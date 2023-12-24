@@ -19,6 +19,13 @@ body {
   margin: 0;
   display: flex;
   place-items: center;
-  min-width: 320px;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+
+#root {
+  margin: 0;
+  display: flex;
+  min-width: 100vw;
   min-height: 100vh;
 }
