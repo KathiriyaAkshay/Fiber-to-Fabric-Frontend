@@ -4,11 +4,13 @@ import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/dashboard/Dashboard";
 import BaseLayout from "./layouts/BaseLayout";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <BaseLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
