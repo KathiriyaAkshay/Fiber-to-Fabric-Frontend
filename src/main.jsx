@@ -653,69 +653,58 @@ const router = createBrowserRouter([
           },
         ],
       },
+
       {
-        path: "/more",
+        path: "machine",
+        element: <div>machine</div>,
+      },
+      {
+        path: "material",
+        element: <div>material</div>,
+      },
+      {
+        path: "yarn-stock-company",
         element: (
           <div>
-            <div>more</div>
+            <div>yarn-stock-company</div>
             <Outlet />
           </div>
         ),
         children: [
-          { index: true, element: <div>more</div> },
+          { index: true, element: <div>yarn-stock-company</div> },
           {
-            path: "machine",
-            element: <div>machine</div>,
+            path: "company-list",
+            element: <div>company-list</div>,
           },
           {
-            path: "material",
-            element: <div>material</div>,
-          },
-          {
-            path: "yarn-stock-company",
-            element: (
-              <div>
-                <div>yarn-stock-company</div>
-                <Outlet />
-              </div>
-            ),
-            children: [
-              { index: true, element: <div>yarn-stock-company</div> },
-              {
-                path: "company-list",
-                element: <div>company-list</div>,
-              },
-              {
-                path: "manage-yarn-stock",
-                element: <div>manage-yarn-stock</div>,
-              },
-            ],
-          },
-          {
-            path: "beam-card",
-            element: <div>beam-card</div>,
-          },
-          {
-            path: "require-ready-beam",
-            element: <div>require-ready-beam</div>,
-          },
-          {
-            path: "seeking",
-            element: <div>seeking</div>,
-          },
-          {
-            path: "cost calculator",
-            element: <div>cost calculator</div>,
-          },
-          {
-            path: "today-report",
-            element: <div>today-report</div>,
-          },
-          {
-            path: "gate-pass",
-            element: <div>gate-pass</div>,
+            path: "manage-yarn-stock",
+            element: <div>manage-yarn-stock</div>,
           },
         ],
+      },
+      {
+        path: "beam-card",
+        element: <div>beam-card</div>,
+      },
+      {
+        path: "require-ready-beam",
+        element: <div>require-ready-beam</div>,
+      },
+      {
+        path: "seeking",
+        element: <div>seeking</div>,
+      },
+      {
+        path: "cost calculator",
+        element: <div>cost calculator</div>,
+      },
+      {
+        path: "today-report",
+        element: <div>today-report</div>,
+      },
+      {
+        path: "gate-pass",
+        element: <div>gate-pass</div>,
       },
     ],
   },
