@@ -2,7 +2,8 @@ import { Button, Link as MUILink, Menu, MenuItem } from "@mui/material";
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
-function MenubarItem({ title, path, children, index }) {
+function MenubarItem({ title, path, children, index, parentPath = "" }) {
+  const concatedPath = parentPath ? `${parentPath}/${path}` : path;
   const [anchorEl, setAnchorEl] = useState(null);
   const isOpenSubMenu = Boolean(anchorEl);
 
@@ -10,9 +11,9 @@ function MenubarItem({ title, path, children, index }) {
     // Do not render menu if have only one item that is index page
     if (children.length === 1 && children[0]?.index) return;
     setAnchorEl(event.currentTarget);
-    // if (anchorEl !== event.currentTarget) {
-    //   setAnchorEl(event.currentTarget);
-    // }
+    if (anchorEl !== event.currentTarget) {
+      setAnchorEl(event.currentTarget);
+    }
   };
 
   const handleCloseSubMenu = () => {
@@ -30,6 +31,8 @@ function MenubarItem({ title, path, children, index }) {
           aria-haspopup="true"
           onClick={openSubMenu}
           onMouseOver={openSubMenu}
+          // onMouseEnter={openSubMenu}
+          // onMouseLeave={handleCloseSubMenu}
           sx={{
             padding: 0,
             justifyContent: "flex-start",
@@ -37,7 +40,7 @@ function MenubarItem({ title, path, children, index }) {
         >
           <MUILink
             as={RouterLink}
-            to={path}
+            to={concatedPath}
             key={path}
             sx={{ textDecoration: "none" }}
           >
@@ -56,7 +59,7 @@ function MenubarItem({ title, path, children, index }) {
             if (data.index) return null;
             return (
               <MenuItem onClick={handleCloseSubMenu} key={data.path}>
-                <MenubarItem {...data} />
+                <MenubarItem {...data} parentPath={concatedPath} />
               </MenuItem>
             );
           })}
@@ -69,7 +72,7 @@ function MenubarItem({ title, path, children, index }) {
     <Button>
       <MUILink
         as={RouterLink}
-        to={path}
+        to={concatedPath}
         key={path}
         sx={{ textDecoration: "none" }}
       >

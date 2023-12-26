@@ -5,7 +5,7 @@ function Menubar() {
   return (
     <div className="flex gap-3 p-2 shadow">
       {menubarOptionsList.map((data) => {
-        return <MenubarItem {...data} key={data.path} />;
+        return <MenubarItem {...data} key={data.path} parentPath="" />;
       })}
     </div>
   );
