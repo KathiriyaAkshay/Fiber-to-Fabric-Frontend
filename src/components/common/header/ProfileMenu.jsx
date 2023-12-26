@@ -1,54 +1,55 @@
-import { Avatar, Button, Menu, MenuItem } from "@mui/material";
-import { useState } from "react";
+import { Avatar, Menu } from "antd";
 
 function ProfileMenu() {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const isOpenProfileMenu = Boolean(anchorEl);
-
-  const openProfileMenu = (event) => {
-    // setAnchorEl(event.currentTarget);
-    if (anchorEl !== event.currentTarget) {
-      setAnchorEl(event.currentTarget);
-    }
-  };
-
-  const handleCloseProfileMenu = () => {
-    setAnchorEl(null);
+  const onClick = (e) => {
+    console.log("click", e);
   };
 
   return (
-    <div>
-      <div>
-        <Button
-          aria-haspopup="true"
-          onClick={openProfileMenu}
-          onMouseOver={openProfileMenu}
-          sx={{
-            padding: 0,
-          }}
-        >
-          <Avatar
-            alt="Remy Sharp"
-            src="/assets/svg/logo.svg"
-            className="p-1 border"
-          />
-        </Button>
-        <Menu
-          anchorEl={anchorEl}
-          open={isOpenProfileMenu}
-          onClose={handleCloseProfileMenu}
-          MenuListProps={{
-            onMouseLeave: handleCloseProfileMenu,
-          }}
-        >
-          <MenuItem onClick={handleCloseProfileMenu}>my profile</MenuItem>
-          <MenuItem onClick={handleCloseProfileMenu}>change password</MenuItem>
-          <MenuItem onClick={handleCloseProfileMenu}>create user</MenuItem>
-          <MenuItem onClick={handleCloseProfileMenu}>user role</MenuItem>
-          <MenuItem onClick={handleCloseProfileMenu}>logout</MenuItem>
-        </Menu>
-      </div>
-    </div>
+    <Menu
+      style={{
+        padding: 0,
+      }}
+      onClick={onClick}
+      triggerSubMenuAction="click"
+      mode="vertical"
+      expandIcon={null}
+      items={[
+        {
+          label: (
+            <Avatar
+              alt="Profile Avatar"
+              src="/assets/svg/logo.svg"
+              className="p-1 border"
+            />
+          ),
+          key: "profile-menu",
+          popupOffset: [-80, 50],
+          children: [
+            {
+              label: "My Profile",
+              key: "My Profile",
+            },
+            {
+              label: "Change Password",
+              key: "Change Password",
+            },
+            {
+              label: "Create User",
+              key: "Create User",
+            },
+            {
+              label: "User Role",
+              key: "User Role",
+            },
+            {
+              label: "Logout",
+              key: "Logout",
+            },
+          ],
+        },
+      ]}
+    />
   );
 }
 

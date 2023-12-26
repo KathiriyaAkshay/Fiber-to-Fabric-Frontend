@@ -1,4 +1,4 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Button } from "antd";
 import { Link, useRouteError } from "react-router-dom";
 
 function ErrorBoundary() {
@@ -6,10 +6,10 @@ function ErrorBoundary() {
   console.error("Error:----->", error);
   // Uncaught ReferenceError: path is not defined
   return (
-    <Box className="flex items-center justify-center w-full">
-      <Box
-        sx={{
-          p: 5,
+    <div className="flex items-center justify-center w-full">
+      <div
+        style={{
+          padding: "20px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -18,23 +18,21 @@ function ErrorBoundary() {
           gap: "20px",
         }}
       >
-        <Box>
-          <Typography variant="h1" sx={{ mb: 2.5 }}>
-            500
-          </Typography>
-          <Typography
-            variant="h5"
-            sx={{ mb: 2.5, fontSize: "1.5rem !important" }}
-          >
-            Internal server error 👨🏻‍💻
-          </Typography>
-          <Typography variant="body2">Oops, something went wrong!</Typography>
-        </Box>
-        <Button href="/" component={Link} variant="contained" sx={{ px: 5.5 }}>
+        <div>
+          <h1 className="mb-2.5">500</h1>
+          <h5 className="mb-2.5 text-xl">Internal server error 👨🏻‍💻</h5>
+          <p>Oops, something went wrong!</p>
+        </div>
+        <Button
+          href="/"
+          component={Link}
+          variant="contained"
+          className="px-5.5"
+        >
           Back to Home
         </Button>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 }
 

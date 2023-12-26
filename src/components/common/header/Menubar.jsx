@@ -1,13 +1,13 @@
+import { Menu } from "antd";
 import { menubarOptionsList } from "../../../constants/menu";
-import MenubarItem from "./MenubarItem";
 
 function Menubar() {
+  const onClick = (e) => {
+    console.log("click", e);
+  };
+
   return (
-    <div className="flex gap-3 p-2 shadow">
-      {menubarOptionsList.map((data) => {
-        return <MenubarItem {...data} key={data.path} parentPath="" />;
-      })}
-    </div>
+    <Menu onClick={onClick} mode="horizontal" items={menubarOptionsList} />
   );
 }
 
