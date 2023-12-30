@@ -1,16 +1,47 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
+import "react-phone-number-input/style.css";
 import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import Dashboard from "./pages/dashboard/Dashboard";
 import BaseLayout from "./layouts/BaseLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import OtpVerificationPage from "./pages/auth/OtpVerificationPage";
+
+const queryClient = new QueryClient();
 
 const router = createBrowserRouter([
+  {
+    path: "auth",
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        index: true,
+        element: <Login />,
+      },
+      {
+        path: "login",
+        element: <Login />,
+      },
+      {
+        path: "verify-otp",
+        element: <OtpVerificationPage />,
+      },
+      {
+        path: "register",
+        element: <Register />,
+      },
+    ],
+  },
   {
     path: "/",
     element: <BaseLayout />,
     errorElement: <ErrorBoundary />,
+
     children: [
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
@@ -712,6 +743,9 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+      <ReactQueryDevtools />
+    </QueryClientProvider>
   </React.StrictMode>
 );
