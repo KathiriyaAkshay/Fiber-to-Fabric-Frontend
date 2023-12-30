@@ -11,6 +11,7 @@ import Register from "./pages/auth/Register";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import OtpVerificationPage from "./pages/auth/OtpVerificationPage";
+import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "verify-otp",
         element: <OtpVerificationPage />,
+      },
+      {
+        path: "forget-password",
+        element: <ForgetPasswordPage />,
       },
       {
         path: "register",

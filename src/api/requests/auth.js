@@ -19,3 +19,11 @@ export function verifyOtpRequest(data) {
 export function resendOtpRequest(data) {
   return api.get("/auth/resend-otp", data);
 }
+
+export function forgetPasswrordRequest(data) {
+  return api.post("/auth/forget-password", data);
+}
+
+export function resetPasswrordRequest(data) {
+  return api.post("/auth/reset-password", data);
+}

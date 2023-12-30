@@ -1,5 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
-import { Form, Input, Button, Row, Col } from "antd";
+import { Form, Input, Button, Row, Col, Space } from "antd";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
@@ -7,7 +7,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
 import { loginRequest } from "../../api/requests/auth";
-import { api } from "../../api";
 
 const loginSchemaResolver = yupResolver(
   yup.object().shape({
@@ -34,8 +33,6 @@ const LoginForm = () => {
       const authToken = res?.data?.token;
       if (authToken) {
         localStorage.setItem("authToken", authToken);
-        api.defaults.headers.common["Authorization"] = authToken;
-
         const otpVerified = res?.data?.user?.otp_verified;
         if (otpVerified) {
           navigate("/", { replace: true });
@@ -103,14 +100,20 @@ const LoginForm = () => {
           />
         </Form.Item>
 
+        <Form.Item style={{ margin: 0 }}>
+          <Link to="/auth/forget-password">Forgot password</Link>
+        </Form.Item>
+
         <Form.Item>
           <Row justify="center">
             <Col>
-              <Button type="primary" htmlType="submit">
-                Login
-              </Button>
-              {" Or "}
-              <Link to="/auth/register">Register</Link>
+              <Space>
+                <Button type="primary" htmlType="submit">
+                  Login
+                </Button>
+                <p>Or</p>
+                <Link to="/auth/register">Register</Link>
+              </Space>
             </Col>
           </Row>
         </Form.Item>

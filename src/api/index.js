@@ -9,6 +9,19 @@ export const api = axios.create({
   },
 });
 
+// Add a request interceptor
+api.interceptors.request.use(
+  function (config) {
+    const authToken = localStorage.getItem("authToken");
+    config.headers.Authorization = authToken;
+    return config;
+  },
+  function (error) {
+    // Do something with request error
+    return Promise.reject(error);
+  }
+);
+
 // Add a response interceptor
 api.interceptors.response.use(
   function (response) {
@@ -17,7 +30,10 @@ api.interceptors.response.use(
   },
   function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
-    if (error?.response?.status === 401) {
+    if (
+      error?.response?.status === 401 &&
+      error?.config?.url?.includes("/auth/current-user")
+    ) {
       window.location.href = `${window.location.origin}/auth`;
     }
     return Promise.reject(error);

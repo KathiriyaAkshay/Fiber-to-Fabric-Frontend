@@ -6,7 +6,6 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { signupRequest } from "../../api/requests/auth";
-import { api } from "../../api";
 import { DevTool } from "@hookform/devtools";
 import { GSTRegex, PANRegex } from "../../constants/regex";
 
@@ -100,7 +99,6 @@ const RegistrationForm = () => {
       const authToken = res?.data?.token;
       if (authToken) {
         localStorage.setItem("authToken", authToken);
-        api.defaults.headers.common["Authorization"] = authToken;
 
         const otpVerified = res?.data?.user?.otp_verified;
         if (otpVerified) {

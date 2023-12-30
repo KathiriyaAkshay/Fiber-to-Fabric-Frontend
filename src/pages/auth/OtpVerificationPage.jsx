@@ -1,11 +1,11 @@
-import { Form, Input, Button, message } from "antd";
+import { Form, Input, Button, message, Breadcrumb } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { resendOtpRequest, verifyOtpRequest } from "../../api/requests/auth";
 import { useMutation } from "@tanstack/react-query";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const otpSchemaResolver = yupResolver(
   yup.object().shape({
@@ -76,6 +76,15 @@ const OtpVerificationPage = () => {
 
   return (
     <>
+      <div className="flex px-10 py-4">
+        <Breadcrumb
+          items={[
+            {
+              title: <Link to="/">Home</Link>,
+            },
+          ]}
+        />
+      </div>
       <div className="flex flex-col items-center justify-center min-w-full">
         <h1>OTP Verification</h1>
         <Form onFinish={handleSubmit(onSubmit)}>
