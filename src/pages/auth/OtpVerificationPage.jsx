@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate } from "react-router-dom";
 
 const otpSchemaResolver = yupResolver(
   yup.object().shape({
@@ -16,6 +17,7 @@ const otpSchemaResolver = yupResolver(
 );
 
 const OtpVerificationPage = () => {
+  const navigate = useNavigate();
   const {
     handleSubmit,
     control,
@@ -30,27 +32,35 @@ const OtpVerificationPage = () => {
       return await verifyOtpRequest(data);
     },
     onSuccess: () => {
-      // Handle successful verification, e.g., navigate to the next page
       message.success("OTP verified successfully!");
+      navigate("/", { replace: true });
     },
     onError: (error) => {
-      // Handle verification error
-      message.error(error.message || "Failed to verify OTP");
+      const errorMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to verify OTP";
+      message.error(errorMessage);
     },
   });
 
   // Mutation for resending OTP
   const { mutate: resendOtp, isLoading: isResending } = useMutation({
     mutationFn: async (data) => {
-      return await resendOtpRequest(data);
+      const res = await resendOtpRequest(data);
+      return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       // Handle successful resend
-      message.success("OTP resent successfully!");
+      message.success(res?.message || "OTP resent successfully!");
     },
     onError: (error) => {
       // Handle resend error
-      message.error(error.message || "Failed to resend OTP");
+      const errorMessage =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to resend OTP";
+      message.error(errorMessage);
     },
   });
 
