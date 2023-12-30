@@ -8,6 +8,10 @@ export function loginRequest(data) {
   return api.post("/auth/login", data);
 }
 
+export function signupRequest(data) {
+  return api.post("/auth/signup", data);
+}
+
 export function verifyOtpRequest(data) {
   return api.post("/auth/verify-otp", data);
 }

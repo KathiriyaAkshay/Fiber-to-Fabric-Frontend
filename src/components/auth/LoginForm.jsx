@@ -61,7 +61,8 @@ const LoginForm = () => {
   }
 
   return (
-    <>
+    <div className="flex flex-col">
+      <h1 className="text-center">Login</h1>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Form.Item
           label="Phone Number"
@@ -115,7 +116,7 @@ const LoginForm = () => {
         </Form.Item>
       </Form>
       <DevTool control={control} />
-    </>
+    </div>
   );
 };
 
