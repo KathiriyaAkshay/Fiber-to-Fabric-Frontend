@@ -1,5 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
-import { Form, Input, Button, Row, Col, Space } from "antd";
+import { Form, Input, Button, Row, Col, Space, message } from "antd";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
@@ -40,6 +40,10 @@ const LoginForm = () => {
           navigate("/auth/verify-otp");
         }
       }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
     },
   });
 

@@ -12,6 +12,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import OtpVerificationPage from "./pages/auth/OtpVerificationPage";
 import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
+import CompanyList from "./pages/company/CompanyList";
+import AddCompany from "./pages/company/AddCompany";
 
 const queryClient = new QueryClient();
 
@@ -66,13 +68,10 @@ const router = createBrowserRouter([
       },
       {
         path: "/company",
-        element: (
-          <div>
-            <div>company</div>
-            <Outlet />
-          </div>
-        ),
-        children: [{ index: true, element: <div>company</div> }],
+        children: [
+          { index: true, element: <CompanyList /> },
+          { path: "add", element: <AddCompany /> },
+        ],
       },
       {
         path: "/user-master",

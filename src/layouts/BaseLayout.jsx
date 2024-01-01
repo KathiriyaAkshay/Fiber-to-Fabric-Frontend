@@ -4,6 +4,7 @@ import { getCurrentUser } from "../api/requests/auth";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "../components/common/ErrorBoundary";
 import { useEffect } from "react";
+import { Spin } from "antd";
 
 function BaseLayout() {
   const navigate = useNavigate();
@@ -27,7 +28,11 @@ function BaseLayout() {
   }, [navigate, user]);
 
   if (isLoading) {
-    return "Loading";
+    return (
+      <Spin tip="Loading" size="large">
+        <div className="p-14" />
+      </Spin>
+    );
   }
 
   if (isError) {
