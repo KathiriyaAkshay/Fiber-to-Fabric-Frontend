@@ -71,7 +71,7 @@ function CompanyList() {
             <Button>
               <EditOutlined />
             </Button>
-            <DeleteCompany />
+            <DeleteCompany companyDetails={companyDetails} />
             <Button>
               <UsergroupAddOutlined />
             </Button>
