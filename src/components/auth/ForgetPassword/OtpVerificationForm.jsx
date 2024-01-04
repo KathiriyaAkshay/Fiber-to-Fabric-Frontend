@@ -8,6 +8,7 @@ import {
 } from "../../../api/requests/auth";
 import { useState } from "react";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import ForwardRefInput from "../../common/ForwardRefInput";
 
 const OtpVerificationForm = ({ setOtpVerified }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -103,6 +104,7 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
                   placeholder="Enter phone number"
                   defaultCountry="IN"
                   international
+                  inputComponent={ForwardRefInput}
                 />
               )}
             />

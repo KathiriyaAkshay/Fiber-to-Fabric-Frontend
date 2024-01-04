@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
 import { loginRequest } from "../../api/requests/auth";
+import ForwardRefInput from "../common/ForwardRefInput";
 
 const loginSchemaResolver = yupResolver(
   yup.object().shape({
@@ -80,6 +81,7 @@ const LoginForm = () => {
                 placeholder="Enter phone number"
                 defaultCountry="IN"
                 international
+                inputComponent={ForwardRefInput}
               />
             )}
           />

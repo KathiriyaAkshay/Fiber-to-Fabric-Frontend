@@ -10,6 +10,7 @@ import { createCompanyRequest } from "../../api/requests/company";
 import PhoneInput from "react-phone-number-input";
 import { GSTRegex } from "../../constants/regex";
 import { DevTool } from "@hookform/devtools";
+import ForwardRefInput from "../../components/common/ForwardRefInput";
 
 const loginSchemaResolver = yupResolver(
   yup.object().shape({
@@ -137,6 +138,7 @@ function AddCompany() {
                     placeholder="Enter phone number"
                     defaultCountry="IN"
                     international
+                    inputComponent={ForwardRefInput}
                   />
                 )}
               />
@@ -234,6 +236,7 @@ function AddCompany() {
                     placeholder="9876543210"
                     defaultCountry="IN"
                     international
+                    inputComponent={ForwardRefInput}
                   />
                 )}
               />

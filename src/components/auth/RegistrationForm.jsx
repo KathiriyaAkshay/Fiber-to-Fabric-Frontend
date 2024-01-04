@@ -8,6 +8,7 @@ import * as yup from "yup";
 import { signupRequest } from "../../api/requests/auth";
 import { DevTool } from "@hookform/devtools";
 import { GSTRegex, PANRegex } from "../../constants/regex";
+import ForwardRefInput from "../common/ForwardRefInput";
 
 const registerSchemaResolver = yupResolver(
   yup.object().shape({
@@ -292,6 +293,7 @@ const RegistrationForm = () => {
                 placeholder="Enter phone number"
                 defaultCountry="IN"
                 international
+                inputComponent={ForwardRefInput}
               />
             )}
           />
