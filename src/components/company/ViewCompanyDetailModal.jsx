@@ -6,21 +6,16 @@ const { Title, Text } = Typography;
 
 const ViewCompanyDetailModal = ({ companyDetails }) => {
   const {
-    id = 1,
     gst_no = null,
     owner_name = null,
     company_name = null,
-    owner_mobile = "+919876543210",
+    owner_mobile = "",
     pancard_no = null,
     adhar_no = null,
-    company_unit = null,
-    bill_number_format = null,
     company_email = null,
     company_contact = null,
     address_line_1 = null,
     address_line_2 = null,
-    country = null,
-    state = null,
     city = null,
     pincode = null,
     bill_title = null,
@@ -28,12 +23,6 @@ const ViewCompanyDetailModal = ({ companyDetails }) => {
     account_number = null,
     ifsc_code = null,
     company_type = null,
-    signature_url = null,
-    company_logo_url = null,
-    user_id = 2,
-    deletedAt = null,
-    createdAt = "2024-01-01T17:08:09.000Z",
-    updatedAt = "2024-01-01T17:08:09.000Z",
   } = companyDetails;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {

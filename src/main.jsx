@@ -14,6 +14,7 @@ import OtpVerificationPage from "./pages/auth/OtpVerificationPage";
 import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
 import CompanyList from "./pages/company/CompanyList";
 import AddCompany from "./pages/company/AddCompany";
+import UpdateCompany from "./pages/company/UpdateCompany";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <CompanyList /> },
           { path: "add", element: <AddCompany /> },
+          { path: "update/:companyId", element: <UpdateCompany /> },
         ],
       },
       {

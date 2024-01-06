@@ -31,6 +31,10 @@ function CompanyList() {
     navigate("/company/add");
   }
 
+  function navigateToUpdateCompany(companyId) {
+    navigate(`/company/update/${companyId}`);
+  }
+
   const columns = [
     {
       title: "ID",
@@ -68,7 +72,11 @@ function CompanyList() {
         return (
           <Space>
             <ViewCompanyDetailModal companyDetails={companyDetails} />
-            <Button>
+            <Button
+              onClick={() => {
+                navigateToUpdateCompany(companyDetails.id);
+              }}
+            >
               <EditOutlined />
             </Button>
             <DeleteCompany companyDetails={companyDetails} />

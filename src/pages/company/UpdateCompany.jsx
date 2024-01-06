@@ -1,43 +1,46 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { createCompanyRequest } from "../../api/requests/company";
+import {
+  getCompanyRequest,
+  updateCompanyRequest,
+} from "../../api/requests/company";
 import PhoneInput from "react-phone-number-input";
-import { GSTRegex } from "../../constants/regex";
 import { DevTool } from "@hookform/devtools";
 import ForwardRefInput from "../../components/common/ForwardRefInput";
+import { useEffect } from "react";
 
-const createCompanySchemaResolver = yupResolver(
+const updateCompanySchemaResolver = yupResolver(
   yup.object().shape({
     owner_mobile: yup
       .string()
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    gst_no: yup
-      .string()
-      // .required('Please enter GST')
-      .matches(GSTRegex, "Enter valid GST number"),
+    gst_no: yup.string(),
   })
 );
 
-function AddCompany() {
+function UpdateCompany() {
   const navigate = useNavigate();
+  const params = useParams();
+  const { companyId } = params;
+
   function goBack() {
     navigate(-1);
   }
 
-  const { mutateAsync: addNewCompany } = useMutation({
+  const { mutateAsync: updateCompanyDetails } = useMutation({
     mutationFn: async (data) => {
-      const res = await createCompanyRequest(data);
+      const res = await updateCompanyRequest({ companyId, data });
       return res.data;
     },
-    mutationKey: ["company", "create"],
+    mutationKey: ["update", "company", companyId],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
@@ -45,11 +48,25 @@ function AddCompany() {
       }
       navigate(-1);
     },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const { data: companyDetails } = useQuery({
+    queryKey: ["company", companyId],
+    queryFn: async () => {
+      const res = await getCompanyRequest({ companyId });
+      return res.data?.data;
+    },
   });
 
   async function onSubmit(data) {
     console.log(data); // Handle form submission
-    const res = await addNewCompany(data);
+    const res = await updateCompanyDetails(data);
     console.log("res----->", res);
   }
 
@@ -59,8 +76,22 @@ function AddCompany() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: createCompanySchemaResolver,
+    resolver: updateCompanySchemaResolver,
   });
+
+  useEffect(() => {
+    if (companyDetails) {
+      reset({
+        ...companyDetails,
+        // remove unnecessary fields
+        id: undefined,
+        user_id: undefined,
+        deletedAt: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+      });
+    }
+  }, [companyDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -68,7 +99,7 @@ function AddCompany() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Add New Company</h2>
+        <h2 className="m-0">Update Company</h2>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -437,11 +468,11 @@ function AddCompany() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={reset}>
+          {/* <Button htmlType="button" onClick={reset}>
             Reset
-          </Button>
+          </Button> */}
           <Button type="primary" htmlType="submit">
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
@@ -451,4 +482,4 @@ function AddCompany() {
   );
 }
 
-export default AddCompany;
+export default UpdateCompany;
