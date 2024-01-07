@@ -1,15 +1,12 @@
 import { Button, Space, Spin, Table } from "antd";
-import {
-  EditOutlined,
-  PlusCircleOutlined,
-  UsergroupAddOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { getCompanyListRequest } from "../../api/requests/company";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "../../components/common/ErrorBoundary";
 import ViewCompanyDetailModal from "../../components/company/ViewCompanyDetailModal";
 import DeleteCompany from "../../components/company/DeleteCompany";
+import AddPartner from "../../components/company/AddPartner";
 
 function CompanyList() {
   const navigate = useNavigate();
@@ -80,9 +77,7 @@ function CompanyList() {
               <EditOutlined />
             </Button>
             <DeleteCompany companyDetails={companyDetails} />
-            <Button>
-              <UsergroupAddOutlined />
-            </Button>
+            <AddPartner companyDetails={companyDetails} />
           </Space>
         );
       },

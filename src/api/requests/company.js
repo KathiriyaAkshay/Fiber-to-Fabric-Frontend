@@ -20,8 +20,8 @@ export function getCompanyListRequest({ config }) {
   return api.get(`/company/list`, config);
 }
 
-export function getCompanyPartnerRequest({ partnerId, config }) {
-  return api.get(`/company/partner/get/${partnerId}`, config);
+export function getCompanyPartnerRequest({ companyId, config }) {
+  return api.get(`/company/partner/get/${companyId}`, config);
 }
 
 export function addPartnerToCompanyRequest(data) {
