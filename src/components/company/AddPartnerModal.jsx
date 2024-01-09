@@ -1,8 +1,10 @@
-import { Modal, Spin, Table, Typography } from "antd";
+import { Modal, Space, Spin, Table, Typography } from "antd";
 import { getCompanyPartnerRequest } from "../../api/requests/company";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "../common/ErrorBoundary";
 import AddPartnerForm from "./AddPartnerForm";
+import DeleteCompanyPartner from "./partner/DeleteCompanyPartner";
+
 const { Title } = Typography;
 
 function AddPartnerModal({ open, onCancel, companyDetails }) {
@@ -56,6 +58,17 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
       dataIndex: "capital",
       key: "capital",
     },
+    {
+      title: "Action",
+      render: (partnerDetails) => {
+        return (
+          <Space>
+            <DeleteCompanyPartner partnerDetails={partnerDetails} />
+          </Space>
+        );
+      },
+      key: "action",
+    },
   ];
 
   return (
@@ -75,6 +88,7 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
           dataSource={partnerListRes?.rows || []}
           columns={columns}
           rowKey="id"
+          style={{ overflow: "auto" }}
         />
         <AddPartnerForm companyDetails={companyDetails} />
       </Modal>

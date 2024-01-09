@@ -27,3 +27,11 @@ export function getCompanyPartnerRequest({ companyId, config }) {
 export function addPartnerToCompanyRequest(data) {
   return api.post(`/company/partner/add`, data);
 }
+
+export function updateCompanyPartnerRequest({ partnerId, data }) {
+  return api.post(`/company/partner/update/${partnerId}`, data);
+}
+
+export function deleteCompanyPartnerRequest({ partnerId, config }) {
+  return api.delete(`/company/partner/delete/${partnerId}`, config);
+}
