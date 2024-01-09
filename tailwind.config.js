@@ -2,7 +2,11 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      backgroundImage: {
+        "auth-mask-group": "url('./src/assets/svg/auth-mask-top-right.svg')",
+      },
+    },
   },
   plugins: [],
   corePlugins: {

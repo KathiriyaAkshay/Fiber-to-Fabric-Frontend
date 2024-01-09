@@ -15,6 +15,7 @@ import ForgetPasswordPage from "./pages/auth/ForgetPasswordPage";
 import CompanyList from "./pages/company/CompanyList";
 import AddCompany from "./pages/company/AddCompany";
 import UpdateCompany from "./pages/company/UpdateCompany";
+import { ConfigProvider } from "antd";
 
 const queryClient = new QueryClient();
 
@@ -750,7 +751,15 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <ConfigProvider
+        theme={{
+          token: {
+            colorPrimary: "#194A6D",
+          },
+        }}
+      >
+        <RouterProvider router={router} />
+      </ConfigProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>
   </React.StrictMode>

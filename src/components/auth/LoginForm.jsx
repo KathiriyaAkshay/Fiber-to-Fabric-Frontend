@@ -1,5 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
-import { Form, Input, Button, Row, Col, Space, message } from "antd";
+import { Form, Input, Button, message } from "antd";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
@@ -63,8 +63,8 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="flex flex-col">
-      <h1 className="text-center">Login</h1>
+    <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+      <h2 className="">Login</h2>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Form.Item
           label="Phone Number"
@@ -106,23 +106,23 @@ const LoginForm = () => {
           />
         </Form.Item>
 
-        <Form.Item style={{ margin: 0 }}>
-          <Link to="/auth/forget-password">Forgot password</Link>
-        </Form.Item>
+        <div className="flex justify-end">
+          <Link to="/auth/forget-password">Forgot Password?</Link>
+        </div>
 
-        <Form.Item>
-          <Row justify="center">
-            <Col>
-              <Space>
-                <Button type="primary" htmlType="submit">
-                  Login
-                </Button>
-                <p>Or</p>
-                <Link to="/auth/register">Register</Link>
-              </Space>
-            </Col>
-          </Row>
-        </Form.Item>
+        <Button
+          type="primary"
+          htmlType="submit"
+          className="w-full mt-5 text-2xl font-bold"
+          size="large"
+        >
+          Log In
+        </Button>
+
+        <div className="flex items-center gap-1.5 mt-3">
+          <p className="m-0">Not registered Yet?</p>
+          <Link to="/auth/register">Create account</Link>
+        </div>
       </Form>
       <DevTool control={control} />
     </div>
