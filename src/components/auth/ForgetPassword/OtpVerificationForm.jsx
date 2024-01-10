@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import ForwardRefInput from "../../common/ForwardRefInput";
+import { Link } from "react-router-dom";
 
 const OtpVerificationForm = ({ setOtpVerified }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -65,7 +66,7 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
 
   async function handleForgetPassword() {
     const mobile = getValues("mobile");
-    if (!isValidPhoneNumber(mobile)) {
+    if (!mobile || !isValidPhoneNumber(mobile)) {
       return message.error("Please enter valid Mobile Number");
     }
     const data = await forgetPassword({ mobile });
@@ -86,9 +87,9 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center min-w-full">
-        <h1>OTP Verification</h1>
-        <Form>
+      <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+        <h2 className="">OTP Verification</h2>
+        <Form layout="vertical">
           <Form.Item
             label="Phone Number"
             name="mobile"
@@ -136,15 +137,21 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
               type="primary"
               onClick={handleForgetClick}
               loading={isVerifying}
+              className="flex-grow"
             >
               {isOtpSent ? "Verify OTP" : "Send OTP"}
             </Button>
             <Button
               onClick={handleForgetPassword}
               loading={isLoadingForgetPassword}
+              className="flex-grow"
             >
               Resend OTP
             </Button>
+          </div>
+          <div className="flex items-center gap-1.5 mt-3">
+            <p className="m-0">Back to</p>
+            <Link to="/auth">Log in !</Link>
           </div>
         </Form>
       </div>

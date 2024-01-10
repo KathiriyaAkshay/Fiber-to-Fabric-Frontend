@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { resetPasswrordRequest } from "../../../api/requests/auth";
 
 const forgetPasswordSchemaResolver = yupResolver(
@@ -61,9 +61,9 @@ const ForgetPasswordForm = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center min-w-full">
-        <h1>Forget Password</h1>
-        <Form onFinish={handleSubmit(onSubmit)}>
+      <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+        <h2 className="">Forget Password</h2>
+        <Form onFinish={handleSubmit(onSubmit)} layout="vertical">
           <Form.Item
             label="Old Password"
             name="oldPassword"
@@ -120,13 +120,19 @@ const ForgetPasswordForm = () => {
               )}
             />
           </Form.Item>
-          <Form.Item>
-            <div className="flex gap-3">
-              <Button type="primary" htmlType="submit" loading={isReseting}>
-                Reset
-              </Button>
-            </div>
-          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isReseting}
+            className="w-full"
+          >
+            Reset
+          </Button>
+
+          <div className="flex items-center gap-1.5 mt-3">
+            <p className="m-0">Back to</p>
+            <Link to="/auth">Log in !</Link>
+          </div>
         </Form>
       </div>
       <DevTool control={control} />

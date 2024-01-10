@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       backgroundImage: {
-        "auth-mask-group": "url('./src/assets/svg/auth-mask-top-right.svg')",
+        "auth-mask-group": "url('assets/svg/auth-mask-top-right.svg')",
       },
     },
   },
