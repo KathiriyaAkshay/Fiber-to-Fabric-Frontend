@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { createCompanyRequest } from "../../api/requests/company";
 import PhoneInput from "react-phone-number-input";
-import { GSTRegex } from "../../constants/regex";
 import { DevTool } from "@hookform/devtools";
 import ForwardRefInput from "../../components/common/ForwardRefInput";
 
@@ -19,10 +18,9 @@ const createCompanySchemaResolver = yupResolver(
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    gst_no: yup
-      .string()
-      // .required('Please enter GST')
-      .matches(GSTRegex, "Enter valid GST number"),
+    gst_no: yup.string(),
+    // .required('Please enter GST')
+    // .matches(GSTRegex, "Enter valid GST number"),
   })
 );
 

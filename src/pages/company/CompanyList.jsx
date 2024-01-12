@@ -3,7 +3,6 @@ import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { getCompanyListRequest } from "../../api/requests/company";
 import { useQuery } from "@tanstack/react-query";
-import ErrorBoundary from "../../components/common/ErrorBoundary";
 import ViewCompanyDetailModal from "../../components/company/ViewCompanyDetailModal";
 import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
@@ -11,12 +10,7 @@ import AddPartner from "../../components/company/AddPartner";
 function CompanyList() {
   const navigate = useNavigate();
 
-  const {
-    data: companyListRes,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const { data: companyListRes, isLoading } = useQuery({
     queryKey: ["company", "list"],
     queryFn: async () => {
       const res = await getCompanyListRequest({});
@@ -91,11 +85,6 @@ function CompanyList() {
         <div className="p-14" />
       </Spin>
     );
-  }
-
-  if (isError) {
-    console.error("----->", error);
-    return <ErrorBoundary />;
   }
 
   return (

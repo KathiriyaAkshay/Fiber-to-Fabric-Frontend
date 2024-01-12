@@ -42,6 +42,7 @@ const AddPartnerForm = ({ companyDetails }) => {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm({
     defaultValues: {
       company_id: companyDetails.id,
@@ -52,11 +53,13 @@ const AddPartnerForm = ({ companyDetails }) => {
 
   async function onSubmit(data) {
     await addPartner(data);
+    reset();
   }
 
   return (
     <>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+        <h2>Add</h2>
         <Flex gap={10} justify="space-between" align="center">
           <Form.Item
             // className="w-full"
@@ -123,14 +126,9 @@ const AddPartnerForm = ({ companyDetails }) => {
             />
           </Form.Item>
         </Flex>
-
-        <Form.Item>
-          <Flex gap={10}>
-            <Button type="primary" htmlType="submit">
-              Add
-            </Button>
-          </Flex>
-        </Form.Item>
+        <Button type="primary" htmlType="submit">
+          Add
+        </Button>
       </Form>
       <DevTool control={control} />
     </>

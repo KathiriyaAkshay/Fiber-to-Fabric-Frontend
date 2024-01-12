@@ -1,11 +1,16 @@
-import { Modal, Spin, Table, Typography } from "antd";
+import { Button, Modal, Space, Spin, Table, Typography } from "antd";
 import { getCompanyPartnerRequest } from "../../api/requests/company";
 import { useQuery } from "@tanstack/react-query";
 import ErrorBoundary from "../common/ErrorBoundary";
 import AddProprietorForm from "./AddProprietorForm";
+import { useState } from "react";
+import EditPartnerForm from "./partner/EditPartnerForm";
+import { EditOutlined } from "@ant-design/icons";
+import DeleteCompanyPartner from "./partner/DeleteCompanyPartner";
 const { Title } = Typography;
 
 function AddProprietorModal({ open, onCancel, companyDetails }) {
+  const [partnerTBE, setPartnerTBE] = useState();
   const {
     data: partnerListRes,
     isLoading,
@@ -56,7 +61,33 @@ function AddProprietorModal({ open, onCancel, companyDetails }) {
       dataIndex: "capital",
       key: "capital",
     },
+    {
+      title: "Action",
+      render: (partnerDetails) => {
+        return (
+          <Space>
+            <Button onClick={() => setPartnerTBE(partnerDetails)}>
+              <EditOutlined />
+            </Button>
+            <DeleteCompanyPartner partnerDetails={partnerDetails} />
+          </Space>
+        );
+      },
+      key: "action",
+    },
   ];
+
+  function renderForm() {
+    if (partnerTBE) {
+      return (
+        <EditPartnerForm
+          partnerDetails={partnerTBE}
+          setPartnerTBE={setPartnerTBE}
+        />
+      );
+    }
+    return <AddProprietorForm companyDetails={companyDetails} />;
+  }
 
   return (
     <>
@@ -76,7 +107,7 @@ function AddProprietorModal({ open, onCancel, companyDetails }) {
           columns={columns}
           rowKey="id"
         />
-        <AddProprietorForm companyDetails={companyDetails} />
+        {renderForm()}
       </Modal>
     </>
   );

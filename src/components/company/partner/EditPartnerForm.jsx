@@ -2,25 +2,30 @@ import { useForm, Controller } from "react-hook-form";
 import { Form, Input, Button, message, Flex } from "antd";
 import { DevTool } from "@hookform/devtools";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addPartnerToCompanyRequest } from "../../api/requests/company";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { updateCompanyPartnerRequest } from "../../../api/requests/company";
 
-const addProprietorSchemaResolver = yupResolver(
+const editPartnerSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string().required("Please enter first name"),
     last_name: yup.string().required("Please enter last name"),
     ratio: yup.string().required("Please enter ratio"),
     capital: yup.string().required("Please enter capital"),
+    type: yup.string().required("Please select type"),
   })
 );
 
-const AddProprietorForm = ({ companyDetails }) => {
+const EditPartnerForm = ({ partnerDetails = {}, setPartnerTBE }) => {
+  const { first_name, last_name, ratio, capital, type, id } = partnerDetails;
   const queryClient = useQueryClient();
 
-  const { mutateAsync: addProprietor } = useMutation({
+  const { mutateAsync: EditPartner } = useMutation({
     mutationFn: async (data) => {
-      const res = await addPartnerToCompanyRequest(data);
+      const res = await updateCompanyPartnerRequest({
+        partnerId: id,
+        data: data,
+      });
       return res?.data;
     },
     onSuccess: (res) => {
@@ -42,23 +47,26 @@ const AddProprietorForm = ({ companyDetails }) => {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm({
     defaultValues: {
-      company_id: companyDetails.id,
-      type: "PROPRIETOR",
+      first_name,
+      last_name,
+      ratio,
+      capital,
+      type,
     },
-    resolver: addProprietorSchemaResolver,
+    resolver: editPartnerSchemaResolver,
   });
 
   async function onSubmit(data) {
-    await addProprietor(data);
-    reset();
+    await EditPartner(data);
+    setPartnerTBE(undefined);
   }
 
   return (
     <>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+        <h2>Edit</h2>
         <Flex gap={10} justify="space-between" align="center">
           <Form.Item
             // className="w-full"
@@ -125,18 +133,16 @@ const AddProprietorForm = ({ companyDetails }) => {
             />
           </Form.Item>
         </Flex>
-
-        <Form.Item>
-          <Flex gap={10}>
-            <Button type="primary" htmlType="submit">
-              Add
-            </Button>
-          </Flex>
-        </Form.Item>
+        <Flex gap={12}>
+          <Button type="primary" htmlType="submit">
+            Update
+          </Button>
+          <Button onClick={() => setPartnerTBE(undefined)}>Cancel</Button>
+        </Flex>
       </Form>
       <DevTool control={control} />
     </>
   );
 };
 
-export default AddProprietorForm;
+export default EditPartnerForm;

@@ -1,19 +1,17 @@
-import { Modal, Space, Spin, Table, Typography } from "antd";
+import { Button, Modal, Space, Table, Typography } from "antd";
 import { getCompanyPartnerRequest } from "../../api/requests/company";
 import { useQuery } from "@tanstack/react-query";
-import ErrorBoundary from "../common/ErrorBoundary";
 import AddPartnerForm from "./AddPartnerForm";
 import DeleteCompanyPartner from "./partner/DeleteCompanyPartner";
+import EditPartnerForm from "./partner/EditPartnerForm";
+import { useState } from "react";
+import { EditOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
 function AddPartnerModal({ open, onCancel, companyDetails }) {
-  const {
-    data: partnerListRes,
-    isLoading,
-    isError,
-    error,
-  } = useQuery({
+  const [partnerTBE, setPartnerTBE] = useState();
+  const { data: partnerListRes } = useQuery({
     queryKey: ["company", "partner", "get", { type: "PARTNER" }],
     queryFn: async () => {
       const res = await getCompanyPartnerRequest({
@@ -23,19 +21,6 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
       return res.data?.data;
     },
   });
-
-  if (isLoading) {
-    return (
-      <Spin tip="Loading" size="large">
-        <div className="p-14" />
-      </Spin>
-    );
-  }
-
-  if (isError) {
-    console.error("----->", error);
-    return <ErrorBoundary />;
-  }
 
   const columns = [
     {
@@ -63,6 +48,9 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
       render: (partnerDetails) => {
         return (
           <Space>
+            <Button onClick={() => setPartnerTBE(partnerDetails)}>
+              <EditOutlined />
+            </Button>
             <DeleteCompanyPartner partnerDetails={partnerDetails} />
           </Space>
         );
@@ -70,6 +58,18 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
       key: "action",
     },
   ];
+
+  function renderForm() {
+    if (partnerTBE) {
+      return (
+        <EditPartnerForm
+          partnerDetails={partnerTBE}
+          setPartnerTBE={setPartnerTBE}
+        />
+      );
+    }
+    return <AddPartnerForm companyDetails={companyDetails} />;
+  }
 
   return (
     <>
@@ -90,7 +90,7 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
           rowKey="id"
           style={{ overflow: "auto" }}
         />
-        <AddPartnerForm companyDetails={companyDetails} />
+        {renderForm()}
       </Modal>
     </>
   );
