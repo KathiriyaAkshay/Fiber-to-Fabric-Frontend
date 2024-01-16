@@ -16,6 +16,9 @@ import CompanyList from "./pages/company/CompanyList";
 import AddCompany from "./pages/company/AddCompany";
 import UpdateCompany from "./pages/company/UpdateCompany";
 import { ConfigProvider } from "antd";
+import SupervisorList from "./pages/userMaster/supervisor/SupervisorList";
+import AddSupervisor from "./pages/userMaster/supervisor/AddSupervisor";
+import UpdateSupervisor from "./pages/userMaster/supervisor/UpdateSupervisor";
 
 const queryClient = new QueryClient();
 
@@ -78,15 +81,16 @@ const router = createBrowserRouter([
       },
       {
         path: "/user-master",
-        element: (
-          <div>
-            <div>user-master</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>user-master</div> },
-          { path: "my-supervisor", element: <div>my-supervisor</div> },
+          { index: true, element: <SupervisorList /> },
+          {
+            path: "my-supervisor",
+            children: [
+              { index: true, element: <SupervisorList /> },
+              { path: "add", element: <AddSupervisor /> },
+              { path: "update/:id", element: <UpdateSupervisor /> },
+            ],
+          },
           { path: "my-broker", element: <div>my-broker</div> },
           { path: "my-parties", element: <div>my-parties</div> },
           { path: "my-supplier", element: <div>my-supplier</div> },
