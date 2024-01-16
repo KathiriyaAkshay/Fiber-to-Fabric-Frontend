@@ -108,7 +108,7 @@ function UpdateSupervisor() {
       reset({
         ...userDetails,
         supervisor_type: userDetails?.supervisor?.supervisor_type,
-        supervisor_companies: userDetails?.supervisor_companies?.map(
+        company_ids: userDetails?.supervisor_companies?.map(
           (c) => c?.company_id
         ),
         // remove unnecessary fields
@@ -353,7 +353,7 @@ function UpdateSupervisor() {
 
           <Col span={12}>
             <Form.Item
-              label="Supervisor Type"
+              label="Companies"
               name="company_ids"
               validateStatus={errors.company_ids ? "error" : ""}
               help={errors.company_ids && errors.company_ids.message}

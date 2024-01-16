@@ -344,7 +344,7 @@ function AddSupervisor() {
 
           <Col span={12}>
             <Form.Item
-              label="Supervisor Type"
+              label="Companies"
               name="company_ids"
               validateStatus={errors.company_ids ? "error" : ""}
               help={errors.company_ids && errors.company_ids.message}
