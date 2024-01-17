@@ -3,16 +3,16 @@ import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  getSupervisorListRequest,
+  getBrokerListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
 import { getCompanyListRequest } from "../../../api/requests/company";
-import ViewSupervisorDetailModal from "../../../components/userMaster/supervisor/ViewSupervisorDetailModal";
 import { USER_ROLES } from "../../../constants/userRole";
+import ViewBrokerDetailModal from "../../../components/userMaster/broker/ViewBrokerDetailModal";
 
-const roleId = USER_ROLES.SUPERVISOR.role_id;
+const roleId = USER_ROLES.BROKER.role_id;
 
-function SupervisorList() {
+function BrokerList() {
   const navigate = useNavigate();
 
   const { data: companyListRes } = useQuery({
@@ -25,10 +25,10 @@ function SupervisorList() {
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { data: supervisorListRes, isLoading } = useQuery({
-    queryKey: ["supervisor", "list", { company_id: companyId }],
+  const { data: userListRes, isLoading } = useQuery({
+    queryKey: ["broker", "list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getSupervisorListRequest({
+      const res = await getBrokerListRequest({
         params: { company_id: companyId },
       });
       return res.data?.data;
@@ -65,11 +65,11 @@ function SupervisorList() {
   });
 
   function navigateToAdd() {
-    navigate("/user-master/my-supervisor/add");
+    navigate("/user-master/my-broker/add");
   }
 
   function navigateToUpdate(id) {
-    navigate(`/user-master/my-supervisor/update/${id}`);
+    navigate(`/user-master/my-broker/update/${id}`);
   }
 
   const columns = [
@@ -113,7 +113,7 @@ function SupervisorList() {
       render: (userDetails) => {
         return (
           <Space>
-            <ViewSupervisorDetailModal userDetails={userDetails} />
+            <ViewBrokerDetailModal userDetails={userDetails} />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);
@@ -158,7 +158,7 @@ function SupervisorList() {
 
     return (
       <Table
-        dataSource={supervisorListRes?.supervisorList?.rows || []}
+        dataSource={userListRes?.brokerList?.rows || []}
         columns={columns}
         rowKey={"id"}
       />
@@ -168,7 +168,7 @@ function SupervisorList() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <h2 className="m-0">Supervisor List</h2>
+        <h2 className="m-0">Broker List</h2>
         <Button onClick={navigateToAdd}>
           <PlusCircleOutlined />
         </Button>
@@ -178,4 +178,4 @@ function SupervisorList() {
   );
 }
 
-export default SupervisorList;
+export default BrokerList;
