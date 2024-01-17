@@ -1,10 +1,16 @@
-import { Button, Space, Spin, Switch, Table } from "antd";
+import { Button, Space, Spin, Switch, Table, message } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getSupervisorListRequest } from "../../../api/requests/users";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getSupervisorListRequest,
+  updateUserRequest,
+} from "../../../api/requests/users";
 import { getCompanyListRequest } from "../../../api/requests/company";
 import ViewSupervisorDetailModal from "../../../components/userMaster/ViewSupervisorDetailModal";
+import { USER_ROLES } from "../../../constants/userRole";
+
+const roleId = USER_ROLES.SUPERVISOR.role_id;
 
 function SupervisorList() {
   const navigate = useNavigate();
@@ -20,7 +26,7 @@ function SupervisorList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: supervisorListRes, isLoading } = useQuery({
-    queryKey: ["supervisor", "list"],
+    queryKey: ["supervisor", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getSupervisorListRequest({
         params: { company_id: companyId },
@@ -28,6 +34,34 @@ function SupervisorList() {
       return res.data?.data;
     },
     enabled: Boolean(companyId),
+  });
+
+  const {
+    mutateAsync: updateUser,
+    isPending: updatingUser,
+    variables,
+  } = useMutation({
+    mutationFn: async ({ userId, data }) => {
+      const res = await updateUserRequest({
+        roleId,
+        userId,
+        data,
+      });
+      return res.data;
+    },
+    mutationKey: ["users", "update", roleId],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
   });
 
   function navigateToAdd() {
@@ -95,8 +129,18 @@ function SupervisorList() {
     {
       title: "Status",
       render: (userDetails) => {
+        const { is_active, id } = userDetails;
         return (
-          <Switch loading={false} defaultChecked={userDetails.is_active} />
+          <Switch
+            loading={updatingUser && variables?.userId === id}
+            defaultChecked={is_active}
+            onChange={(is_active) => {
+              updateUser({
+                userId: id,
+                data: { is_active: is_active },
+              });
+            }}
+          />
         );
       },
       key: "status",

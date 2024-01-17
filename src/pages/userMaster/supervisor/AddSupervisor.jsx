@@ -73,6 +73,8 @@ function AddSupervisor() {
     },
   });
 
+  const companyId = companyListRes?.rows?.[0]?.id;
+
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
@@ -83,7 +85,11 @@ function AddSupervisor() {
     },
     mutationKey: ["users", "add", roleId],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["supervisor", "list"]);
+      queryClient.invalidateQueries([
+        "supervisor",
+        "list",
+        { company_id: companyId },
+      ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
