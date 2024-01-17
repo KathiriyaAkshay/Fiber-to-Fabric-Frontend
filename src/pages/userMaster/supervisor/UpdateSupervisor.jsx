@@ -26,15 +26,33 @@ import {
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
 import { USER_ROLES } from "../../../constants/userRole";
 import { getCompanyListRequest } from "../../../api/requests/company";
+import { AadharRegex } from "../../../constants/regex";
 
-const updateCompanySchemaResolver = yupResolver(
+const updateSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
-    owner_mobile: yup
+    first_name: yup.string(),
+    last_name: yup.string(),
+    mobile: yup
       .string()
+      .required("Please enter Contact number")
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    gst_no: yup.string(),
+    email: yup
+      .string()
+      .required("Please enter email address")
+      .email("Please enter valid email address"),
+    address: yup.string(),
+    gst_no: yup.string().required("Please enter GST"),
+    // .matches(GSTRegex, "Enter valid GST number"),
+    pancard_no: yup.string(),
+    // .required('Please enter pan number')
+    // .matches(PANRegex, "Enter valid PAN number"),
+    username: yup.string(),
+    adhar_no: yup
+      .string()
+      // .required("Please enter Aadhar number")
+      .matches(AadharRegex, "Enter valid Aadhar number"),
   })
 );
 
@@ -61,7 +79,7 @@ function UpdateSupervisor() {
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
-        id,
+        userId: id,
         data,
       });
       return res.data;
@@ -100,7 +118,7 @@ function UpdateSupervisor() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: updateCompanySchemaResolver,
+    resolver: updateSupervisorSchemaResolver,
   });
 
   useEffect(() => {

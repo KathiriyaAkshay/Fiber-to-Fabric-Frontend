@@ -26,7 +26,7 @@ import { AadharRegex } from "../../../constants/regex";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
-const registerSchemaResolver = yupResolver(
+const addSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
@@ -45,8 +45,6 @@ const registerSchemaResolver = yupResolver(
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string(),
-    registration_step: yup.number(),
-    role_id: yup.number(),
     gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
@@ -108,7 +106,7 @@ function AddSupervisor() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: registerSchemaResolver,
+    resolver: addSupervisorSchemaResolver,
   });
 
   return (

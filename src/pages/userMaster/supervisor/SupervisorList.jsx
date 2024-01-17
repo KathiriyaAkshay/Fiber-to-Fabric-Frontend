@@ -2,9 +2,9 @@ import { Button, Space, Spin, Switch, Table } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import ViewCompanyDetailModal from "../../../components/company/ViewCompanyDetailModal";
 import { getSupervisorListRequest } from "../../../api/requests/users";
 import { getCompanyListRequest } from "../../../api/requests/company";
+import ViewSupervisorDetailModal from "../../../components/userMaster/ViewSupervisorDetailModal";
 
 function SupervisorList() {
   const navigate = useNavigate();
@@ -76,13 +76,13 @@ function SupervisorList() {
     // },
     {
       title: "Action",
-      render: (companyDetails) => {
+      render: (userDetails) => {
         return (
           <Space>
-            <ViewCompanyDetailModal companyDetails={companyDetails} />
+            <ViewSupervisorDetailModal userDetails={userDetails} />
             <Button
               onClick={() => {
-                navigateToUpdate(companyDetails.id);
+                navigateToUpdate(userDetails.id);
               }}
             >
               <EditOutlined />
