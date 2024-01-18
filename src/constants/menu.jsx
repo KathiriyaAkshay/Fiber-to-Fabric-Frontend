@@ -46,9 +46,9 @@ export const menubarOptionsList = [
         label: <Link to="user-master/my-broker">My Broker</Link>,
       },
       {
-        path: "my-parties",
+        path: "my-party",
         key: "My Parties",
-        label: <Link to="user-master/my-parties">My Parties</Link>,
+        label: <Link to="user-master/my-party">My Parties</Link>,
       },
       {
         path: "my-supplier",

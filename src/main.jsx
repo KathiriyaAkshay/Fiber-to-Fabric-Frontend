@@ -22,6 +22,9 @@ import UpdateSupervisor from "./pages/userMaster/supervisor/UpdateSupervisor";
 import BrokerList from "./pages/userMaster/broker/BrokerList";
 import AddBroker from "./pages/userMaster/broker/AddBroker";
 import UpdateBroker from "./pages/userMaster/broker/UpdateBroker";
+import PartyList from "./pages/userMaster/party/PartyList";
+import AddParty from "./pages/userMaster/party/AddParty";
+import UpdateParty from "./pages/userMaster/party/UpdateParty";
 
 const queryClient = new QueryClient();
 
@@ -102,7 +105,14 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateBroker /> },
             ],
           },
-          { path: "my-parties", element: <div>my-parties</div> },
+          {
+            path: "my-party",
+            children: [
+              { index: true, element: <PartyList /> },
+              { path: "add", element: <AddParty /> },
+              { path: "update/:id", element: <UpdateParty /> },
+            ],
+          },
           { path: "my-supplier", element: <div>my-supplier</div> },
           { path: "my-employee", element: <div>my-employee</div> },
           { path: "my-collection", element: <div>my-collection</div> },

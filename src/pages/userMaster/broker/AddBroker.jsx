@@ -1,10 +1,13 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, message } from "antd";
+import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
-import { addUserRequest } from "../../../api/requests/users";
+import {
+  addUserRequest,
+  getPartyListRequest,
+} from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
@@ -64,6 +67,17 @@ function AddBroker() {
   });
 
   const companyId = companyListRes?.rows?.[0]?.id;
+
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getPartyListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {
@@ -310,6 +324,36 @@ function AddBroker() {
                 name="username"
                 render={({ field }) => (
                   <Input {...field} placeholder="Username" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Party"
+              name="party_ids"
+              validateStatus={errors.party_ids ? "error" : ""}
+              help={errors.party_ids && errors.party_ids.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="party_ids"
+                render={({ field }) => (
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Please select party"
+                    loading={isLoadingPartyList}
+                    {...field}
+                    options={partyUserListRes?.partyList?.rows?.map(
+                      (party) => ({
+                        label: party.first_name + " " + party.last_name,
+                        value: party.id,
+                      })
+                    )}
+                  />
                 )}
               />
             </Form.Item>

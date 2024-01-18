@@ -10,8 +10,8 @@ import PhoneInput from "react-phone-number-input";
 import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 import {
-  getBrokerByIdRequest,
-  getPartyListRequest,
+  getBrokerListRequest,
+  getPartyByIdRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
@@ -19,7 +19,7 @@ import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { getCompanyListRequest } from "../../../api/requests/company";
 
-const updateBrokerSchemaResolver = yupResolver(
+const updatePartySchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
@@ -47,9 +47,9 @@ const updateBrokerSchemaResolver = yupResolver(
   })
 );
 
-const roleId = USER_ROLES.BROKER.role_id;
+const roleId = USER_ROLES.PARTY.role_id;
 
-function UpdateBroker() {
+function UpdateParty() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
@@ -57,6 +57,27 @@ function UpdateBroker() {
   function goBack() {
     navigate(-1);
   }
+
+  const { data: companyListRes } = useQuery({
+    queryKey: ["company", "list"],
+    queryFn: async () => {
+      const res = await getCompanyListRequest({});
+      return res.data?.data;
+    },
+  });
+
+  const companyId = companyListRes?.rows?.[0]?.id;
+
+  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
+    queryKey: ["broker", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getBrokerListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { mutateAsync: updateUser } = useMutation({
     mutationFn: async (data) => {
@@ -84,9 +105,9 @@ function UpdateBroker() {
   });
 
   const { data: userDetails } = useQuery({
-    queryKey: ["broker", "get", id],
+    queryKey: ["party", "get", id],
     queryFn: async () => {
-      const res = await getBrokerByIdRequest({ id });
+      const res = await getPartyByIdRequest({ id });
       return res.data?.data?.user;
     },
   });
@@ -95,40 +116,28 @@ function UpdateBroker() {
     await updateUser(data);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
-
-  const companyId = companyListRes?.rows?.[0]?.id;
-
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getPartyListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
-
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
   } = useForm({
-    resolver: updateBrokerSchemaResolver,
+    resolver: updatePartySchemaResolver,
   });
 
   useEffect(() => {
     if (userDetails) {
       reset({
         ...userDetails,
+        checker_name: userDetails?.party?.checker_name,
+        checker_number: userDetails?.party?.checker_number,
+        delivery_address: userDetails?.party?.delivery_address,
+        overdue_day_limit: userDetails?.party?.overdue_day_limit,
+        credit_limit: userDetails?.party?.credit_limit,
+        company_name: userDetails?.party?.company_name,
+        company_gst_number: userDetails?.party?.company_gst_number,
+        broker_ids: userDetails?.party_user?.map((u) => u?.broker_id),
+
         // remove unnecessary fields
         id: undefined,
         deletedAt: undefined,
@@ -350,26 +359,162 @@ function UpdateBroker() {
 
           <Col span={12}>
             <Form.Item
-              label="Party"
-              name="party_ids"
-              validateStatus={errors.party_ids ? "error" : ""}
-              help={errors.party_ids && errors.party_ids.message}
+              label="Checker Name"
+              name="checker_name"
+              validateStatus={errors.checker_name ? "error" : ""}
+              help={errors.checker_name && errors.checker_name.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="party_ids"
+                name="checker_name"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Checker Name" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Checker Number"
+              name="checker_number"
+              validateStatus={errors.checker_number ? "error" : ""}
+              help={errors.checker_number && errors.checker_number.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="checker_number"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Checker Number" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Delivery Address"
+              name="delivery_address"
+              validateStatus={errors.delivery_address ? "error" : ""}
+              help={errors.delivery_address && errors.delivery_address.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="delivery_address"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Delivery Address" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Overdue Day Limit"
+              name="overdue_day_limit"
+              validateStatus={errors.overdue_day_limit ? "error" : ""}
+              help={
+                errors.overdue_day_limit && errors.overdue_day_limit.message
+              }
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="overdue_day_limit"
+                render={({ field }) => (
+                  <Input {...field} placeholder="7" type="number" min={0} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Credit Limit"
+              name="credit_limit"
+              validateStatus={errors.credit_limit ? "error" : ""}
+              help={errors.credit_limit && errors.credit_limit.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="credit_limit"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="1500.50"
+                    type="number"
+                    min={0}
+                    step=".01"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Company Name"
+              name="company_name"
+              validateStatus={errors.company_name ? "error" : ""}
+              help={errors.company_name && errors.company_name.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_name"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Company Name" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Company GST Number"
+              name="company_gst_number"
+              validateStatus={errors.company_gst_number ? "error" : ""}
+              help={
+                errors.company_gst_number && errors.company_gst_number.message
+              }
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_gst_number"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Company GST Number" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Brokers"
+              name="broker_ids"
+              validateStatus={errors.broker_ids ? "error" : ""}
+              help={errors.broker_ids && errors.broker_ids.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="broker_ids"
                 render={({ field }) => (
                   <Select
                     mode="multiple"
                     allowClear
-                    placeholder="Please select party"
-                    loading={isLoadingPartyList}
+                    placeholder="Please select brokers"
+                    loading={isLoadingBrokerList}
                     {...field}
-                    options={partyUserListRes?.partyList?.rows?.map(
-                      (party) => ({
-                        label: party.first_name + " " + party.last_name,
-                        value: party.id,
+                    options={brokerUserListRes?.brokerList?.rows?.map(
+                      (broker) => ({
+                        label: broker.first_name + " " + broker.last_name,
+                        value: broker.id,
                       })
                     )}
                     disabled
@@ -392,4 +537,4 @@ function UpdateBroker() {
   );
 }
 
-export default UpdateBroker;
+export default UpdateParty;
