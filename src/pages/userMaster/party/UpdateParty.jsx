@@ -517,7 +517,6 @@ function UpdateParty() {
                         value: broker.id,
                       })
                     )}
-                    disabled
                   />
                 )}
               />

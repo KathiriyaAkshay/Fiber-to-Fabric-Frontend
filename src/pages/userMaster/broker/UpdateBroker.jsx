@@ -372,7 +372,6 @@ function UpdateBroker() {
                         value: party.id,
                       })
                     )}
-                    disabled
                   />
                 )}
               />
