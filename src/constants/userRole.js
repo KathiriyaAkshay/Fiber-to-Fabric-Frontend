@@ -13,3 +13,11 @@ export const USER_ROLES = {
   MENDING_USER: { role_id: 12, name: "mending user" },
   FOLDING_USER: { role_id: 13, name: "folding user" },
 };
+
+export const supplierTypeEnum = [
+  "purchase/trading",
+  "job",
+  "yarn",
+  "other",
+  "re-work",
+];
