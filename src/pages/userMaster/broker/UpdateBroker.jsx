@@ -129,6 +129,7 @@ function UpdateBroker() {
     if (userDetails) {
       reset({
         ...userDetails,
+        party_ids: userDetails?.broker?.map((b) => b?.party_id),
         // remove unnecessary fields
         id: undefined,
         deletedAt: undefined,
