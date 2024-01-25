@@ -5,7 +5,7 @@ import { EyeOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 
 const ViewSupplierDetailModal = ({ userDetails }) => {
-  const { gst_no, address, mobile, supplier, supplier_type } = userDetails;
+  const { gst_no, address, mobile, supplier, supplier_types } = userDetails;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -103,7 +103,7 @@ const ViewSupplierDetailModal = ({ userDetails }) => {
               <Title level={5} style={{ margin: 0 }}>
                 Supplier Type :
               </Title>
-              {supplier_type?.type}
+              {supplier_types?.map((s) => s?.type)?.join(", ")}
             </Text>
           </Col>
         </Row>
