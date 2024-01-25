@@ -1,7 +1,17 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
+import {
+  Button,
+  Checkbox,
+  Col,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate, useParams } from "react-router-dom";
@@ -10,7 +20,7 @@ import PhoneInput from "react-phone-number-input";
 import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 import {
-  getPartyListRequest,
+  getBrokerListRequest,
   getSupplierByIdRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
@@ -105,10 +115,10 @@ function UpdateSupplier() {
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
+  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
+    queryKey: ["broker", "list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getPartyListRequest({
+      const res = await getBrokerListRequest({
         params: { company_id: companyId },
       });
       return res.data?.data;
@@ -121,6 +131,7 @@ function UpdateSupplier() {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm({
     resolver: updateSupplierSchemaResolver,
   });
@@ -129,7 +140,12 @@ function UpdateSupplier() {
     if (userDetails) {
       reset({
         ...userDetails,
-        // party_ids: userDetails?.supplier?.map((b) => b?.party_id),
+        supplier_name: userDetails?.supplier?.supplier_name,
+        supplier_company: userDetails?.supplier?.supplier_company,
+        hsn_code: userDetails?.supplier?.hsn_code,
+        broker_id: userDetails?.supplier?.broker_id,
+        supplier_types: userDetails?.supplier_types?.map((st) => st?.type),
+
         // remove unnecessary fields
         id: undefined,
         deletedAt: undefined,
@@ -351,28 +367,144 @@ function UpdateSupplier() {
 
           <Col span={12}>
             <Form.Item
-              label="Party"
-              name="party_ids"
-              validateStatus={errors.party_ids ? "error" : ""}
-              help={errors.party_ids && errors.party_ids.message}
+              label="Supplier Name"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="party_ids"
+                name="supplier_name"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Supplier Name" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="supplier Company"
+              name="supplier_company"
+              validateStatus={errors.supplier_company ? "error" : ""}
+              help={errors.supplier_company && errors.supplier_company.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_company"
+                render={({ field }) => (
+                  <Input {...field} placeholder="supplier Company" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="HSN Code"
+              name="hsn_code"
+              validateStatus={errors.hsn_code ? "error" : ""}
+              help={errors.hsn_code && errors.hsn_code.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="hsn_code"
+                render={({ field }) => (
+                  <Input {...field} placeholder="HSN Code" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Broker"
+              name="broker_id"
+              validateStatus={errors.broker_id ? "error" : ""}
+              help={errors.broker_id && errors.broker_id.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="broker_id"
                 render={({ field }) => (
                   <Select
-                    mode="multiple"
-                    allowClear
-                    placeholder="Please select party"
-                    loading={isLoadingPartyList}
                     {...field}
-                    options={partyUserListRes?.partyList?.rows?.map(
-                      (party) => ({
-                        label: party.first_name + " " + party.last_name,
-                        value: party.id,
+                    placeholder="Select Broker"
+                    allowClear
+                    loading={isLoadingBrokerList}
+                    options={brokerUserListRes?.brokerList?.rows?.map(
+                      (broker) => ({
+                        label: broker.first_name + " " + broker.last_name,
+                        value: broker.id,
                       })
                     )}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Supplier Type"
+              name="supplier_types"
+              validateStatus={errors.supplier_types ? "error" : ""}
+              help={errors.supplier_types && errors.supplier_types.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_types"
+                render={({ field }) => (
+                  <Checkbox.Group
+                    options={[
+                      {
+                        value: "purchase/trading",
+                        label: "Purchase/Trading",
+                        disabled:
+                          (getValues("supplier_types")?.includes("yarn") ||
+                            getValues("supplier_types")?.includes("other") ||
+                            getValues("supplier_types")?.includes("re-work")) &&
+                          !getValues("supplier_types")?.includes(
+                            "purchase/trading"
+                          ),
+                      },
+                      {
+                        value: "job",
+                        label: "Job",
+                        disabled:
+                          (getValues("supplier_types")?.includes("yarn") ||
+                            getValues("supplier_types")?.includes("other") ||
+                            getValues("supplier_types")?.includes("re-work")) &&
+                          !getValues("supplier_types")?.includes("job"),
+                      },
+                      {
+                        value: "yarn",
+                        label: "Yarn",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("yarn"),
+                      },
+                      {
+                        value: "other",
+                        label: "Other",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("other"),
+                      },
+                      {
+                        value: "re-work",
+                        label: "Re-Work",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("re-work"),
+                      },
+                    ]}
+                    {...field}
                   />
                 )}
               />
