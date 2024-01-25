@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import { Button, Space, Spin, Switch, Table, Typography, message } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -9,6 +9,8 @@ import {
 import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewSupplierDetailModal from "../../../components/userMaster/supplier/ViewSupplierDetailModal";
+
+const { Text } = Typography;
 
 const roleId = USER_ROLES.SUPPLIER.role_id;
 
@@ -79,35 +81,38 @@ function SupplierList() {
       key: "id",
     },
     {
-      title: "First Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      title: "Name",
+      dataIndex: ["supplier", "supplier_name"],
+      key: "supplier_name",
     },
     {
-      title: "Last Name",
-      dataIndex: "last_name",
-      key: "last_name",
+      title: "Company Name",
+      dataIndex: ["supplier", "supplier_company"],
+      key: "supplier_company",
     },
     {
-      title: "Adhaar No",
-      dataIndex: "adhar_no",
-      key: "adhar_no",
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
     },
     {
-      title: "Contact No",
-      dataIndex: "mobile",
-      key: "mobile",
+      title: "GST No",
+      dataIndex: "gst_no",
+      key: "gst_no",
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
+      title: "HSN Code",
+      dataIndex: ["supplier", "hsn_code"],
+      key: "hsn_code",
     },
-    // {
-    //   title: "Address",
-    //   dataIndex: "address",
-    //   key: "address",
-    // },
+    {
+      title: "Supplier Type",
+      render: (userDetails) => {
+        const { supplier_types } = userDetails;
+        return <Text>{supplier_types?.map((s) => s?.type)?.join(", ")}</Text>;
+      },
+      key: "supplier_type",
+    },
     {
       title: "Action",
       render: (userDetails) => {
@@ -160,7 +165,10 @@ function SupplierList() {
       <Table
         dataSource={userListRes?.supplierList?.rows || []}
         columns={columns}
-        rowKey={(s) => s?.supplier_type?.id}
+        rowKey={(s) => s?.id}
+        style={{
+          textTransform: "capitalize",
+        }}
       />
     );
   }
