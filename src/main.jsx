@@ -31,6 +31,9 @@ import UpdateSupplier from "./pages/userMaster/supplier/UpdateSupplier";
 import EmployeeList from "./pages/userMaster/employee/EmployeeList";
 import AddEmployee from "./pages/userMaster/employee/AddEmployee";
 import UpdateEmployee from "./pages/userMaster/employee/UpdateEmployee";
+import CollectionUserList from "./pages/userMaster/collectionUser/CollectionUserList";
+import AddCollectionUser from "./pages/userMaster/collectionUser/AddCollectionUser";
+import UpdateCollectionUser from "./pages/userMaster/collectionUser/UpdateCollectionUser";
 
 const queryClient = new QueryClient();
 
@@ -135,7 +138,14 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateEmployee /> },
             ],
           },
-          { path: "my-collection", element: <div>my-collection</div> },
+          {
+            path: "my-collection",
+            children: [
+              { index: true, element: <CollectionUserList /> },
+              { path: "add", element: <AddCollectionUser /> },
+              { path: "update/:id", element: <UpdateCollectionUser /> },
+            ],
+          },
           { path: "my-accountant", element: <div>my-accountant</div> },
           { path: "vehicle", element: <div>vehicle</div> },
         ],
