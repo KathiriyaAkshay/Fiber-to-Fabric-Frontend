@@ -6,7 +6,7 @@ export const USER_ROLES = {
   SUPPLIER: { role_id: 5, name: "supplier" },
   EMPLOYEE: { role_id: 6, name: "employee" },
   COLLECTION_USER: { role_id: 7, name: "collection user" },
-  ACCOUNTANT: { role_id: 8, name: "accountant" },
+  ACCOUNTANT_USER: { role_id: 8, name: "accountant user" },
   VEHICLE_USER: { role_id: 9, name: "vehicle user" },
   NORMAL_USER: { role_id: 10, name: "normal user" },
   PARNTER_USER: { role_id: 11, name: "partner user" },
