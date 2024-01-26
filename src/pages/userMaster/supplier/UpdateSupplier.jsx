@@ -13,10 +13,8 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import PhoneInput from "react-phone-number-input";
 import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 import {
@@ -24,7 +22,6 @@ import {
   getSupplierByIdRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
-import ForwardRefInput from "../../../components/common/ForwardRefInput";
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { getCompanyListRequest } from "../../../api/requests/company";
@@ -33,12 +30,6 @@ const updateSupplierSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
-    mobile: yup
-      .string()
-      .required("Please enter Contact number")
-      .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
-        value ? isValidPhoneNumber(value) : false
-      ),
     email: yup
       .string()
       .required("Please enter email address")
@@ -49,7 +40,6 @@ const updateSupplierSchemaResolver = yupResolver(
     pancard_no: yup.string(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -213,30 +203,6 @@ function UpdateSupplier() {
 
           <Col span={12}>
             <Form.Item
-              label={<p className="m-0 whitespace-nowrap">Phone Number</p>}
-              name="mobile"
-              validateStatus={errors.mobile ? "error" : ""}
-              help={errors.mobile && errors.mobile.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="mobile"
-                render={({ field }) => (
-                  <PhoneInput
-                    {...field}
-                    placeholder="Enter phone number"
-                    defaultCountry="IN"
-                    international
-                    inputComponent={ForwardRefInput}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label="Email"
               name="email"
               validateStatus={errors.email ? "error" : ""}
@@ -342,24 +308,6 @@ function UpdateSupplier() {
                 name="pancard_no"
                 render={({ field }) => (
                   <Input {...field} placeholder="PAN No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Username"
-              name="username"
-              validateStatus={errors.username ? "error" : ""}
-              help={errors.username && errors.username.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="username"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Username" />
                 )}
               />
             </Form.Item>
