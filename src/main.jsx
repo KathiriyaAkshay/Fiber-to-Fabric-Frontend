@@ -28,6 +28,9 @@ import UpdateParty from "./pages/userMaster/party/UpdateParty";
 import SupplierList from "./pages/userMaster/supplier/SupplierList";
 import AddSupplier from "./pages/userMaster/supplier/AddSupplier";
 import UpdateSupplier from "./pages/userMaster/supplier/UpdateSupplier";
+import EmployeeList from "./pages/userMaster/employee/EmployeeList";
+import AddEmployee from "./pages/userMaster/employee/AddEmployee";
+import UpdateEmployee from "./pages/userMaster/employee/UpdateEmployee";
 
 const queryClient = new QueryClient();
 
@@ -124,7 +127,14 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateSupplier /> },
             ],
           },
-          { path: "my-employee", element: <div>my-employee</div> },
+          {
+            path: "my-employee",
+            children: [
+              { index: true, element: <EmployeeList /> },
+              { path: "add", element: <AddEmployee /> },
+              { path: "update/:id", element: <UpdateEmployee /> },
+            ],
+          },
           { path: "my-collection", element: <div>my-collection</div> },
           { path: "my-accountant", element: <div>my-accountant</div> },
           { path: "vehicle", element: <div>vehicle</div> },
