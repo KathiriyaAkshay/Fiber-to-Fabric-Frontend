@@ -37,6 +37,9 @@ import UpdateCollectionUser from "./pages/userMaster/collectionUser/UpdateCollec
 import AccountantUserList from "./pages/userMaster/accountantUser/AccountantUserList";
 import AddAccountantUser from "./pages/userMaster/accountantUser/AddAccountantUser";
 import UpdateAccountantUser from "./pages/userMaster/accountantUser/UpdateAccountantUser";
+import VehicleUserList from "./pages/userMaster/vehicleUser/VehicleUserList";
+import AddVehicleUser from "./pages/userMaster/vehicleUser/AddVehicleUser";
+import UpdateVehicleUser from "./pages/userMaster/vehicleUser/UpdateVehicleUser";
 
 const queryClient = new QueryClient();
 
@@ -157,7 +160,14 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateAccountantUser /> },
             ],
           },
-          { path: "vehicle", element: <div>vehicle</div> },
+          {
+            path: "vehicle",
+            children: [
+              { index: true, element: <VehicleUserList /> },
+              { path: "add", element: <AddVehicleUser /> },
+              { path: "update/:id", element: <UpdateVehicleUser /> },
+            ],
+          },
         ],
       },
       {

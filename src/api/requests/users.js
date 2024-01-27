@@ -70,3 +70,12 @@ export function getAccountantUserByIdRequest({ id, config }) {
 export function getAccountantUserListRequest(config) {
   return api.get(`/users/accountant_user/list`, config);
 }
+
+// vehicle-user
+export function getVehicleUserByIdRequest({ id, config }) {
+  return api.get(`/vehicle/get/${id}`, config);
+}
+
+export function getVehicleUserListRequest(config) {
+  return api.get(`/vehicle/list`, config);
+}
