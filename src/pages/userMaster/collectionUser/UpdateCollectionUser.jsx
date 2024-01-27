@@ -32,6 +32,7 @@ const updateCollectionUserSchemaResolver = yupResolver(
       .string()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
+    salary: yup.string().required("Please provide salary"),
   })
 );
 
@@ -268,6 +269,24 @@ function UpdateCollectionUser() {
                 name="pancard_no"
                 render={({ field }) => (
                   <Input {...field} placeholder="PAN No" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Salary"
+              name="salary"
+              validateStatus={errors.salary ? "error" : ""}
+              help={errors.salary && errors.salary.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="salary"
+                render={({ field }) => (
+                  <Input {...field} placeholder="10000" type="number" min={0} />
                 )}
               />
             </Form.Item>

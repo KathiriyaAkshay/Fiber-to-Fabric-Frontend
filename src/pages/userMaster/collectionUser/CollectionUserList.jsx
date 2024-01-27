@@ -97,6 +97,11 @@ function CollectionUserList() {
       key: "email",
     },
     {
+      title: "Salary",
+      dataIndex: "salary",
+      key: "salary",
+    },
+    {
       title: "Address",
       dataIndex: "address",
       key: "address",
