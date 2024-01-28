@@ -1,7 +1,17 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, message } from "antd";
+import {
+  Button,
+  Col,
+  DatePicker,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
@@ -12,25 +22,41 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
+import SalaryTypeSpecificFields from "../../../components/userMaster/employee/SalaryTypeSpecificFields";
+import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
+import { getCompanyListRequest } from "../../../api/requests/company";
+import dayjs from "dayjs";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string().required("Please provide first name"),
     last_name: yup.string().required("Please provide last name"),
     employee_type_id: yup.string().required("Please select employee type"),
-    // tds: yup.string().required("Please enter TDS"),
     // salary_type: yup.string().required("Please select salary type"),
-    // company_id: yup.string().required("Please select company"),
-    // joining_date: yup.string().required("Please select joining date"),
-    // salary: yup.string().when("salary_type", {
-    //   is: "monthly",
-    //   then: () =>
-    //     yup.string().required("Please provide salary for monthly type"),
-    // }),
-    // per_attendance: yup.string().when("salary_type", {
-    //   is: "attendance",
-    //   then: () => yup.string().required("Please provide salary per attendance"),
-    // }),
+    company_id: yup.string().required("Please select company"),
+    joining_date: yup.string().required("Please select joining date"),
+    tds: yup.string().required("Please enter TDS"),
+    salary: yup.string().when("salary_type", {
+      is: "monthly",
+      then: () =>
+        yup.string().required("Please provide salary for monthly type"),
+    }),
+    per_attendance: yup.string().when("salary_type", {
+      is: "attendance",
+      then: () => yup.string().required("Please provide rate per attendance"),
+    }),
+    per_meter: yup.string().when("salary_type", {
+      is: "on production",
+      then: () => yup.string().required("Please provide rate per meter"),
+    }),
+    machineNo_from: yup.string().when("salary_type", {
+      is: "work basis",
+      then: () => yup.string().required("Please provide rate per meter"),
+    }),
+    machineNo_to: yup.string().when("salary_type", {
+      is: "work basis",
+      then: () => yup.string().required("Please provide rate per meter"),
+    }),
   })
 );
 
@@ -82,32 +108,53 @@ function UpdateEmployee() {
     await updateUser(data);
   }
 
-  // const { data: companyListRes } = useQuery({
-  //   queryKey: ["company", "list"],
-  //   queryFn: async () => {
-  //     const res = await getCompanyListRequest({});
-  //     return res.data?.data;
-  //   },
-  // });
-
-  // const companyId = companyListRes?.rows?.[0]?.id;
+  const { data: companyListRes, isLoading: isLoadingCompanyList } = useQuery({
+    queryKey: ["company", "list"],
+    queryFn: async () => {
+      const res = await getCompanyListRequest({});
+      return res.data?.data;
+    },
+  });
 
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: updateEmployeeSchemaResolver,
   });
 
-  console.log("errors", errors);
-
   useEffect(() => {
     if (userDetails) {
       const { first_name, last_name, employer } = userDetails;
-      const { tds, employee_type_id } = employer;
-      reset({ first_name, last_name, tds, employee_type_id });
+      const {
+        tds,
+        employee_type_id,
+        joining_date,
+        company_id,
+        salary_type,
+        machineNo_from,
+        machineNo_to,
+        per_attendance,
+        per_meter,
+      } = employer;
+
+      reset({
+        first_name,
+        last_name,
+        tds,
+        employee_type_id,
+        joining_date: dayjs(joining_date),
+        company_id,
+        salary_type,
+        machineNo_from,
+        machineNo_to,
+        per_attendance,
+        per_meter,
+      });
     }
   }, [userDetails, reset]);
 
@@ -126,6 +173,70 @@ function UpdateEmployee() {
             padding: "12px",
           }}
         >
+          <EmployeeSalaryTypeInput
+            errors={errors}
+            control={control}
+            watch={watch}
+            setValue={setValue}
+            isUpdate={true}
+          />
+          <Col span={12}>
+            <Form.Item
+              label="Joining Date"
+              name="joining_date"
+              validateStatus={errors.joining_date ? "error" : ""}
+              help={errors.joining_date && errors.joining_date.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="joining_date"
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="DD/MM/YYYY"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Select Company"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    allowClear
+                    loading={isLoadingCompanyList}
+                    options={companyListRes?.rows?.map((et) => ({
+                      label: et?.company_name,
+                      value: et?.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={12}>
             <Form.Item
               label={<p className="m-0 whitespace-nowrap">First Name</p>}
@@ -169,24 +280,6 @@ function UpdateEmployee() {
 
           <Col span={12}>
             <Form.Item
-              label="Address"
-              name="address"
-              validateStatus={errors.address ? "error" : ""}
-              help={errors.address && errors.address.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="address"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Address" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label={<p className="m-0 whitespace-nowrap">TDS</p>}
               name="tds"
               validateStatus={errors.tds ? "error" : ""}
@@ -209,41 +302,11 @@ function UpdateEmployee() {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
-            <Form.Item
-              label="Aadhar No"
-              name="adhar_no"
-              validateStatus={errors.adhar_no ? "error" : ""}
-              help={errors.adhar_no && errors.adhar_no.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="adhar_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Aadhar No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="PAN No"
-              name="pancard_no"
-              validateStatus={errors.pancard_no ? "error" : ""}
-              help={errors.pancard_no && errors.pancard_no.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pancard_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="PAN No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
+          <SalaryTypeSpecificFields
+            salaryType={watch("salary_type")}
+            errors={errors}
+            control={control}
+          />
         </Row>
 
         <Flex gap={10} justify="flex-end">

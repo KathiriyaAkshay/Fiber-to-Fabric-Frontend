@@ -22,7 +22,6 @@ import { getCompanyListRequest } from "../../../api/requests/company";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { AadharRegex } from "../../../constants/regex";
 import dayjs from "dayjs";
 import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
 import SalaryTypeSpecificFields from "../../../components/userMaster/employee/SalaryTypeSpecificFields";
@@ -39,15 +38,7 @@ const addEmployeeSchemaResolver = yupResolver(
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    address: yup.string(),
-    pancard_no: yup.string(),
-    // .required('Please enter pan number')
-    // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string().required("Please enter username"),
-    adhar_no: yup
-      .string()
-      // .required("Please enter Aadhar number")
-      .matches(AadharRegex, "Enter valid Aadhar number"),
     employee_type_id: yup.string().required("Please select employee type"),
     salary_type: yup.string().required("Please select salary type"),
     company_id: yup.string().required("Please select company"),
@@ -60,7 +51,19 @@ const addEmployeeSchemaResolver = yupResolver(
     }),
     per_attendance: yup.string().when("salary_type", {
       is: "attendance",
-      then: () => yup.string().required("Please provide salary per attendance"),
+      then: () => yup.string().required("Please provide rate per attendance"),
+    }),
+    per_meter: yup.string().when("salary_type", {
+      is: "on production",
+      then: () => yup.string().required("Please provide rate per meter"),
+    }),
+    machineNo_from: yup.string().when("salary_type", {
+      is: "work basis",
+      then: () => yup.string().required("Please provide rate per meter"),
+    }),
+    machineNo_to: yup.string().when("salary_type", {
+      is: "work basis",
+      then: () => yup.string().required("Please provide rate per meter"),
     }),
   })
 );
@@ -128,8 +131,6 @@ function AddEmployee() {
       joining_date: dayjs(),
     },
   });
-
-  console.log(errors);
 
   return (
     <div className="flex flex-col p-4">
@@ -324,7 +325,7 @@ function AddEmployee() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={reset}>
+          <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
           <Button type="primary" htmlType="submit">

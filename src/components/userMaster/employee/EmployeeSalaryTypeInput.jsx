@@ -4,7 +4,13 @@ import { Controller } from "react-hook-form";
 import { getEmployeeTypeListRequest } from "../../../api/requests/users";
 import { useEffect, useState } from "react";
 
-function EmployeeSalaryTypeInput({ errors, control, watch, setValue }) {
+function EmployeeSalaryTypeInput({
+  errors,
+  control,
+  watch,
+  setValue,
+  isUpdate = false,
+}) {
   const [salaryTypeList, setSalaryTypeList] = useState([]);
 
   const { data: employeeTypeList, isLoading: isLoadingEmployeeType } = useQuery(
@@ -27,9 +33,11 @@ function EmployeeSalaryTypeInput({ errors, control, watch, setValue }) {
       label: st,
       value: st,
     }));
-    setValue("salary_type", "");
+    if (!isUpdate) {
+      setValue("salary_type", "");
+    }
     setSalaryTypeList(salaryTypeList ?? []);
-  }, [employeeTypeList, selectedEmployeeTypeId, setValue]);
+  }, [employeeTypeList, isUpdate, selectedEmployeeTypeId, setValue]);
 
   return (
     <>
@@ -89,6 +97,7 @@ function EmployeeSalaryTypeInput({ errors, control, watch, setValue }) {
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
+                disabled={isUpdate}
               />
             )}
           />
