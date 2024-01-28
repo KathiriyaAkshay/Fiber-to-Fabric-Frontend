@@ -18,7 +18,7 @@ const updateEmployeeSchemaResolver = yupResolver(
     first_name: yup.string().required("Please provide first name"),
     last_name: yup.string().required("Please provide last name"),
     employee_type_id: yup.string().required("Please select employee type"),
-    tds: yup.string().required("Please enter TDS"),
+    // tds: yup.string().required("Please enter TDS"),
     // salary_type: yup.string().required("Please select salary type"),
     // company_id: yup.string().required("Please select company"),
     // joining_date: yup.string().required("Please select joining date"),

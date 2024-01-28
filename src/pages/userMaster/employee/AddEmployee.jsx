@@ -25,6 +25,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
 import dayjs from "dayjs";
 import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
+import SalaryTypeSpecificFields from "../../../components/userMaster/employee/SalaryTypeSpecificFields";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -120,7 +121,6 @@ function AddEmployee() {
     formState: { errors },
     reset,
     setValue,
-    getValues,
     watch,
   } = useForm({
     resolver: addEmployeeSchemaResolver,
@@ -130,39 +130,6 @@ function AddEmployee() {
   });
 
   console.log(errors);
-
-  function renderSalaryTypeSpecificFields() {
-    const selectedSalaryType = getValues("salary_type");
-    switch (selectedSalaryType) {
-      case "monthly":
-        return (
-          <Col span={12}>
-            <Form.Item
-              label="Salary"
-              name="salary"
-              validateStatus={errors.salary ? "error" : ""}
-              help={errors.salary && errors.salary.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="salary"
-                render={({ field }) => (
-                  <Input {...field} placeholder="10000" type="number" min={0} />
-                )}
-              />
-            </Form.Item>
-          </Col>
-        );
-
-      default:
-        console.info(
-          "selectedSalaryType not defined in renderSalaryTypeSpecificFields",
-          selectedSalaryType
-        );
-        return null;
-    }
-  }
 
   return (
     <div className="flex flex-col p-4">
@@ -349,7 +316,11 @@ function AddEmployee() {
             </Form.Item>
           </Col>
 
-          {renderSalaryTypeSpecificFields()}
+          <SalaryTypeSpecificFields
+            salaryType={watch("salary_type")}
+            errors={errors}
+            control={control}
+          />
         </Row>
 
         <Flex gap={10} justify="flex-end">
