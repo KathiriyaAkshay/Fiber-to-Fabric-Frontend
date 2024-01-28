@@ -44,27 +44,46 @@ const addEmployeeSchemaResolver = yupResolver(
     company_id: yup.string().required("Please select company"),
     joining_date: yup.string().required("Please select joining date"),
     tds: yup.string().required("Please enter TDS"),
-    salary: yup.string().when("salary_type", {
-      is: "monthly",
-      then: () =>
-        yup.string().required("Please provide salary for monthly type"),
-    }),
-    per_attendance: yup.string().when("salary_type", {
-      is: "attendance",
-      then: () => yup.string().required("Please provide rate per attendance"),
-    }),
-    per_meter: yup.string().when("salary_type", {
-      is: "on production",
-      then: () => yup.string().required("Please provide rate per meter"),
-    }),
-    machineNo_from: yup.string().when("salary_type", {
-      is: "work basis",
-      then: () => yup.string().required("Please provide rate per meter"),
-    }),
-    machineNo_to: yup.string().when("salary_type", {
-      is: "work basis",
-      then: () => yup.string().required("Please provide rate per meter"),
-    }),
+    salary: yup
+      .string()
+      .nullable()
+      .when("salary_type", {
+        is: "monthly",
+        then: () =>
+          yup.string().required("Please provide salary for monthly type"),
+      }),
+    per_attendance: yup
+      .string()
+      .nullable()
+      .when("salary_type", {
+        is: "attendance",
+        then: () => yup.string().required("Please provide rate per attendance"),
+      }),
+    per_meter: yup
+      .string()
+      .nullable()
+      .when("salary_type", {
+        is: "on production",
+        then: () => yup.string().required("Please provide rate per meter"),
+      }),
+    machineNo_from: yup
+      .string()
+      .nullable()
+      .when("salary_type", {
+        is: "work basis",
+        then: () => yup.string().required("Please provide rate per meter"),
+      }),
+    machineNo_to: yup
+      .string()
+      .nullable()
+      .when("salary_type", {
+        is: "work basis",
+        then: () =>
+          yup
+            .string()
+            .required("Please provide rate per meter")
+            .min(yup.ref("machineNo_from"), "To must be greater than From"),
+      }),
   })
 );
 
