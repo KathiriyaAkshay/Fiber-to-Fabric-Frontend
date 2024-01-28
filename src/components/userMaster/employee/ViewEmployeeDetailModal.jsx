@@ -1,21 +1,12 @@
 import { useState } from "react";
 import { Button, Col, Modal, Row, Typography } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
 const ViewEmployeeDetailModal = ({ userDetails }) => {
-  const {
-    gst_no,
-    pancard_no,
-    adhar_no,
-    address,
-    first_name,
-    last_name,
-    mobile,
-    email,
-    username,
-  } = userDetails;
+  const { first_name, last_name, mobile, username, employer } = userDetails;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -62,15 +53,6 @@ const ViewEmployeeDetailModal = ({ userDetails }) => {
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Email :
-              </Title>
-              {email}
-            </Text>
-          </Col>
-
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
                 Username :
               </Title>
               {username}
@@ -80,33 +62,45 @@ const ViewEmployeeDetailModal = ({ userDetails }) => {
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                GST No :
+                TDS :
               </Title>
-              {gst_no}
+              {employer?.tds}
             </Text>
           </Col>
+
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                PAN No :
+                Employee Type :
               </Title>
-              {pancard_no}
+              {employer?.employee_type?.employee_type}
             </Text>
           </Col>
+
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Adhaar No :
+                Salary Type :
               </Title>
-              {adhar_no}
+              {employer?.salary_type}
             </Text>
           </Col>
+
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Address :
+                Joining Date :
               </Title>
-              {address}
+              {dayjs(employer?.joining_date).format("DD/MM/YYYY")}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Company :
+              </Title>
+              {employer?.company?.company_name}
             </Text>
           </Col>
         </Row>

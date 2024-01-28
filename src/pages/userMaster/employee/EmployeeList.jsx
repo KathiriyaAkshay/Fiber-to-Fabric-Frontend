@@ -89,25 +89,15 @@ function EmployeeList() {
       key: "last_name",
     },
     {
-      title: "Adhaar No",
-      dataIndex: "adhar_no",
-      key: "adhar_no",
-    },
-    {
       title: "Contact No",
       dataIndex: "mobile",
       key: "mobile",
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
     },
-    // {
-    //   title: "Address",
-    //   dataIndex: "address",
-    //   key: "address",
-    // },
     {
       title: "Action",
       render: (userDetails) => {
@@ -158,7 +148,7 @@ function EmployeeList() {
 
     return (
       <Table
-        dataSource={userListRes?.employeeList?.rows || []}
+        dataSource={userListRes?.empoloyeeList?.rows || []}
         columns={columns}
         rowKey={"id"}
       />

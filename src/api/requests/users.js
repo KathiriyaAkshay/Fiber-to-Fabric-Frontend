@@ -53,6 +53,10 @@ export function getEmployeeListRequest(config) {
   return api.get(`/employee/list`, config);
 }
 
+export function getEmployeeTypeListRequest(config) {
+  return api.get(`/dropdown/employee_type/list`, config);
+}
+
 // collection_user
 export function getCollectionUserByIdRequest({ id, config }) {
   return api.get(`/users/collection_user/get/${id}`, config);

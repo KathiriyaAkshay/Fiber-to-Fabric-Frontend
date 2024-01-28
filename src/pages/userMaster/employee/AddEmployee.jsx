@@ -1,6 +1,16 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, message } from "antd";
+import {
+  Button,
+  Col,
+  DatePicker,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
@@ -13,38 +23,44 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
+import dayjs from "dayjs";
+import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
 const addEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
-    password: yup
-      .string()
-      // .min(8, "Password is too short - should be 8 chars minimum.")
-      .required("No password provided."),
+    first_name: yup.string().required("Please provide first name"),
+    last_name: yup.string().required("Please provide last name"),
     mobile: yup
       .string()
       .required("Please enter Contact number")
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    email: yup
-      .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
-    // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
+    username: yup.string().required("Please enter username"),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
+    employee_type_id: yup.string().required("Please select employee type"),
+    salary_type: yup.string().required("Please select salary type"),
+    company_id: yup.string().required("Please select company"),
+    joining_date: yup.string().required("Please select joining date"),
+    tds: yup.string().required("Please enter TDS"),
+    salary: yup.string().when("salary_type", {
+      is: "monthly",
+      then: () =>
+        yup.string().required("Please provide salary for monthly type"),
+    }),
+    per_attendance: yup.string().when("salary_type", {
+      is: "attendance",
+      then: () => yup.string().required("Please provide salary per attendance"),
+    }),
   })
 );
 
@@ -55,7 +71,7 @@ function AddEmployee() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
+  const { data: companyListRes, isLoading: isLoadingCompanyList } = useQuery({
     queryKey: ["company", "list"],
     queryFn: async () => {
       const res = await getCompanyListRequest({});
@@ -88,7 +104,9 @@ function AddEmployee() {
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      if (typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
     },
   });
 
@@ -101,9 +119,50 @@ function AddEmployee() {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    getValues,
+    watch,
   } = useForm({
     resolver: addEmployeeSchemaResolver,
+    defaultValues: {
+      joining_date: dayjs(),
+    },
   });
+
+  console.log(errors);
+
+  function renderSalaryTypeSpecificFields() {
+    const selectedSalaryType = getValues("salary_type");
+    switch (selectedSalaryType) {
+      case "monthly":
+        return (
+          <Col span={12}>
+            <Form.Item
+              label="Salary"
+              name="salary"
+              validateStatus={errors.salary ? "error" : ""}
+              help={errors.salary && errors.salary.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="salary"
+                render={({ field }) => (
+                  <Input {...field} placeholder="10000" type="number" min={0} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        );
+
+      default:
+        console.info(
+          "selectedSalaryType not defined in renderSalaryTypeSpecificFields",
+          selectedSalaryType
+        );
+        return null;
+    }
+  }
 
   return (
     <div className="flex flex-col p-4">
@@ -120,6 +179,69 @@ function AddEmployee() {
             padding: "12px",
           }}
         >
+          <EmployeeSalaryTypeInput
+            errors={errors}
+            control={control}
+            watch={watch}
+            setValue={setValue}
+          />
+          <Col span={12}>
+            <Form.Item
+              label="Joining Date"
+              name="joining_date"
+              validateStatus={errors.joining_date ? "error" : ""}
+              help={errors.joining_date && errors.joining_date.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="joining_date"
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="DD/MM/YYYY"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Select Company"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    allowClear
+                    loading={isLoadingCompanyList}
+                    options={companyListRes?.rows?.map((et) => ({
+                      label: et?.company_name,
+                      value: et?.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={12}>
             <Form.Item
               label={<p className="m-0 whitespace-nowrap">First Name</p>}
@@ -142,6 +264,7 @@ function AddEmployee() {
               />
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item
               label={<p className="m-0 whitespace-nowrap">Last Name</p>}
@@ -159,6 +282,7 @@ function AddEmployee() {
               />
             </Form.Item>
           </Col>
+
           <Col span={12}>
             <Form.Item
               label={<p className="m-0 whitespace-nowrap">Phone Number</p>}
@@ -182,112 +306,7 @@ function AddEmployee() {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Email"
-              name="email"
-              validateStatus={errors.email ? "error" : ""}
-              help={errors.email && errors.email.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="email"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Email" type="email" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Address"
-              name="address"
-              validateStatus={errors.address ? "error" : ""}
-              help={errors.address && errors.address.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="address"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Address" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="GST No"
-              name="gst_no"
-              validateStatus={errors.gst_no ? "error" : ""}
-              help={errors.gst_no && errors.gst_no.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="Aadhar No"
-              name="adhar_no"
-              validateStatus={errors.adhar_no ? "error" : ""}
-              help={errors.adhar_no && errors.adhar_no.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="adhar_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Aadhar No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label="PAN No"
-              name="pancard_no"
-              validateStatus={errors.pancard_no ? "error" : ""}
-              help={errors.pancard_no && errors.pancard_no.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pancard_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="PAN No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
+
           <Col span={12}>
             <Form.Item
               label="Username"
@@ -305,7 +324,32 @@ function AddEmployee() {
               />
             </Form.Item>
           </Col>
-          -{" "}
+
+          <Col span={12}>
+            <Form.Item
+              label={<p className="m-0 whitespace-nowrap">TDS</p>}
+              name="tds"
+              validateStatus={errors.tds ? "error" : ""}
+              help={errors.tds && errors.tds.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="tds"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="5"
+                    type="number"
+                    min={0}
+                    step=".01"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          {renderSalaryTypeSpecificFields()}
         </Row>
 
         <Flex gap={10} justify="flex-end">

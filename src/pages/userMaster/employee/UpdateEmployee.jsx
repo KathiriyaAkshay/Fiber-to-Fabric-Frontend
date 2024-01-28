@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
+import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
@@ -9,31 +9,28 @@ import { DevTool } from "@hookform/devtools";
 import { useEffect } from "react";
 import {
   getEmployeeByIdRequest,
-  getPartyListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { AadharRegex } from "../../../constants/regex";
-import { getCompanyListRequest } from "../../../api/requests/company";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
-    email: yup
-      .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
-    address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
-    // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string(),
-    // .required('Please enter pan number')
-    // .matches(PANRegex, "Enter valid PAN number"),
-    adhar_no: yup
-      .string()
-      // .required("Please enter Aadhar number")
-      .matches(AadharRegex, "Enter valid Aadhar number"),
+    first_name: yup.string().required("Please provide first name"),
+    last_name: yup.string().required("Please provide last name"),
+    employee_type_id: yup.string().required("Please select employee type"),
+    tds: yup.string().required("Please enter TDS"),
+    // salary_type: yup.string().required("Please select salary type"),
+    // company_id: yup.string().required("Please select company"),
+    // joining_date: yup.string().required("Please select joining date"),
+    // salary: yup.string().when("salary_type", {
+    //   is: "monthly",
+    //   then: () =>
+    //     yup.string().required("Please provide salary for monthly type"),
+    // }),
+    // per_attendance: yup.string().when("salary_type", {
+    //   is: "attendance",
+    //   then: () => yup.string().required("Please provide salary per attendance"),
+    // }),
   })
 );
 
@@ -85,26 +82,15 @@ function UpdateEmployee() {
     await updateUser(data);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  // const { data: companyListRes } = useQuery({
+  //   queryKey: ["company", "list"],
+  //   queryFn: async () => {
+  //     const res = await getCompanyListRequest({});
+  //     return res.data?.data;
+  //   },
+  // });
 
-  const companyId = companyListRes?.rows?.[0]?.id;
-
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getPartyListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const companyId = companyListRes?.rows?.[0]?.id;
 
   const {
     control,
@@ -115,17 +101,13 @@ function UpdateEmployee() {
     resolver: updateEmployeeSchemaResolver,
   });
 
+  console.log("errors", errors);
+
   useEffect(() => {
     if (userDetails) {
-      reset({
-        ...userDetails,
-        party_ids: userDetails?.employee?.map((b) => b?.party_id),
-        // remove unnecessary fields
-        id: undefined,
-        deletedAt: undefined,
-        createdAt: undefined,
-        updatedAt: undefined,
-      });
+      const { first_name, last_name, employer } = userDetails;
+      const { tds, employee_type_id } = employer;
+      reset({ first_name, last_name, tds, employee_type_id });
     }
   }, [userDetails, reset]);
 
@@ -187,24 +169,6 @@ function UpdateEmployee() {
 
           <Col span={12}>
             <Form.Item
-              label="Email"
-              name="email"
-              validateStatus={errors.email ? "error" : ""}
-              help={errors.email && errors.email.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="email"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Email" type="email" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label="Address"
               name="address"
               validateStatus={errors.address ? "error" : ""}
@@ -221,41 +185,25 @@ function UpdateEmployee() {
             </Form.Item>
           </Col>
 
-          {/* <Col span={12}>
-            <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={12}>
             <Form.Item
-              label="GST No"
-              name="gst_no"
-              validateStatus={errors.gst_no ? "error" : ""}
-              help={errors.gst_no && errors.gst_no.message}
+              label={<p className="m-0 whitespace-nowrap">TDS</p>}
+              name="tds"
+              validateStatus={errors.tds ? "error" : ""}
+              help={errors.tds && errors.tds.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="gst_no"
+                name="tds"
                 render={({ field }) => (
-                  <Input {...field} placeholder="GST No" />
+                  <Input
+                    {...field}
+                    placeholder="5"
+                    type="number"
+                    min={0}
+                    step=".01"
+                  />
                 )}
               />
             </Form.Item>
@@ -292,36 +240,6 @@ function UpdateEmployee() {
                 name="pancard_no"
                 render={({ field }) => (
                   <Input {...field} placeholder="PAN No" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Party"
-              name="party_ids"
-              validateStatus={errors.party_ids ? "error" : ""}
-              help={errors.party_ids && errors.party_ids.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="party_ids"
-                render={({ field }) => (
-                  <Select
-                    mode="multiple"
-                    allowClear
-                    placeholder="Please select party"
-                    loading={isLoadingPartyList}
-                    {...field}
-                    options={partyUserListRes?.partyList?.rows?.map(
-                      (party) => ({
-                        label: party.first_name + " " + party.last_name,
-                        value: party.id,
-                      })
-                    )}
-                  />
                 )}
               />
             </Form.Item>
