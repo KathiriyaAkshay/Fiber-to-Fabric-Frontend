@@ -5,16 +5,8 @@ import { EyeOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 
 const ViewMachineDetailModal = ({ details }) => {
-  const {
-    gst_no,
-    pancard_no,
-    adhar_no,
-    address,
-    first_name,
-    last_name,
-    mobile,
-    email,
-  } = details;
+  const { machine_type, machine_name, no_of_machines, no_of_employees } =
+    details;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -43,60 +35,36 @@ const ViewMachineDetailModal = ({ details }) => {
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Name :
+                Machine Name :
               </Title>
-              {first_name} {last_name}
+              {machine_name}
             </Text>
           </Col>
 
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Contact Number :
+                Machine No :
               </Title>
-              {mobile}
+              {no_of_machines}
             </Text>
           </Col>
 
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Email :
+                No of Employee :
               </Title>
-              {email}
+              {no_of_employees}
             </Text>
           </Col>
 
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                GST No :
+                Machine Type :
               </Title>
-              {gst_no}
-            </Text>
-          </Col>
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
-                PAN No :
-              </Title>
-              {pancard_no}
-            </Text>
-          </Col>
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
-                Adhaar No :
-              </Title>
-              {adhar_no}
-            </Text>
-          </Col>
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
-                Address :
-              </Title>
-              {address}
+              {machine_type}
             </Text>
           </Col>
         </Row>

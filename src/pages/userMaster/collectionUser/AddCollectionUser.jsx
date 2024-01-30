@@ -337,7 +337,7 @@ function AddCollectionUser() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={reset}>
+          <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
           <Button type="primary" htmlType="submit">

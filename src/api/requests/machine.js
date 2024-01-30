@@ -4,8 +4,10 @@ export function addMachineRequest({ data }) {
   return api.post(`/machine/add/`, data);
 }
 
-export function getMachineDropdownListRequest({ config }) {
-  return api.get(`dropdown/machine_name/list`, config);
+export function getMachineDropdownListRequest({ params }) {
+  return api.get(`dropdown/machine_name/list`, {
+    params: params,
+  });
 }
 
 export function addMachineNameWithTypeRequest({ data }) {

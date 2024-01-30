@@ -34,7 +34,7 @@ function EmployeeSalaryTypeInput({
       value: st,
     }));
     if (!isUpdate) {
-      setValue("salary_type", "");
+      setValue("salary_type", undefined);
     }
     setSalaryTypeList(salaryTypeList ?? []);
   }, [employeeTypeList, isUpdate, selectedEmployeeTypeId, setValue]);

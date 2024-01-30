@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import ViewMachineDetailModal from "../../components/machine/ViewMachineDetailModal";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import { getCompanyListRequest } from "../../api/requests/company";
+import DeleteMachine from "../../components/machine/DeleteMachine";
 
 function MachineList() {
   const navigate = useNavigate();
@@ -43,35 +44,25 @@ function MachineList() {
       key: "id",
     },
     {
-      title: "First Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      title: "Machine Name",
+      dataIndex: "machine_name",
+      key: "machine_name",
     },
     {
-      title: "Last Name",
-      dataIndex: "last_name",
-      key: "last_name",
+      title: "No of Machine",
+      dataIndex: "no_of_machines",
+      key: "no_of_machines",
     },
     {
-      title: "Adhaar No",
-      dataIndex: "adhar_no",
-      key: "adhar_no",
+      title: "No of Employee",
+      dataIndex: "no_of_employees",
+      key: "no_of_employees",
     },
     {
-      title: "Contact No",
-      dataIndex: "mobile",
-      key: "mobile",
+      title: "Machine Type",
+      dataIndex: "machine_type",
+      key: "machine_type",
     },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
-    // {
-    //   title: "Address",
-    //   dataIndex: "address",
-    //   key: "address",
-    // },
     {
       title: "Action",
       render: (machineDetails) => {
@@ -85,6 +76,7 @@ function MachineList() {
             >
               <EditOutlined />
             </Button>
+            <DeleteMachine details={machineDetails} />
           </Space>
         );
       },
