@@ -40,6 +40,9 @@ import UpdateAccountantUser from "./pages/userMaster/accountantUser/UpdateAccoun
 import VehicleUserList from "./pages/userMaster/vehicleUser/VehicleUserList";
 import AddVehicleUser from "./pages/userMaster/vehicleUser/AddVehicleUser";
 import UpdateVehicleUser from "./pages/userMaster/vehicleUser/UpdateVehicleUser";
+import MachineList from "./pages/machine/MachineList";
+import AddMachine from "./pages/machine/AddMachine";
+import UpdateMachine from "./pages/machine/UpdateMachine";
 
 const queryClient = new QueryClient();
 
@@ -768,7 +771,11 @@ const router = createBrowserRouter([
 
       {
         path: "machine",
-        element: <div>machine</div>,
+        children: [
+          { index: true, element: <MachineList /> },
+          { path: "add", element: <AddMachine /> },
+          { path: "update/:id", element: <UpdateMachine /> },
+        ],
       },
       {
         path: "material",
