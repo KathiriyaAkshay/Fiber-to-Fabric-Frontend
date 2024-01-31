@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Col, Form, Radio, Select } from "antd";
+import { Col, Form, Input, Radio, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { useEffect } from "react";
 import { machineTypeList } from "../../constants/machine";
@@ -67,6 +67,9 @@ function MachineTypeFields({
           validateStatus={errors.machine_name ? "error" : ""}
           help={errors.machine_name && errors.machine_name.message}
           wrapperCol={{ sm: 24 }}
+          style={{
+            marginBottom: "8px",
+          }}
         >
           <Controller
             control={control}
@@ -86,6 +89,21 @@ function MachineTypeFields({
                   textTransform: "capitalize",
                 }}
                 dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+              />
+            )}
+          />
+        </Form.Item>
+        <Form.Item name="machine_name" wrapperCol={{ sm: 24 }}>
+          <Controller
+            control={control}
+            name="machine_name"
+            render={({ field }) => (
+              <Input
+                {...field}
+                placeholder="other"
+                style={{
                   textTransform: "capitalize",
                 }}
               />
