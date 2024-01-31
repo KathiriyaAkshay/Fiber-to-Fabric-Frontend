@@ -57,6 +57,10 @@ export function getEmployeeTypeListRequest(config) {
   return api.get(`/dropdown/employee_type/list`, config);
 }
 
+export function addEmployeeTypeRequest({ data }) {
+  return api.post(`dropdown/employee_type/add`, data);
+}
+
 // collection_user
 export function getCollectionUserByIdRequest({ id, config }) {
   return api.get(`/users/collection_user/get/${id}`, config);
