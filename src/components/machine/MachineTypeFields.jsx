@@ -95,21 +95,23 @@ function MachineTypeFields({
             )}
           />
         </Form.Item>
-        <Form.Item name="machine_name" wrapperCol={{ sm: 24 }}>
-          <Controller
-            control={control}
-            name="machine_name"
-            render={({ field }) => (
-              <Input
-                {...field}
-                placeholder="other"
-                style={{
-                  textTransform: "capitalize",
-                }}
-              />
-            )}
-          />
-        </Form.Item>
+        {!isUpdate && (
+          <Form.Item name="machine_name" wrapperCol={{ sm: 24 }}>
+            <Controller
+              control={control}
+              name="machine_name"
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="other"
+                  style={{
+                    textTransform: "capitalize",
+                  }}
+                />
+              )}
+            />
+          </Form.Item>
+        )}
       </Col>
     </>
   );
