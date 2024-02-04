@@ -1,5 +1,9 @@
 import { Button, Space, Spin, Switch, Table, message } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -9,6 +13,7 @@ import {
 import { getCompanyListRequest } from "../../../api/requests/company";
 import ViewSupervisorDetailModal from "../../../components/userMaster/supervisor/ViewSupervisorDetailModal";
 import { USER_ROLES } from "../../../constants/userRole";
+import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
@@ -70,6 +75,35 @@ function SupervisorList() {
 
   function navigateToUpdate(id) {
     navigate(`/user-master/my-supervisor/update/${id}`);
+  }
+
+  function downloadPdf() {
+    const leftContent = `
+    Name:- YASH PATEL
+    Address:- SURAT
+    Created Date:- 03-02-2024
+    `;
+
+    const rightContent = `
+    Company Name:- SONU TEXTILES
+    Company Contact:- +91 6353207671
+    GST No.:- 24ABHPP6021C1Z4
+    `;
+
+    const body = supervisorListRes?.supervisorList?.rows?.map((supervisor) => {
+      const { id, first_name, last_name, adhar_no, mobile, email } = supervisor;
+      return [id, first_name, last_name, adhar_no, mobile, email];
+    });
+
+    downloadUserPdf({
+      body,
+      head: [
+        ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
+      ],
+      leftContent,
+      rightContent,
+      title: "Supervisor List",
+    });
   }
 
   const columns = [
@@ -167,11 +201,21 @@ function SupervisorList() {
 
   return (
     <div className="flex flex-col p-4">
-      <div className="flex items-center gap-5">
-        <h2 className="m-0">Supervisor List</h2>
-        <Button onClick={navigateToAdd}>
-          <PlusCircleOutlined />
-        </Button>
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="m-0">Supervisor List</h2>
+          <Button
+            onClick={navigateToAdd}
+            icon={<PlusCircleOutlined />}
+            type="text"
+          />
+        </div>
+        <Button
+          icon={<FilePdfOutlined />}
+          type="primary"
+          disabled={!supervisorListRes?.supervisorList?.rows?.length}
+          onClick={downloadPdf}
+        />
       </div>
       {renderTable()}
     </div>
