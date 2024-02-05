@@ -14,11 +14,14 @@ import { getCompanyListRequest } from "../../../api/requests/company";
 import ViewSupervisorDetailModal from "../../../components/userMaster/supervisor/ViewSupervisorDetailModal";
 import { USER_ROLES } from "../../../constants/userRole";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import { useCurrentUser } from "../../../api/hooks/auth";
+import dayjs from "dayjs";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
 function SupervisorList() {
   const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useQuery({
     queryKey: ["company", "list"],
@@ -78,16 +81,25 @@ function SupervisorList() {
   }
 
   function downloadPdf() {
+    if (!user) return;
+    const companyName = companyListRes?.rows?.[0]?.company_name;
+    const {
+      first_name = "YASH",
+      last_name = "PATEL",
+      address = "SURAT",
+      mobile = "+918980626669",
+      gst_no = "GST123456789000",
+    } = user;
     const leftContent = `
-    Name:- YASH PATEL
-    Address:- SURAT
-    Created Date:- 03-02-2024
+    Name:- ${first_name} ${last_name}
+    Address:- ${address}
+    Created Date:- ${dayjs().format("DD-MM-YYYY")}
     `;
 
     const rightContent = `
-    Company Name:- SONU TEXTILES
-    Company Contact:- +91 6353207671
-    GST No.:- 24ABHPP6021C1Z4
+    Company Name:- ${companyName}
+    Company Contact:- ${mobile}
+    GST No.:- ${gst_no}
     `;
 
     const body = supervisorListRes?.supervisorList?.rows?.map((supervisor) => {
