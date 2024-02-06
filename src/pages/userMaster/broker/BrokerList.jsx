@@ -1,5 +1,9 @@
 import { Button, Space, Spin, Switch, Table, message } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -9,11 +13,15 @@ import {
 import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewBrokerDetailModal from "../../../components/userMaster/broker/ViewBrokerDetailModal";
+import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import dayjs from "dayjs";
+import { useCurrentUser } from "../../../api/hooks/auth";
 
 const roleId = USER_ROLES.BROKER.role_id;
 
 function BrokerList() {
   const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useQuery({
     queryKey: ["company", "list"],
@@ -70,6 +78,44 @@ function BrokerList() {
 
   function navigateToUpdate(id) {
     navigate(`/user-master/my-broker/update/${id}`);
+  }
+
+  function downloadPdf() {
+    if (!user) return;
+    const companyName = companyListRes?.rows?.[0]?.company_name;
+    const {
+      first_name = "YASH",
+      last_name = "PATEL",
+      address = "SURAT",
+      mobile = "+918980626669",
+      gst_no = "GST123456789000",
+    } = user;
+    const leftContent = `
+    Name:- ${first_name} ${last_name}
+    Address:- ${address}
+    Created Date:- ${dayjs().format("DD-MM-YYYY")}
+    `;
+
+    const rightContent = `
+    Company Name:- ${companyName}
+    Company Contact:- ${mobile}
+    GST No.:- ${gst_no}
+    `;
+
+    const body = userListRes?.brokerList?.rows?.map((user) => {
+      const { id, first_name, last_name, adhar_no, mobile, email } = user;
+      return [id, first_name, last_name, adhar_no, mobile, email];
+    });
+
+    downloadUserPdf({
+      body,
+      head: [
+        ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
+      ],
+      leftContent,
+      rightContent,
+      title: "Broker List",
+    });
   }
 
   const columns = [
@@ -167,11 +213,21 @@ function BrokerList() {
 
   return (
     <div className="flex flex-col p-4">
-      <div className="flex items-center gap-5">
-        <h2 className="m-0">Broker List</h2>
-        <Button onClick={navigateToAdd}>
-          <PlusCircleOutlined />
-        </Button>
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="m-0">Broker List</h2>
+          <Button
+            onClick={navigateToAdd}
+            icon={<PlusCircleOutlined />}
+            type="text"
+          />
+        </div>
+        <Button
+          icon={<FilePdfOutlined />}
+          type="primary"
+          disabled={!userListRes?.brokerList?.rows?.length}
+          onClick={downloadPdf}
+        />
       </div>
       {renderTable()}
     </div>

@@ -1,5 +1,9 @@
 import { Button, Space, Spin, Switch, Table, Typography, message } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -9,6 +13,9 @@ import {
 import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewSupplierDetailModal from "../../../components/userMaster/supplier/ViewSupplierDetailModal";
+import { useCurrentUser } from "../../../api/hooks/auth";
+import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import dayjs from "dayjs";
 
 const { Text } = Typography;
 
@@ -16,6 +23,7 @@ const roleId = USER_ROLES.SUPPLIER.role_id;
 
 function SupplierList() {
   const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useQuery({
     queryKey: ["company", "list"],
@@ -72,6 +80,61 @@ function SupplierList() {
 
   function navigateToUpdate(id) {
     navigate(`/user-master/my-supplier/update/${id}`);
+  }
+
+  function downloadPdf() {
+    if (!user) return;
+    const companyName = companyListRes?.rows?.[0]?.company_name;
+    const {
+      first_name = "YASH",
+      last_name = "PATEL",
+      address = "SURAT",
+      mobile = "+918980626669",
+      gst_no = "GST123456789000",
+    } = user;
+    const leftContent = `
+    Name:- ${first_name} ${last_name}
+    Address:- ${address}
+    Created Date:- ${dayjs().format("DD-MM-YYYY")}
+    `;
+
+    const rightContent = `
+    Company Name:- ${companyName}
+    Company Contact:- ${mobile}
+    GST No.:- ${gst_no}
+    `;
+
+    const body = userListRes?.supplierList?.rows?.map((user) => {
+      const { id, supplier, address, gst_no, supplier_types } = user;
+      const { supplier_name, supplier_company, hsn_code } = supplier;
+      return [
+        id,
+        supplier_name,
+        supplier_company,
+        address,
+        gst_no,
+        hsn_code,
+        supplier_types?.map((s) => s?.type)?.join(", "),
+      ];
+    });
+
+    downloadUserPdf({
+      body,
+      head: [
+        [
+          "ID",
+          "Name",
+          "Company Name",
+          "Address",
+          "GST No",
+          "HSN Code",
+          "Supplier Type",
+        ],
+      ],
+      leftContent,
+      rightContent,
+      title: "Supplier List",
+    });
   }
 
   const columns = [
@@ -175,11 +238,21 @@ function SupplierList() {
 
   return (
     <div className="flex flex-col p-4">
-      <div className="flex items-center gap-5">
-        <h2 className="m-0">Supplier List</h2>
-        <Button onClick={navigateToAdd}>
-          <PlusCircleOutlined />
-        </Button>
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="m-0">Supplier List</h2>
+          <Button
+            onClick={navigateToAdd}
+            icon={<PlusCircleOutlined />}
+            type="text"
+          />
+        </div>
+        <Button
+          icon={<FilePdfOutlined />}
+          type="primary"
+          disabled={!userListRes?.supplierList?.rows?.length}
+          onClick={downloadPdf}
+        />
       </div>
       {renderTable()}
     </div>
