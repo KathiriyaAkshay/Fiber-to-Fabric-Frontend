@@ -1,9 +1,11 @@
 import axios from "axios";
 
 const authToken = localStorage.getItem("authToken");
+const baseURL = import.meta.env.VITE_BACKEND_BASE_URL;
+console.log("baseURL", baseURL);
 
 export const api = axios.create({
-  baseURL: " http://localhost:4000/api",
+  baseURL: baseURL,
   headers: {
     Authorization: authToken,
   },

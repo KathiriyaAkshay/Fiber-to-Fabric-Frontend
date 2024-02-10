@@ -43,6 +43,9 @@ import UpdateVehicleUser from "./pages/userMaster/vehicleUser/UpdateVehicleUser"
 import MachineList from "./pages/machine/MachineList";
 import AddMachine from "./pages/machine/AddMachine";
 import UpdateMachine from "./pages/machine/UpdateMachine";
+import YarnStockCompanyList from "./pages/yarnStock/yarnStockCompany/YarnStockCompanyList";
+import AddYarnStockCompany from "./pages/yarnStock/yarnStockCompany/AddYarnStockCompany";
+import UpdateYarnStockCompany from "./pages/yarnStock/yarnStockCompany/UpdateYarnStockCompany";
 
 const queryClient = new QueryClient();
 
@@ -783,17 +786,15 @@ const router = createBrowserRouter([
       },
       {
         path: "yarn-stock-company",
-        element: (
-          <div>
-            <div>yarn-stock-company</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>yarn-stock-company</div> },
+          { index: true, element: <YarnStockCompanyList /> },
           {
             path: "company-list",
-            element: <div>company-list</div>,
+            children: [
+              { index: true, element: <YarnStockCompanyList /> },
+              { path: "add", element: <AddYarnStockCompany /> },
+              { path: "update/:id", element: <UpdateYarnStockCompany /> },
+            ],
           },
           {
             path: "manage-yarn-stock",
