@@ -1,14 +1,30 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  AutoComplete,
+  Button,
+  Col,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { addYarnStockCompanyRequest } from "../../../api/requests/yarnStock";
-import { getCompanyListRequest } from "../../../api/requests/company";
-import { useBrokerList } from "../../../hooks/userMaster";
+// import { useBrokerList } from "../../../hooks/userMaster";
+import {
+  LUSTER_TYPE_LIST,
+  YARN_COLOR_LIST,
+  YARN_FIBER_TYPE_LIST,
+  YARN_SUBTYPE_LIST,
+} from "../../../constants/yarnStockCompany";
+import { useCompanyId } from "../../../api/hooks/company";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -34,18 +50,10 @@ function AddYarnStockCompany() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { companyId } = useCompanyId();
 
-  const companyId = companyListRes?.rows?.[0]?.id;
-
-  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } =
-    useBrokerList(companyId);
+  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } =
+  //   useBrokerList(companyId);
 
   const { mutateAsync: addYSC } = useMutation({
     mutationFn: async (data) => {
@@ -75,7 +83,13 @@ function AddYarnStockCompany() {
   });
 
   async function onSubmit(data) {
-    await addYSC({ ...data, company_id: companyId });
+    const { yarn_company_name, yarn_Sub_type } = data;
+    await addYSC({
+      ...data,
+      company_id: companyId,
+      yarn_company_name: yarn_company_name?.toUpperCase(),
+      yarn_Sub_type: yarn_Sub_type?.toUpperCase(),
+    });
   }
 
   const {
@@ -125,27 +139,134 @@ function AddYarnStockCompany() {
           <Col span={6}>
             <Form.Item
               label="Yarn/Fiber Type"
-              name="broker_ids"
-              validateStatus={errors.broker_ids ? "error" : ""}
-              help={errors.broker_ids && errors.broker_ids.message}
+              name="yarn_type"
+              validateStatus={errors.yarn_type ? "error" : ""}
+              help={errors.yarn_type && errors.yarn_type.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="broker_ids"
+                name="yarn_type"
                 render={({ field }) => (
                   <Select
                     allowClear
                     placeholder="Select Yarn Company Type"
-                    loading={isLoadingBrokerList}
                     {...field}
-                    options={brokerUserListRes?.brokerList?.rows?.map(
-                      (broker) => ({
-                        label: broker.first_name + " " + broker.last_name,
-                        value: broker.id,
-                      })
-                    )}
+                    options={YARN_FIBER_TYPE_LIST}
                   />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Yarn Sub Type(Not Mandatory)"
+              name="yarn_Sub_type"
+              validateStatus={errors.yarn_Sub_type ? "error" : ""}
+              help={errors.yarn_Sub_type && errors.yarn_Sub_type.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="yarn_Sub_type"
+                render={({ field }) => (
+                  <AutoComplete
+                    {...field}
+                    options={YARN_SUBTYPE_LIST}
+                    placeholder="Enter yarn sub type"
+                    filterOption={(inputValue, option) =>
+                      option.value
+                        .toUpperCase()
+                        .indexOf(inputValue.toUpperCase()) !== -1
+                    }
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Luster Type"
+              name="luster_type"
+              validateStatus={errors.luster_type ? "error" : ""}
+              help={errors.luster_type && errors.luster_type.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="luster_type"
+                render={({ field }) => (
+                  <Select
+                    allowClear
+                    placeholder="Select Luster Type"
+                    {...field}
+                    options={LUSTER_TYPE_LIST}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Yarn Color"
+              name="yarn_color"
+              validateStatus={errors.yarn_color ? "error" : ""}
+              help={errors.yarn_color && errors.yarn_color.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="yarn_color"
+                render={({ field }) => (
+                  <AutoComplete
+                    {...field}
+                    options={YARN_COLOR_LIST}
+                    placeholder="Enter yarn color"
+                    filterOption={(inputValue, option) =>
+                      option.value
+                        .toUpperCase()
+                        .indexOf(inputValue.toUpperCase()) !== -1
+                    }
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={3}>
+            <Form.Item
+              label="Count"
+              name="yarn_count"
+              validateStatus={errors.yarn_count ? "error" : ""}
+              help={errors.yarn_count && errors.yarn_count.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="yarn_count"
+                render={({ field }) => (
+                  <Input {...field} placeholder="50" type="number" min={0} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={3}>
+            <Form.Item
+              label="Denier"
+              name="yarn_denier"
+              validateStatus={errors.yarn_denier ? "error" : ""}
+              help={errors.yarn_denier && errors.yarn_denier.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="yarn_denier"
+                render={({ field }) => (
+                  <Input {...field} placeholder="50" type="number" min={0} />
                 )}
               />
             </Form.Item>
