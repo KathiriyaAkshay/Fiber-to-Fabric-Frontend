@@ -25,6 +25,7 @@ import {
   YARN_SUBTYPE_LIST,
 } from "../../../constants/yarnStockCompany";
 import { useCompanyId } from "../../../api/hooks/company";
+import { useEffect } from "react";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -38,8 +39,8 @@ const addYSCSchemaResolver = yupResolver(
     filament: yup.string().required("Please enter filament"),
     hsn_no: yup.string().required("Please enter HSN No"),
     avg_daily_stock: yup.string().required("Please enter average daily stock"),
-    stock_date: yup.string().required("Please enter stock date"),
-    company_id: yup.string().required("Please enter company id"),
+    // stock_date: yup.string().required("Please enter stock date"),
+    // company_id: yup.string().required("Please enter company id"),
   })
 );
 
@@ -59,6 +60,9 @@ function AddYarnStockCompany() {
     mutationFn: async (data) => {
       const res = await addYarnStockCompanyRequest({
         data,
+        params: {
+          company_id: companyId,
+        },
       });
       return res.data;
     },
@@ -97,9 +101,21 @@ function AddYarnStockCompany() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: addYSCSchemaResolver,
   });
+
+  const { yarn_count } = watch();
+
+  useEffect(() => {
+    if (yarn_count) {
+      setValue("yarn_denier", Math.ceil(5315 / yarn_count));
+    }
+  }, [setValue, yarn_count]);
+
+  console.log(errors);
 
   return (
     <div className="flex flex-col p-4">
@@ -248,7 +264,13 @@ function AddYarnStockCompany() {
                 control={control}
                 name="yarn_count"
                 render={({ field }) => (
-                  <Input {...field} placeholder="50" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="50"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -266,7 +288,77 @@ function AddYarnStockCompany() {
                 control={control}
                 name="yarn_denier"
                 render={({ field }) => (
-                  <Input {...field} placeholder="50" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="50"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Fillament"
+              name="filament"
+              validateStatus={errors.filament ? "error" : ""}
+              help={errors.filament && errors.filament.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="filament"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="48"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="HSN No."
+              name="hsn_no"
+              validateStatus={errors.hsn_no ? "error" : ""}
+              help={errors.hsn_no && errors.hsn_no.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="hsn_no"
+                render={({ field }) => <Input {...field} placeholder="2541" />}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Avg daily stock in kg"
+              name="avg_daily_stock"
+              validateStatus={errors.avg_daily_stock ? "error" : ""}
+              help={errors.avg_daily_stock && errors.avg_daily_stock.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="avg_daily_stock"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="1200"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

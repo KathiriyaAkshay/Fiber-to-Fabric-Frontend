@@ -73,7 +73,7 @@ function YarnStockCompanyList() {
 
     return (
       <Table
-        dataSource={ysCompanyListRes?.companyList?.rows || []}
+        dataSource={ysCompanyListRes?.yarnComanyList?.rows || []}
         columns={columns}
         rowKey={"id"}
       />

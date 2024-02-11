@@ -1,8 +1,8 @@
 // yarn company
 import { api } from "..";
 
-export function addYarnStockCompanyRequest({ data }) {
-  return api.post(`/yarn-stock/company/add`, data);
+export function addYarnStockCompanyRequest({ data, params }) {
+  return api.post(`/yarn-stock/company/add`, data, { params });
 }
 
 export function updateYarnStockCompanyRequest({ id, data }) {
