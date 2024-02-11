@@ -1,8 +1,11 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Space, Spin, Switch, Table, message } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getYarnStockCompanyListRequest } from "../../../api/requests/yarnStock";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getYarnStockCompanyListRequest,
+  updateYarnStockCompanyRequest,
+} from "../../../api/requests/yarnStock";
 import DeleteYarnStockCompany from "../../../components/yarnStock/yarnStockCompany/DeleteYarnStockCompany";
 import { useCompanyId } from "../../../api/hooks/company";
 // import { downloadUserPdf } from "../../../lib/pdf/userPdf";
@@ -27,6 +30,36 @@ function YarnStockCompanyList() {
       },
       enabled: Boolean(companyId),
     });
+
+  const {
+    mutateAsync: updateYSCompany,
+    isPending: updatingYSCompany,
+    variables,
+  } = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await updateYarnStockCompanyRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["yarn-stock", "company", "update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
 
   function navigateToAdd() {
     navigate("/yarn-stock-company/company-list/add");
@@ -143,6 +176,26 @@ function YarnStockCompanyList() {
         );
       },
       key: "action",
+    },
+
+    {
+      title: "Status",
+      render: (yscDetails) => {
+        const { is_active, id } = yscDetails;
+        return (
+          <Switch
+            loading={updatingYSCompany && variables?.id === id}
+            defaultChecked={is_active}
+            onChange={(is_active) => {
+              updateYSCompany({
+                id: id,
+                data: { is_active: is_active },
+              });
+            }}
+          />
+        );
+      },
+      key: "status",
     },
   ];
 

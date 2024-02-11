@@ -5,6 +5,7 @@ import {
   AutoComplete,
   Button,
   Col,
+  DatePicker,
   Flex,
   Form,
   Input,
@@ -28,6 +29,7 @@ import {
   YARN_SUBTYPE_LIST,
 } from "../../../constants/yarnStockCompany";
 import { useCompanyId } from "../../../api/hooks/company";
+import dayjs from "dayjs";
 
 const updateYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -41,7 +43,7 @@ const updateYSCSchemaResolver = yupResolver(
     filament: yup.string().required("Please enter filament"),
     hsn_no: yup.string().required("Please enter HSN No"),
     avg_daily_stock: yup.string().required("Please enter average daily stock"),
-    // stock_date: yup.string().required("Please enter stock date"),
+    stock_date: yup.string(),
     // company_id: yup.string().required("Please enter company id"),
   })
 );
@@ -125,7 +127,7 @@ function UpdateYarnStockCompany() {
         filament,
         hsn_no,
         avg_daily_stock,
-        // stock_date,
+        stock_date,
         // company_id,
       } = ysCompanyDetails;
       reset({
@@ -139,7 +141,7 @@ function UpdateYarnStockCompany() {
         filament,
         hsn_no,
         avg_daily_stock,
-        // stock_date,
+        stock_date: dayjs(stock_date),
         // company_id,
       });
     }
@@ -398,6 +400,30 @@ function UpdateYarnStockCompany() {
                     type="number"
                     min={0}
                     step={0.01}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Stock Date"
+              name="stock_date"
+              validateStatus={errors.stock_date ? "error" : ""}
+              help={errors.stock_date && errors.stock_date.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="stock_date"
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="DD/MM/YYYY"
                   />
                 )}
               />
