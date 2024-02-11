@@ -785,7 +785,8 @@ export const menubarOptionsList = [
   {
     path: "/more",
     key: "More",
-    label: <Link to="/more">More</Link>,
+    // label: <Link to="/more">More</Link>,
+    label: "More",
     children: [
       {
         path: "machine",
@@ -801,24 +802,24 @@ export const menubarOptionsList = [
         path: "yarn-stock-company",
         key: "Yarn Stock Company",
         label: <Link to="yarn-stock-company">Yarn Stock Company</Link>,
-        children: [
-          {
-            path: "company-list",
-            key: "Company List",
-            label: (
-              <Link to="yarn-stock-company/company-list">Company List</Link>
-            ),
-          },
-          {
-            path: "manage-yarn-stock",
-            key: "Manage Yarn Stock",
-            label: (
-              <Link to="yarn-stock-company/manage-yarn-stock">
-                Manage Yarn Stock
-              </Link>
-            ),
-          },
-        ],
+        // children: [
+        //   {
+        //     path: "company-list",
+        //     key: "Company List",
+        //     label: (
+        //       <Link to="yarn-stock-company/company-list">Company List</Link>
+        //     ),
+        //   },
+        //   {
+        //     path: "manage-yarn-stock",
+        //     key: "Manage Yarn Stock",
+        //     label: (
+        //       <Link to="yarn-stock-company/manage-yarn-stock">
+        //         Manage Yarn Stock
+        //       </Link>
+        //     ),
+        //   },
+        // ],
       },
       {
         path: "beam-card",

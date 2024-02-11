@@ -796,10 +796,10 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateYarnStockCompany /> },
             ],
           },
-          {
-            path: "manage-yarn-stock",
-            element: <div>manage-yarn-stock</div>,
-          },
+          // {
+          //   path: "manage-yarn-stock",
+          //   element: <div>manage-yarn-stock</div>,
+          // },
         ],
       },
       {
