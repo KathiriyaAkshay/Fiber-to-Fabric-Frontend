@@ -5,15 +5,20 @@ export function createCompanyRequest(data) {
 }
 
 export function updateCompanyRequest({ companyId, data }) {
-  return api.put(`/company/${companyId}`, data);
+  return api.put(`/company/update/${companyId}`, data);
 }
 
-export function getCompanyRequest({ companyId, config }) {
-  return api.get(`/company/${companyId}`, config);
+export function getCompanyRequest({ companyId, params }) {
+  return api.get(`/company/get/${companyId}`, {
+    params: {
+      company_id: companyId,
+      ...params,
+    },
+  });
 }
 
 export function deleteCompanyRequest({ companyId, config }) {
-  return api.delete(`/company/${companyId}`, config);
+  return api.delete(`/company/delete/${companyId}`, config);
 }
 
 export function getCompanyListRequest({ config }) {

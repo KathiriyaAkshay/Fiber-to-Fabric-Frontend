@@ -10,7 +10,12 @@ export function updateYarnStockCompanyRequest({ id, data }) {
 }
 
 export function getYarnStockCompanyListRequest({ companyId, params }) {
-  return api.get(`/yarn-stock/company/list/${companyId}`, { params });
+  return api.get(`/yarn-stock/company/list/${companyId}`, {
+    params: {
+      company_id: companyId,
+      ...params,
+    },
+  });
 }
 
 export function getYarnStockCompanyByIdRequest({ id, params }) {

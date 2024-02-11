@@ -72,11 +72,11 @@ export function getCollectionUserListRequest(config) {
 
 // accountant_user
 export function getAccountantUserByIdRequest({ id, config }) {
-  return api.get(`/users/accountant_user/get/${id}`, config);
+  return api.get(`/users/accountant/get/${id}`, config);
 }
 
 export function getAccountantUserListRequest(config) {
-  return api.get(`/users/accountant_user/list`, config);
+  return api.get(`/users/accountant/list`, config);
 }
 
 // vehicle-user
