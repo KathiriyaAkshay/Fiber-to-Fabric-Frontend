@@ -5,10 +5,15 @@ import { useQuery } from "@tanstack/react-query";
 import { getYarnStockCompanyListRequest } from "../../../api/requests/yarnStock";
 import DeleteYarnStockCompany from "../../../components/yarnStock/yarnStockCompany/DeleteYarnStockCompany";
 import { useCompanyId } from "../../../api/hooks/company";
+// import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+// import dayjs from "dayjs";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 
 function YarnStockCompanyList() {
   const navigate = useNavigate();
   const { companyId } = useCompanyId();
+  // const { data: companyListRes } = useCompanyList();
+  // const { data: user } = useCurrentUser();
 
   const { data: ysCompanyListRes, isLoading: isLoadingYSCompanyList } =
     useQuery({
@@ -31,6 +36,44 @@ function YarnStockCompanyList() {
     navigate(`/yarn-stock-company/company-list/update/${id}`);
   }
 
+  // function downloadPdf() {
+  //   if (!user) return;
+  //   const companyName = companyListRes?.rows?.[0]?.company_name;
+  //   const {
+  //     first_name = "YASH",
+  //     last_name = "PATEL",
+  //     address = "SURAT",
+  //     mobile = "+918980626669",
+  //     gst_no = "GST123456789000",
+  //   } = user;
+  //   const leftContent = `
+  //   Name:- ${first_name} ${last_name}
+  //   Address:- ${address}
+  //   Created Date:- ${dayjs().format("DD-MM-YYYY")}
+  //   `;
+
+  //   const rightContent = `
+  //   Company Name:- ${companyName}
+  //   Company Contact:- ${mobile}
+  //   GST No.:- ${gst_no}
+  //   `;
+
+  //   const body = ysCompanyListRes?.yarnComanyList?.rows?.map((user) => {
+  //     const { id, first_name, last_name, adhar_no, mobile, email } = user;
+  //     return [id, first_name, last_name, adhar_no, mobile, email];
+  //   });
+
+  //   downloadUserPdf({
+  //     body,
+  //     head: [
+  //       ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
+  //     ],
+  //     leftContent,
+  //     rightContent,
+  //     title: "Broker List",
+  //   });
+  // }
+
   const columns = [
     {
       title: "ID",
@@ -38,9 +81,50 @@ function YarnStockCompanyList() {
       key: "id",
     },
     {
-      title: "No of Employee",
-      dataIndex: "no_of_employees",
-      key: "no_of_employees",
+      title: "Company Name",
+      dataIndex: "yarn_company_name",
+      key: "yarn_company_name",
+    },
+    {
+      title: "Yarn/Fiber Type",
+      key: "yarn_type",
+      render: (yscDetails) => {
+        const { yarn_type = "", yarn_Sub_type = "" } = yscDetails;
+        if (yarn_Sub_type) {
+          return `${yarn_type} (${yarn_Sub_type})`;
+        }
+        return yarn_type;
+      },
+    },
+    {
+      title: "Denier / Count",
+      key: "yarn_denier",
+      render: (yscDetails) => {
+        const {
+          yarn_denier = 0,
+          yarn_count = 0,
+          yarn_color = "",
+          luster_type = "",
+        } = yscDetails;
+        return `${Math.ceil(yarn_denier)}D / ${Math.ceil(
+          yarn_count
+        )}C (${yarn_color} - ${luster_type})`;
+      },
+    },
+    {
+      title: "Filament",
+      dataIndex: "filament",
+      key: "filament",
+    },
+    {
+      title: "HSN No.",
+      dataIndex: "hsn_no",
+      key: "hsn_no",
+    },
+    {
+      title: "Avg.Stock",
+      dataIndex: "avg_daily_stock",
+      key: "avg_daily_stock",
     },
     {
       title: "Action",
@@ -82,11 +166,21 @@ function YarnStockCompanyList() {
 
   return (
     <div className="flex flex-col p-4">
-      <div className="flex items-center gap-5">
-        <h2 className="m-0">Yarn Companies List</h2>
-        <Button onClick={navigateToAdd}>
-          <PlusCircleOutlined />
-        </Button>
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h2 className="m-0">Yarn Companies List</h2>
+          <Button
+            onClick={navigateToAdd}
+            icon={<PlusCircleOutlined />}
+            type="text"
+          />
+        </div>
+        {/* <Button
+          icon={<FilePdfOutlined />}
+          type="primary"
+          disabled={!ysCompanyListRes?.yarnComanyList?.rows?.length}
+          onClick={downloadPdf}
+        /> */}
       </div>
       {renderTable()}
     </div>
