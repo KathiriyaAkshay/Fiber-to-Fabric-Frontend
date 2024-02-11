@@ -115,8 +115,6 @@ function AddYarnStockCompany() {
     }
   }, [setValue, yarn_count]);
 
-  console.log(errors);
-
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
