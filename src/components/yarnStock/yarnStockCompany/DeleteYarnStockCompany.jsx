@@ -4,6 +4,7 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getCompanyListRequest } from "../../../api/requests/company";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
+import { deleteYSCompanyRequest } from "../../../api/requests/yarnStock";
 
 const DeleteYarnStockCompany = ({ details }) => {
   const queryClient = useQueryClient();
@@ -20,11 +21,16 @@ const DeleteYarnStockCompany = ({ details }) => {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: deleteYarnStockCompany } = useMutation({
-    mutationFn: async ({ id, params }) => {
-      console.log(id, params);
-      // const res = await deleteYarnStockCompanyRequest({ id, params });
-      // return res?.data;
+    mutationFn: async ({ id }) => {
+      const res = await deleteYSCompanyRequest({
+        id,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res?.data;
     },
+    mutationKey: ["yarn-stock", "company", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {

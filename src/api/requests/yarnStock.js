@@ -30,6 +30,10 @@ export function getYarnColorListRequest({ params }) {
   return api.get(`/dropdown/yarn_color/list`, { params });
 }
 
+export function deleteYSCompanyRequest({ id, params }) {
+  return api.delete(`yarn-stock/company/delete/${id}`, { params });
+}
+
 // yarn stock report
 
 export function createYarnStockReportRequest({ data }) {
