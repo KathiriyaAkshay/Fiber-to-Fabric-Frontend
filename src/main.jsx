@@ -46,6 +46,9 @@ import UpdateMachine from "./pages/machine/UpdateMachine";
 import YarnStockCompanyList from "./pages/yarnStock/yarnStockCompany/YarnStockCompanyList";
 import AddYarnStockCompany from "./pages/yarnStock/yarnStockCompany/AddYarnStockCompany";
 import UpdateYarnStockCompany from "./pages/yarnStock/yarnStockCompany/UpdateYarnStockCompany";
+import DailyTaskList from "./pages/tasks/dailyTask/DailyTaskList";
+import AddDailyTask from "./pages/tasks/dailyTask/AddDailyTask";
+import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
 
 const queryClient = new QueryClient();
 
@@ -178,15 +181,16 @@ const router = createBrowserRouter([
       },
       {
         path: "/tasks",
-        element: (
-          <div>
-            <div>tasks</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>tasks</div> },
-          { path: "daily-task", element: <div>daily-task</div> },
+          { index: true, element: <DailyTaskList /> },
+          {
+            path: "daily-task",
+            children: [
+              { index: true, element: <DailyTaskList /> },
+              { path: "add", element: <AddDailyTask /> },
+              { path: "update/:id", element: <UpdateDailyTask /> },
+            ],
+          },
           { path: "daily-task-report", element: <div>daily-task-report</div> },
         ],
       },
