@@ -38,9 +38,29 @@ function DailyTaskList() {
       key: "id",
     },
     {
-      title: "No of Employee",
-      dataIndex: "no_of_employees",
-      key: "no_of_employees",
+      title: "Task Detail",
+      dataIndex: "task_detail",
+      key: "task_detail",
+    },
+    // {
+    //   title: "Assigned Time",
+    //   dataIndex: "assigned_time",
+    //   key: "assigned_time",
+    // },
+    {
+      title: "Achievement",
+      dataIndex: "achievement",
+      key: "achievement",
+    },
+    {
+      title: "Reason",
+      dataIndex: "reason",
+      key: "reason",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Action",
