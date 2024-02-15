@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Button, Col, Modal, Row, Typography } from "antd";
 import { EyeOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
 const ViewTaskDetailModal = ({ details }) => {
-  const { no_of_employees } = details;
+  const { task_detail, assign_time, achievement, reason, status, createdAt } =
+    details;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -34,9 +36,54 @@ const ViewTaskDetailModal = ({ details }) => {
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                No of Employee :
+                Date :
               </Title>
-              {no_of_employees}
+              {dayjs(createdAt).format("DD/MM/YYYY")}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Assigned Time :
+              </Title>
+              {assign_time}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Task :
+              </Title>
+              {task_detail}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Achievement :
+              </Title>
+              {achievement || "-"}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Reason :
+              </Title>
+              {reason || "-"}
+            </Text>
+          </Col>
+
+          <Col span={12}>
+            <Text>
+              <Title level={5} style={{ margin: 0 }}>
+                Status :
+              </Title>
+              {status}
             </Text>
           </Col>
         </Row>
