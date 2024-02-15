@@ -13,7 +13,7 @@ export function getSupervisorByIdRequest({ id, params }) {
   return api.get(`/supervisor/get/${id}`, { params });
 }
 
-export function getSupervisorListRequest(params) {
+export function getSupervisorListRequest({ params }) {
   return api.get(`/supervisor/list`, { params });
 }
 
@@ -22,7 +22,7 @@ export function getBrokerByIdRequest({ id, params }) {
   return api.get(`/broker/get/${id}`, { params });
 }
 
-export function getBrokerListRequest(params) {
+export function getBrokerListRequest({ params }) {
   return api.get(`/broker/list`, { params });
 }
 
@@ -31,7 +31,7 @@ export function getPartyByIdRequest({ id, params }) {
   return api.get(`/party/get/${id}`, { params });
 }
 
-export function getPartyListRequest(params) {
+export function getPartyListRequest({ params }) {
   return api.get(`/party/list`, { params });
 }
 
@@ -40,7 +40,7 @@ export function getSupplierByIdRequest({ id, params }) {
   return api.get(`/supplier/get/${id}`, { params });
 }
 
-export function getSupplierListRequest(params) {
+export function getSupplierListRequest({ params }) {
   return api.get(`/supplier/list`, { params });
 }
 
@@ -49,11 +49,11 @@ export function getEmployeeByIdRequest({ id, params }) {
   return api.get(`/employee/get/${id}`, { params });
 }
 
-export function getEmployeeListRequest(params) {
+export function getEmployeeListRequest({ params }) {
   return api.get(`/employee/list`, { params });
 }
 
-export function getEmployeeTypeListRequest(params) {
+export function getEmployeeTypeListRequest({ params }) {
   return api.get(`/dropdown/employee_type/list`, { params });
 }
 
@@ -66,7 +66,7 @@ export function getCollectionUserByIdRequest({ id, params }) {
   return api.get(`/users/collection_user/get/${id}`, { params });
 }
 
-export function getCollectionUserListRequest(params) {
+export function getCollectionUserListRequest({ params }) {
   return api.get(`/users/collection_user/list`, { params });
 }
 
@@ -75,7 +75,7 @@ export function getAccountantUserByIdRequest({ id, params }) {
   return api.get(`/users/accountant/get/${id}`, { params });
 }
 
-export function getAccountantUserListRequest(params) {
+export function getAccountantUserListRequest({ params }) {
   return api.get(`/users/accountant/list`, { params });
 }
 
@@ -84,6 +84,6 @@ export function getVehicleUserByIdRequest({ id, params }) {
   return api.get(`/vehicle/get/${id}`, { params });
 }
 
-export function getVehicleUserListRequest(params) {
+export function getVehicleUserListRequest({ params }) {
   return api.get(`/vehicle/list`, { params });
 }

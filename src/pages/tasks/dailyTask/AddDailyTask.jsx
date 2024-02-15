@@ -23,6 +23,7 @@ import { createTaskRequest } from "../../../api/requests/task";
 import { useMemo } from "react";
 import { getSupervisorListRequest } from "../../../api/requests/users";
 import dayjs from "dayjs";
+import { ASSIGN_TIME_LIST } from "../../../constants/task";
 
 const addTaskSchemaResolver = yupResolver(
   yup.object().shape({
@@ -31,6 +32,8 @@ const addTaskSchemaResolver = yupResolver(
       .boolean()
       .required("Please select one time or everyday"),
     task_detail: yup.string().required("Please enter task details"),
+    assign_time: yup.string().required("Please select time"),
+    task_days: yup.array().of(yup.string()),
   })
 );
 
@@ -63,6 +66,7 @@ function AddDailyTask() {
     mutationFn: async (data) => {
       const res = await createTaskRequest({
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },
@@ -98,12 +102,16 @@ function AddDailyTask() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     resolver: addTaskSchemaResolver,
     defaultValues: {
       is_every_day_task: true,
+      task_days: [],
     },
   });
+
+  const { is_every_day_task } = watch();
 
   return (
     <div className="flex flex-col p-4">
@@ -204,53 +212,78 @@ function AddDailyTask() {
           </Col>
 
           <Col span={12}>
-            <Form.Item
-              label="Days"
-              name="task_days"
-              validateStatus={errors.task_days ? "error" : ""}
-              help={
-                (errors.task_days && errors.task_days.message) ||
-                "[Select One Or More Days]"
-              }
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
+            {is_every_day_task && (
+              <Form.Item
+                label="Days"
                 name="task_days"
-                render={({ field }) => (
-                  <Checkbox.Group
-                    options={[
-                      { value: 0, label: "Sunday" },
-                      { value: 1, label: "Monday" },
-                      { value: 2, label: "Tuesday" },
-                      { value: 3, label: "Wednesday" },
-                      { value: 4, label: "Thursday" },
-                      { value: 5, label: "Friday" },
-                      { value: 6, label: "Saturday" },
-                    ]}
-                    {...field}
-                  />
-                )}
-              />
-            </Form.Item>
+                validateStatus={errors.task_days ? "error" : ""}
+                help={
+                  (errors.task_days && errors.task_days.message) ||
+                  "[Select One Or More Days]"
+                }
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="task_days"
+                  render={({ field }) => (
+                    <Checkbox.Group
+                      options={[
+                        { value: 0, label: "Sunday" },
+                        { value: 1, label: "Monday" },
+                        { value: 2, label: "Tuesday" },
+                        { value: 3, label: "Wednesday" },
+                        { value: 4, label: "Thursday" },
+                        { value: 5, label: "Friday" },
+                        { value: 6, label: "Saturday" },
+                      ]}
+                      {...field}
+                    />
+                  )}
+                />
+              </Form.Item>
+            )}
           </Col>
 
-          <Col span={12}>
-            <Form.Item
-              label="Write About Task"
-              name="task_detail"
-              validateStatus={errors.task_detail ? "error" : ""}
-              help={errors.task_detail && errors.task_detail.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
+          <Col span={12} style={{ display: "flex", alignItems: "end" }}>
+            <Col span={18}>
+              <Form.Item
+                label="Write About Task"
                 name="task_detail"
-                render={({ field }) => (
-                  <Input.TextArea {...field} placeholder="Task 1" />
-                )}
-              />
-            </Form.Item>
+                validateStatus={errors.task_detail ? "error" : ""}
+                help={errors.task_detail && errors.task_detail.message}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="task_detail"
+                  render={({ field }) => (
+                    <Input.TextArea {...field} placeholder="Task 1" autoSize />
+                  )}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="assign_time"
+                validateStatus={errors.assign_time ? "error" : ""}
+                help={errors.assign_time && errors.assign_time.message}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="assign_time"
+                  render={({ field }) => (
+                    <Select
+                      allowClear
+                      placeholder="Please select time"
+                      {...field}
+                      options={ASSIGN_TIME_LIST}
+                    />
+                  )}
+                />
+              </Form.Item>
+            </Col>
           </Col>
         </Row>
 
