@@ -10,8 +10,8 @@ const DeleteCompanyPartner = ({ partnerDetails }) => {
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { mutateAsync: deleteCompanyPartner } = useMutation({
-    mutationFn: async ({ partnerId, config }) => {
-      const res = await deleteCompanyPartnerRequest({ partnerId, config });
+    mutationFn: async ({ partnerId, params }) => {
+      const res = await deleteCompanyPartnerRequest({ partnerId, params });
       return res?.data;
     },
     onSuccess: (res) => {

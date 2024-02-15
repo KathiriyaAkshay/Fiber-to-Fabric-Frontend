@@ -10,12 +10,12 @@ import {
   getVehicleUserListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewVehicleUserDetailModal from "../../../components/userMaster/vehicle-user/ViewVehicleUserDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
@@ -23,13 +23,7 @@ function VehicleUserList() {
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

@@ -9,52 +9,52 @@ export function updateUserRequest({ roleId, userId, data }) {
 }
 
 // supervisor
-export function getSupervisorByIdRequest({ id, config }) {
-  return api.get(`/supervisor/get/${id}`, config);
+export function getSupervisorByIdRequest({ id, params }) {
+  return api.get(`/supervisor/get/${id}`, { params });
 }
 
-export function getSupervisorListRequest(config) {
-  return api.get(`/supervisor/list`, config);
+export function getSupervisorListRequest(params) {
+  return api.get(`/supervisor/list`, { params });
 }
 
 // Broker
-export function getBrokerByIdRequest({ id, config }) {
-  return api.get(`/broker/get/${id}`, config);
+export function getBrokerByIdRequest({ id, params }) {
+  return api.get(`/broker/get/${id}`, { params });
 }
 
-export function getBrokerListRequest(config) {
-  return api.get(`/broker/list`, config);
+export function getBrokerListRequest(params) {
+  return api.get(`/broker/list`, { params });
 }
 
 // Party
-export function getPartyByIdRequest({ id, config }) {
-  return api.get(`/party/get/${id}`, config);
+export function getPartyByIdRequest({ id, params }) {
+  return api.get(`/party/get/${id}`, { params });
 }
 
-export function getPartyListRequest(config) {
-  return api.get(`/party/list`, config);
+export function getPartyListRequest(params) {
+  return api.get(`/party/list`, { params });
 }
 
 // supplier
-export function getSupplierByIdRequest({ id, config }) {
-  return api.get(`/supplier/get/${id}`, config);
+export function getSupplierByIdRequest({ id, params }) {
+  return api.get(`/supplier/get/${id}`, { params });
 }
 
-export function getSupplierListRequest(config) {
-  return api.get(`/supplier/list`, config);
+export function getSupplierListRequest(params) {
+  return api.get(`/supplier/list`, { params });
 }
 
 // employee
-export function getEmployeeByIdRequest({ id, config }) {
-  return api.get(`/employee/get/${id}`, config);
+export function getEmployeeByIdRequest({ id, params }) {
+  return api.get(`/employee/get/${id}`, { params });
 }
 
-export function getEmployeeListRequest(config) {
-  return api.get(`/employee/list`, config);
+export function getEmployeeListRequest(params) {
+  return api.get(`/employee/list`, { params });
 }
 
-export function getEmployeeTypeListRequest(config) {
-  return api.get(`/dropdown/employee_type/list`, config);
+export function getEmployeeTypeListRequest(params) {
+  return api.get(`/dropdown/employee_type/list`, { params });
 }
 
 export function addEmployeeTypeRequest({ data }) {
@@ -62,28 +62,28 @@ export function addEmployeeTypeRequest({ data }) {
 }
 
 // collection_user
-export function getCollectionUserByIdRequest({ id, config }) {
-  return api.get(`/users/collection_user/get/${id}`, config);
+export function getCollectionUserByIdRequest({ id, params }) {
+  return api.get(`/users/collection_user/get/${id}`, { params });
 }
 
-export function getCollectionUserListRequest(config) {
-  return api.get(`/users/collection_user/list`, config);
+export function getCollectionUserListRequest(params) {
+  return api.get(`/users/collection_user/list`, { params });
 }
 
 // accountant_user
-export function getAccountantUserByIdRequest({ id, config }) {
-  return api.get(`/users/accountant/get/${id}`, config);
+export function getAccountantUserByIdRequest({ id, params }) {
+  return api.get(`/users/accountant/get/${id}`, { params });
 }
 
-export function getAccountantUserListRequest(config) {
-  return api.get(`/users/accountant/list`, config);
+export function getAccountantUserListRequest(params) {
+  return api.get(`/users/accountant/list`, { params });
 }
 
 // vehicle-user
-export function getVehicleUserByIdRequest({ id, config }) {
-  return api.get(`/vehicle/get/${id}`, config);
+export function getVehicleUserByIdRequest({ id, params }) {
+  return api.get(`/vehicle/get/${id}`, { params });
 }
 
-export function getVehicleUserListRequest(config) {
-  return api.get(`/vehicle/list`, config);
+export function getVehicleUserListRequest(params) {
+  return api.get(`/vehicle/list`, { params });
 }

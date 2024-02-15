@@ -17,16 +17,16 @@ export function getCompanyRequest({ companyId, params }) {
   });
 }
 
-export function deleteCompanyRequest({ companyId, config }) {
-  return api.delete(`/company/delete/${companyId}`, config);
+export function deleteCompanyRequest({ companyId, params }) {
+  return api.delete(`/company/delete/${companyId}`, { params });
 }
 
-export function getCompanyListRequest({ config }) {
-  return api.get(`/company/list`, config);
+export function getCompanyListRequest({ params }) {
+  return api.get(`/company/list`, { params });
 }
 
-export function getCompanyPartnerRequest({ companyId, config }) {
-  return api.get(`/company/partner/get/${companyId}`, config);
+export function getCompanyPartnerRequest({ companyId, params }) {
+  return api.get(`/company/partner/get/${companyId}`, { params });
 }
 
 export function addPartnerToCompanyRequest(data) {
@@ -37,6 +37,6 @@ export function updateCompanyPartnerRequest({ partnerId, data }) {
   return api.post(`/company/partner/update/${partnerId}`, data);
 }
 
-export function deleteCompanyPartnerRequest({ partnerId, config }) {
-  return api.delete(`/company/partner/delete/${partnerId}`, config);
+export function deleteCompanyPartnerRequest({ partnerId, params }) {
+  return api.delete(`/company/partner/delete/${partnerId}`, { params });
 }

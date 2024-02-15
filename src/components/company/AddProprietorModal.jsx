@@ -21,7 +21,7 @@ function AddProprietorModal({ open, onCancel, companyDetails }) {
     queryFn: async () => {
       const res = await getCompanyPartnerRequest({
         companyId: companyDetails.id,
-        config: { params: { type: "PROPRIETOR" } },
+        params: { type: "PROPRIETOR" },
       });
       return res.data?.data;
     },

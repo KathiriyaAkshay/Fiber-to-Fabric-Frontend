@@ -4,26 +4,23 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import ViewMachineDetailModal from "../../components/machine/ViewMachineDetailModal";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
-import { getCompanyListRequest } from "../../api/requests/company";
 import DeleteMachine from "../../components/machine/DeleteMachine";
+import { useCompanyList } from "../../api/hooks/company";
 
 function MachineList() {
   const navigate = useNavigate();
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "List", companyId],
     queryFn: async () => {
-      const res = await getCompanyMachineListRequest({ companyId, config: {} });
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
       return res.data?.data;
     },
     enabled: Boolean(companyId),

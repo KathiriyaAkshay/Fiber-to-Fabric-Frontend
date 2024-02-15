@@ -1,14 +1,14 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { getCompanyListRequest } from "../../api/requests/company";
 import { addMachineRequest } from "../../api/requests/machine";
 import MachineTypeFields from "../../components/machine/MachineTypeFields";
+import { useCompanyList } from "../../api/hooks/company";
 
 const addMachineSchemaResolver = yupResolver(
   yup.object().shape({
@@ -27,13 +27,7 @@ function AddMachine() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

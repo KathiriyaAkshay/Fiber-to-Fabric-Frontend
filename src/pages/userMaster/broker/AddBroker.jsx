@@ -11,11 +11,11 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const roleId = USER_ROLES.BROKER.role_id;
 
@@ -58,13 +58,7 @@ function AddBroker() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

@@ -10,12 +10,12 @@ import {
   getAccountantUserListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewAccountantUserDetailModal from "../../../components/userMaster/accountant-user/ViewAccountantUserDetailModal";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const roleId = USER_ROLES.ACCOUNTANT_USER.role_id;
 
@@ -24,13 +24,7 @@ function AccountantUserList() {
 
   const { data: user } = useCurrentUser();
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

@@ -11,8 +11,8 @@ const DeleteCompany = ({ companyDetails }) => {
 
   // Mutation for delete company
   const { mutateAsync: deleteCompany } = useMutation({
-    mutationFn: async ({ companyId, config }) => {
-      const res = await deleteCompanyRequest({ companyId, config });
+    mutationFn: async ({ companyId, params }) => {
+      const res = await deleteCompanyRequest({ companyId, params });
       return res?.data;
     },
     onSuccess: (res) => {

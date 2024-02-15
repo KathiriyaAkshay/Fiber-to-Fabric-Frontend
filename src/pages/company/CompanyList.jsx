@@ -1,22 +1,15 @@
 import { Button, Space, Spin, Table } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { getCompanyListRequest } from "../../api/requests/company";
-import { useQuery } from "@tanstack/react-query";
 import ViewCompanyDetailModal from "../../components/company/ViewCompanyDetailModal";
 import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
+import { useCompanyList } from "../../api/hooks/company";
 
 function CompanyList() {
   const navigate = useNavigate();
 
-  const { data: companyListRes, isLoading } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes, isLoading } = useCompanyList();
 
   function navigateToAddCompany() {
     navigate("/company/add");

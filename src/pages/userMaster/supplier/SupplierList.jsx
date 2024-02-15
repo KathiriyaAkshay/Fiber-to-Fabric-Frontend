@@ -10,12 +10,12 @@ import {
   getSupplierListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import { USER_ROLES } from "../../../constants/userRole";
 import ViewSupplierDetailModal from "../../../components/userMaster/supplier/ViewSupplierDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const { Text } = Typography;
 
@@ -25,13 +25,7 @@ function SupplierList() {
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

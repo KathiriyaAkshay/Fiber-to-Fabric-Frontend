@@ -14,18 +14,18 @@ export function addMachineNameWithTypeRequest({ data }) {
   return api.post(`/dropdown/machine_name/add`, data);
 }
 
-export function getMachineByIdRequest({ id, config }) {
-  return api.get(`/machine/get/${id}`, config);
+export function getMachineByIdRequest({ id, params }) {
+  return api.get(`/machine/get/${id}`, params);
 }
 
-export function getCompanyMachineListRequest({ companyId, config }) {
-  return api.get(`/machine/list/${companyId}`, config);
+export function getCompanyMachineListRequest({ companyId, params }) {
+  return api.get(`/machine/list/${companyId}`, { params });
 }
 
 export function updateMachineRequest({ id, data }) {
   return api.patch(`/machine/update/${id}`, data);
 }
 
-export function deleteMachineRequest({ id, config }) {
-  return api.delete(`/machine/delete/${id}`, config);
+export function deleteMachineRequest({ id, params }) {
+  return api.delete(`/machine/delete/${id}`, { params });
 }

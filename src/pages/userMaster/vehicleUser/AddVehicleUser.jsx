@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -8,11 +8,11 @@ import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
@@ -59,13 +59,7 @@ function AddVehicleUser() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

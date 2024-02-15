@@ -1,22 +1,16 @@
 import { useState } from "react";
 import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getCompanyListRequest } from "../../../api/requests/company";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { deleteYSCompanyRequest } from "../../../api/requests/yarnStock";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const DeleteYarnStockCompany = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 

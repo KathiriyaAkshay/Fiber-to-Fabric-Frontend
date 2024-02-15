@@ -24,7 +24,7 @@ import {
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
-import { getCompanyListRequest } from "../../../api/requests/company";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const updateSupplierSchemaResolver = yupResolver(
   yup.object().shape({
@@ -95,14 +95,7 @@ function UpdateSupplier() {
     await updateUser(data);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
-
+  const { data: companyListRes } = useCompanyList();
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({

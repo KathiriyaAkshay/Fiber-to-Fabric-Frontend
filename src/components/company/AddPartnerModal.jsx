@@ -16,7 +16,7 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
     queryFn: async () => {
       const res = await getCompanyPartnerRequest({
         companyId: companyDetails.id,
-        config: { params: { type: "PARTNER" } },
+        params: { type: "PARTNER" },
       });
       return res.data?.data;
     },

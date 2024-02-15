@@ -22,8 +22,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import { AadharRegex } from "../../../constants/regex";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const updateSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
@@ -57,13 +57,7 @@ function UpdateSupervisor() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes } = useCompanyList();
 
   const { mutateAsync: updateUser } = useMutation({
     mutationFn: async (data) => {

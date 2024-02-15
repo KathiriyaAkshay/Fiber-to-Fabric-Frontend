@@ -24,8 +24,8 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import SalaryTypeSpecificFields from "../../../components/userMaster/employee/SalaryTypeSpecificFields";
 import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
-import { getCompanyListRequest } from "../../../api/requests/company";
 import dayjs from "dayjs";
+import { useCompanyList } from "../../../api/hooks/company";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
@@ -127,13 +127,8 @@ function UpdateEmployee() {
     await updateUser(data);
   }
 
-  const { data: companyListRes, isLoading: isLoadingCompanyList } = useQuery({
-    queryKey: ["company", "list"],
-    queryFn: async () => {
-      const res = await getCompanyListRequest({});
-      return res.data?.data;
-    },
-  });
+  const { data: companyListRes, isLoading: isLoadingCompanyList } =
+    useCompanyList();
 
   const {
     control,

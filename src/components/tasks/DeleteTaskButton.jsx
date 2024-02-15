@@ -15,8 +15,8 @@ const DeleteTaskButton = ({ details }) => {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: deleteTask } = useMutation({
-    mutationFn: async ({ id, config }) => {
-      const res = await deleteTaskRequest({ id, config });
+    mutationFn: async ({ id, params }) => {
+      const res = await deleteTaskRequest({ id, params });
       return res?.data;
     },
     onSuccess: (res) => {
