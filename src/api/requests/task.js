@@ -12,8 +12,8 @@ export function getTaskListRequest({ companyId, params }) {
   return api.get(`/task-assignment/list/${companyId}`, { params });
 }
 
-export function updateTaskRequest({ id, data }) {
-  return api.patch(`/task-assignment/update/${id}`, data);
+export function updateTaskRequest({ id, data, params }) {
+  return api.patch(`/task-assignment/update/${id}`, data, { params });
 }
 
 export function deleteTaskRequest({ id, params }) {
