@@ -10,13 +10,18 @@ const DeleteTaskButton = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { data: companyListRes } = useCompanyList;
+  const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: deleteTask } = useMutation({
-    mutationFn: async ({ id, params }) => {
-      const res = await deleteTaskRequest({ id, params });
+    mutationFn: async ({ id }) => {
+      const res = await deleteTaskRequest({
+        id,
+        params: {
+          company_id: companyId,
+        },
+      });
       return res?.data;
     },
     onSuccess: (res) => {
