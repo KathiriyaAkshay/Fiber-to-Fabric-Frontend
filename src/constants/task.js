@@ -120,3 +120,50 @@ export const ASSIGN_TIME_LIST = [
     // value: "11:00 pm",
   },
 ];
+
+export const DAILY_TASK_REPORT_LIST = [
+  {
+    title: "Daily T.F.O Report",
+    path: "daily-tfo-report",
+  },
+  {
+    title: "Beam Stock Report",
+    path: "beam-stock-report",
+  },
+  {
+    title: "Check Taka and Report",
+    path: "check-taka-and-report",
+  },
+  {
+    title: "Yarn Stock Report",
+    path: "yarn-stock-report",
+  },
+  {
+    title: "Other Reports",
+    path: "other-reports",
+  },
+  {
+    title: "Employees Attendance Report",
+    path: "employees-attendance-report",
+  },
+  {
+    title: "Today's Report",
+    path: "todays-report",
+  },
+  {
+    title: "Wastage Report",
+    path: "wastage-report",
+  },
+  {
+    title: "Denierwise Wastage Report",
+    path: "denierwise-wastage-report",
+  },
+  {
+    title: "Wastage Sales Report",
+    path: "wastage-sales-report",
+  },
+  {
+    title: "Beam Card",
+    path: "beam-card",
+  },
+];

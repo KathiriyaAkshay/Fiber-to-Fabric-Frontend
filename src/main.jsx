@@ -49,6 +49,7 @@ import UpdateYarnStockCompany from "./pages/yarnStock/yarnStockCompany/UpdateYar
 import DailyTaskList from "./pages/tasks/dailyTask/DailyTaskList";
 import AddDailyTask from "./pages/tasks/dailyTask/AddDailyTask";
 import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
+import { dailyTaskReportRoutes } from "./router/dailyTaskReportRoutes";
 
 const queryClient = new QueryClient();
 
@@ -191,7 +192,7 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateDailyTask /> },
             ],
           },
-          { path: "daily-task-report", element: <div>daily-task-report</div> },
+          dailyTaskReportRoutes,
         ],
       },
       {
