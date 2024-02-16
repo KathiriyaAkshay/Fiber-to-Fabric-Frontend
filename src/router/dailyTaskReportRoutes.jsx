@@ -2,6 +2,9 @@ import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddOtherReport from "../pages/tasks/dailyTaskReport/otherReports/AddOtherReport";
+import OtherReportList from "../pages/tasks/dailyTaskReport/otherReports/OtherReportList";
+import UpdateOtherReport from "../pages/tasks/dailyTaskReport/otherReports/UpdateOtherReport";
 
 export const dailyTaskReportRoutes = {
   path: "daily-task-report",
@@ -42,9 +45,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "other-reports",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <OtherReportList /> },
+        { path: "add", element: <AddOtherReport /> },
+        { path: "update/:id", element: <UpdateOtherReport /> },
       ],
     },
     {

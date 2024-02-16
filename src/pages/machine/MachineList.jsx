@@ -15,7 +15,7 @@ function MachineList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: ["machine", "List", companyId],
+    queryKey: ["machine", "list", companyId],
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,

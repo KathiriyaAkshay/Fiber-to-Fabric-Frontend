@@ -6,16 +6,15 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCompanyList } from "../../../api/hooks/company";
-import { getTaskListRequest } from "../../../api/requests/task";
-import ViewTaskDetailModal from "../../../components/tasks/ViewTaskDetailModal";
-import DeleteTaskButton from "../../../components/tasks/DeleteTaskButton";
-import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
-import { downloadUserPdf } from "../../../lib/pdf/userPdf";
-// import { getSupervisorListRequest } from "../../../api/requests/users";
+import { useCompanyList } from "../../../../api/hooks/company";
+import { useCurrentUser } from "../../../../api/hooks/auth";
+import { getOtherReportListRequest } from "../../../../api/requests/reports/otherReport";
+import { downloadUserPdf } from "../../../../lib/pdf/userPdf";
+import ViewOtherReportDetailModal from "../../../../components/tasks/otherReport/ViewOtherReportDetailModal";
+import DeleteOtherReportButton from "../../../../components/tasks/otherReport/DeleteOtherReportButton";
 
-function DailyTaskList() {
+function OtherReportList() {
   const navigate = useNavigate();
 
   const { data: user } = useCurrentUser();
@@ -23,22 +22,10 @@ function DailyTaskList() {
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
-  // const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
-  //   useQuery({
-  //     queryKey: ["supervisor", "list", { company_id: companyId }],
-  //     queryFn: async () => {
-  //       const res = await getSupervisorListRequest({
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data?.data;
-  //     },
-  //     enabled: Boolean(companyId),
-  //   });
-
-  const { data: taskListRes, isLoading: isLoadingTaskList } = useQuery({
-    queryKey: ["task-assignment", "list", companyId],
+  const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
+    queryKey: ["reports", "other-report", "list", companyId],
     queryFn: async () => {
-      const res = await getTaskListRequest({
+      const res = await getOtherReportListRequest({
         companyId,
         params: { company_id: companyId },
       });
@@ -48,11 +35,11 @@ function DailyTaskList() {
   });
 
   function navigateToAdd() {
-    navigate("/tasks/daily-task/add");
+    navigate("/tasks/daily-task-report/other-reports/add");
   }
 
   function navigateToUpdate(id) {
-    navigate(`/tasks/daily-task/update/${id}`);
+    navigate(`/tasks/daily-task-report/other-reports/update/${id}`);
   }
 
   function downloadPdf() {
@@ -77,27 +64,17 @@ function DailyTaskList() {
     GST No.:- ${gst_no}
     `;
 
-    const body = taskListRes?.taskList?.rows?.map((task) => {
-      const { id, task_detail, assign_time, achievement, reason, status } =
-        task;
-      return [id, task_detail, assign_time, achievement, reason, status];
+    const body = reportListRes?.reportList?.rows?.map((report) => {
+      const { id, assign_time, achievement, reason, status } = report;
+      return [id, assign_time, achievement, reason, status];
     });
 
     downloadUserPdf({
       body,
-      head: [
-        [
-          "ID",
-          "Task Detail",
-          "Assigned Time",
-          "Achievement",
-          "Reason",
-          "Status",
-        ],
-      ],
+      head: [["ID", "Assigned Time", "Achievement", "Reason", "Status"]],
       leftContent,
       rightContent,
-      title: "Assign Task List",
+      title: "Other Report List",
     });
   }
 
@@ -106,11 +83,6 @@ function DailyTaskList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-    },
-    {
-      title: "Task Detail",
-      dataIndex: "task_detail",
-      key: "task_detail",
     },
     {
       title: "Assigned Time",
@@ -134,18 +106,18 @@ function DailyTaskList() {
     },
     {
       title: "Action",
-      render: (taskDetails) => {
+      render: (reportDetails) => {
         return (
           <Space>
-            <ViewTaskDetailModal details={taskDetails} />
+            <ViewOtherReportDetailModal details={reportDetails} />
             <Button
               onClick={() => {
-                navigateToUpdate(taskDetails.id);
+                navigateToUpdate(reportDetails.id);
               }}
             >
               <EditOutlined />
             </Button>
-            <DeleteTaskButton details={taskDetails} />
+            <DeleteOtherReportButton details={reportDetails} />
           </Space>
         );
       },
@@ -154,7 +126,7 @@ function DailyTaskList() {
   ];
 
   function renderTable() {
-    if (isLoadingTaskList) {
+    if (isLoadingReportList) {
       return (
         <Spin tip="Loading" size="large">
           <div className="p-14" />
@@ -164,7 +136,7 @@ function DailyTaskList() {
 
     return (
       <Table
-        dataSource={taskListRes?.taskList?.rows || []}
+        dataSource={reportListRes?.reportList?.rows || []}
         columns={columns}
         rowKey={"id"}
       />
@@ -175,7 +147,7 @@ function DailyTaskList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="m-0">Task List</h2>
+          <h2 className="m-0">Other Report</h2>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -185,7 +157,7 @@ function DailyTaskList() {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!taskListRes?.taskList?.rows?.length}
+          disabled={!reportListRes?.reportList?.rows?.length}
           onClick={downloadPdf}
         />
       </div>
@@ -194,4 +166,4 @@ function DailyTaskList() {
   );
 }
 
-export default DailyTaskList;
+export default OtherReportList;
