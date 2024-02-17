@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 const { Title, Text } = Typography;
 
 const ViewOtherReportDetailModal = ({ details }) => {
-  const { assign_time, achievement, reason, status, createdAt } = details;
+  const { report_date, notes } = details;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -37,43 +37,25 @@ const ViewOtherReportDetailModal = ({ details }) => {
               <Title level={5} style={{ margin: 0 }}>
                 Date :
               </Title>
-              {dayjs(createdAt).format("DD/MM/YYYY")}
+              {dayjs(report_date).format("DD-MM-YYYY")}
             </Text>
           </Col>
 
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Assigned Time :
+                Time :
               </Title>
-              {assign_time}
+              {dayjs(report_date).format("h:mm:ss A")}
             </Text>
           </Col>
 
           <Col span={12}>
             <Text>
               <Title level={5} style={{ margin: 0 }}>
-                Achievement :
+                Notes :
               </Title>
-              {achievement || "-"}
-            </Text>
-          </Col>
-
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
-                Reason :
-              </Title>
-              {reason || "-"}
-            </Text>
-          </Col>
-
-          <Col span={12}>
-            <Text>
-              <Title level={5} style={{ margin: 0 }}>
-                Status :
-              </Title>
-              {status}
+              {notes || "-"}
             </Text>
           </Col>
         </Row>

@@ -7,8 +7,9 @@ import {
   DatePicker,
   Flex,
   Form,
+  Input,
   Row,
-  Select,
+  TimePicker,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -22,12 +23,12 @@ import {
   getOtherReportByIdRequest,
   updateOtherReportRequest,
 } from "../../../../api/requests/reports/otherReport";
-import { getSupervisorListRequest } from "../../../../api/requests/users";
 
 const updateOtherReportSchemaResolver = yupResolver(
   yup.object().shape({
-    user_id: yup.string().required("Please select supervisor"),
-    assign_time: yup.string().required("Please select time"),
+    notes: yup.string().required("Please enter note"),
+    report_date: yup.string().required("Please select date"),
+    report_time: yup.string(),
   })
 );
 
@@ -78,27 +79,14 @@ function UpdateOtherReport() {
         id,
         params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data?.data?.report;
     },
     enabled: Boolean(companyId),
   });
 
-  const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
-    useQuery({
-      queryKey: ["supervisor", "list", { company_id: companyId }],
-      queryFn: async () => {
-        const res = await getSupervisorListRequest({
-          params: { company_id: companyId },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
-
   async function onSubmit(data) {
     // delete parameter's those are not allowed
-    delete data?.user_id;
-    delete data?.created_date;
+    delete data?.report_time;
     await updateOtherReport(data);
   }
 
@@ -113,12 +101,12 @@ function UpdateOtherReport() {
 
   useEffect(() => {
     if (reportDetails) {
-      const { user_id, createdAt, assign_time } = reportDetails;
+      const { notes, report_date } = reportDetails;
 
       reset({
-        user_id,
-        created_date: dayjs(createdAt),
-        assign_time,
+        notes: notes,
+        report_date: dayjs(report_date),
+        report_time: dayjs(report_date),
       });
     }
   }, [reportDetails, reset]);
@@ -138,29 +126,24 @@ function UpdateOtherReport() {
             padding: "12px",
           }}
         >
-          <Col span={12} className="flex items-end gap-2">
+          <Col span={12}>
             <Form.Item
-              label="Select Supervisor Name"
-              name="user_id"
-              validateStatus={errors.user_id ? "error" : ""}
-              help={errors.user_id && errors.user_id.message}
+              label="Date"
+              name="report_date"
+              validateStatus={errors.report_date ? "error" : ""}
+              help={errors.report_date && errors.report_date.message}
               wrapperCol={{ sm: 24 }}
-              className="flex-grow"
             >
               <Controller
                 control={control}
-                name="user_id"
+                name="report_date"
                 render={({ field }) => (
-                  <Select
+                  <DatePicker
                     {...field}
-                    placeholder="Select supervisor"
-                    loading={isLoadingSupervisorList}
-                    options={supervisorListRes?.supervisorList?.rows?.map(
-                      (supervisor) => ({
-                        label: supervisor?.first_name,
-                        value: supervisor?.id,
-                      })
-                    )}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="DD-MM-YYYY"
                     disabled
                   />
                 )}
@@ -170,23 +153,45 @@ function UpdateOtherReport() {
 
           <Col span={12}>
             <Form.Item
-              label="Created Date"
-              name="created_date"
-              validateStatus={errors.created_date ? "error" : ""}
-              help={errors.created_date && errors.created_date.message}
+              label="Date"
+              name="report_time"
+              validateStatus={errors.report_time ? "error" : ""}
+              help={errors.report_time && errors.report_time.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="created_date"
+                name="report_time"
                 render={({ field }) => (
-                  <DatePicker
+                  <TimePicker
                     {...field}
                     style={{
                       width: "100%",
                     }}
-                    format="DD/MM/YYYY"
-                    disabled
+                    format="h:mm:ss A"
+                    disabled={true}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={24}>
+            <Form.Item
+              label="Notes"
+              name="notes"
+              validateStatus={errors.notes ? "error" : ""}
+              help={errors.notes && errors.notes.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Please enter note"
+                    autoSize
                   />
                 )}
               />

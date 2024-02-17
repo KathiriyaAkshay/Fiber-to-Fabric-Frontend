@@ -29,7 +29,7 @@ function OtherReportList() {
         companyId,
         params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data?.data?.otherReportList;
     },
     enabled: Boolean(companyId),
   });
@@ -64,14 +64,19 @@ function OtherReportList() {
     GST No.:- ${gst_no}
     `;
 
-    const body = reportListRes?.reportList?.rows?.map((report) => {
-      const { id, assign_time, achievement, reason, status } = report;
-      return [id, assign_time, achievement, reason, status];
+    const body = reportListRes?.rows?.map((report) => {
+      const { id, report_date, notes } = report;
+      return [
+        id,
+        dayjs(report_date).format("DD-MM-YYYY"),
+        dayjs(report_date).format("h:mm:ss A"),
+        notes,
+      ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Assigned Time", "Achievement", "Reason", "Status"]],
+      head: [["ID", "Date", "Time", "Notes"]],
       leftContent,
       rightContent,
       title: "Other Report List",
@@ -85,24 +90,23 @@ function OtherReportList() {
       key: "id",
     },
     {
-      title: "Assigned Time",
-      dataIndex: "assign_time",
-      key: "assign_time",
+      title: "Date",
+      key: "report_date",
+      render: ({ report_date }) => {
+        return dayjs(report_date).format("DD-MM-YYYY");
+      },
     },
     {
-      title: "Achievement",
-      dataIndex: "achievement",
-      key: "achievement",
+      title: "Time",
+      key: "report_time",
+      render: ({ report_date }) => {
+        return dayjs(report_date).format("h:mm:ss A");
+      },
     },
     {
-      title: "Reason",
-      dataIndex: "reason",
-      key: "reason",
-    },
-    {
-      title: "Status",
-      dataIndex: "Status",
-      key: "status",
+      title: "Notes",
+      dataIndex: "notes",
+      key: "notes",
     },
     {
       title: "Action",
@@ -136,7 +140,7 @@ function OtherReportList() {
 
     return (
       <Table
-        dataSource={reportListRes?.reportList?.rows || []}
+        dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
       />
@@ -157,7 +161,7 @@ function OtherReportList() {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!reportListRes?.reportList?.rows?.length}
+          disabled={!reportListRes?.rows?.length}
           onClick={downloadPdf}
         />
       </div>
