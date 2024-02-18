@@ -19,3 +19,7 @@ export function updateYarnStockReportRequest({ id, data, params }) {
 export function deleteYarnStockReportRequest({ id, params }) {
   return api.delete(`/yarn-stock/yarn-report/delete/${id}`, { params });
 }
+
+export function getYSCDropdownList({ params }) {
+  return api.get(`/dropdown/yarn_company/list`, { params });
+}

@@ -6,6 +6,7 @@ import {
   DatePicker,
   Flex,
   Form,
+  Input,
   Row,
   Select,
   TimePicker,
@@ -18,14 +19,24 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../../api/hooks/company";
-import { createYarnStockReportRequest } from "../../../../api/requests/reports/yarnStockReport";
-import { getYarnStockCompanyListRequest } from "../../../../api/requests/yarnStock";
+import {
+  createYarnStockReportRequest,
+  getYSCDropdownList,
+} from "../../../../api/requests/reports/yarnStockReport";
+import { useEffect, useState } from "react";
 
 const addYarnStockReportSchemaResolver = yupResolver(
   yup.object().shape({
     report_date: yup.string().required("Please select date"),
     report_time: yup.string(),
-    yarn_company_id: yup.string().required("Please select yarn stock company"),
+    yarn_company_id: yup.string().required("Please select denier"),
+    avg_stock: yup.string(),
+    require_stock: yup.string(),
+    current_stock: yup.string().required("please enter current stock"),
+    cartoon: yup.string().required("please enter current stock"),
+    yarn_company_name: yup
+      .string()
+      .required("Please select yarn stock company"),
   })
 );
 
@@ -33,22 +44,21 @@ function AddYarnStockReport() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const [denierOptions, setDenierOptions] = useState([]);
+
   const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { data: ysCompanyListRes, isLoading: isLoadingYSCompanyList } =
-    useQuery({
-      queryKey: ["yarn-stock", "company", "list", companyId],
-      queryFn: async () => {
-        const res = await getYarnStockCompanyListRequest({
-          companyId,
-          params: {},
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
+  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
+    queryKey: ["dropdown", "yarn_company", "list"],
+    queryFn: async () => {
+      const res = await getYSCDropdownList({
+        params: {},
+      });
+      return res.data?.data;
+    },
+  });
 
   const { mutateAsync: createYarnStockReport } = useMutation({
     mutationFn: async (data) => {
@@ -80,8 +90,9 @@ function AddYarnStockReport() {
   async function onSubmit(data) {
     await createYarnStockReport({
       ...data,
-      company_id: companyId,
       report_time: undefined,
+      yarn_company_name: undefined,
+      avg_stock: undefined,
     });
   }
 
@@ -90,6 +101,8 @@ function AddYarnStockReport() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: addYarnStockReportSchemaResolver,
     defaultValues: {
@@ -101,6 +114,72 @@ function AddYarnStockReport() {
   function goToAddYarnStockCompany() {
     navigate("/yarn-stock-company/company-list/add");
   }
+
+  const {
+    yarn_company_name,
+    yarn_company_id,
+    current_stock = 0,
+    avg_stock = 0,
+  } = watch();
+
+  useEffect(() => {
+    // set options for denier selection
+    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
+      if (name === yarn_company_name) {
+        const options = yarn_details?.map(
+          ({
+            yarn_company_id = 0,
+            filament = 0,
+            yarn_denier = 0,
+            luster_type = "",
+            yarn_color = "",
+            // yarn_count,
+            // current_stock,
+            // avg_daily_stock,
+            // pending_quantity,
+          }) => {
+            return {
+              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+              value: yarn_company_id,
+            };
+          }
+        );
+        if (options?.length) {
+          setDenierOptions(options);
+        }
+      }
+    });
+  }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
+
+  useEffect(() => {
+    // set Avg stock value
+    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
+      if (name === yarn_company_name) {
+        const options = yarn_details?.forEach(
+          ({ avg_daily_stock, yarn_company_id: id }) => {
+            if (yarn_company_id === id) {
+              setValue("avg_stock", avg_daily_stock);
+            }
+          }
+        );
+        if (options?.length) {
+          setDenierOptions(options);
+        }
+      }
+    });
+  }, [
+    setValue,
+    yarn_company_id,
+    yarn_company_name,
+    yscdListRes?.yarnCompanyList,
+  ]);
+
+  useEffect(() => {
+    const require_stock = Number(avg_stock) - Number(current_stock);
+    setValue("require_stock", Math.max(0, require_stock));
+  }, [avg_stock, current_stock, setValue]);
 
   return (
     <div className="flex flex-col p-4">
@@ -169,25 +248,27 @@ function AddYarnStockReport() {
           <Col span={12} className="flex items-end gap-2">
             <Form.Item
               label="Yarn Stock Company Name"
-              name="yarn_company_id"
-              validateStatus={errors.yarn_company_id ? "error" : ""}
-              help={errors.yarn_company_id && errors.yarn_company_id.message}
+              name="yarn_company_name"
+              validateStatus={errors.yarn_company_name ? "error" : ""}
+              help={
+                errors.yarn_company_name && errors.yarn_company_name.message
+              }
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
               <Controller
                 control={control}
-                name="yarn_company_id"
+                name="yarn_company_name"
                 render={({ field }) => (
                   <Select
                     {...field}
                     placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCompanyList}
-                    options={ysCompanyListRes?.yarnComanyList?.rows?.map(
-                      ({ id = "", yarn_company_name = "" }) => {
+                    loading={isLoadingYSCDList}
+                    options={yscdListRes?.yarnCompanyList?.map(
+                      ({ yarn_company_name = "" }) => {
                         return {
                           label: yarn_company_name,
-                          value: id,
+                          value: yarn_company_name,
                         };
                       }
                     )}
@@ -206,24 +287,21 @@ function AddYarnStockReport() {
           <Col span={12}>
             <Form.Item
               label="Denier/Count"
-              name="company_id"
-              validateStatus={errors.company_id ? "error" : ""}
-              help={errors.company_id && errors.company_id.message}
+              name="yarn_company_id"
+              validateStatus={errors.yarn_company_id ? "error" : ""}
+              help={errors.yarn_company_id && errors.yarn_company_id.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="company_id"
+                name="yarn_company_id"
                 render={({ field }) => (
                   <Select
                     {...field}
                     placeholder="Select denier"
                     allowClear
-                    // loading={isLoadingCompanyList}
-                    options={companyListRes?.rows?.map((et) => ({
-                      label: et?.company_name,
-                      value: et?.id,
-                    }))}
+                    loading={isLoadingYSCDList}
+                    options={denierOptions}
                     style={{
                       textTransform: "capitalize",
                     }}
@@ -231,6 +309,109 @@ function AddYarnStockReport() {
                       textTransform: "capitalize",
                     }}
                   />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Avg stock"
+              name="avg_stock"
+              validateStatus={errors.avg_stock ? "error" : ""}
+              help={errors.avg_stock && errors.avg_stock.message}
+              wrapperCol={{ sm: 24 }}
+              disabled
+            >
+              <Controller
+                control={control}
+                name="avg_stock"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    disabled
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Cartoon"
+              name="cartoon"
+              validateStatus={errors.cartoon ? "error" : ""}
+              help={errors.cartoon && errors.cartoon.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="cartoon"
+                render={({ field }) => (
+                  <Input {...field} placeholder="3" type="number" min={0} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Current Stock"
+              name="current_stock"
+              validateStatus={errors.current_stock ? "error" : ""}
+              help={errors.current_stock && errors.current_stock.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="current_stock"
+                render={({ field }) => (
+                  <Input {...field} placeholder="3" type="number" min={0} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Require kg"
+              name="require_stock"
+              validateStatus={errors.require_stock ? "error" : ""}
+              help={errors.require_stock && errors.require_stock.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="require_stock"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    disabled
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Lot No"
+              name="lot_no"
+              validateStatus={errors.lot_no ? "error" : ""}
+              help={errors.lot_no && errors.lot_no.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="lot_no"
+                render={({ field }) => (
+                  <Input {...field} placeholder="3" type="number" min={0} />
                 )}
               />
             </Form.Item>

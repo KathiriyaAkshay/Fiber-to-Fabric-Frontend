@@ -24,7 +24,7 @@ function YarnStockReportList() {
         companyId,
         params: { company_id: companyId },
       });
-      return res.data?.data?.reportList;
+      return res.data?.data?.yarnStockReportList;
     },
     enabled: Boolean(companyId),
   });
@@ -60,18 +60,51 @@ function YarnStockReportList() {
     `;
 
     const body = reportListRes?.rows?.map((report) => {
-      const { id, report_date, notes } = report;
+      const {
+        id,
+        report_date,
+        yarn_stock_company,
+        cartoon,
+        current_stock,
+        require_stock,
+      } = report;
+      const {
+        yarn_company_name = "",
+        yarn_denier = 0,
+        filament = 0,
+        luster_type = "",
+        yarn_color = "",
+        yarn_Sub_type = "",
+        avg_daily_stock = 0,
+      } = yarn_stock_company;
       return [
         id,
         dayjs(report_date).format("DD-MM-YYYY"),
-        dayjs(report_date).format("h:mm:ss A"),
-        notes,
+        dayjs(report_date).format("hh:mm:ss A"),
+        yarn_company_name,
+        `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+        avg_daily_stock,
+        cartoon,
+        current_stock,
+        require_stock,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Date", "Time", "Notes"]],
+      head: [
+        [
+          "ID",
+          "Date",
+          "Time",
+          "Company Name",
+          "Denier/Count",
+          "Avg Stock(Kg)",
+          "Cartoon",
+          "Current Stock(Kg)",
+          "Require kg",
+        ],
+      ],
       leftContent,
       rightContent,
       title: "Yarn Stock Report List",
@@ -95,13 +128,53 @@ function YarnStockReportList() {
       title: "Time",
       key: "report_time",
       render: ({ report_date }) => {
-        return dayjs(report_date).format("h:mm:ss A");
+        return dayjs(report_date).format("hh:mm:ss A");
       },
     },
     {
-      title: "Notes",
-      dataIndex: "notes",
-      key: "notes",
+      title: "Company Name",
+      render: ({ yarn_stock_company }) => {
+        const { yarn_company_name } = yarn_stock_company;
+        return yarn_company_name;
+      },
+      key: "yarn_company_name",
+    },
+    {
+      title: "Denier/Count",
+      render: ({ yarn_stock_company }) => {
+        const {
+          yarn_denier = 0,
+          filament = 0,
+          luster_type = "",
+          yarn_color = "",
+          yarn_Sub_type = "",
+        } = yarn_stock_company;
+        return `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`;
+      },
+      key: "yarn_denier",
+    },
+    {
+      title: "Avg Stock(Kg)",
+      render: ({ yarn_stock_company }) => {
+        const { avg_daily_stock } = yarn_stock_company;
+        return avg_daily_stock;
+      },
+      key: "avg_daily_stock",
+    },
+    {
+      title: "Cartoon",
+      dataIndex: "cartoon",
+      key: "cartoon",
+    },
+    {
+      title: "Current Stock(Kg)",
+      dataIndex: "current_stock",
+      key: "current_stock",
+    },
+    {
+      title: "Require kg",
+      dataIndex: "require_stock",
+      key: "require_stock",
     },
     {
       title: "Action",

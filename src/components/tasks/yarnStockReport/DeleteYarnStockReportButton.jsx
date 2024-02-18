@@ -58,6 +58,7 @@ const DeleteYarnStockReportButton = ({ details }) => {
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}
+        disabled={true}
       >
         <DeleteOutlined />
       </Button>
