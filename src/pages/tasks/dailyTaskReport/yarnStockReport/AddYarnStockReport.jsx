@@ -1,13 +1,13 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
   DatePicker,
   Flex,
   Form,
-  Input,
   Row,
+  Select,
   TimePicker,
   message,
 } from "antd";
@@ -16,39 +16,49 @@ import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMemo } from "react";
 import dayjs from "dayjs";
-import { createOtherReportRequest } from "../../../../api/requests/reports/otherReport";
 import { useCompanyList } from "../../../../api/hooks/company";
+import { createYarnStockReportRequest } from "../../../../api/requests/reports/yarnStockReport";
+import { getYarnStockCompanyListRequest } from "../../../../api/requests/yarnStock";
 
-const addOtherReportSchemaResolver = yupResolver(
+const addYarnStockReportSchemaResolver = yupResolver(
   yup.object().shape({
-    notes: yup.string().required("Please enter note"),
     report_date: yup.string().required("Please select date"),
     report_time: yup.string(),
+    yarn_company_id: yup.string().required("Please select yarn stock company"),
   })
 );
 
-function AddOtherReport() {
+function AddYarnStockReport() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { data: companyListRes } = useCompanyList();
 
-  const companyId = useMemo(
-    () => companyListRes?.rows?.[0]?.id,
-    [companyListRes?.rows]
-  );
+  const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { mutateAsync: createOtherReport } = useMutation({
+  const { data: ysCompanyListRes, isLoading: isLoadingYSCompanyList } =
+    useQuery({
+      queryKey: ["yarn-stock", "company", "list", companyId],
+      queryFn: async () => {
+        const res = await getYarnStockCompanyListRequest({
+          companyId,
+          params: {},
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { mutateAsync: createYarnStockReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await createOtherReportRequest({
+      const res = await createYarnStockReportRequest({
         data,
         params: { company_id: companyId },
       });
       return res.data;
     },
-    mutationKey: ["reports", "other-report", "create"],
+    mutationKey: ["yarn-stock", "yarn-report", "create"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["reports", "list", companyId]);
       const successMessage = res?.message;
@@ -68,7 +78,7 @@ function AddOtherReport() {
   }
 
   async function onSubmit(data) {
-    await createOtherReport({
+    await createYarnStockReport({
       ...data,
       company_id: companyId,
       report_time: undefined,
@@ -81,12 +91,16 @@ function AddOtherReport() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: addOtherReportSchemaResolver,
+    resolver: addYarnStockReportSchemaResolver,
     defaultValues: {
       report_date: dayjs(),
       report_time: dayjs(),
     },
   });
+
+  function goToAddYarnStockCompany() {
+    navigate("/yarn-stock-company/company-list/add");
+  }
 
   return (
     <div className="flex flex-col p-4">
@@ -94,7 +108,7 @@ function AddOtherReport() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Add New Other Report</h2>
+        <h2 className="m-0">Yarn Stock Report</h2>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -152,22 +166,70 @@ function AddOtherReport() {
             </Form.Item>
           </Col>
 
-          <Col span={24}>
+          <Col span={12} className="flex items-end gap-2">
             <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
+              label="Yarn Stock Company Name"
+              name="yarn_company_id"
+              validateStatus={errors.yarn_company_id ? "error" : ""}
+              help={errors.yarn_company_id && errors.yarn_company_id.message}
+              wrapperCol={{ sm: 24 }}
+              className="flex-grow"
+            >
+              <Controller
+                control={control}
+                name="yarn_company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Yarn Stock Company"
+                    loading={isLoadingYSCompanyList}
+                    options={ysCompanyListRes?.yarnComanyList?.rows?.map(
+                      ({ id = "", yarn_company_name = "" }) => {
+                        return {
+                          label: yarn_company_name,
+                          value: id,
+                        };
+                      }
+                    )}
+                  />
+                )}
+              />
+            </Form.Item>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={goToAddYarnStockCompany}
+              className="mb-6"
+              type="primary"
+            />
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Denier/Count"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="notes"
+                name="company_id"
                 render={({ field }) => (
-                  <Input.TextArea
+                  <Select
                     {...field}
-                    placeholder="Please enter note"
-                    autoSize
+                    placeholder="Select denier"
+                    allowClear
+                    // loading={isLoadingCompanyList}
+                    options={companyListRes?.rows?.map((et) => ({
+                      label: et?.company_name,
+                      value: et?.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
                   />
                 )}
               />
@@ -190,4 +252,4 @@ function AddOtherReport() {
   );
 }
 
-export default AddOtherReport;
+export default AddYarnStockReport;

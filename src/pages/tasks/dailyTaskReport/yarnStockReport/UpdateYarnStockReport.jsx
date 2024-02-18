@@ -1,5 +1,6 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Col,
@@ -12,16 +13,16 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
+import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useMemo } from "react";
+import { DevTool } from "@hookform/devtools";
+import { useEffect } from "react";
 import dayjs from "dayjs";
-import { createOtherReportRequest } from "../../../../api/requests/reports/otherReport";
 import { useCompanyList } from "../../../../api/hooks/company";
+import { getYarnStockReportByIdRequest } from "../../../../api/requests/reports/yarnStockReport";
+// import { updateYarnStockReportRequest } from "../../../../api/requests/reports/yarnStockReport";
 
-const addOtherReportSchemaResolver = yupResolver(
+const updateYarnStockReportSchemaResolver = yupResolver(
   yup.object().shape({
     notes: yup.string().required("Please enter note"),
     report_date: yup.string().required("Please select date"),
@@ -29,28 +30,33 @@ const addOtherReportSchemaResolver = yupResolver(
   })
 );
 
-function AddOtherReport() {
-  const queryClient = useQueryClient();
+function UpdateYarnStockReport() {
   const navigate = useNavigate();
+  const params = useParams();
+  const { id } = params;
+
+  function goBack() {
+    navigate(-1);
+  }
 
   const { data: companyListRes } = useCompanyList();
 
-  const companyId = useMemo(
-    () => companyListRes?.rows?.[0]?.id,
-    [companyListRes?.rows]
-  );
+  const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { mutateAsync: createOtherReport } = useMutation({
+  const { mutateAsync: updateReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await createOtherReportRequest({
-        data,
-        params: { company_id: companyId },
-      });
-      return res.data;
+      console.log(data);
+      // const res = await updateYarnStockReportRequest({
+      //   id,
+      //   data,
+      //   params: {
+      //     company_id: companyId,
+      //   },
+      // });
+      // return res.data;
     },
-    mutationKey: ["reports", "other-report", "create"],
+    mutationKey: ["yarn-stock", "yarn-report", "update", id],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["reports", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -58,21 +64,29 @@ function AddOtherReport() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
     },
   });
 
-  function goBack() {
-    navigate(-1);
-  }
+  const { data: reportDetails } = useQuery({
+    queryKey: ["yarn-stock", "yarn-report", "get", id],
+    queryFn: async () => {
+      const res = await getYarnStockReportByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.report;
+    },
+    enabled: Boolean(companyId),
+  });
 
   async function onSubmit(data) {
-    await createOtherReport({
-      ...data,
-      company_id: companyId,
-      report_time: undefined,
-    });
+    // delete parameter's those are not allowed
+    delete data?.report_time;
+    await updateReport(data);
   }
 
   const {
@@ -81,12 +95,20 @@ function AddOtherReport() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: addOtherReportSchemaResolver,
-    defaultValues: {
-      report_date: dayjs(),
-      report_time: dayjs(),
-    },
+    resolver: updateYarnStockReportSchemaResolver,
   });
+
+  useEffect(() => {
+    if (reportDetails) {
+      const { notes, report_date } = reportDetails;
+
+      reset({
+        notes: notes,
+        report_date: dayjs(report_date),
+        report_time: dayjs(report_date),
+      });
+    }
+  }, [reportDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -94,7 +116,7 @@ function AddOtherReport() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Add New Other Report</h2>
+        <h2 className="m-0">Update Notes</h2>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -121,6 +143,7 @@ function AddOtherReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    disabled
                   />
                 )}
               />
@@ -129,7 +152,7 @@ function AddOtherReport() {
 
           <Col span={12}>
             <Form.Item
-              label="Time"
+              label="Date"
               name="report_time"
               validateStatus={errors.report_time ? "error" : ""}
               help={errors.report_time && errors.report_time.message}
@@ -176,11 +199,8 @@ function AddOtherReport() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit">
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
@@ -190,4 +210,4 @@ function AddOtherReport() {
   );
 }
 
-export default AddOtherReport;
+export default UpdateYarnStockReport;

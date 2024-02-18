@@ -5,6 +5,9 @@ import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddOtherReport from "../pages/tasks/dailyTaskReport/otherReports/AddOtherReport";
 import OtherReportList from "../pages/tasks/dailyTaskReport/otherReports/OtherReportList";
 import UpdateOtherReport from "../pages/tasks/dailyTaskReport/otherReports/UpdateOtherReport";
+import AddYarnStockReport from "../pages/tasks/dailyTaskReport/yarnStockReport/AddYarnStockReport";
+import UpdateYarnStockReport from "../pages/tasks/dailyTaskReport/yarnStockReport/UpdateYarnStockReport";
+import YarnStockReportList from "../pages/tasks/dailyTaskReport/yarnStockReport/YarnStockReportList";
 
 export const dailyTaskReportRoutes = {
   path: "daily-task-report",
@@ -37,9 +40,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "yarn-stock-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <YarnStockReportList /> },
+        { path: "add", element: <AddYarnStockReport /> },
+        { path: "update/:id", element: <UpdateYarnStockReport /> },
       ],
     },
     {
