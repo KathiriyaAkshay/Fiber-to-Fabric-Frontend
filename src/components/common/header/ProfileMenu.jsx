@@ -52,8 +52,11 @@ function ProfileMenu() {
               key: "Create User",
             },
             {
-              label: "User Role",
-              key: "User Role",
+              label: "User Roles",
+              key: "User Roles",
+              onClick: () => {
+                navigate("/profile/user-roles");
+              },
             },
             {
               label: <Button onClick={handleLogout}>Logout</Button>,

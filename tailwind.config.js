@@ -6,6 +6,11 @@ export default {
       backgroundImage: {
         "auth-mask-group": "url('assets/svg/auth-mask-top-right.svg')",
       },
+      colors: {
+        primary: {
+          DEFAULT: "#194A6D",
+        },
+      },
     },
   },
   plugins: [],

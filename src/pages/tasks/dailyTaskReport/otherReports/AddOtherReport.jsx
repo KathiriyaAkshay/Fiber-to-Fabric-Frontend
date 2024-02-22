@@ -16,7 +16,6 @@ import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMemo } from "react";
 import dayjs from "dayjs";
 import { createOtherReportRequest } from "../../../../api/requests/reports/otherReport";
 import { useCompanyList } from "../../../../api/hooks/company";
@@ -35,10 +34,7 @@ function AddOtherReport() {
 
   const { data: companyListRes } = useCompanyList();
 
-  const companyId = useMemo(
-    () => companyListRes?.rows?.[0]?.id,
-    [companyListRes?.rows]
-  );
+  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: createOtherReport } = useMutation({
     mutationFn: async (data) => {

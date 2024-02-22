@@ -50,6 +50,7 @@ import DailyTaskList from "./pages/tasks/dailyTask/DailyTaskList";
 import AddDailyTask from "./pages/tasks/dailyTask/AddDailyTask";
 import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
 import { dailyTaskReportRoutes } from "./router/dailyTaskReportRoutes";
+import UserRoles from "./pages/profile/userRoles/userRoles";
 
 const queryClient = new QueryClient();
 
@@ -831,6 +832,28 @@ const router = createBrowserRouter([
         path: "gate-pass",
         element: <div>gate-pass</div>,
       },
+      {
+        path: "profile",
+        children: [
+          { index: true, element: <div>my-profile</div> },
+          {
+            path: "my-profile",
+            element: <div>my-profile</div>,
+          },
+          {
+            path: "change-password",
+            element: <div>change-password</div>,
+          },
+          {
+            path: "create-user",
+            element: <div>create-user</div>,
+          },
+          {
+            path: "user-roles",
+            element: <UserRoles />,
+          },
+        ],
+      },
     ],
   },
 ]);
@@ -842,6 +865,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         theme={{
           token: {
             colorPrimary: "#194A6D",
+          },
+          components: {
+            Card: {
+              headerBg: "#194A6D",
+              extraColor: "white",
+            },
           },
         }}
       >
