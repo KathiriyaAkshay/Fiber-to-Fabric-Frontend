@@ -1,13 +1,10 @@
-import { Avatar, Button, Menu } from "antd";
+import { Avatar, Button, Dropdown } from "antd";
 import { api } from "../../../api";
-import { useNavigate } from "react-router-dom";
+import { Link as RotuerLink, useNavigate } from "react-router-dom";
+import profilePlaceholder from "../../../assets/png/profile-placeholder.png";
 
 function ProfileMenu() {
   const navigate = useNavigate();
-  const onClick = (e) => {
-    console.log("click", e);
-  };
-
   function handleLogout() {
     // remove authentication token from local storage
     localStorage.removeItem("authToken");
@@ -18,54 +15,43 @@ function ProfileMenu() {
     navigate("/auth", { replace: true });
   }
 
+  const items = [
+    {
+      label: "My Profile",
+      key: "My Profile",
+    },
+    {
+      label: "Change Password",
+      key: "Change Password",
+    },
+    {
+      label: "Create User",
+      key: "Create User",
+    },
+    {
+      label: <RotuerLink to="/profile/user-roles">User Roles</RotuerLink>,
+      key: "User Roles",
+    },
+    {
+      label: <Button onClick={handleLogout}>Logout</Button>,
+      key: "Logout",
+    },
+  ];
+
   return (
-    <Menu
-      style={{
-        padding: 0,
-      }}
-      onClick={onClick}
-      triggerSubMenuAction="click"
-      mode="vertical"
-      expandIcon={null}
-      items={[
-        {
-          label: (
-            <Avatar
-              alt="Profile Avatar"
-              src="/assets/svg/logo.svg"
-              className="p-1 border"
-            />
-          ),
-          key: "profile-menu",
-          popupOffset: [-80, 50],
-          children: [
-            {
-              label: "My Profile",
-              key: "My Profile",
-            },
-            {
-              label: "Change Password",
-              key: "Change Password",
-            },
-            {
-              label: "Create User",
-              key: "Create User",
-            },
-            {
-              label: "User Roles",
-              key: "User Roles",
-              onClick: () => {
-                navigate("/profile/user-roles");
-              },
-            },
-            {
-              label: <Button onClick={handleLogout}>Logout</Button>,
-              key: "Logout",
-            },
-          ],
-        },
-      ]}
-    />
+    <>
+      <Dropdown
+        menu={{
+          items,
+        }}
+      >
+        <Avatar
+          alt="Profile Avatar"
+          src={profilePlaceholder}
+          className="cursor-pointer"
+        />
+      </Dropdown>
+    </>
   );
 }
 

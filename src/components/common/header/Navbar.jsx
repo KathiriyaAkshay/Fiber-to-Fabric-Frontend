@@ -1,23 +1,32 @@
+import { menubarOptionsList } from "../../../constants/menu";
 import ProfileMenu from "./ProfileMenu";
-import Menubar from "./Menubar";
+import { Flex, Menu } from "antd";
+import notificationBell from "../../../assets/svg/notification-bell.svg";
+import CompanySelection from "./CompanySelection";
+import topbarLogo from "../../../assets/svg/topbar-logo.svg";
 
 function Navbar() {
   return (
-    <div>
-      <div className="flex items-center justify-between px-4 py-2 shadow-md">
-        <div className="flex items-center gap-1 ">
-          <img src="/assets/svg/logo.svg" alt="logo" className="w-6 h-6" />
-          <p className="text-sm">Fiber to Fabric</p>
-        </div>
-        <div className="text-xl">
-          <p>Welcome to SONU TEXTILES 2023-2024</p>
-        </div>
-        <div>
-          <ProfileMenu />
-        </div>
-      </div>
-      <Menubar />
-    </div>
+    <Flex
+      justify="space-between"
+      align="center"
+      className="px-4 py-2 bg-primary"
+    >
+      <Flex gap={"20px"} align="center">
+        <img src={topbarLogo} alt="logo" className="h-8" />
+        <Menu
+          theme="dark"
+          mode="horizontal"
+          items={menubarOptionsList}
+          className="max-w-5xl"
+        />
+      </Flex>
+      <Flex gap={"12px"} align="center">
+        <CompanySelection />
+        <img src={notificationBell} alt="notifications" />
+        <ProfileMenu />
+      </Flex>
+    </Flex>
   );
 }
 

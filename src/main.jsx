@@ -871,6 +871,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               headerBg: "#194A6D",
               extraColor: "white",
             },
+            Menu: {
+              darkItemBg: "#194A6D",
+              darkSubMenuItemBg: "#194A6D",
+              darkGroupTitleColor: "#FFFFFF",
+              darkItemColor: "#FFFFFF",
+            },
           },
         }}
       >
