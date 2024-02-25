@@ -11,11 +11,11 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import ViewVehicleUserDetailModal from "../../../components/userMaster/vehicle-user/ViewVehicleUserDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
@@ -173,9 +173,29 @@ function VehicleUserList() {
     {
       title: "Action",
       render: (userDetails) => {
+        const {
+          first_name,
+          last_name,
+          mobile,
+          email,
+          username,
+          address,
+          vehicle,
+        } = userDetails;
         return (
           <Space>
-            <ViewVehicleUserDetailModal userDetails={userDetails} />
+            <ViewDetailModal
+              title="Vehicle User Details"
+              details={[
+                { title: "Name", value: `${first_name} ${last_name}` },
+                { title: "Contact Number", value: mobile },
+                { title: "Email", value: email },
+                { title: "Username", value: username },
+                { title: "Address", value: address },
+                { title: "Vehicle Name", value: vehicle?.vehicleName },
+                { title: "Vehicle No", value: vehicle?.vehicleNo },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);

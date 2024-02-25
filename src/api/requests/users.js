@@ -1,7 +1,7 @@
 import { api } from "..";
 
-export function addUserRequest({ roleId, data }) {
-  return api.post(`/users/add/${roleId}`, data);
+export function addUserRequest({ roleId, data, params }) {
+  return api.post(`/users/add/${roleId}`, data, { params });
 }
 
 export function updateUserRequest({ roleId, userId, data }) {

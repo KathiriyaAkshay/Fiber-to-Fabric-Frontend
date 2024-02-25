@@ -11,11 +11,11 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import ViewSupplierDetailModal from "../../../components/userMaster/supplier/ViewSupplierDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 
 const { Text } = Typography;
 
@@ -173,9 +173,41 @@ function SupplierList() {
     {
       title: "Action",
       render: (userDetails) => {
+        const {
+          address,
+          gst_no,
+          mobile,
+          supplier_types = [],
+          supplier,
+        } = userDetails;
+        const {
+          broker = {},
+          supplier_name,
+          supplier_company,
+          hsn_code,
+        } = supplier;
+        const { first_name, last_name } = broker;
         return (
           <Space>
-            <ViewSupplierDetailModal userDetails={userDetails} />
+            <ViewDetailModal
+              title="Supplier Details"
+              details={[
+                { title: "Broker Name", value: `${first_name} ${last_name}` },
+                { title: "Supplier Name", value: supplier_name },
+                { title: "Supplier Address", value: address },
+                { title: "Supplier GST No", value: gst_no },
+                {
+                  title: "Supplier Company Name",
+                  value: supplier_company,
+                },
+                { title: "Supplier Mobile No", value: mobile },
+                { title: "Supplier HSN Code", value: hsn_code },
+                {
+                  title: "Supplier Type",
+                  value: supplier_types?.map((s) => s?.type)?.join(", "),
+                },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);

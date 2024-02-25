@@ -11,8 +11,8 @@ import { useCompanyList } from "../../../../api/hooks/company";
 import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getOtherReportListRequest } from "../../../../api/requests/reports/otherReport";
 import { downloadUserPdf } from "../../../../lib/pdf/userPdf";
-import ViewOtherReportDetailModal from "../../../../components/tasks/otherReport/ViewOtherReportDetailModal";
 import DeleteOtherReportButton from "../../../../components/tasks/otherReport/DeleteOtherReportButton";
+import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 
 function OtherReportList() {
   const navigate = useNavigate();
@@ -111,9 +111,23 @@ function OtherReportList() {
     {
       title: "Action",
       render: (reportDetails) => {
+        const { report_date, notes } = reportDetails;
         return (
           <Space>
-            <ViewOtherReportDetailModal details={reportDetails} />
+            <ViewDetailModal
+              title="Other Report"
+              details={[
+                {
+                  title: "Date",
+                  value: dayjs(report_date).format("DD-MM-YYYY"),
+                },
+                {
+                  title: "Time",
+                  value: dayjs(report_date).format("h:mm:ss A"),
+                },
+                { title: "Notes", value: notes },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(reportDetails.id);

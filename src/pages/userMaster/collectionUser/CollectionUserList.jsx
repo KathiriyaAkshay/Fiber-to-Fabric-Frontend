@@ -11,11 +11,11 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import ViewCollectionUserDetailModal from "../../../components/userMaster/collection-user/ViewCollectionUserDetailModal";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { useCompanyList } from "../../../api/hooks/company";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 
 const roleId = USER_ROLES.COLLECTION_USER.role_id;
 
@@ -158,9 +158,32 @@ function CollectionUserList() {
     {
       title: "Action",
       render: (userDetails) => {
+        const {
+          first_name,
+          last_name,
+          mobile,
+          email,
+          username,
+          gst_no,
+          pancard_no,
+          adhar_no,
+          address,
+        } = userDetails;
         return (
           <Space>
-            <ViewCollectionUserDetailModal userDetails={userDetails} />
+            <ViewDetailModal
+              title="Collection User Details"
+              details={[
+                { title: "Name", value: `${first_name} ${last_name}` },
+                { title: "Contact Number", value: mobile },
+                { title: "Email", value: email },
+                { title: "Username", value: username },
+                { title: "GST No", value: gst_no },
+                { title: "PAN No", value: pancard_no },
+                { title: "Adhaar No", value: adhar_no },
+                { title: "Address", value: address },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);

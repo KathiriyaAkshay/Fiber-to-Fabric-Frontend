@@ -2,10 +2,10 @@ import { Button, Space, Spin, Table } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import ViewMachineDetailModal from "../../components/machine/ViewMachineDetailModal";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import DeleteMachine from "../../components/machine/DeleteMachine";
 import { useCompanyList } from "../../api/hooks/company";
+import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 
 function MachineList() {
   const navigate = useNavigate();
@@ -63,9 +63,19 @@ function MachineList() {
     {
       title: "Action",
       render: (machineDetails) => {
+        const { machine_name, no_of_machines, no_of_employees, machine_type } =
+          machineDetails;
         return (
           <Space>
-            <ViewMachineDetailModal details={machineDetails} />
+            <ViewDetailModal
+              title="Machine Details"
+              details={[
+                { title: "Machine Name", value: machine_name },
+                { title: "Machine No", value: no_of_machines },
+                { title: "No of Employee", value: no_of_employees },
+                { title: "Machine Type", value: machine_type },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(machineDetails.id);

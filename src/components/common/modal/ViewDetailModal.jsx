@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 
-const ViewDetailModal = ({ title = "", details = [] }) => {
+const ViewDetailModal = ({ title = "-", details = [] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);

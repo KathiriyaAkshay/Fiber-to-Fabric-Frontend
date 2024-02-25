@@ -11,11 +11,11 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import ViewEmployeeDetailModal from "../../../components/userMaster/employee/ViewEmployeeDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -139,9 +139,41 @@ function EmployeeList() {
     {
       title: "Action",
       render: (userDetails) => {
+        const {
+          first_name,
+          last_name,
+          mobile,
+          username,
+          employer = {},
+        } = userDetails;
+        const {
+          tds,
+          employee_type: { employee_type = "" },
+          salary_type,
+          joining_date,
+          company: { company_name = "" },
+        } = employer;
         return (
           <Space>
-            <ViewEmployeeDetailModal userDetails={userDetails} />
+            <ViewDetailModal
+              title="Employee Details"
+              details={[
+                { title: "Name", value: `${first_name} ${last_name}` },
+                { title: "Contact Number", value: mobile },
+                { title: "Username", value: username },
+                { title: "TDS", value: tds },
+                {
+                  title: "Employee Type",
+                  value: employee_type,
+                },
+                { title: "Salary Type", value: salary_type },
+                {
+                  title: "Joining Date",
+                  value: dayjs(joining_date).format("DD/MM/YYYY"),
+                },
+                { title: "Company", value: company_name },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);

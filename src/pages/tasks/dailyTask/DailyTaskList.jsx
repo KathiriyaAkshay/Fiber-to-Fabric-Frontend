@@ -8,11 +8,11 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCompanyList } from "../../../api/hooks/company";
 import { getTaskListRequest } from "../../../api/requests/task";
-import ViewTaskDetailModal from "../../../components/tasks/ViewTaskDetailModal";
 import DeleteTaskButton from "../../../components/tasks/DeleteTaskButton";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 // import { getSupervisorListRequest } from "../../../api/requests/users";
 
 function DailyTaskList() {
@@ -135,9 +135,27 @@ function DailyTaskList() {
     {
       title: "Action",
       render: (taskDetails) => {
+        const {
+          createdAt,
+          assign_time,
+          task_detail,
+          achievement,
+          reason,
+          status,
+        } = taskDetails;
         return (
           <Space>
-            <ViewTaskDetailModal details={taskDetails} />
+            <ViewDetailModal
+              title="Task Report"
+              details={[
+                { title: "Date", value: dayjs(createdAt).format("DD/MM/YYYY") },
+                { title: "Assigned Time", value: assign_time },
+                { title: "Task", value: task_detail },
+                { title: "Achievement", value: achievement },
+                { title: "Reason", value: reason },
+                { title: "Status", value: status },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(taskDetails.id);

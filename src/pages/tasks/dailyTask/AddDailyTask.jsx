@@ -60,8 +60,6 @@ function AddDailyTask() {
       enabled: Boolean(companyId),
     });
 
-  console.log("supervisorListRes", supervisorListRes);
-
   const { mutateAsync: createDailyTask } = useMutation({
     mutationFn: async (data) => {
       const res = await createTaskRequest({
@@ -276,7 +274,7 @@ function AddDailyTask() {
                   render={({ field }) => (
                     <Select
                       allowClear
-                      placeholder="Please select time"
+                      placeholder="Time"
                       {...field}
                       options={ASSIGN_TIME_LIST}
                     />

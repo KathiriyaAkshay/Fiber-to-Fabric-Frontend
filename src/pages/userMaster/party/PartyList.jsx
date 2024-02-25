@@ -11,11 +11,11 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import ViewPartyDetailModal from "../../../components/userMaster/party/ViewPartyDetailModal";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { useCompanyList } from "../../../api/hooks/company";
+import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 
 const roleId = USER_ROLES.PARTY.role_id;
 
@@ -151,9 +151,32 @@ function PartyList() {
     {
       title: "Action",
       render: (userDetails) => {
+        const {
+          first_name,
+          last_name,
+          mobile,
+          email,
+          username,
+          gst_no,
+          pancard_no,
+          adhar_no,
+          address,
+        } = userDetails;
         return (
           <Space>
-            <ViewPartyDetailModal userDetails={userDetails} />
+            <ViewDetailModal
+              title="Party Details"
+              details={[
+                { title: "Name", value: `${first_name} ${last_name}` },
+                { title: "Contact Number", value: mobile },
+                { title: "Email", value: email },
+                { title: "Username", value: username },
+                { title: "GST No", value: gst_no },
+                { title: "PAN No", value: pancard_no },
+                { title: "Adhaar No", value: adhar_no },
+                { title: "Address", value: address },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdate(userDetails.id);
