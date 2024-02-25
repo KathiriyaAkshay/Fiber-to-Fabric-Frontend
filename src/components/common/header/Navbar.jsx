@@ -12,13 +12,14 @@ function Navbar() {
       align="center"
       className="px-4 py-2 bg-primary"
     >
-      <Flex gap={"20px"} align="center">
+      <Flex gap={"20px"} align="center" className="w-full">
         <img src={topbarLogo} alt="logo" className="h-8" />
         <Menu
           theme="dark"
           mode="horizontal"
           items={menubarOptionsList}
-          className="max-w-5xl"
+          className="w-4/5"
+          overflowedIndicator={"More"}
         />
       </Flex>
       <Flex gap={"12px"} align="center">
