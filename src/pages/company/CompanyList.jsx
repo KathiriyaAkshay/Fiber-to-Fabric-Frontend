@@ -1,10 +1,10 @@
 import { Button, Space, Spin, Table } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import ViewCompanyDetailModal from "../../components/company/ViewCompanyDetailModal";
 import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
 import { useCompanyList } from "../../api/hooks/company";
+import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 
 function CompanyList() {
   const navigate = useNavigate();
@@ -53,9 +53,50 @@ function CompanyList() {
     {
       title: "Action",
       render: (companyDetails) => {
+        const {
+          gst_no = "-",
+          owner_name = "-",
+          company_name = "-",
+          owner_mobile = "-",
+          pancard_no = "-",
+          adhar_no = "-",
+          company_email = "-",
+          company_contact = "-",
+          address_line_1 = "-",
+          address_line_2 = "-",
+          city = "-",
+          pincode = "-",
+          bill_title = "-",
+          bank_name = "-",
+          account_number = "-",
+          ifsc_code = "-",
+          company_type = "-",
+        } = companyDetails;
+
         return (
           <Space>
-            <ViewCompanyDetailModal companyDetails={companyDetails} />
+            <ViewDetailModal
+              title="Company Details"
+              details={[
+                { title: "Company Name", value: company_name },
+                { title: "GST No", value: gst_no },
+                { title: "Owner Name", value: owner_name },
+                { title: "Owner Mobile", value: owner_mobile },
+                { title: "PAN No", value: pancard_no },
+                { title: "Adhaar No", value: adhar_no },
+                { title: "Address Line 1", value: address_line_1 },
+                { title: "Address Line 2", value: address_line_2 },
+                { title: "City", value: city },
+                { title: "Pincode", value: pincode },
+                { title: "Bill Title", value: bill_title },
+                { title: "Bank Name", value: bank_name },
+                { title: "Account Number", value: account_number },
+                { title: "IFSC Code", value: ifsc_code },
+                { title: "Company Email", value: company_email },
+                { title: "Company Contact", value: company_contact },
+                { title: "Company Type", value: company_type },
+              ]}
+            />
             <Button
               onClick={() => {
                 navigateToUpdateCompany(companyDetails.id);
