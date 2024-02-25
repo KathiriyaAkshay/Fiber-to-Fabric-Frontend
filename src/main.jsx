@@ -877,6 +877,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               darkGroupTitleColor: "#FFFFFF",
               darkItemColor: "#FFFFFF",
             },
+            Table: {
+              headerBg: "#194A6D",
+              headerColor: "#FFFFFF",
+            },
           },
         }}
       >
