@@ -11,6 +11,9 @@ export default {
           DEFAULT: "#194A6D",
         },
       },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
     },
   },
   plugins: [],

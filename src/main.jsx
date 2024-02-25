@@ -865,6 +865,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         theme={{
           token: {
             colorPrimary: "#194A6D",
+            fontFamily: "Poppins",
           },
           components: {
             Card: {
@@ -880,6 +881,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             Table: {
               headerBg: "#194A6D",
               headerColor: "#FFFFFF",
+            },
+            Modal: {
+              headerBg: "#194A6D",
+              titleColor: "#FFFFFF",
             },
           },
         }}
