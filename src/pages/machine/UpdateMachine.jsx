@@ -93,7 +93,7 @@ function UpdateMachine() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Update Machine</h2>
+        <h3 className="m-0 text-primary">Update Machine</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row

@@ -99,7 +99,7 @@ function UpdateCompany() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Update Company</h2>
+        <h3 className="m-0 text-primary">Update Company</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row

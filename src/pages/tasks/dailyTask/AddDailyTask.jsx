@@ -119,7 +119,7 @@ function AddDailyTask() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Assign Task</h2>
+        <h3 className="m-0 text-primary">Assign Task</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row

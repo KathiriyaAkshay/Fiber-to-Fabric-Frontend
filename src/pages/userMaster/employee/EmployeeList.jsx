@@ -197,7 +197,7 @@ function EmployeeList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="m-0">Employee List</h2>
+          <h3 className="m-0 text-primary">Employee List</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}

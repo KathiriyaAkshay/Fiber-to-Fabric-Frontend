@@ -144,7 +144,7 @@ function UpdateSupplier() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h2 className="m-0">Update User</h2>
+        <h3 className="m-0 text-primary">Update User</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row

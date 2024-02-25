@@ -83,7 +83,7 @@ function CompanyList() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <h2 className="m-0">Company List</h2>
+        <h3 className="m-0 text-primary">Company List</h3>
         <Button onClick={navigateToAddCompany}>
           <PlusCircleOutlined />
         </Button>

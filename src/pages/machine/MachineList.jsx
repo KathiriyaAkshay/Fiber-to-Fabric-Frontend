@@ -102,7 +102,7 @@ function MachineList() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <h2 className="m-0">Machine List</h2>
+        <h3 className="m-0 text-primary">Machine List</h3>
         <Button onClick={navigateToAdd}>
           <PlusCircleOutlined />
         </Button>
