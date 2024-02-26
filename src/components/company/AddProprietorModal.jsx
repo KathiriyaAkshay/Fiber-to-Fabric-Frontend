@@ -5,23 +5,31 @@ import ErrorBoundary from "../common/ErrorBoundary";
 import AddProprietorForm from "./AddProprietorForm";
 import { useState } from "react";
 import EditPartnerForm from "./partner/EditPartnerForm";
-import { EditOutlined } from "@ant-design/icons";
+import { CloseOutlined, EditOutlined } from "@ant-design/icons";
 import DeleteCompanyPartner from "./partner/DeleteCompanyPartner";
-const { Title } = Typography;
+import { usePagination } from "../../hooks/usePagination";
 
 function AddProprietorModal({ open, onCancel, companyDetails }) {
   const [partnerTBE, setPartnerTBE] = useState();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
   const {
     data: partnerListRes,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["company", "partner", "get", { type: "PROPRIETOR" }],
+    queryKey: [
+      "company",
+      "partner",
+      "get",
+      { type: "PROPRIETOR", page, pageSize },
+    ],
     queryFn: async () => {
+      const { id } = companyDetails;
       const res = await getCompanyPartnerRequest({
-        companyId: companyDetails.id,
-        params: { type: "PROPRIETOR" },
+        companyId: id,
+        params: { type: "PROPRIETOR", company_id: id, page, pageSize },
       });
       return res.data?.data;
     },
@@ -93,19 +101,41 @@ function AddProprietorModal({ open, onCancel, companyDetails }) {
     <>
       <Modal
         title={
-          <Title level={4} style={{ margin: 0 }}>
+          <Typography.Text className="text-xl font-medium text-white">
             Add Proprietor
-          </Title>
+          </Typography.Text>
         }
         open={open}
         footer={null}
         onCancel={onCancel}
-        width={"50%"}
+        centered={true}
+        closeIcon={<CloseOutlined className="text-white" />}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
       >
         <Table
           dataSource={partnerListRes?.rows || []}
           columns={columns}
           rowKey="id"
+          pagination={{
+            total: partnerListRes?.count || 0,
+            showSizeChanger: true,
+            onShowSizeChange: onShowSizeChange,
+            onChange: onPageChange,
+          }}
         />
         {renderForm()}
       </Modal>

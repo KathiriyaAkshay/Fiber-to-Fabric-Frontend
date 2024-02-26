@@ -29,7 +29,7 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         onCancel={handleCancel}
         centered={true}
         classNames={{
-          header: "text-center p-4",
+          header: "text-center",
         }}
         styles={{
           content: {
@@ -37,10 +37,14 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
           },
           header: {
             padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
           },
         }}
       >
-        <Flex className="flex-col gap-1 p-5">
+        <Flex className="flex-col gap-1">
           {details?.map(({ title = "", value = "" }) => {
             return (
               <Row gutter={12} className="flex-grow" key={title}>

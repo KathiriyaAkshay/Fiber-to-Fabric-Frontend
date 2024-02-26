@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { Button, Modal, Select, Typography } from "antd";
-import { UsergroupAddOutlined } from "@ant-design/icons";
+import { CloseOutlined, UsergroupAddOutlined } from "@ant-design/icons";
 import AddPartnerModal from "./AddPartnerModal";
 import AddProprietorModal from "./AddProprietorModal";
-
-const { Title } = Typography;
 
 const AddPartner = ({ companyDetails }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,14 +37,31 @@ const AddPartner = ({ companyDetails }) => {
     }
     return (
       <Modal
+        closeIcon={<CloseOutlined className="text-white" />}
         title={
-          <Title level={4} style={{ margin: 0 }}>
+          <Typography.Text className="text-xl font-medium text-white">
             Select Type
-          </Title>
+          </Typography.Text>
         }
         open={isModalOpen}
         footer={null}
         onCancel={handleCancel}
+        centered={true}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
       >
         <Select
           defaultValue=""

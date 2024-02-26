@@ -5,18 +5,20 @@ import AddPartnerForm from "./AddPartnerForm";
 import DeleteCompanyPartner from "./partner/DeleteCompanyPartner";
 import EditPartnerForm from "./partner/EditPartnerForm";
 import { useState } from "react";
-import { EditOutlined } from "@ant-design/icons";
-
-const { Title } = Typography;
+import { CloseOutlined, EditOutlined } from "@ant-design/icons";
+import { usePagination } from "../../hooks/usePagination";
 
 function AddPartnerModal({ open, onCancel, companyDetails }) {
   const [partnerTBE, setPartnerTBE] = useState();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
   const { data: partnerListRes } = useQuery({
     queryKey: ["company", "partner", "get", { type: "PARTNER" }],
     queryFn: async () => {
+      const { id } = companyDetails;
       const res = await getCompanyPartnerRequest({
-        companyId: companyDetails.id,
-        params: { type: "PARTNER" },
+        companyId: id,
+        params: { type: "PARTNER", page, pageSize, company_id: id },
       });
       return res.data?.data;
     },
@@ -75,20 +77,42 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
     <>
       <Modal
         title={
-          <Title level={4} style={{ margin: 0 }}>
+          <Typography.Text className="text-xl font-medium text-white">
             Add Parnter
-          </Title>
+          </Typography.Text>
         }
         open={open}
         footer={null}
         onCancel={onCancel}
-        width={"50%"}
+        centered={true}
+        closeIcon={<CloseOutlined className="text-white" />}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
       >
         <Table
           dataSource={partnerListRes?.rows || []}
           columns={columns}
           rowKey="id"
           style={{ overflow: "auto" }}
+          pagination={{
+            total: partnerListRes?.count || 0,
+            showSizeChanger: true,
+            onShowSizeChange: onShowSizeChange,
+            onChange: onPageChange,
+          }}
         />
         {renderForm()}
       </Modal>
