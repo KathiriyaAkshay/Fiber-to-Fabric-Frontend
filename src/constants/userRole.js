@@ -14,6 +14,22 @@ export const USER_ROLES = {
   FOLDING_USER: { role_id: 13, name: "folding user" },
 };
 
+export const ROLE_ID_USER_TYPE_MAP = {
+  1: "admin",
+  2: "supervisor",
+  3: "broker",
+  4: "party",
+  5: "supplier",
+  6: "employee",
+  7: "collection user",
+  8: "accountant user",
+  9: "vehicle user",
+  10: "normal user",
+  11: "partner user",
+  12: "mending user",
+  13: "folding user",
+};
+
 export const supplierTypeEnum = [
   "purchase/trading",
   "job",

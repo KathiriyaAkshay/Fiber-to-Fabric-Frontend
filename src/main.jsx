@@ -51,6 +51,7 @@ import AddDailyTask from "./pages/tasks/dailyTask/AddDailyTask";
 import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
 import { dailyTaskReportRoutes } from "./router/dailyTaskReportRoutes";
 import UserRoles from "./pages/profile/userRoles/userRoles";
+import UserActivity from "./pages/profile/userActivity/UserActivity";
 
 const queryClient = new QueryClient();
 
@@ -851,6 +852,10 @@ const router = createBrowserRouter([
           {
             path: "user-roles",
             element: <UserRoles />,
+          },
+          {
+            path: "user-activity",
+            element: <UserActivity />,
           },
         ],
       },

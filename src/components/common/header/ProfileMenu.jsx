@@ -33,6 +33,10 @@ function ProfileMenu() {
       key: "User Roles",
     },
     {
+      label: <RotuerLink to="/profile/user-activity">User Activity</RotuerLink>,
+      key: "User Activity",
+    },
+    {
       label: <Button onClick={handleLogout}>Logout</Button>,
       key: "Logout",
     },
