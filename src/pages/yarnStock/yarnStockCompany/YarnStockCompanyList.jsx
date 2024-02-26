@@ -8,23 +8,30 @@ import {
 } from "../../../api/requests/yarnStock";
 import DeleteYarnStockCompany from "../../../components/yarnStock/yarnStockCompany/DeleteYarnStockCompany";
 import { useCompanyId } from "../../../api/hooks/company";
+import { usePagination } from "../../../hooks/usePagination";
 // import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 // import dayjs from "dayjs";
 // import { useCurrentUser } from "../../../api/hooks/auth";
 
 function YarnStockCompanyList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { companyId } = useCompanyId();
   // const { data: companyListRes } = useCompanyList();
   // const { data: user } = useCurrentUser();
 
   const { data: ysCompanyListRes, isLoading: isLoadingYSCompanyList } =
     useQuery({
-      queryKey: ["yarn-stock", "company", "list", companyId],
+      queryKey: [
+        "yarn-stock",
+        "company",
+        "list",
+        { company_id: companyId, page, pageSize },
+      ],
       queryFn: async () => {
         const res = await getYarnStockCompanyListRequest({
           companyId,
-          params: {},
+          params: { company_id: companyId, page, pageSize },
         });
         return res.data?.data;
       },
@@ -213,6 +220,12 @@ function YarnStockCompanyList() {
         dataSource={ysCompanyListRes?.yarnComanyList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: ysCompanyListRes?.yarnComanyList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

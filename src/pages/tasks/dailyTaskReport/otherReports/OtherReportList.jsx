@@ -13,9 +13,11 @@ import { getOtherReportListRequest } from "../../../../api/requests/reports/othe
 import { downloadUserPdf } from "../../../../lib/pdf/userPdf";
 import DeleteOtherReportButton from "../../../../components/tasks/otherReport/DeleteOtherReportButton";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../../hooks/usePagination";
 
 function OtherReportList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
   const { data: companyListRes } = useCompanyList();
@@ -23,11 +25,16 @@ function OtherReportList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
-    queryKey: ["reports", "other-report", "list", companyId],
+    queryKey: [
+      "reports",
+      "other-report",
+      "list",
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getOtherReportListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data?.otherReportList;
     },
@@ -157,6 +164,12 @@ function OtherReportList() {
         dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: reportListRes?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

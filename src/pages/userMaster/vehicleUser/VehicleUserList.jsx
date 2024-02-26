@@ -16,11 +16,13 @@ import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
 function VehicleUserList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -28,10 +30,14 @@ function VehicleUserList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["vehicle-user", "list", { company_id: companyId }],
+    queryKey: [
+      "vehicle-user",
+      "list",
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getVehicleUserListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -243,6 +249,12 @@ function VehicleUserList() {
         dataSource={userListRes?.vehicleList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: userListRes?.vehicleList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

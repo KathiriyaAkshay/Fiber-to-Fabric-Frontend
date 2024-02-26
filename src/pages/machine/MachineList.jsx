@@ -6,20 +6,22 @@ import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import DeleteMachine from "../../components/machine/DeleteMachine";
 import { useCompanyList } from "../../api/hooks/company";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../hooks/usePagination";
 
 function MachineList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: companyListRes } = useCompanyList();
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: ["machine", "list", companyId],
+    queryKey: ["machine", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -105,12 +107,18 @@ function MachineList() {
         dataSource={machineListRes?.machineList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: machineListRes?.machineList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }
 
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Machine List</h3>
         <Button onClick={navigateToAdd}>

@@ -16,11 +16,13 @@ import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.PARTY.role_id;
 
 function PartyList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -28,10 +30,10 @@ function PartyList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
+    queryKey: ["party", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getPartyListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -224,6 +226,12 @@ function PartyList() {
         dataSource={userListRes?.partyList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: userListRes?.partyList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

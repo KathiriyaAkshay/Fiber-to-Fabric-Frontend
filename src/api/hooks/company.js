@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCompanyListRequest } from "../requests/company";
 
-export function useCompanyList() {
+export function useCompanyList({ params } = {}) {
   return useQuery({
     queryKey: ["company", "list"],
     queryFn: async () => {
-      const res = await getCompanyListRequest({});
+      const res = await getCompanyListRequest({ params });
       return res.data?.data;
     },
   });

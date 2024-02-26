@@ -16,11 +16,13 @@ import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
 function EmployeeList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -28,10 +30,10 @@ function EmployeeList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["employee", "list", { company_id: companyId }],
+    queryKey: ["employee", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getEmployeeListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -221,6 +223,12 @@ function EmployeeList() {
         dataSource={userListRes?.empoloyeeList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: userListRes?.empoloyeeList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

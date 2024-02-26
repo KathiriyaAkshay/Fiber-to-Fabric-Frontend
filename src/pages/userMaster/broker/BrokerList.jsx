@@ -16,11 +16,13 @@ import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.BROKER.role_id;
 
 function BrokerList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -28,10 +30,10 @@ function BrokerList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId }],
+    queryKey: ["broker", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getBrokerListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -225,6 +227,12 @@ function BrokerList() {
         dataSource={userListRes?.brokerList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: userListRes?.brokerList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

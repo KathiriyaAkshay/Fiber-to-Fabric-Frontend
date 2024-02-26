@@ -16,11 +16,13 @@ import dayjs from "dayjs";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.ACCOUNTANT_USER.role_id;
 
 function AccountantUserList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
 
@@ -29,10 +31,15 @@ function AccountantUserList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["users", "accountant_user", "list", { company_id: companyId }],
+    queryKey: [
+      "users",
+      "accountant_user",
+      "list",
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getAccountantUserListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -218,6 +225,12 @@ function AccountantUserList() {
         dataSource={userListRes?.accountantUserList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: userListRes?.accountantUserList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

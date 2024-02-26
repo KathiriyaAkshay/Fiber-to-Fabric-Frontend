@@ -16,6 +16,7 @@ import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const { Text } = Typography;
 
@@ -23,6 +24,7 @@ const roleId = USER_ROLES.SUPPLIER.role_id;
 
 function SupplierList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -30,10 +32,10 @@ function SupplierList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryKey: ["supplier", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -257,6 +259,12 @@ function SupplierList() {
         rowKey={(s) => s?.id}
         style={{
           textTransform: "capitalize",
+        }}
+        pagination={{
+          total: userListRes?.supplierList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
         }}
       />
     );

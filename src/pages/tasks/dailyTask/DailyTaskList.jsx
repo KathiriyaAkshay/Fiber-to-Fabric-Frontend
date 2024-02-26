@@ -13,10 +13,12 @@ import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 // import { getSupervisorListRequest } from "../../../api/requests/users";
 
 function DailyTaskList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
   const { data: companyListRes } = useCompanyList();
@@ -36,11 +38,15 @@ function DailyTaskList() {
   //   });
 
   const { data: taskListRes, isLoading: isLoadingTaskList } = useQuery({
-    queryKey: ["task-assignment", "list", companyId],
+    queryKey: [
+      "task-assignment",
+      "list",
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getTaskListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -185,6 +191,12 @@ function DailyTaskList() {
         dataSource={taskListRes?.taskList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: taskListRes?.taskList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

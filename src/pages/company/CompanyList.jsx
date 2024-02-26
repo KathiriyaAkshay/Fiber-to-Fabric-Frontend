@@ -5,11 +5,15 @@ import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
 import { useCompanyList } from "../../api/hooks/company";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../hooks/usePagination";
 
 function CompanyList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: companyListRes, isLoading } = useCompanyList();
+  const { data: companyListRes, isLoading } = useCompanyList({
+    params: { page, pageSize },
+  });
 
   function navigateToAddCompany() {
     navigate("/company/add");
@@ -122,7 +126,7 @@ function CompanyList() {
   }
 
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Company List</h3>
         <Button onClick={navigateToAddCompany}>
@@ -133,6 +137,12 @@ function CompanyList() {
         dataSource={companyListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: companyListRes?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     </div>
   );

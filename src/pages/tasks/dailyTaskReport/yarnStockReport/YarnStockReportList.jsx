@@ -8,9 +8,11 @@ import { useCurrentUser } from "../../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../../lib/pdf/userPdf";
 import { getYarnStockReportListRequest } from "../../../../api/requests/reports/yarnStockReport";
 import DeleteYarnStockReportButton from "../../../../components/tasks/yarnStockReport/DeleteYarnStockReportButton";
+import { usePagination } from "../../../../hooks/usePagination";
 
 function YarnStockReportList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
   const { data: companyListRes } = useCompanyList();
@@ -18,11 +20,16 @@ function YarnStockReportList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
-    queryKey: ["yarn-stock", "yarn-report", "list", companyId],
+    queryKey: [
+      "yarn-stock",
+      "yarn-report",
+      "list",
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getYarnStockReportListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data?.yarnStockReportList;
     },
@@ -203,6 +210,12 @@ function YarnStockReportList() {
         dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: reportListRes?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }

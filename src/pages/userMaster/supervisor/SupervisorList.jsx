@@ -16,11 +16,13 @@ import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import { usePagination } from "../../../hooks/usePagination";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
 function SupervisorList() {
   const navigate = useNavigate();
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: companyListRes } = useCompanyList();
@@ -28,10 +30,10 @@ function SupervisorList() {
   const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: supervisorListRes, isLoading } = useQuery({
-    queryKey: ["supervisor", "list", { company_id: companyId }],
+    queryKey: ["supervisor", "list", { company_id: companyId, page, pageSize }],
     queryFn: async () => {
       const res = await getSupervisorListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, page, pageSize },
       });
       return res.data?.data;
     },
@@ -229,6 +231,12 @@ function SupervisorList() {
         dataSource={supervisorListRes?.supervisorList?.rows || []}
         columns={columns}
         rowKey={"id"}
+        pagination={{
+          total: supervisorListRes?.supervisorList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
       />
     );
   }
