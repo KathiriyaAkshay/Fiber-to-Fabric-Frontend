@@ -1,7 +1,11 @@
+import { useContext } from "react";
 import { Select } from "antd";
 import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 function CompanySelection() {
+  const { companyId, setCompanyId } = useContext(GlobalContext);
+
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
 
@@ -14,6 +18,8 @@ function CompanySelection() {
         value: id,
       }))}
       className="w-40 text-primary"
+      value={companyId}
+      onChange={setCompanyId}
     />
   );
 }

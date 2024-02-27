@@ -52,6 +52,8 @@ import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
 import { dailyTaskReportRoutes } from "./router/dailyTaskReportRoutes";
 import UserRoles from "./pages/profile/userRoles/userRoles";
 import UserActivity from "./pages/profile/userActivity/UserActivity";
+import { orderMasterRoutes } from "./router/orderMasterRoutes";
+import GlobalContextProvider from "./contexts/GlobalContext";
 
 const queryClient = new QueryClient();
 
@@ -84,7 +86,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <BaseLayout />,
+    element: (
+      <GlobalContextProvider>
+        <BaseLayout />
+      </GlobalContextProvider>
+    ),
     errorElement: <ErrorBoundary />,
 
     children: [
@@ -562,34 +568,7 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {
-        path: "/order-master",
-        element: (
-          <div>
-            <div>order-master</div>
-            <Outlet />
-          </div>
-        ),
-        children: [
-          { index: true, element: <div>order-master</div> },
-          {
-            path: "my-orders",
-            element: <div>my-orders</div>,
-          },
-          {
-            path: "my-yarn-orders",
-            element: <div>my-yarn-orders</div>,
-          },
-          {
-            path: "size-beam-order",
-            element: <div>size-beam-order</div>,
-          },
-          {
-            path: "schedule-delivery-list",
-            element: <div>schedule-delivery-list</div>,
-          },
-        ],
-      },
+      orderMasterRoutes,
       {
         path: "/account",
         element: (

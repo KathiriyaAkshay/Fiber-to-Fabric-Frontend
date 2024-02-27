@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Col, Form, Input, Radio, Select } from "antd";
 import { Controller } from "react-hook-form";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { machineTypeList } from "../../constants/machine";
 import { getMachineDropdownListRequest } from "../../api/requests/machine";
+import { GlobalContext } from "../../contexts/GlobalContext";
 
 function MachineTypeFields({
   errors,
@@ -12,17 +13,21 @@ function MachineTypeFields({
   setValue,
   isUpdate = false,
 }) {
+  const { companyId } = useContext(GlobalContext);
+
   const machineType = watch("machine_type");
   const { data: machineNameList, isLoading: isLoadingMachineType } = useQuery({
     queryKey: ["dropdown", "machine_name", "list", machineType],
     queryFn: async () => {
       const res = await getMachineDropdownListRequest({
-        params: { machine_type: machineType },
+        params: { machine_type: machineType, company_id: companyId },
       });
       return res.data?.data || [];
     },
     enabled: Boolean(
-      machineType && machineTypeList.map((mt) => mt.value).includes(machineType)
+      machineType &&
+        machineTypeList.map((mt) => mt.value).includes(machineType) &&
+        companyId
     ),
   });
 
