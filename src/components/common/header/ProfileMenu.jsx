@@ -2,6 +2,7 @@ import { Avatar, Button, Dropdown } from "antd";
 import { api } from "../../../api";
 import { Link as RotuerLink, useNavigate } from "react-router-dom";
 import profilePlaceholder from "../../../assets/png/profile-placeholder.png";
+import ProfileDetailModal from "../modal/ProfileDetailModal";
 
 function ProfileMenu() {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ function ProfileMenu() {
 
   const items = [
     {
-      label: "My Profile",
+      label: <ProfileDetailModal />,
       key: "My Profile",
     },
     {
@@ -48,6 +49,7 @@ function ProfileMenu() {
         menu={{
           items,
         }}
+        trigger={["click"]}
       >
         <Avatar
           alt="Profile Avatar"
