@@ -18,12 +18,12 @@ import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
-import { useCompanyList } from "../../../../api/hooks/company";
 import {
   createYarnStockReportRequest,
   getYSCDropdownList,
 } from "../../../../api/requests/reports/yarnStockReport";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const addYarnStockReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -46,15 +46,13 @@ function AddYarnStockReport() {
 
   const [denierOptions, setDenierOptions] = useState([]);
 
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list"],
     queryFn: async () => {
       const res = await getYSCDropdownList({
-        params: {},
+        params: { company_id: companyId },
       });
       return res.data?.data;
     },

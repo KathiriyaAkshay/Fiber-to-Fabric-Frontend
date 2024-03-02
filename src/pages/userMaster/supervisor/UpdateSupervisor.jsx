@@ -16,7 +16,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getSupervisorByIdRequest,
   updateUserRequest,
@@ -24,6 +24,7 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
@@ -52,6 +53,7 @@ function UpdateSupervisor() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
+  const { companyId } = useContext(GlobalContext);
 
   function goBack() {
     navigate(-1);
@@ -85,9 +87,12 @@ function UpdateSupervisor() {
   });
 
   const { data: userDetails } = useQuery({
-    queryKey: ["supervisor", "get", id],
+    queryKey: ["supervisor", "get", id, { company_id: companyId }],
     queryFn: async () => {
-      const res = await getSupervisorByIdRequest({ id });
+      const res = await getSupervisorByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
   });

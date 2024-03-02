@@ -8,11 +8,12 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import { createYarnOrderRequest } from "../../../api/requests/orderMaster";
 import { getSupplierListRequest } from "../../../api/requests/users";
 import { YARN_GRADE_LIST } from "../../../constants/orderMaster";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -45,15 +46,13 @@ function AddYarnOrder() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-    queryKey: ["dropdown", "yarn_company", "list"],
+    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getYSCDropdownList({
-        params: {},
+        params: { company_id: companyId },
       });
       return res.data?.data;
     },
