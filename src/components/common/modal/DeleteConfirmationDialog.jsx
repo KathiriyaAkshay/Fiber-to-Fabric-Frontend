@@ -1,4 +1,5 @@
-import { Modal, Button } from "antd";
+import { CloseOutlined } from "@ant-design/icons";
+import { Modal, Button, Flex } from "antd";
 
 const DeleteConfirmationDialog = ({
   open,
@@ -14,14 +15,33 @@ const DeleteConfirmationDialog = ({
       open={open}
       title={title}
       onCancel={onCancel}
-      footer={[
-        <Button key="cancel" onClick={onCancel}>
-          {cancelText}
-        </Button>,
-        <Button key="confirm" type="primary" onClick={onConfirm}>
-          {confirmText}
-        </Button>,
-      ]}
+      closeIcon={<CloseOutlined className="text-white" />}
+      footer={
+        <Flex className="px-4 py-3" justify="end">
+          <Button key="cancel" onClick={onCancel}>
+            {cancelText}
+          </Button>
+          <Button key="confirm" type="primary" onClick={onConfirm}>
+            {confirmText}
+          </Button>
+        </Flex>
+      }
+      centered={true}
+      classNames={{
+        header: "text-center",
+      }}
+      styles={{
+        content: {
+          padding: 0,
+        },
+        header: {
+          padding: "16px",
+          margin: 0,
+        },
+        body: {
+          padding: "0px 16px",
+        },
+      }}
     >
       <p>{content}</p>
     </Modal>

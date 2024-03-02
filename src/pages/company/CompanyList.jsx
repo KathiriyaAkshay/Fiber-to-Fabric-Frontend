@@ -1,19 +1,30 @@
 import { Button, Space, Spin, Table } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  BankOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
-import { useCompanyList } from "../../api/hooks/company";
+import { useCompanyBankList, useCompanyList } from "../../api/hooks/company";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
+import CompanyBankList from "./CompanyBankList";
+import BankDetailModal from "./BankDetailModal";
+import { useState } from "react";
 
 function CompanyList() {
   const navigate = useNavigate();
+  const [isOpenBankDetails, setIsOpenBankDetails] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: companyListRes, isLoading } = useCompanyList({
     params: { page, pageSize },
   });
+
+  const companyBankDetails = useCompanyBankList();
 
   function navigateToAddCompany() {
     navigate("/company/add");
@@ -109,6 +120,14 @@ function CompanyList() {
               <EditOutlined />
             </Button>
             <DeleteCompany companyDetails={companyDetails} />
+            <Button
+              onClick={() => {
+                setIsOpenBankDetails(true);
+                setSelectedCompany(companyDetails);
+              }}
+            >
+              <BankOutlined />
+            </Button>
             <AddPartner companyDetails={companyDetails} />
           </Space>
         );
@@ -143,6 +162,29 @@ function CompanyList() {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        expandable={{
+          expandedRowRender: (companyDetails) => {
+            const { id: companyId } = companyDetails;
+            return (
+              <CompanyBankList
+                company={companyDetails}
+                query={companyBankDetails[companyId]}
+              />
+            );
+          },
+          rowExpandable: () => true,
+        }}
+        style={{
+          overflow: "auto",
+        }}
+      />
+      <BankDetailModal
+        open={isOpenBankDetails}
+        onCancel={() => {
+          setIsOpenBankDetails(false);
+          setSelectedCompany(undefined);
+        }}
+        company={selectedCompany}
       />
     </div>
   );
