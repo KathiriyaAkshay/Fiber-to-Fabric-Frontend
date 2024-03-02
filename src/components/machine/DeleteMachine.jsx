@@ -1,22 +1,23 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import DeleteConfirmationDialog from "../common/modal/DeleteConfirmationDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteMachineRequest } from "../../api/requests/machine";
-import { useCompanyList } from "../../api/hooks/company";
+import { GlobalContext } from "../../contexts/GlobalContext";
 
 const DeleteMachine = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: deleteMachine } = useMutation({
-    mutationFn: async ({ id, params }) => {
-      const res = await deleteMachineRequest({ id, params });
+    mutationFn: async ({ id }) => {
+      const res = await deleteMachineRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res?.data;
     },
     onSuccess: (res) => {

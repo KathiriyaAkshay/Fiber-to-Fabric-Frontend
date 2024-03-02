@@ -1,7 +1,7 @@
 import { api } from "..";
 
-export function addMachineRequest({ data }) {
-  return api.post(`/machine/add/`, data);
+export function addMachineRequest({ data, params }) {
+  return api.post(`/machine/add/`, data, { params });
 }
 
 export function getMachineDropdownListRequest({ params }) {
@@ -10,8 +10,8 @@ export function getMachineDropdownListRequest({ params }) {
   });
 }
 
-export function addMachineNameWithTypeRequest({ data }) {
-  return api.post(`/dropdown/machine_name/add`, data);
+export function addMachineNameWithTypeRequest({ data, params }) {
+  return api.post(`/dropdown/machine_name/add`, data, { params });
 }
 
 export function getMachineByIdRequest({ id, params }) {
@@ -22,8 +22,8 @@ export function getCompanyMachineListRequest({ companyId, params }) {
   return api.get(`/machine/list/${companyId}`, { params });
 }
 
-export function updateMachineRequest({ id, data }) {
-  return api.patch(`/machine/update/${id}`, data);
+export function updateMachineRequest({ id, data, params }) {
+  return api.patch(`/machine/update/${id}`, data, { params });
 }
 
 export function deleteMachineRequest({ id, params }) {

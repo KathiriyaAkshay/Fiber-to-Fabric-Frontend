@@ -6,12 +6,13 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getMachineByIdRequest,
   updateMachineRequest,
 } from "../../api/requests/machine";
 import MachineTypeFields from "../../components/machine/MachineTypeFields";
+import { GlobalContext } from "../../contexts/GlobalContext";
 
 const updateMachineSchemaResolver = yupResolver(
   yup.object().shape({
@@ -28,6 +29,8 @@ function UpdateMachine() {
   const params = useParams();
   const { id } = params;
 
+  const { companyId } = useContext(GlobalContext);
+
   function goBack() {
     navigate(-1);
   }
@@ -37,6 +40,7 @@ function UpdateMachine() {
       const res = await updateMachineRequest({
         id,
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },
@@ -57,9 +61,12 @@ function UpdateMachine() {
   });
 
   const { data: machineDetails } = useQuery({
-    queryKey: ["machine", "get", id],
+    queryKey: ["machine", "get", id, { company_id: companyId }],
     queryFn: async () => {
-      const res = await getMachineByIdRequest({ id });
+      const res = await getMachineByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.machine;
     },
   });

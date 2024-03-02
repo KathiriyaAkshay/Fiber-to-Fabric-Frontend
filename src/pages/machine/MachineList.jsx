@@ -4,17 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import DeleteMachine from "../../components/machine/DeleteMachine";
-import { useCompanyList } from "../../api/hooks/company";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { useContext } from "react";
 
 function MachineList() {
   const navigate = useNavigate();
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId, page, pageSize }],

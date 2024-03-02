@@ -8,7 +8,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { addMachineRequest } from "../../api/requests/machine";
 import MachineTypeFields from "../../components/machine/MachineTypeFields";
-import { useCompanyList } from "../../api/hooks/company";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { useContext } from "react";
 
 const addMachineSchemaResolver = yupResolver(
   yup.object().shape({
@@ -27,14 +28,13 @@ function AddMachine() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: addMachine } = useMutation({
     mutationFn: async (data) => {
       const res = await addMachineRequest({
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },
