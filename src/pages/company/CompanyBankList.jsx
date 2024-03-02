@@ -5,7 +5,7 @@ import DeleteCompanyBank from "../../components/company/DeleteCompanyBank";
 import { updateCompanyBankRequest } from "../../api/requests/company";
 import { useMutation } from "@tanstack/react-query";
 
-function CompanyBankList({ company, query }) {
+function CompanyBankList({ company, query, setBankDetailModal }) {
   const { id: companyId } = company;
   const { data: bankList } = query;
 
@@ -67,9 +67,14 @@ function CompanyBankList({ company, query }) {
               ]}
             />
             <Button
-            // onClick={() => {
-            //   navigateToUpdateCompany(companyDetails.id);
-            // }}
+              onClick={() => {
+                setBankDetailModal({
+                  open: true,
+                  company: company,
+                  companyBank: companyBankDetails,
+                  edit: true,
+                });
+              }}
             >
               <EditOutlined />
             </Button>

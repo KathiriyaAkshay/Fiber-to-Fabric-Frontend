@@ -14,10 +14,17 @@ import CompanyBankList from "./CompanyBankList";
 import BankDetailModal from "./BankDetailModal";
 import { useState } from "react";
 
+const initialBankDetailModal = {
+  open: false,
+  company: undefined,
+  companyBank: undefined,
+  edit: false,
+};
 function CompanyList() {
   const navigate = useNavigate();
-  const [isOpenBankDetails, setIsOpenBankDetails] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState();
+  const [bankDetailModal, setBankDetailModal] = useState(
+    initialBankDetailModal
+  );
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: companyListRes, isLoading } = useCompanyList({
@@ -122,8 +129,12 @@ function CompanyList() {
             <DeleteCompany companyDetails={companyDetails} />
             <Button
               onClick={() => {
-                setIsOpenBankDetails(true);
-                setSelectedCompany(companyDetails);
+                setBankDetailModal({
+                  open: true,
+                  company: companyDetails,
+                  companyBank: undefined,
+                  edit: false,
+                });
               }}
             >
               <BankOutlined />
@@ -169,6 +180,7 @@ function CompanyList() {
               <CompanyBankList
                 company={companyDetails}
                 query={companyBankDetails[companyId]}
+                setBankDetailModal={setBankDetailModal}
               />
             );
           },
@@ -179,12 +191,8 @@ function CompanyList() {
         }}
       />
       <BankDetailModal
-        open={isOpenBankDetails}
-        onCancel={() => {
-          setIsOpenBankDetails(false);
-          setSelectedCompany(undefined);
-        }}
-        company={selectedCompany}
+        onCancel={() => setBankDetailModal(initialBankDetailModal)}
+        bankDetailModal={bankDetailModal}
       />
     </div>
   );

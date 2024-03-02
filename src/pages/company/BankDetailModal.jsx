@@ -1,6 +1,6 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Flex,
@@ -13,7 +13,11 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
-import { createCompanyBankRequest } from "../../api/requests/company";
+import {
+  createCompanyBankRequest,
+  updateCompanyBankRequest,
+} from "../../api/requests/company";
+import { useEffect } from "react";
 
 const createCompanySchemaResolver = yupResolver(
   yup.object().shape({
@@ -24,13 +28,15 @@ const createCompanySchemaResolver = yupResolver(
   })
 );
 
-function BankDetailModal({
-  title = "Bank Details",
-  open = true,
-  onCancel = () => {},
-  company = {},
-}) {
+function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
+  const {
+    open = false,
+    company = {},
+    edit = false,
+    companyBank,
+  } = bankDetailModal;
   const { id: companyId } = company;
+  const queryClient = useQueryClient();
 
   const { mutateAsync: createCompanyBank } = useMutation({
     mutationFn: async (data) => {
@@ -55,27 +61,74 @@ function BankDetailModal({
     },
   });
 
+  const { mutateAsync: updateCompanyBank } = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await updateCompanyBankRequest({
+        id,
+        data,
+        params: { company_id: companyId },
+      });
+      return res.data;
+    },
+    mutationKey: ["company", "bank-detail", "update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
   const {
     control,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     resolver: createCompanySchemaResolver,
   });
 
   async function onSubmit(data) {
-    await createCompanyBank(data);
+    if (edit) {
+      const { id } = companyBank;
+      await updateCompanyBank({ id, data });
+    } else {
+      await createCompanyBank(data);
+    }
+    queryClient.invalidateQueries([
+      "company",
+      "bank-detail",
+      "list",
+      { company_id: companyId },
+    ]);
     reset();
     onCancel();
   }
+
+  useEffect(() => {
+    if (companyBank) {
+      const { account_number, account_type, bank_name, ifsc_code } =
+        companyBank;
+      setValue("account_number", account_number);
+      setValue("account_type", account_type);
+      setValue("bank_name", bank_name);
+      setValue("ifsc_code", ifsc_code);
+    }
+  }, [companyBank, setValue]);
 
   return (
     <Modal
       closeIcon={<CloseOutlined className="text-white" />}
       title={
         <Typography.Text className="text-xl font-medium text-white">
-          {title}
+          Bank Details
         </Typography.Text>
       }
       open={open}
@@ -174,7 +227,7 @@ function BankDetailModal({
 
           <Flex gap={10} justify="flex-end">
             <Button type="primary" htmlType="submit">
-              Create
+              {edit ? "Update" : "Create"}
             </Button>
           </Flex>
         </Form>
