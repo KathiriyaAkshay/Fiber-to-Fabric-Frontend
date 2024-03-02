@@ -69,6 +69,7 @@ function UpdateMachine() {
       });
       return res.data?.data?.machine;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

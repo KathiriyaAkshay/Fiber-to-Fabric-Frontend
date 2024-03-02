@@ -15,7 +15,7 @@ export function addMachineNameWithTypeRequest({ data, params }) {
 }
 
 export function getMachineByIdRequest({ id, params }) {
-  return api.get(`/machine/get/${id}`, params);
+  return api.get(`/machine/get/${id}`, { params });
 }
 
 export function getCompanyMachineListRequest({ companyId, params }) {
