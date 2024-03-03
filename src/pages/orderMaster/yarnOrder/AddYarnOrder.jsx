@@ -56,6 +56,7 @@ function AddYarnOrder() {
   const navigate = useNavigate();
 
   const [denierOptions, setDenierOptions] = useState([]);
+  const [yarnDetail, setYarnDetail] = useState();
 
   function goBack() {
     navigate(-1);
@@ -199,22 +200,20 @@ function AddYarnOrder() {
 
   useEffect(() => {
     // set pending_kg on change of denier (yarn_stock_company_id)
+    if (!yarn_company_name || !yarn_stock_company_id) {
+      return setYarnDetail();
+    }
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_company_name: name = "", yarn_details = [] } = ysc;
       if (name === yarn_company_name) {
-        yarn_details?.forEach(({ pending_quantity, yarn_company_id }) => {
-          if (yarn_stock_company_id === yarn_company_id) {
-            setValue("pending_kg", pending_quantity);
+        yarn_details?.forEach((yarn_detail) => {
+          if (yarn_stock_company_id === yarn_detail.yarn_company_id) {
+            setYarnDetail(yarn_detail);
           }
         });
       }
     });
-  }, [
-    setValue,
-    yarn_company_name,
-    yarn_stock_company_id,
-    yscdListRes?.yarnCompanyList,
-  ]);
+  }, [yarn_company_name, yarn_stock_company_id, yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
     // set pending_quantity
@@ -350,6 +349,35 @@ function AddYarnOrder() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Pending KG:"
+              name="pending_kg"
+              validateStatus={errors.pending_kg ? "error" : ""}
+              help={
+                (errors.pending_kg && errors.pending_kg.message) ||
+                `Current stock: ${yarnDetail?.current_stock || 0},
+              Pending quantity: ${yarnDetail?.pending_quantity || 0}`
+              }
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="pending_kg"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    disabled
+                    value={
+                      (yarnDetail?.current_stock || 0) +
+                      (yarnDetail?.pending_quantity || 0)
+                    }
                   />
                 )}
               />
