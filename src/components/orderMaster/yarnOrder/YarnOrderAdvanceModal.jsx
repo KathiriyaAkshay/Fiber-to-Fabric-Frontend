@@ -51,13 +51,13 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
     },
     {
       title: "Company",
-      dataIndex: "Company",
-      key: "Company",
+      dataIndex: ["company", "company_name"],
+      key: "company.company_name",
     },
     {
       title: "Supplier Company",
-      dataIndex: "Supplier",
-      key: "Supplier",
+      dataIndex: ["supplier", "first_name"],
+      key: "supplier.first_name",
     },
     {
       title: "Amount",
