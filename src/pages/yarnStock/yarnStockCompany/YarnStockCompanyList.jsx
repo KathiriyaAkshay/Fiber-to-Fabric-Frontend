@@ -7,18 +7,14 @@ import {
   updateYarnStockCompanyRequest,
 } from "../../../api/requests/yarnStock";
 import DeleteYarnStockCompany from "../../../components/yarnStock/yarnStockCompany/DeleteYarnStockCompany";
-import { useCompanyId } from "../../../api/hooks/company";
 import { usePagination } from "../../../hooks/usePagination";
-// import { downloadUserPdf } from "../../../lib/pdf/userPdf";
-// import dayjs from "dayjs";
-// import { useCurrentUser } from "../../../api/hooks/auth";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 function YarnStockCompanyList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { companyId } = useCompanyId();
-  // const { data: companyListRes } = useCompanyList();
-  // const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
 
   const { data: ysCompanyListRes, isLoading: isLoadingYSCompanyList } =
     useQuery({
@@ -75,44 +71,6 @@ function YarnStockCompanyList() {
   function navigateToUpdate(id) {
     navigate(`/yarn-stock-company/company-list/update/${id}`);
   }
-
-  // function downloadPdf() {
-  //   if (!user) return;
-  //   const companyName = companyListRes?.rows?.[0]?.company_name;
-  //   const {
-  //     first_name = "YASH",
-  //     last_name = "PATEL",
-  //     address = "SURAT",
-  //     mobile = "+918980626669",
-  //     gst_no = "GST123456789000",
-  //   } = user;
-  //   const leftContent = `
-  //   Name:- ${first_name} ${last_name}
-  //   Address:- ${address}
-  //   Created Date:- ${dayjs().format("DD-MM-YYYY")}
-  //   `;
-
-  //   const rightContent = `
-  //   Company Name:- ${companyName}
-  //   Company Contact:- ${mobile}
-  //   GST No.:- ${gst_no}
-  //   `;
-
-  //   const body = ysCompanyListRes?.yarnComanyList?.rows?.map((user) => {
-  //     const { id, first_name, last_name, adhar_no, mobile, email } = user;
-  //     return [id, first_name, last_name, adhar_no, mobile, email];
-  //   });
-
-  //   downloadUserPdf({
-  //     body,
-  //     head: [
-  //       ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
-  //     ],
-  //     leftContent,
-  //     rightContent,
-  //     title: "Broker List",
-  //   });
-  // }
 
   const columns = [
     {

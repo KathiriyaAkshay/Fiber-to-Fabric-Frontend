@@ -6,14 +6,15 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCompanyList } from "../../../api/hooks/company";
 import { getTaskListRequest } from "../../../api/requests/task";
 import DeleteTaskButton from "../../../components/tasks/DeleteTaskButton";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
-import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { useContext } from "react";
 // import { getSupervisorListRequest } from "../../../api/requests/users";
 
 function DailyTaskList() {
@@ -21,9 +22,7 @@ function DailyTaskList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { company, companyId } = useContext(GlobalContext);
 
   // const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
   //   useQuery({
@@ -62,27 +61,7 @@ function DailyTaskList() {
   }
 
   function downloadPdf() {
-    if (!user) return;
-    const companyName = companyListRes?.rows?.[0]?.company_name;
-    const {
-      first_name = "YASH",
-      last_name = "PATEL",
-      address = "SURAT",
-      mobile = "+918980626669",
-      gst_no = "GST123456789000",
-    } = user;
-    const leftContent = `
-    Name:- ${first_name} ${last_name}
-    Address:- ${address}
-    Created Date:- ${dayjs().format("DD-MM-YYYY")}
-    `;
-
-    const rightContent = `
-    Company Name:- ${companyName}
-    Company Contact:- ${mobile}
-    GST No.:- ${gst_no}
-    `;
-
+    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = taskListRes?.taskList?.rows?.map((task) => {
       const { id, task_detail, assign_time, achievement, reason, status } =
         task;

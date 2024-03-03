@@ -14,12 +14,6 @@ export function useCompanyList({ params } = {}) {
   });
 }
 
-export function useCompanyId() {
-  const { data: companyListRes } = useCompanyList();
-  const companyId = companyListRes?.rows?.[0]?.id;
-  return { companyId };
-}
-
 export function useCompanyBankList() {
   const { data: companyListRes } = useCompanyList();
   return useQueries({

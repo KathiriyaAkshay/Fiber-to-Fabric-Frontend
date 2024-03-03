@@ -44,3 +44,20 @@ export function downloadUserPdf({
   // Save the PDF
   pdf.save(title + " " + dayjs().format("DD-MM-YYYY HH-mm-ss") + ".pdf");
 }
+
+export function getPDFTitleContent({ user, company }) {
+  const { first_name, last_name, address } = user;
+  const leftContent = `
+  Name:- ${first_name || "-"} ${last_name || "-"}
+  Address:- ${address || "-"}
+  Created Date:- ${dayjs().format("DD-MM-YYYY")}
+  `;
+
+  const { company_name, company_contact, gst_no } = company;
+  const rightContent = `
+  Company Name:- ${company_name || "-"}
+  Company Contact:- ${company_contact || "-"}
+  GST No.:- ${gst_no || "-"}
+  `;
+  return { leftContent, rightContent };
+}

@@ -24,8 +24,8 @@ import {
   YARN_FIBER_TYPE_LIST,
   YARN_SUBTYPE_LIST,
 } from "../../../constants/yarnStockCompany";
-import { useCompanyId } from "../../../api/hooks/company";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -51,10 +51,7 @@ function AddYarnStockCompany() {
     navigate(-1);
   }
 
-  const { companyId } = useCompanyId();
-
-  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } =
-  //   useBrokerList(companyId);
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: addYSC } = useMutation({
     mutationFn: async (data) => {

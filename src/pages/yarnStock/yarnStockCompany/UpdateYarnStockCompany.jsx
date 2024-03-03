@@ -17,7 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getYarnStockCompanyByIdRequest,
   updateYarnStockCompanyRequest,
@@ -28,8 +28,8 @@ import {
   YARN_FIBER_TYPE_LIST,
   YARN_SUBTYPE_LIST,
 } from "../../../constants/yarnStockCompany";
-import { useCompanyId } from "../../../api/hooks/company";
 import dayjs from "dayjs";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -52,7 +52,7 @@ function UpdateYarnStockCompany() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
-  const { companyId } = useCompanyId();
+  const { companyId } = useContext(GlobalContext);
 
   function goBack() {
     navigate(-1);

@@ -12,22 +12,20 @@ import {
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf } from "../../../lib/pdf/userPdf";
+import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
-import { useCompanyList } from "../../../api/hooks/company";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
 function EmployeeList() {
+  const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: ["employee", "list", { company_id: companyId, page, pageSize }],
@@ -77,26 +75,7 @@ function EmployeeList() {
   }
 
   function downloadPdf() {
-    if (!user) return;
-    const companyName = companyListRes?.rows?.[0]?.company_name;
-    const {
-      first_name = "YASH",
-      last_name = "PATEL",
-      address = "SURAT",
-      mobile = "+918980626669",
-      gst_no = "GST123456789000",
-    } = user;
-    const leftContent = `
-    Name:- ${first_name} ${last_name}
-    Address:- ${address}
-    Created Date:- ${dayjs().format("DD-MM-YYYY")}
-    `;
-
-    const rightContent = `
-    Company Name:- ${companyName}
-    Company Contact:- ${mobile}
-    GST No.:- ${gst_no}
-    `;
+    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.empoloyeeList?.rows?.map((user) => {
       const { id, first_name, last_name, mobile, username } = user;
