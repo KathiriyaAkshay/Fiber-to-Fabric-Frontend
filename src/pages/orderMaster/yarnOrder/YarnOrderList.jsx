@@ -1,9 +1,5 @@
-import { Button, Space, Spin, Table } from "antd";
-import {
-  EditOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { Button, Space, Spin, Table, Typography } from "antd";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
@@ -14,6 +10,7 @@ import { usePagination } from "../../../hooks/usePagination";
 import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
 
 function YarnOrderList() {
   const navigate = useNavigate();
@@ -41,9 +38,9 @@ function YarnOrderList() {
     navigate("/order-master/my-yarn-orders/add");
   }
 
-  function navigateToUpdate(id) {
-    navigate(`/order-master/my-yarn-orders/update/${id}`);
-  }
+  // function navigateToUpdate(id) {
+  //   navigate(`/order-master/my-yarn-orders/update/${id}`);
+  // }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -256,13 +253,7 @@ function YarnOrderList() {
                 // { title: "Remaining Amount", value: "" },
               ]}
             />
-            <Button
-              onClick={() => {
-                navigateToUpdate(yarnOrder.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
+            <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
           </Space>
         );
       },
@@ -291,6 +282,42 @@ function YarnOrderList() {
           onChange: onPageChange,
         }}
         style={{ overflow: "auto" }}
+        summary={() => {
+          if (!yarnOrderListRes) return;
+          const {
+            total_quantity,
+            total_delivered_quantity,
+            total_pending_quantity,
+            total_approxAmount,
+          } = yarnOrderListRes;
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{total_quantity}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{total_delivered_quantity}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{total_pending_quantity}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{total_approxAmount}</Typography.Text>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </>
+          );
+        }}
       />
     );
   }

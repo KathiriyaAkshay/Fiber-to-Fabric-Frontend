@@ -26,6 +26,7 @@ const GlobalContextProvider = (props) => {
         companyId,
         setCompanyId,
         isLoadingCompanyList,
+        companyListRes,
       }}
     >
       {props.children}
