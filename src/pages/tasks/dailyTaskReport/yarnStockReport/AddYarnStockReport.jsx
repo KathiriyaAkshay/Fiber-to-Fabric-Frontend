@@ -56,6 +56,7 @@ function AddYarnStockReport() {
       });
       return res.data?.data;
     },
+    enabled: Boolean(companyId),
   });
 
   const { mutateAsync: createYarnStockReport } = useMutation({
@@ -155,16 +156,11 @@ function AddYarnStockReport() {
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_company_name: name = "", yarn_details = [] } = ysc;
       if (name === yarn_company_name) {
-        const options = yarn_details?.forEach(
-          ({ avg_daily_stock, yarn_company_id: id }) => {
-            if (yarn_company_id === id) {
-              setValue("avg_stock", avg_daily_stock);
-            }
+        yarn_details?.forEach(({ avg_daily_stock, yarn_company_id: id }) => {
+          if (yarn_company_id === id) {
+            setValue("avg_stock", avg_daily_stock);
           }
-        );
-        if (options?.length) {
-          setDenierOptions(options);
-        }
+        });
       }
     });
   }, [
