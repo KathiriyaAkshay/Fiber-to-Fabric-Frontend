@@ -48,14 +48,64 @@ function YarnOrderList() {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder) => {
-      const { id, first_name, last_name, mobile, address } = yarnOrder;
-      return [id, first_name, last_name, mobile, address];
+      const {
+        id,
+        order_date,
+        yarn_stock_company = {},
+        user = {},
+        order_no,
+        lot_no,
+        yarn_grade,
+        rate,
+        quantity,
+        approx_cartoon,
+        approx_amount,
+        status,
+      } = yarnOrder;
+      const {
+        yarn_denier,
+        filament,
+        luster_type,
+        yarn_color,
+        yarn_Sub_type,
+        yarn_company_name,
+      } = yarn_stock_company;
+      const { first_name: supplierName } = user;
+      return [
+        id,
+        order_no,
+        dayjs(order_date).format("DD-MM-YYYY"),
+        supplierName,
+        yarn_company_name,
+        `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+        lot_no,
+        yarn_grade,
+        approx_cartoon,
+        quantity,
+        rate,
+        approx_amount,
+        status,
+      ];
     });
 
     downloadUserPdf({
       body,
       head: [
-        ["ID", "First Name", "Last Name", "Contact No", "Rate", "Address"],
+        [
+          "ID",
+          "Order No.",
+          "Order Date",
+          "Party/Supplier Name",
+          "Yarn Company",
+          "Dennier",
+          "Lot no",
+          "Yarn Grade",
+          "Cartoon",
+          "Quantity",
+          "Rate",
+          "Approx Amount",
+          "Order Status",
+        ],
       ],
       leftContent,
       rightContent,
