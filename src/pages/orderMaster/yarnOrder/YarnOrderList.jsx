@@ -1,12 +1,11 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import { Button, Space, Spin, Table } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { updateUserRequest } from "../../../api/requests/users";
+import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
@@ -24,7 +23,7 @@ function YarnOrderList() {
 
   const companyId = companyListRes?.rows?.[0]?.id;
 
-  const { data: userListRes, isLoading } = useQuery({
+  const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
       "yarn-order",
@@ -38,33 +37,6 @@ function YarnOrderList() {
       return res.data?.data;
     },
     enabled: Boolean(companyId),
-  });
-
-  const {
-    mutateAsync: updateUser,
-    isPending: updatingUser,
-    variables,
-  } = useMutation({
-    mutationFn: async ({ userId, data }) => {
-      const res = await updateUserRequest({
-        userId,
-        data,
-      });
-      return res.data;
-    },
-    mutationKey: ["users", "update"],
-    onSuccess: (res) => {
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
-      }
-    },
-    onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
-    },
   });
 
   function navigateToAdd() {
@@ -97,7 +69,7 @@ function YarnOrderList() {
     GST No.:- ${gst_no}
     `;
 
-    const body = userListRes?.rows?.map((user) => {
+    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((user) => {
       const { id, first_name, last_name, mobile, address } = user;
       return [id, first_name, last_name, mobile, address];
     });
@@ -120,22 +92,80 @@ function YarnOrderList() {
       key: "id",
     },
     {
-      title: "Name",
-      render: (userDetails) => {
-        const { first_name, last_name } = userDetails;
-        return first_name + " " + last_name;
+      title: "Order Date",
+      render: ({ order_date }) => {
+        return dayjs(order_date).format("DD-MM-YYYY");
       },
-      key: "name",
+      key: "order_date",
     },
     {
-      title: "Contact No",
-      dataIndex: "mobile",
-      key: "mobile",
+      title: "Order No.",
+      dataIndex: "order_no",
+      key: "order_no",
     },
     {
-      title: "Address",
-      dataIndex: "address",
-      key: "address",
+      title: "Party/Supplier Name",
+      dataIndex: ["user", "first_name"],
+      key: "user.first_name",
+    },
+    {
+      title: "Yarn Company",
+      dataIndex: ["yarn_stock_company", "yarn_company_name"],
+      key: "yarn_stock_company.yarn_company_name",
+    },
+    {
+      title: "Denier",
+      render: ({ yarn_stock_company }) => {
+        const {
+          yarn_denier = 0,
+          filament = 0,
+          luster_type = "",
+          yarn_color = "",
+          yarn_Sub_type = "",
+        } = yarn_stock_company;
+        return `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`;
+      },
+      key: "denier",
+    },
+    {
+      title: "Lot No.",
+      dataIndex: "lot_no",
+      key: "lot_no",
+    },
+    {
+      title: "Yarn grade",
+      dataIndex: "yarn_grade",
+      key: "yarn_grade",
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Delivered Quantity",
+      dataIndex: "delivered_quantity",
+      key: "delivered_quantity",
+    },
+    {
+      title: "Pending Quantity",
+      dataIndex: "pending_quantity",
+      key: "pending_quantity",
+    },
+    {
+      title: "Rate",
+      dataIndex: "rate",
+      key: "rate",
+    },
+    {
+      title: "Approx amount",
+      dataIndex: "approx_amount",
+      key: "approx_amount",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Action",
@@ -166,25 +196,6 @@ function YarnOrderList() {
       },
       key: "action",
     },
-    {
-      title: "Status",
-      render: (userDetails) => {
-        const { is_active, id } = userDetails;
-        return (
-          <Switch
-            loading={updatingUser && variables?.userId === id}
-            defaultChecked={is_active}
-            onChange={(is_active) => {
-              updateUser({
-                userId: id,
-                data: { is_active: is_active },
-              });
-            }}
-          />
-        );
-      },
-      key: "status",
-    },
   ];
 
   function renderTable() {
@@ -198,15 +209,16 @@ function YarnOrderList() {
 
     return (
       <Table
-        dataSource={userListRes?.rows || []}
+        dataSource={yarnOrderListRes?.yarnOrderList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: userListRes?.count || 0,
+          total: yarnOrderListRes?.yarnOrderList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        style={{ overflow: "auto" }}
       />
     );
   }
@@ -225,7 +237,7 @@ function YarnOrderList() {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!userListRes?.rows?.length}
+          disabled={!yarnOrderListRes?.yarnOrderList?.rows?.length}
           onClick={downloadPdf}
         />
       </div>
