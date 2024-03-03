@@ -318,7 +318,7 @@ function AddYarnOrder() {
             <Button
               icon={<PlusCircleOutlined />}
               onClick={goToAddYarnStockCompany}
-              className="mb-6"
+              className="flex-none mb-6"
               type="primary"
             />
           </Col>

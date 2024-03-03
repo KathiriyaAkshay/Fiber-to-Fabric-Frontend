@@ -47,8 +47,8 @@ function YarnOrderList() {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, address } = user;
+    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder) => {
+      const { id, first_name, last_name, mobile, address } = yarnOrder;
       return [id, first_name, last_name, mobile, address];
     });
 
@@ -147,24 +147,68 @@ function YarnOrderList() {
     },
     {
       title: "Action",
-      render: (userDetails) => {
-        const { first_name, last_name, mobile, email, username, address } =
-          userDetails;
+      render: (yarnOrder) => {
+        const {
+          order_date,
+          yarn_stock_company = {},
+          user = {},
+          order_no,
+          lot_no,
+          yarn_grade,
+          rate,
+          credit_days,
+          quantity,
+          pending_quantity,
+          delivered_quantity,
+          approx_cartoon,
+          pending_cartoon,
+          delivered_cartoon,
+          approx_amount,
+        } = yarnOrder;
+        const {
+          yarn_denier,
+          filament,
+          luster_type,
+          yarn_color,
+          yarn_Sub_type,
+          yarn_company_name,
+        } = yarn_stock_company;
+        const { first_name: supplierName } = user;
+
         return (
           <Space>
             <ViewDetailModal
               title="Yarn Order Detail"
               details={[
-                { title: "Name", value: `${first_name} ${last_name}` },
-                { title: "Contact Number", value: mobile },
-                { title: "Email", value: email },
-                { title: "Username", value: username },
-                { title: "Address", value: address },
+                { title: "Yarn Company", value: yarn_company_name },
+                {
+                  title: "Dennier",
+                  value: `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+                },
+                {
+                  title: "Order Date",
+                  value: dayjs(order_date).format("DD-MM-YYYY"),
+                },
+                { title: "Supplier Name", value: supplierName },
+                { title: "Order No.", value: order_no },
+                { title: "Lot No.", value: lot_no },
+                { title: "Yarn Grade", value: yarn_grade },
+                { title: "Rate", value: rate },
+                { title: "Credit Days", value: credit_days },
+                { title: "Quantity", value: quantity },
+                { title: "Pending Quantity", value: pending_quantity },
+                { title: "Delivered Quantity", value: delivered_quantity },
+                { title: "Approx Cartoon", value: approx_cartoon },
+                { title: "Pending Cartoon", value: pending_cartoon },
+                { title: "Delivered Cartoon", value: delivered_cartoon },
+                { title: "Approx Amount", value: approx_amount },
+                // { title: "Advance Amount", value: "" },
+                // { title: "Remaining Amount", value: "" },
               ]}
             />
             <Button
               onClick={() => {
-                navigateToUpdate(userDetails.id);
+                navigateToUpdate(yarnOrder.id);
               }}
             >
               <EditOutlined />

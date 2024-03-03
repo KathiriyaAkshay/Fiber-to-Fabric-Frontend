@@ -45,13 +45,13 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         }}
       >
         <Flex className="flex-col gap-1">
-          {details?.map(({ title = "", value = "" }) => {
+          {details?.map(({ title = "", value }) => {
             return (
               <Row gutter={12} className="flex-grow" key={title}>
                 <Col span={10} className="font-medium">
                   {title}
                 </Col>
-                <Col span={14}>{value || "-"}</Col>
+                <Col span={14}>{value ?? "-"}</Col>
               </Row>
             );
           })}
