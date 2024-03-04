@@ -78,9 +78,13 @@ function UpdateVehicleUser() {
   const { data: userDetails } = useQuery({
     queryKey: ["vehicle-user", "get", id],
     queryFn: async () => {
-      const res = await getVehicleUserByIdRequest({ id });
+      const res = await getVehicleUserByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

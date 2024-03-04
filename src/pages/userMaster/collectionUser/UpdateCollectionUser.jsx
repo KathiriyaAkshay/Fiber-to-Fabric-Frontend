@@ -78,9 +78,13 @@ function UpdateCollectionUser() {
   const { data: userDetails } = useQuery({
     queryKey: ["users", "collection_user", "get", id],
     queryFn: async () => {
-      const res = await getCollectionUserByIdRequest({ id });
+      const res = await getCollectionUserByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

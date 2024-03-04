@@ -77,9 +77,13 @@ function UpdateAccountantUser() {
   const { data: userDetails } = useQuery({
     queryKey: ["users", "accountant_user", "get", id],
     queryFn: async () => {
-      const res = await getAccountantUserByIdRequest({ id });
+      const res = await getAccountantUserByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

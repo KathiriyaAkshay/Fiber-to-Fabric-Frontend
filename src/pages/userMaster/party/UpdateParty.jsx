@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getBrokerListRequest,
   getPartyByIdRequest,
@@ -14,7 +14,7 @@ import {
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updatePartySchemaResolver = yupResolver(
   yup.object().shape({
@@ -40,6 +40,7 @@ const updatePartySchemaResolver = yupResolver(
 const roleId = USER_ROLES.PARTY.role_id;
 
 function UpdateParty() {
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
@@ -47,10 +48,6 @@ function UpdateParty() {
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
     queryKey: ["broker", "list", { company_id: companyId }],
@@ -92,9 +89,13 @@ function UpdateParty() {
   const { data: userDetails } = useQuery({
     queryKey: ["party", "get", id],
     queryFn: async () => {
-      const res = await getPartyByIdRequest({ id });
+      const res = await getPartyByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

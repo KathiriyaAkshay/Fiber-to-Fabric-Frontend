@@ -6,12 +6,13 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { AadharRegex } from "../../../constants/regex";
 import {
   getYarnOrderByIdRequest,
   updateYarnOrderRequest,
 } from "../../../api/requests/orderMaster";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -34,6 +35,7 @@ const updateYarnOrderSchemaResolver = yupResolver(
 );
 
 function UpdateYarnOrder() {
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
@@ -66,9 +68,13 @@ function UpdateYarnOrder() {
   const { data: yarnOrderDetails } = useQuery({
     queryKey: ["order-master", "yarn-order", "get", id],
     queryFn: async () => {
-      const res = await getYarnOrderByIdRequest({ id });
+      const res = await getYarnOrderByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

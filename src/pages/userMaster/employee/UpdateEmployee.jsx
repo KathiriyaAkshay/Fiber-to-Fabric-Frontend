@@ -121,9 +121,13 @@ function UpdateEmployee() {
   const { data: userDetails } = useQuery({
     queryKey: ["employee", "get", id],
     queryFn: async () => {
-      const res = await getEmployeeByIdRequest({ id });
+      const res = await getEmployeeByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {

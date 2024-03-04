@@ -6,7 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getBrokerByIdRequest,
   getPartyListRequest,
@@ -14,7 +14,7 @@ import {
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateBrokerSchemaResolver = yupResolver(
   yup.object().shape({
@@ -40,6 +40,7 @@ const updateBrokerSchemaResolver = yupResolver(
 const roleId = USER_ROLES.BROKER.role_id;
 
 function UpdateBroker() {
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
@@ -77,18 +78,18 @@ function UpdateBroker() {
   const { data: userDetails } = useQuery({
     queryKey: ["broker", "get", id],
     queryFn: async () => {
-      const res = await getBrokerByIdRequest({ id });
+      const res = await getBrokerByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {
     await updateUser(data);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
