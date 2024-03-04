@@ -9,8 +9,9 @@ import { useQuery } from "@tanstack/react-query";
 import PermissionCheckboxes from "../../../components/permission/PermissionCheckboxes";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const permissionSchema = yup.object().shape({
   sub_module_id: yup.number().required("Sub Module ID is required"),
@@ -29,18 +30,17 @@ const updatePermissionSchemaResolver = yupResolver(
 );
 
 function UserRoles() {
+  const { companyId } = useContext(GlobalContext);
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
+    // reset,
     watch,
-    setValue,
+    // setValue,
   } = useForm({
     resolver: updatePermissionSchemaResolver,
     defaultValues: {
@@ -48,10 +48,10 @@ function UserRoles() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "permissions",
-  });
+  // const { fields, append, remove } = useFieldArray({
+  //   control,
+  //   name: "permissions",
+  // });
 
   const { company_id, user_id } = watch();
 
@@ -78,15 +78,19 @@ function UserRoles() {
   });
 
   const { data: allowedPermissionsRes } = useQuery({
-    queryKey: ["permission", "get", company_id, user_id],
+    queryKey: ["permission", "get", 5, 4],
     queryFn: async () => {
       const res = await getModulePermissionsRequest({
-        params: { company_id: company_id },
+        companyId: companyId,
+        userId: user_id,
+        params: { company_id: 5 },
       });
       return res.data?.data;
     },
     enabled: Boolean(company_id && user_id),
   });
+
+  console.log("allowedPermissionsRes", allowedPermissionsRes);
 
   async function onSubmit(data) {
     console.log(data);

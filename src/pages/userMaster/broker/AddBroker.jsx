@@ -15,7 +15,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const roleId = USER_ROLES.BROKER.role_id;
 
@@ -52,15 +53,12 @@ const addBrokerSchemaResolver = yupResolver(
 );
 
 function AddBroker() {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],

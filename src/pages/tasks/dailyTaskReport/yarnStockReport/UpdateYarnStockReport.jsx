@@ -16,10 +16,10 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import dayjs from "dayjs";
-import { useCompanyList } from "../../../../api/hooks/company";
 import { getYarnStockReportByIdRequest } from "../../../../api/requests/reports/yarnStockReport";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import { updateYarnStockReportRequest } from "../../../../api/requests/reports/yarnStockReport";
 
 const updateYarnStockReportSchemaResolver = yupResolver(
@@ -34,14 +34,11 @@ function UpdateYarnStockReport() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
+  const { companyId } = useContext(GlobalContext);
 
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: updateReport } = useMutation({
     mutationFn: async (data) => {

@@ -12,7 +12,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
@@ -53,15 +54,12 @@ const addVehicleUserSchemaResolver = yupResolver(
 );
 
 function AddVehicleUser() {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {

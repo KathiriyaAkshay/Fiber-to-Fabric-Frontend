@@ -25,6 +25,8 @@ import dayjs from "dayjs";
 import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
 import SalaryTypeSpecificFields from "../../../components/userMaster/employee/SalaryTypeSpecificFields";
 import { useCompanyList } from "../../../api/hooks/company";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -88,6 +90,7 @@ const addEmployeeSchemaResolver = yupResolver(
 );
 
 function AddEmployee() {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   function goBack() {
@@ -96,8 +99,6 @@ function AddEmployee() {
 
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {

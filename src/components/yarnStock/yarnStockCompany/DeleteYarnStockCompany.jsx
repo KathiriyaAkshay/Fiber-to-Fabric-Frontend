@@ -1,18 +1,16 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { deleteYSCompanyRequest } from "../../../api/requests/yarnStock";
-import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const DeleteYarnStockCompany = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: deleteYarnStockCompany } = useMutation({
     mutationFn: async ({ id }) => {

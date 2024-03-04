@@ -1,18 +1,15 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import DeleteConfirmationDialog from "../common/modal/DeleteConfirmationDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCompanyList } from "../../api/hooks/company";
 import { deleteTaskRequest } from "../../api/requests/task";
+import { GlobalContext } from "../../contexts/GlobalContext";
 
 const DeleteTaskButton = ({ details }) => {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: deleteTask } = useMutation({
     mutationFn: async ({ id }) => {

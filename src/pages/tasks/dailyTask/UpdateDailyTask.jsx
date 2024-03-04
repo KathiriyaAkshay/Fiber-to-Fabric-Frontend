@@ -17,15 +17,15 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getTaskByIdRequest,
   updateTaskRequest,
 } from "../../../api/requests/task";
 import { getSupervisorListRequest } from "../../../api/requests/users";
-import { useCompanyList } from "../../../api/hooks/company";
 import dayjs from "dayjs";
 import { ASSIGN_TIME_LIST } from "../../../constants/task";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateTaskSchemaResolver = yupResolver(
   yup.object().shape({
@@ -44,10 +44,7 @@ function UpdateDailyTask() {
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: updateTask } = useMutation({
     mutationFn: async (data) => {

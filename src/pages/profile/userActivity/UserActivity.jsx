@@ -1,16 +1,15 @@
 import { Table } from "antd";
-import { useCompanyList } from "../../../api/hooks/company";
 import { useQuery } from "@tanstack/react-query";
 import { getUserActivityRequest } from "../../../api/requests/activity";
 import dayjs from "dayjs";
 import { ROLE_ID_USER_TYPE_MAP } from "../../../constants/userRole";
 import { usePagination } from "../../../hooks/usePagination";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 function UserActivity() {
-  const { data: companyListRes } = useCompanyList();
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { data: userActivityListRes } = useQuery({
     queryKey: [

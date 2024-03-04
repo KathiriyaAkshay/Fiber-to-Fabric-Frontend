@@ -16,13 +16,13 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import dayjs from "dayjs";
-import { useCompanyList } from "../../../../api/hooks/company";
 import {
   getOtherReportByIdRequest,
   updateOtherReportRequest,
 } from "../../../../api/requests/reports/otherReport";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const updateOtherReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -36,14 +36,11 @@ function UpdateOtherReport() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
+  const { companyId } = useContext(GlobalContext);
 
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: updateOtherReport } = useMutation({
     mutationFn: async (data) => {

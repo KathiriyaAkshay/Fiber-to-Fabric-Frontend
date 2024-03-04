@@ -1,88 +1,54 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  Flex,
-  Form,
-  Input,
-  Radio,
-  Row,
-  Select,
-  message,
-} from "antd";
-import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
-import { addUserRequest } from "../../../api/requests/users";
-import { USER_ROLES } from "../../../constants/userRole";
-import PhoneInput from "react-phone-number-input";
-import ForwardRefInput from "../../../components/common/ForwardRefInput";
-import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import * as yup from "yup";
+import { DevTool } from "@hookform/devtools";
+import { useEffect } from "react";
 import { AadharRegex } from "../../../constants/regex";
-import { useContext } from "react";
-import { GlobalContext } from "../../../contexts/GlobalContext";
+import {
+  getSizeBeamOrderByIdRequest,
+  updateSizeBeamOrderRequest,
+} from "../../../api/requests/orderMaster";
 
-const roleId = USER_ROLES.SUPERVISOR.role_id;
-
-const addSupervisorSchemaResolver = yupResolver(
+const updateSizeBeamOrderSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
-    password: yup
-      .string()
-      // .min(8, "Password is too short - should be 8 chars minimum.")
-      .required("No password provided."),
-    mobile: yup
-      .string()
-      .required("Please enter Contact number")
-      .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
-        value ? isValidPhoneNumber(value) : false
-      ),
     email: yup
       .string()
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
-    // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
-    // .required('Please enter pan number')
-    // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
+    gst_no: yup.string(),
+    rateType: yup.string().required("Please select rate type"),
+    pricePerRate: yup.string().required("Please provide price "),
   })
 );
 
-function AddSupervisor() {
-  const { companyId, companyListRes } = useContext(GlobalContext);
-  const queryClient = useQueryClient();
+function UpdateSizeBeamOrder() {
   const navigate = useNavigate();
+  const params = useParams();
+  const { id } = params;
+
   function goBack() {
     navigate(-1);
   }
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: updateSizeBeamOrder } = useMutation({
     mutationFn: async (data) => {
-      const res = await addUserRequest({
-        roleId,
-        data,
-        params: { company_id: companyId },
-      });
+      const res = await updateSizeBeamOrderRequest({ id, data });
       return res.data;
     },
-    mutationKey: ["users", "add", roleId],
+    mutationKey: ["order-master", "yarn-order", "update", id],
     onSuccess: (res) => {
-      queryClient.invalidateQueries([
-        "supervisor",
-        "list",
-        { company_id: companyId },
-      ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -90,13 +56,23 @@ function AddSupervisor() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const { data: sizeBeamOrderDetails } = useQuery({
+    queryKey: ["order-master", "yarn-order", "get", id],
+    queryFn: async () => {
+      const res = await getSizeBeamOrderByIdRequest({ id });
+      return res.data?.data;
     },
   });
 
   async function onSubmit(data) {
-    await addUser(data);
+    await updateSizeBeamOrder(data);
   }
 
   const {
@@ -105,8 +81,22 @@ function AddSupervisor() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: addSupervisorSchemaResolver,
+    resolver: updateSizeBeamOrderSchemaResolver,
   });
+
+  useEffect(() => {
+    if (sizeBeamOrderDetails) {
+      reset({
+        ...sizeBeamOrderDetails,
+        // remove unnecessary fields
+        id: undefined,
+        deletedAt: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+        salary: undefined,
+      });
+    }
+  }, [sizeBeamOrderDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -114,7 +104,7 @@ function AddSupervisor() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Add New Supervisor</h3>
+        <h3 className="m-0 text-primary">Update Yarn Order</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -166,30 +156,6 @@ function AddSupervisor() {
 
           <Col span={12}>
             <Form.Item
-              label={<p className="m-0 whitespace-nowrap">Phone Number</p>}
-              name="mobile"
-              validateStatus={errors.mobile ? "error" : ""}
-              help={errors.mobile && errors.mobile.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="mobile"
-                render={({ field }) => (
-                  <PhoneInput
-                    {...field}
-                    placeholder="Enter phone number"
-                    defaultCountry="IN"
-                    international
-                    inputComponent={ForwardRefInput}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label="Email"
               name="email"
               validateStatus={errors.email ? "error" : ""}
@@ -224,7 +190,7 @@ function AddSupervisor() {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          {/* <Col span={12}>
             <Form.Item
               label="Password"
               name="password"
@@ -244,7 +210,7 @@ function AddSupervisor() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={12}>
             <Form.Item
@@ -302,37 +268,19 @@ function AddSupervisor() {
 
           <Col span={12}>
             <Form.Item
-              label="Username"
-              name="username"
-              validateStatus={errors.username ? "error" : ""}
-              help={errors.username && errors.username.message}
+              label="Rate Type"
+              name="rateType"
+              validateStatus={errors.rateType ? "error" : ""}
+              help={errors.rateType && errors.rateType.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="username"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Username" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Supervisor Type"
-              name="supervisor_type"
-              validateStatus={errors.supervisor_type ? "error" : ""}
-              help={errors.supervisor_type && errors.supervisor_type.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="supervisor_type"
+                name="rateType"
                 render={({ field }) => (
                   <Radio.Group {...field}>
-                    <Radio value={"senior"}>Senior</Radio>
-                    <Radio value={"super_senior"}>Semi-Senior</Radio>
+                    <Radio value={"perTaka"}>Per Taka</Radio>
+                    <Radio value={"perMeter"}>Per Meter</Radio>
                   </Radio.Group>
                 )}
               />
@@ -341,29 +289,17 @@ function AddSupervisor() {
 
           <Col span={12}>
             <Form.Item
-              label="Companies"
-              name="company_ids"
-              validateStatus={errors.company_ids ? "error" : ""}
-              help={errors.company_ids && errors.company_ids.message}
+              label="Price"
+              name="pricePerRate"
+              validateStatus={errors.pricePerRate ? "error" : ""}
+              help={errors.pricePerRate && errors.pricePerRate.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="company_ids"
+                name="pricePerRate"
                 render={({ field }) => (
-                  <Select
-                    mode="multiple"
-                    allowClear
-                    // style={{
-                    //   width: "100%",
-                    // }}
-                    placeholder="Please select companies"
-                    {...field}
-                    options={companyListRes?.rows?.map((company) => ({
-                      label: company.company_name,
-                      value: company.id,
-                    }))}
-                  />
+                  <Input {...field} placeholder="75" type="number" min={0} />
                 )}
               />
             </Form.Item>
@@ -371,11 +307,8 @@ function AddSupervisor() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit">
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
@@ -385,4 +318,4 @@ function AddSupervisor() {
   );
 }
 
-export default AddSupervisor;
+export default UpdateSizeBeamOrder;

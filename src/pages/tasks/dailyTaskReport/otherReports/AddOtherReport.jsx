@@ -18,7 +18,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
 import { createOtherReportRequest } from "../../../../api/requests/reports/otherReport";
-import { useCompanyList } from "../../../../api/hooks/company";
+import { useContext } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const addOtherReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -29,12 +30,9 @@ const addOtherReportSchemaResolver = yupResolver(
 );
 
 function AddOtherReport() {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
 
   const { mutateAsync: createOtherReport } = useMutation({
     mutationFn: async (data) => {

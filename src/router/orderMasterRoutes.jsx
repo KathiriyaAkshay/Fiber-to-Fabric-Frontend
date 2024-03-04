@@ -1,3 +1,6 @@
+import AddSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/AddSizeBeamOrder";
+import SizeBeamOrderList from "../pages/orderMaster/sizeBeamOrder/SizeBeamOrderList";
+// import UpdateSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/UpdateSizeBeamOrder";
 import AddYarnOrder from "../pages/orderMaster/yarnOrder/AddYarnOrder";
 // import UpdateYarnOrder from "../pages/orderMaster/yarnOrder/UpdateYarnOrder";
 import YarnOrderList from "../pages/orderMaster/yarnOrder/YarnOrderList";
@@ -20,7 +23,11 @@ export const orderMasterRoutes = {
     },
     {
       path: "size-beam-order",
-      element: <div>size-beam-order</div>,
+      children: [
+        { index: true, element: <SizeBeamOrderList /> },
+        { path: "add", element: <AddSizeBeamOrder /> },
+        // { path: "update/:id", element: <UpdateSizeBeamOrder /> },
+      ],
     },
     {
       path: "schedule-delivery-list",

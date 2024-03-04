@@ -12,7 +12,8 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
+import { useContext } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const roleId = USER_ROLES.ACCOUNTANT_USER.role_id;
 
@@ -54,10 +55,7 @@ function AddAccountantUser() {
   function goBack() {
     navigate(-1);
   }
-
-  const { data: companyListRes } = useCompanyList();
-
-  const companyId = companyListRes?.rows?.[0]?.id;
+  const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {
