@@ -52,6 +52,7 @@ function CollectionUserList() {
         roleId,
         userId,
         data,
+        params: { copmany_id: companyId },
       });
       return res.data;
     },

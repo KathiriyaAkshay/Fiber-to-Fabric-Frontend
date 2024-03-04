@@ -47,6 +47,7 @@ function PartyList() {
         roleId,
         userId,
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },

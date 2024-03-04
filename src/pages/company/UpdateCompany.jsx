@@ -37,7 +37,11 @@ function UpdateCompany() {
 
   const { mutateAsync: updateCompanyDetails } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateCompanyRequest({ companyId, data });
+      const res = await updateCompanyRequest({
+        companyId,
+        data,
+        params: { company_id: companyId },
+      });
       return res.data;
     },
     mutationKey: ["update", "company", companyId],

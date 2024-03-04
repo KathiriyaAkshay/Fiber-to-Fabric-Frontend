@@ -69,6 +69,7 @@ function UpdateParty() {
         roleId,
         userId: id,
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },

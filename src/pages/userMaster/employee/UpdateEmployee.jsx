@@ -16,7 +16,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import {
   getEmployeeByIdRequest,
   updateUserRequest,
@@ -26,6 +26,7 @@ import SalaryTypeSpecificFields from "../../../components/userMaster/employee/Sa
 import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/EmployeeSalaryTypeInput";
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
@@ -82,6 +83,7 @@ const updateEmployeeSchemaResolver = yupResolver(
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
 function UpdateEmployee() {
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
@@ -96,6 +98,7 @@ function UpdateEmployee() {
         roleId,
         userId: id,
         data,
+        params: { company_id: companyId },
       });
       return res.data;
     },

@@ -4,8 +4,8 @@ export function createCompanyRequest(data) {
   return api.post("/company/create", data);
 }
 
-export function updateCompanyRequest({ companyId, data }) {
-  return api.put(`/company/update/${companyId}`, data);
+export function updateCompanyRequest({ companyId, data, params }) {
+  return api.put(`/company/update/${companyId}`, data, { params });
 }
 
 export function getCompanyRequest({ companyId, params }) {

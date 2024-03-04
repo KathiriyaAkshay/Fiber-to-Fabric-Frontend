@@ -4,8 +4,8 @@ export function addUserRequest({ roleId, data, params }) {
   return api.post(`/users/add/${roleId}`, data, { params });
 }
 
-export function updateUserRequest({ roleId, userId, data }) {
-  return api.post(`/users/update/${roleId}/${userId}`, data);
+export function updateUserRequest({ roleId, userId, data, params }) {
+  return api.post(`/users/update/${roleId}/${userId}`, data, { params });
 }
 
 // supervisor
