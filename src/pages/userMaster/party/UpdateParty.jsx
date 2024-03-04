@@ -369,7 +369,13 @@ function UpdateParty() {
                 control={control}
                 name="overdue_day_limit"
                 render={({ field }) => (
-                  <Input {...field} placeholder="7" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="7"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -392,7 +398,7 @@ function UpdateParty() {
                     placeholder="1500.50"
                     type="number"
                     min={0}
-                    step=".01"
+                    step={0.01}
                   />
                 )}
               />

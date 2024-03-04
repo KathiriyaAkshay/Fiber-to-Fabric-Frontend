@@ -353,7 +353,13 @@ function UpdateVehicleUser() {
                 control={control}
                 name="pricePerRate"
                 render={({ field }) => (
-                  <Input {...field} placeholder="75" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="75"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

@@ -17,7 +17,13 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
               control={control}
               name="salary"
               render={({ field }) => (
-                <Input {...field} placeholder="10000" type="number" min={0} />
+                <Input
+                  {...field}
+                  placeholder="10000"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                />
               )}
             />
           </Form.Item>
@@ -38,7 +44,13 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
               control={control}
               name="per_attendance"
               render={({ field }) => (
-                <Input {...field} placeholder="24" type="number" min={0} />
+                <Input
+                  {...field}
+                  placeholder="24"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                />
               )}
             />
           </Form.Item>
@@ -87,7 +99,13 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
                 control={control}
                 name="machineNo_from"
                 render={({ field }) => (
-                  <Input {...field} placeholder="1" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="1"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -104,7 +122,13 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
                 control={control}
                 name="machineNo_to"
                 render={({ field }) => (
-                  <Input {...field} placeholder="50" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="50"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

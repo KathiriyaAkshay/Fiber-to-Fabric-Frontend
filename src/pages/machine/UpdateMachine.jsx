@@ -129,7 +129,13 @@ function UpdateMachine() {
                 control={control}
                 name="no_of_machines"
                 render={({ field }) => (
-                  <Input {...field} placeholder="3" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -146,7 +152,13 @@ function UpdateMachine() {
                 control={control}
                 name="no_of_employees"
                 render={({ field }) => (
-                  <Input {...field} placeholder="1" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="1"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

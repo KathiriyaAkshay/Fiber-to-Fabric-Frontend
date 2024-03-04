@@ -327,6 +327,7 @@ function AddYarnStockReport() {
                     type="number"
                     min={0}
                     disabled
+                    step={0.01}
                   />
                 )}
               />
@@ -345,7 +346,13 @@ function AddYarnStockReport() {
                 control={control}
                 name="cartoon"
                 render={({ field }) => (
-                  <Input {...field} placeholder="3" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -363,7 +370,13 @@ function AddYarnStockReport() {
                 control={control}
                 name="current_stock"
                 render={({ field }) => (
-                  <Input {...field} placeholder="3" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -387,6 +400,7 @@ function AddYarnStockReport() {
                     type="number"
                     min={0}
                     disabled
+                    step={0.01}
                   />
                 )}
               />
@@ -405,7 +419,13 @@ function AddYarnStockReport() {
                 control={control}
                 name="lot_no"
                 render={({ field }) => (
-                  <Input {...field} placeholder="3" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="3"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

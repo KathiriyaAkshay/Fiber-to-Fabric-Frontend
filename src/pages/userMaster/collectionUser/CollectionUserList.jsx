@@ -52,7 +52,7 @@ function CollectionUserList() {
         roleId,
         userId,
         data,
-        params: { copmany_id: companyId },
+        params: { company_id: companyId },
       });
       return res.data;
     },

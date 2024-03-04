@@ -322,7 +322,13 @@ function AddCollectionUser() {
                 control={control}
                 name="salary"
                 render={({ field }) => (
-                  <Input {...field} placeholder="10000" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="10000"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>

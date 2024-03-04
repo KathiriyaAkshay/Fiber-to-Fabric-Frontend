@@ -247,6 +247,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
                     placeholder="100000"
                     type="number"
                     min={0}
+                    step={0.01}
                   />
                 )}
               />

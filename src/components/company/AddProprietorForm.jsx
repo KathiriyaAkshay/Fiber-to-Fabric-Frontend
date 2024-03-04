@@ -104,7 +104,13 @@ const AddProprietorForm = ({ companyDetails }) => {
               control={control}
               name="ratio"
               render={({ field }) => (
-                <Input {...field} placeholder="75" type="number" min={0} />
+                <Input
+                  {...field}
+                  placeholder="75"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                />
               )}
             />
           </Form.Item>
@@ -120,7 +126,13 @@ const AddProprietorForm = ({ companyDetails }) => {
               control={control}
               name="capital"
               render={({ field }) => (
-                <Input {...field} placeholder="50000" type="number" min={0} />
+                <Input
+                  {...field}
+                  placeholder="50000"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                />
               )}
             />
           </Form.Item>

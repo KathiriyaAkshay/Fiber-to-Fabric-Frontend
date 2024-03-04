@@ -318,7 +318,7 @@ function UpdateEmployee() {
                     placeholder="5"
                     type="number"
                     min={0}
-                    step=".01"
+                    step={0.01}
                   />
                 )}
               />

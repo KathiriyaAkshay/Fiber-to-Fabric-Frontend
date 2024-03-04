@@ -526,6 +526,7 @@ function AddYarnOrder() {
                     type="number"
                     min={0}
                     disabled={true}
+                    step={0.01}
                   />
                 )}
               />
@@ -549,6 +550,7 @@ function AddYarnOrder() {
                     placeholder="Rate per KG"
                     type="number"
                     min={0}
+                    step={0.01}
                   />
                 )}
               />
@@ -589,7 +591,13 @@ function AddYarnOrder() {
                 control={control}
                 name="credit_days"
                 render={({ field }) => (
-                  <Input {...field} placeholder="30" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="30"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -611,7 +619,13 @@ function AddYarnOrder() {
                 control={control}
                 name="quantity"
                 render={({ field }) => (
-                  <Input {...field} placeholder="1000" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="1000"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -631,7 +645,13 @@ function AddYarnOrder() {
                 control={control}
                 name="delivered_quantity"
                 render={({ field }) => (
-                  <Input {...field} placeholder="0" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="0"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -655,6 +675,7 @@ function AddYarnOrder() {
                     type="number"
                     min={0}
                     disabled={true}
+                    step={0.01}
                   />
                 )}
               />
@@ -676,7 +697,13 @@ function AddYarnOrder() {
                 control={control}
                 name="approx_cartoon"
                 render={({ field }) => (
-                  <Input {...field} placeholder="100" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="100"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -696,7 +723,13 @@ function AddYarnOrder() {
                 control={control}
                 name="delivered_cartoon"
                 render={({ field }) => (
-                  <Input {...field} placeholder="0" type="number" min={0} />
+                  <Input
+                    {...field}
+                    placeholder="0"
+                    type="number"
+                    min={0}
+                    step={0.01}
+                  />
                 )}
               />
             </Form.Item>
@@ -720,6 +753,7 @@ function AddYarnOrder() {
                     type="number"
                     min={0}
                     disabled={true}
+                    step={0.01}
                   />
                 )}
               />
