@@ -1,5 +1,5 @@
 import { Button, Space, Spin, Table } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
@@ -10,6 +10,7 @@ import { usePagination } from "../../../hooks/usePagination";
 import { getSizeBeamOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import DeleteSizeBeamOrderButton from "../../../components/orderMaster/sizeBeamOrder/DeleteSizeBeamOrderButton";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function SizeBeamOrderList() {
   const { data: sizeBeamOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
-      "yarn-order",
+      "size-beam-order",
       "list",
       { company_id: companyId, page, pageSize },
     ],
@@ -34,12 +35,12 @@ function SizeBeamOrderList() {
   });
 
   function navigateToAdd() {
-    navigate("/order-master/my-yarn-orders/add");
+    navigate("/order-master/size-beam-order/add");
   }
 
-  // function navigateToUpdate(id) {
-  //   navigate(`/order-master/my-yarn-orders/update/${id}`);
-  // }
+  function navigateToUpdate(id) {
+    navigate(`/order-master/size-beam-order/update/${id}`);
+  }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -48,35 +49,20 @@ function SizeBeamOrderList() {
         const {
           id,
           order_date,
-          yarn_stock_company = {},
           user = {},
           order_no,
-          lot_no,
-          yarn_grade,
           rate,
           quantity,
           approx_cartoon,
           approx_amount,
           status,
         } = sizeBeamOrder;
-        const {
-          yarn_denier,
-          filament,
-          luster_type,
-          yarn_color,
-          yarn_Sub_type,
-          yarn_company_name,
-        } = yarn_stock_company;
         const { first_name: supplierName } = user;
         return [
           id,
           order_no,
           dayjs(order_date).format("DD-MM-YYYY"),
           supplierName,
-          yarn_company_name,
-          `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
-          lot_no,
-          yarn_grade,
           approx_cartoon,
           quantity,
           rate,
@@ -94,10 +80,8 @@ function SizeBeamOrderList() {
           "Order No.",
           "Order Date",
           "Party/Supplier Name",
-          "Yarn Company",
           "Dennier",
           "Lot no",
-          "Yarn Grade",
           "Cartoon",
           "Quantity",
           "Rate",
@@ -107,7 +91,7 @@ function SizeBeamOrderList() {
       ],
       leftContent,
       rightContent,
-      title: "Yarn Order List",
+      title: "Send Beam Pipe Order List",
     });
   }
 
@@ -135,33 +119,9 @@ function SizeBeamOrderList() {
       key: "user.first_name",
     },
     {
-      title: "Yarn Company",
-      dataIndex: ["yarn_stock_company", "yarn_company_name"],
-      key: "yarn_stock_company.yarn_company_name",
-    },
-    {
-      title: "Denier",
-      render: ({ yarn_stock_company }) => {
-        const {
-          yarn_denier = 0,
-          filament = 0,
-          luster_type = "",
-          yarn_color = "",
-          yarn_Sub_type = "",
-        } = yarn_stock_company;
-        return `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`;
-      },
-      key: "denier",
-    },
-    {
       title: "Lot No.",
       dataIndex: "lot_no",
       key: "lot_no",
-    },
-    {
-      title: "Yarn grade",
-      dataIndex: "yarn_grade",
-      key: "yarn_grade",
     },
     {
       title: "Quantity",
@@ -197,12 +157,11 @@ function SizeBeamOrderList() {
       title: "Action",
       render: (sizeBeamOrder) => {
         const {
+          id,
           order_date,
-          yarn_stock_company = {},
           user = {},
           order_no,
           lot_no,
-          yarn_grade,
           rate,
           credit_days,
           quantity,
@@ -213,26 +172,13 @@ function SizeBeamOrderList() {
           delivered_cartoon,
           approx_amount,
         } = sizeBeamOrder;
-        const {
-          yarn_denier,
-          filament,
-          luster_type,
-          yarn_color,
-          yarn_Sub_type,
-          yarn_company_name,
-        } = yarn_stock_company;
         const { first_name: supplierName } = user;
 
         return (
           <Space>
             <ViewDetailModal
-              title="Yarn Order Detail"
+              title="Beam Pipe Challan"
               details={[
-                { title: "Yarn Company", value: yarn_company_name },
-                {
-                  title: "Dennier",
-                  value: `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
-                },
                 {
                   title: "Order Date",
                   value: dayjs(order_date).format("DD-MM-YYYY"),
@@ -240,7 +186,6 @@ function SizeBeamOrderList() {
                 { title: "Supplier Name", value: supplierName },
                 { title: "Order No.", value: order_no },
                 { title: "Lot No.", value: lot_no },
-                { title: "Yarn Grade", value: yarn_grade },
                 { title: "Rate", value: rate },
                 { title: "Credit Days", value: credit_days },
                 { title: "Quantity", value: quantity },
@@ -254,6 +199,14 @@ function SizeBeamOrderList() {
                 // { title: "Remaining Amount", value: "" },
               ]}
             />
+            <Button
+              onClick={() => {
+                navigateToUpdate(id);
+              }}
+            >
+              <EditOutlined />
+            </Button>
+            <DeleteSizeBeamOrderButton data={sizeBeamOrder}/>
           </Space>
         );
       },

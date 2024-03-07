@@ -159,9 +159,7 @@ function CompanyList() {
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Company List</h3>
-        <Button onClick={navigateToAddCompany}>
-          <PlusCircleOutlined />
-        </Button>
+        <Button onClick={navigateToAddCompany} icon={<PlusCircleOutlined />} />
       </div>
       <Table
         dataSource={companyListRes?.rows || []}

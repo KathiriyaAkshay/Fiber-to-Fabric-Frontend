@@ -119,9 +119,7 @@ function MachineList() {
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Machine List</h3>
-        <Button onClick={navigateToAdd}>
-          <PlusCircleOutlined />
-        </Button>
+        <Button onClick={navigateToAdd} icon={<PlusCircleOutlined />} />
       </div>
       {renderTable()}
     </div>
