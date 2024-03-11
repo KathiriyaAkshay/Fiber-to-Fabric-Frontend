@@ -5,8 +5,9 @@ import {
   addEmployeeTypeRequest,
   getEmployeeTypeListRequest,
 } from "../../../api/requests/users";
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { CheckOutlined } from "@ant-design/icons";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const { Search } = Input;
 
@@ -17,6 +18,7 @@ function EmployeeSalaryTypeInput({
   setValue,
   isUpdate = false,
 }) {
+  const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [salaryTypeList, setSalaryTypeList] = useState([]);
   const [employeeType, setEmployeeType] = useState("");
@@ -25,9 +27,12 @@ function EmployeeSalaryTypeInput({
     useQuery({
       queryKey: ["dropdown", "employee_type", "list"],
       queryFn: async () => {
-        const res = await getEmployeeTypeListRequest();
+        const res = await getEmployeeTypeListRequest({
+          params: { company_id: companyId },
+        });
         return res.data?.data?.employeeTypeList || [];
       },
+      enabled: Boolean(companyId),
     });
 
   const selectedEmployeeTypeId = watch("employee_type_id");
@@ -36,6 +41,9 @@ function EmployeeSalaryTypeInput({
     mutationFn: async (data) => {
       const res = await addEmployeeTypeRequest({
         data,
+        params: {
+          company_id: companyId,
+        },
       });
       return res.data?.data;
     },
@@ -58,6 +66,10 @@ function EmployeeSalaryTypeInput({
   });
 
   function onSearch(employee_type) {
+    if (!employee_type) {
+      message.error("Please select employee type");
+      return;
+    }
     addEmployeeType({ employee_type });
   }
 

@@ -12,13 +12,8 @@ export function getModulePermissionsRequest({ companyId, userId, params }) {
   });
 }
 
-export function updateUserPermissionRequest({
-  companyId,
-  UserId,
-  data,
-  params,
-}) {
-  return api.patch(`permission/update/${companyId}/${UserId}`, data, {
+export function updateUserPermissionRequest({ companyId, userId, data, params }) {
+  return api.patch(`permission/update/${companyId}/${userId}`, data, {
     params: params,
   });
 }

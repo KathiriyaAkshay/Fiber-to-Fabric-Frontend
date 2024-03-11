@@ -1,31 +1,44 @@
-import { Button, Card, Col, Flex, Form, Input, Row, Select } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
 import { useCompanyList } from "../../../api/hooks/company";
 import {
   getModulePermissionsRequest,
   getPermissionModulesRequest,
   getPermissionUsersRequest,
+  updateUserPermissionRequest,
 } from "../../../api/requests/permission";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import PermissionCheckboxes from "../../../components/permission/PermissionCheckboxes";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { DevTool } from "@hookform/devtools";
 
-const permissionSchema = yup.object().shape({
-  sub_module_id: yup.number().required("Sub Module ID is required"),
-  permission: yup
-    .object()
-    .shape({ [yup.string()]: yup.boolean() })
-    .noUnknown(),
-});
+// const permissionSchema = yup.object().shape({
+//   sub_module_id: yup.number().required("Sub Module ID is required"),
+//   permission: yup
+//     .object()
+//     .shape({ [yup.string()]: yup.boolean() })
+//     .noUnknown(),
+// });
 
 const updatePermissionSchemaResolver = yupResolver(
   yup.object().shape({
     company_id: yup.string(),
     user_id: yup.string(),
-    permissions: yup.array().of(permissionSchema),
+    // permissions: yup.array().of(permissionSchema),
+    permissions: yup.object(),
   })
 );
 
@@ -40,7 +53,7 @@ function UserRoles() {
     formState: { errors },
     // reset,
     watch,
-    // setValue,
+    setValue,
   } = useForm({
     resolver: updatePermissionSchemaResolver,
     defaultValues: {
@@ -48,12 +61,7 @@ function UserRoles() {
     },
   });
 
-  // const { fields, append, remove } = useFieldArray({
-  //   control,
-  //   name: "permissions",
-  // });
-
-  const { company_id, user_id } = watch();
+  const { company_id, user_id, permissions } = watch();
 
   const { data: userRes, isLoading: isLoadingUser } = useQuery({
     queryKey: ["dropdown", "permission-user", companyId],
@@ -78,27 +86,65 @@ function UserRoles() {
   });
 
   const { data: allowedPermissionsRes } = useQuery({
-    queryKey: ["permission", "get", 5, 4],
+    queryKey: ["permission", "get", company_id, user_id],
     queryFn: async () => {
       const res = await getModulePermissionsRequest({
         companyId: companyId,
         userId: user_id,
-        params: { company_id: 5 },
+        params: { company_id: company_id },
       });
       return res.data?.data;
     },
     enabled: Boolean(company_id && user_id),
   });
 
-  console.log("allowedPermissionsRes", allowedPermissionsRes);
+  // console.log("allowedPermissionsRes----->", allowedPermissionsRes);
+
+  const { mutateAsync: updatePermissions } = useMutation({
+    mutationFn: async (data) => {
+      const res = await updateUserPermissionRequest({
+        companyId: company_id,
+        userId: user_id,
+        data,
+        params: { company_id: companyId },
+      });
+      return res.data;
+    },
+    mutationKey: ["permission", "update", companyId, user_id],
+    onSuccess: (res) => {
+      // queryClient.invalidateQueries(["machine", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
 
   async function onSubmit(data) {
     console.log(data);
-    // await addMachine({ ...data, company_id: companyId });
+    // await updatePermissions({ permissions: permissions });
+  }
+
+  async function handleUpdatePermission() {
+    // console.log(permissions);
+    const updatedPermissions = {};
+    Object.entries(permissions || {}).forEach(([key, value]) => {
+      updatedPermissions[key] = {
+        sub_module_id: key,
+        permission: value?.operations || {},
+      };
+    });
+    // console.log("updatedPermissions", updatedPermissions);
+    await updatePermissions({
+      permissions: updatedPermissions,
+    });
   }
 
   function renderPermissionCards() {
-    let index = 0;
     return defaultPermissionRes?.map(
       ({ name = "", id = 0, sub_modules = [] }) => {
         return (
@@ -108,13 +154,13 @@ function UserRoles() {
             key={id}
           >
             {sub_modules?.map((sub_module) => {
-              const sub_module_index = index;
-              index += 1;
               return (
                 <PermissionCheckboxes
                   key={`${sub_module?.id}`}
                   module={sub_module}
-                  sub_module_index={sub_module_index}
+                  control={control}
+                  watch={watch}
+                  setValue={setValue}
                 />
               );
             })}
@@ -123,6 +169,12 @@ function UserRoles() {
       }
     );
   }
+
+  useEffect(() => {
+    if (allowedPermissionsRes?.permission) {
+      setValue("permissions", allowedPermissionsRes?.permission);
+    }
+  }, [allowedPermissionsRes, setValue]);
 
   return (
     <Flex className="flex-col mx-20 my-6">
@@ -203,7 +255,7 @@ function UserRoles() {
 
           <Col span={4} style={{ display: "flex", alignItems: "end" }}>
             <Form.Item>
-              <Button type="primary" disabled={true}>
+              <Button type="primary" onClick={handleUpdatePermission}>
                 Update
               </Button>
             </Form.Item>
@@ -211,6 +263,7 @@ function UserRoles() {
         </Row>
         <Flex className="flex-col gap-5">{renderPermissionCards()}</Flex>
       </Form>
+      <DevTool control={control} />
     </Flex>
   );
 }

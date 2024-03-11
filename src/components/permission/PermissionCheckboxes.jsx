@@ -1,9 +1,11 @@
 import { Checkbox, Col, Row } from "antd";
 import { useState } from "react";
 
-function PermissionCheckboxes({ module, sub_module_index = 0 }) {
+function PermissionCheckboxes({ module, watch, setValue }) {
   const { name = "", id = 0, operations = [] } = module;
+  const { permissions, company_id, user_id } = watch();
   const [disabled, setDisabled] = useState(true);
+  // console.log("permissions----->", permissions);
 
   return (
     <Row>
@@ -14,6 +16,7 @@ function PermissionCheckboxes({ module, sub_module_index = 0 }) {
           onChange={(e) => {
             setDisabled(!e.target.checked);
           }}
+          disabled={!company_id || !user_id}
         >
           {name}
         </Checkbox>
@@ -22,15 +25,39 @@ function PermissionCheckboxes({ module, sub_module_index = 0 }) {
         <Row>
           {operations?.map((operation) => {
             return (
-              <Col span={4} key={operation}>
-                <Checkbox disabled={disabled}>{operation}</Checkbox>
+              <Col span={4} key={`${id} ${operation}`}>
+                <Checkbox
+                  disabled={disabled}
+                  name={`permissions.${id}.operations.${operation}`}
+                  checked={permissions?.[id]?.operations?.[operation]}
+                  onChange={(e) => {
+                    setValue(
+                      `permissions.${id}.operations.${operation}`,
+                      e.target.checked
+                    );
+                  }}
+                >
+                  {operation}
+                </Checkbox>
               </Col>
             );
           })}
         </Row>
       </Col>
       <Col span={2}>
-        <Checkbox disabled={disabled}>all</Checkbox>
+        <Checkbox
+          disabled={disabled}
+          checked={operations.every(
+            (op) => permissions?.[id]?.operations?.[op]
+          )}
+          onChange={(e) => {
+            operations?.forEach((op) => {
+              setValue(`permissions.${id}.operations.${op}`, e.target.checked);
+            });
+          }}
+        >
+          all
+        </Checkbox>
       </Col>
     </Row>
   );

@@ -57,8 +57,8 @@ export function getEmployeeTypeListRequest({ params }) {
   return api.get(`/dropdown/employee_type/list`, { params });
 }
 
-export function addEmployeeTypeRequest({ data }) {
-  return api.post(`dropdown/employee_type/add`, data);
+export function addEmployeeTypeRequest({ data, params }) {
+  return api.post(`dropdown/employee_type/add`, data, { params });
 }
 
 // collection_user
