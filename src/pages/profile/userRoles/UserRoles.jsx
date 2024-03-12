@@ -133,10 +133,7 @@ function UserRoles() {
     // console.log(permissions);
     const updatedPermissions = {};
     Object.entries(permissions || {}).forEach(([key, value]) => {
-      updatedPermissions[key] = {
-        sub_module_id: key,
-        permission: value?.operations || {},
-      };
+      updatedPermissions[key] = value?.operations || {};
     });
     // console.log("updatedPermissions", updatedPermissions);
     await updatePermissions({
