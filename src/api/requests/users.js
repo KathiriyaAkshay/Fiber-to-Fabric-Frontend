@@ -44,6 +44,10 @@ export function getSupplierListRequest({ params }) {
   return api.get(`/supplier/list`, { params });
 }
 
+export function getDropdownSupplierListRequest({ params }) {
+  return api.get(`/dropdown/supplier/list`, { params });
+}
+
 // employee
 export function getEmployeeByIdRequest({ id, params }) {
   return api.get(`/employee/get/${id}`, { params });

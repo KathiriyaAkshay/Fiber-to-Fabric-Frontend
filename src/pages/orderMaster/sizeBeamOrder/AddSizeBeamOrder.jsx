@@ -18,7 +18,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import { createSizeBeamOrderRequest } from "../../../api/requests/orderMaster";
-import { getSupplierListRequest } from "../../../api/requests/users";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
@@ -26,8 +26,8 @@ import dayjs from "dayjs";
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
   machine_type: yup.string().required("Please select machine type"),
-  supplier_id: yup.string().required("Please select supplier ID"),
-  supplier_company: yup.string().required("Please enter supplier company"),
+  supplier_name: yup.string().required("Please select supplier"),
+  supplier_id: yup.string().required("Please select supplier company"),
   yarn_stock_company_id: yup
     .string()
     .required("Please select yarn stock company ID"),
@@ -53,8 +53,7 @@ function AddSizeBeamOrder() {
   const navigate = useNavigate();
 
   const [denierOptions, setDenierOptions] = useState([]);
-  const [yarnDetail, setYarnDetail] = useState();
-  console.log("yarnDetail", yarnDetail);
+  const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
 
   function goBack() {
     navigate(-1);
@@ -74,10 +73,13 @@ function AddSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
 
-  const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId }],
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getSupplierListRequest({
+      const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId },
       });
       return res.data?.data?.supplierList;
@@ -132,18 +134,10 @@ function AddSizeBeamOrder() {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
     watch,
   } = useForm({
     resolver: yupResolver(addSizeBeamOrderSchema),
     defaultValues: {
-      order_type: "Yarn",
-      quantity: 0,
-      pending_quantity: 0,
-      delivered_quantity: 0,
-      approx_cartoon: 0,
-      pending_cartoon: 0,
-      delivered_cartoon: 0,
       order_date: dayjs(),
     },
   });
@@ -156,16 +150,7 @@ function AddSizeBeamOrder() {
     navigate("/user-master/my-supplier/add");
   }
 
-  const {
-    yarn_company_name,
-    quantity,
-    delivered_quantity,
-    approx_cartoon,
-    delivered_cartoon,
-    rate,
-    credit_days,
-    yarn_stock_company_id,
-  } = watch();
+  const { yarn_company_name, supplier_name } = watch();
 
   useEffect(() => {
     // set options for denier selection on yarn stock company select
@@ -179,10 +164,6 @@ function AddSizeBeamOrder() {
             yarn_denier = 0,
             luster_type = "",
             yarn_color = "",
-            // yarn_count,
-            // current_stock,
-            // avg_daily_stock,
-            // pending_quantity,
           }) => {
             return {
               label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
@@ -198,47 +179,24 @@ function AddSizeBeamOrder() {
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
-    // set pending_kg on change of denier (yarn_stock_company_id)
-    if (!yarn_company_name || !yarn_stock_company_id) {
-      return setYarnDetail();
-    }
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarn_company_name) {
-        yarn_details?.forEach((yarn_detail) => {
-          if (yarn_stock_company_id === yarn_detail.yarn_company_id) {
-            setYarnDetail(yarn_detail);
+    // set options for supplier company selection on supplier name select
+    dropdownSupplierListRes?.forEach((spl) => {
+      const { supplier_name: name = "", supplier_company = [] } = spl;
+      if (name === supplier_name) {
+        const options = supplier_company?.map(
+          ({ supplier_id = 0, supplier_company = "" }) => {
+            return {
+              label: supplier_company,
+              value: supplier_id,
+            };
           }
-        });
+        );
+        if (options?.length) {
+          setSupplierCompanyOptions(options);
+        }
       }
     });
-  }, [yarn_company_name, yarn_stock_company_id, yscdListRes?.yarnCompanyList]);
-
-  useEffect(() => {
-    // set pending_quantity
-    const pending_quantity = Number(quantity) - Number(delivered_quantity);
-    setValue("pending_quantity", Math.max(0, pending_quantity));
-  }, [delivered_quantity, quantity, setValue]);
-
-  useEffect(() => {
-    // set pending_cartoon
-    const pending_cartoon = Number(approx_cartoon) - Number(delivered_cartoon);
-    setValue("pending_cartoon", Math.max(0, pending_cartoon));
-  }, [approx_cartoon, delivered_cartoon, setValue]);
-
-  useEffect(() => {
-    // set approx_amount
-    const approx_amount = Number(quantity) * Number(rate);
-    setValue("approx_amount", Math.max(0, approx_amount));
-  }, [quantity, rate, setValue]);
-
-  useEffect(() => {
-    // set remark
-    setValue(
-      "remark",
-      `payment due in ${Math.max(0, Math.floor(credit_days || 0))} days`
-    );
-  }, [credit_days, setValue]);
+  }, [dropdownSupplierListRes, supplier_name]);
 
   return (
     <div className="flex flex-col p-4">
@@ -320,23 +278,23 @@ function AddSizeBeamOrder() {
           <Col span={8} className="flex items-end gap-2">
             <Form.Item
               label="Supplier"
-              name="supplier_id"
-              validateStatus={errors.supplier_id ? "error" : ""}
-              help={errors.supplier_id && errors.supplier_id.message}
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
               <Controller
                 control={control}
-                name="supplier_id"
+                name="supplier_name"
                 render={({ field }) => (
                   <Select
                     {...field}
                     placeholder="Select supplier"
-                    loading={isLoadingSupplierList}
-                    options={supplierListRes?.rows?.map((supervisor) => ({
-                      label: supervisor?.first_name,
-                      value: supervisor?.id,
+                    loading={isLoadingDropdownSupplierList}
+                    options={dropdownSupplierListRes?.map((supervisor) => ({
+                      label: supervisor?.supplier_name,
+                      value: supervisor?.supplier_name,
                     }))}
                   />
                 )}
@@ -353,16 +311,21 @@ function AddSizeBeamOrder() {
           <Col span={8}>
             <Form.Item
               label="Supplier Company"
-              name="supplier_company"
-              validateStatus={errors.supplier_company ? "error" : ""}
-              help={errors.supplier_company && errors.supplier_company.message}
+              name="supplier_id"
+              validateStatus={errors.supplier_id ? "error" : ""}
+              help={errors.supplier_id && errors.supplier_id.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="supplier_company"
+                name="supplier_id"
                 render={({ field }) => (
-                  <Input {...field} placeholder="Supplier Company" />
+                  <Select
+                    {...field}
+                    placeholder="Select supplier Company"
+                    loading={isLoadingDropdownSupplierList}
+                    options={supplierCompanyOptions}
+                  />
                 )}
               />
             </Form.Item>
