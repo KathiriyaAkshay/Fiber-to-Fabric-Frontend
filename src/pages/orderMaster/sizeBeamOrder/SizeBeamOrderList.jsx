@@ -44,7 +44,7 @@ function SizeBeamOrderList() {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = sizeBeamOrderListRes?.SizeBeamOrderList?.rows?.map(
+    const body = sizeBeamOrderListRes?.SizeBeamOrderList?.map(
       (sizeBeamOrder) => {
         const {
           id,
@@ -102,56 +102,46 @@ function SizeBeamOrderList() {
       key: "id",
     },
     {
-      title: "Order Date",
+      title: "Date",
       render: ({ order_date }) => {
         return dayjs(order_date).format("DD-MM-YYYY");
       },
       key: "order_date",
     },
     {
-      title: "Order No.",
-      dataIndex: "order_no",
-      key: "order_no",
+      title: "From",
+      dataIndex: "from",
+      key: "from",
     },
     {
-      title: "Party/Supplier Name",
-      dataIndex: ["user", "first_name"],
-      key: "user.first_name",
+      title: "To",
+      dataIndex: "to",
+      key: "to",
     },
     {
-      title: "Lot No.",
-      dataIndex: "lot_no",
-      key: "lot_no",
+      title: "Total Pipe",
+      dataIndex: "total_pipe",
+      key: "total_pipe",
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
+      title: "Total Meter",
+      dataIndex: "total_meter",
+      key: "total_meter",
     },
     {
-      title: "Delivered Quantity",
-      dataIndex: "delivered_quantity",
-      key: "delivered_quantity",
+      title: "Pending Meter",
+      dataIndex: "pending_meter",
+      key: "pending_meter",
     },
     {
-      title: "Pending Quantity",
-      dataIndex: "pending_quantity",
-      key: "pending_quantity",
-    },
-    {
-      title: "Rate",
-      dataIndex: "rate",
-      key: "rate",
-    },
-    {
-      title: "Approx amount",
-      dataIndex: "approx_amount",
-      key: "approx_amount",
-    },
-    {
-      title: "Status",
+      title: "Order Status",
       dataIndex: "status",
       key: "status",
+    },
+    {
+      title: "Print Challan",
+      dataIndex: "print_challan_status",
+      key: "print_challan_status",
     },
     {
       title: "Action",
@@ -206,7 +196,7 @@ function SizeBeamOrderList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteSizeBeamOrderButton data={sizeBeamOrder}/>
+            <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
           </Space>
         );
       },
@@ -225,7 +215,7 @@ function SizeBeamOrderList() {
 
     return (
       <Table
-        dataSource={sizeBeamOrderListRes?.SizeBeamOrderList?.rows || []}
+        dataSource={sizeBeamOrderListRes?.SizeBeamOrderList || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
@@ -253,7 +243,7 @@ function SizeBeamOrderList() {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!sizeBeamOrderListRes?.SizeBeamOrderList?.rows?.length}
+          disabled={!sizeBeamOrderListRes?.SizeBeamOrderList?.length}
           onClick={downloadPdf}
         />
       </div>
