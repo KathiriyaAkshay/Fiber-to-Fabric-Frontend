@@ -7,3 +7,12 @@ export const YARN_GRADE_LIST = [
   { value: "A UNEVEN", label: "A UNEVEN" },
   { value: "AA UNEVEN", label: "AA UNEVEN" },
 ];
+
+export const initialOrderDetail = {
+  ends_or_tars: "",
+  grade: "",
+  meters: "",
+  pano: "",
+  remark: "",
+  tpm: "",
+};

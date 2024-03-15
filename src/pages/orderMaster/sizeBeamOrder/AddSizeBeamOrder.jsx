@@ -22,12 +22,15 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
+import SizeBeamOrderDetail from "../../../components/orderMaster/sizeBeamOrder/SizeBeamOrderDetail";
+import { initialOrderDetail } from "../../../constants/orderMaster";
 
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
   machine_type: yup.string().required("Please select machine type"),
   supplier_name: yup.string().required("Please select supplier"),
   supplier_id: yup.string().required("Please select supplier company"),
+  yarn_company_name: yup.string().required("Please select yarn stock company"),
   yarn_stock_company_id: yup
     .string()
     .required("Please select yarn stock company ID"),
@@ -43,7 +46,7 @@ const addSizeBeamOrderSchema = yup.object().shape({
       grade: yup.string().required("Please enter grade"),
       meters: yup.string().required("Please enter meters"),
       pano: yup.string().required("Please enter pano"),
-      remark: yup.string(),
+      remark: yup.string().required("Please enter remark"),
     })
   ),
 });
@@ -139,6 +142,8 @@ function AddSizeBeamOrder() {
     resolver: yupResolver(addSizeBeamOrderSchema),
     defaultValues: {
       order_date: dayjs(),
+      machine_type: "Looms",
+      order_details: [initialOrderDetail],
     },
   });
 
@@ -254,9 +259,6 @@ function AddSizeBeamOrder() {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    defaultValue={"Looms"}
-                    allowClear
-                    // loading={isLoadingMachineType}
                     options={[
                       {
                         label: "Looms",
@@ -485,6 +487,8 @@ function AddSizeBeamOrder() {
             </Form.Item>
           </Col>
         </Row>
+
+        <SizeBeamOrderDetail control={control} errors={errors} />
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
