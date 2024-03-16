@@ -49,22 +49,24 @@ function SizeBeamOrderList() {
         const {
           id,
           order_date,
-          from,
-          to,
           total_pipe,
-          total_meter,
-          pending_meter,
+          total_meters,
+          pending_meters,
           status,
           print_challan_status,
+          company = {},
+          yarn_stock_company = {},
         } = sizeBeamOrder;
+        const { company_name = "" } = company;
+        const { yarn_company_name = "" } = yarn_stock_company;
         return [
           id,
           dayjs(order_date).format("DD-MM-YYYY"),
-          from,
-          to,
+          yarn_company_name,
+          company_name,
           total_pipe,
-          total_meter,
-          pending_meter,
+          total_meters,
+          pending_meters,
           status,
           print_challan_status,
         ];
@@ -107,13 +109,13 @@ function SizeBeamOrderList() {
     },
     {
       title: "From",
-      dataIndex: "from",
-      key: "from",
+      dataIndex: ["yarn_stock_company", "yarn_company_name"],
+      key: "yarn_stock_company.yarn_company_name",
     },
     {
       title: "To",
-      dataIndex: "to",
-      key: "to",
+      dataIndex: ["company", "company_name"],
+      key: "company.company_name",
     },
     {
       title: "Total Pipe",
@@ -122,13 +124,13 @@ function SizeBeamOrderList() {
     },
     {
       title: "Total Meter",
-      dataIndex: "total_meter",
-      key: "total_meter",
+      dataIndex: "total_meters",
+      key: "total_meters",
     },
     {
       title: "Pending Meter",
-      dataIndex: "pending_meter",
-      key: "pending_meter",
+      dataIndex: "pending_meters",
+      key: "pending_meters",
     },
     {
       title: "Order Status",
@@ -146,14 +148,16 @@ function SizeBeamOrderList() {
         const {
           id,
           order_date,
-          from,
-          to,
           total_pipe,
-          total_meter,
-          pending_meter,
+          total_meters,
+          pending_meters,
           status,
           print_challan_status,
+          company = {},
+          yarn_stock_company = {},
         } = sizeBeamOrder;
+        const { company_name = "" } = company;
+        const { yarn_company_name = "" } = yarn_stock_company;
 
         return (
           <Space>
@@ -164,11 +168,11 @@ function SizeBeamOrderList() {
                   title: "Order Date",
                   value: dayjs(order_date).format("DD-MM-YYYY"),
                 },
-                { title: "From", value: from },
-                { title: "To", value: to },
+                { title: "From", value: yarn_company_name },
+                { title: "To", value: company_name },
                 { title: "Total Pipe", value: total_pipe },
-                { title: "Total Meter", value: total_meter },
-                { title: "Pending Meter", value: pending_meter },
+                { title: "Total Meter", value: total_meters },
+                { title: "Pending Meter", value: pending_meters },
                 { title: "Order Status", value: status },
                 { title: "Print Challan", value: print_challan_status },
               ]}

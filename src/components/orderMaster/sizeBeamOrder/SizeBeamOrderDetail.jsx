@@ -253,7 +253,10 @@ function SizeBeamOrderDetail({ control, errors }) {
             onClick={() => {
               // append(Array.from({ length: noOfAdd }, () => initialOrderDetail));
               append(
-                Array.from({ length: noOfAdd }, () => fields[fields.length - 1])
+                Array.from({ length: noOfAdd }, () => ({
+                  ...fields[fields.length - 1],
+                  id: undefined,
+                }))
               );
               setNoOfAdd(1);
             }}
