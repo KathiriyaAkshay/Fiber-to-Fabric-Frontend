@@ -89,7 +89,7 @@ function AddMachine() {
             watch={watch}
             setValue={setValue}
           />
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="No of Machine"
               name="no_of_machines"
@@ -113,7 +113,7 @@ function AddMachine() {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="No of Employee"
               name="no_of_employees"

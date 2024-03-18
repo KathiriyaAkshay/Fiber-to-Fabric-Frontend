@@ -113,16 +113,16 @@ const LoginForm = () => {
         <Button
           type="primary"
           htmlType="submit"
-          className="w-full mt-5 text-2xl font-bold"
+          className="flex items-center justify-center w-full mt-5 text-2xl font-bold"
           size="large"
         >
           Log In
         </Button>
 
-        <div className="flex items-center gap-1.5 mt-3">
+        {/* <div className="flex items-center gap-1.5 mt-3">
           <p className="m-0">Not registered Yet?</p>
           <Link to="/auth/register">Create account</Link>
-        </div>
+        </div> */}
       </Form>
       <DevTool control={control} />
     </div>

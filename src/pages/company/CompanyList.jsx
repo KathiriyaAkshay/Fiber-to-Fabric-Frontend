@@ -5,7 +5,7 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import DeleteCompany from "../../components/company/DeleteCompany";
+// import DeleteCompany from "../../components/company/DeleteCompany";
 import AddPartner from "../../components/company/AddPartner";
 import { useCompanyBankList, useCompanyList } from "../../api/hooks/company";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
@@ -126,7 +126,7 @@ function CompanyList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteCompany companyDetails={companyDetails} />
+            {/* <DeleteCompany companyDetails={companyDetails} /> */}
             <Button
               onClick={() => {
                 setBankDetailModal({

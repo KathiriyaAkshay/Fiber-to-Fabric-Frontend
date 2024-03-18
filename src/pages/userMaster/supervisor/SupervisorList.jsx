@@ -100,6 +100,11 @@ function SupervisorList() {
       key: "id",
     },
     {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
       title: "First Name",
       dataIndex: "first_name",
       key: "first_name",
@@ -119,11 +124,11 @@ function SupervisorList() {
       dataIndex: "mobile",
       key: "mobile",
     },
-    {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-    },
+    // {
+    //   title: "Email",
+    //   dataIndex: "email",
+    //   key: "email",
+    // },
     // {
     //   title: "Address",
     //   dataIndex: "address",

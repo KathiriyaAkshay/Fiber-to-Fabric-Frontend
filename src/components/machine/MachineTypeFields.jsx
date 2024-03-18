@@ -39,7 +39,7 @@ function MachineTypeFields({
 
   return (
     <>
-      <Col span={6}>
+      <Col span={12}>
         <Form.Item
           label="Machine Type"
           name="machine_type"
@@ -65,7 +65,7 @@ function MachineTypeFields({
         </Form.Item>
       </Col>
 
-      <Col span={6}>
+      <Col span={12}>
         <Form.Item
           label="Type Name"
           name="machine_name"

@@ -119,6 +119,11 @@ function SupplierList() {
       key: "id",
     },
     {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
       title: "Name",
       dataIndex: ["supplier", "supplier_name"],
       key: "supplier_name",

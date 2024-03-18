@@ -99,24 +99,29 @@ function EmployeeList() {
       key: "id",
     },
     {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
       title: "First Name",
       dataIndex: "first_name",
       key: "first_name",
     },
+    // {
+    //   title: "Last Name",
+    //   dataIndex: "last_name",
+    //   key: "last_name",
+    // },
     {
-      title: "Last Name",
-      dataIndex: "last_name",
-      key: "last_name",
+      title: "Employee Type",
+      dataIndex: ["employer", "employee_type", "employee_type"],
+      key: "employee_type",
     },
     {
       title: "Contact No",
       dataIndex: "mobile",
       key: "mobile",
-    },
-    {
-      title: "Username",
-      dataIndex: "username",
-      key: "username",
     },
     {
       title: "Action",

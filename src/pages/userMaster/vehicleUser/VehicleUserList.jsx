@@ -123,6 +123,11 @@ function VehicleUserList() {
       key: "id",
     },
     {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
       title: "Name",
       render: (userDetails) => {
         const { first_name, last_name } = userDetails;

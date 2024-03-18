@@ -329,7 +329,7 @@ function UpdateSupplier() {
 
           <Col span={12}>
             <Form.Item
-              label="supplier Company"
+              label="Supplier Company"
               name="supplier_company"
               validateStatus={errors.supplier_company ? "error" : ""}
               help={errors.supplier_company && errors.supplier_company.message}
@@ -339,7 +339,7 @@ function UpdateSupplier() {
                 control={control}
                 name="supplier_company"
                 render={({ field }) => (
-                  <Input {...field} placeholder="supplier Company" />
+                  <Input {...field} placeholder="Supplier Company" />
                 )}
               />
             </Form.Item>

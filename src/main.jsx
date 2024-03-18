@@ -7,7 +7,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import BaseLayout from "./layouts/BaseLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
+// import Register from "./pages/auth/Register";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import OtpVerificationPage from "./pages/auth/OtpVerificationPage";
@@ -78,10 +78,10 @@ const router = createBrowserRouter([
         path: "forget-password",
         element: <ForgetPasswordPage />,
       },
-      {
-        path: "register",
-        element: <Register />,
-      },
+      // {
+      //   path: "register",
+      //   element: <Register />,
+      // },
     ],
   },
   {

@@ -117,7 +117,7 @@ function UpdateMachine() {
             setValue={setValue}
             isUpdate={true}
           />
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="No of Machine"
               name="no_of_machines"
@@ -140,7 +140,7 @@ function UpdateMachine() {
               />
             </Form.Item>
           </Col>
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="No of Employee"
               name="no_of_employees"

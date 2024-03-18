@@ -1,16 +1,6 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  Flex,
-  Form,
-  Input,
-  Radio,
-  Row,
-  Select,
-  message,
-} from "antd";
+import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
@@ -46,7 +36,8 @@ const addSupervisorSchemaResolver = yupResolver(
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
+    gst_no: yup.string(),
+    // .required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
     // .required('Please enter pan number')
@@ -60,7 +51,10 @@ const addSupervisorSchemaResolver = yupResolver(
 );
 
 function AddSupervisor() {
-  const { companyId, companyListRes } = useContext(GlobalContext);
+  const {
+    companyId,
+    // companyListRes
+  } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   function goBack() {
@@ -339,7 +333,7 @@ function AddSupervisor() {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          {/* <Col span={12}>
             <Form.Item
               label="Companies"
               name="company_ids"
@@ -367,7 +361,7 @@ function AddSupervisor() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
         </Row>
 
         <Flex gap={10} justify="flex-end">

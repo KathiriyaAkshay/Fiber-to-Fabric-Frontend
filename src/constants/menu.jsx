@@ -14,44 +14,6 @@ export const menubarOptionsList = [
     ),
   },
   {
-    path: "/quality-master",
-    key: "Quality Master",
-    label: (
-      <Link
-        className="text-current no-underline hover:text-current"
-        to="/quality-master"
-      >
-        Quality Master
-      </Link>
-    ),
-    children: [
-      {
-        path: "/quality-master/inhouse-quality",
-        key: "Inhouse Quality",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="quality-master/inhouse-quality"
-          >
-            Inhouse Quality
-          </Link>
-        ),
-      },
-      {
-        path: "/quality-master/trading-quality",
-        key: "Tranding Quality",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="quality-master/trading-quality"
-          >
-            Tranding Quality
-          </Link>
-        ),
-      },
-    ],
-  },
-  {
     path: "/company",
     key: "Company",
     label: (
@@ -168,6 +130,44 @@ export const menubarOptionsList = [
             to="user-master/vehicle"
           >
             Vehicle
+          </Link>
+        ),
+      },
+    ],
+  },
+  {
+    path: "/quality-master",
+    key: "Quality Master",
+    label: (
+      <Link
+        className="text-current no-underline hover:text-current"
+        to="/quality-master"
+      >
+        Quality Master
+      </Link>
+    ),
+    children: [
+      {
+        path: "/quality-master/inhouse-quality",
+        key: "Inhouse Quality",
+        label: (
+          <Link
+            className="text-current no-underline hover:text-current"
+            to="quality-master/inhouse-quality"
+          >
+            Inhouse Quality
+          </Link>
+        ),
+      },
+      {
+        path: "/quality-master/trading-quality",
+        key: "Tranding Quality",
+        label: (
+          <Link
+            className="text-current no-underline hover:text-current"
+            to="quality-master/trading-quality"
+          >
+            Tranding Quality
           </Link>
         ),
       },

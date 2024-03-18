@@ -3,7 +3,7 @@ import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
-import DeleteMachine from "../../components/machine/DeleteMachine";
+// import DeleteMachine from "../../components/machine/DeleteMachine";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -83,7 +83,7 @@ function MachineList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteMachine details={machineDetails} />
+            {/* <DeleteMachine details={machineDetails} /> */}
           </Space>
         );
       },
