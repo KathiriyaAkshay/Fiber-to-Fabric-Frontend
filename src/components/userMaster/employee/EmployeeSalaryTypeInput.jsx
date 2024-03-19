@@ -109,6 +109,7 @@ function EmployeeSalaryTypeInput({
           name="employee_type_id"
           validateStatus={errors.employee_type_id ? "error" : ""}
           help={errors.employee_type_id && errors.employee_type_id.message}
+          required={true}
           wrapperCol={{ sm: 24 }}
           style={{
             width: "100%",
@@ -161,6 +162,7 @@ function EmployeeSalaryTypeInput({
           name="salary_type"
           validateStatus={errors.salary_type ? "error" : ""}
           help={errors.salary_type && errors.salary_type.message}
+          required={true}
           wrapperCol={{ sm: 24 }}
         >
           <Controller
