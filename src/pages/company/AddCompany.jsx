@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, message } from "antd";
+import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +37,10 @@ const createCompanySchemaResolver = yupResolver(
     bank_name: yup.string().required(),
     account_number: yup.string().required(),
     ifsc_code: yup.string().required(),
-    // company_types: ["sale", "purchase"],
+    company_types: yup
+      .array()
+      // .of(yup.string().oneOf(enumValues, "Invalid company type value"))
+      .required("Enum array is required"),
     signature_url: yup.string().required(),
     company_logo_url: yup.string().required(),
     account_type: yup.string().required(),
@@ -375,16 +378,35 @@ function AddCompany() {
 
             <Form.Item
               label="Company Type"
-              name="company_type"
-              validateStatus={errors.company_type ? "error" : ""}
-              help={errors.company_type && errors.company_type.message}
+              name="company_types"
+              validateStatus={errors.company_types ? "error" : ""}
+              help={errors.company_types && errors.company_types.message}
               required={true}
             >
               <Controller
                 control={control}
-                name="company_type"
+                name="company_types"
                 render={({ field }) => (
-                  <Input {...field} placeholder="Company type" />
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Company type"
+                    {...field}
+                    options={[
+                      {
+                        label: "Sale",
+                        value: "sale",
+                      },
+                      {
+                        label: "Purchase",
+                        value: "purchase",
+                      },
+                      {
+                        label: "Production",
+                        value: "production",
+                      },
+                    ]}
+                  />
                 )}
               />
             </Form.Item>

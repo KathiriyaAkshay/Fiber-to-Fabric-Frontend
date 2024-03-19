@@ -1,7 +1,7 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row, message } from "antd";
+import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { useNavigate, useParams } from "react-router-dom";
@@ -253,57 +253,6 @@ function UpdateCompany() {
                 )}
               />
             </Form.Item>
-
-            <Form.Item
-              label="Company Contact"
-              name="company_contact"
-              validateStatus={errors.company_contact ? "error" : ""}
-              help={errors.company_contact && errors.company_contact.message}
-            >
-              <Controller
-                control={control}
-                name="company_contact"
-                render={({ field }) => (
-                  <PhoneInput
-                    {...field}
-                    placeholder="9876543210"
-                    defaultCountry="IN"
-                    international
-                    inputComponent={ForwardRefInput}
-                  />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Addres Line 1"
-              name="address_line_1"
-              validateStatus={errors.address_line_1 ? "error" : ""}
-              help={errors.address_line_1 && errors.address_line_1.message}
-            >
-              <Controller
-                control={control}
-                name="address_line_1"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Addres Line 1" />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Addres Line 2"
-              name="address_line_2"
-              validateStatus={errors.address_line_2 ? "error" : ""}
-              help={errors.address_line_2 && errors.address_line_2.message}
-            >
-              <Controller
-                control={control}
-                name="address_line_2"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Addres Line 2" />
-                )}
-              />
-            </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item
@@ -424,15 +373,35 @@ function UpdateCompany() {
 
             <Form.Item
               label="Company Type"
-              name="company_type"
-              validateStatus={errors.company_type ? "error" : ""}
-              help={errors.company_type && errors.company_type.message}
+              name="company_types"
+              validateStatus={errors.company_types ? "error" : ""}
+              help={errors.company_types && errors.company_types.message}
+              required={true}
             >
               <Controller
                 control={control}
-                name="company_type"
+                name="company_types"
                 render={({ field }) => (
-                  <Input {...field} placeholder="Company type" />
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Company type"
+                    {...field}
+                    options={[
+                      {
+                        label: "Sale",
+                        value: "sale",
+                      },
+                      {
+                        label: "Purchase",
+                        value: "purchase",
+                      },
+                      {
+                        label: "Production",
+                        value: "production",
+                      },
+                    ]}
+                  />
                 )}
               />
             </Form.Item>
@@ -466,6 +435,65 @@ function UpdateCompany() {
                 )}
               />
             </Form.Item> */}
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Addres Line 1"
+              name="address_line_1"
+              validateStatus={errors.address_line_1 ? "error" : ""}
+              help={errors.address_line_1 && errors.address_line_1.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="address_line_1"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Addres Line 1" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Addres Line 2"
+              name="address_line_2"
+              validateStatus={errors.address_line_2 ? "error" : ""}
+              help={errors.address_line_2 && errors.address_line_2.message}
+            >
+              <Controller
+                control={control}
+                name="address_line_2"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Addres Line 2" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Company Contact"
+              name="company_contact"
+              validateStatus={errors.company_contact ? "error" : ""}
+              help={errors.company_contact && errors.company_contact.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="company_contact"
+                render={({ field }) => (
+                  <PhoneInput
+                    {...field}
+                    placeholder="9876543210"
+                    defaultCountry="IN"
+                    international
+                    inputComponent={ForwardRefInput}
+                  />
+                )}
+              />
+            </Form.Item>
           </Col>
         </Row>
 
