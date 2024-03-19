@@ -224,6 +224,7 @@ function AddSizeBeamOrder() {
               name="order_date"
               validateStatus={errors.order_date ? "error" : ""}
               help={errors.order_date && errors.order_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -248,6 +249,7 @@ function AddSizeBeamOrder() {
               name="machine_type"
               validateStatus={errors.machine_type ? "error" : ""}
               help={errors.machine_type && errors.machine_type.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               style={{
                 marginBottom: "8px",
@@ -283,6 +285,7 @@ function AddSizeBeamOrder() {
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -316,6 +319,7 @@ function AddSizeBeamOrder() {
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -341,6 +345,7 @@ function AddSizeBeamOrder() {
               help={
                 errors.yarn_company_name && errors.yarn_company_name.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -381,6 +386,7 @@ function AddSizeBeamOrder() {
                 errors.yarn_stock_company_id &&
                 errors.yarn_stock_company_id.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -414,6 +420,7 @@ function AddSizeBeamOrder() {
                 errors.purchased_to_company_id &&
                 errors.purchased_to_company_id.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -445,6 +452,7 @@ function AddSizeBeamOrder() {
               name="rate_per_kg"
               validateStatus={errors.rate_per_kg ? "error" : ""}
               help={errors.rate_per_kg && errors.rate_per_kg.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -469,6 +477,7 @@ function AddSizeBeamOrder() {
               name="credit_day"
               validateStatus={errors.credit_day ? "error" : ""}
               help={errors.credit_day && errors.credit_day.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

@@ -21,10 +21,6 @@ const addVehicleUserSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string().required("Please provide first name"),
     last_name: yup.string().required("Please provide last name"),
-    password: yup
-      .string()
-      // .min(8, "Password is too short - should be 8 chars minimum.")
-      .required("No password provided."),
     mobile: yup
       .string()
       .required("Please enter Contact number")
@@ -128,6 +124,7 @@ function AddVehicleUser() {
               name="first_name"
               validateStatus={errors.first_name ? "error" : ""}
               help={errors.first_name && errors.first_name.message}
+              required={true}
               className=""
               wrapperCol={{ sm: 24 }}
             >
@@ -151,6 +148,7 @@ function AddVehicleUser() {
               name="last_name"
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -169,6 +167,7 @@ function AddVehicleUser() {
               name="mobile"
               validateStatus={errors.mobile ? "error" : ""}
               help={errors.mobile && errors.mobile.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -193,6 +192,7 @@ function AddVehicleUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -211,6 +211,7 @@ function AddVehicleUser() {
               name="address"
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -218,28 +219,6 @@ function AddVehicleUser() {
                 name="address"
                 render={({ field }) => (
                   <Input {...field} placeholder="Address" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
                 )}
               />
             </Form.Item>
@@ -323,6 +302,7 @@ function AddVehicleUser() {
               name="vehicleNo"
               validateStatus={errors.vehicleNo ? "error" : ""}
               help={errors.vehicleNo && errors.vehicleNo.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -341,6 +321,7 @@ function AddVehicleUser() {
               name="vehicleName"
               validateStatus={errors.vehicleName ? "error" : ""}
               help={errors.vehicleName && errors.vehicleName.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -357,6 +338,7 @@ function AddVehicleUser() {
               name="rateType"
               validateStatus={errors.rateType ? "error" : ""}
               help={errors.rateType && errors.rateType.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -378,6 +360,7 @@ function AddVehicleUser() {
               name="pricePerRate"
               validateStatus={errors.pricePerRate ? "error" : ""}
               help={errors.pricePerRate && errors.pricePerRate.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

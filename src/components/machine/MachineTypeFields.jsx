@@ -45,6 +45,7 @@ function MachineTypeFields({
           name="machine_type"
           validateStatus={errors.machine_type ? "error" : ""}
           help={errors.machine_type && errors.machine_type.message}
+          required={true}
           wrapperCol={{ sm: 24 }}
         >
           <Controller
@@ -71,6 +72,7 @@ function MachineTypeFields({
           name="machine_name"
           validateStatus={errors.machine_name ? "error" : ""}
           help={errors.machine_name && errors.machine_name.message}
+          required={true}
           wrapperCol={{ sm: 24 }}
           style={{
             marginBottom: "8px",

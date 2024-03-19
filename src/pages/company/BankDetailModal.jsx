@@ -158,6 +158,7 @@ function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
             name="bank_name"
             validateStatus={errors.bank_name ? "error" : ""}
             help={errors.bank_name && errors.bank_name.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -171,6 +172,7 @@ function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
             name="account_number"
             validateStatus={errors.account_number ? "error" : ""}
             help={errors.account_number && errors.account_number.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -184,6 +186,7 @@ function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
             name="ifsc_code"
             validateStatus={errors.ifsc_code ? "error" : ""}
             help={errors.ifsc_code && errors.ifsc_code.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -197,6 +200,7 @@ function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
             name="account_type"
             validateStatus={errors.account_type ? "error" : ""}
             help={errors.account_type && errors.account_type.message}
+            required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller

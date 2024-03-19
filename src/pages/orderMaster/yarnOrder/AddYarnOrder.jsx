@@ -291,6 +291,7 @@ function AddYarnOrder() {
               help={
                 errors.yarn_company_name && errors.yarn_company_name.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -331,6 +332,7 @@ function AddYarnOrder() {
                 errors.yarn_stock_company_id &&
                 errors.yarn_stock_company_id.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -390,6 +392,7 @@ function AddYarnOrder() {
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -423,6 +426,7 @@ function AddYarnOrder() {
               name="order_date"
               validateStatus={errors.order_date ? "error" : ""}
               help={errors.order_date && errors.order_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -451,6 +455,7 @@ function AddYarnOrder() {
               name="lot_no"
               validateStatus={errors.lot_no ? "error" : ""}
               help={errors.lot_no && errors.lot_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -467,6 +472,7 @@ function AddYarnOrder() {
               name="yarn_grade"
               validateStatus={errors.yarn_grade ? "error" : ""}
               help={errors.yarn_grade && errors.yarn_grade.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -490,6 +496,7 @@ function AddYarnOrder() {
               name="rate"
               validateStatus={errors.rate ? "error" : ""}
               help={errors.rate && errors.rate.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -539,6 +546,7 @@ function AddYarnOrder() {
               name="freight"
               validateStatus={errors.freight ? "error" : ""}
               help={errors.freight && errors.freight.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -585,6 +593,7 @@ function AddYarnOrder() {
               name="credit_days"
               validateStatus={errors.credit_days ? "error" : ""}
               help={errors.credit_days && errors.credit_days.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

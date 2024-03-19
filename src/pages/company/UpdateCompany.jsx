@@ -69,9 +69,7 @@ function UpdateCompany() {
   });
 
   async function onSubmit(data) {
-    console.log(data); // Handle form submission
-    const res = await updateCompanyDetails(data);
-    console.log("res----->", res);
+    await updateCompanyDetails(data);
   }
 
   const {
@@ -138,7 +136,7 @@ function UpdateCompany() {
                 control={control}
                 name="owner_name"
                 render={({ field }) => (
-                  <Input {...field} placeholder="owner name" />
+                  <Input {...field} placeholder="Owner name" />
                 )}
               />
             </Form.Item>
@@ -153,7 +151,7 @@ function UpdateCompany() {
                 control={control}
                 name="company_name"
                 render={({ field }) => (
-                  <Input {...field} placeholder="company name" />
+                  <Input {...field} placeholder="Company name" />
                 )}
               />
             </Form.Item>
@@ -318,7 +316,7 @@ function UpdateCompany() {
                 control={control}
                 name="country"
                 render={({ field }) => (
-                  <Input {...field} placeholder="country" />
+                  <Input {...field} placeholder="Country" />
                 )}
               />
             </Form.Item>
@@ -332,7 +330,7 @@ function UpdateCompany() {
               <Controller
                 control={control}
                 name="state"
-                render={({ field }) => <Input {...field} placeholder="state" />}
+                render={({ field }) => <Input {...field} placeholder="State" />}
               />
             </Form.Item>
 
@@ -345,7 +343,7 @@ function UpdateCompany() {
               <Controller
                 control={control}
                 name="city"
-                render={({ field }) => <Input {...field} placeholder="city" />}
+                render={({ field }) => <Input {...field} placeholder="City" />}
               />
             </Form.Item>
 
@@ -359,7 +357,7 @@ function UpdateCompany() {
                 control={control}
                 name="pincode"
                 render={({ field }) => (
-                  <Input {...field} placeholder="pincode" />
+                  <Input {...field} placeholder="Pincode" />
                 )}
               />
             </Form.Item>
@@ -374,7 +372,7 @@ function UpdateCompany() {
                 control={control}
                 name="bill_title"
                 render={({ field }) => (
-                  <Input {...field} placeholder="bill_title" />
+                  <Input {...field} placeholder="Bill title" />
                 )}
               />
             </Form.Item>
@@ -389,7 +387,7 @@ function UpdateCompany() {
                 control={control}
                 name="bank_name"
                 render={({ field }) => (
-                  <Input {...field} placeholder="bank_name" />
+                  <Input {...field} placeholder="Bank name" />
                 )}
               />
             </Form.Item>
@@ -404,7 +402,7 @@ function UpdateCompany() {
                 control={control}
                 name="account_number"
                 render={({ field }) => (
-                  <Input {...field} placeholder="account_number" />
+                  <Input {...field} placeholder="Account number" />
                 )}
               />
             </Form.Item>
@@ -419,7 +417,7 @@ function UpdateCompany() {
                 control={control}
                 name="ifsc_code"
                 render={({ field }) => (
-                  <Input {...field} placeholder="ifsc_code" />
+                  <Input {...field} placeholder="IFSC Code" />
                 )}
               />
             </Form.Item>
@@ -434,12 +432,12 @@ function UpdateCompany() {
                 control={control}
                 name="company_type"
                 render={({ field }) => (
-                  <Input {...field} placeholder="company_type" />
+                  <Input {...field} placeholder="Company type" />
                 )}
               />
             </Form.Item>
 
-            <Form.Item
+            {/* <Form.Item
               label="Signature Url"
               name="signature_url"
               validateStatus={errors.signature_url ? "error" : ""}
@@ -467,7 +465,7 @@ function UpdateCompany() {
                   <Input {...field} placeholder="company_logo_url" />
                 )}
               />
-            </Form.Item>
+            </Form.Item> */}
           </Col>
         </Row>
 

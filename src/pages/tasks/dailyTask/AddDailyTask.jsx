@@ -132,6 +132,7 @@ function AddDailyTask() {
               name="user_id"
               validateStatus={errors.user_id ? "error" : ""}
               help={errors.user_id && errors.user_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -194,6 +195,7 @@ function AddDailyTask() {
               help={
                 errors.is_every_day_task && errors.is_every_day_task.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -219,6 +221,7 @@ function AddDailyTask() {
                   (errors.task_days && errors.task_days.message) ||
                   "[Select One Or More Days]"
                 }
+                required={true}
                 wrapperCol={{ sm: 24 }}
               >
                 <Controller
@@ -266,6 +269,7 @@ function AddDailyTask() {
                 name="assign_time"
                 validateStatus={errors.assign_time ? "error" : ""}
                 help={errors.assign_time && errors.assign_time.message}
+                required={true}
                 wrapperCol={{ sm: 24 }}
               >
                 <Controller

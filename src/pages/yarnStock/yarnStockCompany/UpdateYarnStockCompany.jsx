@@ -178,6 +178,7 @@ function UpdateYarnStockCompany() {
               help={
                 errors.yarn_company_name && errors.yarn_company_name.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -200,6 +201,7 @@ function UpdateYarnStockCompany() {
               name="yarn_type"
               validateStatus={errors.yarn_type ? "error" : ""}
               help={errors.yarn_type && errors.yarn_type.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -250,6 +252,7 @@ function UpdateYarnStockCompany() {
               name="luster_type"
               validateStatus={errors.luster_type ? "error" : ""}
               help={errors.luster_type && errors.luster_type.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -273,6 +276,7 @@ function UpdateYarnStockCompany() {
               name="yarn_color"
               validateStatus={errors.yarn_color ? "error" : ""}
               help={errors.yarn_color && errors.yarn_color.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -324,6 +328,7 @@ function UpdateYarnStockCompany() {
               name="yarn_denier"
               validateStatus={errors.yarn_denier ? "error" : ""}
               help={errors.yarn_denier && errors.yarn_denier.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -348,6 +353,7 @@ function UpdateYarnStockCompany() {
               name="filament"
               validateStatus={errors.filament ? "error" : ""}
               help={errors.filament && errors.filament.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -372,6 +378,7 @@ function UpdateYarnStockCompany() {
               name="hsn_no"
               validateStatus={errors.hsn_no ? "error" : ""}
               help={errors.hsn_no && errors.hsn_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -388,6 +395,7 @@ function UpdateYarnStockCompany() {
               name="avg_daily_stock"
               validateStatus={errors.avg_daily_stock ? "error" : ""}
               help={errors.avg_daily_stock && errors.avg_daily_stock.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

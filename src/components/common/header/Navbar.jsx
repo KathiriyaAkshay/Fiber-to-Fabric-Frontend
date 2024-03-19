@@ -10,7 +10,7 @@ function Navbar() {
     <Flex
       justify="space-between"
       align="center"
-      className="px-4 py-2 bg-primary"
+      className="sticky top-0 z-10 px-4 py-2 bg-primary"
     >
       <Flex gap={"20px"} align="center" className="w-full">
         <img src={topbarLogo} alt="logo" className="h-8" />

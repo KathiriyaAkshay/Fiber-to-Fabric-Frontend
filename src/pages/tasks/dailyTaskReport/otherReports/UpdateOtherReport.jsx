@@ -129,6 +129,7 @@ function UpdateOtherReport() {
               name="report_date"
               validateStatus={errors.report_date ? "error" : ""}
               help={errors.report_date && errors.report_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -179,6 +180,7 @@ function UpdateOtherReport() {
               name="notes"
               validateStatus={errors.notes ? "error" : ""}
               help={errors.notes && errors.notes.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

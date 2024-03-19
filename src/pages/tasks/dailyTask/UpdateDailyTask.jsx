@@ -172,6 +172,7 @@ function UpdateDailyTask() {
               name="user_id"
               validateStatus={errors.user_id ? "error" : ""}
               help={errors.user_id && errors.user_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -259,6 +260,7 @@ function UpdateDailyTask() {
                 name="task_detail"
                 validateStatus={errors.task_detail ? "error" : ""}
                 help={errors.task_detail && errors.task_detail.message}
+                required={true}
                 wrapperCol={{ sm: 24 }}
               >
                 <Controller
@@ -275,6 +277,7 @@ function UpdateDailyTask() {
                 name="assign_time"
                 validateStatus={errors.assign_time ? "error" : ""}
                 help={errors.assign_time && errors.assign_time.message}
+                required={true}
                 wrapperCol={{ sm: 24 }}
               >
                 <Controller

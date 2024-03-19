@@ -122,6 +122,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
               name="company_id"
               validateStatus={errors.company_id ? "error" : ""}
               help={errors.company_id && errors.company_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -153,6 +154,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
               name="bank_id"
               validateStatus={errors.bank_id ? "error" : ""}
               help={errors.bank_id && errors.bank_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -187,6 +189,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -220,6 +223,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
               name="cheque_no"
               validateStatus={errors.cheque_no ? "error" : ""}
               help={errors.cheque_no && errors.cheque_no.message}
+              required={true}
             >
               <Controller
                 control={control}
@@ -237,6 +241,7 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
               name="advance_amount"
               validateStatus={errors.advance_amount ? "error" : ""}
               help={errors.advance_amount && errors.advance_amount.message}
+              required={true}
             >
               <Controller
                 control={control}

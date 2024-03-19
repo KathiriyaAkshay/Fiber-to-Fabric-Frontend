@@ -190,6 +190,7 @@ function UpdateSupervisor() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -248,6 +249,7 @@ function UpdateSupervisor() {
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

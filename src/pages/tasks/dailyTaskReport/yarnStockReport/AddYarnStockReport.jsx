@@ -196,6 +196,7 @@ function AddYarnStockReport() {
               name="report_date"
               validateStatus={errors.report_date ? "error" : ""}
               help={errors.report_date && errors.report_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -247,6 +248,7 @@ function AddYarnStockReport() {
               help={
                 errors.yarn_company_name && errors.yarn_company_name.message
               }
+              required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
@@ -284,6 +286,7 @@ function AddYarnStockReport() {
               name="yarn_company_id"
               validateStatus={errors.yarn_company_id ? "error" : ""}
               help={errors.yarn_company_id && errors.yarn_company_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -340,6 +343,7 @@ function AddYarnStockReport() {
               name="cartoon"
               validateStatus={errors.cartoon ? "error" : ""}
               help={errors.cartoon && errors.cartoon.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -364,6 +368,7 @@ function AddYarnStockReport() {
               name="current_stock"
               validateStatus={errors.current_stock ? "error" : ""}
               help={errors.current_stock && errors.current_stock.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

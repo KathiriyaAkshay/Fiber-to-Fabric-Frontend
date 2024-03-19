@@ -181,6 +181,7 @@ function UpdateVehicleUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -292,6 +293,7 @@ function UpdateVehicleUser() {
               name="vehicleNo"
               validateStatus={errors.vehicleNo ? "error" : ""}
               help={errors.vehicleNo && errors.vehicleNo.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -310,6 +312,7 @@ function UpdateVehicleUser() {
               name="vehicleName"
               validateStatus={errors.vehicleName ? "error" : ""}
               help={errors.vehicleName && errors.vehicleName.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -326,6 +329,7 @@ function UpdateVehicleUser() {
               name="rateType"
               validateStatus={errors.rateType ? "error" : ""}
               help={errors.rateType && errors.rateType.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -347,6 +351,7 @@ function UpdateVehicleUser() {
               name="pricePerRate"
               validateStatus={errors.pricePerRate ? "error" : ""}
               help={errors.pricePerRate && errors.pricePerRate.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

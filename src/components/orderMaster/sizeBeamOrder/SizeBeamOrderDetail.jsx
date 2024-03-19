@@ -38,6 +38,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.ends_or_tars &&
               errors.order_details?.[index]?.ends_or_tars.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller
@@ -65,6 +66,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.tpm &&
               errors.order_details?.[index]?.tpm.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller
@@ -92,6 +94,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.grade &&
               errors.order_details?.[index]?.grade.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller
@@ -143,6 +146,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.meters &&
               errors.order_details?.[index]?.meters.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller
@@ -170,6 +174,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.pano &&
               errors.order_details?.[index]?.pano.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller
@@ -199,6 +204,7 @@ function SizeBeamOrderDetail({ control, errors }) {
               errors.order_details?.[index]?.remark &&
               errors.order_details?.[index]?.remark.message
             }
+            required={true}
             className="mb-0"
           >
             <Controller

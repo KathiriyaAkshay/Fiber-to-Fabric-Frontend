@@ -175,6 +175,7 @@ function AddEmployee() {
               name="joining_date"
               validateStatus={errors.joining_date ? "error" : ""}
               help={errors.joining_date && errors.joining_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -199,6 +200,7 @@ function AddEmployee() {
               name="company_id"
               validateStatus={errors.company_id ? "error" : ""}
               help={errors.company_id && errors.company_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -232,6 +234,7 @@ function AddEmployee() {
               name="first_name"
               validateStatus={errors.first_name ? "error" : ""}
               help={errors.first_name && errors.first_name.message}
+              required={true}
               className=""
               wrapperCol={{ sm: 24 }}
             >
@@ -255,6 +258,7 @@ function AddEmployee() {
               name="last_name"
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -273,6 +277,7 @@ function AddEmployee() {
               name="mobile"
               validateStatus={errors.mobile ? "error" : ""}
               help={errors.mobile && errors.mobile.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -297,6 +302,7 @@ function AddEmployee() {
               name="username"
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -315,6 +321,7 @@ function AddEmployee() {
               name="tds"
               validateStatus={errors.tds ? "error" : ""}
               help={errors.tds && errors.tds.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

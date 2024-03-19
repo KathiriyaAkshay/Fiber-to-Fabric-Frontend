@@ -21,10 +21,6 @@ const addCollectionUserSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
-    password: yup
-      .string()
-      // .min(8, "Password is too short - should be 8 chars minimum.")
-      .required("No password provided."),
     mobile: yup
       .string()
       .required("Please enter Contact number")
@@ -162,6 +158,7 @@ function AddCollectionUser() {
               name="mobile"
               validateStatus={errors.mobile ? "error" : ""}
               help={errors.mobile && errors.mobile.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -186,6 +183,7 @@ function AddCollectionUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -218,32 +216,11 @@ function AddCollectionUser() {
 
           <Col span={12}>
             <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label="GST No"
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -316,6 +293,7 @@ function AddCollectionUser() {
               name="salary"
               validateStatus={errors.salary ? "error" : ""}
               help={errors.salary && errors.salary.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

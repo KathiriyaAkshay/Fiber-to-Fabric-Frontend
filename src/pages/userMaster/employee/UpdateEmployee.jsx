@@ -209,6 +209,7 @@ function UpdateEmployee() {
               name="joining_date"
               validateStatus={errors.joining_date ? "error" : ""}
               help={errors.joining_date && errors.joining_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -233,6 +234,7 @@ function UpdateEmployee() {
               name="company_id"
               validateStatus={errors.company_id ? "error" : ""}
               help={errors.company_id && errors.company_id.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -266,6 +268,7 @@ function UpdateEmployee() {
               name="first_name"
               validateStatus={errors.first_name ? "error" : ""}
               help={errors.first_name && errors.first_name.message}
+              required={true}
               className=""
               wrapperCol={{ sm: 24 }}
             >
@@ -289,6 +292,7 @@ function UpdateEmployee() {
               name="last_name"
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

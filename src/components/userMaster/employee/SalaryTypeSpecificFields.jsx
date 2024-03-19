@@ -11,6 +11,7 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
             name="salary"
             validateStatus={errors.salary ? "error" : ""}
             help={errors.salary && errors.salary.message}
+            required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller
@@ -38,6 +39,7 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
             name="per_attendance"
             validateStatus={errors.per_attendance ? "error" : ""}
             help={errors.per_attendance && errors.per_attendance.message}
+            required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller
@@ -65,6 +67,7 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
             name="per_meter"
             validateStatus={errors.per_meter ? "error" : ""}
             help={errors.per_meter && errors.per_meter.message}
+            required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller
@@ -93,6 +96,7 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
               name="machineNo_from"
               validateStatus={errors.machineNo_from ? "error" : ""}
               help={errors.machineNo_from && errors.machineNo_from.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -116,6 +120,7 @@ function SalaryTypeSpecificFields({ salaryType, errors, control }) {
               name="machineNo_to"
               validateStatus={errors.machineNo_to ? "error" : ""}
               help={errors.machineNo_to && errors.machineNo_to.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

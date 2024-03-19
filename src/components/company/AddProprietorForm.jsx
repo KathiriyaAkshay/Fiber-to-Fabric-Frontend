@@ -66,6 +66,7 @@ const AddProprietorForm = ({ companyDetails }) => {
             name="first_name"
             validateStatus={errors.first_name ? "error" : ""}
             help={errors.first_name && errors.first_name.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -82,6 +83,7 @@ const AddProprietorForm = ({ companyDetails }) => {
             name="last_name"
             validateStatus={errors.last_name ? "error" : ""}
             help={errors.last_name && errors.last_name.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -99,6 +101,7 @@ const AddProprietorForm = ({ companyDetails }) => {
             name="ratio"
             validateStatus={errors.ratio ? "error" : ""}
             help={errors.ratio && errors.ratio.message}
+            required={true}
           >
             <Controller
               control={control}
@@ -121,6 +124,7 @@ const AddProprietorForm = ({ companyDetails }) => {
             name="capital"
             validateStatus={errors.capital ? "error" : ""}
             help={errors.capital && errors.capital.message}
+            required={true}
           >
             <Controller
               control={control}

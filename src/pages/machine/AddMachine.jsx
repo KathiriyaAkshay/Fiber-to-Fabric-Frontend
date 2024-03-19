@@ -95,6 +95,7 @@ function AddMachine() {
               name="no_of_machines"
               validateStatus={errors.no_of_machines ? "error" : ""}
               help={errors.no_of_machines && errors.no_of_machines.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -119,6 +120,7 @@ function AddMachine() {
               name="no_of_employees"
               validateStatus={errors.no_of_employees ? "error" : ""}
               help={errors.no_of_employees && errors.no_of_employees.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
