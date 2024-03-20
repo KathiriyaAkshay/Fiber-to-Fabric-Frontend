@@ -125,6 +125,7 @@ function AddProprietorModal({ open, onCancel, companyDetails }) {
             padding: "10px 16px",
           },
         }}
+        width={"80vw"}
       >
         <Table
           dataSource={partnerListRes?.rows || []}

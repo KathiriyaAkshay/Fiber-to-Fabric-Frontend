@@ -1,11 +1,11 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import { Button, Flex, Input, Space, Spin, Switch, Table, message } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import {
   getSupervisorListRequest,
   updateUserRequest,
@@ -15,26 +15,44 @@ import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
 function SupervisorList() {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: supervisorListRes, isLoading } = useQuery({
-    queryKey: ["supervisor", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      "supervisor",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        search: debouncedSearch,
+      },
+    ],
     queryFn: async () => {
       const res = await getSupervisorListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+        },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
+    placeholderData: keepPreviousData,
   });
 
   const {
@@ -221,6 +239,9 @@ function SupervisorList() {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        style={{
+          overflow: "auto",
+        }}
       />
     );
   }
@@ -236,12 +257,20 @@ function SupervisorList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!supervisorListRes?.supervisorList?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!supervisorListRes?.supervisorList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

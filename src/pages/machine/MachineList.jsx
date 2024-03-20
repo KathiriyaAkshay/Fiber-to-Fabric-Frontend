@@ -1,8 +1,11 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Space, Spin, Switch, Table, message } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { getCompanyMachineListRequest } from "../../api/requests/machine";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getCompanyMachineListRequest,
+  updateMachineRequest,
+} from "../../api/requests/machine";
 // import DeleteMachine from "../../components/machine/DeleteMachine";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
@@ -24,6 +27,35 @@ function MachineList() {
       return res.data?.data;
     },
     enabled: Boolean(companyId),
+  });
+
+  const {
+    mutateAsync: updateMachine,
+    isPending: updatingMachine,
+    variables,
+  } = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await updateMachineRequest({
+        id,
+        data,
+        params: { company_id: companyId },
+      });
+      return res.data;
+    },
+    mutationKey: ["machine", "update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
   });
 
   function navigateToAdd() {
@@ -88,6 +120,25 @@ function MachineList() {
         );
       },
       key: "action",
+    },
+    {
+      title: "Status",
+      render: (data) => {
+        const { is_active = false, id } = data;
+        return (
+          <Switch
+            loading={updatingMachine && variables?.userId === id}
+            defaultChecked={is_active}
+            onChange={(is_active) => {
+              updateMachine({
+                id: id,
+                data: { is_active: is_active },
+              });
+            }}
+          />
+        );
+      },
+      key: "status",
     },
   ];
 
