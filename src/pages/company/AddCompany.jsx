@@ -41,8 +41,6 @@ const createCompanySchemaResolver = yupResolver(
       .array()
       // .of(yup.string().oneOf(enumValues, "Invalid company type value"))
       .required("Enum array is required"),
-    signature_url: yup.string().required(),
-    company_logo_url: yup.string().required(),
     account_type: yup.string().required(),
   })
 );
@@ -83,6 +81,8 @@ function AddCompany() {
     resolver: createCompanySchemaResolver,
   });
 
+  // console.log("errors----->", errors);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -114,7 +114,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Owner Name"
               name="owner_name"
@@ -130,7 +131,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Company Name"
               name="company_name"
@@ -146,7 +148,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Owner Mobile"
               name="owner_mobile"
@@ -168,7 +171,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="PAN No"
               name="pancard_no"
@@ -184,7 +188,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Aadhar No"
               name="adhar_no"
@@ -200,7 +205,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Company Unit"
               name="company_unit"
@@ -216,7 +222,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Bill Number Format"
               name="bill_number_format"
@@ -234,7 +241,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Company Email"
               name="company_email"
@@ -267,7 +275,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="State"
               name="state"
@@ -281,7 +290,8 @@ function AddCompany() {
                 render={({ field }) => <Input {...field} placeholder="State" />}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="City"
               name="city"
@@ -295,7 +305,8 @@ function AddCompany() {
                 render={({ field }) => <Input {...field} placeholder="City" />}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Pincode"
               name="pincode"
@@ -311,7 +322,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Bill Title"
               name="bill_title"
@@ -327,55 +339,8 @@ function AddCompany() {
                 )}
               />
             </Form.Item>
-
-            <Form.Item
-              label="Bank Name"
-              name="bank_name"
-              validateStatus={errors.bank_name ? "error" : ""}
-              help={errors.bank_name && errors.bank_name.message}
-              required={true}
-            >
-              <Controller
-                control={control}
-                name="bank_name"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Bank name" />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Account Number"
-              name="account_number"
-              validateStatus={errors.account_number ? "error" : ""}
-              help={errors.account_number && errors.account_number.message}
-              required={true}
-            >
-              <Controller
-                control={control}
-                name="account_number"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Account number" />
-                )}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="IFSC Code"
-              name="ifsc_code"
-              validateStatus={errors.ifsc_code ? "error" : ""}
-              help={errors.ifsc_code && errors.ifsc_code.message}
-              required={true}
-            >
-              <Controller
-                control={control}
-                name="ifsc_code"
-                render={({ field }) => (
-                  <Input {...field} placeholder="IFSC Code" />
-                )}
-              />
-            </Form.Item>
-
+          </Col>
+          <Col span={12}>
             <Form.Item
               label="Company Type"
               name="company_types"
@@ -465,6 +430,91 @@ function AddCompany() {
                     defaultCountry="IN"
                     international
                     inputComponent={ForwardRefInput}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Bank Name"
+              name="bank_name"
+              validateStatus={errors.bank_name ? "error" : ""}
+              help={errors.bank_name && errors.bank_name.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="bank_name"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Bank name" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="IFSC Code"
+              name="ifsc_code"
+              validateStatus={errors.ifsc_code ? "error" : ""}
+              help={errors.ifsc_code && errors.ifsc_code.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="ifsc_code"
+                render={({ field }) => (
+                  <Input {...field} placeholder="IFSC Code" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Account Number"
+              name="account_number"
+              validateStatus={errors.account_number ? "error" : ""}
+              help={errors.account_number && errors.account_number.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="account_number"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Account number" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Account Type"
+              name="account_type"
+              validateStatus={errors.account_type ? "error" : ""}
+              help={errors.account_type && errors.account_type.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="account_type"
+                render={({ field }) => (
+                  <Select
+                    placeholder="Account type"
+                    {...field}
+                    options={[
+                      {
+                        label: "Savings",
+                        value: "SAVINGS",
+                      },
+                      {
+                        label: "Current",
+                        value: "CURRENT",
+                      },
+                    ]}
                   />
                 )}
               />
