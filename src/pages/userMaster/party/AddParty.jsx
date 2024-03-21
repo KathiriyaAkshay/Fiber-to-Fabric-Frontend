@@ -37,8 +37,7 @@ const addPartySchemaResolver = yupResolver(
     address: yup.string(),
     gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string(),
-    // .required('Please enter pan number')
+    pancard_no: yup.string().required("Please enter pan number"),
     // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string(),
     adhar_no: yup
@@ -269,6 +268,7 @@ function AddParty() {
               name="pancard_no"
               validateStatus={errors.pancard_no ? "error" : ""}
               help={errors.pancard_no && errors.pancard_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

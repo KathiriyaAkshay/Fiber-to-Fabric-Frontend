@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import { Button, Flex, Input, Space, Spin, Switch, Table, message } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -15,22 +15,34 @@ import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
 
 const roleId = USER_ROLES.BROKER.role_id;
 
 function BrokerList() {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      "broker",
+      "list",
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
+    ],
     queryFn: async () => {
       const res = await getBrokerListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+        },
       });
       return res.data?.data;
     },
@@ -232,12 +244,20 @@ function BrokerList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!userListRes?.brokerList?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!userListRes?.brokerList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

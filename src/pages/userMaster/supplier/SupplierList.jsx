@@ -1,4 +1,14 @@
-import { Button, Space, Spin, Switch, Table, Typography, message } from "antd";
+import {
+  Button,
+  Flex,
+  Input,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Typography,
+  message,
+} from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -15,24 +25,36 @@ import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
 
 const { Text } = Typography;
 
 const roleId = USER_ROLES.SUPPLIER.role_id;
 
 function SupplierList() {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      "supplier",
+      "list",
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
+    ],
     queryFn: async () => {
       const res = await getSupplierListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+        },
       });
       return res.data?.data;
     },
@@ -265,12 +287,21 @@ function SupplierList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!userListRes?.supplierList?.rows?.length}
-          onClick={downloadPdf}
-        />
+
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!userListRes?.supplierList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

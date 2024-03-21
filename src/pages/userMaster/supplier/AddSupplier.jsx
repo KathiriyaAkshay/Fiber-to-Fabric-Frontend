@@ -17,6 +17,7 @@ import { DevTool } from "@hookform/devtools";
 import {
   addUserRequest,
   getBrokerListRequest,
+  getDropdownSupplierNameListRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES, supplierTypeEnum } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -47,10 +48,11 @@ const addSupplierSchemaResolver = yupResolver(
     address: yup.string(),
     gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string(),
-    // .required('Please enter pan number')
+    pancard_no: yup.string().required("Please enter pan number"),
     // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
+    username: yup.string().required(),
+    supplier_company: yup.string().required(),
+    broker_id: yup.string().required(),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -88,6 +90,18 @@ function AddSupplier() {
     enabled: Boolean(companyId),
   });
 
+  const { data: supplierNameList, isLoading: isLoadingSupplierNameList } =
+    useQuery({
+      queryKey: ["dropdown/supplier_names/list", { company_id: companyId }],
+      queryFn: async () => {
+        const res = await getDropdownSupplierNameListRequest({
+          params: { company_id: companyId },
+        });
+        return res.data?.data?.supplierList || [];
+      },
+      enabled: Boolean(companyId),
+    });
+
   const { mutateAsync: addUser } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
@@ -112,7 +126,13 @@ function AddSupplier() {
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      if (typeof errorMessage === "object") {
+        const err = errorMessage?.details?.[0]?.message;
+        message.error(err);
+      }
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
     },
   });
 
@@ -145,6 +165,118 @@ function AddSupplier() {
             padding: "12px",
           }}
         >
+          <Col span={12}>
+            <Form.Item
+              label="Supplier Type"
+              name="supplier_types"
+              validateStatus={errors.supplier_types ? "error" : ""}
+              help={errors.supplier_types && errors.supplier_types.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_types"
+                render={({ field }) => (
+                  <Checkbox.Group
+                    options={[
+                      {
+                        value: "purchase/trading",
+                        label: "Purchase/Trading",
+                        disabled:
+                          (getValues("supplier_types")?.includes("yarn") ||
+                            getValues("supplier_types")?.includes("other") ||
+                            getValues("supplier_types")?.includes("re-work")) &&
+                          !getValues("supplier_types")?.includes(
+                            "purchase/trading"
+                          ),
+                      },
+                      {
+                        value: "job",
+                        label: "Job",
+                        disabled:
+                          (getValues("supplier_types")?.includes("yarn") ||
+                            getValues("supplier_types")?.includes("other") ||
+                            getValues("supplier_types")?.includes("re-work")) &&
+                          !getValues("supplier_types")?.includes("job"),
+                      },
+                      {
+                        value: "yarn",
+                        label: "Yarn",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("yarn"),
+                      },
+                      {
+                        value: "other",
+                        label: "Other",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("other"),
+                      },
+                      {
+                        value: "re-work",
+                        label: "Re-Work",
+                        disabled:
+                          getValues("supplier_types")?.length &&
+                          !getValues("supplier_types")?.includes("re-work"),
+                      },
+                    ]}
+                    {...field}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Supplier Name"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Supplier Name"
+                    allowClear
+                    loading={isLoadingSupplierNameList}
+                    options={supplierNameList?.map((supplierName) => ({
+                      label: supplierName?.supplier_name,
+                      value: supplierName?.supplier_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+            <Form.Item name="supplier_name" wrapperCol={{ sm: 24 }}>
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="other"
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={12}>
             <Form.Item
               label={<p className="m-0 whitespace-nowrap">First Name</p>}
@@ -291,6 +423,7 @@ function AddSupplier() {
               name="pancard_no"
               validateStatus={errors.pancard_no ? "error" : ""}
               help={errors.pancard_no && errors.pancard_no.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -309,6 +442,7 @@ function AddSupplier() {
               name="username"
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -323,35 +457,18 @@ function AddSupplier() {
 
           <Col span={12}>
             <Form.Item
-              label="Supplier Name"
-              name="supplier_name"
-              validateStatus={errors.supplier_name ? "error" : ""}
-              help={errors.supplier_name && errors.supplier_name.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="supplier_name"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Supplier Name" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="supplier Company"
+              label="Supplier Company"
               name="supplier_company"
               validateStatus={errors.supplier_company ? "error" : ""}
               help={errors.supplier_company && errors.supplier_company.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
                 name="supplier_company"
                 render={({ field }) => (
-                  <Input {...field} placeholder="supplier Company" />
+                  <Input {...field} placeholder="Supplier Company" />
                 )}
               />
             </Form.Item>
@@ -398,70 +515,6 @@ function AddSupplier() {
                         value: broker.id,
                       })
                     )}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
-              label="Supplier Type"
-              name="supplier_types"
-              validateStatus={errors.supplier_types ? "error" : ""}
-              help={errors.supplier_types && errors.supplier_types.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="supplier_types"
-                render={({ field }) => (
-                  <Checkbox.Group
-                    options={[
-                      {
-                        value: "purchase/trading",
-                        label: "Purchase/Trading",
-                        disabled:
-                          (getValues("supplier_types")?.includes("yarn") ||
-                            getValues("supplier_types")?.includes("other") ||
-                            getValues("supplier_types")?.includes("re-work")) &&
-                          !getValues("supplier_types")?.includes(
-                            "purchase/trading"
-                          ),
-                      },
-                      {
-                        value: "job",
-                        label: "Job",
-                        disabled:
-                          (getValues("supplier_types")?.includes("yarn") ||
-                            getValues("supplier_types")?.includes("other") ||
-                            getValues("supplier_types")?.includes("re-work")) &&
-                          !getValues("supplier_types")?.includes("job"),
-                      },
-                      {
-                        value: "yarn",
-                        label: "Yarn",
-                        disabled:
-                          getValues("supplier_types")?.length &&
-                          !getValues("supplier_types")?.includes("yarn"),
-                      },
-                      {
-                        value: "other",
-                        label: "Other",
-                        disabled:
-                          getValues("supplier_types")?.length &&
-                          !getValues("supplier_types")?.includes("other"),
-                      },
-                      {
-                        value: "re-work",
-                        label: "Re-Work",
-                        disabled:
-                          getValues("supplier_types")?.length &&
-                          !getValues("supplier_types")?.includes("re-work"),
-                      },
-                    ]}
-                    {...field}
                   />
                 )}
               />

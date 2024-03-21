@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import { Button, Flex, Input, Space, Spin, Switch, Table, message } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -15,12 +15,15 @@ import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
 function VehicleUserList() {
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
@@ -30,11 +33,16 @@ function VehicleUserList() {
     queryKey: [
       "vehicle-user",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
     ],
     queryFn: async () => {
       const res = await getVehicleUserListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+        },
       });
       return res.data?.data;
     },
@@ -254,12 +262,21 @@ function VehicleUserList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!userListRes?.vehicleList?.rows?.length}
-          onClick={downloadPdf}
-        />
+
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!userListRes?.vehicleList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

@@ -48,6 +48,10 @@ export function getDropdownSupplierListRequest({ params }) {
   return api.get(`/dropdown/supplier/list`, { params });
 }
 
+export function getDropdownSupplierNameListRequest({ params }) {
+  return api.get(`/dropdown/supplier_names/list`, { params });
+}
+
 // employee
 export function getEmployeeByIdRequest({ id, params }) {
   return api.get(`/employee/get/${id}`, { params });

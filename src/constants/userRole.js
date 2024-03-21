@@ -37,3 +37,30 @@ export const supplierTypeEnum = [
   "other",
   "re-work",
 ];
+
+export const SALARY_TYPE_LIST = [
+  {
+    label: "Work basis",
+    value: "Work basis",
+  },
+  {
+    label: "Monthly",
+    value: "Monthly",
+  },
+  {
+    label: "Attendance",
+    value: "Attendance",
+  },
+  {
+    label: "On production",
+    value: "On production",
+  },
+  {
+    label: "Beam pasaria",
+    value: "Beam pasaria",
+  },
+  {
+    label: "Beam warper",
+    value: "Beam warper",
+  },
+];

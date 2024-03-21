@@ -45,7 +45,7 @@ const addEmployeeSchemaResolver = yupResolver(
     salary_type: yup.string().required("Please select salary type"),
     company_id: yup.string().required("Please select company"),
     joining_date: yup.string().required("Please select joining date"),
-    tds: yup.string().required("Please enter TDS"),
+    tds: yup.string(),
     salary: yup
       .string()
       .nullable()
@@ -169,6 +169,26 @@ function AddEmployee() {
             watch={watch}
             setValue={setValue}
           />
+
+          <Col span={12}>
+            <Form.Item
+              label="Username"
+              name="username"
+              validateStatus={errors.username ? "error" : ""}
+              help={errors.username && errors.username.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="username"
+                render={({ field }) => (
+                  <Input {...field} placeholder="Username" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={12}>
             <Form.Item
               label="Joining Date"
@@ -298,30 +318,10 @@ function AddEmployee() {
 
           <Col span={12}>
             <Form.Item
-              label="Username"
-              name="username"
-              validateStatus={errors.username ? "error" : ""}
-              help={errors.username && errors.username.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="username"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Username" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={12}>
-            <Form.Item
               label={<p className="m-0 whitespace-nowrap">TDS</p>}
               name="tds"
               validateStatus={errors.tds ? "error" : ""}
               help={errors.tds && errors.tds.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

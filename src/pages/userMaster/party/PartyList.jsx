@@ -1,4 +1,14 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import {
+  Button,
+  Flex,
+  Input,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Typography,
+  message,
+} from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -16,21 +26,53 @@ import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import useDebounce from "../../../hooks/useDebounce";
 
 const roleId = USER_ROLES.PARTY.role_id;
 
 function PartyList() {
+  const [search, setSearch] = useState("");
+  const [dueDay, setDueDay] = useState(undefined);
+  const [creditLimitFrom, setCreditLimitFrom] = useState(undefined);
+  const [creditLimitTo, setCreditLimitTo] = useState(undefined);
+  const [due_day_active, setDueDayActive] = useState(true);
+  const debouncedSearch = useDebounce(search, 500);
+  const debouncedDueDay = useDebounce(dueDay, 500);
+  const debouncedCreditLimitTo = useDebounce(creditLimitTo, 500);
+  const debouncedCreditLimitFrom = useDebounce(creditLimitFrom, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      "party",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        search: debouncedSearch,
+        due_day_active,
+        due_day: debouncedDueDay,
+        creditLimitFrom: debouncedCreditLimitFrom,
+        creditLimitTo: debouncedCreditLimitTo,
+      },
+    ],
     queryFn: async () => {
       const res = await getPartyListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+          due_day_active,
+          due_day: debouncedDueDay,
+          creditLimitFrom: debouncedCreditLimitFrom,
+          creditLimitTo: debouncedCreditLimitTo,
+        },
       });
       return res.data?.data;
     },
@@ -226,12 +268,56 @@ function PartyList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!userListRes?.partyList?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Due Day Active
+            </Typography.Text>
+            <Switch
+              loading={isLoading}
+              defaultChecked={due_day_active}
+              onChange={(v) => {
+                setDueDayActive(v);
+              }}
+            />
+          </Flex>
+          <Input
+            placeholder="Due Day"
+            value={dueDay}
+            onChange={(e) => setDueDay(e.target.value)}
+            type="number"
+            step={1}
+            min={0}
+          />
+          <Input
+            placeholder="Credit Limit From"
+            value={creditLimitFrom}
+            onChange={(e) => setCreditLimitFrom(e.target.value)}
+            type="number"
+            step={1}
+            min={0}
+          />
+          <Input
+            placeholder="Credit Limit To"
+            value={creditLimitTo}
+            onChange={(e) => setCreditLimitTo(e.target.value)}
+            type="number"
+            step={1}
+            min={0}
+          />
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!userListRes?.partyList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

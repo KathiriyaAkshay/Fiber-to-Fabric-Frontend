@@ -19,16 +19,10 @@ const updateVehicleUserSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
-    email: yup
-      .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
+    email: yup.string().email("Please enter valid email address"),
     address: yup.string(),
     pancard_no: yup.string(),
-    adhar_no: yup
-      .string()
-      // .required("Please enter Aadhar number")
-      .matches(AadharRegex, "Enter valid Aadhar number"),
+    adhar_no: yup.string().matches(AadharRegex, "Enter valid Aadhar number"),
     gst_no: yup.string(),
     vehicleNo: yup.string().required("Please provide vehicle number"),
     vehicleName: yup.string().required("Please provide vehicle name"),
@@ -181,7 +175,6 @@ function UpdateVehicleUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -211,28 +204,6 @@ function UpdateVehicleUser() {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={12}>
-            <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
 
           <Col span={12}>
             <Form.Item

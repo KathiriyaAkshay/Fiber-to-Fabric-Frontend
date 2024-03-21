@@ -27,16 +27,10 @@ const addVehicleUserSchemaResolver = yupResolver(
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
-    email: yup
-      .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
+    email: yup.string().email("Please enter valid email address"),
     address: yup.string().required("Please provide address"),
     gst_no: yup.string(),
-    // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
-    // .required('Please enter pan number')
-    // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string(),
     adhar_no: yup
       .string()
@@ -192,7 +186,6 @@ function AddVehicleUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

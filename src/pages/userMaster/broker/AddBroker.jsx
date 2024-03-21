@@ -35,7 +35,8 @@ const addBrokerSchemaResolver = yupResolver(
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
+    gst_no: yup.string(),
+    // .required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
     // .required('Please enter pan number')
@@ -232,7 +233,6 @@ function AddBroker() {
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller

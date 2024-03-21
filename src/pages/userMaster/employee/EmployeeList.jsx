@@ -1,4 +1,15 @@
-import { Button, Space, Spin, Switch, Table, message } from "antd";
+import {
+  Button,
+  Flex,
+  Input,
+  Select,
+  Space,
+  Spin,
+  Switch,
+  Table,
+  Typography,
+  message,
+} from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -10,28 +21,53 @@ import {
   getEmployeeListRequest,
   updateUserRequest,
 } from "../../../api/requests/users";
-import { USER_ROLES } from "../../../constants/userRole";
+import { SALARY_TYPE_LIST, USER_ROLES } from "../../../constants/userRole";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
 function EmployeeList() {
+  const [search, setSearch] = useState();
+  const [salaryType, setSalaryType] = useState();
+  const [status, setStatus] = useState();
+  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSalaryType = useDebounce(salaryType, 500);
+  const debouncedStatus = useDebounce(status, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
-    queryKey: ["employee", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      "employee",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        search: debouncedSearch,
+        salary_type: debouncedSalaryType,
+        status: debouncedStatus,
+      },
+    ],
     queryFn: async () => {
       const res = await getEmployeeListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          search: debouncedSearch,
+          salary_type: debouncedSalaryType,
+          status: debouncedStatus,
+        },
       });
       return res.data?.data;
     },
@@ -229,12 +265,62 @@ function EmployeeList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!userListRes?.empoloyeeList?.rows?.length}
-          onClick={downloadPdf}
-        />
+
+        <Flex align="center" gap={10}>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Salary Type
+            </Typography.Text>
+            <Select
+              placeholder="Select Salary Type"
+              loading={isLoading}
+              options={SALARY_TYPE_LIST}
+              value={salaryType}
+              onChange={setSalaryType}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Status
+            </Typography.Text>
+            <Select
+              placeholder="Select status"
+              loading={isLoading}
+              options={[
+                { label: "Active", value: 1 },
+                { label: "Inactive", value: 0 },
+              ]}
+              value={status}
+              onChange={setStatus}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!userListRes?.empoloyeeList?.rows?.length}
+            onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

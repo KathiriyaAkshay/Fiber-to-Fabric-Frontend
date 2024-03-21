@@ -19,16 +19,10 @@ const updateCollectionUserSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
     last_name: yup.string(),
-    email: yup
-      .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
+    email: yup.string().email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
-    // .matches(GSTRegex, "Enter valid GST number"),
+    gst_no: yup.string(),
     pancard_no: yup.string(),
-    // .required('Please enter pan number')
-    // .matches(PANRegex, "Enter valid PAN number"),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -175,7 +169,6 @@ function UpdateCollectionUser() {
               name="email"
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -206,35 +199,12 @@ function UpdateCollectionUser() {
             </Form.Item>
           </Col>
 
-          {/* <Col span={12}>
-            <Form.Item
-              label="Password"
-              name="password"
-              validateStatus={errors.password ? "error" : ""}
-              help={errors.password && errors.password.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="password"
-                render={({ field }) => (
-                  <Input.Password
-                    {...field}
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={12}>
             <Form.Item
               label="GST No"
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
