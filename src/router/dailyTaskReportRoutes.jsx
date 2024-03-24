@@ -2,6 +2,9 @@ import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/AddEmployeeAttendanceReport";
+import EmployeeAttendanceReportList from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/EmployeeAttendanceReportList";
+import UpdateEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/UpdateEmployeeAttendanceReport";
 import AddOtherReport from "../pages/tasks/dailyTaskReport/otherReports/AddOtherReport";
 import OtherReportList from "../pages/tasks/dailyTaskReport/otherReports/OtherReportList";
 import UpdateOtherReport from "../pages/tasks/dailyTaskReport/otherReports/UpdateOtherReport";
@@ -56,9 +59,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "employees-attendance-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <EmployeeAttendanceReportList /> },
+        { path: "add", element: <AddEmployeeAttendanceReport /> },
+        { path: "update/:id", element: <UpdateEmployeeAttendanceReport /> },
       ],
     },
     {
