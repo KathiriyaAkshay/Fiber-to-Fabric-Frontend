@@ -86,6 +86,7 @@ const addEmployeeSchemaResolver = yupResolver(
             .required("Please provide rate per meter")
             .min(yup.ref("machineNo_from"), "To must be greater than From"),
       }),
+    shift: yup.string(),
   })
 );
 
@@ -334,6 +335,44 @@ function AddEmployee() {
                     type="number"
                     min={0}
                     step={0.01}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Shift"
+              name="shift"
+              validateStatus={errors.shift ? "error" : ""}
+              help={errors.shift && errors.shift.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="shift"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Shift"
+                    options={[
+                      {
+                        label: "Day",
+                        value: "day",
+                      },
+                      {
+                        label: "Night",
+                        value: "night",
+                      },
+                    ]}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
                   />
                 )}
               />
