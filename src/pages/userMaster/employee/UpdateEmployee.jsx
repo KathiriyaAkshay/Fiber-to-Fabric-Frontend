@@ -179,7 +179,7 @@ function UpdateEmployee() {
         per_attendance,
         per_meter,
         shift,
-        salary,
+        salary: salary ? salary : undefined,
       });
     }
   }, [userDetails, reset]);
