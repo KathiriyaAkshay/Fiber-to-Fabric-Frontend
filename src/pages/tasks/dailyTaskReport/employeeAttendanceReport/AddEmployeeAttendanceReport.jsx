@@ -1,31 +1,23 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Flex,
-  Form,
-  Input,
-  Row,
-  TimePicker,
-  message,
-} from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import dayjs from "dayjs";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { createEmployeeAttendanceReportRequest } from "../../../../api/requests/reports/employeeAttendance";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import { getEmployeeListRequest } from "../../../../api/requests/users";
 
 const addEmployeeAttendanceReportSchemaResolver = yupResolver(
   yup.object().shape({
-    notes: yup.string().required("Please enter note"),
-    report_date: yup.string().required("Please select date"),
-    report_time: yup.string(),
+    machine_id: yup.string(),
+    absent_employee_count: yup.string(),
+    shift: yup.string(),
+    user_ids: yup.array().of(yup.string()).required("Please select Employees"),
   })
 );
 
@@ -33,6 +25,37 @@ function AddEmployeeAttendanceReport() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: EmployeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee",
+      "list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { mutateAsync: createEmployeeAttendance } = useMutation({
     mutationFn: async (data) => {
@@ -62,11 +85,7 @@ function AddEmployeeAttendanceReport() {
   }
 
   async function onSubmit(data) {
-    await createEmployeeAttendance({
-      ...data,
-      company_id: companyId,
-      report_time: undefined,
-    });
+    await createEmployeeAttendance(data);
   }
 
   const {
@@ -76,11 +95,10 @@ function AddEmployeeAttendanceReport() {
     reset,
   } = useForm({
     resolver: addEmployeeAttendanceReportSchemaResolver,
-    defaultValues: {
-      report_date: dayjs(),
-      report_time: dayjs(),
-    },
+    defaultValues: {},
   });
+
+  // console.log("errors----->", errors);
 
   return (
     <div className="flex flex-col p-4">
@@ -99,23 +117,35 @@ function AddEmployeeAttendanceReport() {
         >
           <Col span={12}>
             <Form.Item
-              label="Date"
-              name="report_date"
-              validateStatus={errors.report_date ? "error" : ""}
-              help={errors.report_date && errors.report_date.message}
+              label="Machine Name"
+              name="machine_id"
+              validateStatus={errors.machine_id ? "error" : ""}
+              help={errors.machine_id && errors.machine_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              style={{
+                marginBottom: "8px",
+              }}
             >
               <Controller
                 control={control}
-                name="report_date"
+                name="machine_id"
                 render={({ field }) => (
-                  <DatePicker
+                  <Select
                     {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((mn) => ({
+                      label: mn?.machine_name,
+                      value: mn?.machine_name_id,
+                    }))}
                     style={{
-                      width: "100%",
+                      textTransform: "capitalize",
                     }}
-                    format="DD-MM-YYYY"
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
                   />
                 )}
               />
@@ -124,46 +154,91 @@ function AddEmployeeAttendanceReport() {
 
           <Col span={12}>
             <Form.Item
-              label="Time"
-              name="report_time"
-              validateStatus={errors.report_time ? "error" : ""}
-              help={errors.report_time && errors.report_time.message}
+              label="Absent Employee Count"
+              name="absent_employee_count"
+              validateStatus={errors.absent_employee_count ? "error" : ""}
+              help={
+                errors.absent_employee_count &&
+                errors.absent_employee_count.message
+              }
               wrapperCol={{ sm: 24 }}
+              disabled
             >
               <Controller
                 control={control}
-                name="report_time"
+                name="absent_employee_count"
                 render={({ field }) => (
-                  <TimePicker
+                  <Input
                     {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="h:mm:ss A"
-                    disabled={true}
+                    placeholder="1"
+                    type="number"
+                    min={0}
+                    step={1}
                   />
                 )}
               />
             </Form.Item>
           </Col>
 
-          <Col span={24}>
+          <Col span={12}>
             <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
+              name={`shift`}
+              validateStatus={errors.shift ? "error" : ""}
+              help={errors?.shift?.message}
               required={true}
+              className="mb-0"
+              label="Shift"
+            >
+              <Controller
+                control={control}
+                name={`shift`}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={[
+                      {
+                        label: "Day",
+                        value: "day",
+                      },
+                      {
+                        label: "Night",
+                        value: "night",
+                      },
+                    ]}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Employee"
+              name="user_ids"
+              validateStatus={errors.user_ids ? "error" : ""}
+              help={errors.user_ids && errors.user_ids.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="notes"
+                name="user_ids"
                 render={({ field }) => (
-                  <Input.TextArea
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Please select Employees"
+                    loading={isLoadingEmployeeList}
                     {...field}
-                    placeholder="Please enter note"
-                    autoSize
+                    options={EmployeeListRes?.rows?.map((user) => ({
+                      label: user.first_name + " " + user.last_name,
+                      value: user.id,
+                    }))}
                   />
                 )}
               />
