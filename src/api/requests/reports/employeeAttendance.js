@@ -11,7 +11,7 @@ export function getEmployeeAttendanceReportByIdRequest({ id, params }) {
 }
 
 export function getEmployeeAttendanceReportListRequest({ params }) {
-  return api.get(`/reports/employee-attandance-report/list/`, {
+  return api.get(`/reports/employee-attandance-report/list`, {
     params,
   });
 }

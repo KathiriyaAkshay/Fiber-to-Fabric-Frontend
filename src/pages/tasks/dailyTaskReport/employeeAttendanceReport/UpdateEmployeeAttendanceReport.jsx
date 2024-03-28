@@ -26,9 +26,12 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const updateOtherReportSchemaResolver = yupResolver(
   yup.object().shape({
-    notes: yup.string().required("Please enter note"),
-    report_date: yup.string().required("Please select date"),
-    report_time: yup.string(),
+    machine_id: yup.string().required("Please select machine name"),
+    absent_employee_count: yup
+      .string()
+      .required("Please enter absent employee count"),
+    shift: yup.string().required("Please select shift"),
+    user_ids: yup.array().of(yup.string()).required("Please select Employees"),
   })
 );
 

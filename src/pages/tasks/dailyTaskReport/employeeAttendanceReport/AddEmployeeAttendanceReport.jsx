@@ -14,9 +14,11 @@ import { getEmployeeListRequest } from "../../../../api/requests/users";
 
 const addEmployeeAttendanceReportSchemaResolver = yupResolver(
   yup.object().shape({
-    machine_id: yup.string(),
-    absent_employee_count: yup.string(),
-    shift: yup.string(),
+    machine_id: yup.string().required("Please select machine name"),
+    absent_employee_count: yup
+      .string()
+      .required("Please enter absent employee count"),
+    shift: yup.string().required("Please select shift"),
     user_ids: yup.array().of(yup.string()).required("Please select Employees"),
   })
 );

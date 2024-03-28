@@ -40,144 +40,142 @@ function EmployeeAttendanceReportList() {
     },
     enabled: Boolean(companyId),
   });
+console.log("reportListRes------>", reportListRes);
+function navigateToAdd() {
+  navigate("/tasks/daily-task-report/employees-attendance-report/add");
+}
 
-  function navigateToAdd() {
-    navigate("/tasks/daily-task-report/employees-attendance-report/add");
-  }
+function navigateToUpdate(id) {
+  navigate(`/tasks/daily-task-report/employees-attendance-report/update/${id}`);
+}
 
-  function navigateToUpdate(id) {
-    navigate(
-      `/tasks/daily-task-report/employees-attendance-report/update/${id}`
-    );
-  }
+function downloadPdf() {
+  const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-  function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+  const body = reportListRes?.row?.map((report) => {
+    const { id, report_date, notes } = report;
+    return [
+      id,
+      dayjs(report_date).format("DD-MM-YYYY"),
+      dayjs(report_date).format("h:mm:ss A"),
+      notes,
+    ];
+  });
 
-    const body = reportListRes?.rows?.map((report) => {
-      const { id, report_date, notes } = report;
-      return [
-        id,
-        dayjs(report_date).format("DD-MM-YYYY"),
-        dayjs(report_date).format("h:mm:ss A"),
-        notes,
-      ];
-    });
+  downloadUserPdf({
+    body,
+    head: [["ID", "Date", "Time", "Notes"]],
+    leftContent,
+    rightContent,
+    title: "Employee Attendance Report List",
+  });
+}
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Date", "Time", "Notes"]],
-      leftContent,
-      rightContent,
-      title: "Employee Attendance Report List",
-    });
-  }
-
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
+const columns = [
+  {
+    title: "ID",
+    dataIndex: "id",
+    key: "id",
+  },
+  {
+    title: "Date",
+    key: "createdAt",
+    render: ({ createdAt }) => {
+      return dayjs(createdAt).format("DD-MM-YYYY");
     },
-    {
-      title: "Date",
-      key: "report_date",
-      render: ({ report_date }) => {
-        return dayjs(report_date).format("DD-MM-YYYY");
-      },
+  },
+  {
+    title: "Machine Name",
+    key: "report_time",
+    render: ({ report_date }) => {
+      return dayjs(report_date).format("h:mm:ss A");
     },
-    {
-      title: "Time",
-      key: "report_time",
-      render: ({ report_date }) => {
-        return dayjs(report_date).format("h:mm:ss A");
-      },
-    },
-    {
-      title: "Notes",
-      dataIndex: "notes",
-      key: "notes",
-    },
-    {
-      title: "Action",
-      render: (reportDetails) => {
-        const { report_date, notes } = reportDetails;
-        return (
-          <Space>
-            <ViewDetailModal
-              title="Machine List"
-              details={[
-                {
-                  title: "Date",
-                  value: dayjs(report_date).format("DD-MM-YYYY"),
-                },
-                {
-                  title: "Time",
-                  value: dayjs(report_date).format("h:mm:ss A"),
-                },
-                { title: "Notes", value: notes },
-              ]}
-            />
-            <Button
-              onClick={() => {
-                navigateToUpdate(reportDetails.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteEmployeeAttendanceReportButton details={reportDetails} />
-          </Space>
-        );
-      },
-      key: "action",
-    },
-  ];
-
-  function renderTable() {
-    if (isLoadingReportList) {
+  },
+  {
+    title: "Notes",
+    dataIndex: "notes",
+    key: "notes",
+  },
+  {
+    title: "Action",
+    render: (reportDetails) => {
+      const { report_date, notes } = reportDetails;
       return (
-        <Spin tip="Loading" size="large">
-          <div className="p-14" />
-        </Spin>
+        <Space>
+          <ViewDetailModal
+            title="Machine List"
+            details={[
+              {
+                title: "Date",
+                value: dayjs(report_date).format("DD-MM-YYYY"),
+              },
+              {
+                title: "Time",
+                value: dayjs(report_date).format("h:mm:ss A"),
+              },
+              { title: "Notes", value: notes },
+            ]}
+          />
+          <Button
+            onClick={() => {
+              navigateToUpdate(reportDetails.id);
+            }}
+          >
+            <EditOutlined />
+          </Button>
+          <DeleteEmployeeAttendanceReportButton details={reportDetails} />
+        </Space>
       );
-    }
+    },
+    key: "action",
+  },
+];
 
+function renderTable() {
+  if (isLoadingReportList) {
     return (
-      <Table
-        dataSource={reportListRes?.rows || []}
-        columns={columns}
-        rowKey={"id"}
-        pagination={{
-          total: reportListRes?.count || 0,
-          showSizeChanger: true,
-          onShowSizeChange: onShowSizeChange,
-          onChange: onPageChange,
-        }}
-      />
+      <Spin tip="Loading" size="large">
+        <div className="p-14" />
+      </Spin>
     );
   }
 
   return (
-    <div className="flex flex-col p-4">
-      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Employees Attendance Report</h3>
-          <Button
-            onClick={navigateToAdd}
-            icon={<PlusCircleOutlined />}
-            type="text"
-          />
-        </div>
+    <Table
+      dataSource={reportListRes?.row || []}
+      columns={columns}
+      rowKey={"id"}
+      pagination={{
+        total: reportListRes?.count || 0,
+        showSizeChanger: true,
+        onShowSizeChange: onShowSizeChange,
+        onChange: onPageChange,
+      }}
+    />
+  );
+}
+
+return (
+  <div className="flex flex-col p-4">
+    <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+      <div className="flex items-center gap-2">
+        <h3 className="m-0 text-primary">Employees Attendance Report</h3>
         <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!reportListRes?.rows?.length}
-          onClick={downloadPdf}
+          onClick={navigateToAdd}
+          icon={<PlusCircleOutlined />}
+          type="text"
         />
       </div>
-      {renderTable()}
+      <Button
+        icon={<FilePdfOutlined />}
+        type="primary"
+        disabled={!reportListRes?.row?.length}
+        onClick={downloadPdf}
+      />
     </div>
-  );
+    {renderTable()}
+  </div>
+);
 }
 
 export default EmployeeAttendanceReportList;
