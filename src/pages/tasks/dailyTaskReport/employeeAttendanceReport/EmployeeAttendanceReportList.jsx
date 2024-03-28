@@ -53,18 +53,30 @@ function downloadPdf() {
   const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
   const body = reportListRes?.row?.map((report) => {
-    const { id, report_date, notes } = report;
+    const { id, createdAt, machine = {}, absent_employee_count } = report;
+    const { machine_name, no_of_machines, no_of_employees } = machine;
     return [
       id,
-      dayjs(report_date).format("DD-MM-YYYY"),
-      dayjs(report_date).format("h:mm:ss A"),
-      notes,
+      dayjs(createdAt).format("DD-MM-YYYY"),
+      machine_name,
+      no_of_machines,
+      no_of_employees,
+      absent_employee_count,
     ];
   });
 
   downloadUserPdf({
     body,
-    head: [["ID", "Date", "Time", "Notes"]],
+    head: [
+      [
+        "ID",
+        "Date",
+        "Machine Name",
+        "No. of machine",
+        "No Of Emp.",
+        "Absent Emp.",
+      ],
+    ],
     leftContent,
     rightContent,
     title: "Employee Attendance Report List",
@@ -86,34 +98,60 @@ const columns = [
   },
   {
     title: "Machine Name",
-    key: "report_time",
-    render: ({ report_date }) => {
-      return dayjs(report_date).format("h:mm:ss A");
-    },
+    key: "machine.machine_name",
+    dataIndex: ["machine", "machine_name"],
   },
   {
-    title: "Notes",
-    dataIndex: "notes",
-    key: "notes",
+    title: "No. of machine",
+    dataIndex: ["machine", "no_of_machines"],
+    key: "machine.no_of_machines",
+  },
+  {
+    title: "No. of Emp.",
+    dataIndex: ["machine", "no_of_employees"],
+    key: "machine.no_of_employees",
+  },
+  {
+    title: "Absent Emp.",
+    dataIndex: "absent_employee_count",
+    key: "absent_employee_count",
+  },
+  {
+    title: "Shift Type",
+    dataIndex: "shift",
+    key: "shift",
   },
   {
     title: "Action",
     render: (reportDetails) => {
-      const { report_date, notes } = reportDetails;
+      const {
+        machine = {},
+        absent_employee_count,
+        shift,
+        createdAt,
+      } = reportDetails;
+      const { machine_name, no_of_machines, no_of_employees } = machine;
       return (
         <Space>
           <ViewDetailModal
             title="Machine List"
             details={[
               {
+                title: "Machine Name",
+                value: machine_name,
+              },
+              { title: "Machine No.", value: no_of_machines },
+              { title: "No of Emp.", value: no_of_employees },
+              { title: "Absent Employee", value: absent_employee_count },
+              { title: "Attendance Type", value: shift },
+              {
                 title: "Date",
-                value: dayjs(report_date).format("DD-MM-YYYY"),
+                value: dayjs(createdAt).format("DD-MM-YYYY"),
               },
               {
                 title: "Time",
-                value: dayjs(report_date).format("h:mm:ss A"),
+                value: dayjs(createdAt).format("h:mm:ss A"),
               },
-              { title: "Notes", value: notes },
             ]}
           />
           <Button

@@ -95,11 +95,13 @@ function AddEmployeeAttendanceReport() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     resolver: addEmployeeAttendanceReportSchemaResolver,
     defaultValues: {},
   });
 
+  const { absent_employee_count, user_ids } = watch();
   // console.log("errors----->", errors);
 
   return (
@@ -138,9 +140,9 @@ function AddEmployeeAttendanceReport() {
                     placeholder="Select Machine Name"
                     allowClear
                     loading={isLoadingMachineList}
-                    options={machineListRes?.rows?.map((mn) => ({
-                      label: mn?.machine_name,
-                      value: mn?.machine_name_id,
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.id,
                     }))}
                     style={{
                       textTransform: "capitalize",
@@ -240,6 +242,10 @@ function AddEmployeeAttendanceReport() {
                     options={EmployeeListRes?.rows?.map((user) => ({
                       label: user.first_name + " " + user.last_name,
                       value: user.id,
+                      disabled:
+                        !absent_employee_count ||
+                        (user_ids?.length >= absent_employee_count &&
+                          !user_ids?.includes(user?.id)),
                     }))}
                   />
                 )}

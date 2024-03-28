@@ -1,30 +1,21 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Flex,
-  Form,
-  Input,
-  Row,
-  TimePicker,
-  message,
-} from "antd";
+import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
-import dayjs from "dayjs";
-import {
-  getOtherReportByIdRequest,
-  updateOtherReportRequest,
-} from "../../../../api/requests/reports/otherReport";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { getEmployeeListRequest } from "../../../../api/requests/users";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import {
+  getEmployeeAttendanceReportByIdRequest,
+  updateEmployeeAttendanceReportRequest,
+} from "../../../../api/requests/reports/employeeAttendance";
 
-const updateOtherReportSchemaResolver = yupResolver(
+const updateEmployeeAttendanceReportSchemaResolver = yupResolver(
   yup.object().shape({
     machine_id: yup.string().required("Please select machine name"),
     absent_employee_count: yup
@@ -45,9 +36,40 @@ function UpdateEmployeeAttendanceReport() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateOtherReport } = useMutation({
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: EmployeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee",
+      "list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { mutateAsync: updateEmployeeAttendanceReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateOtherReportRequest({
+      const res = await updateEmployeeAttendanceReportRequest({
         id,
         data,
         params: {
@@ -56,7 +78,7 @@ function UpdateEmployeeAttendanceReport() {
       });
       return res.data;
     },
-    mutationKey: ["reports", "other-report", "update", id],
+    mutationKey: ["reports/employee-attandance-report/update", id],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
@@ -73,13 +95,13 @@ function UpdateEmployeeAttendanceReport() {
   });
 
   const { data: reportDetails } = useQuery({
-    queryKey: ["reports", "other-report", "get", id],
+    queryKey: ["reports/employee-attandance-report/get", id],
     queryFn: async () => {
-      const res = await getOtherReportByIdRequest({
+      const res = await getEmployeeAttendanceReportByIdRequest({
         id,
         params: { company_id: companyId },
       });
-      return res.data?.data?.report;
+      return res.data?.data?.employee_attendance_report;
     },
     enabled: Boolean(companyId),
   });
@@ -87,7 +109,7 @@ function UpdateEmployeeAttendanceReport() {
   async function onSubmit(data) {
     // delete parameter's those are not allowed
     delete data?.report_time;
-    await updateOtherReport(data);
+    await updateEmployeeAttendanceReport(data);
   }
 
   const {
@@ -95,18 +117,22 @@ function UpdateEmployeeAttendanceReport() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
-    resolver: updateOtherReportSchemaResolver,
+    resolver: updateEmployeeAttendanceReportSchemaResolver,
   });
+  const { absent_employee_count, user_ids } = watch();
 
   useEffect(() => {
     if (reportDetails) {
-      const { notes, report_date } = reportDetails;
+      const { machine, absent_employee_count, shift, report_absentees } =
+        reportDetails;
 
       reset({
-        notes: notes,
-        report_date: dayjs(report_date),
-        report_time: dayjs(report_date),
+        machine_id: machine?.id,
+        absent_employee_count: absent_employee_count,
+        shift: shift,
+        user_ids: report_absentees?.map((ra) => ra?.user_id),
       });
     }
   }, [reportDetails, reset]);
@@ -128,24 +154,35 @@ function UpdateEmployeeAttendanceReport() {
         >
           <Col span={12}>
             <Form.Item
-              label="Date"
-              name="report_date"
-              validateStatus={errors.report_date ? "error" : ""}
-              help={errors.report_date && errors.report_date.message}
+              label="Machine Name"
+              name="machine_id"
+              validateStatus={errors.machine_id ? "error" : ""}
+              help={errors.machine_id && errors.machine_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              style={{
+                marginBottom: "8px",
+              }}
             >
               <Controller
                 control={control}
-                name="report_date"
+                name="machine_id"
                 render={({ field }) => (
-                  <DatePicker
+                  <Select
                     {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.id,
+                    }))}
                     style={{
-                      width: "100%",
+                      textTransform: "capitalize",
                     }}
-                    format="DD-MM-YYYY"
-                    disabled
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
                   />
                 )}
               />
@@ -154,46 +191,96 @@ function UpdateEmployeeAttendanceReport() {
 
           <Col span={12}>
             <Form.Item
-              label="Date"
-              name="report_time"
-              validateStatus={errors.report_time ? "error" : ""}
-              help={errors.report_time && errors.report_time.message}
+              label="Absent Employee Count"
+              name="absent_employee_count"
+              validateStatus={errors.absent_employee_count ? "error" : ""}
+              help={
+                errors.absent_employee_count &&
+                errors.absent_employee_count.message
+              }
               wrapperCol={{ sm: 24 }}
+              disabled
             >
               <Controller
                 control={control}
-                name="report_time"
+                name="absent_employee_count"
                 render={({ field }) => (
-                  <TimePicker
+                  <Input
                     {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="h:mm:ss A"
-                    disabled={true}
+                    placeholder="1"
+                    type="number"
+                    min={0}
+                    step={1}
                   />
                 )}
               />
             </Form.Item>
           </Col>
 
-          <Col span={24}>
+          <Col span={12}>
             <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
+              name={`shift`}
+              validateStatus={errors.shift ? "error" : ""}
+              help={errors?.shift?.message}
               required={true}
+              className="mb-0"
+              label="Shift"
+            >
+              <Controller
+                control={control}
+                name={`shift`}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={[
+                      {
+                        label: "Day",
+                        value: "day",
+                      },
+                      {
+                        label: "Night",
+                        value: "night",
+                      },
+                    ]}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
+              label="Employee"
+              name="user_ids"
+              validateStatus={errors.user_ids ? "error" : ""}
+              help={errors.user_ids && errors.user_ids.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="notes"
+                name="user_ids"
                 render={({ field }) => (
-                  <Input.TextArea
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    placeholder="Please select Employees"
+                    loading={isLoadingEmployeeList}
                     {...field}
-                    placeholder="Please enter note"
-                    autoSize
+                    options={EmployeeListRes?.rows?.map((user) => ({
+                      label: user.first_name + " " + user.last_name,
+                      value: user.id,
+
+                      disabled:
+                        !absent_employee_count ||
+                        (user_ids?.length >= absent_employee_count &&
+                          !user_ids?.includes(user?.id)),
+                    }))}
                   />
                 )}
               />
