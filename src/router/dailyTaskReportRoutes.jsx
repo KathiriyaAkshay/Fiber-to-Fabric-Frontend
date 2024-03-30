@@ -2,6 +2,8 @@ import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddWastageReport from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReport";
+import WastageReportList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportList";
 import AddEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/AddEmployeeAttendanceReport";
 import EmployeeAttendanceReportList from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/EmployeeAttendanceReportList";
 import UpdateEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/UpdateEmployeeAttendanceReport";
@@ -75,9 +77,8 @@ export const dailyTaskReportRoutes = {
     {
       path: "wastage-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <WastageReportList /> },
+        { path: "add", element: <AddWastageReport /> },
       ],
     },
     {
