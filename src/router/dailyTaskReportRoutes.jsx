@@ -4,6 +4,9 @@ import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddWastageReport from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReport";
 import WastageReportList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportList";
+import AddDenierwiseWastageReport from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/AddDenierwiseWastageReport";
+import DenierwiseWastageReportList from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/DenierwiseWastageReportList";
+import UpdateDenierwiseWastageReport from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/UpdateDenierwiseWastageReport";
 import AddEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/AddEmployeeAttendanceReport";
 import EmployeeAttendanceReportList from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/EmployeeAttendanceReportList";
 import UpdateEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/UpdateEmployeeAttendanceReport";
@@ -84,9 +87,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "denierwise-wastage-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <DenierwiseWastageReportList /> },
+        { path: "add", element: <AddDenierwiseWastageReport /> },
+        { path: "update/:id", element: <UpdateDenierwiseWastageReport /> },
       ],
     },
     {
