@@ -54,6 +54,9 @@ import UserRoles from "./pages/profile/userRoles/userRoles";
 import UserActivity from "./pages/profile/userActivity/UserActivity";
 import { orderMasterRoutes } from "./router/orderMasterRoutes";
 import GlobalContextProvider from "./contexts/GlobalContext";
+import YarnReceiveList from "./pages/purchase/receive/yarn-receive/YarnReceiveList";
+import AddYarnReceive from "./pages/purchase/receive/yarn-receive/AddYarnReceive";
+import UpdateYarnReceive from "./pages/purchase/receive/yarn-receive/UpdateYarnReceive";
 
 const queryClient = new QueryClient();
 
@@ -326,14 +329,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/purchase",
-        element: (
-          <div>
-            <div>purchase</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>purchase</div> },
           {
             path: "purchased-taka",
             element: <div>purchased-taka</div>,
@@ -344,17 +340,17 @@ const router = createBrowserRouter([
           },
           {
             path: "receive",
-            element: (
-              <div>
-                <div>receive</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>receive</div> },
               {
                 path: "yarn-receive",
-                element: <div>yarn-receive</div>,
+                children: [
+                  { index: true, element: <YarnReceiveList /> },
+                  { path: "add", element: <AddYarnReceive /> },
+                  {
+                    path: "update/:id",
+                    element: <UpdateYarnReceive />,
+                  },
+                ],
               },
             ],
           },
