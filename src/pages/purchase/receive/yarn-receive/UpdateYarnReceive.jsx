@@ -103,7 +103,6 @@ function UpdateYarnReceive() {
 
   async function onSubmit(data) {
     // delete parameter's those are not allowed
-    delete data?.challan_date;
     delete data?.yarn_company_name;
     await updateYarnReceive(data);
   }
