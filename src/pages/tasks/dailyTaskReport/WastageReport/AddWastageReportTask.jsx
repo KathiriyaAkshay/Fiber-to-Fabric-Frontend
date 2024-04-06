@@ -3,33 +3,45 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  DatePicker,
+  // DatePicker,
+  TimePicker,
   Flex,
   Form,
   Input,
   Row,
   Select,
   message,
+  Checkbox,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
-import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import { createWastageReportTaskRequest } from "../../../../api/requests/reports/wastageReportTask";
+import { getSupervisorListRequest } from "../../../../api/requests/users";
 
 const addWastageReportTaskSchemaResolver = yupResolver(
   yup.object().shape({
-    report_date: yup.string(),
-    machine_id: yup.string().required("Please select machine name"),
-    notes: yup.string(),
-    yarn_stock_company_id: yup.string().required(),
-    wastage: yup.string().required(),
+    user_id: yup.string().required(),
+    machine_type: yup.string().required(),
+    floor: yup.string().required(),
+    notes: yup.string().required(),
+    is_every_day_task: yup.boolean().required(),
+    machine_id: yup.string().required(),
+    machine_name: yup.string().required(),
+    machine_from: yup.string().required(),
+    machine_to: yup.string().required(),
+    task_days: yup.array().of(yup.string()),
+    // everyday: yup.string().required(),
+    assign_time: yup.string().required(),
+    // comment: yup.string().required(),
+    // wastage: yup.string().required(),
+    // wastage_percent: yup.string().required(),
   })
 );
 
@@ -37,6 +49,18 @@ function AddWastageReportTask() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
+    useQuery({
+      queryKey: ["supervisor", "list", { company_id: companyId }],
+      queryFn: async () => {
+        const res = await getSupervisorListRequest({
+          params: { company_id: companyId },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -46,17 +70,6 @@ function AddWastageReportTask() {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getYSCDropdownList({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
@@ -80,7 +93,15 @@ function AddWastageReportTask() {
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      } else if (typeof errorMessage === "object") {
+        const err = errorMessage?.details?.[0]?.message;
+        if (err && typeof err === "string") {
+          message.error(err);
+        }
+      }
     },
   });
 
@@ -88,8 +109,11 @@ function AddWastageReportTask() {
     navigate(-1);
   }
 
+  function goToAddSupervisor() {
+    navigate("/user-master/my-supervisor/add");
+  }
+
   async function onSubmit(data) {
-    delete data.yarn_company_name;
     await createWastageReportTask(data);
   }
 
@@ -98,16 +122,40 @@ function AddWastageReportTask() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: addWastageReportTaskSchemaResolver,
     defaultValues: {
-      report_date: dayjs(),
+      // report_date: dayjs(),
+      assign_time: dayjs(),
+      is_every_day_task: false,
     },
   });
 
-  function goToAddYarnStockCompany() {
-    navigate("/yarn-stock-company/company-list/add");
-  }
+  console.log("errors----->", errors);
+  const { machine_id, is_every_day_task, task_days } = watch();
+
+  useEffect(() => {
+    // set machine name as it is required from backend
+    machineListRes?.rows?.forEach((mchn) => {
+      if (mchn?.id == machine_id) {
+        setValue("machine_name", mchn?.machine_name);
+      }
+    });
+  }, [machineListRes?.rows, machine_id, setValue]);
+
+  useEffect(() => {
+    // set all values if it is every day task
+    if (is_every_day_task) {
+      setValue("task_days", [0, 1, 2, 3, 4, 5, 6]);
+    }
+  }, [is_every_day_task, setValue]);
+
+  useEffect(() => {
+    // check is every day if all days selected
+    setValue("is_every_day_task", task_days?.length === 7);
+  }, [setValue, task_days]);
 
   return (
     <div className="flex flex-col p-4">
@@ -115,7 +163,7 @@ function AddWastageReportTask() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Wastage Report List</h3>
+        <h3 className="m-0 text-primary">Assign new wastage report task</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -124,7 +172,43 @@ function AddWastageReportTask() {
             padding: "12px",
           }}
         >
-          <Col span={8}>
+          <Col span={8} className="flex items-end gap-2">
+            <Form.Item
+              label="Supervisor"
+              name="user_id"
+              validateStatus={errors.user_id ? "error" : ""}
+              help={errors.user_id && errors.user_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+              className="flex-grow"
+            >
+              <Controller
+                control={control}
+                name="user_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select supervisor"
+                    loading={isLoadingSupervisorList}
+                    options={supervisorListRes?.supervisorList?.rows?.map(
+                      (supervisor) => ({
+                        label: supervisor?.first_name,
+                        value: supervisor?.id,
+                      })
+                    )}
+                  />
+                )}
+              />
+            </Form.Item>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={goToAddSupervisor}
+              className="mb-6"
+              type="primary"
+            />
+          </Col>
+
+          {/* <Col span={8}>
             <Form.Item
               label="Date"
               name="report_date"
@@ -142,6 +226,162 @@ function AddWastageReportTask() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col> */}
+
+          <Col span={8}>
+            <Form.Item
+              label="Assign Time"
+              name="assign_time"
+              validateStatus={errors.assign_time ? "error" : ""}
+              help={errors.assign_time && errors.assign_time.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="assign_time"
+                render={({ field }) => (
+                  <TimePicker
+                    {...field}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="h:mm:ss A"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Machine Type"
+              name="machine_type"
+              validateStatus={errors.machine_type ? "error" : ""}
+              help={errors.machine_type && errors.machine_type.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="machine_type"
+                render={({ field }) => <Input {...field} />}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Floor"
+              name="floor"
+              validateStatus={errors.floor ? "error" : ""}
+              help={errors.floor && errors.floor.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="floor"
+                render={({ field }) => <Input {...field} />}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Weekly"
+              name="task_days"
+              validateStatus={errors.task_days ? "error" : ""}
+              help={
+                errors.task_days && errors.task_days.message
+                // || "[Select One Or More Days]"
+              }
+              required={true}
+              wrapperCol={{ sm: 24 }}
+              className="mb-0"
+            >
+              <Controller
+                control={control}
+                name="task_days"
+                render={({ field }) => (
+                  <Checkbox.Group
+                    options={[
+                      {
+                        value: 0,
+                        // label: "Sunday"
+                        label: "S",
+                      },
+                      {
+                        value: 1,
+                        // label: "Monday"
+                        label: "M",
+                      },
+                      {
+                        value: 2,
+                        // label: "Tuesday"
+                        label: "T",
+                      },
+                      {
+                        value: 3,
+                        // label: "Wednesday"
+                        label: "W",
+                      },
+                      {
+                        value: 4,
+                        // label: "Thursday"
+                        label: "T",
+                      },
+                      {
+                        value: 5,
+                        // label: "Friday"
+                        label: "F",
+                      },
+                      {
+                        value: 6,
+                        // label: "Saturday"
+                        label: "S",
+                      },
+                    ]}
+                    {...field}
+                  />
+                )}
+              />
+            </Form.Item>
+            <Controller
+              name="is_every_day_task"
+              control={control}
+              defaultValue={false}
+              render={({ field }) => (
+                <Checkbox
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                >
+                  Everyday
+                </Checkbox>
+              )}
+            />
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Notes"
+              name="notes"
+              validateStatus={errors.notes ? "error" : ""}
+              help={errors.notes && errors.notes.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="notes"
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Please enter note"
+                    autoSize
                   />
                 )}
               />
@@ -185,65 +425,20 @@ function AddWastageReportTask() {
             </Form.Item>
           </Col>
 
-          <Col span={8} className="flex items-end gap-2">
-            <Form.Item
-              label="Yarn Stock Company Name"
-              name="yarn_company_name"
-              validateStatus={errors.yarn_company_name ? "error" : ""}
-              help={
-                errors.yarn_company_name && errors.yarn_company_name.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="yarn_company_name"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCDList}
-                    options={yscdListRes?.yarnCompanyList?.map(
-                      ({ yarn_company_name = "" }) => {
-                        return {
-                          label: yarn_company_name,
-                          value: yarn_company_name,
-                        };
-                      }
-                    )}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddYarnStockCompany}
-              className="flex-none mb-6"
-              type="primary"
-            />
-          </Col>
-
           <Col span={8}>
             <Form.Item
-              label="Wastage"
-              name="wastage"
-              validateStatus={errors.wastage ? "error" : ""}
-              help={errors.wastage && errors.wastage.message}
+              label="Machine From"
+              name="machine_from"
+              validateStatus={errors.machine_from ? "error" : ""}
+              help={errors.machine_from && errors.machine_from.message}
               required={true}
+              wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="wastage"
+                name="machine_from"
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder="100000"
-                    type="number"
-                    min={0}
-                    step={0.01}
-                  />
+                  <Input {...field} type="number" min={0} step={0.01} />
                 )}
               />
             </Form.Item>
@@ -251,21 +446,18 @@ function AddWastageReportTask() {
 
           <Col span={8}>
             <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
+              label="Machine To"
+              name="machine_to"
+              validateStatus={errors.machine_to ? "error" : ""}
+              help={errors.machine_to && errors.machine_to.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="notes"
+                name="machine_to"
                 render={({ field }) => (
-                  <Input.TextArea
-                    {...field}
-                    placeholder="Please enter note"
-                    autoSize
-                  />
+                  <Input {...field} type="number" min={0} step={0.01} />
                 )}
               />
             </Form.Item>
