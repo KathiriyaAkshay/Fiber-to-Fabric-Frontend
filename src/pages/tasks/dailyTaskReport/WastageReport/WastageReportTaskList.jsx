@@ -10,25 +10,26 @@ import {
 } from "antd";
 import {
   EditOutlined,
-  FilePdfOutlined,
   PlusCircleOutlined,
+  FilePdfOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import { getWastageReportListRequest } from "../../../../api/requests/reports/wastageReport";
+import { getWastageReportTaskListRequest } from "../../../../api/requests/reports/wastageReportTask";
+import DeleteWastageReportTaskButton from "../../../../components/tasks/WastageReport/DeleteWastageReportTaskButton";
+import {
+  downloadUserPdf,
+  getPDFTitleContent,
+} from "../../../../lib/pdf/userPdf";
+import { useCurrentUser } from "../../../../api/hooks/auth";
 
-function WastageReportList() {
+function WastageReportTaskList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [toDate, setToDate] = useState();
@@ -41,15 +42,14 @@ function WastageReportList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
+  const { data: user } = useCurrentUser();
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: user } = useCurrentUser();
-
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
-      "reports/wastage-report/list",
+      "reports/wastage-report-task/list",
       {
         company_id: companyId,
         page,
@@ -60,7 +60,7 @@ function WastageReportList() {
       },
     ],
     queryFn: async () => {
-      const res = await getWastageReportListRequest({
+      const res = await getWastageReportTaskListRequest({
         companyId,
         params: {
           company_id: companyId,
@@ -86,21 +86,46 @@ function WastageReportList() {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-
-    const body = reportListRes?.row?.map((report) => {
-      const { id, createdAt, machine = {} } = report;
-      const { machine_name, no_of_machines } = machine;
+    const body = reportListRes?.rows?.map((report) => {
+      const {
+        id,
+        createdAt,
+        assign_time,
+        machine_type,
+        floor,
+        wastage,
+        notes,
+        comment,
+        status,
+      } = report;
       return [
         id,
         dayjs(createdAt).format("DD-MM-YYYY"),
-        machine_name,
-        no_of_machines,
+        dayjs(assign_time).format("HH:mm:ss"),
+        machine_type,
+        floor,
+        wastage,
+        notes,
+        comment,
+        status,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Date", "Machine Name", "No. of machine"]],
+      head: [
+        [
+          "ID",
+          "Date",
+          "Assigned Time",
+          "Machine Type",
+          "Floor",
+          "wastage(in kgs)",
+          "Note",
+          "Comment",
+          "Status",
+        ],
+      ],
       leftContent,
       rightContent,
       title: "Wastage Report List",
@@ -121,44 +146,121 @@ function WastageReportList() {
       },
     },
     {
-      title: "Machine Name",
-      key: "machine.machine_name",
-      dataIndex: ["machine", "machine_name"],
+      title: "Assigned Time",
+      key: "assign_time",
+      render: ({ assign_time }) => {
+        return dayjs(assign_time).format("HH:mm:ss");
+      },
     },
     {
-      title: "No. of machine",
-      dataIndex: ["machine", "no_of_machines"],
-      key: "machine.no_of_machines",
+      title: "Machine Type",
+      dataIndex: "machine_type",
+      key: "machine_type",
     },
     {
-      title: "Shift Type",
-      dataIndex: "shift",
-      key: "shift",
+      title: "Floor",
+      dataIndex: "floor",
+      key: "floor",
+    },
+    {
+      title: "Machine",
+      dataIndex: "machine_name",
+      key: "machine_name",
+    },
+    {
+      title: "Machine From",
+      dataIndex: "machine_from",
+      key: "machine_from",
+    },
+    {
+      title: "Machine To",
+      dataIndex: "machine_to",
+      key: "machine_to",
+    },
+    {
+      title: "wastage(in kgs)",
+      dataIndex: "wastage",
+      key: "wastage",
+    },
+    {
+      title: "Wastage (%)",
+      dataIndex: "wastage_percent",
+      key: "wastage_percent",
+    },
+    {
+      title: "Note",
+      dataIndex: "notes",
+      key: "notes",
+    },
+    {
+      title: "Reported Date",
+      key: "report_date",
+      render: ({ report_date }) => {
+        return report_date ? dayjs(report_date).format("DD-MM-YYYY") : null;
+      },
+    },
+    {
+      title: "Comment",
+      dataIndex: "comment",
+      key: "comment",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Action",
       render: (reportDetails) => {
-        const { machine = {}, shift, createdAt } = reportDetails;
-        const { machine_name, no_of_machines } = machine;
+        const {
+          createdAt,
+          user = {},
+          assign_time,
+          machine_type,
+          floor,
+          notes,
+        } = reportDetails;
+        const { first_name = "" } = user;
+        const daysOfWeek = [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+        ];
+        let weekly = [];
+        daysOfWeek.forEach((day) => {
+          if (reportDetails[day] === true) {
+            // capitalize
+            weekly.push(day.charAt(0).toUpperCase() + day.slice(1));
+          }
+        });
         return (
           <Space>
             <ViewDetailModal
-              title="Machine List"
+              title="Wastage Report"
+              className="capitalize"
               details={[
-                {
-                  title: "Machine Name",
-                  value: machine_name,
-                },
-                { title: "Machine No.", value: no_of_machines },
-                { title: "Attendance Type", value: shift },
+                { title: "Name", value: first_name },
                 {
                   title: "Date",
                   value: dayjs(createdAt).format("DD-MM-YYYY"),
                 },
                 {
-                  title: "Time",
-                  value: dayjs(createdAt).format("h:mm:ss A"),
+                  title: "Assign time",
+                  value: dayjs(assign_time).format("HH:mm:ss"),
                 },
+                // { title: "Answer", value: "" },
+                // { title: "Comment", value: "" },
+                { title: "Machine Type", value: machine_type },
+                { title: "Floor", value: floor },
+                {
+                  title: "Weekly",
+                  value: weekly.join(", "),
+                },
+                { title: "Notes", value: notes },
               ]}
             />
             <Button
@@ -168,6 +270,7 @@ function WastageReportList() {
             >
               <EditOutlined />
             </Button>
+            <DeleteWastageReportTaskButton details={reportDetails} />
           </Space>
         );
       },
@@ -186,7 +289,7 @@ function WastageReportList() {
 
     return (
       <Table
-        dataSource={reportListRes?.row || []}
+        dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
@@ -195,6 +298,7 @@ function WastageReportList() {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        className="overflow-auto"
       />
     );
   }
@@ -247,10 +351,9 @@ function WastageReportList() {
           />
 
           <Button
-            className="flex-none"
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!reportListRes?.row?.length}
+            disabled={!reportListRes?.rows?.length}
             onClick={downloadPdf}
           />
         </Flex>
@@ -260,4 +363,4 @@ function WastageReportList() {
   );
 }
 
-export default WastageReportList;
+export default WastageReportTaskList;
