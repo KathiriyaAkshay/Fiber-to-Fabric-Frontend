@@ -20,5 +20,5 @@ jobs:
         script: |
           cd /home/ubuntu/FtoF-FE
           git pull origin master
-          npm install
-          pm2 reload 0
+          /home/ubuntu/.nvm/versions/node/v18.20.1/bin/npm install
+          /home/ubuntu/.nvm/versions/node/v18.20.1/bin/pm2 reload 0
