@@ -50,7 +50,7 @@ import DailyTaskList from "./pages/tasks/dailyTask/DailyTaskList";
 import AddDailyTask from "./pages/tasks/dailyTask/AddDailyTask";
 import UpdateDailyTask from "./pages/tasks/dailyTask/UpdateDailyTask";
 import { dailyTaskReportRoutes } from "./router/dailyTaskReportRoutes";
-import UserRoles from "./pages/profile/userRoles/userRoles";
+import UserRoles from "./pages/profile/userRoles/UserRoles";
 import UserActivity from "./pages/profile/userActivity/UserActivity";
 import { orderMasterRoutes } from "./router/orderMasterRoutes";
 import GlobalContextProvider from "./contexts/GlobalContext";
