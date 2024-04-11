@@ -1,6 +1,7 @@
 import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
+import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReportTask";
 import UpdateWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/UpdateWastageReportTask";
@@ -26,10 +27,19 @@ export const dailyTaskReportRoutes = {
     { index: true, element: <DailyTaskReport /> },
     {
       path: "daily-tfo-report",
+      element: <DailyTFOReport />,
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        {
+          path: "daily-tfo",
+          children: [
+            { index: true, element: <DailyTaskList /> },
+            { path: "add", element: <AddDailyTask /> },
+            { path: "update/:id", element: <UpdateDailyTask /> },
+          ],
+        },
+        { path: "winding-report", children: [] },
+        { path: "roll-stock-report", children: [] },
+        { path: "assign-roll-yarn", children: [] },
       ],
     },
     {
