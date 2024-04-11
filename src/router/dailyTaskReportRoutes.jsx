@@ -3,6 +3,8 @@ import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
+import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
 import AddWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReportTask";
 import UpdateWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/UpdateWastageReportTask";
 import WastageReportTaskList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportTaskList";
@@ -38,7 +40,13 @@ export const dailyTaskReportRoutes = {
           ],
         },
         { path: "winding-report", children: [] },
-        { path: "roll-stock-report", children: [] },
+        {
+          path: "roll-stock-report",
+          children: [
+            { index: true, element: <RollStockReportList /> },
+            { path: "add", element: <AddRollStockReport /> },
+          ],
+        },
         { path: "assign-roll-yarn", children: [] },
       ],
     },
