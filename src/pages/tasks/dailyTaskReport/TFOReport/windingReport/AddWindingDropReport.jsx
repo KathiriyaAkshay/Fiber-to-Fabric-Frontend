@@ -3,60 +3,54 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Col,
+  DatePicker,
   Flex,
   Form,
   Input,
   Row,
   Select,
-  DatePicker,
   message,
-  TimePicker,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../../contexts/GlobalContext";
-import { createRollStockReportRequest } from "../../../../../api/requests/reports/rollStockReport";
-import dayjs from "dayjs";
+import { createWindingDropsReportRequest } from "../../../../../api/requests/reports/windingDropsReport";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
+import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
 
-const addRollStockReportSchemaResolver = yupResolver(
+const addWindingReportSchemaResolver = yupResolver(
   yup.object().shape({
-    report_date: yup.string().required("Please select date"),
-    report_time: yup.string(),
+    report_date: yup.string().required(),
     yarn_stock_company_id: yup.string().required(),
-    yarn_type: yup.string().required(),
-    roll_stock: yup.string(),
-    weight_stock: yup.string().required(),
+    cartoon_open: yup.string().required(),
+    cops: yup.string().required(),
+    weight: yup.string().required(),
+    total_weight: yup.string().required(),
   })
 );
 
-function AddRollStockReport() {
+function AddWindingDropReport() {
   const [denierOptions, setDenierOptions] = useState([]);
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { mutateAsync: createRollStockReport } = useMutation({
+  const { mutateAsync: createWindingDropReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await createRollStockReportRequest({
+      const res = await createWindingDropsReportRequest({
         data,
         params: { company_id: companyId },
       });
       return res.data;
     },
-    mutationKey: ["reports/roll-stock-report/create"],
+    mutationKey: ["reports/winding-drops-report/create"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries([
-        "reports/roll-stock-report/list",
-        {
-          company_id: companyId,
-        },
-      ]);
+      queryClient.invalidateQueries(["reports", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -67,6 +61,10 @@ function AddRollStockReport() {
       mutationOnErrorHandler({ error, message });
     },
   });
+
+  function goToAddYarnStockCompany() {
+    navigate("/yarn-stock-company/company-list/add");
+  }
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -79,14 +77,13 @@ function AddRollStockReport() {
     enabled: Boolean(companyId),
   });
 
-  function goToAddYarnStockCompany() {
-    navigate("/yarn-stock-company/company-list/add");
+  function goBack() {
+    navigate(-1);
   }
 
   async function onSubmit(data) {
-    delete data?.report_time;
     delete data?.yarn_company_name;
-    await createRollStockReport(data);
+    await createWindingDropReport(data);
   }
 
   const {
@@ -95,15 +92,15 @@ function AddRollStockReport() {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm({
-    resolver: addRollStockReportSchemaResolver,
+    resolver: addWindingReportSchemaResolver,
     defaultValues: {
       report_date: dayjs(),
-      report_time: dayjs(),
     },
   });
 
-  const { yarn_company_name } = watch();
+  const { yarn_company_name, cops, weight } = watch();
 
   useEffect(() => {
     // set options for denier selection on yarn stock company select
@@ -131,13 +128,17 @@ function AddRollStockReport() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
+  useEffect(() => {
+    setValue("total_weight", Number(cops) * Number(weight));
+  }, [cops, setValue, weight]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Link to={-1}>
-          <Button icon={<ArrowLeftOutlined />} />
-        </Link>
-        <h3 className="m-0 text-primary">Roll Stock Report</h3>
+        <Button onClick={goBack}>
+          <ArrowLeftOutlined />
+        </Button>
+        <h3 className="m-0 text-primary">{`Today's winding drops`}</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -165,31 +166,6 @@ function AddRollStockReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Time"
-              name="report_time"
-              validateStatus={errors.report_time ? "error" : ""}
-              help={errors.report_time && errors.report_time.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="report_time"
-                render={({ field }) => (
-                  <TimePicker
-                    {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="h:mm:ss A"
-                    disabled={true}
                   />
                 )}
               />
@@ -272,63 +248,81 @@ function AddRollStockReport() {
 
           <Col span={8}>
             <Form.Item
-              label="Yarn Type"
-              name="yarn_type"
-              validateStatus={errors.yarn_type ? "error" : ""}
-              help={errors.yarn_type && errors.yarn_type.message}
+              label="Cartoons/pallet open"
+              name="cartoon_open"
+              validateStatus={errors.cartoon_open ? "error" : ""}
+              help={errors.cartoon_open && errors.cartoon_open.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="yarn_type"
+                name="cartoon_open"
                 render={({ field }) => (
-                  <Select
-                    allowClear
-                    placeholder="Yarn Grade"
+                  <Input {...field} type="number" min={0} step={0.01} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Cops"
+              name="cops"
+              validateStatus={errors.cops ? "error" : ""}
+              help={errors.cops && errors.cops.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="cops"
+                render={({ field }) => (
+                  <Input {...field} type="number" min={0} step={0.01} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Weight"
+              name="weight"
+              validateStatus={errors.weight ? "error" : ""}
+              help={errors.weight && errors.weight.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="weight"
+                render={({ field }) => (
+                  <Input {...field} type="number" min={0} step={0.01} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Total Weight"
+              name="total_weight"
+              validateStatus={errors.total_weight ? "error" : ""}
+              help={errors.total_weight && errors.total_weight.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="total_weight"
+                render={({ field }) => (
+                  <Input
                     {...field}
-                    options={[
-                      { label: "S", value: "s" },
-                      { label: "Z", value: "z" },
-                    ]}
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    disabled={true}
                   />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Roll stock"
-              name="roll_stock"
-              validateStatus={errors.roll_stock ? "error" : ""}
-              help={errors.roll_stock && errors.roll_stock.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="roll_stock"
-                render={({ field }) => (
-                  <Input {...field} type="number" min={0} step={0.01} />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Weight Stock"
-              name="weight_stock"
-              validateStatus={errors.weight_stock ? "error" : ""}
-              help={errors.weight_stock && errors.weight_stock.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="weight_stock"
-                render={({ field }) => (
-                  <Input {...field} type="number" min={0} step={0.01} />
                 )}
               />
             </Form.Item>
@@ -350,4 +344,4 @@ function AddRollStockReport() {
   );
 }
 
-export default AddRollStockReport;
+export default AddWindingDropReport;

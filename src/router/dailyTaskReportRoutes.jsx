@@ -5,6 +5,9 @@ import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
 import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
+import AddWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/AddWindingDropReport";
+import UpdateWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/UpdateWindingDropReport";
+import WindingDropReportList from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/WindingDropReportList";
 import AddWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReportTask";
 import UpdateWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/UpdateWastageReportTask";
 import WastageReportTaskList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportTaskList";
@@ -39,7 +42,14 @@ export const dailyTaskReportRoutes = {
             { path: "update/:id", element: <UpdateDailyTask /> },
           ],
         },
-        { path: "winding-report", children: [] },
+        {
+          path: "winding-report",
+          children: [
+            { index: true, element: <WindingDropReportList /> },
+            { path: "add", element: <AddWindingDropReport /> },
+            { path: "update/:id", element: <UpdateWindingDropReport /> },
+          ],
+        },
         {
           path: "roll-stock-report",
           children: [
