@@ -87,7 +87,7 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
 
   return (
     <>
-      <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+      <div className="flex flex-col justify-center flex-grow  mx-20">
         <h2 className="">OTP Verification</h2>
         <Form layout="vertical">
           <Form.Item

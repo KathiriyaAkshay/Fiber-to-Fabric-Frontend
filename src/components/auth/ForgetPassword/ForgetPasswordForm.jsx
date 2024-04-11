@@ -61,7 +61,7 @@ const ForgetPasswordForm = () => {
 
   return (
     <>
-      <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+      <div className="flex flex-col justify-center flex-grow  mx-20">
         <h2 className="">Forget Password</h2>
         <Form onFinish={handleSubmit(onSubmit)} layout="vertical">
           <Form.Item
