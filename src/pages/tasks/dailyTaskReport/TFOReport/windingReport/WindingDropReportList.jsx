@@ -89,28 +89,27 @@ function WindingDropReportList() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = reportListRes?.row?.map((report) => {
-      const { id, createdAt, machine = {} } = report;
-      const { machine_name, no_of_machines } = machine;
+      const { id, yarn_stock_company = {}, cops, total_weight } = report;
+      const {
+        yarn_company_name,
+        yarn_denier = 0,
+        filament = 0,
+        luster_type = "",
+        yarn_color = "",
+        yarn_Sub_type = "",
+      } = yarn_stock_company;
       return [
         id,
-        dayjs(createdAt).format("DD-MM-YYYY"),
-        machine_name,
-        no_of_machines,
+        `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+        yarn_company_name,
+        cops,
+        total_weight,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "Machine Name",
-          "No. of machine",
-          "No Of Emp.",
-          "Absent Emp.",
-        ],
-      ],
+      head: [["ID", "Denier", "Company", "Total Cops", "Total Weight"]],
       leftContent,
       rightContent,
       title: "Winding Report",
@@ -125,25 +124,44 @@ function WindingDropReportList() {
     },
     {
       title: "Date",
-      key: "createdAt",
-      render: ({ createdAt }) => {
-        return dayjs(createdAt).format("DD-MM-YYYY");
+      key: "report_date",
+      render: ({ report_date }) => {
+        return dayjs(report_date).format("DD-MM-YYYY");
       },
     },
     {
-      title: "Machine Name",
-      key: "machine.machine_name",
-      dataIndex: ["machine", "machine_name"],
+      title: "Yarn Company",
+      dataIndex: ["yarn_stock_company", "yarn_company_name"],
+      key: "yarn_stock_company.yarn_company_name",
     },
     {
-      title: "No. of machine",
-      dataIndex: ["machine", "no_of_machines"],
-      key: "machine.no_of_machines",
+      title: "Denier",
+      render: ({ yarn_stock_company }) => {
+        const {
+          yarn_denier = 0,
+          filament = 0,
+          luster_type = "",
+          yarn_color = "",
+          yarn_Sub_type = "",
+        } = yarn_stock_company;
+        return `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`;
+      },
+      key: "denier",
     },
     {
-      title: "Shift Type",
-      dataIndex: "shift",
-      key: "shift",
+      title: "Cartoons/pallet",
+      dataIndex: "cartoon_open",
+      key: "cartoon_open",
+    },
+    {
+      title: "Total Cops",
+      dataIndex: "cops",
+      key: "cops",
+    },
+    {
+      title: "Total Weight",
+      dataIndex: "total_weight",
+      key: "total_weight",
     },
     {
       title: "Action",

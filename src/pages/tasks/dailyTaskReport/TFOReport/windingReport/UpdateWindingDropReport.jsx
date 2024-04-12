@@ -13,7 +13,7 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect, useState } from "react";
@@ -23,11 +23,16 @@ import {
 } from "../../../../../api/requests/reports/windingDropsReport";
 import { GlobalContext } from "../../../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
+import dayjs from "dayjs";
 
 const updateWindingDropReportSchemaResolver = yupResolver(
   yup.object().shape({
-    machine_id: yup.string().required("Please select machine name"),
-    shift: yup.string().required("Please select shift"),
+    report_date: yup.string().required(),
+    yarn_stock_company_id: yup.string().required(),
+    cartoon_open: yup.string().required(),
+    cops: yup.string().required(),
+    weight: yup.string().required(),
+    total_weight: yup.string().required(),
   })
 );
 
@@ -37,10 +42,6 @@ function UpdateWindingDropReport() {
   const params = useParams();
   const { id } = params;
   const { companyId } = useContext(GlobalContext);
-
-  function goBack() {
-    navigate(-1);
-  }
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -87,7 +88,7 @@ function UpdateWindingDropReport() {
         id,
         params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data?.data?.task;
     },
     enabled: Boolean(companyId),
   });
@@ -98,7 +99,7 @@ function UpdateWindingDropReport() {
 
   async function onSubmit(data) {
     // delete parameter's those are not allowed
-    delete data?.report_time;
+    delete data?.yarn_company_name;
     await updateWindingDropReport(data);
   }
 
@@ -147,12 +148,25 @@ function UpdateWindingDropReport() {
 
   useEffect(() => {
     if (reportDetails) {
-      const { machine, shift, report_absentees } = reportDetails;
+      const {
+        report_date,
+        yarn_stock_company_id,
+        yarn_stock_company,
+        cartoon_open,
+        cops,
+        weight,
+        total_weight,
+      } = reportDetails;
+      const { yarn_company_name } = yarn_stock_company;
 
       reset({
-        machine_id: machine?.id,
-        shift: shift,
-        user_ids: report_absentees?.map((ra) => ra?.user_id),
+        report_date: dayjs(report_date),
+        yarn_stock_company_id,
+        yarn_company_name,
+        cartoon_open,
+        cops,
+        weight,
+        total_weight,
       });
     }
   }, [reportDetails, reset]);
@@ -160,9 +174,9 @@ function UpdateWindingDropReport() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <Link to={-1}>
+          <Button icon={<ArrowLeftOutlined />} />
+        </Link>
         <h3 className="m-0 text-primary">Update Notes</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
