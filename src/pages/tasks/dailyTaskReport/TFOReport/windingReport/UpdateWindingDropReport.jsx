@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -13,7 +13,7 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect, useState } from "react";
@@ -24,6 +24,7 @@ import {
 import { GlobalContext } from "../../../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import GoBackButton from "../../../../../components/common/buttons/GoBackButton";
 
 const updateWindingDropReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -174,9 +175,7 @@ function UpdateWindingDropReport() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Link to={-1}>
-          <Button icon={<ArrowLeftOutlined />} />
-        </Link>
+        <GoBackButton />
         <h3 className="m-0 text-primary">Update Notes</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>

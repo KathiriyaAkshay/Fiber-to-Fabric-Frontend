@@ -3,6 +3,9 @@ import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
 import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AddAssignRollReport";
+import AssignRollReportList from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AssignRollReportList";
+import UpdateAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/UpdateAssignRollReport";
 import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
 import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
 import AddWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/AddWindingDropReport";
@@ -57,7 +60,14 @@ export const dailyTaskReportRoutes = {
             { path: "add", element: <AddRollStockReport /> },
           ],
         },
-        { path: "assign-roll-yarn", children: [] },
+        {
+          path: "assign-roll-yarn",
+          children: [
+            { index: true, element: <AssignRollReportList /> },
+            { path: "add", element: <AddAssignRollReport /> },
+            { path: "update/:id", element: <UpdateAssignRollReport /> },
+          ],
+        },
       ],
     },
     {
