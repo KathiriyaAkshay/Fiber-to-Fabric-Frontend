@@ -1,7 +1,13 @@
 import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
+import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
+import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
+import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
+import AddWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/AddWindingDropReport";
+import UpdateWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/UpdateWindingDropReport";
+import WindingDropReportList from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/WindingDropReportList";
 import AddWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/AddWastageReportTask";
 import UpdateWastageReportTask from "../pages/tasks/dailyTaskReport/WastageReport/UpdateWastageReportTask";
 import WastageReportTaskList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportTaskList";
@@ -26,10 +32,32 @@ export const dailyTaskReportRoutes = {
     { index: true, element: <DailyTaskReport /> },
     {
       path: "daily-tfo-report",
+      element: <DailyTFOReport />,
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        {
+          path: "daily-tfo",
+          children: [
+            { index: true, element: <DailyTaskList /> },
+            { path: "add", element: <AddDailyTask /> },
+            { path: "update/:id", element: <UpdateDailyTask /> },
+          ],
+        },
+        {
+          path: "winding-report",
+          children: [
+            { index: true, element: <WindingDropReportList /> },
+            { path: "add", element: <AddWindingDropReport /> },
+            { path: "update/:id", element: <UpdateWindingDropReport /> },
+          ],
+        },
+        {
+          path: "roll-stock-report",
+          children: [
+            { index: true, element: <RollStockReportList /> },
+            { path: "add", element: <AddRollStockReport /> },
+          ],
+        },
+        { path: "assign-roll-yarn", children: [] },
       ],
     },
     {

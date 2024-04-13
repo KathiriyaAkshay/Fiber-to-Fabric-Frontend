@@ -87,7 +87,7 @@ const OtpVerificationPage = () => {
         <div className="flex flex-col w-1/2 bg-[#E7F5FF]">
           <AuthTitle />
 
-          <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+          <div className="flex flex-col justify-center flex-grow  mx-20">
             <h2 className="">OTP Verification</h2>
             <Form onFinish={handleSubmit(onSubmit)} layout="vertical">
               <Form.Item

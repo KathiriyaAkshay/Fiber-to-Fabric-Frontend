@@ -63,7 +63,7 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center flex-grow max-w-md mx-20">
+    <div className="flex flex-col justify-center flex-grow mx-20">
       <h2 className="">Login</h2>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Form.Item
@@ -113,7 +113,7 @@ const LoginForm = () => {
         <Button
           type="primary"
           htmlType="submit"
-          className="flex items-center justify-center w-full mt-5 text-2xl font-bold"
+          className="flex items-center justify-center w-full mt-5"
           size="large"
         >
           Log In
