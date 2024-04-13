@@ -9,7 +9,7 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../../contexts/GlobalContext";
 import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
 import { createAssignRollReportRequest } from "../../../../../api/requests/reports/assignRollReport";
-import { SALARY_TYPE_LIST } from "../../../../../constants/userRole";
+import { SALARY_TYPE_LIST, TPM_LIST } from "../../../../../constants/userRole";
 import { getEmployeeListRequest } from "../../../../../api/requests/users";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
 import { DeleteOutlined } from "@ant-design/icons";
@@ -272,20 +272,7 @@ function AddAssignRollReport() {
               render={({ field }) => (
                 <Select
                   {...field}
-                  options={[
-                    {
-                      label: "S",
-                      value: "s",
-                    },
-                    {
-                      label: "Z",
-                      value: "z",
-                    },
-                    {
-                      label: "Zero",
-                      value: "zero",
-                    },
-                  ]}
+                  options={TPM_LIST}
                   style={{
                     textTransform: "capitalize",
                   }}
