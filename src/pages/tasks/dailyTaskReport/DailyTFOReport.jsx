@@ -1,6 +1,7 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Menu, Flex, Button } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
+import GoBackButton from "../../../components/common/buttons/GoBackButton";
 
 const items = [
   {
@@ -33,9 +34,7 @@ function DailyTFOReport() {
   return (
     <>
       <Flex align="center" gap={10} className="mx-2">
-        <Link to={-1}>
-          <Button icon={<ArrowLeftOutlined />} />
-        </Link>
+        <GoBackButton />
         <Menu selectedKeys={selectedKeys} mode="horizontal" items={items} />
       </Flex>
       <Outlet />

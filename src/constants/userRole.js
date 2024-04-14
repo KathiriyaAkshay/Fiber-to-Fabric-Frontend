@@ -64,3 +64,19 @@ export const SALARY_TYPE_LIST = [
     value: "Beam warper",
   },
 ];
+
+
+export const TPM_LIST = [
+  {
+    label: "S",
+    value: "s",
+  },
+  {
+    label: "Z",
+    value: "z",
+  },
+  {
+    label: "Zero",
+    value: "zero",
+  },
+];
