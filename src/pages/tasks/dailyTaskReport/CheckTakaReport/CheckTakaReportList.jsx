@@ -21,16 +21,16 @@ import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import { getWastageReportTaskListRequest } from "../../../../api/requests/reports/wastageReportTask";
-import DeleteWastageReportTaskButton from "../../../../components/tasks/WastageReport/DeleteWastageReportTaskButton";
 import {
   downloadUserPdf,
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/checkTakaReport";
+import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
 
-function WastageReportTaskList() {
+function CheckTakaReportList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [toDate, setToDate] = useState();
@@ -50,7 +50,7 @@ function WastageReportTaskList() {
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
-      "reports/wastage-report-task/list",
+      "reports/check-taka-report/list",
       {
         company_id: companyId,
         page,
@@ -61,7 +61,7 @@ function WastageReportTaskList() {
       },
     ],
     queryFn: async () => {
-      const res = await getWastageReportTaskListRequest({
+      const res = await getCheckTakaReportListRequest({
         companyId,
         params: {
           company_id: companyId,
@@ -78,11 +78,11 @@ function WastageReportTaskList() {
   });
 
   function navigateToAdd() {
-    navigate("/tasks/daily-task-report/wastage-report/add");
+    navigate("/tasks/daily-task-report/check-taka-and-report/add");
   }
 
   function navigateToUpdate(id) {
-    navigate(`/tasks/daily-task-report/wastage-report/update/${id}`);
+    navigate(`/tasks/daily-task-report/check-taka-and-report/update/${id}`);
   }
 
   function downloadPdf() {
@@ -94,7 +94,6 @@ function WastageReportTaskList() {
         assign_time,
         machine_type,
         floor,
-        wastage,
         notes,
         comment,
         status,
@@ -105,7 +104,6 @@ function WastageReportTaskList() {
         dayjs(assign_time).format("HH:mm:ss"),
         machine_type,
         floor,
-        wastage,
         notes,
         comment,
         status,
@@ -121,7 +119,6 @@ function WastageReportTaskList() {
           "Assigned Time",
           "Machine Type",
           "Floor",
-          "wastage(in kgs)",
           "Note",
           "Comment",
           "Status",
@@ -129,7 +126,7 @@ function WastageReportTaskList() {
       ],
       leftContent,
       rightContent,
-      title: "Wastage Report List",
+      title: "Taka Report List",
     });
   }
 
@@ -177,16 +174,6 @@ function WastageReportTaskList() {
       title: "Machine To",
       dataIndex: "machine_to",
       key: "machine_to",
-    },
-    {
-      title: "wastage(in kgs)",
-      dataIndex: "wastage",
-      key: "wastage",
-    },
-    {
-      title: "Wastage (%)",
-      dataIndex: "wastage_percent",
-      key: "wastage_percent",
     },
     {
       title: "Note",
@@ -241,7 +228,7 @@ function WastageReportTaskList() {
         return (
           <Space>
             <ViewDetailModal
-              title="Wastage Report"
+              title="Taka Report"
               className="capitalize"
               details={[
                 { title: "Name", value: first_name },
@@ -271,7 +258,7 @@ function WastageReportTaskList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteWastageReportTaskButton details={reportDetails} />
+            <DeleteCheckTakaReportButton details={reportDetails} />
           </Space>
         );
       },
@@ -309,7 +296,7 @@ function WastageReportTaskList() {
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
           <GoBackButton />
-          <h3 className="m-0 text-primary">Wastage Report List</h3>
+          <h3 className="m-0 text-primary">Taka Report</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -365,4 +352,4 @@ function WastageReportTaskList() {
   );
 }
 
-export default WastageReportTaskList;
+export default CheckTakaReportList;

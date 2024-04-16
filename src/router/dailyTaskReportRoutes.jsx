@@ -1,6 +1,9 @@
 import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
+import AddCheckTakaReport from "../pages/tasks/dailyTaskReport/CheckTakaReport/AddCheckTakaReport";
+import CheckTakaReportList from "../pages/tasks/dailyTaskReport/CheckTakaReport/CheckTakaReportList";
+import UpdateCheckTakaReport from "../pages/tasks/dailyTaskReport/CheckTakaReport/UpdateCheckTakaReport";
 import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AddAssignRollReport";
@@ -81,9 +84,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "check-taka-and-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <CheckTakaReportList /> },
+        { path: "add", element: <AddCheckTakaReport /> },
+        { path: "update/:id", element: <UpdateCheckTakaReport /> },
       ],
     },
     {
