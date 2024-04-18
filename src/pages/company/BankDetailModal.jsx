@@ -123,6 +123,13 @@ function BankDetailModal({ onCancel = () => {}, bankDetailModal = {} }) {
     }
   }, [companyBank, setValue]);
 
+  useEffect(() => {
+    return () => {
+      // reset form fields
+      reset();
+    };
+  }, [reset, bankDetailModal]);
+
   return (
     <Modal
       closeIcon={<CloseOutlined className="text-white" />}

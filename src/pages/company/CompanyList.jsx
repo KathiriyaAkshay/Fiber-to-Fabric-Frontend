@@ -68,9 +68,11 @@ function CompanyList() {
       key: "gst_no",
     },
     {
-      title: "Company Type",
-      dataIndex: "company_type",
-      key: "company_type",
+      title: "Company Types",
+      render: ({ company_types = [] }) => {
+        return company_types.map((ct) => ct?.company_type).join(", ");
+      },
+      key: "company_types",
     },
     {
       title: "Action",

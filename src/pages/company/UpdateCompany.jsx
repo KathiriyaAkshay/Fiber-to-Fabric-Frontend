@@ -106,8 +106,10 @@ function UpdateCompany() {
 
   useEffect(() => {
     if (companyDetails) {
+      const { company_types = [] } = companyDetails;
       reset({
         ...companyDetails,
+        company_types: company_types?.map((cmp) => cmp?.company_type),
         // remove unnecessary fields
         id: undefined,
         user_id: undefined,
