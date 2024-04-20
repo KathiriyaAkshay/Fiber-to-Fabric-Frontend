@@ -28,14 +28,15 @@ export const menubarOptionsList = [
   {
     path: "/user-master",
     key: "User Master",
-    label: (
-      <Link
-        className="text-current no-underline hover:text-current"
-        to="/user-master"
-      >
-        User Master
-      </Link>
-    ),
+    label: "User Master",
+    // label: (
+    //   <Link
+    //     className="text-current no-underline hover:text-current"
+    //     to="/user-master"
+    //   >
+    //     User Master
+    //   </Link>
+    // ),
     children: [
       {
         path: "my-supervisor",

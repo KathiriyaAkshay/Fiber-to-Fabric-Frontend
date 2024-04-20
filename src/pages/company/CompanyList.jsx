@@ -94,7 +94,8 @@ function CompanyList() {
           bank_name = "-",
           account_number = "-",
           ifsc_code = "-",
-          company_type = "-",
+          company_types = [],
+          account_type = "-",
         } = companyDetails;
 
         return (
@@ -118,7 +119,11 @@ function CompanyList() {
                 { title: "IFSC Code", value: ifsc_code },
                 { title: "Company Email", value: company_email },
                 { title: "Company Contact", value: company_contact },
-                { title: "Company Type", value: company_type },
+                {
+                  title: "Company Type",
+                  value: company_types.map((ct) => ct?.company_type).join(", "),
+                },
+                { title: "Account Type", value: account_type },
               ]}
             />
             <Button

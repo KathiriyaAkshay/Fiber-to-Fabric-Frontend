@@ -17,11 +17,11 @@ const DeleteConfirmationDialog = ({
       onCancel={onCancel}
       closeIcon={<CloseOutlined className="text-white" />}
       footer={
-        <Flex className="px-4 py-3" justify="end">
+        <Flex className="px-4 py-3" justify="end" gap={10}>
           <Button key="cancel" onClick={onCancel}>
             {cancelText}
           </Button>
-          <Button key="confirm" type="primary" onClick={onConfirm}>
+          <Button key="confirm" type="primary" onClick={onConfirm} danger>
             {confirmText}
           </Button>
         </Flex>

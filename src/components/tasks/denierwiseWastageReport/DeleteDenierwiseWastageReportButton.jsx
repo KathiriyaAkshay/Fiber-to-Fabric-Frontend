@@ -63,7 +63,7 @@ const DeleteDenierwiseWastageReportButton = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete this item?"
+        content="Are you sure you want to delete denierwise wastage report?"
         confirmText="Delete"
         cancelText="Cancel"
       />

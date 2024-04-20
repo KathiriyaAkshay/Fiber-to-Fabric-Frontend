@@ -1,7 +1,7 @@
 import { Button, Space, Switch, Table, message } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
-import DeleteCompanyBank from "../../components/company/DeleteCompanyBank";
+// import DeleteCompanyBank from "../../components/company/DeleteCompanyBank";
 import { updateCompanyBankRequest } from "../../api/requests/company";
 import { useMutation } from "@tanstack/react-query";
 
@@ -78,10 +78,10 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
             >
               <EditOutlined />
             </Button>
-            <DeleteCompanyBank
+            {/* <DeleteCompanyBank
               companyBankDetails={companyBankDetails}
               company={company}
-            />
+            /> */}
             <Switch
               loading={updatingCompanyBank && variables?.id === id}
               defaultChecked={is_active}
@@ -100,7 +100,7 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
   ];
 
   return (
-    <Table dataSource={bankList?.rows || []} columns={columns} rowKey={"id"} />
+    <Table dataSource={bankList?.rows || []} columns={columns} rowKey={"id"} className="mt-3" />
   );
 }
 
