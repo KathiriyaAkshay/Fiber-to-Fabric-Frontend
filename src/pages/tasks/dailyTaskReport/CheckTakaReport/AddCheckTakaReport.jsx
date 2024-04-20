@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Row,
   Select,
   message,
+  DatePicker,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -20,22 +21,20 @@ import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
-import { getSupervisorListRequest } from "../../../../api/requests/users";
 import { createCheckTakaReportRequest } from "../../../../api/requests/reports/checkTakaReport";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
-    user_id: yup.string().required(),
-    machine_type: yup.string().required(),
-    floor: yup.string().required(),
-    notes: yup.string().required(),
-    machine_id: yup.string().required(),
-    machine_name: yup.string().required(),
-    machine_from: yup.string().required(),
-    machine_to: yup.string().required(),
-    // everyday: yup.string().required(),
-    assign_time: yup.string().required(),
-    // comment: yup.string().required(),
+    report_date: yup.string().required("Please enter date"),
+    employee_id: yup.string().required("Please select employee"),
+    employee_name: yup.string().required("Please enter employee name"),
+    machine_id: yup.string().required("Please select machine name"),
+    machine_name: yup.string(),
+    machine_no: yup.string().required("Please select machine number"),
+    quality_id: yup.string().required("Please select quality"),
+    taka_no: yup.string(),
+    problem: yup.string().required("Please enter problem"),
+    fault: yup.string().required("Please enter fault"),
   })
 );
 
@@ -43,18 +42,6 @@ function AddCheckTakaReport() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
-    useQuery({
-      queryKey: ["supervisor", "list", { company_id: companyId }],
-      queryFn: async () => {
-        const res = await getSupervisorListRequest({
-          params: { company_id: companyId },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -103,10 +90,6 @@ function AddCheckTakaReport() {
     navigate(-1);
   }
 
-  function goToAddSupervisor() {
-    navigate("/user-master/my-supervisor/add");
-  }
-
   async function onSubmit(data) {
     await createCheckTakaReport(data);
   }
@@ -121,22 +104,26 @@ function AddCheckTakaReport() {
   } = useForm({
     resolver: addCheckTakaReportSchemaResolver,
     defaultValues: {
-      // report_date: dayjs(),
+      report_date: dayjs(),
       assign_time: dayjs(),
     },
   });
 
   console.log("errors----->", errors);
-  const { machine_id } = watch();
+  const { machine_id, machine_no } = watch();
 
   useEffect(() => {
     // set machine name as it is required from backend
     machineListRes?.rows?.forEach((mchn) => {
       if (mchn?.id == machine_id) {
         setValue("machine_name", mchn?.machine_name);
+        // reset machine no if selected machine number is greater than total machines
+        if (machine_no > mchn?.no_of_machines) {
+          setValue("machine_no", undefined);
+        }
       }
     });
-  }, [machineListRes?.rows, machine_id, setValue]);
+  }, [machineListRes?.rows, machine_id, machine_no, setValue]);
 
   return (
     <div className="flex flex-col p-4">
@@ -153,48 +140,13 @@ function AddCheckTakaReport() {
             padding: "12px",
           }}
         >
-          <Col span={8} className="flex items-end gap-2">
-            <Form.Item
-              label="Supervisor"
-              name="user_id"
-              validateStatus={errors.user_id ? "error" : ""}
-              help={errors.user_id && errors.user_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="user_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select supervisor"
-                    loading={isLoadingSupervisorList}
-                    options={supervisorListRes?.supervisorList?.rows?.map(
-                      (supervisor) => ({
-                        label: supervisor?.first_name,
-                        value: supervisor?.id,
-                      })
-                    )}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddSupervisor}
-              className="mb-6"
-              type="primary"
-            />
-          </Col>
-
-          {/* <Col span={8}>
+          <Col span={8}>
             <Form.Item
               label="Date"
               name="report_date"
               validateStatus={errors.report_date ? "error" : ""}
               help={errors.report_date && errors.report_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -211,7 +163,7 @@ function AddCheckTakaReport() {
                 )}
               />
             </Form.Item>
-          </Col> */}
+          </Col>
 
           <Col span={8}>
             <Form.Item
@@ -240,56 +192,16 @@ function AddCheckTakaReport() {
 
           <Col span={8}>
             <Form.Item
-              label="Machine Type"
-              name="machine_type"
-              validateStatus={errors.machine_type ? "error" : ""}
-              help={errors.machine_type && errors.machine_type.message}
+              label="Employee Name"
+              name="employee_name"
+              validateStatus={errors.employee_name ? "error" : ""}
+              help={errors.employee_name && errors.employee_name.message}
               required={true}
-              wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="machine_type"
-                render={({ field }) => <Input {...field} />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Floor"
-              name="floor"
-              validateStatus={errors.floor ? "error" : ""}
-              help={errors.floor && errors.floor.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="floor"
-                render={({ field }) => <Input {...field} />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="notes"
-                render={({ field }) => (
-                  <Input.TextArea
-                    {...field}
-                    placeholder="Please enter note"
-                    autoSize
-                  />
-                )}
+                name="employee_name"
+                render={({ field }) => <Input {...field} placeholder="Name" />}
               />
             </Form.Item>
           </Col>
@@ -333,18 +245,35 @@ function AddCheckTakaReport() {
 
           <Col span={8}>
             <Form.Item
-              label="Machine From"
-              name="machine_from"
-              validateStatus={errors.machine_from ? "error" : ""}
-              help={errors.machine_from && errors.machine_from.message}
+              label="Machine No."
+              name="machine_no"
+              validateStatus={errors.machine_no ? "error" : ""}
+              help={errors.machine_no && errors.machine_no.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              style={{
+                marginBottom: "8px",
+              }}
             >
               <Controller
                 control={control}
-                name="machine_from"
+                name="machine_no"
                 render={({ field }) => (
-                  <Input {...field} type="number" min={0} step={0.01} />
+                  <Select
+                    {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={Array.from(
+                      {
+                        length:
+                          machineListRes?.rows?.find(
+                            (mchn) => mchn?.id == machine_id
+                          )?.no_of_machines || 0,
+                      },
+                      (_, index) => ({ label: index + 1, value: index + 1 })
+                    )}
+                  />
                 )}
               />
             </Form.Item>
@@ -352,18 +281,69 @@ function AddCheckTakaReport() {
 
           <Col span={8}>
             <Form.Item
-              label="Machine To"
-              name="machine_to"
-              validateStatus={errors.machine_to ? "error" : ""}
-              help={errors.machine_to && errors.machine_to.message}
+              label="Taka No."
+              name="taka_no"
+              validateStatus={errors.taka_no ? "error" : ""}
+              help={errors.taka_no && errors.taka_no.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="taka_no"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    placeholder="10"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Problem"
+              name="problem"
+              validateStatus={errors.problem ? "error" : ""}
+              help={errors.problem && errors.problem.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="machine_to"
+                name="problem"
                 render={({ field }) => (
-                  <Input {...field} type="number" min={0} step={0.01} />
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Ankdi, Chira, Chhapa"
+                    autoSize
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Who's Fault"
+              name="fault"
+              validateStatus={errors.fault ? "error" : ""}
+              help={errors.fault && errors.fault.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="fault"
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Master, Karigar, Mender"
+                    autoSize
+                  />
                 )}
               />
             </Form.Item>
