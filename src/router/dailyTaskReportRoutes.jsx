@@ -9,6 +9,8 @@ import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AddAssignRollReport";
 import AssignRollReportList from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AssignRollReportList";
 import UpdateAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/UpdateAssignRollReport";
+import AddDailyTFOReport from "../pages/tasks/dailyTaskReport/TFOReport/dailyTFOReport/AddDailyTFOReport";
+import DailyTFOReportList from "../pages/tasks/dailyTaskReport/TFOReport/dailyTFOReport/DailyTFOReportList";
 import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
 import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
 import AddWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/AddWindingDropReport";
@@ -43,9 +45,8 @@ export const dailyTaskReportRoutes = {
         {
           path: "daily-tfo",
           children: [
-            { index: true, element: <DailyTaskList /> },
-            { path: "add", element: <AddDailyTask /> },
-            { path: "update/:id", element: <UpdateDailyTask /> },
+            { index: true, element: <DailyTFOReportList /> },
+            { path: "add", element: <AddDailyTFOReport /> },
           ],
         },
         {

@@ -8,28 +8,23 @@ import {
   Table,
   Typography,
 } from "antd";
-import {
-  EditOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+import { useContext, useState } from "react";
+import useDebounce from "../../../../../hooks/useDebounce";
+import { GlobalContext } from "../../../../../contexts/GlobalContext";
+import { usePagination } from "../../../../../hooks/usePagination";
+import { useCurrentUser } from "../../../../../api/hooks/auth";
+import { getDailyTFOReportListRequest } from "../../../../../api/requests/reports/dailyTFOReport";
 import {
   downloadUserPdf,
   getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
-import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useState } from "react";
-import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getEmployeeAttendanceReportListRequest } from "../../../../api/requests/reports/employeeAttendance";
-import DeleteEmployeeAttendanceReportButton from "../../../../components/tasks/employeeAttendance/DeleteEmployeeAttendanceReportButton";
-import useDebounce from "../../../../hooks/useDebounce";
+} from "../../../../../lib/pdf/userPdf";
+import ViewDetailModal from "../../../../../components/common/modal/ViewDetailModal";
 
-function EmployeeAttendanceReportList() {
+function DailyTFOReportList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [toDate, setToDate] = useState();
@@ -50,7 +45,7 @@ function EmployeeAttendanceReportList() {
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
-      "reports/employee-attandance-report/list",
+      "reports/daily-tfo-report/list",
       {
         company_id: companyId,
         page,
@@ -61,7 +56,7 @@ function EmployeeAttendanceReportList() {
       },
     ],
     queryFn: async () => {
-      const res = await getEmployeeAttendanceReportListRequest({
+      const res = await getDailyTFOReportListRequest({
         companyId,
         params: {
           company_id: companyId,
@@ -78,46 +73,29 @@ function EmployeeAttendanceReportList() {
   });
 
   function navigateToAdd() {
-    navigate("/tasks/daily-task-report/employees-attendance-report/add");
-  }
-
-  function navigateToUpdate(id) {
-    navigate(
-      `/tasks/daily-task-report/employees-attendance-report/update/${id}`
-    );
+    navigate("/tasks/daily-task-report/daily-tfo-report/daily-tfo/add");
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = reportListRes?.row?.map((report) => {
-      const { id, createdAt, machine = {}, absent_employee_count } = report;
-      const { machine_name, no_of_machines, no_of_employees } = machine;
+      const { id, createdAt, machine = {} } = report;
+      const { machine_name, no_of_machines } = machine;
       return [
         id,
         dayjs(createdAt).format("DD-MM-YYYY"),
         machine_name,
         no_of_machines,
-        no_of_employees,
-        absent_employee_count,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "Machine Name",
-          "No. of machine",
-          "No Of Emp.",
-          "Absent Emp.",
-        ],
-      ],
+      head: [["ID", "Date", "Machine Name", "No. of machine"]],
       leftContent,
       rightContent,
-      title: "Employee Attendance Report List",
+      title: "Daily TFO List",
     });
   }
 
@@ -145,16 +123,6 @@ function EmployeeAttendanceReportList() {
       key: "machine.no_of_machines",
     },
     {
-      title: "No. of Emp.",
-      dataIndex: ["machine", "no_of_employees"],
-      key: "machine.no_of_employees",
-    },
-    {
-      title: "Absent Emp.",
-      dataIndex: "absent_employee_count",
-      key: "absent_employee_count",
-    },
-    {
       title: "Shift Type",
       dataIndex: "shift",
       key: "shift",
@@ -162,13 +130,8 @@ function EmployeeAttendanceReportList() {
     {
       title: "Action",
       render: (reportDetails) => {
-        const {
-          machine = {},
-          absent_employee_count,
-          shift,
-          createdAt,
-        } = reportDetails;
-        const { machine_name, no_of_machines, no_of_employees } = machine;
+        const { machine = {}, createdAt } = reportDetails;
+        const { machine_name, no_of_machines } = machine;
         return (
           <Space>
             <ViewDetailModal
@@ -179,9 +142,6 @@ function EmployeeAttendanceReportList() {
                   value: machine_name,
                 },
                 { title: "Machine No.", value: no_of_machines },
-                { title: "No of Emp.", value: no_of_employees },
-                { title: "Absent Employee", value: absent_employee_count },
-                { title: "Attendance Type", value: shift },
                 {
                   title: "Date",
                   value: dayjs(createdAt).format("DD-MM-YYYY"),
@@ -192,14 +152,6 @@ function EmployeeAttendanceReportList() {
                 },
               ]}
             />
-            <Button
-              onClick={() => {
-                navigateToUpdate(reportDetails.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteEmployeeAttendanceReportButton details={reportDetails} />
           </Space>
         );
       },
@@ -235,7 +187,7 @@ function EmployeeAttendanceReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Employees Attendance Report</h3>
+          <h3 className="m-0 text-primary">T.F.O Drop Report List</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -292,4 +244,4 @@ function EmployeeAttendanceReportList() {
   );
 }
 
-export default EmployeeAttendanceReportList;
+export default DailyTFOReportList;
