@@ -112,7 +112,6 @@ function UserRoles() {
     },
     mutationKey: ["permission", "update", companyId, user_id],
     onSuccess: (res) => {
-      // queryClient.invalidateQueries(["machine", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);

@@ -42,6 +42,7 @@ export const dailyTaskReportRoutes = {
       path: "daily-tfo-report",
       element: <DailyTFOReport />,
       children: [
+        { index: true, element: <DailyTFOReportList /> },
         {
           path: "daily-tfo",
           children: [

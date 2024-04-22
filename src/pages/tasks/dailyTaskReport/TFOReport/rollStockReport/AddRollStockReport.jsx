@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
 import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
 import GoBackButton from "../../../../../components/common/buttons/GoBackButton";
+import { YARN_TYPE_OPTION_LIST } from "../../../../../constants/yarn";
 
 const addRollStockReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -284,12 +285,9 @@ function AddRollStockReport() {
                 render={({ field }) => (
                   <Select
                     allowClear
-                    placeholder="Yarn Grade"
+                    placeholder="Yarn Type"
                     {...field}
-                    options={[
-                      { label: "S", value: "s" },
-                      { label: "Z", value: "z" },
-                    ]}
+                    options={YARN_TYPE_OPTION_LIST}
                   />
                 )}
               />

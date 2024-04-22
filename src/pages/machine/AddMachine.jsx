@@ -40,7 +40,10 @@ function AddMachine() {
     },
     mutationKey: ["machine", "add"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["machine", "list", companyId]);
+      queryClient.invalidateQueries([
+        `machine/list/${companyId}`,
+        { company_id: companyId },
+      ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);

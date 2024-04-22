@@ -41,7 +41,7 @@ function AddDenierwiseWastageReport() {
   const [denierOptions, setDenierOptions] = useState([]);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: ["machine", "list", { company_id: companyId }],
+    queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,
