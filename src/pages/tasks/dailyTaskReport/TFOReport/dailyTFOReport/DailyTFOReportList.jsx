@@ -79,20 +79,36 @@ function DailyTFOReportList() {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = reportListRes?.row?.map((report) => {
-      const { id, createdAt, machine = {} } = report;
-      const { machine_name, no_of_machines } = machine;
+    const body = reportListRes?.rows?.map((report) => {
+      const {
+        id,
+        motor_type,
+        yarn_stock_company = {},
+        tpm = 0,
+        load_date,
+      } = report;
+      const {
+        yarn_denier = 0,
+        filament = 0,
+        luster_type = "",
+        yarn_color = "",
+        yarn_Sub_type = "",
+      } = yarn_stock_company;
       return [
         id,
-        dayjs(createdAt).format("DD-MM-YYYY"),
-        machine_name,
-        no_of_machines,
+        motor_type,
+        `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+        tpm,
+        dayjs(load_date).format("DD-MM-YYYY"),
+        dayjs(load_date).format("h:mm A"),
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Date", "Machine Name", "No. of machine"]],
+      head: [
+        ["ID", "Motor Type", "Denier", "T.P.M.", "Load Date", "Load Time"],
+      ],
       leftContent,
       rightContent,
       title: "Daily TFO List",
@@ -106,49 +122,90 @@ function DailyTFOReportList() {
       key: "id",
     },
     {
-      title: "Date",
-      key: "createdAt",
-      render: ({ createdAt }) => {
-        return dayjs(createdAt).format("DD-MM-YYYY");
+      title: "Motor Type",
+      dataIndex: "motor_type",
+      key: "motor_type",
+    },
+    {
+      title: "Denier",
+      render: ({ yarn_stock_company = {} }) => {
+        const {
+          yarn_denier = 0,
+          filament = 0,
+          luster_type = "",
+          yarn_color = "",
+          yarn_Sub_type = "",
+        } = yarn_stock_company;
+        return `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`;
+      },
+      key: "denier",
+    },
+    {
+      title: "T.P.M.",
+      dataIndex: "tpm",
+      key: "tpm",
+    },
+    {
+      title: "Load Date",
+      key: "load_date",
+      render: ({ load_date }) => {
+        return dayjs(load_date).format("DD-MM-YYYY");
       },
     },
     {
-      title: "Machine Name",
-      key: "machine.machine_name",
-      dataIndex: ["machine", "machine_name"],
+      title: "Load Time",
+      key: "load_time",
+      render: ({ load_date }) => {
+        return dayjs(load_date).format("h:mm A");
+      },
     },
-    {
-      title: "No. of machine",
-      dataIndex: ["machine", "no_of_machines"],
-      key: "machine.no_of_machines",
-    },
-    {
-      title: "Shift Type",
-      dataIndex: "shift",
-      key: "shift",
-    },
+    // {
+    //   title: "Drop Date",
+    //   key: "drop_date",
+    //   render: ({ drop_date }) => {
+    //     return dayjs(drop_date).format("DD-MM-YYYY");
+    //   },
+    // },
+    // {
+    //   title: "Drop Time",
+    //   key: "drop_time",
+    //   render: ({ drop_date }) => {
+    //     return dayjs(drop_date).format("h:mm A");
+    //   },
+    // },
     {
       title: "Action",
       render: (reportDetails) => {
-        const { machine = {}, createdAt } = reportDetails;
-        const { machine_name, no_of_machines } = machine;
+        const {
+          machine_name = "",
+          machine_no = 0,
+          motor_type = "",
+          yarn_stock_company = {},
+          tpm = 0,
+          load_date,
+        } = reportDetails;
+        const { yarn_denier = 0 } = yarn_stock_company;
         return (
           <Space>
             <ViewDetailModal
-              title="Machine List"
+              title="Report Card"
               details={[
+                // {
+                //   title: "SUPERVISOR NAME",
+                //   value: "SUPERVISOR NAME",
+                // },
+                { title: "MACHINE NAME", value: machine_name },
+                { title: "T.F.O NO.", value: machine_no },
+                { title: "MOTOR TYPE", value: motor_type },
+                { title: "DENIER", value: yarn_denier },
+                { title: "TPM", value: tpm },
                 {
-                  title: "Machine Name",
-                  value: machine_name,
+                  title: "Load Date",
+                  value: dayjs(load_date).format("DD-MM-YYYY"),
                 },
-                { title: "Machine No.", value: no_of_machines },
                 {
-                  title: "Date",
-                  value: dayjs(createdAt).format("DD-MM-YYYY"),
-                },
-                {
-                  title: "Time",
-                  value: dayjs(createdAt).format("h:mm:ss A"),
+                  title: "Load Time",
+                  value: dayjs(load_date).format("h:mm:ss A"),
                 },
               ]}
             />
@@ -170,7 +227,7 @@ function DailyTFOReportList() {
 
     return (
       <Table
-        dataSource={reportListRes?.row || []}
+        dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
@@ -234,7 +291,7 @@ function DailyTFOReportList() {
             className="flex-none"
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!reportListRes?.row?.length}
+            disabled={!reportListRes?.rows?.length}
             onClick={downloadPdf}
           />
         </Flex>
