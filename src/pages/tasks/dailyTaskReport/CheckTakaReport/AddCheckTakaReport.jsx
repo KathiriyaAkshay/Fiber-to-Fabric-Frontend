@@ -1,44 +1,47 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  DatePicker,
+  TimePicker,
   Flex,
   Form,
   Input,
   Row,
   Select,
   message,
+  DatePicker,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
-import { createDenierwiseWastageReportRequest } from "../../../../api/requests/reports/denierwiseWastageReport";
 import dayjs from "dayjs";
-import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
+import { createCheckTakaReportRequest } from "../../../../api/requests/reports/checkTakaReport";
 
-const addDenierwiseWastageReportSchemaResolver = yupResolver(
+const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
-    report_date: yup.string(),
+    report_date: yup.string().required("Please enter date"),
+    employee_id: yup.string().required("Please select employee"),
+    employee_name: yup.string().required("Please enter employee name"),
     machine_id: yup.string().required("Please select machine name"),
-    notes: yup.string(),
-    yarn_stock_company_id: yup.string().required(),
-    wastage: yup.string().required(),
+    machine_name: yup.string(),
+    machine_no: yup.string().required("Please select machine number"),
+    quality_id: yup.string().required("Please select quality"),
+    taka_no: yup.string(),
+    problem: yup.string().required("Please enter problem"),
+    fault: yup.string().required("Please enter fault"),
   })
 );
 
-function AddDenierwiseWastageReport() {
+function AddCheckTakaReport() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-
-  const [denierOptions, setDenierOptions] = useState([]);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
@@ -52,26 +55,15 @@ function AddDenierwiseWastageReport() {
     enabled: Boolean(companyId),
   });
 
-  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getYSCDropdownList({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { mutateAsync: createDenierwiseWastageReport } = useMutation({
+  const { mutateAsync: createCheckTakaReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await createDenierwiseWastageReportRequest({
+      const res = await createCheckTakaReportRequest({
         data,
         params: { company_id: companyId },
       });
       return res.data;
     },
-    mutationKey: ["reports/denierwise-wastage-report/create"],
+    mutationKey: ["reports/check-taka-report/create"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["reports", "list", companyId]);
       const successMessage = res?.message;
@@ -82,7 +74,15 @@ function AddDenierwiseWastageReport() {
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      } else if (typeof errorMessage === "object") {
+        const err = errorMessage?.details?.[0]?.message;
+        if (err && typeof err === "string") {
+          message.error(err);
+        }
+      }
     },
   });
 
@@ -91,8 +91,7 @@ function AddDenierwiseWastageReport() {
   }
 
   async function onSubmit(data) {
-    delete data.yarn_company_name;
-    await createDenierwiseWastageReport(data);
+    await createCheckTakaReport(data);
   }
 
   const {
@@ -101,44 +100,30 @@ function AddDenierwiseWastageReport() {
     formState: { errors },
     reset,
     watch,
+    setValue,
   } = useForm({
-    resolver: addDenierwiseWastageReportSchemaResolver,
+    resolver: addCheckTakaReportSchemaResolver,
     defaultValues: {
       report_date: dayjs(),
+      assign_time: dayjs(),
     },
   });
 
-  const { yarn_company_name } = watch();
-
-  function goToAddYarnStockCompany() {
-    navigate("/yarn-stock-company/company-list/add");
-  }
+  console.log("errors----->", errors);
+  const { machine_id, machine_no } = watch();
 
   useEffect(() => {
-    // set options for denier selection on yarn stock company select
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarn_company_name) {
-        const options = yarn_details?.map(
-          ({
-            yarn_company_id = 0,
-            filament = 0,
-            yarn_denier = 0,
-            luster_type = "",
-            yarn_color = "",
-          }) => {
-            return {
-              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: yarn_company_id,
-            };
-          }
-        );
-        if (options?.length) {
-          setDenierOptions(options);
+    // set machine name as it is required from backend
+    machineListRes?.rows?.forEach((mchn) => {
+      if (mchn?.id == machine_id) {
+        setValue("machine_name", mchn?.machine_name);
+        // reset machine no if selected machine number is greater than total machines
+        if (machine_no > mchn?.no_of_machines) {
+          setValue("machine_no", undefined);
         }
       }
     });
-  }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
+  }, [machineListRes?.rows, machine_id, machine_no, setValue]);
 
   return (
     <div className="flex flex-col p-4">
@@ -146,7 +131,7 @@ function AddDenierwiseWastageReport() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Denierwise wastage report</h3>
+        <h3 className="m-0 text-primary">New Taka Report</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -161,6 +146,7 @@ function AddDenierwiseWastageReport() {
               name="report_date"
               validateStatus={errors.report_date ? "error" : ""}
               help={errors.report_date && errors.report_date.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -175,6 +161,47 @@ function AddDenierwiseWastageReport() {
                     format="DD-MM-YYYY"
                   />
                 )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Assign Time"
+              name="assign_time"
+              validateStatus={errors.assign_time ? "error" : ""}
+              help={errors.assign_time && errors.assign_time.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="assign_time"
+                render={({ field }) => (
+                  <TimePicker
+                    {...field}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="h:mm:ss A"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Employee Name"
+              name="employee_name"
+              validateStatus={errors.employee_name ? "error" : ""}
+              help={errors.employee_name && errors.employee_name.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="employee_name"
+                render={({ field }) => <Input {...field} placeholder="Name" />}
               />
             </Form.Item>
           </Col>
@@ -216,98 +243,60 @@ function AddDenierwiseWastageReport() {
             </Form.Item>
           </Col>
 
-          <Col span={8} className="flex items-end gap-2">
+          <Col span={8}>
             <Form.Item
-              label="Yarn Stock Company Name"
-              name="yarn_company_name"
-              validateStatus={errors.yarn_company_name ? "error" : ""}
-              help={
-                errors.yarn_company_name && errors.yarn_company_name.message
-              }
+              label="Machine No."
+              name="machine_no"
+              validateStatus={errors.machine_no ? "error" : ""}
+              help={errors.machine_no && errors.machine_no.message}
               required={true}
               wrapperCol={{ sm: 24 }}
-              className="flex-grow"
+              style={{
+                marginBottom: "8px",
+              }}
             >
               <Controller
                 control={control}
-                name="yarn_company_name"
+                name="machine_no"
                 render={({ field }) => (
                   <Select
                     {...field}
-                    placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCDList}
-                    options={yscdListRes?.yarnCompanyList?.map(
-                      ({ yarn_company_name = "" }) => {
-                        return {
-                          label: yarn_company_name,
-                          value: yarn_company_name,
-                        };
-                      }
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={Array.from(
+                      {
+                        length:
+                          machineListRes?.rows?.find(
+                            (mchn) => mchn?.id == machine_id
+                          )?.no_of_machines || 0,
+                      },
+                      (_, index) => ({ label: index + 1, value: index + 1 })
                     )}
                   />
                 )}
               />
             </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddYarnStockCompany}
-              className="flex-none mb-6"
-              type="primary"
-            />
           </Col>
 
           <Col span={8}>
             <Form.Item
-              label="Denier/Count & Filament  "
-              name="yarn_stock_company_id"
-              validateStatus={errors.yarn_stock_company_id ? "error" : ""}
-              help={
-                errors.yarn_stock_company_id &&
-                errors.yarn_stock_company_id.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="yarn_stock_company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select denier"
-                    allowClear
-                    loading={isLoadingYSCDList}
-                    options={denierOptions}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Wastage"
-              name="wastage"
-              validateStatus={errors.wastage ? "error" : ""}
-              help={errors.wastage && errors.wastage.message}
+              label="Taka No."
+              name="taka_no"
+              validateStatus={errors.taka_no ? "error" : ""}
+              help={errors.taka_no && errors.taka_no.message}
               required={true}
             >
               <Controller
                 control={control}
-                name="wastage"
+                name="taka_no"
                 render={({ field }) => (
                   <Input
                     {...field}
-                    placeholder="100000"
                     type="number"
                     min={0}
                     step={0.01}
+                    placeholder="10"
                   />
                 )}
               />
@@ -316,19 +305,43 @@ function AddDenierwiseWastageReport() {
 
           <Col span={8}>
             <Form.Item
-              label="Notes"
-              name="notes"
-              validateStatus={errors.notes ? "error" : ""}
-              help={errors.notes && errors.notes.message}
+              label="Problem"
+              name="problem"
+              validateStatus={errors.problem ? "error" : ""}
+              help={errors.problem && errors.problem.message}
+              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="notes"
+                name="problem"
                 render={({ field }) => (
                   <Input.TextArea
                     {...field}
-                    placeholder="Please enter note"
+                    placeholder="Ankdi, Chira, Chhapa"
+                    autoSize
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Who's Fault"
+              name="fault"
+              validateStatus={errors.fault ? "error" : ""}
+              help={errors.fault && errors.fault.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="fault"
+                render={({ field }) => (
+                  <Input.TextArea
+                    {...field}
+                    placeholder="Master, Karigar, Mender"
                     autoSize
                   />
                 )}
@@ -352,4 +365,4 @@ function AddDenierwiseWastageReport() {
   );
 }
 
-export default AddDenierwiseWastageReport;
+export default AddCheckTakaReport;

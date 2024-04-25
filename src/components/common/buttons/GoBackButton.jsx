@@ -5,7 +5,10 @@ import { Link } from "react-router-dom";
 function GoBackButton() {
   return (
     <Link to={-1}>
-      <Button icon={<ArrowLeftOutlined />} />
+      <Button
+        icon={<ArrowLeftOutlined />}
+        className="flex items-center justify-center"
+      />
     </Link>
   );
 }

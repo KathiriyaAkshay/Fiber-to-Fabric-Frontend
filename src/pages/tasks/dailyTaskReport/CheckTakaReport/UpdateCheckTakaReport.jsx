@@ -1,66 +1,53 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  // DatePicker,
-  TimePicker,
   Flex,
   Form,
   Input,
   Row,
   Select,
   message,
-  Checkbox,
+  TimePicker,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
+import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
+import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
-import { createWastageReportTaskRequest } from "../../../../api/requests/reports/wastageReportTask";
-import { getSupervisorListRequest } from "../../../../api/requests/users";
+import {
+  getCheckTakaReportByIdRequest,
+  updateCheckTakaReportRequest,
+} from "../../../../api/requests/reports/checkTakaReport";
 
-const addWastageReportTaskSchemaResolver = yupResolver(
+const updateCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
-    user_id: yup.string().required(),
+    // user_id: yup.string().required(),
     machine_type: yup.string().required(),
     floor: yup.string().required(),
     notes: yup.string().required(),
-    is_every_day_task: yup.boolean().required(),
     machine_id: yup.string().required(),
     machine_name: yup.string().required(),
     machine_from: yup.string().required(),
     machine_to: yup.string().required(),
-    task_days: yup.array().of(yup.string()),
-    // everyday: yup.string().required(),
     assign_time: yup.string().required(),
-    // comment: yup.string().required(),
-    // wastage: yup.string().required(),
-    // wastage_percent: yup.string().required(),
   })
 );
 
-function AddWastageReportTask() {
-  const { companyId } = useContext(GlobalContext);
-  const queryClient = useQueryClient();
+function UpdateCheckTakaReport() {
   const navigate = useNavigate();
+  const params = useParams();
+  const { id } = params;
+  const { companyId } = useContext(GlobalContext);
 
-  const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
-    useQuery({
-      queryKey: ["supervisor", "list", { company_id: companyId }],
-      queryFn: async () => {
-        const res = await getSupervisorListRequest({
-          params: { company_id: companyId },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
+  function goBack() {
+    navigate(-1);
+  }
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
@@ -74,17 +61,19 @@ function AddWastageReportTask() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createWastageReportTask } = useMutation({
+  const { mutateAsync: updateCheckTakaReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await createWastageReportTaskRequest({
+      const res = await updateCheckTakaReportRequest({
+        id,
         data,
-        params: { company_id: companyId },
+        params: {
+          company_id: companyId,
+        },
       });
       return res.data;
     },
-    mutationKey: ["reports/wastage-report-task/create"],
+    mutationKey: ["reports/check-taka-report/update", id],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["reports", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -92,29 +81,29 @@ function AddWastageReportTask() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-
+      const errorMessage = error?.response?.data?.message;
       if (errorMessage && typeof errorMessage === "string") {
         message.error(errorMessage);
-      } else if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        if (err && typeof err === "string") {
-          message.error(err);
-        }
       }
     },
   });
 
-  function goBack() {
-    navigate(-1);
-  }
-
-  function goToAddSupervisor() {
-    navigate("/user-master/my-supervisor/add");
-  }
+  const { data: reportDetails } = useQuery({
+    queryKey: ["reports/check-taka-report/get", id],
+    queryFn: async () => {
+      const res = await getCheckTakaReportByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.report;
+    },
+    enabled: Boolean(companyId),
+  });
 
   async function onSubmit(data) {
-    await createWastageReportTask(data);
+    // delete parameter's those are not allowed
+    delete data?.report_time;
+    await updateCheckTakaReport(data);
   }
 
   const {
@@ -122,19 +111,13 @@ function AddWastageReportTask() {
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
     setValue,
+    watch,
   } = useForm({
-    resolver: addWastageReportTaskSchemaResolver,
-    defaultValues: {
-      // report_date: dayjs(),
-      assign_time: dayjs(),
-      is_every_day_task: false,
-    },
+    resolver: updateCheckTakaReportSchemaResolver,
   });
 
-  console.log("errors----->", errors);
-  const { machine_id, is_every_day_task, task_days } = watch();
+  const { machine_id } = watch();
 
   useEffect(() => {
     // set machine name as it is required from backend
@@ -146,16 +129,30 @@ function AddWastageReportTask() {
   }, [machineListRes?.rows, machine_id, setValue]);
 
   useEffect(() => {
-    // set all values if it is every day task
-    if (is_every_day_task) {
-      setValue("task_days", [0, 1, 2, 3, 4, 5, 6]);
-    }
-  }, [is_every_day_task, setValue]);
+    if (reportDetails) {
+      const {
+        machine_type,
+        floor,
+        notes,
+        machine_id,
+        machine_name,
+        machine_from,
+        machine_to,
+        assign_time,
+      } = reportDetails;
 
-  useEffect(() => {
-    // check is every day if all days selected
-    setValue("is_every_day_task", task_days?.length === 7);
-  }, [setValue, task_days]);
+      reset({
+        machine_type,
+        floor,
+        notes,
+        machine_id,
+        machine_name,
+        machine_from,
+        machine_to,
+        assign_time: dayjs(assign_time),
+      });
+    }
+  }, [reportDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -163,7 +160,7 @@ function AddWastageReportTask() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Assign new wastage report task</h3>
+        <h3 className="m-0 text-primary">Edit Taka Report</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -172,42 +169,6 @@ function AddWastageReportTask() {
             padding: "12px",
           }}
         >
-          <Col span={8} className="flex items-end gap-2">
-            <Form.Item
-              label="Supervisor"
-              name="user_id"
-              validateStatus={errors.user_id ? "error" : ""}
-              help={errors.user_id && errors.user_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="user_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select supervisor"
-                    loading={isLoadingSupervisorList}
-                    options={supervisorListRes?.supervisorList?.rows?.map(
-                      (supervisor) => ({
-                        label: supervisor?.first_name,
-                        value: supervisor?.id,
-                      })
-                    )}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddSupervisor}
-              className="mb-6"
-              type="primary"
-            />
-          </Col>
-
           {/* <Col span={8}>
             <Form.Item
               label="Date"
@@ -289,81 +250,6 @@ function AddWastageReportTask() {
                 render={({ field }) => <Input {...field} />}
               />
             </Form.Item>
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Weekly"
-              name="task_days"
-              validateStatus={errors.task_days ? "error" : ""}
-              help={
-                errors.task_days && errors.task_days.message
-                // || "[Select One Or More Days]"
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="mb-0"
-            >
-              <Controller
-                control={control}
-                name="task_days"
-                render={({ field }) => (
-                  <Checkbox.Group
-                    options={[
-                      {
-                        value: 0,
-                        // label: "Sunday"
-                        label: "S",
-                      },
-                      {
-                        value: 1,
-                        // label: "Monday"
-                        label: "M",
-                      },
-                      {
-                        value: 2,
-                        // label: "Tuesday"
-                        label: "T",
-                      },
-                      {
-                        value: 3,
-                        // label: "Wednesday"
-                        label: "W",
-                      },
-                      {
-                        value: 4,
-                        // label: "Thursday"
-                        label: "T",
-                      },
-                      {
-                        value: 5,
-                        // label: "Friday"
-                        label: "F",
-                      },
-                      {
-                        value: 6,
-                        // label: "Saturday"
-                        label: "S",
-                      },
-                    ]}
-                    {...field}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Controller
-              name="is_every_day_task"
-              control={control}
-              defaultValue={false}
-              render={({ field }) => (
-                <Checkbox
-                  checked={field.value}
-                  onChange={(e) => field.onChange(e.target.checked)}
-                >
-                  Everyday
-                </Checkbox>
-              )}
-            />
           </Col>
 
           <Col span={8}>
@@ -465,11 +351,8 @@ function AddWastageReportTask() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit">
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
@@ -479,4 +362,4 @@ function AddWastageReportTask() {
   );
 }
 
-export default AddWastageReportTask;
+export default UpdateCheckTakaReport;

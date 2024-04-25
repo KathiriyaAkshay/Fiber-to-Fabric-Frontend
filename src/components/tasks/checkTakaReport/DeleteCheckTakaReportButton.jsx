@@ -4,17 +4,16 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { deleteAssignRollReportRequest } from "../../../api/requests/reports/assignRollReport";
+import { deleteCheckTakaReportRequest } from "../../../api/requests/reports/checkTakaReport";
 
-const DeleteAssignRollReportButton = ({ details }) => {
+const DeleteCheckTakaReportButton = ({ details }) => {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { mutateAsync: deleteReport } = useMutation({
-    mutationKey: "reports/assign-roll-reports/delete",
     mutationFn: async ({ id }) => {
-      const res = await deleteAssignRollReportRequest({
+      const res = await deleteCheckTakaReportRequest({
         id,
         params: {
           company_id: companyId,
@@ -28,7 +27,7 @@ const DeleteAssignRollReportButton = ({ details }) => {
         message.success(successMessage);
       }
       queryClient.invalidateQueries([
-        "reports/assign-roll-reports/list",
+        "reports/check-taka-report/list",
         { company_id: companyId },
       ]);
     },
@@ -64,7 +63,7 @@ const DeleteAssignRollReportButton = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete assign roll report?"
+        content="Are you sure you want to delete check taka report?"
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -72,4 +71,4 @@ const DeleteAssignRollReportButton = ({ details }) => {
   );
 };
 
-export default DeleteAssignRollReportButton;
+export default DeleteCheckTakaReportButton;

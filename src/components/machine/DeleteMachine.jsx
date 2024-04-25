@@ -25,7 +25,7 @@ const DeleteMachine = ({ details }) => {
       if (successMessage) {
         message.success(successMessage);
       }
-      queryClient.invalidateQueries(["machine", "list", companyId]);
+      queryClient.invalidateQueries([`machine/list/${companyId}`, companyId]);
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -59,7 +59,7 @@ const DeleteMachine = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete this item?"
+        content="Are you sure you want to delete machine?"
         confirmText="Delete"
         cancelText="Cancel"
       />

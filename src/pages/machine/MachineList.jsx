@@ -18,7 +18,10 @@ function MachineList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: ["machine", "list", { company_id: companyId, page, pageSize }],
+    queryKey: [
+      `machine/list/${companyId}`,
+      { company_id: companyId, page, pageSize },
+    ],
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,

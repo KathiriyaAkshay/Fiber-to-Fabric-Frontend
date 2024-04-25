@@ -10,26 +10,27 @@ import {
 } from "antd";
 import {
   EditOutlined,
-  FilePdfOutlined,
   PlusCircleOutlined,
+  FilePdfOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getEmployeeAttendanceReportListRequest } from "../../../../api/requests/reports/employeeAttendance";
-import DeleteEmployeeAttendanceReportButton from "../../../../components/tasks/employeeAttendance/DeleteEmployeeAttendanceReportButton";
 import useDebounce from "../../../../hooks/useDebounce";
+import {
+  downloadUserPdf,
+  getPDFTitleContent,
+} from "../../../../lib/pdf/userPdf";
+import { useCurrentUser } from "../../../../api/hooks/auth";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/checkTakaReport";
+import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
 
-function EmployeeAttendanceReportList() {
+function CheckTakaReportList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [toDate, setToDate] = useState();
@@ -42,15 +43,14 @@ function EmployeeAttendanceReportList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
+  const { data: user } = useCurrentUser();
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: user } = useCurrentUser();
-
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
-      "reports/employee-attandance-report/list",
+      "reports/check-taka-report/list",
       {
         company_id: companyId,
         page,
@@ -61,7 +61,7 @@ function EmployeeAttendanceReportList() {
       },
     ],
     queryFn: async () => {
-      const res = await getEmployeeAttendanceReportListRequest({
+      const res = await getCheckTakaReportListRequest({
         companyId,
         params: {
           company_id: companyId,
@@ -78,28 +78,35 @@ function EmployeeAttendanceReportList() {
   });
 
   function navigateToAdd() {
-    navigate("/tasks/daily-task-report/employees-attendance-report/add");
+    navigate("/tasks/daily-task-report/check-taka-and-report/add");
   }
 
   function navigateToUpdate(id) {
-    navigate(
-      `/tasks/daily-task-report/employees-attendance-report/update/${id}`
-    );
+    navigate(`/tasks/daily-task-report/check-taka-and-report/update/${id}`);
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-
-    const body = reportListRes?.row?.map((report) => {
-      const { id, createdAt, machine = {}, absent_employee_count } = report;
-      const { machine_name, no_of_machines, no_of_employees } = machine;
+    const body = reportListRes?.rows?.map((report) => {
+      const {
+        id,
+        createdAt,
+        assign_time,
+        machine_type,
+        floor,
+        notes,
+        comment,
+        status,
+      } = report;
       return [
         id,
         dayjs(createdAt).format("DD-MM-YYYY"),
-        machine_name,
-        no_of_machines,
-        no_of_employees,
-        absent_employee_count,
+        dayjs(assign_time).format("HH:mm:ss"),
+        machine_type,
+        floor,
+        notes,
+        comment,
+        status,
       ];
     });
 
@@ -109,15 +116,17 @@ function EmployeeAttendanceReportList() {
         [
           "ID",
           "Date",
-          "Machine Name",
-          "No. of machine",
-          "No Of Emp.",
-          "Absent Emp.",
+          "Assigned Time",
+          "Machine Type",
+          "Floor",
+          "Note",
+          "Comment",
+          "Status",
         ],
       ],
       leftContent,
       rightContent,
-      title: "Employee Attendance Report List",
+      title: "Taka Report List",
     });
   }
 
@@ -135,61 +144,111 @@ function EmployeeAttendanceReportList() {
       },
     },
     {
-      title: "Machine Name",
-      key: "machine.machine_name",
-      dataIndex: ["machine", "machine_name"],
+      title: "Assigned Time",
+      key: "assign_time",
+      render: ({ assign_time }) => {
+        return dayjs(assign_time).format("HH:mm:ss");
+      },
     },
     {
-      title: "No. of machine",
-      dataIndex: ["machine", "no_of_machines"],
-      key: "machine.no_of_machines",
+      title: "Machine Type",
+      dataIndex: "machine_type",
+      key: "machine_type",
     },
     {
-      title: "No. of Emp.",
-      dataIndex: ["machine", "no_of_employees"],
-      key: "machine.no_of_employees",
+      title: "Floor",
+      dataIndex: "floor",
+      key: "floor",
     },
     {
-      title: "Absent Emp.",
-      dataIndex: "absent_employee_count",
-      key: "absent_employee_count",
+      title: "Machine",
+      dataIndex: "machine_name",
+      key: "machine_name",
     },
     {
-      title: "Shift Type",
-      dataIndex: "shift",
-      key: "shift",
+      title: "Machine From",
+      dataIndex: "machine_from",
+      key: "machine_from",
+    },
+    {
+      title: "Machine To",
+      dataIndex: "machine_to",
+      key: "machine_to",
+    },
+    {
+      title: "Note",
+      dataIndex: "notes",
+      key: "notes",
+    },
+    {
+      title: "Reported Date",
+      key: "report_date",
+      render: ({ report_date }) => {
+        return report_date ? dayjs(report_date).format("DD-MM-YYYY") : null;
+      },
+    },
+    {
+      title: "Comment",
+      dataIndex: "comment",
+      key: "comment",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
     },
     {
       title: "Action",
       render: (reportDetails) => {
         const {
-          machine = {},
-          absent_employee_count,
-          shift,
           createdAt,
+          user = {},
+          assign_time,
+          machine_type,
+          floor,
+          notes,
         } = reportDetails;
-        const { machine_name, no_of_machines, no_of_employees } = machine;
+        const { first_name = "" } = user;
+        const daysOfWeek = [
+          "monday",
+          "tuesday",
+          "wednesday",
+          "thursday",
+          "friday",
+          "saturday",
+          "sunday",
+        ];
+        let weekly = [];
+        daysOfWeek.forEach((day) => {
+          if (reportDetails[day] === true) {
+            // capitalize
+            weekly.push(day.charAt(0).toUpperCase() + day.slice(1));
+          }
+        });
         return (
           <Space>
             <ViewDetailModal
-              title="Machine List"
+              title="Taka Report"
+              className="capitalize"
               details={[
-                {
-                  title: "Machine Name",
-                  value: machine_name,
-                },
-                { title: "Machine No.", value: no_of_machines },
-                { title: "No of Emp.", value: no_of_employees },
-                { title: "Absent Employee", value: absent_employee_count },
-                { title: "Attendance Type", value: shift },
+                { title: "Name", value: first_name },
                 {
                   title: "Date",
                   value: dayjs(createdAt).format("DD-MM-YYYY"),
                 },
                 {
-                  title: "Time",
-                  value: dayjs(createdAt).format("h:mm:ss A"),
+                  title: "Assign time",
+                  value: dayjs(assign_time).format("HH:mm:ss"),
                 },
+                // { title: "Answer", value: "" },
+                // { title: "Comment", value: "" },
+                { title: "Machine Type", value: machine_type },
+                { title: "Floor", value: floor },
+                {
+                  title: "Weekly",
+                  value: weekly.join(", "),
+                },
+                { title: "Notes", value: notes },
               ]}
             />
             <Button
@@ -199,7 +258,7 @@ function EmployeeAttendanceReportList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteEmployeeAttendanceReportButton details={reportDetails} />
+            <DeleteCheckTakaReportButton details={reportDetails} />
           </Space>
         );
       },
@@ -218,7 +277,7 @@ function EmployeeAttendanceReportList() {
 
     return (
       <Table
-        dataSource={reportListRes?.row || []}
+        dataSource={reportListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
@@ -227,6 +286,7 @@ function EmployeeAttendanceReportList() {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        className="overflow-auto"
       />
     );
   }
@@ -235,7 +295,8 @@ function EmployeeAttendanceReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Employees Attendance Report</h3>
+          <GoBackButton />
+          <h3 className="m-0 text-primary">Taka Report</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -279,10 +340,9 @@ function EmployeeAttendanceReportList() {
           />
 
           <Button
-            className="flex-none"
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!reportListRes?.row?.length}
+            disabled={!reportListRes?.rows?.length}
             onClick={downloadPdf}
           />
         </Flex>
@@ -292,4 +352,4 @@ function EmployeeAttendanceReportList() {
   );
 }
 
-export default EmployeeAttendanceReportList;
+export default CheckTakaReportList;

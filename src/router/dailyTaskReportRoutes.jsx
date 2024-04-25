@@ -1,11 +1,16 @@
 import AddDailyTask from "../pages/tasks/dailyTask/AddDailyTask";
 import DailyTaskList from "../pages/tasks/dailyTask/DailyTaskList";
 import UpdateDailyTask from "../pages/tasks/dailyTask/UpdateDailyTask";
+import AddCheckTakaReport from "../pages/tasks/dailyTaskReport/CheckTakaReport/AddCheckTakaReport";
+import CheckTakaReportList from "../pages/tasks/dailyTaskReport/CheckTakaReport/CheckTakaReportList";
+import UpdateCheckTakaReport from "../pages/tasks/dailyTaskReport/CheckTakaReport/UpdateCheckTakaReport";
 import DailyTFOReport from "../pages/tasks/dailyTaskReport/DailyTFOReport";
 import DailyTaskReport from "../pages/tasks/dailyTaskReport/DailyTaskReport";
 import AddAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AddAssignRollReport";
 import AssignRollReportList from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/AssignRollReportList";
 import UpdateAssignRollReport from "../pages/tasks/dailyTaskReport/TFOReport/assignRollReport/UpdateAssignRollReport";
+import AddDailyTFOReport from "../pages/tasks/dailyTaskReport/TFOReport/dailyTFOReport/AddDailyTFOReport";
+import DailyTFOReportList from "../pages/tasks/dailyTaskReport/TFOReport/dailyTFOReport/DailyTFOReportList";
 import AddRollStockReport from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/AddRollStockReport";
 import RollStockReportList from "../pages/tasks/dailyTaskReport/TFOReport/rollStockReport/RollStockReportList";
 import AddWindingDropReport from "../pages/tasks/dailyTaskReport/TFOReport/windingReport/AddWindingDropReport";
@@ -37,12 +42,12 @@ export const dailyTaskReportRoutes = {
       path: "daily-tfo-report",
       element: <DailyTFOReport />,
       children: [
+        { index: true, element: <DailyTFOReportList /> },
         {
           path: "daily-tfo",
           children: [
-            { index: true, element: <DailyTaskList /> },
-            { path: "add", element: <AddDailyTask /> },
-            { path: "update/:id", element: <UpdateDailyTask /> },
+            { index: true, element: <DailyTFOReportList /> },
+            { path: "add", element: <AddDailyTFOReport /> },
           ],
         },
         {
@@ -81,9 +86,9 @@ export const dailyTaskReportRoutes = {
     {
       path: "check-taka-and-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
-        { path: "update/:id", element: <UpdateDailyTask /> },
+        { index: true, element: <CheckTakaReportList /> },
+        { path: "add", element: <AddCheckTakaReport /> },
+        { path: "update/:id", element: <UpdateCheckTakaReport /> },
       ],
     },
     {

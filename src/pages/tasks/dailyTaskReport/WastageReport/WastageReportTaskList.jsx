@@ -28,6 +28,7 @@ import {
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 function WastageReportTaskList() {
   const [search, setSearch] = useState("");
@@ -307,6 +308,7 @@ function WastageReportTaskList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton />
           <h3 className="m-0 text-primary">Wastage Report List</h3>
           <Button
             onClick={navigateToAdd}
