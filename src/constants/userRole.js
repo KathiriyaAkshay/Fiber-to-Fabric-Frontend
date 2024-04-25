@@ -65,6 +65,35 @@ export const SALARY_TYPE_LIST = [
   },
 ];
 
+export const MACHINE_LIST = [
+  {
+    label: "Looms",
+    value: "looms",
+  },
+  {
+    label: "Jacquard",
+    value: "jacquard",
+  },
+];
+
+export const DESIGN_LIST = [
+  {
+    label: "HJHJUN",
+    value: "hjhjun",
+  },
+  {
+    label: "Test123",
+    value: "test123",
+  },
+  {
+    label: "NEW_TEXT_YOPOLO",
+    value: "new_text_yopolo",
+  },
+  {
+    label: "Other",
+    value: "other",
+  },
+];
 
 export const TPM_LIST = [
   {

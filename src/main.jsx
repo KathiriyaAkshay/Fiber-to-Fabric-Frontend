@@ -57,6 +57,11 @@ import GlobalContextProvider from "./contexts/GlobalContext";
 import YarnReceiveList from "./pages/purchase/receive/yarn-receive/YarnReceiveList";
 import AddYarnReceive from "./pages/purchase/receive/yarn-receive/AddYarnReceive";
 import UpdateYarnReceive from "./pages/purchase/receive/yarn-receive/UpdateYarnReceive";
+import InHouseQualityList from "./pages/qualityMaster/inhouseQuality/inhouseQualityList";
+import TradingQualityList from "./pages/qualityMaster/tradingQuality/TradingQualityList";
+import AddInHouseQuality from "./pages/qualityMaster/inhouseQuality/AddInHouseQuality";
+import AddTradingQuality from "./pages/qualityMaster/tradingQuality/AddTradingQuality";
+import { UpdateTradingQuality } from "./pages/qualityMaster/tradingQuality/UpdateTradingQuality";
 
 const queryClient = new QueryClient();
 
@@ -101,16 +106,23 @@ const router = createBrowserRouter([
       { path: "/dashboard", element: <Dashboard /> },
       {
         path: "/quality-master",
-        element: (
-          <div>
-            <div>quality-master</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>quality-master</div> },
-          { path: "inhouse-quality", element: <div>inhouse-quality</div> },
-          { path: "trading-quality", element: <div>trading-quality</div> },
+          { index: true, element: <InHouseQualityList /> },
+          { 
+            path: "inhouse-quality", 
+            children: [
+              { index: true, element: <InHouseQualityList /> },
+              { path: "add", element: <AddInHouseQuality /> },
+              { path: "update/:qualityId", element: <AddInHouseQuality /> },
+            ], 
+          },
+          { path: "trading-quality", 
+            children: [
+              { index: true, element: <TradingQualityList /> },
+              { path: "add", element: <AddTradingQuality /> },
+              { path: "update/:qualityId", element: <UpdateTradingQuality /> },
+            ],  
+          },
         ],
       },
       {

@@ -161,13 +161,13 @@ export const menubarOptionsList = [
       },
       {
         path: "/quality-master/trading-quality",
-        key: "Tranding Quality",
+        key: "Trading Quality",
         label: (
           <Link
             className="text-current no-underline hover:text-current"
             to="quality-master/trading-quality"
           >
-            Tranding Quality
+            Trading Quality
           </Link>
         ),
       },
