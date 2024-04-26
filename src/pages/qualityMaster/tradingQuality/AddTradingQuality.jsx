@@ -34,7 +34,7 @@ const addYSCSchemaResolver = yupResolver(
     machine_name: yup.string().required("Please enter machine name"),
     production_type: yup.boolean(),
     other_quality_name: yup.string(),
-    other_quality_weight: yup.number(),
+    other_quality_weight: yup.string()
   })
 );
 
@@ -84,17 +84,23 @@ const AddTradingQuality = () => {
   async function onSubmit(data) {
     let quality;
     if (data.quality_name === 0 || data.quality_name === "0") {
-      //   if (!data.other_quality_name || data.other_quality_name === "") {
-      //     setError("other_quality_name", "Please enter quality name.");
-      //     return;
-      //   }
-      //   if (!data.other_quality_weight || data.other_quality_weight === null) {
-      //     setError("other_quality_weight", "Please enter quality weight.");
-      //     return;
-      //   }
+        if (!data.other_quality_name || data.other_quality_name === "") {
+          setError("other_quality_name", {
+            type: "manual",
+            message: "Please enter quality name."
+          });
+          return;
+        }
+        if (!data.other_quality_weight || data.other_quality_weight === null) {
+          setError("other_quality_weight", {
+            type: "manual",
+            message: "Please enter quality weight."
+          });
+          return;
+        }
       quality = {
         quality_name: data.other_quality_name,
-        quality_weight: data.other_quality_weight,
+        quality_weight: parseFloat(data.other_quality_weight),
       };
     } else {
       quality = qualityNames.find(
@@ -120,6 +126,7 @@ const AddTradingQuality = () => {
     reset,
     watch,
     setValue,
+    setError
   } = useForm({
     defaultValues: {
       quality_name: null,
