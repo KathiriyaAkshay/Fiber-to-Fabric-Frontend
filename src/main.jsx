@@ -57,7 +57,7 @@ import GlobalContextProvider from "./contexts/GlobalContext";
 import YarnReceiveList from "./pages/purchase/receive/yarn-receive/YarnReceiveList";
 import AddYarnReceive from "./pages/purchase/receive/yarn-receive/AddYarnReceive";
 import UpdateYarnReceive from "./pages/purchase/receive/yarn-receive/UpdateYarnReceive";
-import InHouseQualityList from "./pages/qualityMaster/inhouseQuality/inhouseQualityList";
+import InHouseQualityList from "./pages/qualityMaster/inhouseQuality/InHouseQualityList";
 import TradingQualityList from "./pages/qualityMaster/tradingQuality/TradingQualityList";
 import AddInHouseQuality from "./pages/qualityMaster/inhouseQuality/AddInHouseQuality";
 import AddTradingQuality from "./pages/qualityMaster/tradingQuality/AddTradingQuality";
