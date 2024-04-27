@@ -156,7 +156,7 @@ function YarnReceiveList() {
               <EditOutlined />
             </Button>
             <DeleteYarnReceiveButton details={yarnReceiveDetails} />
-            <YarnReceiveChallanModal />
+            <YarnReceiveChallanModal details={yarnReceiveDetails} />
           </Space>
         );
       },

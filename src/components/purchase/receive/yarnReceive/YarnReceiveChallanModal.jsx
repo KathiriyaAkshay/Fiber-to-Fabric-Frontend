@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -59,7 +59,22 @@ const addYarnReceiveSchema = yup.object().shape({
   quantity_amount: yup.string().required("Please enter quantity amount"),
 });
 
-const YarnReceiveChallanModal = () => {
+const YarnReceiveChallanModal = ({ details = {} }) => {
+  const {
+    challan_no = "",
+    yarn_stock_company = {},
+    receive_cartoon_pallet = 0,
+    receive_quantity = 0,
+  } = details;
+  const {
+    yarn_count = 0,
+    filament = 0,
+    yarn_type = "",
+    yarn_Sub_type = "",
+    luster_type = "",
+    yarn_color = "",
+    hsn_no = "",
+  } = yarn_stock_company;
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -117,6 +132,8 @@ const YarnReceiveChallanModal = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm({
     resolver: yupResolver(addYarnReceiveSchema),
     defaultValues: {
@@ -129,6 +146,26 @@ const YarnReceiveChallanModal = () => {
     delete data.yarn_company_name;
     await createYarnReceive(data);
   }
+
+  const { order_id } = watch();
+
+  useEffect(() => {
+    yarnOrderListRes?.rows?.forEach((yOrder) => {
+      if (yOrder?.id === order_id) {
+        const { rate = 0, freight = 0 } = yOrder;
+
+        // set total amount on rate change
+        setValue("quantity_rate", parseFloat(rate).toFixed(2));
+        const quantity_amount = Number(rate) * Number(receive_quantity);
+        setValue("quantity_amount", parseFloat(quantity_amount).toFixed(2));
+
+        // set freight value
+        setValue("freight_value", parseFloat(freight).toFixed(2));
+        const freight_amount = Number(freight) * Number(receive_quantity);
+        setValue("freight_amount", parseFloat(freight_amount).toFixed(2));
+      }
+    });
+  }, [order_id, receive_quantity, setValue, yarnOrderListRes?.rows]);
 
   return (
     <>
@@ -175,6 +212,7 @@ const YarnReceiveChallanModal = () => {
                 </Typography.Text>
               </Col>
             </Row>
+
             <Row
               className="px-2 pt-4 border-0 border-b border-solid !m-0"
               gutter={12}
@@ -283,17 +321,17 @@ const YarnReceiveChallanModal = () => {
               </Col>
               <Col span={6}>
                 <Form.Item
-                  label="Challan Date"
-                  name="challan_date"
-                  validateStatus={errors.challan_date ? "error" : ""}
-                  help={errors.challan_date && errors.challan_date.message}
+                  label="BILL Date"
+                  name="bill_date"
+                  validateStatus={errors.bill_date ? "error" : ""}
+                  help={errors.bill_date && errors.bill_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                   // className="mb-0"
                 >
                   <Controller
                     control={control}
-                    name="challan_date"
+                    name="bill_date"
                     render={({ field }) => (
                       <DatePicker
                         {...field}
@@ -308,17 +346,17 @@ const YarnReceiveChallanModal = () => {
               </Col>
               <Col span={6}>
                 <Form.Item
-                  label="Challan Date"
-                  name="challan_date"
-                  validateStatus={errors.challan_date ? "error" : ""}
-                  help={errors.challan_date && errors.challan_date.message}
+                  label="DUE Date"
+                  name="due_date"
+                  validateStatus={errors.due_date ? "error" : ""}
+                  help={errors.due_date && errors.due_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                   // className="mb-0"
                 >
                   <Controller
                     control={control}
-                    name="challan_date"
+                    name="due_date"
                     render={({ field }) => (
                       <DatePicker
                         {...field}
@@ -336,42 +374,219 @@ const YarnReceiveChallanModal = () => {
             <Row className="border-0 border-b border-solid !m-0">
               <Col
                 span={4}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 Challan
               </Col>
               <Col
                 span={4}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 Denier
               </Col>
               <Col
                 span={2}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 HSN No
               </Col>
               <Col
                 span={2}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 Quantity
               </Col>
               <Col
                 span={4}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 Cartoon
               </Col>
               <Col
                 span={4}
-                className="px-1 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0 border-r border-solid"
               >
                 RATE
               </Col>
-              <Col span={4} className="px-1 font-medium">
+              <Col span={4} className="p-2 font-medium">
                 AMOUNT
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                {challan_no}
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                {`${yarn_count}C/${filament}F (${yarn_type}(${yarn_Sub_type}) - ${luster_type} - ${yarn_color})`}
+              </Col>
+              <Col span={2} className="p-2 border-0 border-r border-solid">
+                {hsn_no}
+              </Col>
+              <Col span={2} className="p-2 border-0 border-r border-solid">
+                {receive_quantity}
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                {receive_cartoon_pallet}
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="quantity_rate"
+                  validateStatus={errors.quantity_rate ? "error" : ""}
+                  help={errors.quantity_rate && errors.quantity_rate.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="quantity_rate"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentQRate = e.target.value;
+                          if (currentQRate) {
+                            // set amount on rate change
+                            const quantity_amount =
+                              Number(currentQRate) * Number(receive_quantity);
+                            setValue(
+                              "quantity_amount",
+                              parseFloat(quantity_amount).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="quantity_amount"
+                  validateStatus={errors.quantity_amount ? "error" : ""}
+                  help={
+                    errors.quantity_amount && errors.quantity_amount.message
+                  }
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="quantity_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentQAmount = e.target.value;
+                          if (currentQAmount && receive_quantity) {
+                            // set rate on amount change
+                            const quantity_rate =
+                              Number(currentQAmount) / Number(receive_quantity);
+                            setValue(
+                              "quantity_rate",
+                              parseFloat(quantity_rate).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-b border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                FREIGHT
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="freight_value"
+                  validateStatus={errors.freight_value ? "error" : ""}
+                  help={errors.freight_value && errors.freight_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="freight_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          if (currentFValue) {
+                            // set amount on rate change
+                            const freight_amount =
+                              Number(currentFValue) * Number(receive_quantity);
+                            setValue(
+                              "freight_amount",
+                              parseFloat(freight_amount).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="freight_amount"
+                  validateStatus={errors.freight_amount ? "error" : ""}
+                  help={errors.freight_amount && errors.freight_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="freight_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFAmount = e.target.value;
+                          if (currentFAmount && receive_quantity) {
+                            // set rate on amount change
+                            const freight_value =
+                              Number(currentFAmount) / Number(receive_quantity);
+                            setValue(
+                              "freight_value",
+                              parseFloat(freight_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
               </Col>
             </Row>
           </Flex>
