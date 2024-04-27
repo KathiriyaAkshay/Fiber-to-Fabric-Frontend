@@ -61,7 +61,7 @@ const AddInHouseQuality = () => {
   const [designNo, setDesignNo] = useState([]);
   const [designNoOption, setDesignNoOption] = useState([]);
   const [denierOptions, setDenierOptions] = useState([]);
-
+  // console.log({ denierOptions });
   const [needQualityNameInChallan, setNeedQualityNameInChallan] =
     useState(true);
   const [needQualityGroupInChallan, setNeedQualityGroupInChallan] =
@@ -625,6 +625,70 @@ const AddInHouseQuality = () => {
     const newFields = [...weftFormArray];
     newFields.splice(field, 1);
     setWeftFormArray(newFields);
+  };
+
+  const calculateWarpingWeight = (indexValue) => {
+    const tars = parseFloat(getValues(`tars_${indexValue}`));
+    const tpm = parseFloat(getValues(`warping_tpm_${indexValue}`));
+    const yarn_company = getValues(`yarn_stock_company_id_${indexValue}`);
+    let denier;
+
+    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+      const { yarn_details = [] } = ysc;
+      denier = yarn_details?.find(
+        ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
+      ).yarn_denier;
+      if (denier) {
+        return;
+      }
+    });
+
+    if (tars && tpm && denier) {
+      if (tpm !== 0) {
+        const A = (tpm * 0.0075) / 100;
+        const B = A * denier;
+        const C = B + denier;
+        const D = (C * tars * 106) / 9000000;
+
+        setValue(`warping_weight_${indexValue}`, D.toFixed(3));
+      } else {
+        const D = (denier * tars * 106) / 9000000;
+        setValue(`warping_weight_${indexValue}`, D.toFixed(3));
+      }
+    }
+  };
+
+  const calculateWeftWeight = (indexValue) => {
+    const pano = parseFloat(getValues(`pano_${indexValue}`));
+    const peak = parseFloat(getValues(`peak_${indexValue}`));
+    const tpm = parseFloat(getValues(`weft_tpm_${indexValue}`));
+    // const read = parseFloat(getValues(`read_${indexValue}`));
+    const yarn_company = getValues(`weft_yarn_stock_company_id_${indexValue}`);
+    let denier;
+
+    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+      const { yarn_details = [] } = ysc;
+      denier = yarn_details?.find(
+        ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
+      ).yarn_denier;
+      if (denier) {
+        return;
+      }
+    });
+
+    if (pano && peak && tpm && denier) {
+      if (tpm !== 0) {
+        const A = (tpm * 0.0075) / 100;
+        const B = A * denier;
+        const C = B + denier;
+        const D = (C * pano * peak * 106) / 9000000;
+
+        setValue(`weft_weight_${indexValue}`, D.toFixed(3));
+      } else {
+        const D = (denier * pano * peak * 106) / 9000000;
+        setValue(`weft_weight_${indexValue}`, D.toFixed(3));
+      }
+    }
   };
 
   return (
@@ -1389,11 +1453,15 @@ const AddInHouseQuality = () => {
                           render={({ field }) => {
                             return (
                               <Select
+                                {...field}
                                 allowClear
                                 loading={isLoadingYSCDList}
                                 placeholder="Select denier"
-                                {...field}
                                 options={denierOptions}
+                                onChange={(selectedValue) => {
+                                  field.onChange(selectedValue);
+                                  calculateWarpingWeight(index);
+                                }}
                               />
                             );
                           }}
@@ -1421,6 +1489,15 @@ const AddInHouseQuality = () => {
                               type="number"
                               {...field}
                               placeholder="5560"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (e.target.value === "") {
+                                  setValue(`warping_tpm_${index}`, "");
+                                  setValue(`warping_weight_${index}`, "");
+                                } else {
+                                  calculateWarpingWeight(index);
+                                }
+                              }}
                             />
                           )}
                         />
@@ -1449,6 +1526,10 @@ const AddInHouseQuality = () => {
                               type="number"
                               {...field}
                               placeholder="62.00"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                calculateWarpingWeight(index);
+                              }}
                             />
                           )}
                         />
@@ -1474,8 +1555,8 @@ const AddInHouseQuality = () => {
                           name={`warping_weight_${index}`}
                           render={({ field }) => (
                             <Input
-                              type="number"
                               {...field}
+                              type="number"
                               placeholder="62.00"
                             />
                           )}
@@ -1582,10 +1663,14 @@ const AddInHouseQuality = () => {
                             return (
                               <Select
                                 allowClear
+                                {...field}
                                 loading={isLoadingYSCDList}
                                 placeholder="Select denier"
-                                {...field}
                                 options={denierOptions}
+                                onChange={(selectedValue) => {
+                                  field.onChange(selectedValue);
+                                  calculateWeftWeight(index);
+                                }}
                               />
                             );
                           }}
@@ -1610,9 +1695,18 @@ const AddInHouseQuality = () => {
                           name={`pano_${index}`}
                           render={({ field }) => (
                             <Input
-                              type="number"
                               {...field}
-                              placeholder="5560"
+                              type="number"
+                              placeholder="54.00"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (e.target.value === "") {
+                                  setValue(`weft_tpm_${index}`, "");
+                                  setValue(`weft_weight_${index}`, "");
+                                } else {
+                                  calculateWeftWeight(index);
+                                }
+                              }}
                             />
                           )}
                         />
@@ -1636,9 +1730,18 @@ const AddInHouseQuality = () => {
                           name={`peak_${index}`}
                           render={({ field }) => (
                             <Input
-                              type="number"
                               {...field}
+                              type="number"
                               placeholder="62.00"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                if (e.target.value === "") {
+                                  setValue(`weft_tpm_${index}`, "");
+                                  setValue(`weft_weight_${index}`, "");
+                                } else {
+                                  calculateWeftWeight(index);
+                                }
+                              }}
                             />
                           )}
                         />
@@ -1663,11 +1766,7 @@ const AddInHouseQuality = () => {
                           control={control}
                           name={`dobby_rpm_${index}`}
                           render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              placeholder="62.00"
-                            />
+                            <Input {...field} type="number" placeholder="RPM" />
                           )}
                         />
                       </Form.Item>
@@ -1693,9 +1792,9 @@ const AddInHouseQuality = () => {
                           render={({ field }) => {
                             return (
                               <Input
-                                type="number"
                                 {...field}
-                                placeholder="62.00"
+                                type="number"
+                                placeholder="10"
                               />
                             );
                           }}
@@ -1748,9 +1847,13 @@ const AddInHouseQuality = () => {
                           name={`weft_tpm_${index}`}
                           render={({ field }) => (
                             <Input
-                              type="number"
                               {...field}
+                              type="number"
                               placeholder="62.00"
+                              onChange={(e) => {
+                                field.onChange(e);
+                                calculateWeftWeight(index);
+                              }}
                             />
                           )}
                         />
