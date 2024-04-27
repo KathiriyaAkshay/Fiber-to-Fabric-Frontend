@@ -84,20 +84,20 @@ const AddTradingQuality = () => {
   async function onSubmit(data) {
     let quality;
     if (data.quality_name === 0 || data.quality_name === "0") {
-        if (!data.other_quality_name || data.other_quality_name === "") {
-          setError("other_quality_name", {
-            type: "manual",
-            message: "Please enter quality name."
-          });
-          return;
-        }
-        if (!data.other_quality_weight || data.other_quality_weight === null) {
-          setError("other_quality_weight", {
-            type: "manual",
-            message: "Please enter quality weight."
-          });
-          return;
-        }
+      if (!data.other_quality_name || data.other_quality_name === "") {
+        setError("other_quality_name", {
+          type: "manual",
+          message: "Please enter quality name."
+        });
+        return;
+      }
+      if (!data.other_quality_weight || data.other_quality_weight === null) {
+        setError("other_quality_weight", {
+          type: "manual",
+          message: "Please enter quality weight."
+        });
+        return;
+      }
       quality = {
         quality_name: data.other_quality_name,
         quality_weight: parseFloat(data.other_quality_weight),

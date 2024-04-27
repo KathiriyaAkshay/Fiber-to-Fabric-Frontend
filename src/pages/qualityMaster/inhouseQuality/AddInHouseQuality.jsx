@@ -36,10 +36,17 @@ import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockRepor
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
-    // quality_name: yup.string().required("Please enter quality name"),
-    // quality_group: yup.string().required("Please enter quality group"),
-    // vat_hsn_no: yup.string().required("Please enter VAT HSN No"),
-    // machine_name: yup.string().required("Please enter machine name"),
+    quality_name: yup.string().required("Please enter quality name."),
+    quality_group: yup.string().required("Please enter quality group."),
+    vat_hsn_no: yup.string().required("Please enter VAT HSN No."),
+    machine_name: yup.string().required("Please enter machine name."),
+    design_no: yup.string().required("Please enter design no."),
+    licence_meter: yup.string().required("Please enter licence meter."),
+    yarn_type: yup.string().required("Please enter yarn type."),
+    weight_from: yup.string().required("Please enter weight from."),
+    weight_to: yup.string().required("Please enter weight to."),
+    production_rate: yup.string().required("Please enter production rate."),
+    max_taka: yup.string().required("Please enter max taka."),
     // production_type: yup.string(),
     // other_quality_name: yup.string(),
     // other_quality_weight: yup.string(),
@@ -69,7 +76,7 @@ const AddInHouseQuality = () => {
   const [isTaarBeamPissingSecondary, setIsTaarBeamPissingSecondary] =
     useState(false);
 
-  const [productionType1, setProductionType1] = useState(true);
+  const [productionType1 /* setProductionType */] = useState(true);
   const [productionType2, setProductionType2] = useState(false);
   const [productionType3, setProductionType3] = useState(false);
 
@@ -100,7 +107,6 @@ const AddInHouseQuality = () => {
       //     "list",
       //     companyId,
       //   ]);
-      console.log({ res });
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -114,9 +120,22 @@ const AddInHouseQuality = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log({ data });
     let quality;
     if (data.quality_name === 0 || data.quality_name === "0") {
+      if (!data.other_quality_name || data.other_quality_name === "") {
+        setError("other_quality_name", {
+          type: "manual",
+          message: "Please enter quality name.",
+        });
+        return;
+      }
+      if (!data.other_quality_weight || data.other_quality_weight === null) {
+        setError("other_quality_weight", {
+          type: "manual",
+          message: "Please enter quality weight.",
+        });
+        return;
+      }
       quality = {
         quality_name: data.other_quality_name,
         quality_weight: data.other_quality_weight,
@@ -129,6 +148,13 @@ const AddInHouseQuality = () => {
 
     let design;
     if (data.design_no === 0 || data.design_no === "0") {
+      if (!data.other_design_no || data.other_design_no === null) {
+        setError("other_design_no", {
+          type: "manual",
+          message: "Please enter design no.",
+        });
+        return;
+      }
       design = {
         design_no: data.other_design_no,
       };
@@ -215,7 +241,6 @@ const AddInHouseQuality = () => {
       weft_detail,
     };
 
-    console.log({ newData });
     await addInHouseQuality(newData);
   };
 
@@ -225,6 +250,9 @@ const AddInHouseQuality = () => {
     formState: { errors },
     reset,
     setValue,
+    getValues,
+    setError,
+    clearErrors,
     watch,
   } = useForm({
     defaultValues: {
@@ -253,12 +281,6 @@ const AddInHouseQuality = () => {
 
       require_non_pasarela_beam: "",
       require_pasarela_beam: "",
-
-      // yarn_stock_company_id: null,
-      // tars: 0,
-      // tpm: 0,
-      // warping_weight: 0,
-      // is_primary: true,
     },
     resolver: addYSCSchemaResolver,
   });
@@ -438,6 +460,160 @@ const AddInHouseQuality = () => {
       getYarnCompanyList();
     }
   }, [companyId, getDesignNoData, getYarnCompanyList]);
+
+  const addWarpingDetailRow = (indexValue) => {
+    let isValid = true;
+
+    warpingFormArray.forEach((item, index) => {
+      clearErrors(`yarn_stock_company_id_${index}`);
+      clearErrors(`tars_${index}`);
+      clearErrors(`warping_tpm_${index}`);
+      clearErrors(`warping_weight_${index}`);
+    });
+
+    warpingFormArray.forEach((item, index) => {
+      if (index === indexValue) {
+        if (!getValues(`yarn_stock_company_id_${index}`)) {
+          setError(`yarn_stock_company_id_${index}`, {
+            type: "manual",
+            message: "Please select yarn stock company",
+          });
+          isValid = false;
+        }
+        if (!getValues(`tars_${index}`)) {
+          setError(`tars_${index}`, {
+            type: "manual",
+            message: "Please enter tars.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`warping_tpm_${index}`)) {
+          setError(`warping_tpm_${index}`, {
+            type: "manual",
+            message: "Please enter tpm.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`warping_weight_${index}`)) {
+          setError(`warping_weight_${index}`, {
+            type: "manual",
+            message: "Please enter warping weight.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`yarn_stock_company_id_${index}`)) {
+          setError(`yarn_stock_company_id_${index}`, {
+            type: "manual",
+            message: "Please select yarn stock company",
+          });
+          isValid = false;
+        }
+      }
+    });
+
+    if (isValid) {
+      const nextValue = warpingFormArray.length;
+      setWarpingFormArray((prev) => {
+        return [...prev, nextValue];
+      });
+    }
+  };
+
+  const deleteWarpingDetailRow = (field) => {
+    const newFields = [...warpingFormArray];
+    newFields.splice(field, 1);
+    setWarpingFormArray(newFields);
+  };
+
+  const addWeftDetailRow = (indexValue) => {
+    let isValid = true;
+
+    weftFormArray.forEach((item, index) => {
+      clearErrors(`weft_yarn_stock_company_id_${index}`);
+      clearErrors(`pano_${index}`);
+      clearErrors(`peak_${index}`);
+      clearErrors(`dobby_rpm_${index}`);
+
+      clearErrors(`production_per_day_${index}`);
+      clearErrors(`read_${index}`);
+      clearErrors(`weft_tpm_${index}`);
+      clearErrors(`weft_weight_${index}`);
+    });
+
+    weftFormArray.forEach((item, index) => {
+      if (index === indexValue) {
+        if (!getValues(`weft_yarn_stock_company_id_${index}`)) {
+          setError(`weft_yarn_stock_company_id_${index}`, {
+            type: "manual",
+            message: "Please select yarn stock company",
+          });
+          isValid = false;
+        }
+        if (!getValues(`pano_${index}`)) {
+          setError(`pano_${index}`, {
+            type: "manual",
+            message: "Please enter pano.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`peak_${index}`)) {
+          setError(`peak_${index}`, {
+            type: "manual",
+            message: "Please enter peak.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`dobby_rpm_${index}`)) {
+          setError(`dobby_rpm_${index}`, {
+            type: "manual",
+            message: "Please enter dobby rpm.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`production_per_day_${index}`)) {
+          setError(`production_per_day_${index}`, {
+            type: "manual",
+            message: "Please enter production per day.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`read_${index}`)) {
+          setError(`read_${index}`, {
+            type: "manual",
+            message: "Please enter read.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`weft_tpm_${index}`)) {
+          setError(`weft_tpm_${index}`, {
+            type: "manual",
+            message: "Please enter tpm.",
+          });
+          isValid = false;
+        }
+        if (!getValues(`weft_weight_${index}`)) {
+          setError(`weft_weight_${index}`, {
+            type: "manual",
+            message: "Please enter weft weight.",
+          });
+          isValid = false;
+        }
+      }
+    });
+
+    if (isValid) {
+      const nextValue = weftFormArray.length;
+      setWeftFormArray((prev) => {
+        return [...prev, nextValue];
+      });
+    }
+  };
+
+  const deleteWeftDetailRow = (field) => {
+    const newFields = [...weftFormArray];
+    newFields.splice(field, 1);
+    setWeftFormArray(newFields);
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -872,13 +1048,13 @@ const AddInHouseQuality = () => {
                 </Form.Item>
                 To
                 <Form.Item
-                  label=""
+                  label=" "
                   name="weight_to"
                   validateStatus={errors.weight_to ? "error" : ""}
                   help={errors.weight_to && errors.weight_to.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                  style={{ margin: "0px" }}
+                  style={{ marginTop: "0px" }}
                 >
                   <Controller
                     control={control}
@@ -1324,11 +1500,7 @@ const AddInHouseQuality = () => {
                           style={{ marginTop: "1.9rem" }}
                           icon={<DeleteOutlined />}
                           type="primary"
-                          onClick={() => {
-                            const newFields = [...warpingFormArray];
-                            newFields.splice(field, 1);
-                            setWarpingFormArray(newFields);
-                          }}
+                          onClick={deleteWarpingDetailRow.bind(null, field)}
                           className="flex-none"
                         />
                       </Col>
@@ -1340,12 +1512,7 @@ const AddInHouseQuality = () => {
                           style={{ marginTop: "1.9rem" }}
                           icon={<PlusOutlined />}
                           type="primary"
-                          onClick={() => {
-                            const nextValue = warpingFormArray.length;
-                            setWarpingFormArray((prev) => {
-                              return [...prev, nextValue];
-                            });
-                          }}
+                          onClick={addWarpingDetailRow.bind(null, index)}
                           className="flex-none"
                         />
                       </Col>
@@ -1373,7 +1540,7 @@ const AddInHouseQuality = () => {
                     <Col span={5}>
                       <Form.Item
                         label={"Denier/Count"}
-                        name={`Weft_yarn_stock_company_id_${index}`}
+                        name={`weft_yarn_stock_company_id_${index}`}
                         validateStatus={
                           errors[`weft_yarn_stock_company_id_${index}`]
                             ? "error"
@@ -1543,8 +1710,10 @@ const AddInHouseQuality = () => {
                     <Col span={2}>
                       <Form.Item
                         label={"TPM"}
-                        name={`tpm_${index}`}
-                        validateStatus={errors[`tpm_${index}`] ? "error" : ""}
+                        name={`weft_tpm_${index}`}
+                        validateStatus={
+                          errors[`weft_tpm_${index}`] ? "error" : ""
+                        }
                         help={
                           errors[`weft_tpm_${index}`] &&
                           errors[`weft_tpm_${index}`].message
@@ -1600,11 +1769,7 @@ const AddInHouseQuality = () => {
                           style={{ marginTop: "1.9rem" }}
                           icon={<DeleteOutlined />}
                           type="primary"
-                          onClick={() => {
-                            const newFields = [...weftFormArray];
-                            newFields.splice(field, 1);
-                            setWeftFormArray(newFields);
-                          }}
+                          onClick={deleteWeftDetailRow.bind(null, field)}
                           className="flex-none"
                         />
                       </Col>
@@ -1616,12 +1781,7 @@ const AddInHouseQuality = () => {
                           style={{ marginTop: "1.9rem" }}
                           icon={<PlusOutlined />}
                           type="primary"
-                          onClick={() => {
-                            const nextValue = weftFormArray.length;
-                            setWeftFormArray((prev) => {
-                              return [...prev, nextValue];
-                            });
-                          }}
+                          onClick={addWeftDetailRow.bind(null, index)}
                           className="flex-none"
                         />
                       </Col>
