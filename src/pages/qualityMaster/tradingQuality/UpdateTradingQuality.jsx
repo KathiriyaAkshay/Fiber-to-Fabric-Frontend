@@ -19,13 +19,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { QUALITY_GROUP_LIST } from "../../../constants/yarnStockCompany";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { MACHINE_LIST } from "../../../constants/userRole";
 import {
   // getQualityNameDropDownRequest,
   getTradingQualityByIdRequest,
   updateTradingQualityRequest,
 } from "../../../api/requests/qualityMaster";
 import { CloseOutlined } from "@ant-design/icons";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -65,8 +65,6 @@ export const UpdateTradingQuality = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  console.log({tradingQualityDetail});
 
   const { mutateAsync: updateTradingQuality } = useMutation({
     mutationFn: async (data) => {
@@ -122,6 +120,18 @@ export const UpdateTradingQuality = () => {
     };
     await updateTradingQuality(newData);
   }
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const {
     control,
@@ -192,239 +202,263 @@ export const UpdateTradingQuality = () => {
   // });
 
   useEffect(() => {
-    if(tradingQualityDetail){
-      const { quality_name,quality_weight,  quality_group, vat_hsn_no, machine_name } = tradingQualityDetail;
-      reset({ vat_hsn_no, quality_group, quality_weight, quality_name, machine_name })
+    if (tradingQualityDetail) {
+      const {
+        quality_name,
+        quality_weight,
+        quality_group,
+        vat_hsn_no,
+        machine_name,
+      } = tradingQualityDetail;
+      reset({
+        vat_hsn_no,
+        quality_group,
+        quality_weight,
+        quality_name,
+        machine_name,
+      });
     }
-  }, [tradingQualityDetail, reset])
+  }, [tradingQualityDetail, reset]);
 
   return (
     <div className="flex flex-col p-4">
-    <div className="flex items-center gap-5">
-      <Button onClick={goBack}>
-        <ArrowLeftOutlined />
-      </Button>
-      <h3 className="m-0 text-primary">Edit Trading Quality</h3>
-    </div>
-    <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-      <Row
-        gutter={18}
-        style={{
-          padding: "12px",
-        }}
-      >
-        <Col span={6}>
-          <Form.Item
-            label="Quality Name"
-            name="quality_name"
-            validateStatus={errors.quality_name ? "error" : ""}
-            help={errors.quality_name && errors.quality_name.message}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="quality_name"
-              render={({ field }) => {
-                return (
-                  // <Select
-                  //   showSearch
-                  //   {...field}
-                  //   placeholder="Search Quality"
-                  //   labelInValue
-                  //   allowClear
-                  //   filterOption={false}
-                  //   onChange={(newValue) => {
-                  //     field.onChange(newValue?.value);
-                  //   }}
-                  //   onSearch={(value) => {
-                  //     console.log("onSearch", value);
-                  //     searchQualityName(value);
-                  //   }}
-                  //   options={options}
-                  // />
-                  <Input {...field} placeholder="Search Quality" disabled />
-                );
-              }}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={6}>
-          <Form.Item
-            label="Quality Group"
-            name="quality_group"
-            validateStatus={errors.quality_group ? "error" : ""}
-            help={errors.quality_group && errors.quality_group.message}
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="quality_group"
-              render={({ field }) => {
-                return (
-                  <Select
-                    allowClear
-                    placeholder="Select group"
-                    {...field}
-                    options={QUALITY_GROUP_LIST}
-                  />
-                );
-              }}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={6}>
-          <Form.Item
-            label="VAT HSN No."
-            name="vat_hsn_no"
-            validateStatus={errors.vat_hsn_no ? "error" : ""}
-            help={errors.vat_hsn_no && errors.vat_hsn_no.message}
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="vat_hsn_no"
-              render={({ field }) => <Input {...field} placeholder="5407" />}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col span={6}>
-          <Form.Item
-            label="Machine"
-            name="machine_name"
-            validateStatus={errors.machine_name ? "error" : ""}
-            help={errors.machine_name && errors.machine_name.message}
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="machine_name"
-              render={({ field }) => (
-                <Select
-                  allowClear
-                  placeholder="Select Machine"
-                  {...field}
-                  options={MACHINE_LIST}
-                  disabled
-                />
-              )}
-            />
-          </Form.Item>
-        </Col>
-
-        {quality_name === 0 ? (
-          <>
-            <Col span={6}>
-              <Form.Item
-                label="Quality Name"
-                name="other_quality_name"
-                validateStatus={errors.other_quality_name ? "error" : ""}
-                help={
-                  errors.other_quality_name &&
-                  errors.other_quality_name.message
-                }
-                required={true}
-                wrapperCol={{ sm: 24 }}
-              >
-                <Controller
-                  control={control}
-                  name="other_quality_name"
-                  render={({ field }) => (
-                    <Input {...field} placeholder="60 GRAM" type="text" />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col span={6}>
-              <Form.Item
-                label="Quality Weight"
-                name="other_quality_weight"
-                validateStatus={errors.other_quality_weight ? "error" : ""}
-                help={
-                  errors.other_quality_weight &&
-                  errors.other_quality_weight.message
-                }
-                required={true}
-                wrapperCol={{ sm: 24 }}
-              >
-                <Controller
-                  control={control}
-                  name="other_quality_weight"
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      placeholder="5.6"
-                      type="number"
-                      min={0}
-                      step={0.5}
-                    />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col span={6}>
-              <Button
-                style={{ marginTop: "1.9rem" }}
-                icon={<CloseOutlined />}
-                type="primary"
-                onClick={() => {
-                  setValue("quality_name", null);
-                  setValue("other_quality_name", "");
-                  setValue("other_quality_weight", "");
-                }}
-                className="flex-none"
-              />
-            </Col>
-          </>
-        ) : (
-          <>
-            <Col span={6}></Col>
-            <Col span={6}></Col>
-            <Col span={6}></Col>
-          </>
-        )}
-
-        <Col span={6}>
-          <Form.Item
-            label="Production Type"
-            name="production_type"
-            validateStatus={errors.yarn_company_name ? "error" : ""}
-            help={
-              errors.yarn_company_name && errors.yarn_company_name.message
-            }
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="production_type"
-              render={({ field }) => {
-                return (
-                  <Checkbox {...field} checked={field.value} disabled={true}>
-                    Purchase/Trading
-                  </Checkbox>
-                );
-              }}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Flex gap={10} justify="flex-end">
-        <Button type="primary" htmlType="submit">
-          Update
+      <div className="flex items-center gap-5">
+        <Button onClick={goBack}>
+          <ArrowLeftOutlined />
         </Button>
-      </Flex>
-    </Form>
+        <h3 className="m-0 text-primary">Edit Trading Quality</h3>
+      </div>
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Quality Name"
+              name="quality_name"
+              validateStatus={errors.quality_name ? "error" : ""}
+              help={errors.quality_name && errors.quality_name.message}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="quality_name"
+                render={({ field }) => {
+                  return (
+                    // <Select
+                    //   showSearch
+                    //   {...field}
+                    //   placeholder="Search Quality"
+                    //   labelInValue
+                    //   allowClear
+                    //   filterOption={false}
+                    //   onChange={(newValue) => {
+                    //     field.onChange(newValue?.value);
+                    //   }}
+                    //   onSearch={(value) => {
+                    //     console.log("onSearch", value);
+                    //     searchQualityName(value);
+                    //   }}
+                    //   options={options}
+                    // />
+                    <Input {...field} placeholder="Search Quality" disabled />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
 
-    <DevTool control={control} />
-  </div>
-  )
-}
+          <Col span={6}>
+            <Form.Item
+              label="Quality Group"
+              name="quality_group"
+              validateStatus={errors.quality_group ? "error" : ""}
+              help={errors.quality_group && errors.quality_group.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="quality_group"
+                render={({ field }) => {
+                  return (
+                    <Select
+                      allowClear
+                      placeholder="Select group"
+                      {...field}
+                      options={QUALITY_GROUP_LIST}
+                    />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="VAT HSN No."
+              name="vat_hsn_no"
+              validateStatus={errors.vat_hsn_no ? "error" : ""}
+              help={errors.vat_hsn_no && errors.vat_hsn_no.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="vat_hsn_no"
+                render={({ field }) => <Input {...field} placeholder="5407" />}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Machine"
+              name="machine_name"
+              validateStatus={errors.machine_name ? "error" : ""}
+              help={errors.machine_name && errors.machine_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => {
+                  return (
+                    <Select
+                      {...field}
+                      allowClear
+                      placeholder="Select Machine"
+                      loading={isLoadingMachineList}
+                      options={machineListRes?.rows?.map((machine) => ({
+                        label: machine?.machine_name,
+                        value: machine?.machine_name,
+                      }))}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
+                      disabled
+                    />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          {quality_name === 0 ? (
+            <>
+              <Col span={6}>
+                <Form.Item
+                  label="Quality Name"
+                  name="other_quality_name"
+                  validateStatus={errors.other_quality_name ? "error" : ""}
+                  help={
+                    errors.other_quality_name &&
+                    errors.other_quality_name.message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="other_quality_name"
+                    render={({ field }) => (
+                      <Input {...field} placeholder="60 GRAM" type="text" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={6}>
+                <Form.Item
+                  label="Quality Weight"
+                  name="other_quality_weight"
+                  validateStatus={errors.other_quality_weight ? "error" : ""}
+                  help={
+                    errors.other_quality_weight &&
+                    errors.other_quality_weight.message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="other_quality_weight"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        placeholder="5.6"
+                        type="number"
+                        min={0}
+                        step={0.5}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={6}>
+                <Button
+                  style={{ marginTop: "1.9rem" }}
+                  icon={<CloseOutlined />}
+                  type="primary"
+                  onClick={() => {
+                    setValue("quality_name", null);
+                    setValue("other_quality_name", "");
+                    setValue("other_quality_weight", "");
+                  }}
+                  className="flex-none"
+                />
+              </Col>
+            </>
+          ) : (
+            <>
+              <Col span={6}></Col>
+              <Col span={6}></Col>
+              <Col span={6}></Col>
+            </>
+          )}
+
+          <Col span={6}>
+            <Form.Item
+              label="Production Type"
+              name="production_type"
+              validateStatus={errors.yarn_company_name ? "error" : ""}
+              help={
+                errors.yarn_company_name && errors.yarn_company_name.message
+              }
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="production_type"
+                render={({ field }) => {
+                  return (
+                    <Checkbox {...field} checked={field.value} disabled={true}>
+                      Purchase/Trading
+                    </Checkbox>
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Flex gap={10} justify="flex-end">
+          <Button type="primary" htmlType="submit">
+            Update
+          </Button>
+        </Flex>
+      </Form>
+
+      <DevTool control={control} />
+    </div>
+  );
+};

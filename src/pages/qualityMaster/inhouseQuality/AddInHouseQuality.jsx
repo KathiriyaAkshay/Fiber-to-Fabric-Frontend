@@ -24,7 +24,6 @@ import {
 } from "../../../constants/yarnStockCompany";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { MACHINE_LIST } from "../../../constants/userRole";
 import {
   addInHouseQualityRequest,
   getDesignNoDropDownRequest,
@@ -33,6 +32,7 @@ import {
 } from "../../../api/requests/qualityMaster";
 import { CloseOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -243,6 +243,18 @@ const AddInHouseQuality = () => {
 
     await addInHouseQuality(newData);
   };
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const {
     control,
@@ -734,10 +746,20 @@ const AddInHouseQuality = () => {
                   name="machine_name"
                   render={({ field }) => (
                     <Select
+                      {...field}
                       allowClear
                       placeholder="Select Machine"
-                      {...field}
-                      options={MACHINE_LIST}
+                      loading={isLoadingMachineList}
+                      options={machineListRes?.rows?.map((machine) => ({
+                        label: machine?.machine_name,
+                        value: machine?.machine_name,
+                      }))}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
                     />
                   )}
                 />
