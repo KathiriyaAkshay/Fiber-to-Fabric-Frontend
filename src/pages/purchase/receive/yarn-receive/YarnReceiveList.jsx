@@ -18,6 +18,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getYarnReceiveListRequest } from "../../../../api/requests/purchase/yarnReceive";
 import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnReceiveButton";
+import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
 
 function YarnReceiveList() {
   const [search, setSearch] = useState("");
@@ -155,6 +156,7 @@ function YarnReceiveList() {
               <EditOutlined />
             </Button>
             <DeleteYarnReceiveButton details={yarnReceiveDetails} />
+            <YarnReceiveChallanModal details={yarnReceiveDetails} />
           </Space>
         );
       },

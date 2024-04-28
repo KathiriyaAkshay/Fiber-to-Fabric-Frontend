@@ -19,8 +19,8 @@ const roleId = USER_ROLES.SUPERVISOR.role_id;
 
 const addSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().required("Please enter first name"),
+    last_name: yup.string().required("Please enter last name"),
     mobile: yup
       .string()
       .required("Please enter Contact number")
@@ -31,18 +31,19 @@ const addSupervisorSchemaResolver = yupResolver(
       .string()
       .required("Please enter email address")
       .email("Please enter valid email address"),
-    address: yup.string(),
+    address: yup.string().required("Please enter address"),
     gst_no: yup.string(),
     // .required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
+    username: yup.string().required("Please enter username"),
     adhar_no: yup
       .string()
-      // .required("Please enter Aadhar number")
+      .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
+    supervisor_type: yup.string().required("Please select supervisor type"),
   })
 );
 

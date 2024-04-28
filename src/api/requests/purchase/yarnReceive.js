@@ -27,3 +27,31 @@ export function deleteYarnReceiveRequest({ id, params }) {
     params,
   });
 }
+
+export function createYarnReceiveBillRequest({ data, params }) {
+  return api.post(`/yarn-stock/yarn-receive-challan/bill/create`, data, {
+    params,
+  });
+}
+
+export function getYarnReceiveBillByIdRequest({ id, params }) {
+  return api.get(`/yarn-stock/yarn-receive-challan/bill/get/${id}`, { params });
+}
+
+export function getYarnReceiveBillListRequest({ params }) {
+  return api.get(`/yarn-stock/yarn-receive-challan/bill/list`, {
+    params,
+  });
+}
+
+export function updateYarnReceiveBillRequest({ id, data, params }) {
+  return api.put(`/yarn-stock/yarn-receive-challan/bill/update/${id}`, data, {
+    params,
+  });
+}
+
+export function deleteYarnReceiveBillRequest({ id, params }) {
+  return api.delete(`/yarn-stock/yarn-receive-challan/bill/delete/${id}`, {
+    params,
+  });
+}

@@ -28,22 +28,24 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const updateSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().required("Please enter first name"),
+    last_name: yup.string().required("Please enter last name"),
     email: yup
       .string()
       .required("Please enter email address")
       .email("Please enter valid email address"),
-    address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
+    address: yup.string().required("Please enter address"),
+    gst_no: yup.string(),
+    // .required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
     adhar_no: yup
       .string()
-      // .required("Please enter Aadhar number")
+      .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
+    supervisor_type: yup.string().required("Please select supervisor type"),
   })
 );
 
@@ -96,6 +98,7 @@ function UpdateSupervisor() {
       });
       return res.data?.data?.user;
     },
+    enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {
