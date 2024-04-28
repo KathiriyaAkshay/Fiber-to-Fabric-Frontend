@@ -12,6 +12,7 @@ import {
   Card,
   Divider,
   Checkbox,
+  Typography,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -82,6 +83,9 @@ const AddInHouseQuality = () => {
 
   const [warpingFormArray, setWarpingFormArray] = useState([0]);
   const [weftFormArray, setWeftFormArray] = useState([0]);
+
+  const [tana, setTana] = useState(0);
+  const [wana, setWana] = useState(0);
 
   const { companyId } = useContext(GlobalContext);
 
@@ -651,9 +655,11 @@ const AddInHouseQuality = () => {
         const D = (C * tars * 106) / 9000000;
 
         setValue(`warping_weight_${indexValue}`, D.toFixed(3));
+        setTana(D.toFixed(3));
       } else {
         const D = (denier * tars * 106) / 9000000;
         setValue(`warping_weight_${indexValue}`, D.toFixed(3));
+        setTana(D.toFixed(3));
       }
     }
   };
@@ -684,9 +690,11 @@ const AddInHouseQuality = () => {
         const D = (C * pano * peak * 106) / 9000000;
 
         setValue(`weft_weight_${indexValue}`, D.toFixed(3));
+        setWana(D.toFixed(3));
       } else {
         const D = (denier * pano * peak * 106) / 9000000;
         setValue(`weft_weight_${indexValue}`, D.toFixed(3));
+        setWana(D.toFixed(3));
       }
     }
   };
@@ -1424,203 +1432,214 @@ const AddInHouseQuality = () => {
           {warpingFormArray.length
             ? warpingFormArray.map((field, index) => {
                 return (
-                  <Row
-                    key={field + "_field_warping"}
-                    gutter={18}
-                    style={{
-                      padding: "12px",
-                    }}
-                  >
-                    <Col span={6}>
-                      <Form.Item
-                        label={"Denier/Count"}
-                        name={`yarn_stock_company_id_${index}`}
-                        validateStatus={
-                          errors[`yarn_stock_company_id_${index}`]
-                            ? "error"
-                            : ""
-                        }
-                        help={
-                          errors[`yarn_stock_company_id_${index}`] &&
-                          errors[`yarn_stock_company_id_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                  <>
+                    <Row
+                      key={field + "_field_warping"}
+                      gutter={18}
+                      style={{
+                        padding: "12px",
+                      }}
+                    >
+                      <Col span={6}>
+                        <Form.Item
+                          label={"Denier/Count"}
                           name={`yarn_stock_company_id_${index}`}
-                          render={({ field }) => {
-                            return (
-                              <Select
+                          validateStatus={
+                            errors[`yarn_stock_company_id_${index}`]
+                              ? "error"
+                              : ""
+                          }
+                          help={
+                            errors[`yarn_stock_company_id_${index}`] &&
+                            errors[`yarn_stock_company_id_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`yarn_stock_company_id_${index}`}
+                            render={({ field }) => {
+                              return (
+                                <Select
+                                  {...field}
+                                  allowClear
+                                  loading={isLoadingYSCDList}
+                                  placeholder="Select denier"
+                                  options={denierOptions}
+                                  onChange={(selectedValue) => {
+                                    field.onChange(selectedValue);
+                                    calculateWarpingWeight(index);
+                                  }}
+                                />
+                              );
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={4}>
+                        <Form.Item
+                          label={"Tar/Ends"}
+                          name={`tars_${index}`}
+                          validateStatus={
+                            errors[`tars_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`tars_${index}`] &&
+                            errors[`tars_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`tars_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                type="number"
                                 {...field}
-                                allowClear
-                                loading={isLoadingYSCDList}
-                                placeholder="Select denier"
-                                options={denierOptions}
-                                onChange={(selectedValue) => {
-                                  field.onChange(selectedValue);
+                                placeholder="5560"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  if (e.target.value === "") {
+                                    setValue(`warping_tpm_${index}`, "");
+                                    setValue(`warping_weight_${index}`, "");
+                                  } else {
+                                    calculateWarpingWeight(index);
+                                  }
+                                }}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={4}>
+                        <Form.Item
+                          label={"TPM"}
+                          name={`warping_tpm_${index}`}
+                          validateStatus={
+                            errors[`warping_tpm_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`warping_tpm_${index}`] &&
+                            errors[`warping_tpm_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`warping_tpm_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                {...field}
+                                placeholder="62.00"
+                                onChange={(e) => {
+                                  field.onChange(e);
                                   calculateWarpingWeight(index);
                                 }}
                               />
-                            );
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
 
-                    <Col span={4}>
-                      <Form.Item
-                        label={"Tar/Ends"}
-                        name={`tars_${index}`}
-                        validateStatus={errors[`tars_${index}`] ? "error" : ""}
-                        help={
-                          errors[`tars_${index}`] &&
-                          errors[`tars_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`tars_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              placeholder="5560"
-                              onChange={(e) => {
-                                field.onChange(e);
-                                if (e.target.value === "") {
-                                  setValue(`warping_tpm_${index}`, "");
-                                  setValue(`warping_weight_${index}`, "");
-                                } else {
-                                  calculateWarpingWeight(index);
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={4}>
-                      <Form.Item
-                        label={"TPM"}
-                        name={`warping_tpm_${index}`}
-                        validateStatus={
-                          errors[`warping_tpm_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`warping_tpm_${index}`] &&
-                          errors[`warping_tpm_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`warping_tpm_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              placeholder="62.00"
-                              onChange={(e) => {
-                                field.onChange(e);
-                                calculateWarpingWeight(index);
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={4}>
-                      <Form.Item
-                        label={"Weight[100Mtr]"}
-                        name={`warping_weight_${index}`}
-                        validateStatus={
-                          errors[`warping_weight_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`warping_weight_${index}`] &&
-                          errors[`warping_weight_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                      <Col span={4}>
+                        <Form.Item
+                          label={"Weight[100Mtr]"}
                           name={`warping_weight_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="number"
-                              placeholder="62.00"
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={3}>
-                      <Form.Item
-                        label={"Beam Type"}
-                        name={`is_primary_${index}`}
-                        validateStatus={
-                          errors[`is_primary_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`is_primary_${index}`] &&
-                          errors[`is_primary_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`is_primary_${index}`}
-                          render={({ field }) => {
-                            return (
-                              <Checkbox
+                          validateStatus={
+                            errors[`warping_weight_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`warping_weight_${index}`] &&
+                            errors[`warping_weight_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`warping_weight_${index}`}
+                            render={({ field }) => (
+                              <Input
                                 {...field}
-                                defaultChecked={true}
-                                checked={field.value}
-                              >
-                                {" "}
-                                P/S{" "}
-                              </Checkbox>
-                            );
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    {warpingFormArray.length > 1 && (
-                      <Col span={1}>
-                        <Button
-                          style={{ marginTop: "1.9rem" }}
-                          icon={<DeleteOutlined />}
-                          type="primary"
-                          onClick={deleteWarpingDetailRow.bind(null, field)}
-                          className="flex-none"
-                        />
+                                type="number"
+                                placeholder="62.00"
+                              />
+                            )}
+                          />
+                        </Form.Item>
                       </Col>
-                    )}
 
-                    {index === warpingFormArray.length - 1 && (
-                      <Col span={1}>
-                        <Button
-                          style={{ marginTop: "1.9rem" }}
-                          icon={<PlusOutlined />}
-                          type="primary"
-                          onClick={addWarpingDetailRow.bind(null, index)}
-                          className="flex-none"
-                        />
+                      <Col span={3}>
+                        <Form.Item
+                          label={"Beam Type"}
+                          name={`is_primary_${index}`}
+                          validateStatus={
+                            errors[`is_primary_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`is_primary_${index}`] &&
+                            errors[`is_primary_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`is_primary_${index}`}
+                            render={({ field }) => {
+                              return (
+                                <Checkbox
+                                  {...field}
+                                  defaultChecked={true}
+                                  checked={field.value}
+                                >
+                                  {" "}
+                                  P/S{" "}
+                                </Checkbox>
+                              );
+                            }}
+                          />
+                        </Form.Item>
                       </Col>
-                    )}
-                  </Row>
+
+                      {warpingFormArray.length > 1 && (
+                        <Col span={1}>
+                          <Button
+                            style={{ marginTop: "1.9rem" }}
+                            icon={<DeleteOutlined />}
+                            type="primary"
+                            onClick={deleteWarpingDetailRow.bind(null, field)}
+                            className="flex-none"
+                          />
+                        </Col>
+                      )}
+
+                      {index === warpingFormArray.length - 1 && (
+                        <Col span={1}>
+                          <Button
+                            style={{ marginTop: "1.9rem" }}
+                            icon={<PlusOutlined />}
+                            type="primary"
+                            onClick={addWarpingDetailRow.bind(null, index)}
+                            className="flex-none"
+                          />
+                        </Col>
+                      )}
+                    </Row>
+
+                    <div>
+                      <Typography>
+                        Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
+                        {tana + wana}
+                      </Typography>
+                    </div>
+                  </>
                 );
               })
             : null}
@@ -1633,285 +1652,305 @@ const AddInHouseQuality = () => {
           {weftFormArray.length
             ? weftFormArray.map((field, index) => {
                 return (
-                  <Row
-                    key={field + "_field_weft"}
-                    gutter={18}
-                    style={{
-                      padding: "12px",
-                    }}
-                  >
-                    <Col span={5}>
-                      <Form.Item
-                        label={"Denier/Count"}
-                        name={`weft_yarn_stock_company_id_${index}`}
-                        validateStatus={
-                          errors[`weft_yarn_stock_company_id_${index}`]
-                            ? "error"
-                            : ""
-                        }
-                        help={
-                          errors[`weft_yarn_stock_company_id_${index}`] &&
-                          errors[`weft_yarn_stock_company_id_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                  <>
+                    <Row
+                      key={field + "_field_weft"}
+                      gutter={18}
+                      style={{
+                        padding: "12px",
+                      }}
+                    >
+                      <Col span={5}>
+                        <Form.Item
+                          label={"Denier/Count"}
                           name={`weft_yarn_stock_company_id_${index}`}
-                          render={({ field }) => {
-                            return (
-                              <Select
-                                allowClear
-                                {...field}
-                                loading={isLoadingYSCDList}
-                                placeholder="Select denier"
-                                options={denierOptions}
-                                onChange={(selectedValue) => {
-                                  field.onChange(selectedValue);
-                                  calculateWeftWeight(index);
-                                }}
-                              />
-                            );
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
+                          validateStatus={
+                            errors[`weft_yarn_stock_company_id_${index}`]
+                              ? "error"
+                              : ""
+                          }
+                          help={
+                            errors[`weft_yarn_stock_company_id_${index}`] &&
+                            errors[`weft_yarn_stock_company_id_${index}`]
+                              .message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`weft_yarn_stock_company_id_${index}`}
+                            render={({ field }) => {
+                              return (
+                                <Select
+                                  allowClear
+                                  {...field}
+                                  loading={isLoadingYSCDList}
+                                  placeholder="Select denier"
+                                  options={denierOptions}
+                                  onChange={(selectedValue) => {
+                                    field.onChange(selectedValue);
+                                    calculateWeftWeight(index);
+                                  }}
+                                />
+                              );
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
 
-                    <Col span={2}>
-                      <Form.Item
-                        label={"Pano"}
-                        name={`pano_${index}`}
-                        validateStatus={errors[`pano_${index}`] ? "error" : ""}
-                        help={
-                          errors[`pano_${index}`] &&
-                          errors[`pano_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                      <Col span={2}>
+                        <Form.Item
+                          label={"Pano"}
                           name={`pano_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="number"
-                              placeholder="54.00"
-                              onChange={(e) => {
-                                field.onChange(e);
-                                if (e.target.value === "") {
-                                  setValue(`weft_tpm_${index}`, "");
-                                  setValue(`weft_weight_${index}`, "");
-                                } else {
-                                  calculateWeftWeight(index);
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={2}>
-                      <Form.Item
-                        label={"Peak"}
-                        name={`peak_${index}`}
-                        validateStatus={errors[`peak_${index}`] ? "error" : ""}
-                        help={
-                          errors[`peak_${index}`] &&
-                          errors[`peak_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`peak_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="number"
-                              placeholder="62.00"
-                              onChange={(e) => {
-                                field.onChange(e);
-                                if (e.target.value === "") {
-                                  setValue(`weft_tpm_${index}`, "");
-                                  setValue(`weft_weight_${index}`, "");
-                                } else {
-                                  calculateWeftWeight(index);
-                                }
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={3}>
-                      <Form.Item
-                        label={"Dobby RPM"}
-                        name={`dobby_rpm_${index}`}
-                        validateStatus={
-                          errors[`dobby_rpm_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`dobby_rpm_${index}`] &&
-                          errors[`dobby_rpm_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`dobby_rpm_${index}`}
-                          render={({ field }) => (
-                            <Input {...field} type="number" placeholder="RPM" />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    <Col span={3}>
-                      <Form.Item
-                        label={"Production/Day"}
-                        name={`production_per_day_${index}`}
-                        validateStatus={
-                          errors[`production_per_day_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`production_per_day_${index}`] &&
-                          errors[`production_per_day_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name={`production_per_day_${index}`}
-                          render={({ field }) => {
-                            return (
+                          validateStatus={
+                            errors[`pano_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`pano_${index}`] &&
+                            errors[`pano_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`pano_${index}`}
+                            render={({ field }) => (
                               <Input
                                 {...field}
                                 type="number"
-                                placeholder="10"
+                                placeholder="54.00"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  if (e.target.value === "") {
+                                    setValue(`weft_tpm_${index}`, "");
+                                    setValue(`weft_weight_${index}`, "");
+                                  } else {
+                                    calculateWeftWeight(index);
+                                  }
+                                }}
                               />
-                            );
-                          }}
-                        />
-                      </Form.Item>
-                    </Col>
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
 
-                    <Col span={2}>
-                      <Form.Item
-                        label={"Read"}
-                        name={`read_${index}`}
-                        validateStatus={errors[`read_${index}`] ? "error" : ""}
-                        help={
-                          errors[`read_${index}`] &&
-                          errors[`read_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                      <Col span={2}>
+                        <Form.Item
+                          label={"Peak"}
+                          name={`peak_${index}`}
+                          validateStatus={
+                            errors[`peak_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`peak_${index}`] &&
+                            errors[`peak_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`peak_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                type="number"
+                                placeholder="62.00"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  if (e.target.value === "") {
+                                    setValue(`weft_tpm_${index}`, "");
+                                    setValue(`weft_weight_${index}`, "");
+                                  } else {
+                                    calculateWeftWeight(index);
+                                  }
+                                }}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={3}>
+                        <Form.Item
+                          label={"Dobby RPM"}
+                          name={`dobby_rpm_${index}`}
+                          validateStatus={
+                            errors[`dobby_rpm_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`dobby_rpm_${index}`] &&
+                            errors[`dobby_rpm_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`dobby_rpm_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                type="number"
+                                placeholder="RPM"
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={3}>
+                        <Form.Item
+                          label={"Production/Day"}
+                          name={`production_per_day_${index}`}
+                          validateStatus={
+                            errors[`production_per_day_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`production_per_day_${index}`] &&
+                            errors[`production_per_day_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`production_per_day_${index}`}
+                            render={({ field }) => {
+                              return (
+                                <Input
+                                  {...field}
+                                  type="number"
+                                  placeholder="10"
+                                />
+                              );
+                            }}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col span={2}>
+                        <Form.Item
+                          label={"Read"}
                           name={`read_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              placeholder="62.00"
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
+                          validateStatus={
+                            errors[`read_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`read_${index}`] &&
+                            errors[`read_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`read_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                {...field}
+                                placeholder="62.00"
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
 
-                    <Col span={2}>
-                      <Form.Item
-                        label={"TPM"}
-                        name={`weft_tpm_${index}`}
-                        validateStatus={
-                          errors[`weft_tpm_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`weft_tpm_${index}`] &&
-                          errors[`weft_tpm_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                      <Col span={2}>
+                        <Form.Item
+                          label={"TPM"}
                           name={`weft_tpm_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              type="number"
-                              placeholder="62.00"
-                              onChange={(e) => {
-                                field.onChange(e);
-                                calculateWeftWeight(index);
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
+                          validateStatus={
+                            errors[`weft_tpm_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`weft_tpm_${index}`] &&
+                            errors[`weft_tpm_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`weft_tpm_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                type="number"
+                                placeholder="62.00"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  calculateWeftWeight(index);
+                                }}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </Col>
 
-                    <Col span={3}>
-                      <Form.Item
-                        label={"Weight[100Mtr]"}
-                        name={`weft_weight_${index}`}
-                        validateStatus={
-                          errors[`weft_weight_${index}`] ? "error" : ""
-                        }
-                        help={
-                          errors[`weft_weight_${index}`] &&
-                          errors[`weft_weight_${index}`].message
-                        }
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
+                      <Col span={3}>
+                        <Form.Item
+                          label={"Weight[100Mtr]"}
                           name={`weft_weight_${index}`}
-                          render={({ field }) => (
-                            <Input
-                              type="number"
-                              {...field}
-                              placeholder="62.00"
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </Col>
-
-                    {weftFormArray.length > 1 && (
-                      <Col span={1}>
-                        <Button
-                          style={{ marginTop: "1.9rem" }}
-                          icon={<DeleteOutlined />}
-                          type="primary"
-                          onClick={deleteWeftDetailRow.bind(null, field)}
-                          className="flex-none"
-                        />
+                          validateStatus={
+                            errors[`weft_weight_${index}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`weft_weight_${index}`] &&
+                            errors[`weft_weight_${index}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`weft_weight_${index}`}
+                            render={({ field }) => (
+                              <Input
+                                type="number"
+                                {...field}
+                                placeholder="62.00"
+                              />
+                            )}
+                          />
+                        </Form.Item>
                       </Col>
-                    )}
 
-                    {index === weftFormArray.length - 1 && (
-                      <Col span={1}>
-                        <Button
-                          style={{ marginTop: "1.9rem" }}
-                          icon={<PlusOutlined />}
-                          type="primary"
-                          onClick={addWeftDetailRow.bind(null, index)}
-                          className="flex-none"
-                        />
-                      </Col>
-                    )}
-                  </Row>
+                      {weftFormArray.length > 1 && (
+                        <Col span={1}>
+                          <Button
+                            style={{ marginTop: "1.9rem" }}
+                            icon={<DeleteOutlined />}
+                            type="primary"
+                            onClick={deleteWeftDetailRow.bind(null, field)}
+                            className="flex-none"
+                          />
+                        </Col>
+                      )}
+
+                      {index === weftFormArray.length - 1 && (
+                        <Col span={1}>
+                          <Button
+                            style={{ marginTop: "1.9rem" }}
+                            icon={<PlusOutlined />}
+                            type="primary"
+                            onClick={addWeftDetailRow.bind(null, index)}
+                            className="flex-none"
+                          />
+                        </Col>
+                      )}
+                    </Row>
+
+                    <div>
+                      <Typography>
+                        Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
+                        {tana + wana}
+                      </Typography>
+                    </div>
+                  </>
                 );
               })
             : null}
