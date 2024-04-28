@@ -19,20 +19,43 @@ import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ToWords } from "to-words";
 import { createYarnReceiveBillRequest } from "../../../../api/requests/purchase/yarnReceive";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useCompanyList } from "../../../../api/hooks/company";
 import { getYarnOrderListRequest } from "../../../../api/requests/orderMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const addYarnReceiveSchema = yup.object().shape({
   order_id: yup.string().required("Please select order no."),
   receive_quantity: yup.string().required("Please enter receive quantity"),
   supplier_company_id: yup.string().required("Please select supplier company"),
   invoice_no: yup.string().required("Please enter invoice no."),
-  // yarn_stock_company_id: yup
-  //   .string()
-  //   .required("Please enter yarn stock company"),
+  yarn_stock_company_id: yup
+    .string()
+    .required("Please enter yarn stock company"),
   bill_date: yup.string().required("Please enter bill date"),
   due_date: yup.string().required("Please enter due date"),
   yarn_challan_id: yup.string().required("Please enter yarn challan"),
@@ -63,10 +86,12 @@ const addYarnReceiveSchema = yup.object().shape({
 
 const YarnReceiveChallanModal = ({ details = {} }) => {
   const {
+    id: yarn_challan_id = 0,
     challan_no = "",
     yarn_stock_company = {},
     receive_cartoon_pallet = 0,
     receive_quantity = 0,
+    yarn_stock_company_id = 0,
   } = details;
   const {
     yarn_count = 0,
@@ -80,7 +105,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
   } = yarn_stock_company;
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [supplierName, setSupplierName] = useState();
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
@@ -99,7 +124,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
 
   // fixed Value yarn for supplier_type
   const {
-    // data: dropdownSupplierListRes,
+    data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
     queryKey: [
@@ -152,8 +177,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
       handleCancel();
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -170,11 +194,18 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
       bill_date: dayjs(),
       due_date: dayjs(),
       is_discount: false,
+      receive_quantity: receive_quantity,
+      yarn_challan_id: yarn_challan_id,
+      yarn_stock_company_id: yarn_stock_company_id,
     },
   });
 
+  console.log("errors----->", errors);
+
   async function onSubmit(data) {
     delete data.yarn_company_name;
+    delete data.company_id;
+    data.net_amount = Math.ceil(data?.net_amount);
     await createYarnReceive(data);
   }
 
@@ -192,6 +223,10 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     SGST_amount = 0,
     SGST_value = 0,
     TCS_value = 0,
+    TCS_amount = 0,
+    net_amount = 0,
+    after_TDS_amount = 0,
+    round_off_amount = 0,
   } = watch();
 
   useEffect(() => {
@@ -267,6 +302,27 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [discount_brokerage_amount, setValue]);
 
+  useEffect(() => {
+    const net_amount =
+      Number(discount_brokerage_amount) +
+      Number(SGST_amount) +
+      Number(CGST_amount) +
+      Number(IGST_amount) +
+      Number(TCS_amount);
+    setValue("net_amount", parseFloat(net_amount).toFixed(2));
+    setValue(
+      "round_off_amount",
+      parseFloat(Math.ceil(net_amount) - net_amount).toFixed(2)
+    );
+  }, [
+    CGST_amount,
+    IGST_amount,
+    SGST_amount,
+    TCS_amount,
+    discount_brokerage_amount,
+    setValue,
+  ]);
+
   return (
     <>
       <Button onClick={showModal}>
@@ -295,7 +351,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
             margin: 0,
           },
           body: {
-            padding: "10px 16px",
+            padding: "16px 32px",
           },
         }}
         width={"80vw"}
@@ -307,7 +363,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                 span={24}
                 className="flex items-center justify-center border"
               >
-                <Typography.Text className="text-center">
+                <Typography.Text className="font-semibold text-center">
                   :: SHREE GANESHAY NAMAH ::
                 </Typography.Text>
               </Col>
@@ -353,21 +409,31 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               <Col span={6}>
                 <Form.Item
                   label="Supplier Company"
-                  name="supplier_id"
-                  validateStatus={errors.supplier_id ? "error" : ""}
-                  help={errors.supplier_id && errors.supplier_id.message}
+                  name="supplier_company_id"
+                  validateStatus={errors.supplier_company_id ? "error" : ""}
+                  help={
+                    errors.supplier_company_id &&
+                    errors.supplier_company_id.message
+                  }
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
                   <Controller
                     control={control}
-                    name="supplier_id"
+                    name="supplier_company_id"
                     render={({ field }) => (
                       <Select
                         {...field}
                         placeholder="Select supplier Company"
                         loading={isLoadingDropdownSupplierList}
-                        // options={supplierCompanyOptions}
+                        options={dropdownSupplierListRes?.[0]?.supplier_company?.map(
+                          ({ supplier_company = "", supplier_id = "" }) => {
+                            return {
+                              label: supplier_company,
+                              value: supplier_id,
+                            };
+                          }
+                        )}
                       />
                     )}
                   />
@@ -539,7 +605,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid">
                 {challan_no}
               </Col>
@@ -639,7 +705,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -724,14 +790,14 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
               <Col
                 span={4}
-                className="p-2 font-medium border-0 border-r border-solid"
+                className="p-2 font-semibold border-0 border-r border-solid"
               >
                 <Form.Item
                   name="is_discount"
@@ -790,7 +856,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -876,7 +942,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -962,7 +1028,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -1048,7 +1114,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -1141,7 +1207,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-solid !m-0">
+            <Row className="border-0 border-b border-solid !m-0">
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -1150,90 +1216,94 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                TCS(%)
+                Round Off
               </Col>
-              <Col span={4} className="p-2 border-0 border-r border-solid">
-                <Form.Item
-                  name="TCS_value"
-                  validateStatus={errors.TCS_value ? "error" : ""}
-                  help={errors.TCS_value && errors.TCS_value.message}
-                  required={true}
-                  // className="mb-0"
-                >
-                  <Controller
-                    control={control}
-                    name="TCS_value"
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          const currentFValue = e.target.value;
-                          const amountWithTax =
-                            Number(discount_brokerage_amount) +
-                            Number(SGST_amount) +
-                            Number(CGST_amount) +
-                            Number(IGST_amount);
-                          const TCS_amount =
-                            (Number(amountWithTax) * Number(currentFValue)) /
-                            100;
-                          setValue(
-                            "TCS_amount",
-                            parseFloat(TCS_amount).toFixed(2)
-                          );
-                        }}
-                        placeholder="0"
-                        type="number"
-                        min={0}
-                        step={0.01}
-                      />
-                    )}
-                  />
-                </Form.Item>
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2">
+                <div className="flex items-center justify-center p-1">
+                  {round_off_amount}
+                </div>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-b border-solid !m-0">
+              <Col
+                span={16}
+                className="p-2 font-semibold border-0 border-r border-solid"
+              >
+                NO DYEING GUARANTEE
+              </Col>
+              <Col
+                span={4}
+                className="p-2 font-semibold border-0 border-r border-solid"
+              >
+                NET AMOUNT
               </Col>
               <Col span={4} className="p-2">
-                <Form.Item
-                  name="TCS_amount"
-                  validateStatus={errors.TCS_amount ? "error" : ""}
-                  help={errors.TCS_amount && errors.TCS_amount.message}
-                  required={true}
-                  // className="mb-0"
-                >
-                  <Controller
-                    control={control}
-                    name="TCS_amount"
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          const amount = e.target.value;
-                          const amountWithTax =
-                            Number(discount_brokerage_amount) +
-                            Number(SGST_amount) +
-                            Number(CGST_amount) +
-                            Number(IGST_amount);
-                          if (amount && amountWithTax) {
-                            // set rate on amount change
-                            const TCS_value =
-                              (Number(amount) / Number(amountWithTax)) * 100;
-                            setValue(
-                              "TCS_value",
-                              parseFloat(TCS_value).toFixed(2)
-                            );
-                          }
-                        }}
-                        placeholder="0"
-                        type="number"
-                        min={0}
-                        step={0.01}
-                      />
-                    )}
-                  />
-                </Form.Item>
+                <div className="flex items-center justify-center p-1">
+                  {Math.ceil(net_amount)}
+                </div>
+              </Col>
+            </Row>
+            <Row className="border-0 border-b border-solid !m-0">
+              <Col span={4} className="p-2 font-semibold">
+                Rs.(IN WORDS):
+              </Col>
+              <Col span={20} className="p-2 font-semibold">
+                {Number(net_amount)
+                  ? toWords.convert(Math.ceil(net_amount))
+                  : ""}
               </Col>
             </Row>
           </Flex>
+
+          <Row className="mt-5">
+            <Col span={2} className="p-2 font-medium">
+              TDS :
+            </Col>
+            <Col span={4} className="p-2">
+              <Form.Item
+                name="TDS_amount"
+                validateStatus={errors.TDS_amount ? "error" : ""}
+                help={errors.TDS_amount && errors.TDS_amount.message}
+                required={true}
+                // className="mb-0"
+              >
+                <Controller
+                  control={control}
+                  name="TDS_amount"
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        const currentTDSAmount = e.target.value;
+                        const after_TDS_amount =
+                          Math.ceil(Number(net_amount)) -
+                          Number(currentTDSAmount);
+                        setValue(
+                          "after_TDS_amount",
+                          parseFloat(after_TDS_amount).toFixed(2)
+                        );
+                      }}
+                      placeholder="0"
+                      type="number"
+                      min={0}
+                      step={0.01}
+                    />
+                  )}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={2} className="p-2" />
+            <Col span={4} className="p-2 font-semibold">
+              After TDS AMOUNT:
+            </Col>
+            <Col span={4} className="p-2 font-semibold">
+              {after_TDS_amount}
+            </Col>
+          </Row>
+
           <Flex gap={10} justify="flex-end" className="mt-3">
             <Button htmlType="button" onClick={() => reset()}>
               Reset

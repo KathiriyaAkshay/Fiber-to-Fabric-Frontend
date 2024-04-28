@@ -3778,6 +3778,11 @@ to-regex-range@^5.0.1:
   dependencies:
     is-number "^7.0.0"
 
+to-words@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/to-words/-/to-words-4.0.1.tgz#e24f8ee3b5b3024aa65a27a66f561b7bfd660eda"
+  integrity sha512-HzVs4DbkPk1nJsBnllotj44tEXc5SIZIKpSwRanNe1fy1hFbBgipZSOmNYVvmZQMkQfBQf9mA6F6XbNU2QuA0A==
+
 toggle-selection@^1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/toggle-selection/-/toggle-selection-1.0.6.tgz#6e45b1263f2017fa0acc7d89d78b15b8bf77da32"
