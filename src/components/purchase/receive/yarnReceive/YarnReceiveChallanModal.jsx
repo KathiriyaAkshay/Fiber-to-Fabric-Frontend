@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Modal,
+  Radio,
   Row,
   Select,
   Typography,
@@ -22,6 +23,7 @@ import { createYarnReceiveBillRequest } from "../../../../api/requests/purchase/
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useCompanyList } from "../../../../api/hooks/company";
 import { getYarnOrderListRequest } from "../../../../api/requests/orderMaster";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 
 const addYarnReceiveSchema = yup.object().shape({
   order_id: yup.string().required("Please select order no."),
@@ -74,10 +76,12 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     luster_type = "",
     yarn_color = "",
     hsn_no = "",
+    yarn_company_name = "",
   } = yarn_stock_company;
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(true);
+  const [supplierName, setSupplierName] = useState();
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
 
@@ -92,6 +96,32 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
       },
       enabled: Boolean(companyId),
     });
+
+  // fixed Value yarn for supplier_type
+  const {
+    // data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: [
+      "dropdown/supplier/list",
+      {
+        company_id: companyId,
+        supplier_name: supplierName,
+        supplier_type: "yarn",
+      },
+    ],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: {
+          company_id: companyId,
+          supplier_name: supplierName,
+          supplier_type: "yarn",
+        },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId && supplierName),
+  });
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -139,6 +169,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     defaultValues: {
       bill_date: dayjs(),
       due_date: dayjs(),
+      is_discount: false,
     },
   });
 
@@ -147,12 +178,26 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     await createYarnReceive(data);
   }
 
-  const { order_id } = watch();
+  const {
+    order_id = 0,
+    discount_brokerage_amount = 0,
+    quantity_amount = 0,
+    freight_amount = 0,
+    discount_brokerage_value = 0,
+    is_discount = false,
+    CGST_amount = 0,
+    CGST_value = 0,
+    IGST_amount = 0,
+    IGST_value = 0,
+    SGST_amount = 0,
+    SGST_value = 0,
+    TCS_value = 0,
+  } = watch();
 
   useEffect(() => {
     yarnOrderListRes?.rows?.forEach((yOrder) => {
       if (yOrder?.id === order_id) {
-        const { rate = 0, freight = 0 } = yOrder;
+        const { rate = 0, freight = 0, user = {} } = yOrder;
 
         // set total amount on rate change
         setValue("quantity_rate", parseFloat(rate).toFixed(2));
@@ -163,9 +208,64 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
         setValue("freight_value", parseFloat(freight).toFixed(2));
         const freight_amount = Number(freight) * Number(receive_quantity);
         setValue("freight_amount", parseFloat(freight_amount).toFixed(2));
+
+        const { supplier = {} } = user;
+        const { supplier_name = "" } = supplier;
+        setSupplierName(supplier_name);
       }
     });
   }, [order_id, receive_quantity, setValue, yarnOrderListRes?.rows]);
+
+  useEffect(() => {
+    let qAmount = quantity_amount;
+    if (is_discount) {
+      // the discount amount
+      const discountAmount =
+        (Number(quantity_amount) * Number(discount_brokerage_value)) / 100;
+
+      // the price after discount
+      const priceAfterDiscount = quantity_amount - discountAmount;
+      qAmount = is_discount ? priceAfterDiscount : quantity_amount;
+    }
+    const discount_brokerage_amount =
+      Number(qAmount) +
+      Number(freight_amount) -
+      (Number(discount_brokerage_value) * Number(receive_quantity) || 0);
+    setValue(
+      "discount_brokerage_amount",
+      parseFloat(discount_brokerage_amount).toFixed(2)
+    );
+  }, [
+    discount_brokerage_value,
+    freight_amount,
+    is_discount,
+    quantity_amount,
+    receive_quantity,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    const SGST_amount =
+      (Number(discount_brokerage_amount) * Number(SGST_value)) / 100;
+    setValue("SGST_amount", parseFloat(SGST_amount).toFixed(2));
+
+    const CGST_amount =
+      (Number(discount_brokerage_amount) * Number(CGST_value)) / 100;
+    setValue("CGST_amount", parseFloat(CGST_amount).toFixed(2));
+
+    const IGST_amount =
+      (Number(discount_brokerage_amount) * Number(IGST_value)) / 100;
+    setValue("IGST_amount", parseFloat(IGST_amount).toFixed(2));
+
+    const amountWithTax =
+      Number(discount_brokerage_amount) +
+      Number(SGST_amount) +
+      Number(CGST_amount) +
+      Number(IGST_amount);
+    const TCS_amount = (Number(amountWithTax) * Number(TCS_value)) / 100;
+    setValue("TCS_amount", parseFloat(TCS_amount).toFixed(2));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discount_brokerage_amount, setValue]);
 
   return (
     <>
@@ -235,13 +335,39 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                         {...field}
                         placeholder="Select order"
                         loading={isLoadingYarnOrderList}
-                        options={yarnOrderListRes?.rows?.map(({ id = "" }) => ({
-                          label: id,
-                          value: id,
-                        }))}
+                        options={yarnOrderListRes?.rows?.map(
+                          ({ id = "", order_no = 0 }) => ({
+                            label: order_no,
+                            value: id,
+                          })
+                        )}
                         style={{
                           width: "100%",
                         }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col span={6}>
+                <Form.Item
+                  label="Supplier Company"
+                  name="supplier_id"
+                  validateStatus={errors.supplier_id ? "error" : ""}
+                  help={errors.supplier_id && errors.supplier_id.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="supplier_id"
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select supplier Company"
+                        loading={isLoadingDropdownSupplierList}
+                        // options={supplierCompanyOptions}
                       />
                     )}
                   />
@@ -307,16 +433,16 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
             >
               <Col span={12} className="flex flex-col self-center mb-6">
                 <Row gutter={12} className="flex-grow w-full">
-                  <Col span={10} className="font-medium">
+                  <Col span={8} className="font-medium">
                     Supplier Name
                   </Col>
-                  <Col span={14}>{"MILLGINE ( SUPPLIER_2 )"}</Col>
+                  <Col span={16}>{supplierName}</Col>
                 </Row>
                 <Row gutter={12} className="flex-grow w-full">
-                  <Col span={10} className="font-medium">
+                  <Col span={8} className="font-medium">
                     Company Name
                   </Col>
-                  <Col span={14}>{"A.R. CORPORATION"}</Col>
+                  <Col span={16}>{yarn_company_name}</Col>
                 </Row>
               </Col>
               <Col span={6}>
@@ -468,9 +594,17 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               <Col span={4} className="p-2">
                 <Form.Item
                   name="quantity_amount"
-                  validateStatus={errors.quantity_amount ? "error" : ""}
+                  validateStatus={errors.quantity_amount ? "error" : "success"}
                   help={
-                    errors.quantity_amount && errors.quantity_amount.message
+                    is_discount ? (
+                      <Typography.Text type="success">{`Disc: ${parseFloat(
+                        (Number(quantity_amount) *
+                          Number(discount_brokerage_value)) /
+                          100
+                      ).toFixed(2)}`}</Typography.Text>
+                    ) : (
+                      errors.quantity_amount && errors.quantity_amount.message
+                    )
                   }
                   required={true}
                   // className="mb-0"
@@ -505,7 +639,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-b border-solid !m-0">
+            <Row className="border-0 border-solid !m-0">
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -576,6 +710,516 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                             setValue(
                               "freight_value",
                               parseFloat(freight_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                <Form.Item
+                  name="is_discount"
+                  validateStatus={errors.is_discount ? "error" : ""}
+                  help={errors.is_discount && errors.is_discount.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="is_discount"
+                    render={({ field }) => (
+                      <Radio.Group {...field} className="flex flex-wrap">
+                        <Radio value={true}>DIS(%)</Radio>
+                        <Radio value={false}>BrKg(%)</Radio>
+                      </Radio.Group>
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="discount_brokerage_value"
+                  validateStatus={
+                    errors.discount_brokerage_value ? "error" : ""
+                  }
+                  help={
+                    errors.discount_brokerage_value &&
+                    errors.discount_brokerage_value.message
+                  }
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="discount_brokerage_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <div className="flex items-center justify-center p-1 mb-6">
+                  {discount_brokerage_amount}
+                </div>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                SGST(%)
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="SGST_value"
+                  validateStatus={errors.SGST_value ? "error" : ""}
+                  help={errors.SGST_value && errors.SGST_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="SGST_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          const SGST_amount =
+                            (Number(discount_brokerage_amount) *
+                              Number(currentFValue)) /
+                            100;
+                          setValue(
+                            "SGST_amount",
+                            parseFloat(SGST_amount).toFixed(2)
+                          );
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="SGST_amount"
+                  validateStatus={errors.SGST_amount ? "error" : ""}
+                  help={errors.SGST_amount && errors.SGST_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="SGST_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const amount = e.target.value;
+                          if (amount && discount_brokerage_amount) {
+                            // set rate on amount change
+                            const SGST_value =
+                              (Number(amount) /
+                                Number(discount_brokerage_amount)) *
+                              100;
+                            setValue(
+                              "SGST_value",
+                              parseFloat(SGST_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                CGST(%)
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="CGST_value"
+                  validateStatus={errors.CGST_value ? "error" : ""}
+                  help={errors.CGST_value && errors.CGST_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="CGST_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          const CGST_amount =
+                            (Number(discount_brokerage_amount) *
+                              Number(currentFValue)) /
+                            100;
+                          setValue(
+                            "CGST_amount",
+                            parseFloat(CGST_amount).toFixed(2)
+                          );
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="CGST_amount"
+                  validateStatus={errors.CGST_amount ? "error" : ""}
+                  help={errors.CGST_amount && errors.CGST_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="CGST_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const amount = e.target.value;
+                          if (amount && discount_brokerage_amount) {
+                            // set rate on amount change
+                            const CGST_value =
+                              (Number(amount) /
+                                Number(discount_brokerage_amount)) *
+                              100;
+                            setValue(
+                              "CGST_value",
+                              parseFloat(CGST_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                IGST(%)
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="IGST_value"
+                  validateStatus={errors.IGST_value ? "error" : ""}
+                  help={errors.IGST_value && errors.IGST_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="IGST_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          const IGST_amount =
+                            (Number(discount_brokerage_amount) *
+                              Number(currentFValue)) /
+                            100;
+                          setValue(
+                            "IGST_amount",
+                            parseFloat(IGST_amount).toFixed(2)
+                          );
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="IGST_amount"
+                  validateStatus={errors.IGST_amount ? "error" : ""}
+                  help={errors.IGST_amount && errors.IGST_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="IGST_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const amount = e.target.value;
+                          if (amount && discount_brokerage_amount) {
+                            // set rate on amount change
+                            const IGST_value =
+                              (Number(amount) /
+                                Number(discount_brokerage_amount)) *
+                              100;
+                            setValue(
+                              "IGST_value",
+                              parseFloat(IGST_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                TCS(%)
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="TCS_value"
+                  validateStatus={errors.TCS_value ? "error" : ""}
+                  help={errors.TCS_value && errors.TCS_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TCS_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          const amountWithTax =
+                            Number(discount_brokerage_amount) +
+                            Number(SGST_amount) +
+                            Number(CGST_amount) +
+                            Number(IGST_amount);
+                          const TCS_amount =
+                            (Number(amountWithTax) * Number(currentFValue)) /
+                            100;
+                          setValue(
+                            "TCS_amount",
+                            parseFloat(TCS_amount).toFixed(2)
+                          );
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="TCS_amount"
+                  validateStatus={errors.TCS_amount ? "error" : ""}
+                  help={errors.TCS_amount && errors.TCS_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TCS_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const amount = e.target.value;
+                          const amountWithTax =
+                            Number(discount_brokerage_amount) +
+                            Number(SGST_amount) +
+                            Number(CGST_amount) +
+                            Number(IGST_amount);
+                          if (amount && amountWithTax) {
+                            // set rate on amount change
+                            const TCS_value =
+                              (Number(amount) / Number(amountWithTax)) * 100;
+                            setValue(
+                              "TCS_value",
+                              parseFloat(TCS_value).toFixed(2)
+                            );
+                          }
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row className="border-0 border-solid !m-0">
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={4} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col span={2} className="p-2 border-0 border-r border-solid" />
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                TCS(%)
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  name="TCS_value"
+                  validateStatus={errors.TCS_value ? "error" : ""}
+                  help={errors.TCS_value && errors.TCS_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TCS_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const currentFValue = e.target.value;
+                          const amountWithTax =
+                            Number(discount_brokerage_amount) +
+                            Number(SGST_amount) +
+                            Number(CGST_amount) +
+                            Number(IGST_amount);
+                          const TCS_amount =
+                            (Number(amountWithTax) * Number(currentFValue)) /
+                            100;
+                          setValue(
+                            "TCS_amount",
+                            parseFloat(TCS_amount).toFixed(2)
+                          );
+                        }}
+                        placeholder="0"
+                        type="number"
+                        min={0}
+                        step={0.01}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2">
+                <Form.Item
+                  name="TCS_amount"
+                  validateStatus={errors.TCS_amount ? "error" : ""}
+                  help={errors.TCS_amount && errors.TCS_amount.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TCS_amount"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          const amount = e.target.value;
+                          const amountWithTax =
+                            Number(discount_brokerage_amount) +
+                            Number(SGST_amount) +
+                            Number(CGST_amount) +
+                            Number(IGST_amount);
+                          if (amount && amountWithTax) {
+                            // set rate on amount change
+                            const TCS_value =
+                              (Number(amount) / Number(amountWithTax)) * 100;
+                            setValue(
+                              "TCS_value",
+                              parseFloat(TCS_value).toFixed(2)
                             );
                           }
                         }}
