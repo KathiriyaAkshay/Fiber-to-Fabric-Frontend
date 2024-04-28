@@ -631,6 +631,23 @@ const AddInHouseQuality = () => {
     setWeftFormArray(newFields);
   };
 
+  const calculateTanaWana = () => {
+    let totalTana = 0;
+    warpingFormArray.forEach((field, index) => {
+      const warping_weight = getValues(`warping_weight_${index}`) ?? 0;
+      totalTana += parseFloat(warping_weight);
+    });
+
+    let totalWana = 0;
+    weftFormArray.forEach((field, index) => {
+      const weft_weight = getValues(`weft_weight_${index}`) ?? 0;
+      totalWana += parseFloat(weft_weight);
+    });
+
+    setTana(totalTana);
+    setWana(totalWana);
+  };
+
   const calculateWarpingWeight = (indexValue) => {
     const tars = parseFloat(getValues(`tars_${indexValue}`));
     const tpm = parseFloat(getValues(`warping_tpm_${indexValue}`));
@@ -655,11 +672,11 @@ const AddInHouseQuality = () => {
         const D = (C * tars * 106) / 9000000;
 
         setValue(`warping_weight_${indexValue}`, D.toFixed(3));
-        setTana(D.toFixed(3));
+        calculateTanaWana();
       } else {
         const D = (denier * tars * 106) / 9000000;
         setValue(`warping_weight_${indexValue}`, D.toFixed(3));
-        setTana(D.toFixed(3));
+        calculateTanaWana();
       }
     }
   };
@@ -690,11 +707,11 @@ const AddInHouseQuality = () => {
         const D = (C * pano * peak * 106) / 9000000;
 
         setValue(`weft_weight_${indexValue}`, D.toFixed(3));
-        setWana(D.toFixed(3));
+        calculateTanaWana();
       } else {
         const D = (denier * pano * peak * 106) / 9000000;
         setValue(`weft_weight_${indexValue}`, D.toFixed(3));
-        setWana(D.toFixed(3));
+        calculateTanaWana();
       }
     }
   };
@@ -1636,7 +1653,7 @@ const AddInHouseQuality = () => {
                     <div>
                       <Typography>
                         Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
-                        {tana + wana}
+                        {(tana + wana).toFixed(3)}
                       </Typography>
                     </div>
                   </>

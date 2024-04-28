@@ -62,6 +62,7 @@ import TradingQualityList from "./pages/qualityMaster/tradingQuality/TradingQual
 import AddInHouseQuality from "./pages/qualityMaster/inhouseQuality/AddInHouseQuality";
 import AddTradingQuality from "./pages/qualityMaster/tradingQuality/AddTradingQuality";
 import { UpdateTradingQuality } from "./pages/qualityMaster/tradingQuality/UpdateTradingQuality";
+import CostCalculator from "./pages/costCalculator";
 
 const queryClient = new QueryClient();
 
@@ -108,20 +109,21 @@ const router = createBrowserRouter([
         path: "/quality-master",
         children: [
           { index: true, element: <InHouseQualityList /> },
-          { 
-            path: "inhouse-quality", 
+          {
+            path: "inhouse-quality",
             children: [
               { index: true, element: <InHouseQualityList /> },
               { path: "add", element: <AddInHouseQuality /> },
               { path: "update/:qualityId", element: <AddInHouseQuality /> },
-            ], 
+            ],
           },
-          { path: "trading-quality", 
+          {
+            path: "trading-quality",
             children: [
               { index: true, element: <TradingQualityList /> },
               { path: "add", element: <AddTradingQuality /> },
               { path: "update/:qualityId", element: <UpdateTradingQuality /> },
-            ],  
+            ],
           },
         ],
       },
@@ -809,8 +811,8 @@ const router = createBrowserRouter([
         element: <div>seeking</div>,
       },
       {
-        path: "cost calculator",
-        element: <div>cost calculator</div>,
+        path: "cost-calculator",
+        element: <CostCalculator />,
       },
       {
         path: "today-report",
