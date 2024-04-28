@@ -17,7 +17,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { MACHINE_LIST } from "../../../constants/userRole";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 // import dayjs from "dayjs";
@@ -30,6 +29,7 @@ import {
   getTradingQualityListRequest,
   updateTradingQualityRequest,
 } from "../../../api/requests/qualityMaster";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 // const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -44,6 +44,18 @@ const TradingQualityList = () => {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: tradingQualityList, isLoading } = useQuery({
     queryKey: [
@@ -243,14 +255,17 @@ const TradingQualityList = () => {
             <Select
               allowClear
               placeholder="Select Machine"
-              loading={isLoading}
-              options={MACHINE_LIST}
+              loading={isLoadingMachineList}
               value={machine}
-              onChange={setMachine}
-              style={{
+              options={machineListRes?.rows?.map((machine) => ({
+                label: machine?.machine_name,
+                value: machine?.machine_name,
+              }))}
+              dropdownStyle={{
                 textTransform: "capitalize",
               }}
-              dropdownStyle={{
+              onChange={setMachine}
+              style={{
                 textTransform: "capitalize",
               }}
               className="min-w-40"

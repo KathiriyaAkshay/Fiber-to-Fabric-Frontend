@@ -1549,12 +1549,12 @@ export const menubarOptionsList = [
     ),
   },
   {
-    path: "cost calculator",
+    path: "cost-calculator",
     key: "Cost Calculator",
     label: (
       <Link
         className="text-current no-underline hover:text-current"
-        to="cost calculator"
+        to="cost-calculator"
       >
         Cost Calculator
       </Link>

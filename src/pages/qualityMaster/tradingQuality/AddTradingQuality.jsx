@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Checkbox,
@@ -19,12 +19,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { QUALITY_GROUP_LIST } from "../../../constants/yarnStockCompany";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { MACHINE_LIST } from "../../../constants/userRole";
 import {
   addTradingQualityRequest,
   getQualityNameDropDownRequest,
 } from "../../../api/requests/qualityMaster";
 import { CloseOutlined } from "@ant-design/icons";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -34,7 +34,7 @@ const addYSCSchemaResolver = yupResolver(
     machine_name: yup.string().required("Please enter machine name"),
     production_type: yup.boolean(),
     other_quality_name: yup.string(),
-    other_quality_weight: yup.string()
+    other_quality_weight: yup.string(),
   })
 );
 
@@ -84,20 +84,20 @@ const AddTradingQuality = () => {
   async function onSubmit(data) {
     let quality;
     if (data.quality_name === 0 || data.quality_name === "0") {
-        if (!data.other_quality_name || data.other_quality_name === "") {
-          setError("other_quality_name", {
-            type: "manual",
-            message: "Please enter quality name."
-          });
-          return;
-        }
-        if (!data.other_quality_weight || data.other_quality_weight === null) {
-          setError("other_quality_weight", {
-            type: "manual",
-            message: "Please enter quality weight."
-          });
-          return;
-        }
+      if (!data.other_quality_name || data.other_quality_name === "") {
+        setError("other_quality_name", {
+          type: "manual",
+          message: "Please enter quality name.",
+        });
+        return;
+      }
+      if (!data.other_quality_weight || data.other_quality_weight === null) {
+        setError("other_quality_weight", {
+          type: "manual",
+          message: "Please enter quality weight.",
+        });
+        return;
+      }
       quality = {
         quality_name: data.other_quality_name,
         quality_weight: parseFloat(data.other_quality_weight),
@@ -116,8 +116,21 @@ const AddTradingQuality = () => {
       machine_name: data.machine_name,
       vat_hsn_no: data.vat_hsn_no,
     };
+
     await addTradingQuality(newData);
   }
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const {
     control,
@@ -126,7 +139,7 @@ const AddTradingQuality = () => {
     reset,
     watch,
     setValue,
-    setError
+    setError,
   } = useForm({
     defaultValues: {
       quality_name: null,
@@ -227,7 +240,6 @@ const AddTradingQuality = () => {
                         field.onChange(newValue?.value);
                       }}
                       onSearch={(value) => {
-                        console.log("onSearch", value);
                         searchQualityName(value);
                       }}
                       options={options}
@@ -301,10 +313,20 @@ const AddTradingQuality = () => {
                 name="machine_name"
                 render={({ field }) => (
                   <Select
-                    allowClear
-                    placeholder="Select Machine"
                     {...field}
-                    options={MACHINE_LIST}
+                    allowClear
+                    loading={isLoadingMachineList}
+                    placeholder="Select Machine"
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
                   />
                 )}
               />
