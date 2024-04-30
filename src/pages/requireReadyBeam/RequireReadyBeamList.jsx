@@ -8,7 +8,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, /*PlusCircleOutlined*/ } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../hooks/usePagination";
@@ -79,9 +79,9 @@ const RequireReadyBeamList = () => {
     enabled: Boolean(companyId),
   });
 
-  function navigateToAdd() {
-    navigate("/require-ready-beam/add");
-  }
+  // function navigateToAdd() {
+  //   navigate("/require-ready-beam/add");
+  // }
 
   function navigateToUpdate(id) {
     navigate(`/require-ready-beam/update/${id}`);
@@ -169,11 +169,11 @@ const RequireReadyBeamList = () => {
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
           <h3 className="m-0 text-primary">Require Ready Beam List</h3>
-          <Button
+          {/* <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
             type="text"
-          />
+          /> */}
         </div>
 
         <Flex align="center" gap={10}>
