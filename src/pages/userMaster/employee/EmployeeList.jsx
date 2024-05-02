@@ -133,6 +133,7 @@ function EmployeeList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Username",
@@ -140,18 +141,21 @@ function EmployeeList() {
       key: "username",
     },
     {
-      title: "First Name",
+      title: "Employee name",
       dataIndex: "first_name",
       key: "first_name",
+      render: (text, record) => (
+        `${record?.first_name} ${record?.last_name} | ( ${record?.username} )`
+      )
     },
-    // {
-    //   title: "Last Name",
-    //   dataIndex: "last_name",
-    //   key: "last_name",
-    // },
     {
       title: "Employee Type",
       dataIndex: ["employer", "employee_type", "employee_type"],
+      key: "employee_type",
+    },
+    {
+      title: "Salary Type",
+      dataIndex: ["employer", "employee_type", "salary_type"],
       key: "employee_type",
     },
     {
