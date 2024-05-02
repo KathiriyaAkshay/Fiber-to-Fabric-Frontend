@@ -104,7 +104,12 @@ function AccountantUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
+    {
+      title: "Username", 
+      dataIndex: "username"
+    }, 
     {
       title: "Name",
       render: (userDetails) => {
@@ -124,9 +129,12 @@ function AccountantUserList() {
       key: "email",
     },
     {
-      title: "Address",
-      dataIndex: "address",
+      title: "Salary",
+      dataIndex: "salary",
       key: "address",
+      render: (text, record) => (
+        `₹${text}`
+      )
     },
     {
       title: "Action",

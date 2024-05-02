@@ -176,6 +176,7 @@ function EmployeeList() {
         const {
           tds,
           employee_type: { employee_type = "" },
+          salary,
           salary_type,
           joining_date,
           company: { company_name = "" },
@@ -189,6 +190,7 @@ function EmployeeList() {
                 { title: "Contact Number", value: mobile },
                 { title: "Username", value: username },
                 { title: "TDS", value: tds },
+                { title: "Salary", value: `₹${salary}` },
                 {
                   title: "Employee Type",
                   value: employee_type,
