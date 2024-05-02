@@ -149,6 +149,7 @@ function AccountantUserList() {
           pancard_no,
           adhar_no,
           address,
+          salary
         } = userDetails;
         return (
           <Space>
@@ -163,6 +164,7 @@ function AccountantUserList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
+                { title: "Salary", value:`₹${salary}`}
               ]}
             />
             <Button

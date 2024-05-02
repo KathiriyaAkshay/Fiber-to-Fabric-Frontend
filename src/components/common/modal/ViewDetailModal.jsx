@@ -48,7 +48,7 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         <Flex className="flex-col gap-1">
           {details?.map(({ title = "", value }) => {
             return (
-              <Row gutter={12} className="flex-grow" key={title}>
+              <Row gutter={12} className="flex-grow" style={{marginTop: "0.40rem"}} key={title}>
                 <Col span={10} className="font-medium">
                   {title}
                 </Col>
