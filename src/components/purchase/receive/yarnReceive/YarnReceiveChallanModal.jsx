@@ -76,7 +76,7 @@ const addYarnReceiveSchema = yup.object().shape({
   TCS_amount: yup.string().required("Please enter TCS amount"),
   IGST_value: yup.string().required("Please enter IGST value"),
   IGST_amount: yup.string().required("Please enter IGST amount"),
-  round_off_amount: yup.string().required("Please enter round off amount"),
+  // round_off_amount: yup.string().required("Please enter round off amount"),
   net_amount: yup.string().required("Please enter net amount"),
   TDS_amount: yup.string().required("Please enter TDS amount"),
   after_TDS_amount: yup.string().required("Please enter after TDS amount"),
@@ -205,7 +205,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
   async function onSubmit(data) {
     delete data.yarn_company_name;
     delete data.company_id;
-    data.net_amount = Math.ceil(data?.net_amount);
+    // data.net_amount = Math.ceil(data?.net_amount);
     await createYarnReceive(data);
   }
 
@@ -226,7 +226,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
     TCS_amount = 0,
     net_amount = 0,
     after_TDS_amount = 0,
-    round_off_amount = 0,
+    // round_off_amount = 0,
   } = watch();
 
   useEffect(() => {
@@ -310,10 +310,10 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
       Number(IGST_amount) +
       Number(TCS_amount);
     setValue("net_amount", parseFloat(net_amount).toFixed(2));
-    setValue(
-      "round_off_amount",
-      parseFloat(Math.ceil(net_amount) - net_amount).toFixed(2)
-    );
+    // setValue(
+    //   "round_off_amount",
+    //   parseFloat(Math.ceil(net_amount) - net_amount).toFixed(2)
+    // );
   }, [
     CGST_amount,
     IGST_amount,
@@ -1207,7 +1207,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row className="border-0 border-b border-solid !m-0">
+            {/* <Row className="border-0 border-b border-solid !m-0">
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -1224,7 +1224,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   {round_off_amount}
                 </div>
               </Col>
-            </Row>
+            </Row> */}
 
             <Row className="border-0 border-b border-solid !m-0">
               <Col
@@ -1241,7 +1241,8 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
               <Col span={4} className="p-2">
                 <div className="flex items-center justify-center p-1">
-                  {Math.ceil(net_amount)}
+                  {/* {Math.ceil(net_amount)} */}
+                  {net_amount}
                 </div>
               </Col>
             </Row>
@@ -1251,7 +1252,8 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
               <Col span={20} className="p-2 font-semibold">
                 {Number(net_amount)
-                  ? toWords.convert(Math.ceil(net_amount))
+                  ? // ? toWords.convert(Math.ceil(net_amount))
+                    toWords.convert(net_amount)
                   : ""}
               </Col>
             </Row>
@@ -1279,8 +1281,8 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                         field.onChange(e);
                         const currentTDSAmount = e.target.value;
                         const after_TDS_amount =
-                          Math.ceil(Number(net_amount)) -
-                          Number(currentTDSAmount);
+                          // Math.ceil(Number(net_amount)) - Number(currentTDSAmount);
+                          Number(net_amount) - Number(currentTDSAmount);
                         setValue(
                           "after_TDS_amount",
                           parseFloat(after_TDS_amount).toFixed(2)
