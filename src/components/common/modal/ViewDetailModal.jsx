@@ -31,6 +31,7 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         classNames={{
           header: "text-center",
         }}
+        width={"50%"}
         styles={{
           content: {
             padding: 0,
