@@ -140,16 +140,33 @@ function PartyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
-      title: "First Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
     },
     {
-      title: "Last Name",
-      dataIndex: "last_name",
+      title: "Party",
+      dataIndex: 'party',
       key: "last_name",
+      render: ( text, record) => (
+        `${record?.first_name} ${record?.last_name}`
+      )
+    },
+    {
+      title: "Ourdue day limit",
+      dataIndex: ['party', "overdue_day_limit"],
+      key: "overdue_day_limit"
+    },
+    {
+      title: "Credit limit",
+      dataIndex: ['party', "credit_limit"],
+      key: "credit_limit", 
+      render: (text, record) => (
+        `₹${text}`
+      )
     },
     {
       title: "Adhaar No",
@@ -166,11 +183,27 @@ function PartyList() {
       dataIndex: "email",
       key: "email",
     },
-    // {
-    //   title: "Address",
-    //   dataIndex: "address",
-    //   key: "address",
-    // },
+    {
+      title: "Overdue Days", 
+      dataIndex: ["party", "due_day_limit_active"], 
+      render: (text, record) => {
+        let is_active = record?.party?.due_day_limit_active
+        let id = record?.id ; 
+        return (
+          <Switch
+            loading={updatingUser && variables?.userId === id}
+            defaultChecked={is_active}
+            onChange={(is_active) => {
+              updateUser({
+                userId: id,
+                data: { due_day_limit_active: is_active },
+              });
+            }}
+          />
+        );
+      },
+
+    },
     {
       title: "Action",
       render: (userDetails) => {
@@ -184,7 +217,9 @@ function PartyList() {
           pancard_no,
           adhar_no,
           address,
+          party  
         } = userDetails;
+
         return (
           <Space>
             <ViewDetailModal
@@ -198,6 +233,12 @@ function PartyList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
+                { title: "Checker name", value: party?.checker_name}, 
+                { title: "Checker number", value: party?.checker_number },
+                { title: "Overdue day limit", value: party?.overdue_day_limit}, 
+                { title: "Credit limit", value: party?.credit_limit}, 
+                { title: "Company name", value: party?.company_name}, 
+                { title: "Company GST number", value: party?.company_gst_number}
               ]}
             />
             <Button

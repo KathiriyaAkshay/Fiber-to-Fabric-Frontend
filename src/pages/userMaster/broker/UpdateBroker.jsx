@@ -317,7 +317,7 @@ function UpdateBroker() {
                     {...field}
                     options={partyUserListRes?.partyList?.rows?.map(
                       (party) => ({
-                        label: party.first_name + " " + party.last_name,
+                        label: party.first_name + " " + party.last_name + " " + `| ( ${party?.username})`,
                         value: party.id,
                       })
                     )}
