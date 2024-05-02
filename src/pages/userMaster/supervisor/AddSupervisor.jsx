@@ -122,6 +122,7 @@ function AddSupervisor() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -144,6 +145,7 @@ function AddSupervisor() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -206,6 +208,7 @@ function AddSupervisor() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -242,6 +245,7 @@ function AddSupervisor() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -278,6 +282,7 @@ function AddSupervisor() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -296,6 +301,7 @@ function AddSupervisor() {
               validateStatus={errors.supervisor_type ? "error" : ""}
               help={errors.supervisor_type && errors.supervisor_type.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
