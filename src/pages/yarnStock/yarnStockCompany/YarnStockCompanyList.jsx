@@ -77,6 +77,7 @@ function YarnStockCompanyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Company Name",

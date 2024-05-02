@@ -258,6 +258,7 @@ function AddYarnStockCompany() {
               validateStatus={errors.yarn_count ? "error" : ""}
               help={errors.yarn_count && errors.yarn_count.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
