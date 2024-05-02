@@ -139,6 +139,7 @@ function SupplierList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Username",
@@ -214,6 +215,10 @@ function SupplierList() {
                   title: "Supplier Type",
                   value: supplier_types?.map((s) => s?.type)?.join(", "),
                 },
+                {
+                  title: "Broker", 
+                  value: `${supplier?.broker?.first_name} ${supplier?.broker?.last_name} | ( ${supplier?.broker?.username} )`
+                }
               ]}
             />
             <Button
