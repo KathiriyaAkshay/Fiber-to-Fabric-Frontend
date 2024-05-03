@@ -6,6 +6,7 @@ import {
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import {
@@ -138,6 +139,7 @@ function WastageReportTaskList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Date",
@@ -209,6 +211,11 @@ function WastageReportTaskList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (text, record) => (
+        text == "pending"?<>
+          <Tag color="red">{text}</Tag>
+        </>:<></>
+      )
     },
     {
       title: "Action",
