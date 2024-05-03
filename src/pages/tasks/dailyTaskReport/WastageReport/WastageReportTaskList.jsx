@@ -227,8 +227,10 @@ function WastageReportTaskList() {
           machine_type,
           floor,
           notes,
+          machine_from, 
+          machine_to, 
+          machine_name
         } = reportDetails;
-        const { first_name = "" } = user;
         const daysOfWeek = [
           "monday",
           "tuesday",
@@ -251,7 +253,7 @@ function WastageReportTaskList() {
               title="Wastage Report"
               className="capitalize"
               details={[
-                { title: "Name", value: first_name },
+                { title: "Assign Supervisor", value: `${user?.first_name} ${user?.last_name} | ( ${user?.username} )` },
                 {
                   title: "Date",
                   value: dayjs(createdAt).format("DD-MM-YYYY"),
@@ -260,9 +262,10 @@ function WastageReportTaskList() {
                   title: "Assign time",
                   value: dayjs(assign_time).format("HH:mm:ss"),
                 },
-                // { title: "Answer", value: "" },
-                // { title: "Comment", value: "" },
                 { title: "Machine Type", value: machine_type },
+                { title: "Machine Name", value: machine_name },
+                { title: "Machine From", value: machine_from },
+                { title: "Machine To", value: machine_to },
                 { title: "Floor", value: floor },
                 {
                   title: "Weekly",
