@@ -74,7 +74,7 @@ function MachineList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => index + 1,
+            render: (text, record, index) => ((page*pageSize) + index) + 1,
     },
     {
       title: "Machine Name",
