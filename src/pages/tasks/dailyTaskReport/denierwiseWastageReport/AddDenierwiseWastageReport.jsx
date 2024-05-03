@@ -22,6 +22,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { createDenierwiseWastageReportRequest } from "../../../../api/requests/reports/denierwiseWastageReport";
 import dayjs from "dayjs";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
+import moment from "moment" ; 
 
 const addDenierwiseWastageReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -140,6 +141,11 @@ function AddDenierwiseWastageReport() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
+  function disabledDate(current) {
+    // Can not select future dates
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -168,6 +174,7 @@ function AddDenierwiseWastageReport() {
                 name="report_date"
                 render={({ field }) => (
                   <DatePicker
+                    disabledDate={disabledDate}
                     {...field}
                     style={{
                       width: "100%",

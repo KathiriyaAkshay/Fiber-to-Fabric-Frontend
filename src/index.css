@@ -32,3 +32,7 @@ body {
 .view-in-house-quality-model {
   width: 80% !important;
 }
+
+.red-option-text{
+  color: red;
+}
