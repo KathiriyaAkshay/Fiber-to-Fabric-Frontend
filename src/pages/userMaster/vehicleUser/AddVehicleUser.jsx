@@ -242,6 +242,7 @@ function AddVehicleUser() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -278,6 +279,7 @@ function AddVehicleUser() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}

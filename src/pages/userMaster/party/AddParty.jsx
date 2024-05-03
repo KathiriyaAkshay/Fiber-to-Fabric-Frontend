@@ -130,6 +130,7 @@ function AddParty() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -152,6 +153,7 @@ function AddParty() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -214,6 +216,7 @@ function AddParty() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -251,6 +254,7 @@ function AddParty() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -288,6 +292,7 @@ function AddParty() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -306,6 +311,7 @@ function AddParty() {
               validateStatus={errors.checker_name ? "error" : ""}
               help={errors.checker_name && errors.checker_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -324,6 +330,7 @@ function AddParty() {
               validateStatus={errors.checker_number ? "error" : ""}
               help={errors.checker_number && errors.checker_number.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -362,6 +369,7 @@ function AddParty() {
                 errors.overdue_day_limit && errors.overdue_day_limit.message
               }
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -386,6 +394,7 @@ function AddParty() {
               validateStatus={errors.credit_limit ? "error" : ""}
               help={errors.credit_limit && errors.credit_limit.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -461,7 +470,7 @@ function AddParty() {
                     {...field}
                     options={brokerUserListRes?.brokerList?.rows?.map(
                       (broker) => ({
-                        label: broker.first_name + " " + broker.last_name,
+                        label: broker.first_name + " " + broker.last_name + " " + `| (${broker?.username})`,
                         value: broker.id,
                       })
                     )}

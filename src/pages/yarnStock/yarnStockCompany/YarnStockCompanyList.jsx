@@ -10,6 +10,7 @@ import DeleteYarnStockCompany from "../../../components/yarnStock/yarnStockCompa
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import moment from 'moment';
 
 function YarnStockCompanyList() {
   const navigate = useNavigate();
@@ -77,11 +78,20 @@ function YarnStockCompanyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Company Name",
       dataIndex: "yarn_company_name",
       key: "yarn_company_name",
+    },
+    {
+      title: "Stock date",
+      dataIndex: "stock_date",
+      key: "yarn_company_name",
+      render: (text, record) => (
+        moment(text).format("DD-MM-YYYY HH:MM:SS") 
+      )
     },
     {
       title: "Yarn/Fiber Type",

@@ -31,6 +31,7 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         classNames={{
           header: "text-center",
         }}
+        width={"50%"}
         styles={{
           content: {
             padding: 0,
@@ -47,7 +48,7 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
         <Flex className="flex-col gap-1">
           {details?.map(({ title = "", value }) => {
             return (
-              <Row gutter={12} className="flex-grow" key={title}>
+              <Row gutter={12} className="flex-grow" style={{marginTop: "0.40rem"}} key={title}>
                 <Col span={10} className="font-medium">
                   {title}
                 </Col>

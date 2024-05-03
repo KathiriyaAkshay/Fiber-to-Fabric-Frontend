@@ -253,6 +253,7 @@ function UpdateSupplier() {
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -302,6 +303,7 @@ function UpdateSupplier() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -324,6 +326,7 @@ function UpdateSupplier() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -361,6 +364,7 @@ function UpdateSupplier() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -378,8 +382,7 @@ function UpdateSupplier() {
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
+              wrapperCol={{ szm: 24 }}
             >
               <Controller
                 control={control}
@@ -398,6 +401,7 @@ function UpdateSupplier() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -415,7 +419,6 @@ function UpdateSupplier() {
               name="pancard_no"
               validateStatus={errors.pancard_no ? "error" : ""}
               help={errors.pancard_no && errors.pancard_no.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -454,6 +457,7 @@ function UpdateSupplier() {
               validateStatus={errors.hsn_code ? "error" : ""}
               help={errors.hsn_code && errors.hsn_code.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -484,7 +488,7 @@ function UpdateSupplier() {
                     loading={isLoadingBrokerList}
                     options={brokerUserListRes?.brokerList?.rows?.map(
                       (broker) => ({
-                        label: broker.first_name + " " + broker.last_name,
+                        label: broker.first_name + " " + broker.last_name + " " + `| (${broker?.username})`,
                         value: broker.id,
                       })
                     )}

@@ -120,6 +120,7 @@ function CollectionUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Username",
@@ -148,6 +149,9 @@ function CollectionUserList() {
       title: "Salary",
       dataIndex: "salary",
       key: "salary",
+      render: (text, record) => (
+        `₹${record?.salary}`
+      )
     },
     {
       title: "Address",
