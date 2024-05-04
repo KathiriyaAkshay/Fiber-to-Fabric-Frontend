@@ -125,17 +125,17 @@ const TradingQualityList = () => {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = tradingQualityList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, username } = user;
-      return [id, first_name, last_name, mobile, username];
+    const body = tradingQualityList?.row?.map((user, index) => {
+      const { quality_name, quality_group, production_type, is_active } = user;
+      return [index+1, quality_name, quality_group, production_type, is_active ? "Active" : "Inactive" ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "First Name", "Last Name", "Contact No", "Username"]],
+      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
       leftContent,
       rightContent,
-      title: "Employee List",
+      title: "Trading Quality List",
     });
   }
 
@@ -144,11 +144,17 @@ const TradingQualityList = () => {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Quality Name",
       dataIndex: "quality_name",
       key: "quality_name",
+    },
+    {
+      title: "Quality Group",
+      dataIndex: "quality_group",
+      key: "quality_group",
     },
     {
       title: "Production Type",

@@ -12,6 +12,7 @@ import {
   message,
   Col,
   Row,
+  Checkbox,
 } from "antd";
 import {
   EditOutlined,
@@ -95,9 +96,12 @@ const InHouseQualityList = () => {
     variables,
   } = useMutation({
     mutationFn: async ({ id, data }) => {
+      const payload = {
+        quality_detail: {...data}
+      };
       const res = await updateInHouseQualityRequest({
         id,
-        data,
+        data: payload,
         params: { company_id: companyId },
       });
       return res.data;
@@ -128,17 +132,17 @@ const InHouseQualityList = () => {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = inHouseQualityList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, username } = user;
-      return [id, first_name, last_name, mobile, username];
+    const body = inHouseQualityList?.rows?.map((detail, index) => {
+      const { quality_name, quality_group, vat_hsn_no, weight_from, weight_to, yarn_type, tpm_s, tpm_z, production_rate } = detail;
+      return [index+1, quality_name, quality_group, vat_hsn_no, "", weight_from, weight_to, yarn_type, "", tpm_s, tpm_z, production_rate, "", ""];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "First Name", "Last Name", "Contact No", "Username"]],
+      head: [["ID", "Name", "Group", "Vat HSN No.", "Ceth No.", "From", "To", "Yarn Type", "Wpm", "S", "Z", "Prod Rate", "Maker", "Speaker"]],
       leftContent,
       rightContent,
-      title: "Employee List",
+      title: "In House Quality",
     });
   }
   /**
@@ -158,6 +162,7 @@ const InHouseQualityList = () => {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Quality Name",
@@ -214,8 +219,26 @@ const InHouseQualityList = () => {
       },
       key: "status",
     },
+    {
+      title: "Show to party",
+      render: (qualityDetails) => {
+        const { show_to_party_broker, id } = qualityDetails;
+        return (
+          <Checkbox 
+            defaultChecked={show_to_party_broker} 
+            onChange={(e) => {
+              updateInHouseQuality({
+                id: id,
+                data: { show_to_party_broker: e.target.checked },
+              });
+            }} 
+          />
+        );
+      },
+      key: "status",
+    },
     // {
-    //   title: "Show to party",
+    //   title: "",
     //   dataIndex: "mobile",
     //   key: "mobile",
     // },
