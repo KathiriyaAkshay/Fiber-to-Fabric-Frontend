@@ -66,6 +66,8 @@ import CostCalculator from "./pages/costCalculator";
 import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList";
 import AddRequireReadyBeam from "./pages/requireReadyBeam/AddRequireReadyBeam";
 import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
+import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobYarnStockReportList";
+import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
 
 const queryClient = new QueryClient();
 
@@ -443,14 +445,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/job",
-        element: (
-          <div>
-            <div>job</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>job</div> },
+          { index: true, element: <div>job-taka</div> },
           {
             path: "job-taka",
             element: <div>job-taka</div>,
@@ -497,14 +493,8 @@ const router = createBrowserRouter([
           },
           {
             path: "report",
-            element: (
-              <div>
-                <div>report</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>report</div> },
+              { index: true, element: <div>beam-sent-report</div> },
               {
                 path: "beam-sent-report",
                 element: <div>beam-sent-report</div>,
@@ -523,7 +513,10 @@ const router = createBrowserRouter([
               },
               {
                 path: "job-yarn-stock-report",
-                element: <div>job-yarn-stock-report</div>,
+                children: [
+                  { index: true, element: <JobYarnStockReportList/> },
+                  { path: "add", element: <AddJobYarnStockReport /> },
+                ]
               },
               {
                 path: "job-production",
