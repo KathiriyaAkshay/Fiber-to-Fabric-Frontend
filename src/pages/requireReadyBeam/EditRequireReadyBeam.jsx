@@ -113,7 +113,6 @@ const EditRequireReadyBeam = () => {
     if (requireReadyBeamDetail) {
       const { quality_name, require_non_pasarela_beam, require_pasarela_beam, createdAt } =
         requireReadyBeamDetail.quality;
-      console.log(quality_name, require_non_pasarela_beam, require_pasarela_beam, createdAt);
       reset({
         quality: quality_name,
         require_non_pasarela_beam,

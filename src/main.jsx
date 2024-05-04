@@ -64,7 +64,6 @@ import AddTradingQuality from "./pages/qualityMaster/tradingQuality/AddTradingQu
 import { UpdateTradingQuality } from "./pages/qualityMaster/tradingQuality/UpdateTradingQuality";
 import CostCalculator from "./pages/costCalculator";
 import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList";
-import AddRequireReadyBeam from "./pages/requireReadyBeam/AddRequireReadyBeam";
 import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
 
 const queryClient = new QueryClient();
@@ -809,7 +808,6 @@ const router = createBrowserRouter([
         path: "require-ready-beam",
         children: [
           { index: true, element: <RequireReadyBeamList /> },
-          { path: "add", element: <AddRequireReadyBeam /> },
           { path: "update/:id", element: <EditRequireReadyBeam /> },
         ],
       },
