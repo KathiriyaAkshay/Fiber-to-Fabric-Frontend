@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -101,7 +100,7 @@ function AddEmployee() {
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -390,13 +389,12 @@ function AddEmployee() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -54,7 +53,7 @@ function AddAccountantUser() {
   }
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -119,7 +118,7 @@ function AddAccountantUser() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -142,7 +141,7 @@ function AddAccountantUser() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -205,7 +204,7 @@ function AddAccountantUser() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -224,7 +223,7 @@ function AddAccountantUser() {
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -243,7 +242,7 @@ function AddAccountantUser() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -280,7 +279,7 @@ function AddAccountantUser() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -322,13 +321,12 @@ function AddAccountantUser() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

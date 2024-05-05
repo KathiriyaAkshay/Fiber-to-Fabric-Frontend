@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import {
   addUserRequest,
   getPartyListRequest,
@@ -68,7 +67,7 @@ function AddBroker() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -132,7 +131,7 @@ function AddBroker() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -155,7 +154,7 @@ function AddBroker() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -218,7 +217,7 @@ function AddBroker() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -255,7 +254,7 @@ function AddBroker() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -292,7 +291,7 @@ function AddBroker() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -324,7 +323,12 @@ function AddBroker() {
                     {...field}
                     options={partyUserListRes?.partyList?.rows?.map(
                       (party) => ({
-                        label: party.first_name + " " + party.last_name + " " + `| ( ${party?.username})`,
+                        label:
+                          party.first_name +
+                          " " +
+                          party.last_name +
+                          " " +
+                          `| ( ${party?.username})`,
                         value: party.id,
                       })
                     )}
@@ -339,13 +343,12 @@ function AddBroker() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

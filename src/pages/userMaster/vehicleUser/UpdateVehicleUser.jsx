@@ -5,7 +5,6 @@ import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import {
   getVehicleUserByIdRequest,
@@ -47,7 +46,7 @@ function UpdateVehicleUser() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateUser } = useMutation({
+  const { mutateAsync: updateUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
@@ -349,13 +348,12 @@ function UpdateVehicleUser() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

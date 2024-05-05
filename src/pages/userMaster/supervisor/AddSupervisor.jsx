@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -58,7 +57,7 @@ function AddSupervisor() {
     navigate(-1);
   }
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -122,7 +121,7 @@ function AddSupervisor() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -145,7 +144,7 @@ function AddSupervisor() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -208,7 +207,7 @@ function AddSupervisor() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -245,7 +244,7 @@ function AddSupervisor() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -282,7 +281,7 @@ function AddSupervisor() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -301,7 +300,7 @@ function AddSupervisor() {
               validateStatus={errors.supervisor_type ? "error" : ""}
               help={errors.supervisor_type && errors.supervisor_type.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -351,13 +350,12 @@ function AddSupervisor() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Flex, Form, Input, Select, Table, message } from "antd";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useState } from "react";
@@ -540,7 +539,6 @@ function AddAssignRollReport() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

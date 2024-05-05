@@ -15,7 +15,6 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
@@ -374,7 +373,6 @@ function UpdateDenierwiseWastageReport() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

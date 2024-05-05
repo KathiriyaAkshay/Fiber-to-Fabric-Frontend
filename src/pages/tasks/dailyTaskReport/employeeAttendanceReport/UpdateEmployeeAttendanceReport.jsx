@@ -5,7 +5,6 @@ import { Button, Col, Flex, Form, Input, Row, Select, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
@@ -296,7 +295,6 @@ function UpdateEmployeeAttendanceReport() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

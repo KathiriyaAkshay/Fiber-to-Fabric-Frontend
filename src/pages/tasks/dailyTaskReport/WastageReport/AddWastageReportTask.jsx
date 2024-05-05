@@ -15,7 +15,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect } from "react";
@@ -466,7 +465,6 @@ function AddWastageReportTask() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

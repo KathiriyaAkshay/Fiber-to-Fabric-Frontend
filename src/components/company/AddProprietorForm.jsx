@@ -1,6 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
 import { Form, Input, Button, message, Flex } from "antd";
-import { DevTool } from "@hookform/devtools";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPartnerToCompanyRequest } from "../../api/requests/company";
 import * as yup from "yup";
@@ -150,7 +149,6 @@ const AddProprietorForm = ({ companyDetails }) => {
           </Flex>
         </Form.Item>
       </Form>
-      <DevTool control={control} />
     </>
   );
 };

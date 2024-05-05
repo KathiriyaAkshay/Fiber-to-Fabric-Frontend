@@ -12,7 +12,6 @@ import {
   Typography,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { DevTool } from "@hookform/devtools";
 import { useState } from "react";
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
@@ -887,7 +886,6 @@ const CostCalculator = () => {
         </Col>
       </Row>
 
-      <DevTool control={control} />
     </>
   );
 };

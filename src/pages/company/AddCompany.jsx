@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { createCompanyRequest } from "../../api/requests/company";
 import PhoneInput from "react-phone-number-input";
-import { DevTool } from "@hookform/devtools";
 import ForwardRefInput from "../../components/common/ForwardRefInput";
 
 const createCompanySchemaResolver = yupResolver(
@@ -562,7 +561,6 @@ function AddCompany() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

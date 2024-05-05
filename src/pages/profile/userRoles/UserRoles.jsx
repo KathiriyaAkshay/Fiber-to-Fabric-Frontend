@@ -23,7 +23,6 @@ import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { DevTool } from "@hookform/devtools";
 
 // const permissionSchema = yup.object().shape({
 //   sub_module_id: yup.number().required("Sub Module ID is required"),
@@ -259,7 +258,6 @@ function UserRoles() {
         </Row>
         <Flex className="flex-col gap-5">{renderPermissionCards()}</Flex>
       </Form>
-      <DevTool control={control} />
     </Flex>
   );
 }
