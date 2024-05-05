@@ -26,6 +26,7 @@ import SalaryTypeSpecificFields from "../../../components/userMaster/employee/Sa
 import { useCompanyList } from "../../../api/hooks/company";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -123,10 +124,7 @@ function AddEmployee() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -394,7 +392,6 @@ function AddEmployee() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

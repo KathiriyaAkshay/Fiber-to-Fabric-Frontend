@@ -16,6 +16,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.PARTY.role_id;
 
@@ -38,7 +39,7 @@ const addPartySchemaResolver = yupResolver(
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string().required("Please enter pan number"),
     // .matches(PANRegex, "Enter valid PAN number"),
-    username: yup.string(),
+    username: yup.string().required(),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -88,8 +89,7 @@ function AddParty() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -494,7 +494,6 @@ function AddParty() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

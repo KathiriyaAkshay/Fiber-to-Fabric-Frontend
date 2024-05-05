@@ -13,6 +13,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.SUPERVISOR.role_id;
 
@@ -80,8 +81,7 @@ function AddSupervisor() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -355,7 +355,6 @@ function AddSupervisor() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
