@@ -22,6 +22,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { createCheckTakaReportRequest } from "../../../../api/requests/reports/checkTakaReport";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -73,16 +74,7 @@ function AddCheckTakaReport() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      } else if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        if (err && typeof err === "string") {
-          message.error(err);
-        }
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 

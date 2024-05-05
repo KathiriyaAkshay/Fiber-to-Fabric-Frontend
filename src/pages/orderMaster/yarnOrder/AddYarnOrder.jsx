@@ -23,6 +23,7 @@ import { YARN_GRADE_LIST } from "../../../constants/orderMaster";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -111,14 +112,7 @@ function AddYarnOrder() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        message.error(err);
-      }
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 

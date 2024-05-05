@@ -24,6 +24,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import SizeBeamOrderDetail from "../../../components/orderMaster/sizeBeamOrder/SizeBeamOrderDetail";
 import { initialOrderDetail } from "../../../constants/orderMaster";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
@@ -115,14 +116,7 @@ function AddSizeBeamOrder() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        message.error(err);
-      }
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 

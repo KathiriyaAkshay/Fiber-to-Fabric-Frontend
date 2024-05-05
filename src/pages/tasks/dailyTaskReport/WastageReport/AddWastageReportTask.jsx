@@ -24,6 +24,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { createWastageReportTaskRequest } from "../../../../api/requests/reports/wastageReportTask";
 import { getSupervisorListRequest } from "../../../../api/requests/users";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const addWastageReportTaskSchemaResolver = yupResolver(
   yup.object().shape({
@@ -92,16 +93,7 @@ function AddWastageReportTask() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      } else if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        if (err && typeof err === "string") {
-          message.error(err);
-        }
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
