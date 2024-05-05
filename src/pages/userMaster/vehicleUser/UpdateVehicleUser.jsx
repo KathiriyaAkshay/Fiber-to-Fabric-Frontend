@@ -14,16 +14,20 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateVehicleUserSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().nullable(),
+    last_name: yup.string().nullable(),
     email: yup.string().email("Please enter valid email address"),
-    address: yup.string(),
-    pancard_no: yup.string(),
-    adhar_no: yup.string().matches(AadharRegex, "Enter valid Aadhar number"),
-    gst_no: yup.string(),
+    address: yup.string().nullable(),
+    pancard_no: yup.string().nullable(),
+    adhar_no: yup
+      .string()
+      .nullable()
+      .matches(AadharRegex, "Enter valid Aadhar number"),
+    gst_no: yup.string().nullable(),
     vehicleNo: yup.string().required("Please provide vehicle number"),
     vehicleName: yup.string().required("Please provide vehicle name"),
     rateType: yup.string().required("Please select rate type"),
@@ -62,10 +66,7 @@ function UpdateVehicleUser() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -106,6 +107,7 @@ function UpdateVehicleUser() {
         id: undefined,
         deletedAt: undefined,
         createdAt: undefined,
+        mobile: undefined,
         updatedAt: undefined,
         vehicle: undefined,
         salary: undefined,
@@ -136,7 +138,7 @@ function UpdateVehicleUser() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -159,7 +161,7 @@ function UpdateVehicleUser() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -196,7 +198,7 @@ function UpdateVehicleUser() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -233,7 +235,7 @@ function UpdateVehicleUser() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}

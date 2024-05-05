@@ -15,23 +15,25 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateBrokerSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().nullable(),
+    last_name: yup.string().nullable(),
     email: yup
       .string()
       .required("Please enter email address")
       .email("Please enter valid email address"),
-    address: yup.string(),
+    address: yup.string().nullable(),
     gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string(),
+    pancard_no: yup.string().nullable(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
     adhar_no: yup
       .string()
+      .nullable()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
   })
@@ -68,10 +70,7 @@ function UpdateBroker() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -120,6 +119,7 @@ function UpdateBroker() {
         id: undefined,
         deletedAt: undefined,
         createdAt: undefined,
+        mobile: undefined,
         updatedAt: undefined,
       });
     }
@@ -148,7 +148,7 @@ function UpdateBroker() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -171,7 +171,7 @@ function UpdateBroker() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -317,7 +317,12 @@ function UpdateBroker() {
                     {...field}
                     options={partyUserListRes?.partyList?.rows?.map(
                       (party) => ({
-                        label: party.first_name + " " + party.last_name + " " + `| ( ${party?.username})`,
+                        label:
+                          party.first_name +
+                          " " +
+                          party.last_name +
+                          " " +
+                          `| ( ${party?.username})`,
                         value: party.id,
                       })
                     )}

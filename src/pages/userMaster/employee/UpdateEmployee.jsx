@@ -27,6 +27,7 @@ import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/Emp
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
@@ -77,7 +78,7 @@ const updateEmployeeSchemaResolver = yupResolver(
             .required("Please provide rate per meter")
             .min(yup.ref("machineNo_from"), "To must be greater than From"),
       }),
-    shift: yup.string(),
+    shift: yup.string().nullable(),
   })
 );
 
@@ -112,10 +113,7 @@ function UpdateEmployee() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
