@@ -126,6 +126,7 @@ function EmployeeAttendanceReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+            render: (text, record, index) => ((page*pageSize) + index) + 1,
     },
     {
       title: "Date",

@@ -261,6 +261,7 @@ function UpdateEmployeeAttendanceReport() {
               validateStatus={errors.user_ids ? "error" : ""}
               help={errors.user_ids && errors.user_ids.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}

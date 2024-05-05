@@ -57,6 +57,16 @@ import GlobalContextProvider from "./contexts/GlobalContext";
 import YarnReceiveList from "./pages/purchase/receive/yarn-receive/YarnReceiveList";
 import AddYarnReceive from "./pages/purchase/receive/yarn-receive/AddYarnReceive";
 import UpdateYarnReceive from "./pages/purchase/receive/yarn-receive/UpdateYarnReceive";
+import InHouseQualityList from "./pages/qualityMaster/inhouseQuality/InHouseQualityList";
+import TradingQualityList from "./pages/qualityMaster/tradingQuality/TradingQualityList";
+import AddInHouseQuality from "./pages/qualityMaster/inhouseQuality/AddInHouseQuality";
+import AddTradingQuality from "./pages/qualityMaster/tradingQuality/AddTradingQuality";
+import { UpdateTradingQuality } from "./pages/qualityMaster/tradingQuality/UpdateTradingQuality";
+import CostCalculator from "./pages/costCalculator";
+import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList";
+import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
+import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobYarnStockReportList";
+import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
 
 const queryClient = new QueryClient();
 
@@ -101,16 +111,24 @@ const router = createBrowserRouter([
       { path: "/dashboard", element: <Dashboard /> },
       {
         path: "/quality-master",
-        element: (
-          <div>
-            <div>quality-master</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>quality-master</div> },
-          { path: "inhouse-quality", element: <div>inhouse-quality</div> },
-          { path: "trading-quality", element: <div>trading-quality</div> },
+          { index: true, element: <InHouseQualityList /> },
+          {
+            path: "inhouse-quality",
+            children: [
+              { index: true, element: <InHouseQualityList /> },
+              { path: "add", element: <AddInHouseQuality /> },
+              { path: "update/:qualityId", element: <AddInHouseQuality /> },
+            ],
+          },
+          {
+            path: "trading-quality",
+            children: [
+              { index: true, element: <TradingQualityList /> },
+              { path: "add", element: <AddTradingQuality /> },
+              { path: "update/:qualityId", element: <UpdateTradingQuality /> },
+            ],
+          },
         ],
       },
       {
@@ -426,14 +444,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/job",
-        element: (
-          <div>
-            <div>job</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>job</div> },
+          { index: true, element: <div>job-taka</div> },
           {
             path: "job-taka",
             element: <div>job-taka</div>,
@@ -480,14 +492,8 @@ const router = createBrowserRouter([
           },
           {
             path: "report",
-            element: (
-              <div>
-                <div>report</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>report</div> },
+              { index: true, element: <div>beam-sent-report</div> },
               {
                 path: "beam-sent-report",
                 element: <div>beam-sent-report</div>,
@@ -506,7 +512,10 @@ const router = createBrowserRouter([
               },
               {
                 path: "job-yarn-stock-report",
-                element: <div>job-yarn-stock-report</div>,
+                children: [
+                  { index: true, element: <JobYarnStockReportList/> },
+                  { path: "add", element: <AddJobYarnStockReport /> },
+                ]
               },
               {
                 path: "job-production",
@@ -790,15 +799,18 @@ const router = createBrowserRouter([
       },
       {
         path: "require-ready-beam",
-        element: <div>require-ready-beam</div>,
+        children: [
+          { index: true, element: <RequireReadyBeamList /> },
+          { path: "update/:id", element: <EditRequireReadyBeam /> },
+        ],
       },
       {
         path: "seeking",
         element: <div>seeking</div>,
       },
       {
-        path: "cost calculator",
-        element: <div>cost calculator</div>,
+        path: "cost-calculator",
+        element: <CostCalculator />,
       },
       {
         path: "today-report",

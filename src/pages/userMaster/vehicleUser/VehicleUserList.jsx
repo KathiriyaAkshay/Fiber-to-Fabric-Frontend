@@ -129,6 +129,7 @@ function VehicleUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index) + 1,
     },
     {
       title: "Username",
@@ -158,11 +159,20 @@ function VehicleUserList() {
       dataIndex: ["vehicle", "vehicleName"],
       key: "vehicleName",
     },
+
+    {
+      title: "Rate type",
+      dataIndex: ["vehicle", "rateType"],
+      key: "vehicleName",
+    },
     {
       title: "Rate",
       dataIndex: ["vehicle", "pricePerRate"],
       key: "pricePerRate",
-    },
+      render: (text, record) => (
+        `₹${text}`
+      )
+    }, 
     {
       title: "Address",
       dataIndex: "address",

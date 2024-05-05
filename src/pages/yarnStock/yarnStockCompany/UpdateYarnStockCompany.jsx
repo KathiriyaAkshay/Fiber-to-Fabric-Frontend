@@ -30,6 +30,8 @@ import {
 } from "../../../constants/yarnStockCompany";
 import dayjs from "dayjs";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import moment from 'moment';
+
 
 const updateYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -154,6 +156,12 @@ function UpdateYarnStockCompany() {
       setValue("yarn_denier", Math.ceil(5315 / yarn_count));
     }
   }, [setValue, yarn_count]);
+
+  const disabledDate = current => {
+    // Disable all dates before today
+    return current && current < moment().startOf('day');
+  };
+
 
   return (
     <div className="flex flex-col p-4">
@@ -305,6 +313,7 @@ function UpdateYarnStockCompany() {
               validateStatus={errors.yarn_count ? "error" : ""}
               help={errors.yarn_count && errors.yarn_count.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -432,6 +441,7 @@ function UpdateYarnStockCompany() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disabledDate}
                   />
                 )}
               />

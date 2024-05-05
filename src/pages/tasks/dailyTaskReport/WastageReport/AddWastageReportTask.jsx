@@ -192,7 +192,7 @@ function AddWastageReportTask() {
                     loading={isLoadingSupervisorList}
                     options={supervisorListRes?.supervisorList?.rows?.map(
                       (supervisor) => ({
-                        label: supervisor?.first_name,
+                        label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
                         value: supervisor?.id,
                       })
                     )}

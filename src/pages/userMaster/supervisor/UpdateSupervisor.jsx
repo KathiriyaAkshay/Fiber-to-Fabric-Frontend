@@ -154,6 +154,7 @@ function UpdateSupervisor() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -176,6 +177,7 @@ function UpdateSupervisor() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -213,6 +215,7 @@ function UpdateSupervisor() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -252,7 +255,6 @@ function UpdateSupervisor() {
               name="gst_no"
               validateStatus={errors.gst_no ? "error" : ""}
               help={errors.gst_no && errors.gst_no.message}
-              required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
@@ -272,6 +274,7 @@ function UpdateSupervisor() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -308,6 +311,7 @@ function UpdateSupervisor() {
               validateStatus={errors.supervisor_type ? "error" : ""}
               help={errors.supervisor_type && errors.supervisor_type.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -322,7 +326,7 @@ function UpdateSupervisor() {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          {/* <Col span={12}>
             <Form.Item
               label="Companies"
               name="company_ids"
@@ -350,7 +354,7 @@ function UpdateSupervisor() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
         </Row>
 
         <Flex gap={10} justify="flex-end">

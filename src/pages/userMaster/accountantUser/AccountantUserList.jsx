@@ -104,7 +104,12 @@ function AccountantUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index) + 1,
     },
+    {
+      title: "Username", 
+      dataIndex: "username"
+    }, 
     {
       title: "Name",
       render: (userDetails) => {
@@ -124,9 +129,12 @@ function AccountantUserList() {
       key: "email",
     },
     {
-      title: "Address",
-      dataIndex: "address",
+      title: "Salary",
+      dataIndex: "salary",
       key: "address",
+      render: (text, record) => (
+        `₹${text}`
+      )
     },
     {
       title: "Action",
@@ -141,6 +149,7 @@ function AccountantUserList() {
           pancard_no,
           adhar_no,
           address,
+          salary
         } = userDetails;
         return (
           <Space>
@@ -155,6 +164,7 @@ function AccountantUserList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
+                { title: "Salary", value:`₹${salary}`}
               ]}
             />
             <Button

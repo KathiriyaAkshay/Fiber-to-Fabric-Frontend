@@ -100,7 +100,7 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
   ];
 
   return (
-    <Table dataSource={bankList?.rows || []} columns={columns} rowKey={"id"} className="mt-3" />
+    <Table style={{marginTop: "1rem"}} dataSource={bankList?.rows || []} columns={columns} rowKey={"id"} className="mt-3" />
   );
 }
 

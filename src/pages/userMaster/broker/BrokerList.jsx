@@ -110,6 +110,7 @@ function BrokerList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index) + 1,
     },
     {
       title: "Username",
@@ -159,8 +160,11 @@ function BrokerList() {
           pancard_no,
           adhar_no,
           address,
+          broker
         } = userDetails;
 
+        const partyNames = broker.map(broker => `${broker.party.first_name} ${broker?.party?.last_name} | ( ${broker?.party?.username} )`);
+        const joinedPartyNames = partyNames.join(', ');
         return (
           <Space>
             <ViewDetailModal
@@ -174,6 +178,7 @@ function BrokerList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
+                { title: "Party", value:  joinedPartyNames},
               ]}
             />
             <Button

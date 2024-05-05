@@ -1,0 +1,24 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - master  # Change this to your main branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # You can choose a different runner, if needed
+
+    steps:
+    - name: multiple command
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ubuntu
+        key: ${{ secrets.DEPLOY_KEY }}
+        port: 22
+        script: |
+          cd /home/ubuntu/FtoF-FE
+          git pull origin master
+          npm install
+          sudo pm2 reload FE

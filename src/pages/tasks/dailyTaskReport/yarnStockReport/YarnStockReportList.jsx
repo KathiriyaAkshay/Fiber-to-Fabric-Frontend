@@ -165,6 +165,11 @@ function YarnStockReportList() {
       title: "Require kg",
       dataIndex: "require_stock",
       key: "require_stock",
+      render: (text, record) => (
+
+        <div className="red-option-text">{text}</div>
+        
+      )
     },
     {
       title: "Action",

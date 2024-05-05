@@ -461,3 +461,29 @@ export const YARN_COLOR_LIST = [
     label: "YELLOW GOLD",
   },
 ];
+
+export const QUALITY_GROUP_LIST = [
+  {
+    label: "GREY",
+    value: "grey"
+  }
+]
+
+export const YARN_TYPE_LIST = [
+  {
+    label: "S/Z",
+    value: "s/z"
+  },
+  {
+    label: "S",
+    value: "s"
+  },
+  {
+    label: "Z",
+    value: "z"
+  },
+  {
+    label: "Zero",
+    value: "zero"
+  }
+]
