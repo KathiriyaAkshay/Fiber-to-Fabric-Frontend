@@ -1,4 +1,3 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -25,6 +24,7 @@ import {
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import moment from "moment";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 const updateDenierwiseWastageReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -43,10 +43,6 @@ function UpdateDenierwiseWastageReport() {
   const { companyId } = useContext(GlobalContext);
 
   const [denierOptions, setDenierOptions] = useState([]);
-
-  function goBack() {
-    navigate(-1);
-  }
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -130,13 +126,22 @@ function UpdateDenierwiseWastageReport() {
 
   useEffect(() => {
     if (reportDetails) {
-      const { report_date, machine_id, notes, wastage } = reportDetails;
+      const {
+        report_date,
+        machine_id,
+        notes,
+        wastage,
+        // yarn_stock_company_id,
+        // yarn_stock_company = {},
+      } = reportDetails;
 
       reset({
         report_date: dayjs(report_date),
         machine_id,
         notes,
         wastage,
+        // yarn_company_name: yarn_stock_company?.yarn_company_name,
+        // yarn_stock_company_id,
       });
     }
   }, [reportDetails, reset]);
@@ -177,9 +182,7 @@ function UpdateDenierwiseWastageReport() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <GoBackButton />
         <h3 className="m-0 text-primary">Edit Denierwise wastage report</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
