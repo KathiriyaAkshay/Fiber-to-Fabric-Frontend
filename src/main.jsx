@@ -67,6 +67,8 @@ import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList"
 import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
 import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobYarnStockReportList";
 import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
+import GatePassList from "./pages/gatePass";
+import AddGatePass from "./pages/gatePass/addGatePass";
 
 const queryClient = new QueryClient();
 
@@ -818,7 +820,11 @@ const router = createBrowserRouter([
       },
       {
         path: "gate-pass",
-        element: <div>gate-pass</div>,
+        children: [
+          { index: true, element: <GatePassList /> },
+          { path: "add", element: <AddGatePass /> },
+          { path: "update/:id", element: <GatePassList /> },
+        ]
       },
       {
         path: "profile",
