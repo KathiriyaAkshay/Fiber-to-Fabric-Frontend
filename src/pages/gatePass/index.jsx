@@ -1,14 +1,9 @@
 import {
   Button,
   Flex,
-  Input,
-  Select,
   Space,
   Spin,
-  Switch,
   Table,
-  Typography,
-  message,
 } from "antd";
 import {
   EditOutlined,
@@ -16,35 +11,203 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
 // import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import useDebounce from "../../hooks/useDebounce";
-import {
-  getTradingQualityListRequest,
-  updateTradingQualityRequest,
-} from "../../api/requests/qualityMaster";
-import { getCompanyMachineListRequest } from "../../api/requests/machine";
+// import useDebounce from "../../hooks/useDebounce";
+import dayjs from "dayjs";
+import { getGatePassListRequest } from "../../api/requests/gatePass";
 
 const GatePassList = () => {
-  const [search, setSearch] = useState();
-  const [machine, setMachine] = useState();
+  // const [search, setSearch] = useState();
+  // const [machine, setMachine] = useState();
   // const [status, setStatus] = useState(1);
-  const debouncedSearch = useDebounce(search, 500);
-  const debouncedMachine = useDebounce(machine, 500);
+  // const debouncedSearch = useDebounce(search, 500);
+  // const debouncedMachine = useDebounce(machine, 500);
   // const debouncedStatus = useDebounce(status, 500);
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
+  const { data: gatePassList, isLoading } = useQuery({
+    queryKey: [
+      "gatePassList",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        // search: debouncedSearch,
+        // machine_name: debouncedMachine,
+        // status: debouncedStatus,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getGatePassListRequest({
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          // search: debouncedSearch,
+          // machine_name: debouncedMachine,
+          // status: debouncedStatus,
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  // const {
+  //   mutateAsync: updateTradingQuality,
+  //   isPending: updatingTradingQuality,
+  //   variables,
+  // } = useMutation({
+  //   mutationFn: async ({ id, data }) => {
+  //     const res = await updateTradingQualityRequest({
+  //       id,
+  //       data,
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data;
+  //   },
+  //   mutationKey: ["gate", "pass", "update"],
+  //   onSuccess: (res) => {
+  //     const successMessage = res?.message;
+  //     if (successMessage) {
+  //       message.success(successMessage);
+  //     }
+  //   },
+  //   onError: (error) => {
+  //     const errorMessage = error?.response?.data?.message;
+  //     if (errorMessage && typeof errorMessage === "string") {
+  //       message.error(errorMessage);
+  //     }
+  //   },
+  // });
+
+  function downloadPdf() {
+    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+
+    const body = gatePassList?.rows?.map((gatePass, index) => {
+      const { person_name, company_name, gate_pass_date, status, is_returnable, address } = gatePass;
+      return [index+1, person_name, company_name, dayjs(gate_pass_date).format("DD-MM-YYYY"), address,  status, is_returnable ? "Yes" : "No" ];
+    });
+
+    downloadUserPdf({
+      body,
+      head: [["ID", "Person Name", "Company Group", "Gate Pass Date", "Address", "Status", "Is Returnable"]],
+      leftContent,
+      rightContent,
+      title: "Gate Pass List",
+    });
+  }
+
   function navigateToAdd() {
     navigate("/gate-pass/add");
+  }
+
+  function navigateToUpdate(id) {
+    navigate(`/gate-pass/update/${id}`);
+  }
+
+  const columns = [
+    {
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Person Name",
+      dataIndex: "person_name",
+      key: "person_name",
+    },
+    {
+      title: "Company Name",
+      dataIndex: "company_name",
+      key: "company_name",
+    },
+    {
+      title: "Gate Pass Date",
+      render: (details) => {
+        return dayjs(details.gate_pass_date).format("DD-MM-YYYY")
+      }
+    },
+    {
+      title: "Address",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Is Returnable",
+      render: (details) => {
+        return details.is_returnable ? "Yes" : "No"
+      }
+    },
+    {
+      title: "Action",
+      render: (details) => {
+        return (
+          <Space>
+            <ViewDetailModal
+              title="Gate Pass Details"
+              details={[
+                { title: "Person Name", value: details.person_name },
+                { title: "Company Name", value: details.company_name },
+                { title: "Gate Pass Date", value: dayjs(details.gate_pass_date).format('DD-MM-YYYY') },
+                { title: "Status", value: details.status },
+                { title: "Is Returnable", value: details.is_returnable ? "Yes" : "No" },
+                { title: "Address", value: details.address },
+              ]}
+            />
+            <Button
+              onClick={() => {
+                navigateToUpdate(details.id);
+              }}
+            >
+              <EditOutlined />
+            </Button>
+          </Space>
+        );
+      },
+      key: "action",
+    },
+  ];
+
+  function renderTable() {
+    if (isLoading) {
+      return (
+        <Spin tip="Loading" size="large">
+          <div className="p-14" />
+        </Spin>
+      );
+    }
+
+    return (
+      <Table
+        dataSource={gatePassList?.rows || []}
+        columns={columns}
+        rowKey={"id"}
+        pagination={{
+          total: gatePassList?.rows?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
+      />
+    );
   }
 
   return (
@@ -59,8 +222,8 @@ const GatePassList = () => {
           />
         </div>
 
-        {/* <Flex align="center" gap={10}>
-          <Flex align="center" gap={10}>
+        <Flex align="center" gap={10}>
+          {/* <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Machine
             </Typography.Text>
@@ -82,22 +245,22 @@ const GatePassList = () => {
               }}
               className="min-w-40"
             />
-          </Flex>
-          <Input
+          </Flex> */}
+          {/* <Input
             placeholder="Search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-          />
+          /> */}
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!tradingQualityList?.row?.length}
+            disabled={!gatePassList?.rows?.length}
             onClick={downloadPdf}
             className="flex-none"
           />
-        </Flex> */}
+        </Flex>
       </div>
-      {/* {renderTable()} */}
+      {renderTable()}
     </div>
   );
 };
