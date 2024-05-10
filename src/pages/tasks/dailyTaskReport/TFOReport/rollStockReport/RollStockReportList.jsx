@@ -182,7 +182,6 @@ function RollStockReportList() {
                 <Table.Summary.Cell>
                   <Typography.Text>{totalWeightStock}</Typography.Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
           );
