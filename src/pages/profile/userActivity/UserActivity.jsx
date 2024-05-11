@@ -113,26 +113,26 @@ function UserActivity() {
               From
             </Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
-              allowClear={true}
             />
           </Flex>
 
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
-              allowClear={true}
             />
           </Flex>
 

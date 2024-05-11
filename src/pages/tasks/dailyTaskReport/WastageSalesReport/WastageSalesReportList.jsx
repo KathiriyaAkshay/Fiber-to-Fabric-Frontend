@@ -232,6 +232,7 @@ function WastageSalesReportList() {
               From
             </Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
@@ -244,6 +245,7 @@ function WastageSalesReportList() {
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}

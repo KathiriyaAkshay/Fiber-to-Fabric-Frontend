@@ -139,7 +139,7 @@ function WastageReportTaskList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-            render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -211,11 +211,8 @@ function WastageReportTaskList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => (
-        text == "pending"?<>
-          <Tag color="red">{text}</Tag>
-        </>:<></>
-      )
+      render: (text) =>
+        text == "pending" ? <Tag color="red">{text}</Tag> : null,
     },
     {
       title: "Action",
@@ -227,9 +224,9 @@ function WastageReportTaskList() {
           machine_type,
           floor,
           notes,
-          machine_from, 
-          machine_to, 
-          machine_name
+          machine_from,
+          machine_to,
+          machine_name,
         } = reportDetails;
         const daysOfWeek = [
           "monday",
@@ -253,7 +250,10 @@ function WastageReportTaskList() {
               title="Wastage Report"
               className="capitalize"
               details={[
-                { title: "Assign Supervisor", value: `${user?.first_name} ${user?.last_name} | ( ${user?.username} )` },
+                {
+                  title: "Assign Supervisor",
+                  value: `${user?.first_name} ${user?.last_name} | ( ${user?.username} )`,
+                },
                 {
                   title: "Date",
                   value: dayjs(createdAt).format("DD-MM-YYYY"),
@@ -332,6 +332,7 @@ function WastageReportTaskList() {
               From
             </Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
@@ -344,6 +345,7 @@ function WastageReportTaskList() {
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
