@@ -3,7 +3,7 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Checkbox,
@@ -17,15 +17,15 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { addGatePassRequest } from "../../api/requests/gatePass";
+import { getGatePassByIdRequest, updateGatePassRequest } from "../../api/requests/gatePass";
 import dayjs from "dayjs";
-
+  
 const { TextArea } = Input;
 
 const addYSCSchemaResolver = yupResolver(
@@ -37,20 +37,34 @@ const addYSCSchemaResolver = yupResolver(
   })
 );
 
-const AddGatePass = () => {
+const UpdateGatePass = () => {
   // const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const params = useParams();
+  const { gatePassId: id } = params;
   const [formArray, setFormArray] = useState([0]);
-
   function goBack() {
     navigate(-1);
   }
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: addGatePass } = useMutation({
+  const { data: gatePassDetail } = useQuery({
+    queryKey: ["gatePassDetail", "get", id, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getGatePassByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { mutateAsync: updateGatePass } = useMutation({
     mutationFn: async (data) => {
-      const res = await addGatePassRequest({
+      const res = await updateGatePassRequest({
+        id,
         data,
         params: {
           company_id: companyId,
@@ -58,7 +72,7 @@ const AddGatePass = () => {
       });
       return res.data;
     },
-    mutationKey: ["quality-master", "trading-quality", "add"],
+    mutationKey: ["gate", "pass", "update", id],
     onSuccess: (res) => {
       //   queryClient.invalidateQueries([
       //     "yarn-stock",
@@ -96,16 +110,16 @@ const AddGatePass = () => {
       }),
     };
 
-    await addGatePass(newData);
+    await updateGatePass(newData);
   }
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
     getValues,
     clearErrors,
+    reset,
     setError,
   } = useForm({
     defaultValues: {
@@ -176,13 +190,43 @@ const AddGatePass = () => {
     setFormArray(newFields);
   };
 
+  useEffect(() => {
+    if (gatePassDetail) {
+      const {
+        person_name,
+        company_name,
+        address,
+        gate_pass_date,
+        gate_pass_details
+      } = gatePassDetail.gatePass;
+      setFormArray(() => {
+        return gate_pass_details.map((item, index) => index + 1);
+      })
+      let gatePassDetails = {};
+      gate_pass_details.forEach((item, index) => {
+        gatePassDetails[`particular_${index+1}`] = item.particular;
+        gatePassDetails[`piece_${index+1}`] = item.piece;
+        gatePassDetails[`quality_${index+1}`] = item.quality;
+        gatePassDetails[`problem_in_material_${index+1}`] = item.problem_in_material;
+      })
+      reset({
+        person_name,
+        company_name,
+        address,
+        date: dayjs(gate_pass_date),
+        ...gatePassDetails
+      });
+      
+    }
+  }, [gatePassDetail, reset]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Add Gate Pass</h3>
+        <h3 className="m-0 text-primary">Update Gate Pass</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -317,7 +361,7 @@ const AddGatePass = () => {
                     </Form.Item>
                   </Col> */}
 
-                  <Col span={6}>
+                  <Col span={4}>
                     <Form.Item
                       label="Particular"
                       name={`particular_${field}`}
@@ -341,7 +385,7 @@ const AddGatePass = () => {
                     </Form.Item>
                   </Col>
 
-                  <Col span={6}>
+                  <Col span={4}>
                     <Form.Item
                       label="PIS"
                       name={`piece_${field}`}
@@ -363,7 +407,7 @@ const AddGatePass = () => {
                     </Form.Item>
                   </Col>
 
-                  <Col span={4}>
+                  <Col span={3}>
                     <Form.Item
                       label="Quality"
                       name={`quality_${field}`}
@@ -407,7 +451,7 @@ const AddGatePass = () => {
                     )}
                   </Col>
 
-                  <Col span={6}>
+                  <Col span={4}>
                     <Form.Item
                       label="Problem in Material"
                       name={`problem_in_material_${field}`}
@@ -445,18 +489,15 @@ const AddGatePass = () => {
           </div>
         </Flex>
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit">
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
 
       <DevTool control={control} />
     </div>
-  );
-};
+  )
+}
 
-export default AddGatePass;
+export default UpdateGatePass
