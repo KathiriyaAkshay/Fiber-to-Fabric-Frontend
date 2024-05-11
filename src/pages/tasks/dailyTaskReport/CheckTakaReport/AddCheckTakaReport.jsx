@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  TimePicker,
   Flex,
   Form,
   Input,
@@ -23,6 +22,7 @@ import { createCheckTakaReportRequest } from "../../../../api/requests/reports/c
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -32,7 +32,7 @@ const addCheckTakaReportSchemaResolver = yupResolver(
     machine_id: yup.string().required("Please select machine name"),
     machine_name: yup.string(),
     machine_no: yup.string().required("Please select machine number"),
-    // quality_id: yup.string().required("Please select quality"),
+    quality_id: yup.string().required("Please select quality"),
     taka_no: yup.string(),
     problem: yup.string().required("Please enter problem"),
     fault: yup.string().required("Please enter fault"),
@@ -55,6 +55,25 @@ function AddCheckTakaReport() {
     },
     enabled: Boolean(companyId),
   });
+
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "quality-master/inhouse-quality/list",
+        {
+          company_id: companyId,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
     queryKey: [
@@ -101,6 +120,9 @@ function AddCheckTakaReport() {
     data.employee_name = employeeListRes?.rows?.find(
       (e) => e.id === Number(data?.employee_id || 0)
     )?.first_name;
+
+    // delete not allowed fields
+    delete data?.machine_id;
     await createCheckTakaReport(data);
   }
 
@@ -115,7 +137,7 @@ function AddCheckTakaReport() {
     resolver: addCheckTakaReportSchemaResolver,
     defaultValues: {
       report_date: dayjs(),
-      assign_time: dayjs(),
+      // assign_time: dayjs(),
     },
   });
 
@@ -173,7 +195,7 @@ function AddCheckTakaReport() {
             </Form.Item>
           </Col>
 
-          <Col span={8}>
+          {/* <Col span={8}>
             <Form.Item
               label="Assign Time"
               name="assign_time"
@@ -196,7 +218,7 @@ function AddCheckTakaReport() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={8}>
             <Form.Item
@@ -218,6 +240,35 @@ function AddCheckTakaReport() {
                     options={employeeListRes?.rows?.map(
                       ({ id = 0, first_name = "" }) => ({
                         label: first_name,
+                        value: id,
+                      })
+                    )}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Quality"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="quality_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Quality"
+                    allowClear={true}
+                    loading={isLoadingInHouseQualityList}
+                    options={inHouseQualityList?.rows?.map(
+                      ({ id = 0, quality_name = "" }) => ({
+                        label: quality_name,
                         value: id,
                       })
                     )}

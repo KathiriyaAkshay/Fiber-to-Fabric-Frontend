@@ -29,6 +29,7 @@ import { useCurrentUser } from "../../../../api/hooks/auth";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/checkTakaReport";
 import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
+import { formatDate } from "../../../../constants/time";
 
 function CheckTakaReportList() {
   const [search, setSearch] = useState("");
@@ -87,43 +88,27 @@ function CheckTakaReportList() {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = reportListRes?.rows?.map((report) => {
+    const body = reportListRes?.rows?.map((report, index) => {
       const {
-        id,
-        createdAt,
-        assign_time,
-        machine_type,
-        floor,
-        notes,
-        comment,
-        status,
+        report_date,
+        employee_name = "",
+        machine_name = "",
+        machine_no = 0,
+        taka_no = 0,
       } = report;
       return [
-        id,
-        dayjs(createdAt).format("DD-MM-YYYY"),
-        dayjs(assign_time).format("HH:mm:ss"),
-        machine_type,
-        floor,
-        notes,
-        comment,
-        status,
+        page * pageSize + index + 1,
+        formatDate(report_date),
+        employee_name,
+        machine_name,
+        machine_no,
+        taka_no,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "Assigned Time",
-          "Machine Type",
-          "Floor",
-          "Note",
-          "Comment",
-          "Status",
-        ],
-      ],
+      head: [["ID", "Date", "Employee", "Machine", "Machine No", "Taka No"]],
       leftContent,
       rightContent,
       title: "Taka Report List",
@@ -132,33 +117,19 @@ function CheckTakaReportList() {
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
       key: "id",
+      render: (text, record, index) => page * pageSize + index + 1,
+      title: "ID",
     },
     {
       title: "Date",
-      key: "createdAt",
-      render: ({ createdAt }) => {
-        return dayjs(createdAt).format("DD-MM-YYYY");
-      },
+      key: "report_date",
+      render: ({ report_date }) => formatDate(report_date),
     },
     {
-      title: "Assigned Time",
-      key: "assign_time",
-      render: ({ assign_time }) => {
-        return dayjs(assign_time).format("HH:mm:ss");
-      },
-    },
-    {
-      title: "Machine Type",
-      dataIndex: "machine_type",
-      key: "machine_type",
-    },
-    {
-      title: "Floor",
-      dataIndex: "floor",
-      key: "floor",
+      title: "Employee",
+      dataIndex: "employee_name",
+      key: "employee_name",
     },
     {
       title: "Machine",
@@ -166,89 +137,47 @@ function CheckTakaReportList() {
       key: "machine_name",
     },
     {
-      title: "Machine From",
-      dataIndex: "machine_from",
-      key: "machine_from",
+      title: "Machine No",
+      dataIndex: "machine_no",
+      key: "machine_no",
     },
     {
-      title: "Machine To",
-      dataIndex: "machine_to",
-      key: "machine_to",
+      title: "Taka No",
+      dataIndex: "taka_no",
+      key: "taka_no",
     },
-    {
-      title: "Note",
-      dataIndex: "notes",
-      key: "notes",
-    },
-    {
-      title: "Reported Date",
-      key: "report_date",
-      render: ({ report_date }) => {
-        return report_date ? dayjs(report_date).format("DD-MM-YYYY") : null;
-      },
-    },
-    {
-      title: "Comment",
-      dataIndex: "comment",
-      key: "comment",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-    },
+    // {
+    //   title: "Problem",
+    //   dataIndex: "problem",
+    //   key: "problem",
+    // },
+    // {
+    //   title: "Fault",
+    //   dataIndex: "fault",
+    //   key: "fault",
+    // },
     {
       title: "Action",
       render: (reportDetails) => {
         const {
-          createdAt,
-          user = {},
-          assign_time,
-          machine_type,
-          floor,
-          notes,
+          report_date,
+          employee_name = "",
+          machine_name = "",
+          machine_no = 0,
+          taka_no = 0,
         } = reportDetails;
-        const { first_name = "" } = user;
-        const daysOfWeek = [
-          "monday",
-          "tuesday",
-          "wednesday",
-          "thursday",
-          "friday",
-          "saturday",
-          "sunday",
-        ];
-        let weekly = [];
-        daysOfWeek.forEach((day) => {
-          if (reportDetails[day] === true) {
-            // capitalize
-            weekly.push(day.charAt(0).toUpperCase() + day.slice(1));
-          }
-        });
+
         return (
           <Space>
             <ViewDetailModal
               title="Taka Report"
               className="capitalize"
               details={[
-                { title: "Name", value: first_name },
-                {
-                  title: "Date",
-                  value: dayjs(createdAt).format("DD-MM-YYYY"),
-                },
-                {
-                  title: "Assign time",
-                  value: dayjs(assign_time).format("HH:mm:ss"),
-                },
-                // { title: "Answer", value: "" },
-                // { title: "Comment", value: "" },
-                { title: "Machine Type", value: machine_type },
-                { title: "Floor", value: floor },
-                {
-                  title: "Weekly",
-                  value: weekly.join(", "),
-                },
-                { title: "Notes", value: notes },
+                { title: "Date", value: formatDate(report_date) },
+                { title: "Employee", value: employee_name },
+                { title: "Machine", value: machine_name },
+                { title: "Machine No", value: machine_no },
+                { title: "Taka No", value: taka_no },
               ]}
             />
             <Button
