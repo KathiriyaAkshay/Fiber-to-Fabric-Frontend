@@ -178,7 +178,7 @@ function WastageSalesReportList() {
           onChange: onPageChange,
         }}
         summary={() => {
-          if (!reportListRes) return;
+          if (!reportListRes?.row?.length) return;
 
           const totalRatePerPis = reportListRes?.row?.reduce(
             (accumulator, { rate_par_pis = 0 }) => {

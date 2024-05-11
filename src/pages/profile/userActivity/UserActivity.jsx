@@ -1,25 +1,57 @@
-import { Table } from "antd";
+import { DatePicker, Flex, Input, Select, Spin, Table, Typography } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { getUserActivityRequest } from "../../../api/requests/activity";
 import dayjs from "dayjs";
 import { ROLE_ID_USER_TYPE_MAP } from "../../../constants/userRole";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import useDebounce from "../../../hooks/useDebounce";
+import { USER_ACTIVITY_ACTION_TYPE_LIST } from "../../../constants/userActivity";
 
 function UserActivity() {
   const { companyId } = useContext(GlobalContext);
+  const [username, setUsername] = useState();
+  const debouncedUsername = useDebounce(username, 500);
+  const [toDate, setToDate] = useState();
+  const debouncedToDate = useDebounce(
+    toDate && dayjs(toDate).format("YYYY-MM-DD"),
+    500
+  );
+  const [fromDate, setFromDate] = useState();
+  const debouncedFromDate = useDebounce(
+    fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
+    500
+  );
+  const [actionSearch, setActionSearch] = useState();
+  const debouncedActionSearch = useDebounce(actionSearch, 500);
+
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: userActivityListRes } = useQuery({
+  const { data: userActivityListRes, isLoading } = useQuery({
     queryKey: [
-      "user_activity",
-      "list",
-      { company_id: companyId, pageSize: pageSize, page: page },
+      "user_activity/list",
+      {
+        company_id: companyId,
+        pageSize: pageSize,
+        page: page,
+        username: debouncedUsername,
+        toDate: debouncedToDate,
+        fromDate: debouncedFromDate,
+        action: debouncedActionSearch,
+      },
     ],
     queryFn: async () => {
       const res = await getUserActivityRequest({
-        params: { company_id: companyId, pageSize: pageSize, page: page },
+        params: {
+          company_id: companyId,
+          pageSize: pageSize,
+          page: page,
+          username: debouncedUsername,
+          toDate: debouncedToDate,
+          fromDate: debouncedFromDate,
+          action: debouncedActionSearch,
+        },
       });
       return res.data?.data;
     },
@@ -71,20 +103,76 @@ function UserActivity() {
 
   return (
     <div className="flex flex-col gap-2 p-4">
-      <div className="flex items-center gap-5">
-        <h3 className="m-0 text-primary">Userwise Activity</h3>
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h3 className="m-0 text-primary">Userwise Activity</h3>
+        </div>
+        <Flex align="center" gap={10} wrap="wrap">
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              From
+            </Typography.Text>
+            <DatePicker
+              style={{
+                width: "200px",
+              }}
+              format="YYYY-MM-DD"
+              value={fromDate}
+              onChange={setFromDate}
+              allowClear={true}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+            <DatePicker
+              style={{
+                width: "200px",
+              }}
+              format="YYYY-MM-DD"
+              value={toDate}
+              onChange={setToDate}
+              allowClear={true}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Action
+            </Typography.Text>
+            <Select
+              placeholder="Action"
+              options={USER_ACTIVITY_ACTION_TYPE_LIST}
+              value={actionSearch}
+              onChange={setActionSearch}
+              className="min-w-40"
+              allowClear={true}
+            />
+          </Flex>
+
+          <Input
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            style={{
+              width: "200px",
+            }}
+          />
+        </Flex>
       </div>
-      <Table
-        dataSource={userActivityListRes?.rows || []}
-        columns={columns}
-        rowKey={"id"}
-        pagination={{
-          total: userActivityListRes?.count || 0,
-          showSizeChanger: true,
-          onShowSizeChange: onShowSizeChange,
-          onChange: onPageChange,
-        }}
-      />
+      <Spin spinning={isLoading}>
+        <Table
+          dataSource={userActivityListRes?.rows || []}
+          columns={columns}
+          rowKey={"id"}
+          pagination={{
+            total: userActivityListRes?.count || 0,
+            showSizeChanger: true,
+            onShowSizeChange: onShowSizeChange,
+            onChange: onPageChange,
+          }}
+        />
+      </Spin>
     </div>
   );
 }
