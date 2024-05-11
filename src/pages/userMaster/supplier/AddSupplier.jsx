@@ -52,7 +52,7 @@ const addSupplierSchemaResolver = yupResolver(
     // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string().required(),
     supplier_company: yup.string().required(),
-    broker_id: yup.string().required(),
+    broker_id: yup.string().required("Please select broker"),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -68,6 +68,7 @@ const addSupplierSchemaResolver = yupResolver(
             "Invalid supplier type. Must be one of: purchase/trading, job, yarn, other, re-work"
           )
       ),
+    supplier_name: yup.string().required("Please enter supplier name"),
   })
 );
 
@@ -496,6 +497,7 @@ function AddSupplier() {
               validateStatus={errors.broker_id ? "error" : ""}
               help={errors.broker_id && errors.broker_id.message}
               wrapperCol={{ sm: 24 }}
+              required={true}
             >
               <Controller
                 control={control}
@@ -533,7 +535,6 @@ function AddSupplier() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
