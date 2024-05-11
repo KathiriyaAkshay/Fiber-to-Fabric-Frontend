@@ -1,4 +1,3 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -22,16 +21,18 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { createCheckTakaReportRequest } from "../../../../api/requests/reports/checkTakaReport";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { getEmployeeListRequest } from "../../../../api/requests/users";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
     report_date: yup.string().required("Please enter date"),
     employee_id: yup.string().required("Please select employee"),
-    employee_name: yup.string().required("Please enter employee name"),
+    // employee_name: yup.string().required("Please enter employee name"),
     machine_id: yup.string().required("Please select machine name"),
     machine_name: yup.string(),
     machine_no: yup.string().required("Please select machine number"),
-    quality_id: yup.string().required("Please select quality"),
+    // quality_id: yup.string().required("Please select quality"),
     taka_no: yup.string(),
     problem: yup.string().required("Please enter problem"),
     fault: yup.string().required("Please enter fault"),
@@ -51,6 +52,24 @@ function AddCheckTakaReport() {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data?.data?.empoloyeeList;
     },
     enabled: Boolean(companyId),
   });
@@ -77,11 +96,11 @@ function AddCheckTakaReport() {
     },
   });
 
-  function goBack() {
-    navigate(-1);
-  }
-
   async function onSubmit(data) {
+    // find employee with selected id and set employee_name = first_name of employee
+    data.employee_name = employeeListRes?.rows?.find(
+      (e) => e.id === Number(data?.employee_id || 0)
+    )?.first_name;
     await createCheckTakaReport(data);
   }
 
@@ -100,7 +119,7 @@ function AddCheckTakaReport() {
     },
   });
 
-  console.log("errors----->", errors);
+  // console.log("errors----->", errors);
   const { machine_id, machine_no } = watch();
 
   useEffect(() => {
@@ -119,9 +138,7 @@ function AddCheckTakaReport() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <GoBackButton />
         <h3 className="m-0 text-primary">New Taka Report</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -184,15 +201,28 @@ function AddCheckTakaReport() {
           <Col span={8}>
             <Form.Item
               label="Employee Name"
-              name="employee_name"
-              validateStatus={errors.employee_name ? "error" : ""}
-              help={errors.employee_name && errors.employee_name.message}
+              name="employee_id"
+              validateStatus={errors.employee_id ? "error" : ""}
+              help={errors.employee_id && errors.employee_id.message}
               required={true}
             >
               <Controller
                 control={control}
-                name="employee_name"
-                render={({ field }) => <Input {...field} placeholder="Name" />}
+                name="employee_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Employee"
+                    allowClear
+                    loading={isLoadingEmployeeList}
+                    options={employeeListRes?.rows?.map(
+                      ({ id = 0, first_name = "" }) => ({
+                        label: first_name,
+                        value: id,
+                      })
+                    )}
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -350,7 +380,6 @@ function AddCheckTakaReport() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
