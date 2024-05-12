@@ -5,7 +5,6 @@ import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import {
   getCollectionUserByIdRequest,
@@ -14,17 +13,19 @@ import {
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateCollectionUserSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().nullable(),
+    last_name: yup.string().nullable(),
     email: yup.string().email("Please enter valid email address"),
-    address: yup.string(),
-    gst_no: yup.string(),
-    pancard_no: yup.string(),
+    address: yup.string().nullable(),
+    gst_no: yup.string().nullable(),
+    pancard_no: yup.string().nullable(),
     adhar_no: yup
       .string()
+      .nullable()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
     salary: yup.string().required("Please provide salary"),
@@ -43,7 +44,7 @@ function UpdateCollectionUser() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateUser } = useMutation({
+  const { mutateAsync: updateUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
@@ -62,10 +63,7 @@ function UpdateCollectionUser() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -102,6 +100,7 @@ function UpdateCollectionUser() {
         id: undefined,
         deletedAt: undefined,
         createdAt: undefined,
+        mobile: undefined,
         updatedAt: undefined,
       });
     }
@@ -130,7 +129,7 @@ function UpdateCollectionUser() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -153,7 +152,7 @@ function UpdateCollectionUser() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -172,7 +171,7 @@ function UpdateCollectionUser() {
               validateStatus={errors.email ? "error" : ""}
               help={errors.email && errors.email.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -191,7 +190,7 @@ function UpdateCollectionUser() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -228,7 +227,7 @@ function UpdateCollectionUser() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -285,13 +284,12 @@ function UpdateCollectionUser() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

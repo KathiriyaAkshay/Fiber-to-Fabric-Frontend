@@ -36,7 +36,7 @@ function PartyList() {
   const [dueDay, setDueDay] = useState(undefined);
   const [creditLimitFrom, setCreditLimitFrom] = useState(undefined);
   const [creditLimitTo, setCreditLimitTo] = useState(undefined);
-  const [due_day_active, setDueDayActive] = useState(true);
+  const [due_day_active, setDueDayActive] = useState();
   const debouncedSearch = useDebounce(search, 500);
   const debouncedDueDay = useDebounce(dueDay, 500);
   const debouncedCreditLimitTo = useDebounce(creditLimitTo, 500);
@@ -140,7 +140,7 @@ function PartyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Username",
@@ -149,24 +149,20 @@ function PartyList() {
     },
     {
       title: "Party",
-      dataIndex: 'party',
+      dataIndex: "party",
       key: "last_name",
-      render: ( text, record) => (
-        `${record?.first_name} ${record?.last_name}`
-      )
+      render: (text, record) => `${record?.first_name} ${record?.last_name}`,
     },
     {
       title: "Ourdue day limit",
-      dataIndex: ['party', "overdue_day_limit"],
-      key: "overdue_day_limit"
+      dataIndex: ["party", "overdue_day_limit"],
+      key: "overdue_day_limit",
     },
     {
       title: "Credit limit",
-      dataIndex: ['party', "credit_limit"],
-      key: "credit_limit", 
-      render: (text, record) => (
-        `₹${text}`
-      )
+      dataIndex: ["party", "credit_limit"],
+      key: "credit_limit",
+      render: (text) => `₹${text}`,
     },
     {
       title: "Adhaar No",
@@ -184,11 +180,11 @@ function PartyList() {
       key: "email",
     },
     {
-      title: "Overdue Days", 
-      dataIndex: ["party", "due_day_limit_active"], 
+      title: "Overdue Days",
+      dataIndex: ["party", "due_day_limit_active"],
       render: (text, record) => {
-        let is_active = record?.party?.due_day_limit_active
-        let id = record?.id ; 
+        let is_active = record?.party?.due_day_limit_active;
+        let id = record?.id;
         return (
           <Switch
             loading={updatingUser && variables?.userId === id}
@@ -202,7 +198,6 @@ function PartyList() {
           />
         );
       },
-
     },
     {
       title: "Action",
@@ -217,7 +212,7 @@ function PartyList() {
           pancard_no,
           adhar_no,
           address,
-          party  
+          party,
         } = userDetails;
 
         return (
@@ -233,12 +228,15 @@ function PartyList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
-                { title: "Checker name", value: party?.checker_name}, 
+                { title: "Checker name", value: party?.checker_name },
                 { title: "Checker number", value: party?.checker_number },
-                { title: "Overdue day limit", value: party?.overdue_day_limit}, 
-                { title: "Credit limit", value: party?.credit_limit}, 
-                { title: "Company name", value: party?.company_name}, 
-                { title: "Company GST number", value: party?.company_gst_number}
+                { title: "Overdue day limit", value: party?.overdue_day_limit },
+                { title: "Credit limit", value: party?.credit_limit },
+                { title: "Company name", value: party?.company_name },
+                {
+                  title: "Company GST number",
+                  value: party?.company_gst_number,
+                },
               ]}
             />
             <Button

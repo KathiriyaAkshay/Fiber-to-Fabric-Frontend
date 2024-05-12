@@ -1,3 +1,6 @@
+import { Avatar } from "antd";
+// import BeamCard from "../assets/svg/report-icons/beam-card.svg?react";
+
 export const ASSIGN_TIME_LIST = [
   {
     value: "00:00:00",
@@ -125,45 +128,113 @@ export const DAILY_TASK_REPORT_LIST = [
   {
     title: "Daily T.F.O Report",
     path: "daily-tfo-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/daily-tfo-report.svg"
+      />
+    ),
   },
   {
     title: "Beam Stock Report",
     path: "beam-stock-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/beam-stock-report.svg"
+      />
+    ),
   },
   {
     title: "Check Taka and Report",
     path: "check-taka-and-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/check-taka-and-report.svg"
+      />
+    ),
   },
   {
     title: "Yarn Stock Report",
     path: "yarn-stock-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/yarn-stock-report.svg"
+      />
+    ),
   },
   {
     title: "Other Reports",
     path: "other-reports",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/other-report.svg"
+      />
+    ),
   },
   {
     title: "Employees Attendance Report",
     path: "employees-attendance-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/employee-attendance-report.svg"
+      />
+    ),
   },
   {
     title: "Today's Report",
     path: "todays-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/today-report.svg"
+      />
+    ),
   },
   {
     title: "Wastage Report",
     path: "wastage-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/wastage-report.svg"
+      />
+    ),
   },
   {
     title: "Denierwise Wastage Report",
     path: "denierwise-wastage-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/denierwise-wastage-report.svg"
+      />
+    ),
   },
   {
     title: "Wastage Sales Report",
     path: "wastage-sales-report",
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/wastage-sales-report.svg"
+      />
+    ),
   },
   {
     title: "Beam Card",
     path: "beam-card",
+    // avatar: <BeamCard />,
+    // avatar: <Avatar icon={<BeamCard />} />,
+    avatar: (
+      <Avatar
+        size={"large"}
+        src="../src/assets/svg/report-icons/beam-card.svg"
+      />
+    ),
   },
 ];

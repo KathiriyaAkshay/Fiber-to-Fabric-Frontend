@@ -1,6 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Menu, Flex, Button } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Menu, Flex } from "antd";
 import GoBackButton from "../../../components/common/buttons/GoBackButton";
 
 const items = [

@@ -15,7 +15,6 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import {
   getBrokerListRequest,
@@ -26,16 +25,17 @@ import {
 import { USER_ROLES, supplierTypeEnum } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateSupplierSchemaResolver = yupResolver(
   yup.object().shape({
-    first_name: yup.string(),
-    last_name: yup.string(),
+    first_name: yup.string().nullable(),
+    last_name: yup.string().nullable(),
     email: yup
       .string()
       .required("Please enter email address")
       .email("Please enter valid email address"),
-    address: yup.string(),
+    address: yup.string().nullable(),
     gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
     pancard_no: yup.string().required("Please enter pan number"),
@@ -45,6 +45,7 @@ const updateSupplierSchemaResolver = yupResolver(
     broker_id: yup.string().required(),
     adhar_no: yup
       .string()
+      .nullable()
       // .required("Please enter Aadhar number")
       .matches(AadharRegex, "Enter valid Aadhar number"),
     supplier_types: yup
@@ -73,7 +74,7 @@ function UpdateSupplier() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateUser } = useMutation({
+  const { mutateAsync: updateUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
@@ -92,10 +93,7 @@ function UpdateSupplier() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -162,6 +160,7 @@ function UpdateSupplier() {
         id: undefined,
         deletedAt: undefined,
         createdAt: undefined,
+        mobile: undefined,
         updatedAt: undefined,
       });
     }
@@ -253,7 +252,7 @@ function UpdateSupplier() {
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -303,7 +302,7 @@ function UpdateSupplier() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -326,7 +325,7 @@ function UpdateSupplier() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -364,7 +363,7 @@ function UpdateSupplier() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -401,7 +400,7 @@ function UpdateSupplier() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -457,7 +456,7 @@ function UpdateSupplier() {
               validateStatus={errors.hsn_code ? "error" : ""}
               help={errors.hsn_code && errors.hsn_code.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -488,7 +487,12 @@ function UpdateSupplier() {
                     loading={isLoadingBrokerList}
                     options={brokerUserListRes?.brokerList?.rows?.map(
                       (broker) => ({
-                        label: broker.first_name + " " + broker.last_name + " " + `| (${broker?.username})`,
+                        label:
+                          broker.first_name +
+                          " " +
+                          broker.last_name +
+                          " " +
+                          `| (${broker?.username})`,
                         value: broker.id,
                       })
                     )}
@@ -500,13 +504,12 @@ function UpdateSupplier() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

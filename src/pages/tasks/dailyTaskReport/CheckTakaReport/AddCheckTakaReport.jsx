@@ -1,9 +1,7 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  TimePicker,
   Flex,
   Form,
   Input,
@@ -14,7 +12,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect } from "react";
@@ -22,12 +19,16 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { createCheckTakaReportRequest } from "../../../../api/requests/reports/checkTakaReport";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { getEmployeeListRequest } from "../../../../api/requests/users";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
     report_date: yup.string().required("Please enter date"),
     employee_id: yup.string().required("Please select employee"),
-    employee_name: yup.string().required("Please enter employee name"),
+    // employee_name: yup.string().required("Please enter employee name"),
     machine_id: yup.string().required("Please select machine name"),
     machine_name: yup.string(),
     machine_no: yup.string().required("Please select machine number"),
@@ -55,6 +56,43 @@ function AddCheckTakaReport() {
     enabled: Boolean(companyId),
   });
 
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "quality-master/inhouse-quality/list",
+        {
+          company_id: companyId,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
+
   const { mutateAsync: createCheckTakaReport } = useMutation({
     mutationFn: async (data) => {
       const res = await createCheckTakaReportRequest({
@@ -73,24 +111,18 @@ function AddCheckTakaReport() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      } else if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        if (err && typeof err === "string") {
-          message.error(err);
-        }
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
-  function goBack() {
-    navigate(-1);
-  }
-
   async function onSubmit(data) {
+    // find employee with selected id and set employee_name = first_name of employee
+    data.employee_name = employeeListRes?.rows?.find(
+      (e) => e.id === Number(data?.employee_id || 0)
+    )?.first_name;
+
+    // delete not allowed fields
+    delete data?.machine_id;
     await createCheckTakaReport(data);
   }
 
@@ -105,11 +137,11 @@ function AddCheckTakaReport() {
     resolver: addCheckTakaReportSchemaResolver,
     defaultValues: {
       report_date: dayjs(),
-      assign_time: dayjs(),
+      // assign_time: dayjs(),
     },
   });
 
-  console.log("errors----->", errors);
+  // console.log("errors----->", errors);
   const { machine_id, machine_no } = watch();
 
   useEffect(() => {
@@ -128,9 +160,7 @@ function AddCheckTakaReport() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <GoBackButton />
         <h3 className="m-0 text-primary">New Taka Report</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -165,7 +195,7 @@ function AddCheckTakaReport() {
             </Form.Item>
           </Col>
 
-          <Col span={8}>
+          {/* <Col span={8}>
             <Form.Item
               label="Assign Time"
               name="assign_time"
@@ -188,20 +218,62 @@ function AddCheckTakaReport() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={8}>
             <Form.Item
               label="Employee Name"
-              name="employee_name"
-              validateStatus={errors.employee_name ? "error" : ""}
-              help={errors.employee_name && errors.employee_name.message}
+              name="employee_id"
+              validateStatus={errors.employee_id ? "error" : ""}
+              help={errors.employee_id && errors.employee_id.message}
               required={true}
             >
               <Controller
                 control={control}
-                name="employee_name"
-                render={({ field }) => <Input {...field} placeholder="Name" />}
+                name="employee_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Employee"
+                    allowClear
+                    loading={isLoadingEmployeeList}
+                    options={employeeListRes?.rows?.map(
+                      ({ id = 0, first_name = "" }) => ({
+                        label: first_name,
+                        value: id,
+                      })
+                    )}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Quality"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="quality_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Quality"
+                    allowClear={true}
+                    loading={isLoadingInHouseQualityList}
+                    options={inHouseQualityList?.rows?.map(
+                      ({ id = 0, quality_name = "" }) => ({
+                        label: quality_name,
+                        value: id,
+                      })
+                    )}
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -359,8 +431,6 @@ function AddCheckTakaReport() {
           </Button>
         </Flex>
       </Form>
-
-      <DevTool control={control} />
     </div>
   );
 }

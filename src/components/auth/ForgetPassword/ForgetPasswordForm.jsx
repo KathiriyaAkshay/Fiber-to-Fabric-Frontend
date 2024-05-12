@@ -1,7 +1,6 @@
 import { Form, Input, Button, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Link, useNavigate } from "react-router-dom";
@@ -61,7 +60,7 @@ const ForgetPasswordForm = () => {
 
   return (
     <>
-      <div className="flex flex-col justify-center flex-grow  mx-20">
+      <div className="flex flex-col justify-center flex-grow mx-20">
         <h2 className="">Forget Password</h2>
         <Form onFinish={handleSubmit(onSubmit)} layout="vertical">
           <Form.Item
@@ -135,7 +134,6 @@ const ForgetPasswordForm = () => {
           </div>
         </Form>
       </div>
-      <DevTool control={control} />
     </>
   );
 };

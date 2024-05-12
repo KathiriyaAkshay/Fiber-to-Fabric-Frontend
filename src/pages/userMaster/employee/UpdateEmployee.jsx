@@ -15,7 +15,6 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import {
   getEmployeeByIdRequest,
@@ -27,6 +26,7 @@ import EmployeeSalaryTypeInput from "../../../components/userMaster/employee/Emp
 import dayjs from "dayjs";
 import { useCompanyList } from "../../../api/hooks/company";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateEmployeeSchemaResolver = yupResolver(
   yup.object().shape({
@@ -77,7 +77,7 @@ const updateEmployeeSchemaResolver = yupResolver(
             .required("Please provide rate per meter")
             .min(yup.ref("machineNo_from"), "To must be greater than From"),
       }),
-    shift: yup.string(),
+    shift: yup.string().nullable(),
   })
 );
 
@@ -93,7 +93,7 @@ function UpdateEmployee() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateUser } = useMutation({
+  const { mutateAsync: updateUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
@@ -112,10 +112,7 @@ function UpdateEmployee() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -380,13 +377,12 @@ function UpdateEmployee() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

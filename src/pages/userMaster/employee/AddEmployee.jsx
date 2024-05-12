@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -27,6 +26,7 @@ import SalaryTypeSpecificFields from "../../../components/userMaster/employee/Sa
 import { useCompanyList } from "../../../api/hooks/company";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -101,7 +101,7 @@ function AddEmployee() {
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -124,10 +124,7 @@ function AddEmployee() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -390,13 +387,11 @@ function AddEmployee() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
-
-      <DevTool control={control} />
     </div>
   );
 }

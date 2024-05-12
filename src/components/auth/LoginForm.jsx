@@ -2,7 +2,6 @@ import { useForm, Controller } from "react-hook-form";
 import { Form, Input, Button, message } from "antd";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { Link, useNavigate } from "react-router-dom";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
@@ -124,7 +123,6 @@ const LoginForm = () => {
           <Link to="/auth/register">Create account</Link>
         </div> */}
       </Form>
-      <DevTool control={control} />
     </div>
   );
 };

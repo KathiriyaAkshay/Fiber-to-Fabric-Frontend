@@ -1,7 +1,6 @@
 import { Form, Input, Button, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { DevTool } from "@hookform/devtools";
 import {
   forgetPasswrordRequest,
   verifyOtpRequest,
@@ -87,7 +86,7 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
 
   return (
     <>
-      <div className="flex flex-col justify-center flex-grow  mx-20">
+      <div className="flex flex-col justify-center flex-grow mx-20">
         <h2 className="">OTP Verification</h2>
         <Form layout="vertical">
           <Form.Item
@@ -155,7 +154,6 @@ const OtpVerificationForm = ({ setOtpVerified }) => {
           </div>
         </Form>
       </div>
-      <DevTool control={control} />
     </>
   );
 };

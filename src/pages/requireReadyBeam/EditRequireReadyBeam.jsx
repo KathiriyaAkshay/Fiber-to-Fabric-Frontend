@@ -3,7 +3,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect } from "react";
@@ -246,7 +245,6 @@ const EditRequireReadyBeam = () => {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 };

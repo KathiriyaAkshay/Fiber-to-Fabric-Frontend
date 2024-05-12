@@ -1114,7 +1114,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               </Col>
             </Row>
 
-            <Row>
+            <Row className="border-0 border-b border-solid">
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />

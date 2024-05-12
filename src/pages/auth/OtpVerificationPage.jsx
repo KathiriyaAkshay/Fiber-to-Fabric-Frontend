@@ -2,7 +2,6 @@ import { Form, Input, Button, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { resendOtpRequest, verifyOtpRequest } from "../../api/requests/auth";
 import { useMutation } from "@tanstack/react-query";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Link, useNavigate } from "react-router-dom";
@@ -141,7 +140,6 @@ const OtpVerificationPage = () => {
           subTitle="Please login to your account to access all of your information."
         />
       </div>
-      <DevTool control={control} />
     </>
   );
 };

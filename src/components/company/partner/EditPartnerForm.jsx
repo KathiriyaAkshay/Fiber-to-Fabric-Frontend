@@ -1,6 +1,5 @@
 import { useForm, Controller } from "react-hook-form";
 import { Form, Input, Button, message, Flex } from "antd";
-import { DevTool } from "@hookform/devtools";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -156,7 +155,6 @@ const EditPartnerForm = ({ partnerDetails = {}, setPartnerTBE }) => {
           <Button onClick={() => setPartnerTBE(undefined)}>Cancel</Button>
         </Flex>
       </Form>
-      <DevTool control={control} />
     </>
   );
 };
