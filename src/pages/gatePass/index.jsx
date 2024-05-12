@@ -4,14 +4,15 @@ import {
   Space,
   Spin,
   Table,
+  Switch,
+  message
 } from "antd";
 import {
-  EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
 // import dayjs from "dayjs";
@@ -21,7 +22,8 @@ import { useContext } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 // import useDebounce from "../../hooks/useDebounce";
 import dayjs from "dayjs";
-import { getGatePassListRequest } from "../../api/requests/gatePass";
+import { getGatePassListRequest, updateGatePassRequest } from "../../api/requests/gatePass";
+import DeleteGatePass from "../../components/auth/gatePass/DeleteGatePass";
 
 const GatePassList = () => {
   // const [search, setSearch] = useState();
@@ -37,7 +39,8 @@ const GatePassList = () => {
 
   const { data: gatePassList, isLoading } = useQuery({
     queryKey: [
-      "gatePassList",
+      "gate",
+      "pass",
       "list",
       {
         company_id: companyId,
@@ -64,33 +67,33 @@ const GatePassList = () => {
     enabled: Boolean(companyId),
   });
 
-  // const {
-  //   mutateAsync: updateTradingQuality,
-  //   isPending: updatingTradingQuality,
-  //   variables,
-  // } = useMutation({
-  //   mutationFn: async ({ id, data }) => {
-  //     const res = await updateTradingQualityRequest({
-  //       id,
-  //       data,
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data;
-  //   },
-  //   mutationKey: ["gate", "pass", "update"],
-  //   onSuccess: (res) => {
-  //     const successMessage = res?.message;
-  //     if (successMessage) {
-  //       message.success(successMessage);
-  //     }
-  //   },
-  //   onError: (error) => {
-  //     const errorMessage = error?.response?.data?.message;
-  //     if (errorMessage && typeof errorMessage === "string") {
-  //       message.error(errorMessage);
-  //     }
-  //   },
-  // });
+  const {
+    mutateAsync: updateGatePass,
+    isPending: updatingGatePass,
+    variables,
+  } = useMutation({
+    mutationFn: async ({ id, data }) => {
+      const res = await updateGatePassRequest({
+        id,
+        data,
+        params: { company_id: companyId },
+      });
+      return res.data;
+    },
+    mutationKey: ["gate", "pass", "update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -113,9 +116,9 @@ const GatePassList = () => {
     navigate("/gate-pass/add");
   }
 
-  function navigateToUpdate(id) {
-    navigate(`/gate-pass/update/${id}`);
-  }
+  // function navigateToUpdate(id) {
+  //   navigate(`/gate-pass/update/${id}`);
+  // }
 
   const columns = [
     {
@@ -157,6 +160,26 @@ const GatePassList = () => {
       }
     },
     {
+      title: "Status",
+      render: (details) => {
+        console.log({details});
+        const { status, id } = details;
+        return (
+          <Switch
+            loading={updatingGatePass && variables?.id === id}
+            defaultChecked={status === "pending" ? false : true}
+            onChange={(status) => {
+              updateGatePass({
+                id: id,
+                data: { status: !status ? "pending" : "received" },
+              });
+            }}
+          />
+        );
+      },
+      key: "status",
+    },
+    {
       title: "Action",
       render: (details) => {
         return (
@@ -172,13 +195,14 @@ const GatePassList = () => {
                 { title: "Address", value: details.address },
               ]}
             />
-            <Button
+            {/* <Button
               onClick={() => {
                 navigateToUpdate(details.id);
               }}
             >
               <EditOutlined />
-            </Button>
+            </Button> */}
+            <DeleteGatePass details={details} />
           </Space>
         );
       },
