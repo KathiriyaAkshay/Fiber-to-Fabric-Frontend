@@ -126,7 +126,7 @@ const InHouseQualityList = () => {
   }
 
   function navigateToUpdate(id) {
-    navigate(`/user-master/my-employee/update/${id}`);
+    navigate(`/quality-master/inhouse-quality/update/${id}`);
   }
 
   function downloadPdf() {

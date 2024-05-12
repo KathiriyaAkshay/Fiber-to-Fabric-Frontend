@@ -69,6 +69,7 @@ import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobY
 import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
 import GatePassList from "./pages/gatePass";
 import AddGatePass from "./pages/gatePass/addGatePass";
+import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
 
 const queryClient = new QueryClient();
 
@@ -120,7 +121,7 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <InHouseQualityList /> },
               { path: "add", element: <AddInHouseQuality /> },
-              { path: "update/:qualityId", element: <AddInHouseQuality /> },
+              { path: "update/:qualityId", element: <UpdateInHouseQuality /> },
             ],
           },
           {
