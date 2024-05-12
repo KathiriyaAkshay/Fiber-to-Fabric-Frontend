@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
@@ -23,6 +22,7 @@ import { YARN_GRADE_LIST } from "../../../constants/orderMaster";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -111,14 +111,7 @@ function AddYarnOrder() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        message.error(err);
-      }
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -780,7 +773,6 @@ function AddYarnOrder() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

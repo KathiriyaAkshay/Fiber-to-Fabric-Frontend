@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import {
   addUserRequest,
   getBrokerListRequest,
@@ -28,6 +27,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.SUPPLIER.role_id;
 
@@ -52,7 +52,7 @@ const addSupplierSchemaResolver = yupResolver(
     // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string().required(),
     supplier_company: yup.string().required(),
-    broker_id: yup.string().required(),
+    broker_id: yup.string().required("Please select broker"),
     adhar_no: yup
       .string()
       // .required("Please enter Aadhar number")
@@ -68,6 +68,7 @@ const addSupplierSchemaResolver = yupResolver(
             "Invalid supplier type. Must be one of: purchase/trading, job, yarn, other, re-work"
           )
       ),
+    supplier_name: yup.string().required("Please enter supplier name"),
   })
 );
 
@@ -102,7 +103,7 @@ function AddSupplier() {
       enabled: Boolean(companyId),
     });
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -125,14 +126,7 @@ function AddSupplier() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        message.error(err);
-      }
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -236,7 +230,7 @@ function AddSupplier() {
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -286,7 +280,7 @@ function AddSupplier() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -309,7 +303,7 @@ function AddSupplier() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -372,7 +366,7 @@ function AddSupplier() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -409,7 +403,7 @@ function AddSupplier() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -484,7 +478,7 @@ function AddSupplier() {
               validateStatus={errors.hsn_code ? "error" : ""}
               help={errors.hsn_code && errors.hsn_code.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -503,6 +497,7 @@ function AddSupplier() {
               validateStatus={errors.broker_id ? "error" : ""}
               help={errors.broker_id && errors.broker_id.message}
               wrapperCol={{ sm: 24 }}
+              required={true}
             >
               <Controller
                 control={control}
@@ -515,7 +510,12 @@ function AddSupplier() {
                     loading={isLoadingBrokerList}
                     options={brokerUserListRes?.brokerList?.rows?.map(
                       (broker) => ({
-                        label: broker.first_name + " " + broker.last_name + " " + `| (${broker?.username})`,
+                        label:
+                          broker.first_name +
+                          " " +
+                          broker.last_name +
+                          " " +
+                          `| (${broker?.username})`,
                         value: broker.id,
                       })
                     )}
@@ -530,13 +530,11 @@ function AddSupplier() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
-
-      <DevTool control={control} />
     </div>
   );
 }

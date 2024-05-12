@@ -15,7 +15,6 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import dayjs from "dayjs";
 import { getYarnStockReportByIdRequest } from "../../../../api/requests/reports/yarnStockReport";
@@ -204,7 +203,6 @@ function UpdateYarnStockReport() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

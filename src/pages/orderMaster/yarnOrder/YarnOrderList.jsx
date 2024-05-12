@@ -283,7 +283,7 @@ function YarnOrderList() {
         }}
         style={{ overflow: "auto" }}
         summary={() => {
-          if (!yarnOrderListRes) return;
+          if (!yarnOrderListRes?.yarnOrderList?.rows?.length) return;
           const {
             total_quantity,
             total_delivered_quantity,

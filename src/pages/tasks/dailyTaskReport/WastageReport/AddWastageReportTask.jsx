@@ -15,7 +15,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect } from "react";
@@ -24,6 +23,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { createWastageReportTaskRequest } from "../../../../api/requests/reports/wastageReportTask";
 import { getSupervisorListRequest } from "../../../../api/requests/users";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const addWastageReportTaskSchemaResolver = yupResolver(
   yup.object().shape({
@@ -92,16 +92,7 @@ function AddWastageReportTask() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      } else if (typeof errorMessage === "object") {
-        const err = errorMessage?.details?.[0]?.message;
-        if (err && typeof err === "string") {
-          message.error(err);
-        }
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -474,7 +465,6 @@ function AddWastageReportTask() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

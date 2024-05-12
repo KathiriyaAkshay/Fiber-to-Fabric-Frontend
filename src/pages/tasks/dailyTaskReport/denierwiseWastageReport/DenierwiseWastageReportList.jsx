@@ -79,8 +79,8 @@ function DenierwiseWastageReportList() {
     {
       title: "ID",
       dataIndex: "id",
-      key: "id",      key: "id",
-            render: (text, record, index) => ((page*pageSize) + index) + 1,
+      key: "id",
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -106,9 +106,7 @@ function DenierwiseWastageReportList() {
       title: "Wastage(KG)",
       dataIndex: "wastage",
       key: "wastage",
-      render: (text, record) => (
-        <div className="red-option-text">{text}</div>
-      )
+      render: (text) => <div className="red-option-text">{text}</div>,
     },
     {
       title: "Notes",
@@ -212,6 +210,7 @@ function DenierwiseWastageReportList() {
               From
             </Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
@@ -224,6 +223,7 @@ function DenierwiseWastageReportList() {
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}

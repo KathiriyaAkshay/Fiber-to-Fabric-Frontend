@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import { addUserRequest } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
@@ -14,6 +13,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { AadharRegex } from "../../../constants/regex";
 import { useContext } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.VEHICLE_USER.role_id;
 
@@ -51,7 +51,7 @@ function AddVehicleUser() {
     navigate(-1);
   }
 
-  const { mutateAsync: addUser } = useMutation({
+  const { mutateAsync: addUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addUserRequest({
         roleId,
@@ -76,8 +76,7 @@ function AddVehicleUser() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -242,7 +241,7 @@ function AddVehicleUser() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -279,7 +278,7 @@ function AddVehicleUser() {
               validateStatus={errors.username ? "error" : ""}
               help={errors.username && errors.username.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -379,13 +378,11 @@ function AddVehicleUser() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
-
-      <DevTool control={control} />
     </div>
   );
 }

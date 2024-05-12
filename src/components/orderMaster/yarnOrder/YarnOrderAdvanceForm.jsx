@@ -9,7 +9,6 @@ import {
   Col,
   Row,
 } from "antd";
-import { DevTool } from "@hookform/devtools";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -266,7 +265,6 @@ const YarnOrderAdvanceForm = ({ yarnOrder = {} }) => {
           </Col>
         </Row>
       </Form>
-      <DevTool control={control} />
     </>
   );
 };

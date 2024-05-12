@@ -290,6 +290,7 @@ function EmployeeList() {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear={true}
             />
           </Flex>
           <Flex align="center" gap={10}>

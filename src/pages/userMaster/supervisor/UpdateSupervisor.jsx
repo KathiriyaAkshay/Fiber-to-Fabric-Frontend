@@ -1,21 +1,10 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  Flex,
-  Form,
-  Input,
-  Radio,
-  Row,
-  Select,
-  message,
-} from "antd";
+import { Button, Col, Flex, Form, Input, Radio, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { DevTool } from "@hookform/devtools";
 import { useContext, useEffect } from "react";
 import {
   getSupervisorByIdRequest,
@@ -23,8 +12,8 @@ import {
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import { AadharRegex } from "../../../constants/regex";
-import { useCompanyList } from "../../../api/hooks/company";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const updateSupervisorSchemaResolver = yupResolver(
   yup.object().shape({
@@ -35,10 +24,10 @@ const updateSupervisorSchemaResolver = yupResolver(
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string().required("Please enter address"),
-    gst_no: yup.string(),
+    gst_no: yup.string().nullable(),
     // .required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string(),
+    pancard_no: yup.string().nullable(),
     // .required('Please enter pan number')
     // .matches(PANRegex, "Enter valid PAN number"),
     adhar_no: yup
@@ -61,9 +50,7 @@ function UpdateSupervisor() {
     navigate(-1);
   }
 
-  const { data: companyListRes } = useCompanyList();
-
-  const { mutateAsync: updateUser } = useMutation({
+  const { mutateAsync: updateUser, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateUserRequest({
         roleId,
@@ -82,10 +69,7 @@ function UpdateSupervisor() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -126,6 +110,7 @@ function UpdateSupervisor() {
         id: undefined,
         deletedAt: undefined,
         createdAt: undefined,
+        mobile: undefined,
         updatedAt: undefined,
       });
     }
@@ -154,7 +139,7 @@ function UpdateSupervisor() {
               help={errors.first_name && errors.first_name.message}
               className=""
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -177,7 +162,7 @@ function UpdateSupervisor() {
               validateStatus={errors.last_name ? "error" : ""}
               help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -215,7 +200,7 @@ function UpdateSupervisor() {
               validateStatus={errors.address ? "error" : ""}
               help={errors.address && errors.address.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -274,7 +259,7 @@ function UpdateSupervisor() {
               validateStatus={errors.adhar_no ? "error" : ""}
               help={errors.adhar_no && errors.adhar_no.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -311,7 +296,7 @@ function UpdateSupervisor() {
               validateStatus={errors.supervisor_type ? "error" : ""}
               help={errors.supervisor_type && errors.supervisor_type.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -358,13 +343,12 @@ function UpdateSupervisor() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

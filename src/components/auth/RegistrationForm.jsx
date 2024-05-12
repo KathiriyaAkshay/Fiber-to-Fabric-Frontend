@@ -6,7 +6,6 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { signupRequest } from "../../api/requests/auth";
-import { DevTool } from "@hookform/devtools";
 import { PANRegex } from "../../constants/regex";
 import ForwardRefInput from "../common/ForwardRefInput";
 
@@ -353,7 +352,6 @@ const RegistrationForm = () => {
           <Link to="/auth">Log In</Link>
         </div>
       </Form>
-      <DevTool control={control} />
     </div>
   );
 };

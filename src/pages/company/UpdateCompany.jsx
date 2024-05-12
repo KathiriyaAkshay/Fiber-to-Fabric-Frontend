@@ -11,7 +11,6 @@ import {
   updateCompanyRequest,
 } from "../../api/requests/company";
 import PhoneInput from "react-phone-number-input";
-import { DevTool } from "@hookform/devtools";
 import ForwardRefInput from "../../components/common/ForwardRefInput";
 import { useEffect } from "react";
 
@@ -599,7 +598,6 @@ function UpdateCompany() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

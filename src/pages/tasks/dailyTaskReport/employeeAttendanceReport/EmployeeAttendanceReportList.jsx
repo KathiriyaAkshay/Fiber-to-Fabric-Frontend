@@ -249,6 +249,7 @@ function EmployeeAttendanceReportList() {
               From
             </Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}
@@ -261,6 +262,7 @@ function EmployeeAttendanceReportList() {
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
+              allowClear={true}
               style={{
                 width: "200px",
               }}

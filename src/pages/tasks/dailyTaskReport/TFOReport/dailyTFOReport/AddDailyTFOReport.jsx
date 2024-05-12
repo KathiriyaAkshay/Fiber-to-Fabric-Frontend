@@ -13,7 +13,6 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { DevTool } from "@hookform/devtools";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useState } from "react";
@@ -25,6 +24,7 @@ import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStoc
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { YARN_TYPE_OPTION_LIST } from "../../../../../constants/yarn";
 import dayjs from "dayjs";
+import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
 
 const addDailyTFOReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -98,15 +98,7 @@ function AddDailyTFOReport() {
         navigate(-1);
       },
       onError: (error) => {
-        const errorMessage = error?.response?.data?.message || error.message;
-        if (errorMessage && typeof errorMessage === "string") {
-          message.error(errorMessage);
-        } else if (typeof errorMessage === "object") {
-          const err = errorMessage?.details?.[0]?.message;
-          if (err && typeof err === "string") {
-            message.error(err);
-          }
-        }
+        mutationOnErrorHandler({ error, message });
       },
     });
 
@@ -525,7 +517,6 @@ function AddDailyTFOReport() {
         </Flex>
       </Form>
 
-      <DevTool control={control} />
     </div>
   );
 }

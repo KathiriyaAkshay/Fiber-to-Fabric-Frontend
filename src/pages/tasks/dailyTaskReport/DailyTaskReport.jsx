@@ -1,4 +1,3 @@
-import { ProfileOutlined } from "@ant-design/icons";
 import { Card, Col, Row } from "antd";
 import { DAILY_TASK_REPORT_LIST } from "../../../constants/task";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +14,7 @@ function DailyTaskReport() {
       </div>
 
       <Row gutter={[16, 16]}>
-        {DAILY_TASK_REPORT_LIST.map(({ title, path = "" }) => {
+        {DAILY_TASK_REPORT_LIST.map(({ title, path = "", avatar }) => {
           return (
             <Col className="gutter-row" span={6} key={title}>
               <Card
@@ -25,9 +24,9 @@ function DailyTaskReport() {
                 }}
               >
                 <Card.Meta
+                  avatar={avatar}
+                  className="items-center"
                   title={title}
-                  description=""
-                  avatar={<ProfileOutlined />}
                 />
               </Card>
             </Col>
