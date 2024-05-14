@@ -71,6 +71,7 @@ import GatePassList from "./pages/gatePass";
 import AddGatePass from "./pages/gatePass/addGatePass";
 import UpdateGatePass from "./pages/gatePass/updateGatePass";
 import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
+import BeamCardList from "./pages/beamCard/beamCardList";
 
 const queryClient = new QueryClient();
 
@@ -799,7 +800,9 @@ const router = createBrowserRouter([
       },
       {
         path: "beam-card",
-        element: <div>beam-card</div>,
+        children: [
+          { index: true, element: <BeamCardList /> }
+        ]
       },
       {
         path: "require-ready-beam",
