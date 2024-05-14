@@ -91,6 +91,7 @@ function DailyTaskList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1, 
     },
     {
       title: "Task Detail",
@@ -106,15 +107,21 @@ function DailyTaskList() {
       title: "Achievement",
       dataIndex: "achievement",
       key: "achievement",
+      render: (text, record) => (
+        text == null?"-":text
+      )
     },
     {
       title: "Reason",
       dataIndex: "reason",
       key: "reason",
+      render: (text, record) => (
+        text == null?"-":text
+      )
     },
     {
       title: "Status",
-      dataIndex: "Status",
+      dataIndex: "status",
       key: "status",
     },
     {
@@ -199,6 +206,8 @@ function DailyTaskList() {
         />
       </div>
       {renderTable()}
+
+      
     </div>
   );
 }

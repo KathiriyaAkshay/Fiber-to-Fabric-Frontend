@@ -158,7 +158,7 @@ function UpdateYarnStockCompany() {
 
   const disabledDate = current => {
     // Disable all dates before today
-    return current && current < moment().startOf('day');
+    return current && current > moment().startOf('day');
   };
 
 
