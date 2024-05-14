@@ -36,3 +36,7 @@ body {
 .red-option-text{
   color: red;
 }
+
+.ant-tag{
+  cursor: pointer !important;
+}
