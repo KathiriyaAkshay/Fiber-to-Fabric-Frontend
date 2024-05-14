@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Table, Tag, Popconfirm, message } from "antd";
+import { Button, Space, Spin, Table, Tag, Popconfirm, message, Flex, Input } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -16,26 +16,28 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { APIHandler } from "../../../../api/requests/commonHandler";
 import moment from "moment";
+import useDebounce from "../../../../hooks/useDebounce";
 
 function YarnStockReportList() {
   const navigate = useNavigate();
 
   const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: user } = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
 
   const { data: reportListRes, isLoading: isLoadingReportList, refetch } = useQuery({
     queryKey: [
       "yarn-stock",
       "yarn-report",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
     ],
     queryFn: async () => {
       const res = await getYarnStockReportListRequest({
         companyId,
-        params: { company_id: companyId, page, pageSize },
+        params: { company_id: companyId, page, pageSize, search: debouncedSearch },
       });
       return res.data?.data?.yarnStockReportList;
     },
@@ -267,12 +269,19 @@ function YarnStockReportList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!reportListRes?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) =>{setSearch(e.target.value)} }
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!reportListRes?.rows?.length}
+            onClick={downloadPdf}
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>
