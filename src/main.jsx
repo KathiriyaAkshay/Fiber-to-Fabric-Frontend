@@ -374,18 +374,7 @@ const router = createBrowserRouter([
           },
           {
             path: "/purchase-size-beam",
-            element: (
-              <div>
-                <div>purchase-size-beam</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>purchase-size-beam</div> },
-              {
-                path: "send-beam-pipe",
-                element: <div>send-beam-pipe</div>,
-              },
               {
                 path: "bills-of-size-beam",
                 element: <div>bills-of-size-beam</div>,
