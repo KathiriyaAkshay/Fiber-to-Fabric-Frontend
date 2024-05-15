@@ -28,6 +28,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getEmployeeAttendanceReportListRequest } from "../../../../api/requests/reports/employeeAttendance";
 import DeleteEmployeeAttendanceReportButton from "../../../../components/tasks/employeeAttendance/DeleteEmployeeAttendanceReportButton";
 import useDebounce from "../../../../hooks/useDebounce";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 function EmployeeAttendanceReportList() {
   const [search, setSearch] = useState("");
@@ -163,13 +164,17 @@ function EmployeeAttendanceReportList() {
     {
       title: "Action",
       render: (reportDetails) => {
+
         const {
           machine = {},
           absent_employee_count,
           shift,
           createdAt,
+          report_absentees
         } = reportDetails;
         const { machine_name, no_of_machines, no_of_employees } = machine;
+        const employeeNames = report_absentees?.map(element => `${element?.user?.first_name} ${element?.user?.last_name} | (${element?.user?.username})`) ; 
+        const joinedEmployeeName = employeeNames.join(", ") ; 
         return (
           <Space>
             <ViewDetailModal
@@ -191,6 +196,10 @@ function EmployeeAttendanceReportList() {
                   title: "Time",
                   value: dayjs(createdAt).format("h:mm:ss A"),
                 },
+                {
+                  title: "Absent employee", 
+                  value: joinedEmployeeName
+                }
               ]}
             />
             <Button
@@ -236,6 +245,7 @@ function EmployeeAttendanceReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton/>
           <h3 className="m-0 text-primary">Employees Attendance Report</h3>
           <Button
             onClick={navigateToAdd}
