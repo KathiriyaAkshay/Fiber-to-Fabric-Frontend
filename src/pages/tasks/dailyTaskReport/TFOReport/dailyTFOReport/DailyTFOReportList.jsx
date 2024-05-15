@@ -184,16 +184,12 @@ function DailyTFOReportList() {
           tpm = 0,
           load_date,
         } = reportDetails;
-        const { yarn_denier = 0 } = yarn_stock_company;
+        const { yarn_denier = 0 } = yarn_stock_company || {};
         return (
           <Space>
             <ViewDetailModal
               title="Report Card"
               details={[
-                // {
-                //   title: "SUPERVISOR NAME",
-                //   value: "SUPERVISOR NAME",
-                // },
                 { title: "MACHINE NAME", value: machine_name },
                 { title: "T.F.O NO.", value: machine_no },
                 { title: "MOTOR TYPE", value: motor_type },
