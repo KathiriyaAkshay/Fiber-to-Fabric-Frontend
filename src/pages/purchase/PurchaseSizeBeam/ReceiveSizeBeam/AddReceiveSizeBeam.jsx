@@ -1,5 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, DatePicker, Flex, Form, Input, Row, message } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Button,
+  Col,
+  DatePicker,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  TimePicker,
+  message,
+} from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
@@ -10,6 +21,8 @@ import dayjs from "dayjs";
 import { createReceiveSizeBeamRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -27,6 +40,42 @@ function AddReceiveSizeBeam() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
+    useQuery({
+      queryKey: [
+        "order-master",
+        "size-beam-order",
+        "list",
+        { company_id: companyId },
+      ],
+      queryFn: async () => {
+        const res = await getSizeBeamOrderListRequest({
+          params: { company_id: companyId },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "quality-master/inhouse-quality/list",
+        {
+          company_id: companyId,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { mutateAsync: createReceiveSizeBeam } = useMutation({
     mutationFn: async (data) => {
@@ -63,6 +112,7 @@ function AddReceiveSizeBeam() {
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm({
     resolver: addReceiveSizeBeamSchemaResolver,
     defaultValues: {
@@ -70,6 +120,7 @@ function AddReceiveSizeBeam() {
     },
   });
 
+  const { size_beam_order_id } = watch();
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -85,23 +136,31 @@ function AddReceiveSizeBeam() {
         >
           <Col span={8}>
             <Form.Item
-              label="Challan Date"
-              name="challan_date"
-              validateStatus={errors.challan_date ? "error" : ""}
-              help={errors.challan_date && errors.challan_date.message}
+              label="Order No."
+              name="size_beam_order_id"
+              validateStatus={errors.size_beam_order_id ? "error" : ""}
+              help={
+                errors.size_beam_order_id && errors.size_beam_order_id.message
+              }
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="challan_date"
+                name="size_beam_order_id"
                 render={({ field }) => (
-                  <DatePicker
+                  <Select
                     {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="DD-MM-YYYY"
+                    placeholder="Select supplier Company"
+                    loading={isLoadingSizeBeamOrderList}
+                    options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
+                      ({ order_no = "", id = "" }) => {
+                        return {
+                          label: order_no,
+                          value: id,
+                        };
+                      }
+                    )}
                   />
                 )}
               />
@@ -110,17 +169,29 @@ function AddReceiveSizeBeam() {
 
           <Col span={8}>
             <Form.Item
-              label="Lot No"
-              name="lot_no"
-              validateStatus={errors.lot_no ? "error" : ""}
-              help={errors.lot_no && errors.lot_no.message}
+              label="Quality"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
               required={true}
-              wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="lot_no"
-                render={({ field }) => <Input {...field} />}
+                name="quality_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Quality"
+                    allowClear={true}
+                    loading={isLoadingInHouseQualityList}
+                    options={inHouseQualityList?.rows?.map(
+                      ({ id = 0, quality_name = "" }) => ({
+                        label: quality_name,
+                        value: id,
+                      })
+                    )}
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -137,30 +208,32 @@ function AddReceiveSizeBeam() {
               <Controller
                 control={control}
                 name="challan_no"
-                render={({ field }) => <Input {...field} />}
+                render={({ field }) => (
+                  <Input {...field} disabled={!size_beam_order_id} />
+                )}
               />
             </Form.Item>
           </Col>
 
           <Col span={8}>
             <Form.Item
-              label="Receive Quantity"
-              name="receive_quantity"
-              validateStatus={errors.receive_quantity ? "error" : ""}
-              help={errors.receive_quantity && errors.receive_quantity.message}
+              label="Date"
+              name="receive_date"
+              validateStatus={errors.receive_date ? "error" : ""}
+              help={errors.receive_date && errors.receive_date.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="receive_quantity"
+                name="receive_date"
                 render={({ field }) => (
-                  <Input
+                  <DatePicker
                     {...field}
-                    placeholder="50"
-                    type="number"
-                    min={0}
-                    step={0.01}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="DD-MM-YYYY"
                   />
                 )}
               />
@@ -169,26 +242,24 @@ function AddReceiveSizeBeam() {
 
           <Col span={8}>
             <Form.Item
-              label="Receive Cartoon/pallet"
-              name="receive_cartoon_pallet"
-              validateStatus={errors.receive_cartoon_pallet ? "error" : ""}
-              help={
-                errors.receive_cartoon_pallet &&
-                errors.receive_cartoon_pallet.message
-              }
-              required={true}
+              label="Time"
+              name="report_time"
+              validateStatus={errors.report_time ? "error" : ""}
+              help={errors.report_time && errors.report_time.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="receive_cartoon_pallet"
+                name="report_time"
                 render={({ field }) => (
-                  <Input
+                  <TimePicker
                     {...field}
-                    placeholder="50"
-                    type="number"
-                    min={0}
-                    step={0.01}
+                    value={dayjs()}
+                    style={{
+                      width: "100%",
+                    }}
+                    format="h:mm:ss A"
+                    disabled={true}
                   />
                 )}
               />
