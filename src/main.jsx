@@ -67,6 +67,9 @@ import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList"
 import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
 import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobYarnStockReportList";
 import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
+import ReceiveSizeBeamList from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamList";
+import AddReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/AddReceiveSizeBeam";
+import UpdateReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateReceiveSizeBeam";
 
 const queryClient = new QueryClient();
 
@@ -373,7 +376,7 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: "/purchase-size-beam",
+            path: "purchase-size-beam",
             children: [
               {
                 path: "bills-of-size-beam",
@@ -381,7 +384,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "receive-size-beam",
-                element: <div>receive-size-beam</div>,
+                children: [
+                  { index: true, element: <ReceiveSizeBeamList /> },
+                  { path: "add", element: <AddReceiveSizeBeam /> },
+                  { path: "update/:id", element: <UpdateReceiveSizeBeam /> },
+                ],
               },
             ],
           },
@@ -502,9 +509,9 @@ const router = createBrowserRouter([
               {
                 path: "job-yarn-stock-report",
                 children: [
-                  { index: true, element: <JobYarnStockReportList/> },
+                  { index: true, element: <JobYarnStockReportList /> },
                   { path: "add", element: <AddJobYarnStockReport /> },
-                ]
+                ],
               },
               {
                 path: "job-production",

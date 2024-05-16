@@ -1,36 +1,22 @@
-import { PlusCircleOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Flex,
-  Form,
-  Input,
-  Row,
-  Select,
-  message,
-} from "antd";
+import { Button, Col, DatePicker, Flex, Form, Input, Row, message } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import {
-  getYarnReceiveByIdRequest,
-  updateYarnReceiveRequest,
-} from "../../../../api/requests/purchase/yarnReceive";
-import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+  getReceiveSizeBeamByIdRequest,
+  updateReceiveSizeBeamRequest,
+} from "../../../../api/requests/purchase/purchaseSizeBeam";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
-const updateYarnReceiveSchemaResolver = yupResolver(
+const updateReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
     challan_date: yup.string().required("Please select date"),
-    yarn_company_name: yup.string().required("Please select yarn company"),
-    yarn_stock_company_id: yup.string().required("Please select Denier"),
     lot_no: yup.string().required("Please enter lot no"),
     challan_no: yup.string().required("Please enter lot no"),
     receive_quantity: yup.string().required("Please enter recieve quantity"),
@@ -40,28 +26,19 @@ const updateYarnReceiveSchemaResolver = yupResolver(
   })
 );
 
-function UpdateYarnReceive() {
+function UpdateReceiveSizeBeam() {
   const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
   const { companyId } = useContext(GlobalContext);
 
-  const [denierOptions, setDenierOptions] = useState([]);
+  function goBack() {
+    navigate(-1);
+  }
 
-  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getYSCDropdownList({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { mutateAsync: updateYarnReceive } = useMutation({
+  const { mutateAsync: updateReceiveSizeBeam } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateYarnReceiveRequest({
+      const res = await updateReceiveSizeBeamRequest({
         id,
         data,
         params: {
@@ -70,7 +47,7 @@ function UpdateYarnReceive() {
       });
       return res.data;
     },
-    mutationKey: ["yarn-stock/yarn-receive-challan/update", id],
+    mutationKey: ["order-master/recive-size-beam/update", id],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
@@ -83,22 +60,21 @@ function UpdateYarnReceive() {
     },
   });
 
-  const { data: yarnReceiveDetails } = useQuery({
-    queryKey: ["yarn-stock/yarn-receive-challan/get", id],
+  const { data: receiveSizeBeamdetails } = useQuery({
+    queryKey: ["order-master/recive-size-beam/get", id],
     queryFn: async () => {
-      const res = await getYarnReceiveByIdRequest({
+      const res = await getReceiveSizeBeamByIdRequest({
         id,
         params: { company_id: companyId },
       });
-      return res.data?.data?.yarnRecive;
+      return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
 
   async function onSubmit(data) {
     // delete parameter's those are not allowed
-    delete data?.yarn_company_name;
-    await updateYarnReceive(data);
+    await updateReceiveSizeBeam(data);
   }
 
   const {
@@ -106,72 +82,37 @@ function UpdateYarnReceive() {
     handleSubmit,
     formState: { errors },
     reset,
-    watch,
   } = useForm({
-    resolver: updateYarnReceiveSchemaResolver,
+    resolver: updateReceiveSizeBeamSchemaResolver,
   });
 
-  const { yarn_company_name } = watch();
-
-  function goToAddYarnStockCompany() {
-    navigate("/yarn-stock-company/company-list/add");
-  }
-
   useEffect(() => {
-    if (yarnReceiveDetails) {
+    if (receiveSizeBeamdetails) {
       const {
         challan_date,
-        yarn_stock_company,
-        yarn_stock_company_id,
         lot_no,
         challan_no,
         receive_quantity,
         receive_cartoon_pallet,
-      } = yarnReceiveDetails;
+      } = receiveSizeBeamdetails;
 
       reset({
         challan_date: dayjs(challan_date),
-        yarn_company_name: yarn_stock_company?.yarn_company_name,
-        yarn_stock_company_id,
         lot_no,
         challan_no,
         receive_quantity,
         receive_cartoon_pallet,
       });
     }
-  }, [yarnReceiveDetails, reset]);
-
-  useEffect(() => {
-    // set options for denier selection on yarn stock company select
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarn_company_name) {
-        const options = yarn_details?.map(
-          ({
-            yarn_company_id = 0,
-            filament = 0,
-            yarn_denier = 0,
-            luster_type = "",
-            yarn_color = "",
-          }) => {
-            return {
-              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: yarn_company_id,
-            };
-          }
-        );
-        if (options?.length) {
-          setDenierOptions(options);
-        }
-      }
-    });
-  }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
+  }, [receiveSizeBeamdetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <GoBackButton />
-        <h3 className="m-0 text-primary">Edit Yarn Receive Challan</h3>
+        <Button onClick={goBack}>
+          <ArrowLeftOutlined />
+        </Button>
+        <h3 className="m-0 text-primary">Edit Receive size beam</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -199,80 +140,6 @@ function UpdateYarnReceive() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={8} className="flex items-end gap-2">
-            <Form.Item
-              label="Yarn Company"
-              name="yarn_company_name"
-              validateStatus={errors.yarn_company_name ? "error" : ""}
-              help={
-                errors.yarn_company_name && errors.yarn_company_name.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="yarn_company_name"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCDList}
-                    options={yscdListRes?.yarnCompanyList?.map(
-                      ({ yarn_company_name = "" }) => {
-                        return {
-                          label: yarn_company_name,
-                          value: yarn_company_name,
-                        };
-                      }
-                    )}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddYarnStockCompany}
-              className="flex-none mb-6"
-              type="primary"
-            />
-          </Col>
-
-          <Col span={8}>
-            <Form.Item
-              label="Denier"
-              name="yarn_stock_company_id"
-              validateStatus={errors.yarn_stock_company_id ? "error" : ""}
-              help={
-                errors.yarn_stock_company_id &&
-                errors.yarn_stock_company_id.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="yarn_stock_company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select denier"
-                    allowClear
-                    loading={isLoadingYSCDList}
-                    options={denierOptions}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
                   />
                 )}
               />
@@ -377,4 +244,4 @@ function UpdateYarnReceive() {
   );
 }
 
-export default UpdateYarnReceive;
+export default UpdateReceiveSizeBeam;
