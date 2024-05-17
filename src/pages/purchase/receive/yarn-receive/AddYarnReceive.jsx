@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -20,6 +20,8 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import { createYarnReceiveRequest } from "../../../../api/requests/purchase/yarnReceive";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const addYarnReceiveSchemaResolver = yupResolver(
   yup.object().shape({
@@ -74,14 +76,9 @@ function AddYarnReceive() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      mutationOnErrorHandler({ error, message });
     },
   });
-
-  function goBack() {
-    navigate(-1);
-  }
 
   async function onSubmit(data) {
     delete data.yarn_company_name;
@@ -136,9 +133,7 @@ function AddYarnReceive() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <GoBackButton />
         <h3 className="m-0 text-primary">Yarn Receive Challan Create</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -344,7 +339,6 @@ function AddYarnReceive() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

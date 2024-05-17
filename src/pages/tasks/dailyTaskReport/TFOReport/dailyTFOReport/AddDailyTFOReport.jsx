@@ -439,6 +439,10 @@ function AddDailyTFOReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    // disable past dates
+                    disabledDate={(current) =>
+                      dayjs(current).isBefore(dayjs(), "day")
+                    }
                   />
                 )}
               />
@@ -516,7 +520,6 @@ function AddDailyTFOReport() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
