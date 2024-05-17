@@ -121,10 +121,11 @@ function WindingDropReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index ) + 1
     },
     {
       title: "Date",
-      key: "report_date",
+      key: "created_at",
       render: ({ report_date }) => {
         return dayjs(report_date).format("DD-MM-YYYY");
       },
@@ -201,6 +202,25 @@ function WindingDropReportList() {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          return(
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell>
+                  <Typography.Text>{100}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{100}</Typography.Text>
+                </Table.Summary.Cell>
+              </Table.Summary.Row>
+            </>
+          )
         }}
       />
     );

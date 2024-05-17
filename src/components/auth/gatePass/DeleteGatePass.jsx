@@ -3,17 +3,18 @@ import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
-import { deleteYarnStockReportRequest } from "../../../api/requests/reports/yarnStockReport";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { deleteGatePassRequest } from "../../../api/requests/gatePass";
 
-const DeleteYarnStockReportButton = ({ details }) => {
-  const { companyId } = useContext(GlobalContext);
+const DeleteGatePass = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-  const { mutateAsync: deleteReport } = useMutation({
+  const { companyId } = useContext(GlobalContext);
+
+  const { mutateAsync: deleteGatePass } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteYarnStockReportRequest({
+      const res = await deleteGatePassRequest({
         id,
         params: {
           company_id: companyId,
@@ -21,14 +22,15 @@ const DeleteYarnStockReportButton = ({ details }) => {
       });
       return res?.data;
     },
+    mutationKey: ["gate", "pass", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
       }
       queryClient.invalidateQueries([
-        "yarn-stock",
-        "yarn-report",
+        "gate",
+        "pass",
         "list",
         companyId,
       ]);
@@ -42,7 +44,7 @@ const DeleteYarnStockReportButton = ({ details }) => {
   });
 
   async function handleDelete() {
-    deleteReport({
+    deleteGatePass({
       id: details.id,
     });
     setIsOpenDeleteDialog(false);
@@ -52,7 +54,6 @@ const DeleteYarnStockReportButton = ({ details }) => {
     <div>
       {/* Trigger to open the delete confirmation dialog */}
       <Button
-        danger
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}
@@ -66,7 +67,7 @@ const DeleteYarnStockReportButton = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete yarn stock report?"
+        content="Are you sure you want to delete gate pass?"
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -74,4 +75,4 @@ const DeleteYarnStockReportButton = ({ details }) => {
   );
 };
 
-export default DeleteYarnStockReportButton;
+export default DeleteGatePass;

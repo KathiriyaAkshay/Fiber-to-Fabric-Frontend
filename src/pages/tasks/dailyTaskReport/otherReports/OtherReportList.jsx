@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Flex, Input, Space, Spin, Table } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -18,25 +18,29 @@ import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import useDebounce from "../../../../hooks/useDebounce";
+import { useState } from "react";
 
 function OtherReportList() {
   const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: user } = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
       "reports",
       "other-report",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
     ],
     queryFn: async () => {
       const res = await getOtherReportListRequest({
         companyId,
-        params: { company_id: companyId, page, pageSize },
+        params: { company_id: companyId, page, pageSize, search: debouncedSearch },
       });
       return res.data?.data?.otherReportList;
     },
@@ -78,6 +82,7 @@ function OtherReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1
     },
     {
       title: "Date",
@@ -161,6 +166,7 @@ function OtherReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton/>
           <h3 className="m-0 text-primary">Other Report</h3>
           <Button
             onClick={navigateToAdd}
@@ -168,12 +174,19 @@ function OtherReportList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!reportListRes?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) =>{setSearch(e.target.value)} }
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!reportListRes?.rows?.length}
+            onClick={downloadPdf}
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

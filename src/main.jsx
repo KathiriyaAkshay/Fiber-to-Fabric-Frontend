@@ -70,6 +70,10 @@ import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJo
 import ReceiveSizeBeamList from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamList";
 import AddReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/AddReceiveSizeBeam";
 import UpdateReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateReceiveSizeBeam";
+import GatePassList from "./pages/gatePass";
+import AddGatePass from "./pages/gatePass/addGatePass";
+import UpdateGatePass from "./pages/gatePass/updateGatePass";
+import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
 
 const queryClient = new QueryClient();
 
@@ -121,7 +125,7 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <InHouseQualityList /> },
               { path: "add", element: <AddInHouseQuality /> },
-              { path: "update/:qualityId", element: <AddInHouseQuality /> },
+              { path: "update/:qualityId", element: <UpdateInHouseQuality /> },
             ],
           },
           {
@@ -814,7 +818,11 @@ const router = createBrowserRouter([
       },
       {
         path: "gate-pass",
-        element: <div>gate-pass</div>,
+        children: [
+          { index: true, element: <GatePassList /> },
+          { path: "add", element: <AddGatePass /> },
+          { path: "update/:gatePassId", element: <UpdateGatePass /> },
+        ]
       },
       {
         path: "profile",

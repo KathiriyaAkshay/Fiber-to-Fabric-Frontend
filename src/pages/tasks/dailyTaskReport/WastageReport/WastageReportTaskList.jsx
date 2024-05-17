@@ -310,6 +310,29 @@ function WastageReportTaskList() {
           onChange: onPageChange,
         }}
         className="overflow-auto"
+        summary={() => {
+          return(
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{100}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{100}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          )
+        }}
       />
     );
   }

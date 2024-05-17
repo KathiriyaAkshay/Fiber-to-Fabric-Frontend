@@ -24,6 +24,7 @@ import { GlobalContext } from "../../../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import GoBackButton from "../../../../../components/common/buttons/GoBackButton";
+import moment from "moment";
 
 const updateWindingDropReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -171,6 +172,11 @@ function UpdateWindingDropReport() {
     }
   }, [reportDetails, reset]);
 
+  const disabledDate = (current) => {
+    // Disable dates after today
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -203,6 +209,7 @@ function UpdateWindingDropReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    disabledDate={disabledDate}
                   />
                 )}
               />

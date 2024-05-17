@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Space, Spin, Table, Tag, Popconfirm, message, Flex, Input } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -11,27 +11,33 @@ import {
 import { getYarnStockReportListRequest } from "../../../../api/requests/reports/yarnStockReport";
 import DeleteYarnStockReportButton from "../../../../components/tasks/yarnStockReport/DeleteYarnStockReportButton";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { APIHandler } from "../../../../api/requests/commonHandler";
+import moment from "moment";
+import useDebounce from "../../../../hooks/useDebounce";
 
 function YarnStockReportList() {
-  const { company, companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
+
+  const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: user } = useCurrentUser();
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebounce(search, 500);
 
-  const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
+  const { data: reportListRes, isLoading: isLoadingReportList, refetch } = useQuery({
     queryKey: [
       "yarn-stock",
       "yarn-report",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, search: debouncedSearch },
     ],
     queryFn: async () => {
       const res = await getYarnStockReportListRequest({
         companyId,
-        params: { company_id: companyId, page, pageSize },
+        params: { company_id: companyId, page, pageSize, search: debouncedSearch },
       });
       return res.data?.data?.yarnStockReportList;
     },
@@ -101,11 +107,28 @@ function YarnStockReportList() {
     });
   }
 
+  const [isYarnStatusUpdating, setIsYarnStatusUpdating] = useState(false) ; 
+  async function UpdateYarnStatus(id){
+    setIsYarnStatusUpdating(true); 
+    let response = await APIHandler("PATCH", {"yarn_company_id": id, "is_confirm": true}, `/yarn-stock/yarn-report/update?company_id=${companyId}`) ; 
+    setIsYarnStatusUpdating(false) ; 
+    
+    if (response == false){
+      message.warning("Network request failed") ; 
+    } else if (response?.success){
+      message.success("Stock confirmed successfully") ; 
+      refetch();
+    } else{
+      message.warning(response?.message) ; 
+    }
+  }
+
   const columns = [
     {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index ) + 1
     },
     {
       title: "Date",
@@ -162,11 +185,37 @@ function YarnStockReportList() {
       key: "current_stock",
     },
     {
+      title: "Conformation",
+      dataIndex: "is_confirm", 
+      key: "conformation", 
+      render: (text, record) => (
+        text == false?<>
+          <Popconfirm
+            title = "Stock Conformation"
+            description = "Are you sure you want to confirm this Stock ?"
+            onConfirm={() => {UpdateYarnStatus(record?.yarn_stock_company?.id)}}
+            okButtonProps={{
+              loading: isYarnStatusUpdating
+            }}
+          > 
+            <div>
+              <Tag color="red">Pending</Tag>
+            </div>
+          </Popconfirm>
+        </>:
+          <div>
+            <Tag color="green">Confirmed</Tag>
+            <div style={{marginTop: "0.3rem"}}>
+              {moment(record?.updatedAt).format("DD/MM/YYYY HH:MM:SS")}
+            </div>
+          </div>
+      )
+    }, 
+    {
       title: "Require kg",
       dataIndex: "require_stock",
       key: "require_stock",
       render: (text, record) => (
-
         <div className="red-option-text">{text}</div>
         
       )
@@ -212,6 +261,7 @@ function YarnStockReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton/>
           <h3 className="m-0 text-primary">Yarn Stock Company Report</h3>
           <Button
             onClick={navigateToAdd}
@@ -219,12 +269,19 @@ function YarnStockReportList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!reportListRes?.rows?.length}
-          onClick={downloadPdf}
-        />
+        <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) =>{setSearch(e.target.value)} }
+          />
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!reportListRes?.rows?.length}
+            onClick={downloadPdf}
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>
