@@ -27,6 +27,7 @@ import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import moment from "moment";
 
 const updateCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -201,6 +202,11 @@ function UpdateCheckTakaReport() {
     }
   }, [machineListRes?.rows, reportDetails, reset]);
 
+  const disabledDate = current => {
+    // Disable dates that are after the current date
+    return current && current > moment().endOf('day');
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -234,6 +240,7 @@ function UpdateCheckTakaReport() {
                         width: "100%",
                       }}
                       format="DD-MM-YYYY"
+                      disabledDate={disabledDate}
                     />
                   )}
                 />

@@ -118,7 +118,7 @@ function CheckTakaReportList() {
   const columns = [
     {
       key: "id",
-      render: (text, record, index) => page * pageSize + index + 1,
+      render: (text, record, index) => ((page * pageSize) + index) + 1,
       title: "ID",
     },
     {
@@ -130,6 +130,9 @@ function CheckTakaReportList() {
       title: "Employee",
       dataIndex: "employee_name",
       key: "employee_name",
+      render: (text, record) => (
+        `${record?.employee?.first_name} ${record?.employee?.first_name} | ( ${record?.employee?.username} )`
+      )
     },
     {
       title: "Machine",
@@ -146,16 +149,24 @@ function CheckTakaReportList() {
       dataIndex: "taka_no",
       key: "taka_no",
     },
-    // {
-    //   title: "Problem",
-    //   dataIndex: "problem",
-    //   key: "problem",
-    // },
-    // {
-    //   title: "Fault",
-    //   dataIndex: "fault",
-    //   key: "fault",
-    // },
+    {
+      title: "Quality", 
+      dataIndex: "quality", 
+      key: "quality", 
+      render: (text, record) => (
+        `${record?.inhouse_quality?.quality_name}`
+      )
+    },
+    {
+      title: "Problem", 
+      dataIndex: "problem", 
+      key: "problem"
+    }, 
+    {
+      title: "Fault", 
+      dataIndex: "fault", 
+      key: "fault"
+    }, 
     {
       title: "Action",
       render: (reportDetails) => {
@@ -165,6 +176,9 @@ function CheckTakaReportList() {
           machine_name = "",
           machine_no = 0,
           taka_no = 0,
+          inhouse_quality = {},
+          fault, 
+          problem
         } = reportDetails;
 
         return (
@@ -178,6 +192,9 @@ function CheckTakaReportList() {
                 { title: "Machine", value: machine_name },
                 { title: "Machine No", value: machine_no },
                 { title: "Taka No", value: taka_no },
+                { title: "Quality", value: inhouse_quality?.quality_name}, 
+                { title: "Problem", value: problem} ,
+                { title: "Fault", value: fault}
               ]}
             />
             <Button

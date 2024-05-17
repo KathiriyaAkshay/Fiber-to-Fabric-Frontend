@@ -68,14 +68,18 @@ function UpdateEmployeeAttendanceReport() {
 
   const { mutateAsync: updateEmployeeAttendanceReport } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateEmployeeAttendanceReportRequest({
-        id,
-        data,
-        params: {
-          company_id: companyId,
-        },
-      });
-      return res.data;
+      if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length) {
+        message.warning(`Please select ${data?.absent_employee_count} absend employee`)
+      } else {
+        const res = await updateEmployeeAttendanceReportRequest({
+          id,
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data;
+      }
     },
     mutationKey: ["reports/employee-attandance-report/update", id],
     onSuccess: (res) => {
@@ -273,7 +277,7 @@ function UpdateEmployeeAttendanceReport() {
                     loading={isLoadingEmployeeList}
                     {...field}
                     options={EmployeeListRes?.rows?.map((user) => ({
-                      label: user.first_name + " " + user.last_name,
+                      label:`${user?.first_name} ${user?.last_name} ( ${user?.employer?.employee_type?.employee_type} )`,
                       value: user.id,
 
                       disabled:

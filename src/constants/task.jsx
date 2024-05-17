@@ -225,16 +225,4 @@ export const DAILY_TASK_REPORT_LIST = [
       />
     ),
   },
-  {
-    title: "Beam Card",
-    path: "beam-card",
-    // avatar: <BeamCard />,
-    // avatar: <Avatar icon={<BeamCard />} />,
-    avatar: (
-      <Avatar
-        size={"large"}
-        src="../src/assets/svg/report-icons/beam-card.svg"
-      />
-    ),
-  },
 ];
