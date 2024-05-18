@@ -25,6 +25,7 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { addGatePassRequest } from "../../api/requests/gatePass";
 import dayjs from "dayjs";
+import { disableBeforeDate } from "../../utils/date";
 
 const { TextArea } = Input;
 
@@ -259,7 +260,11 @@ const AddGatePass = () => {
                 control={control}
                 name="date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    disabledDate={disableBeforeDate}
+                  />
                 )}
               />
             </Form.Item>

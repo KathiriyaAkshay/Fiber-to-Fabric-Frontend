@@ -16,3 +16,15 @@ export const initialOrderDetail = {
   remark: "",
   tpm: "",
 };
+
+export const ORDER_STATUS = [
+  { label: "Pending", value: "pending" },
+  { label: "Finished", value: "finished" },
+  { label: "Cancelled", value: "cancelled" },
+];
+
+export const ORDER_TYPE = [
+  { label: "Taka(In House)", value: "taka(inhouse)" },
+  { label: "Purchase/Trading", value: "purchase/trading" },
+  { label: "Job", value: "job" },
+];

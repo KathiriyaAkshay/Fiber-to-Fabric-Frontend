@@ -1,5 +1,27 @@
 import { api } from "..";
 
+// my order
+export function createMyOrderRequest({ data, params }) {
+  return api.post(`/order-master/gray-order/create`, data, { params });
+}
+
+export function getMyOrderByIdRequest({ id, params }) {
+  return api.get(`/order-master/gray-order/get/${id}`, { params });
+}
+
+export function getMyOrderListRequest({ params }) {
+  return api.get(`/order-master/gray-order/list`, { params });
+}
+
+export function updateMyOrderRequest({ id, data, params }) {
+  return api.patch(`/order-master/gray-order/update/${id}`, data, { params });
+}
+
+export function deleteMyOrderRequest({ id, params }) {
+  return api.delete(`/order-master/gray-order/delete/${id}`, { params });
+}
+
+
 // yarn order
 export function createYarnOrderRequest({ data, params }) {
   return api.post(`/order-master/yarn-order/create`, data, { params });
