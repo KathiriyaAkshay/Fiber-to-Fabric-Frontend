@@ -24,6 +24,7 @@ import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
+import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -40,7 +41,7 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
       yup.object().shape({
         ends_or_tars: yup.string().required("Please enter ends of tars"),
         tpm: yup.string().required("Please enter tpm"),
-        grade: yup.string().required("Please enter grade"),
+        // grade: yup.string().required("Please enter grade"),
         meters: yup.string().required("Please enter meters"),
         pano: yup.string().required("Please enter pano"),
         remark: yup.string().optional(),
@@ -123,6 +124,8 @@ function AddReceiveSizeBeam() {
 
   async function onSubmit(data) {
     // delete not allowed properties here
+    delete data?.supplier_name;
+    delete data?.supplier_company;
     await createReceiveSizeBeam(data);
   }
 
@@ -146,12 +149,38 @@ function AddReceiveSizeBeam() {
 
   useEffect(() => {
     sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
-      ({ id = 0, supplier, supplier_id = 0 }) => {
+      ({ id = 0, supplier, supplier_id = 0, size_beam_order_details }) => {
         if (id == size_beam_order_id) {
           const { supplier_name = "", supplier_company = "" } = supplier || {};
           setValue("supplier_id", supplier_id);
           setValue("supplier_name", supplier_name);
           setValue("supplier_company", supplier_company);
+          setValue(
+            "beam_details",
+            (size_beam_order_details || [])?.map(
+              ({
+                beam_no,
+                ends_or_tars,
+                tpm,
+                pano,
+                taka,
+                meters,
+                net_weight,
+                grade,
+              }) => {
+                return {
+                  beam_no,
+                  ends_or_tars,
+                  tpm,
+                  pano,
+                  taka,
+                  meters,
+                  net_weight,
+                  grade,
+                };
+              }
+            )
+          );
         }
       }
     );
@@ -358,6 +387,10 @@ function AddReceiveSizeBeam() {
             </Form.Item>
           </Col>
         </Row>
+
+        {size_beam_order_id && (
+          <ReceiveSizeBeamDetail control={control} errors={errors} />
+        )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
