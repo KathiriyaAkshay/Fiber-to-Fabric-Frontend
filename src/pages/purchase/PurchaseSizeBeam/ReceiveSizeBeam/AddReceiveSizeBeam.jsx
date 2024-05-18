@@ -149,12 +149,21 @@ function AddReceiveSizeBeam() {
 
   useEffect(() => {
     sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
-      ({ id = 0, supplier, supplier_id = 0, size_beam_order_details }) => {
+      ({
+        id = 0,
+        supplier,
+        supplier_id = 0,
+        size_beam_order_details,
+        total_meters = 0,
+      }) => {
         if (id == size_beam_order_id) {
           const { supplier_name = "", supplier_company = "" } = supplier || {};
           setValue("supplier_id", supplier_id);
           setValue("supplier_name", supplier_name);
           setValue("supplier_company", supplier_company);
+          setValue("total_meter", total_meters);
+          // Naa tme koi value pass Kari do..like total meter j send kari do payload ma
+          setValue("remaining_meter", total_meters);
           setValue(
             "beam_details",
             (size_beam_order_details || [])?.map(

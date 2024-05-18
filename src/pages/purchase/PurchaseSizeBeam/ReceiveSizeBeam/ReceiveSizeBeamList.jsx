@@ -140,7 +140,7 @@ function ReceiveSizeBeamList() {
 
     return (
       <Table
-        dataSource={receiveSizeBeamListRes?.row || []}
+        dataSource={receiveSizeBeamListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
