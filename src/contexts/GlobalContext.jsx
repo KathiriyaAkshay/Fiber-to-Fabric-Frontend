@@ -1,9 +1,15 @@
 import { createContext, useEffect, useMemo, useState } from "react";
 import { useCompanyList } from "../api/hooks/company";
+import dayjs from "dayjs";
+import { getFinancialYearEnd } from "../utils/dayjs";
 export const GlobalContext = createContext();
+
+const currentDate = dayjs();
+const currentYearEnd = getFinancialYearEnd(currentDate);
 
 const GlobalContextProvider = (props) => {
   const [companyId, setCompanyId] = useState();
+  const [financialYearEnd, setFinancialYearEnd] = useState(currentYearEnd);
 
   const { data: companyListRes, isLoading: isLoadingCompanyList } =
     useCompanyList();
@@ -27,6 +33,8 @@ const GlobalContextProvider = (props) => {
         setCompanyId,
         isLoadingCompanyList,
         companyListRes,
+        financialYearEnd,
+        setFinancialYearEnd,
       }}
     >
       {props.children}

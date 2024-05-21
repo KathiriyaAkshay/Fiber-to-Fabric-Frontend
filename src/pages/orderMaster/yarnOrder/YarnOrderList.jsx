@@ -16,18 +16,24 @@ function YarnOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
   const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
       "yarn-order",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, end: financialYearEnd },
     ],
     queryFn: async () => {
       const res = await getYarnOrderListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          end: financialYearEnd,
+          pending: true,
+        },
       });
       return res.data?.data;
     },

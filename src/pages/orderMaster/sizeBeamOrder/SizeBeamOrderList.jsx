@@ -16,18 +16,24 @@ function SizeBeamOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
   const { data: sizeBeamOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
       "size-beam-order",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, end: financialYearEnd },
     ],
     queryFn: async () => {
       const res = await getSizeBeamOrderListRequest({
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          end: financialYearEnd,
+          pending: true,
+        },
       });
       return res.data?.data;
     },

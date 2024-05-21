@@ -38,7 +38,7 @@ function DailyTFOReportList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -54,6 +54,7 @@ function DailyTFOReportList() {
         search: debouncedSearch,
         toDate: debouncedToDate,
         fromDate: debouncedFromDate,
+        end: financialYearEnd,
       },
     ],
     queryFn: async () => {
@@ -66,6 +67,7 @@ function DailyTFOReportList() {
           search: debouncedSearch,
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
+          end: financialYearEnd,
         },
       });
       return res.data?.data;

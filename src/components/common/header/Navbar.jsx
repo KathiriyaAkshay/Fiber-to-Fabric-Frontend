@@ -4,6 +4,7 @@ import { Flex, Menu } from "antd";
 import notificationBell from "../../../assets/svg/notification-bell.svg";
 import CompanySelection from "./CompanySelection";
 import topbarLogo from "../../../assets/svg/topbar-logo.svg";
+import YearSelection from "./YearSelection";
 
 function Navbar() {
   return (
@@ -24,6 +25,7 @@ function Navbar() {
       </Flex>
       <Flex gap={"12px"} align="center">
         <CompanySelection />
+        <YearSelection />
         <img src={notificationBell} alt="notifications" />
         <ProfileMenu />
       </Flex>
