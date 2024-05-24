@@ -28,11 +28,7 @@ const DeleteMyOrder = ({ details }) => {
       if (successMessage) {
         message.success(successMessage);
       }
-      queryClient.invalidateQueries([
-        "myOrder",
-        "list",
-        companyId,
-      ]);
+      queryClient.invalidateQueries(["myOrder", "list", companyId]);
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -56,6 +52,7 @@ const DeleteMyOrder = ({ details }) => {
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}
+        danger={true}
       >
         <DeleteOutlined />
       </Button>
