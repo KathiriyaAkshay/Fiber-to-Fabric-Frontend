@@ -4,17 +4,17 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { deleteMyOrderRequest } from "../../../api/requests/orderMaster";
+import { deleteJobTakaRequest } from "../../../api/requests/job/jobTaka";
 
-const DeleteMyOrder = ({ details }) => {
+const DeleteJobTaka = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: deleteMyOrder } = useMutation({
+  const { mutateAsync: deleteYarnSent } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteMyOrderRequest({
+      const res = await deleteJobTakaRequest({
         id,
         params: {
           company_id: companyId,
@@ -22,13 +22,13 @@ const DeleteMyOrder = ({ details }) => {
       });
       return res?.data;
     },
-    mutationKey: ["gate", "pass", "delete"],
+    mutationKey: ["jobTaka", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
       }
-      queryClient.invalidateQueries(["myOrder", "list", companyId]);
+      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -39,7 +39,7 @@ const DeleteMyOrder = ({ details }) => {
   });
 
   async function handleDelete() {
-    deleteMyOrder({
+    deleteYarnSent({
       id: details.id,
     });
     setIsOpenDeleteDialog(false);
@@ -49,10 +49,10 @@ const DeleteMyOrder = ({ details }) => {
     <div>
       {/* Trigger to open the delete confirmation dialog */}
       <Button
+        danger
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}
-        danger={true}
       >
         <DeleteOutlined />
       </Button>
@@ -63,7 +63,7 @@ const DeleteMyOrder = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete order?"
+        content="Are you sure you want to delete job taka?"
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -71,4 +71,4 @@ const DeleteMyOrder = ({ details }) => {
   );
 };
 
-export default DeleteMyOrder;
+export default DeleteJobTaka;

@@ -289,6 +289,7 @@ const MyOrderList = () => {
           <Space>
             <ViewDetailModal
               title="Order Details"
+              isScroll={true}
               details={[
                 { title: "Order Type", value: details.order_type },
                 {
