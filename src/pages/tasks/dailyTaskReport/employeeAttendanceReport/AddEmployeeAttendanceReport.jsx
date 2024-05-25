@@ -60,11 +60,15 @@ function AddEmployeeAttendanceReport() {
 
   const { mutateAsync: createEmployeeAttendance } = useMutation({
     mutationFn: async (data) => {
-      const res = await createEmployeeAttendanceReportRequest({
-        data,
-        params: { company_id: companyId },
-      });
-      return res.data;
+      if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length ){
+        message.warning(`Please select ${data?.absent_employee_count} absend employee`)
+      } else {
+        const res = await createEmployeeAttendanceReportRequest({
+          data,
+          params: { company_id: companyId },
+        });
+        return res.data;
+      }
     },
     mutationKey: ["reports/employee-attandance-report/create"],
     onSuccess: (res) => {
@@ -74,7 +78,7 @@ function AddEmployeeAttendanceReport() {
         message.success(successMessage);
       }
       navigate(-1);
-    },
+    },  
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
       message.error(errorMessage);
@@ -101,7 +105,6 @@ function AddEmployeeAttendanceReport() {
   });
 
   const { absent_employee_count, user_ids } = watch();
-  // console.log("errors----->", errors);
 
   return (
     <div className="flex flex-col p-4">
@@ -240,7 +243,7 @@ function AddEmployeeAttendanceReport() {
                     loading={isLoadingEmployeeList}
                     {...field}
                     options={EmployeeListRes?.rows?.map((user) => ({
-                      label: user.first_name + " " + user.last_name,
+                      label: `${user?.first_name} ${user?.last_name} ( ${user?.employer?.employee_type?.employee_type} )`,
                       value: user.id,
                       disabled:
                         !absent_employee_count ||

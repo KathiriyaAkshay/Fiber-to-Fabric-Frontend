@@ -21,6 +21,7 @@ import { createWindingDropsReportRequest } from "../../../../../api/requests/rep
 import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
+import moment from "moment";
 
 const addWindingReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -131,6 +132,11 @@ function AddWindingDropReport() {
     setValue("total_weight", Number(cops) * Number(weight));
   }, [cops, setValue, weight]);
 
+  const disabledDate = (current) => {
+    // Disable dates after today
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -165,6 +171,7 @@ function AddWindingDropReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    disabledDate={disabledDate}
                   />
                 )}
               />

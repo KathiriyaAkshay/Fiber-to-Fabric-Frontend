@@ -274,10 +274,32 @@ function AddWastageReportTask() {
               required={true}
               wrapperCol={{ sm: 24 }}
             >
+
               <Controller
                 control={control}
                 name="floor"
-                render={({ field }) => <Input {...field} />}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder = "Select floor"
+                    options={[
+                      {label: "Floor", value: "Floor"}, 
+                      {label: "BM", value: "BM"}, 
+                      {label: "GF", value: "GF"}, 
+                      {label: "FF", value: "FF"}, 
+                      {label: "SF", value: "SF"}, 
+                      {label: "TF", value: "TF"}, 
+                      {label: "Fourth", value: "Fourth"}, 
+                      {label: "Five", value: "Five"}, 
+                      {label: "Six", value: "Six"}, 
+                      {label: "Seven", value: "Seven"}, 
+                      {label: "Eight", value: "Eight"}, 
+                      {label: "Nine", value: "Nine"}, 
+                      {label: "Ten", value: "Ten"}, 
+                    ]}
+                  />
+
+                )}
               />
             </Form.Item>
           </Col>

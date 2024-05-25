@@ -67,11 +67,20 @@ import RequireReadyBeamList from "./pages/requireReadyBeam/RequireReadyBeamList"
 import EditRequireReadyBeam from "./pages/requireReadyBeam/EditRequireReadyBeam";
 import JobYarnStockReportList from "./pages/job/reports/jobYarnStockReports/jobYarnStockReportList";
 import AddJobYarnStockReport from "./pages/job/reports/jobYarnStockReports/addJobYarnStockReport";
+import ReceiveSizeBeamList from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamList";
+import AddReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/AddReceiveSizeBeam";
+import UpdateReceiveSizeBeam from "./pages/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateReceiveSizeBeam";
 import GatePassList from "./pages/gatePass";
 import AddGatePass from "./pages/gatePass/addGatePass";
 import UpdateGatePass from "./pages/gatePass/updateGatePass";
 import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
 import BeamCardList from "./pages/beamCard/beamCardList";
+import YarnSentList from "./pages/job/sent/yarnSent/yarnSentList";
+import AddYarnSent from "./pages/job/sent/yarnSent/addYarnSent";
+import UpdateYarnSent from "./pages/job/sent/yarnSent/updateYarnSent";
+import JobTakaList from "./pages/job/jobTaka/JobTakaList";
+import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
+import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
 
 const queryClient = new QueryClient();
 
@@ -378,26 +387,19 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: "/purchase-size-beam",
-            element: (
-              <div>
-                <div>purchase-size-beam</div>
-                <Outlet />
-              </div>
-            ),
+            path: "purchase-size-beam",
             children: [
-              { index: true, element: <div>purchase-size-beam</div> },
-              {
-                path: "send-beam-pipe",
-                element: <div>send-beam-pipe</div>,
-              },
               {
                 path: "bills-of-size-beam",
                 element: <div>bills-of-size-beam</div>,
               },
               {
                 path: "receive-size-beam",
-                element: <div>receive-size-beam</div>,
+                children: [
+                  { index: true, element: <ReceiveSizeBeamList /> },
+                  { path: "add", element: <AddReceiveSizeBeam /> },
+                  { path: "update/:id", element: <UpdateReceiveSizeBeam /> },
+                ],
               },
             ],
           },
@@ -450,19 +452,17 @@ const router = createBrowserRouter([
       {
         path: "/job",
         children: [
-          { index: true, element: <div>job-taka</div> },
+          { index: true, element: <JobTakaList /> },
           {
             path: "job-taka",
-            element: <div>job-taka</div>,
+            children: [
+              { index: true, element: <JobTakaList /> },
+              { path: "add", element: <AddJobTaka /> },
+              { path: "update/:id", element: <UpdateJobTaka /> },
+            ],
           },
           {
             path: "sent",
-            element: (
-              <div>
-                <div>sent</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>sent</div> },
               {
@@ -471,7 +471,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-sent",
-                element: <div>yarn-sent</div>,
+                children: [
+                  { index: true, element: <YarnSentList /> },
+                  { path: "add", element: <AddYarnSent /> },
+                  { path: "update/:id", element: <UpdateYarnSent /> },
+                ],
               },
             ],
           },
@@ -518,9 +522,9 @@ const router = createBrowserRouter([
               {
                 path: "job-yarn-stock-report",
                 children: [
-                  { index: true, element: <JobYarnStockReportList/> },
+                  { index: true, element: <JobYarnStockReportList /> },
                   { path: "add", element: <AddJobYarnStockReport /> },
-                ]
+                ],
               },
               {
                 path: "job-production",
@@ -800,9 +804,7 @@ const router = createBrowserRouter([
       },
       {
         path: "beam-card",
-        children: [
-          { index: true, element: <BeamCardList /> }
-        ]
+        children: [{ index: true, element: <BeamCardList /> }],
       },
       {
         path: "require-ready-beam",
@@ -829,7 +831,7 @@ const router = createBrowserRouter([
           { index: true, element: <GatePassList /> },
           { path: "add", element: <AddGatePass /> },
           { path: "update/:gatePassId", element: <UpdateGatePass /> },
-        ]
+        ],
       },
       {
         path: "profile",

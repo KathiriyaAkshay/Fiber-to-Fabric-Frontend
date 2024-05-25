@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -23,6 +23,8 @@ import {
   getYarnReceiveByIdRequest,
   updateYarnReceiveRequest,
 } from "../../../../api/requests/purchase/yarnReceive";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const updateYarnReceiveSchemaResolver = yupResolver(
   yup.object().shape({
@@ -45,10 +47,6 @@ function UpdateYarnReceive() {
   const { companyId } = useContext(GlobalContext);
 
   const [denierOptions, setDenierOptions] = useState([]);
-
-  function goBack() {
-    navigate(-1);
-  }
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -81,10 +79,7 @@ function UpdateYarnReceive() {
       navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 
@@ -175,9 +170,7 @@ function UpdateYarnReceive() {
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
-        <Button onClick={goBack}>
-          <ArrowLeftOutlined />
-        </Button>
+        <GoBackButton />
         <h3 className="m-0 text-primary">Edit Yarn Receive Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -380,7 +373,6 @@ function UpdateYarnReceive() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

@@ -28,12 +28,7 @@ const DeleteGatePass = ({ details }) => {
       if (successMessage) {
         message.success(successMessage);
       }
-      queryClient.invalidateQueries([
-        "gate",
-        "pass",
-        "list",
-        companyId,
-      ]);
+      queryClient.invalidateQueries(["gate", "pass", "list", companyId]);
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -54,6 +49,7 @@ const DeleteGatePass = ({ details }) => {
     <div>
       {/* Trigger to open the delete confirmation dialog */}
       <Button
+        danger
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}

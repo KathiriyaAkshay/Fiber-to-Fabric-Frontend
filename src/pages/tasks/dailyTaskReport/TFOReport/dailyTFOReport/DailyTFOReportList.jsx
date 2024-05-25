@@ -6,6 +6,7 @@ import {
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
@@ -120,7 +121,13 @@ function DailyTFOReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1
     },
+    {
+      title: "TFO Number", 
+      dataIndex: "tfo_number", 
+
+    }, 
     {
       title: "Motor Type",
       dataIndex: "motor_type",
@@ -159,6 +166,38 @@ function DailyTFOReportList() {
         return dayjs(load_date).format("h:mm A");
       },
     },
+    {
+      title: "Drop Date",
+      key: "load_time",
+      render: ({ load_date }) => {
+        return dayjs(load_date).format("h:mm A");
+      },
+    },
+    {
+      title: "Drop time",
+      key: "load_time",
+      render: ({ load_date }) => {
+        return dayjs(load_date).format("h:mm A");
+      },
+    },
+    {
+      title: "is Unload Motor",
+      key: "load_time",
+      render: ({ load_date }) => {
+        return(
+          <>
+            <Tag color="red">Pending</Tag>
+          </>
+        )
+      },
+    },
+    {
+      title: "Any Problem",
+      key: "load_time",
+      render: ({ load_date }) => {
+        return dayjs(load_date).format("h:mm A");
+      },
+    },
     // {
     //   title: "Drop Date",
     //   key: "drop_date",
@@ -184,16 +223,12 @@ function DailyTFOReportList() {
           tpm = 0,
           load_date,
         } = reportDetails;
-        const { yarn_denier = 0 } = yarn_stock_company;
+        const { yarn_denier = 0 } = yarn_stock_company || {};
         return (
           <Space>
             <ViewDetailModal
               title="Report Card"
               details={[
-                // {
-                //   title: "SUPERVISOR NAME",
-                //   value: "SUPERVISOR NAME",
-                // },
                 { title: "MACHINE NAME", value: machine_name },
                 { title: "T.F.O NO.", value: machine_no },
                 { title: "MOTOR TYPE", value: motor_type },

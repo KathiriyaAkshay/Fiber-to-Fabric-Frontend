@@ -23,6 +23,7 @@ import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import moment from "moment";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -157,6 +158,11 @@ function AddCheckTakaReport() {
     });
   }, [machineListRes?.rows, machine_id, machine_no, setValue]);
 
+  const disabledDate = current => {
+    // Disable dates that are after the current date
+    return current && current > moment().endOf('day');
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -189,6 +195,7 @@ function AddCheckTakaReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    disabledDate={disabledDate  }
                   />
                 )}
               />
@@ -238,8 +245,8 @@ function AddCheckTakaReport() {
                     allowClear
                     loading={isLoadingEmployeeList}
                     options={employeeListRes?.rows?.map(
-                      ({ id = 0, first_name = "" }) => ({
-                        label: first_name,
+                      ({ id = 0, first_name = "", last_name = "", username = ""  }) => ({
+                        label: `${first_name} ${last_name} | ( ${username} )`,
                         value: id,
                       })
                     )}

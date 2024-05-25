@@ -546,18 +546,6 @@ export const menubarOptionsList = [
         ),
         children: [
           {
-            path: "send-beam-pipe",
-            key: "Send Beam Pipe",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="purchase/purchase-size-beam/send-beam-pipe"
-              >
-                Send Beam Pipe
-              </Link>
-            ),
-          },
-          {
             path: "bills-of-size-beam",
             key: "Bills Of Size Beam",
             label: (

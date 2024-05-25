@@ -131,8 +131,8 @@ function UpdateDenierwiseWastageReport() {
         machine_id,
         notes,
         wastage,
-        // yarn_stock_company_id,
-        // yarn_stock_company = {},
+        yarn_stock_company_id,
+        yarn_stock_company = {},
       } = reportDetails;
 
       reset({
@@ -140,8 +140,8 @@ function UpdateDenierwiseWastageReport() {
         machine_id,
         notes,
         wastage,
-        // yarn_company_name: yarn_stock_company?.yarn_company_name,
-        // yarn_stock_company_id,
+        yarn_company_name: yarn_stock_company?.yarn_company_name,
+        yarn_stock_company_id,
       });
     }
   }, [reportDetails, reset]);

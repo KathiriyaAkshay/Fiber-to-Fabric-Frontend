@@ -24,6 +24,7 @@ import { getYSCDropdownList } from "../../../../../api/requests/reports/yarnStoc
 import { mutationOnErrorHandler } from "../../../../../utils/mutationUtils";
 import GoBackButton from "../../../../../components/common/buttons/GoBackButton";
 import { YARN_TYPE_OPTION_LIST } from "../../../../../constants/yarn";
+import moment from "moment";
 
 const addRollStockReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -132,6 +133,11 @@ function AddRollStockReport() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
+  const disabledDate = (current) => {
+    // Disable dates after today
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -164,6 +170,7 @@ function AddRollStockReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
+                    disabledDate={disabledDate}
                   />
                 )}
               />
@@ -300,6 +307,7 @@ function AddRollStockReport() {
               validateStatus={errors.roll_stock ? "error" : ""}
               help={errors.roll_stock && errors.roll_stock.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}

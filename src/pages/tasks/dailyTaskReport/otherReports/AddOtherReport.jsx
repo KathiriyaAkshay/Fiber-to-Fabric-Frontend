@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import { createOtherReportRequest } from "../../../../api/requests/reports/otherReport";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import moment from "moment";
 
 const addOtherReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -68,6 +69,11 @@ function AddOtherReport() {
     });
   }
 
+  const disabledDate = (current) => {
+    // Disable dates that are after today
+    return current && current > moment().endOf('day');
+  };
+
   const {
     control,
     handleSubmit,
@@ -114,6 +120,7 @@ function AddOtherReport() {
                     style={{
                       width: "100%",
                     }}
+                    disabledDate={disabledDate}
                     format="DD-MM-YYYY"
                   />
                 )}

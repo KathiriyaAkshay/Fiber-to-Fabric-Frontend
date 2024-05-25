@@ -11,6 +11,7 @@ import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../hooks/usePagination";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { useContext } from "react";
+import { mutationOnErrorHandler } from "../../utils/mutationUtils";
 
 function MachineList() {
   const navigate = useNavigate();
@@ -51,13 +52,9 @@ function MachineList() {
       if (successMessage) {
         message.success(successMessage);
       }
-      navigate(-1);
     },
     onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
+      mutationOnErrorHandler({ error, message });
     },
   });
 

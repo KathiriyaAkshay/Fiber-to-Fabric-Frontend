@@ -13,6 +13,7 @@ import {
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 function WastageSalesReportList() {
   const [search, setSearch] = useState("");
@@ -117,6 +118,7 @@ function WastageSalesReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index) + 1
     },
     {
       title: "Date",
@@ -219,6 +221,7 @@ function WastageSalesReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton/>
           <h3 className="m-0 text-primary">Wastage Sales report</h3>
           <Button
             onClick={navigateToAdd}
