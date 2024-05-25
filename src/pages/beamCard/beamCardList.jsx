@@ -11,6 +11,7 @@ import {
   Typography,
 } from "antd";
 import {
+  AppstoreOutlined,
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
@@ -26,9 +27,34 @@ import { usePagination } from "../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import useDebounce from "../../hooks/useDebounce";
-import { getTradingQualityListRequest } from "../../api/requests/qualityMaster";
+import {
+  getInHouseQualityListRequest,
+  getTradingQualityListRequest,
+} from "../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import ViewDetailModal from "../../components/common/modal/ViewDetailModal";
+import { BEAM_TYPE } from "../../constants/beam";
+import dayjs from "dayjs";
+import FinishBeamCardModal from "../../components/beamCard/FinishBeamCardModal";
+
+const tradingQualityList = {
+  row: [
+    {
+      beam_no: "Value",
+      quality_name: "Value",
+      company: "Value",
+      taka: "Value",
+      meter: "Value",
+      pending_meter: "Value",
+      shortage: "Value",
+      pano: "Value",
+      mach_no: "Value",
+      day_duration: "Value",
+      date: dayjs().format("DD-MM-YYYY").toString(),
+      status: "Pending",
+    },
+  ],
+};
 
 const BeamCardList = () => {
   const navigate = useNavigate();
@@ -43,9 +69,13 @@ const BeamCardList = () => {
 
   const [machine, setMachine] = useState();
   const [beamType, setBeamType] = useState("primary");
-  console.log(beamType);
+  const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
+  const [quality, setQuality] = useState(null);
+
   const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
+  const debouncedBeamTypeDropDown = useDebounce(beamTypeDropDown, 500);
+  const debouncedQuality = useDebounce(quality, 500);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -59,7 +89,32 @@ const BeamCardList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: tradingQualityList, isLoading } = useQuery({
+  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
+    queryKey: [
+      "dropDownQualityListRes",
+      "list",
+      {
+        company_id: companyId,
+        machine_name: debouncedMachine,
+      },
+    ],
+    queryFn: async () => {
+      if (debouncedMachine) {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            machine_name: debouncedMachine,
+          },
+        });
+        return res.data?.data;
+      } else {
+        return { row: [] };
+      }
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: tradingQualityList2, isLoading } = useQuery({
     queryKey: [
       "tradingQuality",
       "list",
@@ -69,6 +124,8 @@ const BeamCardList = () => {
         pageSize,
         search: debouncedSearch,
         machine_name: debouncedMachine,
+        beam_type: debouncedBeamTypeDropDown,
+        quality_id: debouncedQuality,
         // status: debouncedStatus,
       },
     ],
@@ -80,6 +137,8 @@ const BeamCardList = () => {
           pageSize,
           search: debouncedSearch,
           machine_name: debouncedMachine,
+          beam_type: debouncedBeamTypeDropDown,
+          quality_id: debouncedQuality,
           // status: debouncedStatus,
         },
       });
@@ -214,25 +273,6 @@ const BeamCardList = () => {
       dataIndex: "status",
       key: "status",
     },
-    // {
-    //   title: "Status",
-    //   render: (qualityDetails) => {
-    //     const { is_active, id } = qualityDetails;
-    //     return (
-    //       <Switch
-    //         loading={updatingTradingQuality && variables?.id === id}
-    //         defaultChecked={is_active}
-    //         onChange={(is_active) => {
-    //           updateTradingQuality({
-    //             id: id,
-    //             data: { is_active: is_active },
-    //           });
-    //         }}
-    //       />
-    //     );
-    //   },
-    //   key: "status",
-    // },
     {
       title: "Action",
       render: (qualityDetails) => {
@@ -263,6 +303,10 @@ const BeamCardList = () => {
               }}
             >
               <EditOutlined />
+            </Button>
+            <FinishBeamCardModal />
+            <Button>
+              <AppstoreOutlined />
             </Button>
           </Space>
         );
@@ -363,16 +407,12 @@ const BeamCardList = () => {
             <Select
               allowClear
               placeholder="Select Beam Type"
-              loading={isLoadingMachineList}
-              value={machine}
-              options={machineListRes?.rows?.map((machine) => ({
-                label: machine?.machine_name,
-                value: machine?.machine_name,
-              }))}
+              value={beamTypeDropDown}
+              options={BEAM_TYPE}
               dropdownStyle={{
                 textTransform: "capitalize",
               }}
-              onChange={setMachine}
+              onChange={setBeamTypeDropDow}
               style={{
                 textTransform: "capitalize",
               }}
@@ -410,16 +450,19 @@ const BeamCardList = () => {
             <Select
               allowClear
               placeholder="Select Quality"
-              loading={isLoadingMachineList}
-              value={machine}
-              options={machineListRes?.rows?.map((machine) => ({
-                label: machine?.machine_name,
-                value: machine?.machine_name,
-              }))}
+              loading={dropDownQualityLoading}
+              value={quality}
+              options={
+                dropDownQualityListRes &&
+                dropDownQualityListRes?.rows?.map((item) => ({
+                  value: item.id,
+                  label: item.quality_name,
+                }))
+              }
               dropdownStyle={{
                 textTransform: "capitalize",
               }}
-              onChange={setMachine}
+              onChange={setQuality}
               style={{
                 textTransform: "capitalize",
               }}

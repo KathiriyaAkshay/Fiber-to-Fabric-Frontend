@@ -172,6 +172,9 @@ const AddMyOrder = () => {
       {
         company_id: companyId,
         machine_name: machine_name,
+        page: 0,
+        pageSize: 99999,
+        is_active: true,
       },
     ],
     queryFn: async () => {
@@ -180,6 +183,9 @@ const AddMyOrder = () => {
           params: {
             company_id: companyId,
             machine_name: machine_name,
+            page: 0,
+            pageSize: 99999,
+            is_active: true,
           },
         });
         return res.data?.data;
