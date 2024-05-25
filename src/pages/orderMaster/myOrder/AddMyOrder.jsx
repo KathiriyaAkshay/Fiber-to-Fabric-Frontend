@@ -113,7 +113,6 @@ const AddMyOrder = () => {
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
-    console.log({ newData });
     await addMyOrder(newData);
   }
 

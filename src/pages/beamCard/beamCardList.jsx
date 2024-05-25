@@ -96,6 +96,9 @@ const BeamCardList = () => {
       {
         company_id: companyId,
         machine_name: debouncedMachine,
+        page: 0,
+        pageSize: 9999,
+        is_active: true,
       },
     ],
     queryFn: async () => {
@@ -104,6 +107,9 @@ const BeamCardList = () => {
           params: {
             company_id: companyId,
             machine_name: debouncedMachine,
+            page: 0,
+            pageSize: 9999,
+            is_active: true,
           },
         });
         return res.data?.data;

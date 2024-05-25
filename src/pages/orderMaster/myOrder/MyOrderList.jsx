@@ -75,14 +75,30 @@ const MyOrderList = () => {
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
-      queryKey: ["inhouse-quality", "list", { company_id: companyId }],
+      queryKey: [
+        "inhouse-quality",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: debouncedMachine,
+          page: 0,
+          pageSize: 9999,
+          is_active: true,
+        },
+      ],
       queryFn: async () => {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-          },
-        });
-        return res.data?.data;
+        if (debouncedMachine) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: debouncedMachine,
+              page: 0,
+              pageSize: 9999,
+              is_active: true,
+            },
+          });
+          return res.data?.data;
+        }
       },
       enabled: Boolean(companyId),
     });
