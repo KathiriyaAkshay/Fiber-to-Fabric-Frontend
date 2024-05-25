@@ -272,7 +272,7 @@ const UpdateJobTaka = () => {
         company_id: companyId,
         page: 0,
         pageSize: 9999,
-        is_active: true,
+        is_active: 1,
       },
     ],
     queryFn: async () => {
@@ -281,7 +281,7 @@ const UpdateJobTaka = () => {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
-          is_active: true,
+          is_active: 1,
         },
       });
       return res.data?.data;

@@ -83,7 +83,7 @@ const MyOrderList = () => {
           machine_name: debouncedMachine,
           page: 0,
           pageSize: 9999,
-          is_active: true,
+          is_active: 1,
         },
       ],
       queryFn: async () => {
@@ -94,7 +94,7 @@ const MyOrderList = () => {
               machine_name: debouncedMachine,
               page: 0,
               pageSize: 9999,
-              is_active: true,
+              is_active: 1,
             },
           });
           return res.data?.data;
