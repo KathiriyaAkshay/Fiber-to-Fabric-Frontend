@@ -113,7 +113,6 @@ const AddMyOrder = () => {
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
-    console.log({ newData });
     await addMyOrder(newData);
   }
 
@@ -172,6 +171,9 @@ const AddMyOrder = () => {
       {
         company_id: companyId,
         machine_name: machine_name,
+        page: 0,
+        pageSize: 99999,
+        is_active: true,
       },
     ],
     queryFn: async () => {
@@ -180,6 +182,9 @@ const AddMyOrder = () => {
           params: {
             company_id: companyId,
             machine_name: machine_name,
+            page: 0,
+            pageSize: 99999,
+            is_active: true,
           },
         });
         return res.data?.data;

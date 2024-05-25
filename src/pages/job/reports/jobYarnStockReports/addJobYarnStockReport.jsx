@@ -7,7 +7,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getQualityNameDropDownRequest } from "../../../../api/requests/qualityMaster";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import {
   getDropdownSupplierListRequest,
@@ -120,14 +120,20 @@ const AddJobYarnStockReport = () => {
       {
         company_id: companyId,
         machine_name: machine_name,
+        page: 0,
+        pageSize: 9999,
+        is_active: true,
       },
     ],
     queryFn: async () => {
       if (machine_name) {
-        const res = await getQualityNameDropDownRequest({
+        const res = await getInHouseQualityListRequest({
           params: {
             company_id: companyId,
-            supplier_name: machine_name,
+            machine_name: machine_name,
+            page: 0,
+            pageSize: 9999,
+            is_active: true,
           },
         });
         return res.data?.data;
@@ -306,7 +312,7 @@ const AddJobYarnStockReport = () => {
                       // }}
                       options={
                         dropDownQualityListRes &&
-                        dropDownQualityListRes?.row?.map((item) => ({
+                        dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
                           label: item.quality_name,
                         }))
@@ -424,7 +430,6 @@ const AddJobYarnStockReport = () => {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 };

@@ -22,7 +22,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getQualityNameDropDownRequest } from "../../../../api/requests/qualityMaster";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import {
   getPartyListRequest,
   getVehicleUserListRequest,
@@ -200,12 +200,18 @@ const AddYarnSent = () => {
       "list",
       {
         company_id: companyId,
+        page: 0,
+        pageSize: 9999,
+        is_active: true,
       },
     ],
     queryFn: async () => {
-      const res = await getQualityNameDropDownRequest({
+      const res = await getInHouseQualityListRequest({
         params: {
           company_id: companyId,
+          page: 0,
+          pageSize: 9999,
+          is_active: true,
         },
       });
       return res.data?.data;
@@ -337,7 +343,7 @@ const AddYarnSent = () => {
                       loading={dropDownQualityLoading}
                       options={
                         dropDownQualityListRes &&
-                        dropDownQualityListRes?.row?.map((item) => ({
+                        dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
                           label: item.quality_name,
                         }))

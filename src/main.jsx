@@ -74,12 +74,15 @@ import GatePassList from "./pages/gatePass";
 import AddGatePass from "./pages/gatePass/addGatePass";
 import UpdateGatePass from "./pages/gatePass/updateGatePass";
 import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
+import BeamCardList from "./pages/beamCard/beamCardList";
 import YarnSentList from "./pages/job/sent/yarnSent/yarnSentList";
 import AddYarnSent from "./pages/job/sent/yarnSent/addYarnSent";
 import UpdateYarnSent from "./pages/job/sent/yarnSent/updateYarnSent";
 import JobTakaList from "./pages/job/jobTaka/JobTakaList";
 import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
 import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
+import AddBeamCard from "./pages/beamCard/AddBeamCard";
+import UpdateBeamCard from "./pages/beamCard/UpdateBeamCard";
 
 const queryClient = new QueryClient();
 
@@ -803,7 +806,11 @@ const router = createBrowserRouter([
       },
       {
         path: "beam-card",
-        element: <div>beam-card</div>,
+        children: [
+          { index: true, element: <BeamCardList /> },
+          { path: "add", element: <AddBeamCard /> },
+          { path: "update/:id", element: <UpdateBeamCard /> },
+        ],
       },
       {
         path: "require-ready-beam",
