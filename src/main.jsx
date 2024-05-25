@@ -74,6 +74,12 @@ import GatePassList from "./pages/gatePass";
 import AddGatePass from "./pages/gatePass/addGatePass";
 import UpdateGatePass from "./pages/gatePass/updateGatePass";
 import UpdateInHouseQuality from "./pages/qualityMaster/inhouseQuality/UpdateInHouseQuality";
+import YarnSentList from "./pages/job/sent/yarnSent/yarnSentList";
+import AddYarnSent from "./pages/job/sent/yarnSent/addYarnSent";
+import UpdateYarnSent from "./pages/job/sent/yarnSent/updateYarnSent";
+import JobTakaList from "./pages/job/jobTaka/JobTakaList";
+import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
+import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
 
 const queryClient = new QueryClient();
 
@@ -445,19 +451,17 @@ const router = createBrowserRouter([
       {
         path: "/job",
         children: [
-          { index: true, element: <div>job-taka</div> },
+          { index: true, element: <JobTakaList /> },
           {
             path: "job-taka",
-            element: <div>job-taka</div>,
+            children: [
+              { index: true, element: <JobTakaList /> },
+              { path: "add", element: <AddJobTaka /> },
+              { path: "update/:id", element: <UpdateJobTaka /> },
+            ],
           },
           {
             path: "sent",
-            element: (
-              <div>
-                <div>sent</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>sent</div> },
               {
@@ -466,7 +470,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-sent",
-                element: <div>yarn-sent</div>,
+                children: [
+                  { index: true, element: <YarnSentList /> },
+                  { path: "add", element: <AddYarnSent /> },
+                  { path: "update/:id", element: <UpdateYarnSent /> },
+                ],
               },
             ],
           },
@@ -822,7 +830,7 @@ const router = createBrowserRouter([
           { index: true, element: <GatePassList /> },
           { path: "add", element: <AddGatePass /> },
           { path: "update/:gatePassId", element: <UpdateGatePass /> },
-        ]
+        ],
       },
       {
         path: "profile",

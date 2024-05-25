@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 
-const ViewDetailModal = ({ title = "-", details = [] }) => {
+const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -11,6 +11,12 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  const adjustHeight = {};
+  if (isScroll) {
+    adjustHeight.height = "calc(100vh - 150px)";
+    adjustHeight.overflowY = "scroll";
+  }
 
   return (
     <>
@@ -42,13 +48,19 @@ const ViewDetailModal = ({ title = "-", details = [] }) => {
           },
           body: {
             padding: "10px 16px",
+            ...adjustHeight,
           },
         }}
       >
         <Flex className="flex-col gap-1">
           {details?.map(({ title = "", value }) => {
             return (
-              <Row gutter={12} className="flex-grow" style={{marginTop: "0.40rem"}} key={title}>
+              <Row
+                gutter={12}
+                className="flex-grow"
+                style={{ marginTop: "0.40rem" }}
+                key={title}
+              >
                 <Col span={10} className="font-medium">
                   {title}
                 </Col>

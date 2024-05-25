@@ -23,9 +23,13 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { getGatePassByIdRequest, updateGatePassRequest } from "../../api/requests/gatePass";
+import {
+  getGatePassByIdRequest,
+  updateGatePassRequest,
+} from "../../api/requests/gatePass";
 import dayjs from "dayjs";
-  
+import { disableBeforeDate } from "../../utils/date";
+
 const { TextArea } = Input;
 
 const addYSCSchemaResolver = yupResolver(
@@ -197,26 +201,26 @@ const UpdateGatePass = () => {
         company_name,
         address,
         gate_pass_date,
-        gate_pass_details
+        gate_pass_details,
       } = gatePassDetail.gatePass;
       setFormArray(() => {
         return gate_pass_details.map((item, index) => index + 1);
-      })
+      });
       let gatePassDetails = {};
       gate_pass_details.forEach((item, index) => {
-        gatePassDetails[`particular_${index+1}`] = item.particular;
-        gatePassDetails[`piece_${index+1}`] = item.piece;
-        gatePassDetails[`quality_${index+1}`] = item.quality;
-        gatePassDetails[`problem_in_material_${index+1}`] = item.problem_in_material;
-      })
+        gatePassDetails[`particular_${index + 1}`] = item.particular;
+        gatePassDetails[`piece_${index + 1}`] = item.piece;
+        gatePassDetails[`quality_${index + 1}`] = item.quality;
+        gatePassDetails[`problem_in_material_${index + 1}`] =
+          item.problem_in_material;
+      });
       reset({
         person_name,
         company_name,
         address,
         date: dayjs(gate_pass_date),
-        ...gatePassDetails
+        ...gatePassDetails,
       });
-      
     }
   }, [gatePassDetail, reset]);
 
@@ -303,7 +307,11 @@ const UpdateGatePass = () => {
                 control={control}
                 name="date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    disabledDate={disableBeforeDate}
+                  />
                 )}
               />
             </Form.Item>
@@ -497,7 +505,7 @@ const UpdateGatePass = () => {
 
       <DevTool control={control} />
     </div>
-  )
-}
+  );
+};
 
-export default UpdateGatePass
+export default UpdateGatePass;

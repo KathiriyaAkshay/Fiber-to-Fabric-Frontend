@@ -4,17 +4,17 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { deleteGatePassRequest } from "../../../api/requests/gatePass";
+import { deleteJobTakaRequest } from "../../../api/requests/job/jobTaka";
 
-const DeleteGatePass = ({ details }) => {
+const DeleteJobTaka = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: deleteGatePass } = useMutation({
+  const { mutateAsync: deleteYarnSent } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteGatePassRequest({
+      const res = await deleteJobTakaRequest({
         id,
         params: {
           company_id: companyId,
@@ -22,13 +22,13 @@ const DeleteGatePass = ({ details }) => {
       });
       return res?.data;
     },
-    mutationKey: ["gate", "pass", "delete"],
+    mutationKey: ["jobTaka", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
       }
-      queryClient.invalidateQueries(["gate", "pass", "list", companyId]);
+      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -39,7 +39,7 @@ const DeleteGatePass = ({ details }) => {
   });
 
   async function handleDelete() {
-    deleteGatePass({
+    deleteYarnSent({
       id: details.id,
     });
     setIsOpenDeleteDialog(false);
@@ -63,7 +63,7 @@ const DeleteGatePass = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete gate pass?"
+        content="Are you sure you want to delete job taka?"
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -71,4 +71,4 @@ const DeleteGatePass = ({ details }) => {
   );
 };
 
-export default DeleteGatePass;
+export default DeleteJobTaka;
