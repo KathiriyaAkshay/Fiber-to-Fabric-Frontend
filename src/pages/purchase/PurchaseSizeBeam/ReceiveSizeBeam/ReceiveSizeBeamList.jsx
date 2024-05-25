@@ -31,7 +31,7 @@ function ReceiveSizeBeamList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -48,6 +48,7 @@ function ReceiveSizeBeamList() {
         search: debouncedSearch,
         toDate: debouncedToDate,
         fromDate: debouncedFromDate,
+        end: financialYearEnd,
       },
     ],
     queryFn: async () => {
@@ -60,6 +61,8 @@ function ReceiveSizeBeamList() {
           search: debouncedSearch,
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
+          end: financialYearEnd,
+          // pending: true,
         },
       });
       return res.data?.data;
@@ -140,7 +143,7 @@ function ReceiveSizeBeamList() {
 
     return (
       <Table
-        dataSource={receiveSizeBeamListRes?.row || []}
+        dataSource={receiveSizeBeamListRes?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{

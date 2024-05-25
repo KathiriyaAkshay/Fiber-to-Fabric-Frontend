@@ -17,6 +17,11 @@ export const initialOrderDetail = {
   tpm: "",
 };
 
+export const BEAM_TYPE_OPTION_LIST = [
+  { value: "pasarela(primary)", label: "Pasarela (Primary)" },
+  { value: "non-pasarela(primary)", label: "Non-Pasarela (Primary)" },
+  { value: "non-pasarela(secondary)", label: "Non-Pasarela (Secondary)" },
+];
 export const ORDER_STATUS = [
   { label: "Pending", value: "pending" },
   { label: "Finished", value: "finished" },
@@ -28,3 +33,4 @@ export const ORDER_TYPE = [
   { label: "Purchase/Trading", value: "purchase/trading" },
   { label: "Job", value: "job" },
 ];
+

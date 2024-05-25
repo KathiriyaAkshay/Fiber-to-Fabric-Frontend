@@ -22,7 +22,7 @@ function DailyTaskList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: user } = useCurrentUser();
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
   // const { data: supervisorListRes, isLoading: isLoadingSupervisorList } =
   //   useQuery({
@@ -40,12 +40,17 @@ function DailyTaskList() {
     queryKey: [
       "task-assignment",
       "list",
-      { company_id: companyId, page, pageSize },
+      { company_id: companyId, page, pageSize, end: financialYearEnd },
     ],
     queryFn: async () => {
       const res = await getTaskListRequest({
         companyId,
-        params: { company_id: companyId, page, pageSize },
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          end: financialYearEnd,
+        },
       });
       return res.data?.data;
     },

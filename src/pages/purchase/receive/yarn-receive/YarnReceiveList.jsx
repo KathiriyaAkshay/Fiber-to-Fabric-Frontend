@@ -33,7 +33,7 @@ function YarnReceiveList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -48,6 +48,7 @@ function YarnReceiveList() {
           search: debouncedSearch,
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
+          end: financialYearEnd,
         },
       ],
       queryFn: async () => {
@@ -60,6 +61,8 @@ function YarnReceiveList() {
             search: debouncedSearch,
             toDate: debouncedToDate,
             fromDate: debouncedFromDate,
+            end: financialYearEnd,
+            // pending: true,
           },
         });
         return res.data?.data;

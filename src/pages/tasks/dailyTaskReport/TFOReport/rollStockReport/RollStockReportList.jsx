@@ -17,7 +17,7 @@ import {
 function RollStockReportList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -31,6 +31,7 @@ function RollStockReportList() {
         page,
         pageSize,
         search: debouncedSearch,
+        end: financialYearEnd,
       },
     ],
     queryFn: async () => {
@@ -41,6 +42,7 @@ function RollStockReportList() {
           page,
           pageSize,
           search: debouncedSearch,
+          end: financialYearEnd,
         },
       });
       return res.data?.data;
