@@ -122,7 +122,7 @@ const AddJobYarnStockReport = () => {
         machine_name: machine_name,
         page: 0,
         pageSize: 9999,
-        is_active: true,
+        is_active: 1,
       },
     ],
     queryFn: async () => {
@@ -133,7 +133,7 @@ const AddJobYarnStockReport = () => {
             machine_name: machine_name,
             page: 0,
             pageSize: 9999,
-            is_active: true,
+            is_active: 1,
           },
         });
         return res.data?.data;

@@ -176,7 +176,7 @@ const UpdateBeamCard = () => {
         machine_name: machine_name,
         page: 0,
         pageSize: 99999,
-        is_active: true,
+        is_active: 1,
       },
     ],
     queryFn: async () => {
@@ -187,7 +187,7 @@ const UpdateBeamCard = () => {
             machine_name: machine_name,
             page: 0,
             pageSize: 99999,
-            is_active: true,
+            is_active: 1,
           },
         });
         return res.data?.data;
