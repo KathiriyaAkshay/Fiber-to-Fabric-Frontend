@@ -1,6 +1,20 @@
-import { Button, Flex, Select, Space, Spin, Table, Typography } from "antd";
 import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Typography,
+} from "antd";
+import {
+  CloseOutlined,
   EditOutlined,
+  EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
@@ -22,7 +36,6 @@ import {
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
-import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import DeleteYarnSent from "../../../../components/job/yarnSent/DeleteYarnSent";
 
 const YarnSentList = () => {
@@ -190,17 +203,9 @@ const YarnSentList = () => {
       render: (details) => {
         return (
           <Space>
-            <ViewDetailModal
+            <ViewYarnSentDetailsModal
               title="Yarn Sent Details"
-              details={[
-                { title: "Challan No", value: details.challan_no },
-                {
-                  title: "Sent Date",
-                  value: dayjs(details.sent_date).format("DD-MM-YYYY"),
-                },
-                { title: "Delivery Charge", value: details.delivery_charge },
-                { title: "Power Cost", value: details.power_cost },
-              ]}
+              details={details}
             />
             <Button
               onClick={() => {
@@ -347,3 +352,107 @@ const YarnSentList = () => {
 };
 
 export default YarnSentList;
+
+const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const yarnSentDetail = [
+    { title: "Challan No", value: details.challan_no },
+    {
+      title: "Sent Date",
+      value: dayjs(details.sent_date).format("DD-MM-YYYY"),
+    },
+    { title: "Delivery Charge", value: details.delivery_charge },
+    { title: "Power Cost", value: details.power_cost },
+  ];
+
+  console.log({ details });
+  const { job_yarn_sent_details } = details;
+  return (
+    <>
+      <Button type="primary" onClick={showModal}>
+        <EyeOutlined />
+      </Button>
+      <Modal
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={
+          <Typography.Text className="text-xl font-medium text-white">
+            {title}
+          </Typography.Text>
+        }
+        open={isModalOpen}
+        footer={null}
+        onCancel={handleCancel}
+        centered={true}
+        className="view-in-house-quality-model"
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
+      >
+        <Flex className="flex-col gap-1">
+          {yarnSentDetail?.map(({ title = "", value }) => {
+            return (
+              <Row gutter={12} className="flex-grow" key={title}>
+                <Col span={10} className="font-medium">
+                  {title}
+                </Col>
+                <Col span={14}>{value ?? "-"}</Col>
+              </Row>
+            );
+          })}
+
+          {job_yarn_sent_details.map((item, index) => {
+            return (
+              <>
+                <Divider />
+                <Row
+                  gutter={12}
+                  className="flex-grow"
+                  key={index + "_job_challan_details"}
+                >
+                  <Col span={4} className="font-medium">
+                    Denier
+                  </Col>
+                  <Col span={4}>
+                    {`${item.yarn_stock_company.yarn_denier}D/${item.yarn_stock_company.filament}F (${item.yarn_stock_company.luster_type} - ${item.yarn_stock_company.yarn_color})`}
+                  </Col>
+                  <Col span={2} className="font-medium">
+                    Cartoon:
+                  </Col>
+                  <Col span={2}>{item.cartoon}</Col>
+                  <Col span={2} className="font-medium">
+                    KG:
+                  </Col>
+                  <Col span={2}>{item.kg}</Col>
+                  <Col span={2} className="font-medium">
+                    Remaining Stock:
+                  </Col>
+                  <Col span={2}>{item.remaining_stock}</Col>
+                </Row>
+              </>
+            );
+          })}
+        </Flex>
+      </Modal>
+    </>
+  );
+};

@@ -1,18 +1,30 @@
-import { Button, Flex, Space, Spin, Table } from "antd";
 import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Table,
+  Typography,
+} from "antd";
+import {
+  CloseOutlined,
   EditOutlined,
+  EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
 import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
@@ -175,17 +187,9 @@ const JobTakaList = () => {
       render: (details) => {
         return (
           <Space>
-            <ViewDetailModal
+            <ViewJobTakaDetailsModal
               title="Job Taka Details"
-              details={[
-                { title: "Challan No", value: details.challan_no },
-                { title: "Delivery Address", value: details.delivery_address },
-                { title: "GST In", value: details.gst_in },
-                { title: "GST State", value: details.gst_state },
-                { title: "Total Meter", value: details.total_meter },
-                { title: "Total Taka", value: details.total_taka },
-                { title: "Total Weight", value: details.total_weight },
-              ]}
+              details={details}
             />
             <Button
               onClick={() => {
@@ -332,3 +336,102 @@ const JobTakaList = () => {
 };
 
 export default JobTakaList;
+
+const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const jobTakaDetails = [
+    { title: "Challan No", value: details.challan_no },
+    { title: "Delivery Address", value: details.delivery_address },
+    { title: "GST In", value: details.gst_in },
+    { title: "GST State", value: details.gst_state },
+    { title: "Total Meter", value: details.total_meter },
+    { title: "Total Taka", value: details.total_taka },
+    { title: "Total Weight", value: details.total_weight },
+  ];
+
+  console.log({ details });
+  const { job_challan_details } = details;
+  return (
+    <>
+      <Button type="primary" onClick={showModal}>
+        <EyeOutlined />
+      </Button>
+      <Modal
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={
+          <Typography.Text className="text-xl font-medium text-white">
+            {title}
+          </Typography.Text>
+        }
+        open={isModalOpen}
+        footer={null}
+        onCancel={handleCancel}
+        centered={true}
+        // className="view-in-house-quality-model"
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+            width: "600px",
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
+      >
+        <Flex className="flex-col gap-1">
+          {jobTakaDetails?.map(({ title = "", value }) => {
+            return (
+              <Row gutter={12} className="flex-grow" key={title}>
+                <Col span={10} className="font-medium">
+                  {title}
+                </Col>
+                <Col span={14}>{value ?? "-"}</Col>
+              </Row>
+            );
+          })}
+
+          {job_challan_details.map((item, index) => {
+            return (
+              <>
+                <Divider />
+                <Row
+                  gutter={12}
+                  className="flex-grow"
+                  key={index + "_job_challan_details"}
+                >
+                  <Col span={4} className="font-medium">
+                    Taka No:
+                  </Col>
+                  <Col span={4}>{item.taka_no}</Col>
+                  <Col span={3} className="font-medium">
+                    Meter:
+                  </Col>
+                  <Col span={4}>{item.meter}</Col>
+                  <Col span={3} className="font-medium">
+                    Weight:
+                  </Col>
+                  <Col span={4}>{item.weight}</Col>
+                </Row>
+              </>
+            );
+          })}
+        </Flex>
+      </Modal>
+    </>
+  );
+};
