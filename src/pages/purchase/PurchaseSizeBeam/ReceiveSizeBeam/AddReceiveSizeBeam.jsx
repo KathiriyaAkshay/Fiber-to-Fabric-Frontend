@@ -11,6 +11,7 @@ import {
   TimePicker,
   message,
 } from "antd";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
@@ -23,8 +24,10 @@ import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
+import moment from "moment/moment";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -71,7 +74,7 @@ function AddReceiveSizeBeam() {
       ],
       queryFn: async () => {
         const res = await getSizeBeamOrderListRequest({
-          params: { company_id: companyId },
+          params: { company_id: companyId, status: "PENDING" },
         });
         return res.data?.data;
       },
@@ -88,7 +91,7 @@ function AddReceiveSizeBeam() {
       return res.data?.data?.machineList;
     },
     enabled: Boolean(companyId),
-  });
+  }); 
 
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
@@ -155,8 +158,6 @@ function AddReceiveSizeBeam() {
       receive_date: dayjs(),
     },
   });
-
-  console.log("errors----->", errors);
 
   const { size_beam_order_id } = watch();
 
@@ -310,7 +311,7 @@ function AddReceiveSizeBeam() {
           <Col span={4}>
             <Form.Item
               label="Machine name"
-              name="quality_id"
+              name="machine_name"
               validateStatus={errors.quality_id ? "error" : ""}
               help={errors.quality_id && errors.quality_id.message}
               required={true}
@@ -326,7 +327,7 @@ function AddReceiveSizeBeam() {
                     loading={isLoadingMachineList}
                     options={machineListRes?.rows?.map((machine) => ({
                       label: machine?.machine_name,
-                      value: machine?.id,
+                      value: machine?.machine_name,
                     }))}
                     style={{
                       textTransform: "capitalize",

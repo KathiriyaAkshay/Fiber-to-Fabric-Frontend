@@ -1,7 +1,7 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { Button, Flex, Form, Input, Table } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function ReceiveSizeBeamDetail({ control, errors }) {
   const [noOfAdd, setNoOfAdd] = useState(1);
@@ -10,18 +10,12 @@ function ReceiveSizeBeamDetail({ control, errors }) {
     name: "beam_details",
   });
 
+  useEffect(() => {
+    console.log("Fields information");
+    console.log(fields);
+  }, [fields])
+
   const columns = [
-    // {
-    //   title: "Sr no",
-    //   key: "sr_no",
-    //   render: (text, record, index) => {
-    //     return index + 1;
-    //   },
-    //   textWrap: "word-break",
-    //   ellipsis: true,
-    //   width: 70,
-    //   className: "align-top",
-    // },
     {
       title: "Beam No",
       key: "beam_no",
@@ -266,32 +260,7 @@ function ReceiveSizeBeamDetail({ control, errors }) {
       columns={columns}
       pagination={false}
       footer={() => (
-        <Flex justify="flex-end" gap={10}>
-          <div className="w-28">
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              value={noOfAdd}
-              onChange={(e) => setNoOfAdd(e.target.value)}
-            />
-          </div>
-          <Button
-            htmlType="button"
-            onClick={() => {
-              // append(Array.from({ length: noOfAdd }, () => initialOrderDetail));
-              append(
-                Array.from({ length: noOfAdd }, () => ({
-                  ...fields[fields.length - 1],
-                  id: undefined,
-                }))
-              );
-              setNoOfAdd(1);
-            }}
-          >
-            Add
-          </Button>
-        </Flex>
+        <></>
       )}
       rowKey={"id"}
     />
