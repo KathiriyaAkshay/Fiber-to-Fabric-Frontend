@@ -76,7 +76,20 @@ function AddReceiveSizeBeam() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
@@ -194,6 +207,16 @@ function AddReceiveSizeBeam() {
       }
     );
   }, [setValue, sizeBeamOrderListRes?.SizeBeamOrderList, size_beam_order_id]);
+  
+  function disabledDate(current) {
+    // Disable future dates
+    if (current && current > moment().endOf('day')) {
+     return true;
+    }
+  }
+
+  const [pendingMeter, setPendingMeter] = useState(0) ; 
+  const [totalMeter, setTotalMeter] = useState(0) ; 
 
   return (
     <div className="flex flex-col p-4">
@@ -202,13 +225,23 @@ function AddReceiveSizeBeam() {
         <h3 className="m-0 text-primary">Add Receive size beam</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+
+        <Flex className="mt-3" gap={20}>
+          <Flex>
+            <div className="font-weight-bold">Total meter: {totalMeter}</div>
+          </Flex>
+          <Flex>
+            <div>Pending meter: {pendingMeter}</div>
+          </Flex>
+        </Flex>
+
         <Row
           gutter={18}
           style={{
             padding: "12px",
           }}
         >
-          <Col span={8}>
+          <Col span={4}>
             <Form.Item
               label="Order No."
               name="size_beam_order_id"
@@ -225,23 +258,27 @@ function AddReceiveSizeBeam() {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    placeholder="Select supplier Company"
+                    placeholder="Select size beam order"
                     loading={isLoadingSizeBeamOrderList}
                     options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
-                      ({ order_no = "", id = "" }) => {
+                      ({ order_no = "", id = "", total_meters = 0 }) => {
                         return {
                           label: order_no,
                           value: id,
+                          total_meter: total_meters
                         };
                       }
                     )}
+                    onSelect={(value, option) => {
+                      setTotalMeter(option?.total_meter == null?0:option?.total_meter)
+                    }}
                   />
                 )}
               />
             </Form.Item>
           </Col>
 
-          <Col span={8}>
+          <Col span={4}>
             <Form.Item
               label="Quality"
               name="quality_id"
@@ -270,7 +307,40 @@ function AddReceiveSizeBeam() {
             </Form.Item>
           </Col>
 
-          <Col span={8}>
+          <Col span={4}>
+            <Form.Item
+              label="Machine name"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={4}>
             <Form.Item
               label="Supplier Name"
               name="supplier_name"
@@ -363,6 +433,7 @@ function AddReceiveSizeBeam() {
                     style={{
                       width: "100%",
                     }}
+                    disabledDate={disabledDate}
                     format="DD-MM-YYYY"
                   />
                 )}
