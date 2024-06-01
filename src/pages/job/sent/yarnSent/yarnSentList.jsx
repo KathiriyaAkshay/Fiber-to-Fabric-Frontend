@@ -3,6 +3,7 @@ import {
   Col,
   Divider,
   Flex,
+  Input,
   Modal,
   Row,
   Select,
@@ -17,6 +18,7 @@ import {
   EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
+  TruckOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -29,7 +31,7 @@ import { getYarnSentListRequest } from "../../../../api/requests/job/sent/yarnSe
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import {
   getPartyListRequest,
-  getVehicleUserListRequest,
+  // getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import {
   downloadUserPdf,
@@ -43,22 +45,31 @@ const YarnSentList = () => {
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
+  const [search, setSearch] = useState("");
   const [quality, setQuality] = useState();
   const [party, setParty] = useState();
-  const [vehicle, setVehicle] = useState();
+  // const [vehicle, setVehicle] = useState();
+  const debouncedSearch = useDebounce(search, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedParty = useDebounce(party, 500);
-  const debouncedVehicle = useDebounce(vehicle, 500);
+  // const debouncedVehicle = useDebounce(vehicle, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
-      queryKey: ["inhouse-quality", "list", { company_id: companyId }],
+      queryKey: [
+        "inhouse-quality",
+        "list",
+        { company_id: companyId, page: 0, pageSize: 99999, is_active: 1 },
+      ],
       queryFn: async () => {
         const res = await getInHouseQualityListRequest({
           params: {
             company_id: companyId,
+            page: 0,
+            pageSize: 99999,
+            is_active: 1,
           },
         });
         return res.data?.data;
@@ -77,20 +88,20 @@ const YarnSentList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
-    queryKey: [
-      "vehicle",
-      "list",
-      { company_id: companyId, page: 0, pageSize: 99999 },
-    ],
-    queryFn: async () => {
-      const res = await getVehicleUserListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+  //   queryKey: [
+  //     "vehicle",
+  //     "list",
+  //     { company_id: companyId, page: 0, pageSize: 99999 },
+  //   ],
+  //   queryFn: async () => {
+  //     const res = await getVehicleUserListRequest({
+  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   const { data: jobYarnSentList, isLoading } = useQuery({
     queryKey: [
@@ -100,9 +111,10 @@ const YarnSentList = () => {
         company_id: companyId,
         page,
         pageSize,
-        vehicle_id: debouncedVehicle,
+        // vehicle_id: debouncedVehicle,
         quality_id: debouncedQuality,
         party_id: debouncedParty,
+        search: debouncedSearch,
       },
     ],
     queryFn: async () => {
@@ -111,9 +123,10 @@ const YarnSentList = () => {
           company_id: companyId,
           page,
           pageSize,
-          vehicle_id: debouncedVehicle,
+          // vehicle_id: debouncedVehicle,
           quality_id: debouncedQuality,
           party_id: debouncedParty,
+          search: debouncedSearch,
         },
       });
       return res.data?.data;
@@ -160,14 +173,34 @@ const YarnSentList = () => {
       render: (text, record, index) => index + 1,
     },
     {
+      title: "Sent Date",
+      render: (detail) => {
+        return dayjs(detail.sent_date).format("DD-MM-YYYY");
+      },
+    },
+    {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
     },
     {
-      title: "Sent Date",
+      title: "Party Name",
       render: (detail) => {
-        return dayjs(detail.sent_date).format("DD-MM-YYYY");
+        return `${detail.party.first_name} ${detail.party.last_name}`;
+      },
+    },
+    {
+      title: "Company Name",
+      render: (detail) => {
+        let normalStr = detail.company.company_name.replace(/_/g, " ");
+        normalStr = normalStr
+          .split(" ")
+          .map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+          })
+          .join(" ");
+
+        return normalStr;
       },
     },
     {
@@ -177,24 +210,12 @@ const YarnSentList = () => {
       },
     },
     {
-      title: "Party",
-      render: (detail) => {
-        return `${detail.party.first_name} ${detail.party.last_name}`;
-      },
-    },
-    {
-      title: "Vehicle",
-      render: (detail) => {
-        return `${detail.vehicle.first_name} ${detail.vehicle.last_name}`;
-      },
-    },
-    {
       title: "Delivery Charge",
       dataIndex: "delivery_charge",
       key: "delivery_charge",
     },
     {
-      title: "Power Cost",
+      title: "Power Cost Per Meter",
       dataIndex: "power_cost",
       key: "power_cost",
     },
@@ -215,6 +236,9 @@ const YarnSentList = () => {
               <EditOutlined />
             </Button>
             <DeleteYarnSent details={details} />
+            <Button>
+              <TruckOutlined />
+            </Button>
           </Space>
         );
       },
@@ -309,7 +333,16 @@ const YarnSentList = () => {
             />
           </Flex>
 
-          <Flex align="center" gap={10}>
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "200px",
+            }}
+          />
+
+          {/* <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Vehicle
             </Typography.Text>
@@ -335,7 +368,7 @@ const YarnSentList = () => {
                 value: vehicle.id,
               }))}
             />
-          </Flex>
+          </Flex> */}
 
           <Button
             icon={<FilePdfOutlined />}
@@ -373,7 +406,6 @@ const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
     { title: "Power Cost", value: details.power_cost },
   ];
 
-  console.log({ details });
   const { job_yarn_sent_details } = details;
   return (
     <>

@@ -125,6 +125,39 @@ const JobYarnStockReportList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        summary={(pageData) => {
+          console.log({ pageData });
+          let totalGreyStockMeter = 0;
+          let totalBeamStock = 0;
+          let totalYarnStock = 0;
+
+          pageData.forEach(
+            ({ gray_stock_meter, yarn_stock_total_kg, beam_stock }) => {
+              totalGreyStockMeter += gray_stock_meter;
+              totalBeamStock += beam_stock;
+              totalYarnStock += yarn_stock_total_kg;
+            }
+          );
+
+          return (
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                <b>Grand Total</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalGreyStockMeter}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalYarnStock}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalBeamStock}</b>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          );
+        }}
       />
     );
   }

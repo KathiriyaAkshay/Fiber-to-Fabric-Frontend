@@ -357,7 +357,6 @@ const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
     { title: "Total Weight", value: details.total_weight },
   ];
 
-  console.log({ details });
   const { job_challan_details } = details;
   return (
     <>

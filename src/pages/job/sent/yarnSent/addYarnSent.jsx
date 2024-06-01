@@ -357,7 +357,7 @@ const AddYarnSent = () => {
 
           <Col span={6}>
             <Form.Item
-              label="Select Party"
+              label="Party Name"
               name="party_id"
               validateStatus={errors.party_id ? "error" : ""}
               help={errors.party_id && errors.party_id.message}
@@ -394,7 +394,14 @@ const AddYarnSent = () => {
               />
             </Form.Item>
           </Col>
+        </Row>
 
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
           <Col span={6}>
             <Form.Item
               label="Select vehicle"
@@ -434,14 +441,7 @@ const AddYarnSent = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Challan No"

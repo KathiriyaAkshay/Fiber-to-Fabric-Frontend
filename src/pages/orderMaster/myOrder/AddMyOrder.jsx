@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
@@ -229,6 +229,18 @@ const AddMyOrder = () => {
     enabled: Boolean(companyId),
   });
 
+  const goToAddBroker = () => {
+    navigate("/user-master/my-broker/add");
+  };
+
+  const goToAddParty = () => {
+    navigate("/user-master/my-party/add");
+  };
+
+  const goToAddQuality = () => {
+    navigate("/quality-master/inhouse-quality/add");
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -306,7 +318,7 @@ const AddMyOrder = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={6} className="flex items-end gap-2">
             <Form.Item
               label="Broker"
               name="broker_id"
@@ -314,6 +326,7 @@ const AddMyOrder = () => {
               help={errors.broker_id && errors.broker_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              className="flex-grow"
             >
               <Controller
                 control={control}
@@ -322,6 +335,7 @@ const AddMyOrder = () => {
                   return (
                     <Select
                       {...field}
+                      style={{ width: "100%" }}
                       placeholder="Select Broker"
                       loading={isLoadingBrokerList}
                       options={brokerUserListRes?.brokerList?.rows?.map(
@@ -340,9 +354,15 @@ const AddMyOrder = () => {
                 }}
               />
             </Form.Item>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={goToAddBroker}
+              className="mb-6"
+              type="primary"
+            />
           </Col>
 
-          <Col span={6}>
+          <Col span={6} className="flex items-end gap-2">
             <Form.Item
               label="Party"
               name="party_id"
@@ -350,6 +370,7 @@ const AddMyOrder = () => {
               help={errors.party_id && errors.party_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              className="flex-grow"
             >
               <Controller
                 control={control}
@@ -358,7 +379,7 @@ const AddMyOrder = () => {
                   return (
                     <Select
                       {...field}
-                      placeholder="Select Supervisor"
+                      placeholder="Select Party"
                       loading={isLoadingPartyList}
                       options={partyUserListRes?.partyList?.rows?.map(
                         (party) => ({
@@ -376,6 +397,12 @@ const AddMyOrder = () => {
                 }}
               />
             </Form.Item>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={goToAddParty}
+              className="mb-6"
+              type="primary"
+            />
           </Col>
         </Row>
 
@@ -385,7 +412,7 @@ const AddMyOrder = () => {
             padding: "12px",
           }}
         >
-          <Col span={6}>
+          <Col span={6} className="flex items-end gap-2">
             <Form.Item
               label="Select Quality"
               name="quality_id"
@@ -393,6 +420,7 @@ const AddMyOrder = () => {
               help={errors.quality_id && errors.quality_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
+              className="flex-grow"
             >
               <Controller
                 control={control}
@@ -415,6 +443,12 @@ const AddMyOrder = () => {
                 }}
               />
             </Form.Item>
+            <Button
+              icon={<PlusCircleOutlined />}
+              onClick={goToAddQuality}
+              className="mb-6"
+              type="primary"
+            />
           </Col>
 
           <Col span={6}>
