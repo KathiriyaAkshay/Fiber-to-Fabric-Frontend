@@ -12,7 +12,7 @@ import DeleteAssignRollReportButton from "../../../../../components/tasks/assign
 function AssignRollReportList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -24,6 +24,7 @@ function AssignRollReportList() {
         page,
         pageSize,
         search: debouncedSearch,
+        end: financialYearEnd,
       },
     ],
     queryFn: async () => {
@@ -34,6 +35,7 @@ function AssignRollReportList() {
           page,
           pageSize,
           search: debouncedSearch,
+          end: financialYearEnd,
         },
       });
       return res.data?.data;
