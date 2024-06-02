@@ -12,19 +12,23 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import { getVehicleUserListRequest, getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { createSaleYarnChallanRequest, updateYarnSalerChallanRequest } from "../../../../api/requests/sale/challan/challan";
+import { createSaleYarnChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { getYarnSaleChallanByIdRequest } from "../../../../api/requests/sale/challan/challan";
+import { createSaleJobWorkChallanRequest } from "../../../../api/requests/sale/challan/challan";
+import { getSaleJobworkChllanByIdRequest } from "../../../../api/requests/sale/challan/challan";
+import { updateJobWorkSaleChallanRequest } from "../../../../api/requests/sale/challan/challan";
 
-const yarnSaleChallanResolver = yupResolver(
+const jobWorkChallanResolver = yupResolver(
     yup.object().shape({
-        cartoon: yup.string().required("Please, enter cartoon"),
         kg: yup.string().required("Please, enter kg value"), 
+        current_stock: yup.string(), 
+        hsn_no: yup.string().required("Please enter hsn code"), 
+        notes:  yup.string().required("Please enter notes for this challan")
     })
 );
 
-function UpdateYarnSaleChallan() {
+function UpdateJobWorkChallan(){
     const navigation = useNavigate();
     const queryClient = useQueryClient();
     const {id} = useParams() ; 
@@ -36,7 +40,7 @@ function UpdateYarnSaleChallan() {
         setValue,
         watch,
     } = useForm({
-        resolver: yarnSaleChallanResolver,
+        resolver: jobWorkChallanResolver,
         defaultValues: {
             cartoon: 0, 
             current_stock: 0, 
@@ -48,6 +52,36 @@ function UpdateYarnSaleChallan() {
 
     const [denierOptions, setDenierOptions] = useState([]);
     const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
+
+    const { data: jobWorkChallanDetails} = useQuery({
+        queryFn: async () => {
+            const res = await getSaleJobworkChllanByIdRequest({
+                id, 
+                params: { company_id: companyId },
+            });
+            return res.data?.data;
+        },
+        enabled: Boolean(companyId),
+    });
+
+    useEffect(() => {   
+        if (jobWorkChallanDetails){
+            reset({
+                order_date: dayjs( jobWorkChallanDetails?.createdAt), 
+                supplier_name: jobWorkChallanDetails?.supplier?.supplier_name, 
+                supplier_id: jobWorkChallanDetails?.supplier?.user_id, 
+                challan_no: jobWorkChallanDetails?.challan_no, 
+                vehicle_id: jobWorkChallanDetails?.vehicle?.id, 
+                yarn_company_name: jobWorkChallanDetails?.yarn_stock_company?.yarn_company_name, 
+                yarn_company_id: jobWorkChallanDetails?.yarn_stock_company?.id, 
+                hsn_no: jobWorkChallanDetails?.hsn_no, 
+                quantity: jobWorkChallanDetails?.quantity, 
+                kg: jobWorkChallanDetails?.kg, 
+                notes: jobWorkChallanDetails?.notes
+            })
+        }
+    }, [jobWorkChallanDetails, reset])
+
     const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
         queryKey: [
             "vehicle",
@@ -74,26 +108,11 @@ function UpdateYarnSaleChallan() {
         enabled: Boolean(companyId),
     });
 
-    const { data: yarnSaleChallanDetails} = useQuery({
-        queryFn: async () => {
-            const res = await getYarnSaleChallanByIdRequest({
-                id, 
-                params: { company_id: companyId },
-            });
-            return res.data?.data;
-        },
-        enabled: Boolean(companyId),
-    });
-
-    const { yarn_company_name, supplier_name, current_stock, cartoon } = watch();
+    const { yarn_company_name, supplier_name} = watch();
 
     useEffect(() => {
-        let temp_remain_stock = current_stock - cartoon ; 
-        setValue("remaining_stock", temp_remain_stock) ; 
-    }, [cartoon, current_stock, setValue]) ; 
-
-    useEffect(() => {
-        yarnSaleChallanDetails && yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+        // set options for denier selection on yarn stock company select
+        yscdListRes?.yarnCompanyList?.forEach((ysc) => {
             const { yarn_company_name: name = "", yarn_details = [] } = ysc;
             if (name === yarn_company_name) {
                 const options = yarn_details?.map(
@@ -105,10 +124,6 @@ function UpdateYarnSaleChallan() {
                         yarn_color = "",
                         current_stock = 0 
                     }) => {
-
-                        if (yarnSaleChallanDetails?.yarn_stock_company?.id == yarn_company_id){
-                            setValue("current_stock", current_stock)
-                        }
                         return {
                             label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
                             value: yarn_company_id,
@@ -121,7 +136,7 @@ function UpdateYarnSaleChallan() {
                 }
             }
         });
-    }, [yarn_company_name, yscdListRes?.yarnCompanyList, yarnSaleChallanDetails]);
+    }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
     const {
         data: dropdownSupplierListRes,
@@ -138,7 +153,6 @@ function UpdateYarnSaleChallan() {
     });
 
     useEffect(() => {
-        // set options for supplier company selection on supplier name select
         dropdownSupplierListRes?.forEach((spl) => {
             const { supplier_name: name = "", supplier_company = [] } = spl;
             if (name === supplier_name) {
@@ -155,11 +169,11 @@ function UpdateYarnSaleChallan() {
                 }
             }
         });
-    }, [dropdownSupplierListRes, supplier_name, yarnSaleChallanDetails]);
+    }, [dropdownSupplierListRes, supplier_name]);
 
-    const { mutateAsync: updateYarnSaleChallan } = useMutation({
+    const { mutateAsync: updateJobWorkChallan } = useMutation({
         mutationFn: async (data) => {
-          const res = await updateYarnSalerChallanRequest({
+          const res = await updateJobWorkSaleChallanRequest({
             id,
             data,
             params: { company_id: companyId },
@@ -167,7 +181,7 @@ function UpdateYarnSaleChallan() {
           return res.data;
         },
         onSuccess: (res) => {
-            message.success("Update yarn sale challan successfully")
+            message.success("Update job work sale challan successfully")
             navigation(-1);
         },
         onError: (error) => {
@@ -176,23 +190,6 @@ function UpdateYarnSaleChallan() {
         },
     });
 
-    useEffect(() => {
-        if (yarnSaleChallanDetails){
-            reset({
-                order_date: dayjs( yarnSaleChallanDetails?.createdAt), 
-                supplier_name: yarnSaleChallanDetails?.supplier?.supplier_name, 
-                supplier_id: yarnSaleChallanDetails?.supplier?.user_id, 
-                challan_no: yarnSaleChallanDetails?.challan_no, 
-                vehicle_id: yarnSaleChallanDetails?.vehicle?.id, 
-                yarn_company_name: yarnSaleChallanDetails?.yarn_stock_company?.yarn_company_name, 
-                yarn_company_id: yarnSaleChallanDetails?.yarn_stock_company?.id, 
-                cartoon: yarnSaleChallanDetails?.cartoon, 
-                kg: yarnSaleChallanDetails?.kg, 
-                // pending_kg: yarnSaleChallanDetails?.pending_kg
-            })
-        }
-    }, [yarnSaleChallanDetails, reset])
-
 
     async function onSubmit(data) {
         delete data?.remaining_stock ; 
@@ -200,13 +197,13 @@ function UpdateYarnSaleChallan() {
         delete data?.order_date ; 
         delete data?.yarn_company_name ; 
         delete data?.order_type ; 
-        delete data?.yarn_company_id ; 
+        delete data?.cartoon ; 
+        delete data?.current_stock; 
+        delete data?.challan_no ; 
         delete data?.supplier_id ; 
         delete data?.vehicle_id ; 
-        delete data?.current_stock ; 
-        delete data?.challan_no ; 
-
-        await updateYarnSaleChallan(data) ; 
+        delete data?.yarn_company_id ;
+        await updateJobWorkChallan(data) ; 
     };
 
     const disabledDate = (current) => {
@@ -219,7 +216,7 @@ function UpdateYarnSaleChallan() {
                 <Button onClick={() => { navigation(-1) }}>
                     <ArrowLeftOutlined />
                 </Button>
-                <h3 className="m-0 text-primary">Update Yarn Sale</h3>
+                <h3 className="m-0 text-primary">Update Job Work Sale</h3>
             </div>
 
             <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -241,7 +238,6 @@ function UpdateYarnSaleChallan() {
                             <Controller
                                 control={control}
                                 name="order_date"
-                                disabled
                                 render={({ field }) => (
                                     <DatePicker
                                         {...field}
@@ -348,9 +344,9 @@ function UpdateYarnSaleChallan() {
                             required={true}
                         >
                             <Controller
-                                disabled
                                 control={control}
                                 name="challan_no"
+                                disabled
                                 render={({ field }) => (
                                     <Input
                                         {...field}
@@ -467,6 +463,7 @@ function UpdateYarnSaleChallan() {
                                             textTransform: "capitalize",
                                         }}
                                         onChange={(value, option) => {
+                                            console.log(option);
                                             setValue("yarn_company_id", value)
                                             setValue("current_stock", option?.current_stock)
                                         }}
@@ -478,21 +475,20 @@ function UpdateYarnSaleChallan() {
 
                     <Col span={6}>
                         <Form.Item
-                            label="Current Stock"
-                            name="current_stock"
-                            validateStatus={errors.current_stock ? "error" : ""}
-                            help={errors.current_stock && errors.current_stock.message}
+                            label="HSN code"
+                            name="hsn_no"
+                            validateStatus={errors.hsn_no ? "error" : ""}
+                            help={errors.hsn_no && errors.hsn_no.message}
                             wrapperCol={{ sm: 24 }}
                             required={true}
                         >
                             <Controller
                                 control={control}
-                                disabled
-                                name="current_stock"
+                                placeholder = "Enter HSN code"
+                                name="hsn_no"
                                 render={({ field }) => (
                                     <Input
                                         {...field}
-                                        type="number"
                                     />
                                 )}
                             />
@@ -501,16 +497,16 @@ function UpdateYarnSaleChallan() {
 
                     <Col span={6}>
                         <Form.Item
-                            label="Cartoon"
-                            name="cartoon"
-                            validateStatus={errors.cartoon ? "error" : ""}
-                            help={errors.cartoon && errors.cartoon.message}
+                            label="Quantity"
+                            name="quantity"
+                            validateStatus={errors.quantity ? "error" : ""}
+                            help={errors.quantity && errors.quantity.message}
                             wrapperCol={{ sm: 24 }}
                             required={true}
                         >
                             <Controller
                                 control={control}
-                                name="cartoon"
+                                name="quantity"
                                 render={({ field }) => (
                                     <Input
                                         {...field}
@@ -545,16 +541,16 @@ function UpdateYarnSaleChallan() {
 
                     <Col span={6}>
                         <Form.Item
-                            label="Remaining stock"
-                            name="pending_kg"
-                            validateStatus={errors.pending_kg ? "error" : ""}
-                            help={errors.pending_kg && errors.pending_kg.message}
+                            label="Notes"
+                            name="notes"
+                            validateStatus={errors.notes ? "error" : ""}
+                            help={errors.notes && errors.notes.message}
                             wrapperCol={{ sm: 24 }}
                             required={true}
                         >
                             <Controller
                                 control={control}
-                                name="pending_kg"
+                                name="notes"
                                 // disabled
                                 render={({ field }) => (
                                     <Input
@@ -579,4 +575,4 @@ function UpdateYarnSaleChallan() {
     )
 }
 
-export default UpdateYarnSaleChallan; 
+export default UpdateJobWorkChallan ; 

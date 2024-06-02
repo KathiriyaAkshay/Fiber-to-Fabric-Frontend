@@ -86,6 +86,9 @@ import UpdateBeamCard from "./pages/beamCard/UpdateBeamCard";
 import AddYarnSaleChallan from "./pages/sale/challan/yarnsale/addYarnSale";
 import YarnSaleChallanList from "./pages/sale/challan/yarnsale/yarnSaleListing";
 import UpdateYarnSaleChallan from "./pages/sale/challan/yarnsale/updateYarnSale";
+import AddJobWorkSaleChallan from "./pages/sale/challan/jobwork/addSaleJobWork";
+import JobWorkChallanList from "./pages/sale/challan/jobwork/saleJobWorkList";
+import UpdateJobWorkChallan from "./pages/sale/challan/jobwork/updateJobWork";
 
 const queryClient = new QueryClient();
 
@@ -310,6 +313,14 @@ const router = createBrowserRouter([
                   {index: true, element: <YarnSaleChallanList/>}, 
                   {path: "add", element: <AddYarnSaleChallan/>}, 
                   {path: "update/:id", element: <UpdateYarnSaleChallan/>}
+                ]
+              },
+              {
+                path: "job-work",
+                children:[
+                  {index: true, element: <JobWorkChallanList/>}, 
+                  {path: "add", element: <AddJobWorkSaleChallan/>}, 
+                  {path: "update/:id", element: <UpdateJobWorkChallan/>}
                 ]
               },
               {

@@ -23,3 +23,27 @@ export function getYarnSaleChallanByIdRequest({id, params}){
 export function updateYarnSalerChallanRequest({id, data, params}){
     return api.patch(`sale/challan/yarn-sale/update/${id}`, data, {params}) ; 
 }
+
+export function createSaleJobWorkChallanRequest({data, params}){
+    return api.post(`/sale/challan/job-work/create`, data, {
+        params
+    });
+}
+
+export function saleJobWorkChallanListRequest({params}){
+    return api.get(`/sale/challan/job-work/list`, {
+        params
+    })
+}
+
+export function deleteSaleJobWorkChallanRequest({id, params}){
+    return api.delete(`/sale/challan/job-work/delete/${id}`, {params}) ; 
+}
+
+export function getSaleJobworkChllanByIdRequest({id, params}){
+    return api.get(`/sale/challan/job-work/get/${id}`, {params}) ; 
+}
+
+export function updateJobWorkSaleChallanRequest({id, data, params}){
+    return api.patch(`sale/challan/job-work/update/${id}`, data, {params}) ; 
+}
