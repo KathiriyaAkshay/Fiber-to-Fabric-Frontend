@@ -180,7 +180,6 @@ const UpdateJobTaka = () => {
         job_challan_details,
         gray_order,
       } = jobTakaDetails;
-      console.log(quality_id);
 
       setFieldArray(() => {
         return job_challan_details.map((item, index) => index);
@@ -288,7 +287,6 @@ const UpdateJobTaka = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ dropDownQualityListRes });
 
   const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
     queryKey: ["broker", "list", { company_id: companyId }],
