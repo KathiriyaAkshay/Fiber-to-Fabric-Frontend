@@ -83,6 +83,9 @@ import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
 import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
 import AddBeamCard from "./pages/beamCard/AddBeamCard";
 import UpdateBeamCard from "./pages/beamCard/UpdateBeamCard";
+import AddYarnSaleChallan from "./pages/sale/challan/yarnsale/addYarnSale";
+import YarnSaleChallanList from "./pages/sale/challan/yarnsale/yarnSaleListing";
+import UpdateYarnSaleChallan from "./pages/sale/challan/yarnsale/updateYarnSale";
 
 const queryClient = new QueryClient();
 
@@ -291,26 +294,10 @@ const router = createBrowserRouter([
       },
       {
         path: "sales",
-        element: (
-          <div>
-            <div>sales</div>
-            <Outlet />
-          </div>
-        ),
         children: [
           { index: true, element: <div>sales</div> },
-          {
-            path: "taka-return-request",
-            element: <div>taka-return-request</div>,
-          },
-          {
-            path: "challan",
-            element: (
-              <div>
-                <div>challan</div>
-                <Outlet />
-              </div>
-            ),
+          { path: "taka-return-request", element: <div>taka-return-request</div>},
+          { path: "challan", 
             children: [
               { index: true, element: <div>challan</div> },
               {
@@ -319,7 +306,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-sale",
-                element: <div>yarn-sale</div>,
+                children:[
+                  {index: true, element: <YarnSaleChallanList/>}, 
+                  {path: "add", element: <AddYarnSaleChallan/>}, 
+                  {path: "update/:id", element: <UpdateYarnSaleChallan/>}
+                ]
               },
               {
                 path: "beam-sale",
