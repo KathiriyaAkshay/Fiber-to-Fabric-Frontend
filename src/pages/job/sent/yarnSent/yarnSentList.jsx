@@ -23,14 +23,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import dayjs from "dayjs";
 import { getYarnSentListRequest } from "../../../../api/requests/job/sent/yarnSent";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import {
-  getPartyListRequest,
+  getDropdownSupplierListRequest,
   // getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import {
@@ -47,14 +47,49 @@ const YarnSentList = () => {
 
   const [search, setSearch] = useState("");
   const [quality, setQuality] = useState();
-  const [party, setParty] = useState();
-  // const [vehicle, setVehicle] = useState();
+  // const [party, setParty] = useState();
+  const [supplier, setSupplier] = useState();
+  const [supplierCompany, setSupplierCompany] = useState();
+
   const debouncedSearch = useDebounce(search, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const debouncedParty = useDebounce(party, 500);
-  // const debouncedVehicle = useDebounce(vehicle, 500);
+  // const debouncedParty = useDebounce(party, 500);
+  const debouncedSupplier = useDebounce(supplier, 500);
+  const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      debouncedSupplier &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.filter((item) => {
+        return item.supplier_name === debouncedSupplier;
+      })[0];
+
+      return obj?.supplier_company?.map((item) => {
+        return { label: item.supplier_company, value: item.supplier_id };
+      });
+    } else {
+      return [];
+    }
+  }, [debouncedSupplier, dropdownSupplierListRes]);
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
@@ -77,16 +112,16 @@ const YarnSentList = () => {
       enabled: Boolean(companyId),
     });
 
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getPartyListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+  //   queryKey: ["party", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getPartyListRequest({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   // const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
   //   queryKey: [
@@ -111,10 +146,10 @@ const YarnSentList = () => {
         company_id: companyId,
         page,
         pageSize,
-        // vehicle_id: debouncedVehicle,
+        supplier_id: debouncedSupplierCompany,
         quality_id: debouncedQuality,
-        party_id: debouncedParty,
         search: debouncedSearch,
+        // party_id: debouncedParty,
       },
     ],
     queryFn: async () => {
@@ -123,10 +158,10 @@ const YarnSentList = () => {
           company_id: companyId,
           page,
           pageSize,
-          // vehicle_id: debouncedVehicle,
+          supplier_id: debouncedSupplierCompany,
           quality_id: debouncedQuality,
-          party_id: debouncedParty,
           search: debouncedSearch,
+          // party_id: debouncedParty,
         },
       });
       return res.data?.data;
@@ -184,9 +219,9 @@ const YarnSentList = () => {
       key: "challan_no",
     },
     {
-      title: "Party Name",
+      title: "Supplier Name",
       render: (detail) => {
-        return `${detail.party.first_name} ${detail.party.last_name}`;
+        return `${detail?.supplier?.supplier_name ?? ""}`;
       },
     },
     {
@@ -305,7 +340,7 @@ const YarnSentList = () => {
               className="min-w-40"
             />
           </Flex>
-          <Flex align="center" gap={10}>
+          {/* <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Party
             </Typography.Text>
@@ -326,6 +361,46 @@ const YarnSentList = () => {
                 textTransform: "capitalize",
               }}
               onChange={setParty}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex> */}
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Supplier
+            </Typography.Text>
+            <Select
+              placeholder="Select supplier"
+              loading={isLoadingDropdownSupplierList}
+              options={dropdownSupplierListRes?.map((supervisor) => ({
+                label: supervisor?.supplier_name,
+                value: supervisor?.supplier_name,
+              }))}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              value={supplier}
+              onChange={setSupplier}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Supplier Company
+            </Typography.Text>
+            <Select
+              placeholder="Select Company"
+              options={dropDownSupplierCompanyOption}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              value={supplierCompany}
+              onChange={setSupplierCompany}
               style={{
                 textTransform: "capitalize",
               }}

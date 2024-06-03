@@ -1,13 +1,9 @@
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined, MinusCircleOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
-  Checkbox,
   Col,
+  DatePicker,
   Divider,
   Flex,
   Form,
@@ -20,16 +16,14 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
-import {
-  getBrokerListRequest,
-  getDropdownSupplierListRequest,
-} from "../../../api/requests/users";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import { addJobTakaRequest } from "../../../api/requests/job/jobTaka";
+import dayjs from "dayjs";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -43,20 +37,26 @@ const addJobTakaSchemaResolver = yupResolver(
     quality_id: yup.string().required("Please select quality."),
     total_meter: yup.string().required("Please enter total meter."),
     total_weight: yup.string().required("Please enter total weight."),
-    pending_meter: yup.string().required("Please enter pending meter."),
-    pending_weight: yup.string().required("Please enter pending weight."),
-    pending_taka: yup.string().required("Please enter pending taka."),
     total_taka: yup.string().required("Please enter total taka."),
   })
 );
 
+const jobChallanFieldsInitialValues = Array.from(
+  { length: 48 },
+  (_, i) => i + 1
+);
+const chunkSize = jobChallanFieldsInitialValues.length / 4;
+
 const AddJobTaka = () => {
   const queryClient = useQueryClient();
-  const [fieldArray, setFieldArray] = useState([0]);
+  // const [fieldArray, setFieldArray] = useState([0]);
+
+  const [jobChallanFields] = useState(jobChallanFieldsInitialValues);
+  const [activeField, setActiveField] = useState(1);
 
   const navigate = useNavigate();
   //   const { data: user } = useCurrentUser();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
@@ -85,25 +85,32 @@ const AddJobTaka = () => {
       message.error(errorMessage);
     },
   });
+  console.count("component render");
 
   async function onSubmit(data) {
+    const jobChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
+    console.log({ jobChallanDetailArr });
+
     const newData = {
       delivery_address: data.delivery_address,
       gst_state: data.gst_state,
       gst_in: data.gst_in,
       challan_no: data.challan_no,
-      gray_order_id: data.gray_order_id,
-      supplier_id: data.supplier_id,
-      broker_id: data.broker_id,
-      quality_id: data.quality_id,
-      total_meter: parseInt(data.total_meter),
-      total_weight: parseInt(data.total_weight),
-      pending_meter: parseInt(data.pending_meter),
-      pending_weight: parseInt(data.pending_weight),
-      pending_taka: parseInt(data.pending_taka),
+      gray_order_id: +data.gray_order_id,
+      supplier_id: +data.supplier_id,
+      broker_id: +data.broker_id,
+      quality_id: +data.quality_id,
+      total_meter: +data.total_meter,
+      total_weight: +data.total_weight,
+      pending_meter: +data.pending_meter,
+      // pending_weight: parseInt(data.pending_weight),
+      // pending_taka: parseInt(data.pending_taka),
       total_taka: parseInt(data.total_taka),
-      is_grey: data.is_grey,
-      job_challan_detail: fieldArray.map((field) => {
+      // is_grey: data.is_grey,
+      job_challan_detail: jobChallanDetailArr.map((field) => {
         return {
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
@@ -111,6 +118,7 @@ const AddJobTaka = () => {
         };
       }),
     };
+    console.log({ data, newData });
     await AddJobTaka(newData);
   }
 
@@ -119,80 +127,82 @@ const AddJobTaka = () => {
     handleSubmit,
     formState: { errors },
     reset,
-    clearErrors,
-    setError,
-    getValues,
+    watch,
+    setValue,
   } = useForm({
     defaultValues: {
+      company_id: null,
+      challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
       gst_in: "",
       challan_no: "",
       gray_order_id: null,
+      supplier_name: null,
       supplier_id: null,
       broker_id: null,
+      broker_name: "",
       quality_id: null,
+      pending_meter: "",
       total_meter: "",
       total_weight: "",
-      pending_meter: "",
-      pending_weight: "",
-      pending_taka: "",
       total_taka: "",
       is_grey: true,
     },
     resolver: addJobTakaSchemaResolver,
   });
+  const { supplier_name, gray_order_id } = watch();
   // ------------------------------------------------------------------------------------------
 
-  const addNewFieldRow = (indexValue) => {
-    let isValid = true;
+  // const addNewFieldRow = (indexValue) => {
+  //   let isValid = true;
 
-    fieldArray.forEach((item, index) => {
-      clearErrors(`taka_no_${index}`);
-      clearErrors(`meter_${index}`);
-      clearErrors(`weight_${index}`);
-    });
+  //   fieldArray.forEach((item, index) => {
+  //     clearErrors(`taka_no_${index}`);
+  //     clearErrors(`meter_${index}`);
+  //     clearErrors(`weight_${index}`);
+  //   });
 
-    fieldArray.forEach((item, index) => {
-      if (index === indexValue) {
-        if (!getValues(`taka_no_${index}`)) {
-          setError(`taka_no_${index}`, {
-            type: "manual",
-            message: "Please enter taka no",
-          });
-          isValid = false;
-        }
-        if (!getValues(`meter_${index}`)) {
-          setError(`meter_${index}`, {
-            type: "manual",
-            message: "Please enter meter.",
-          });
-          isValid = false;
-        }
-        if (!getValues(`weight_${index}`)) {
-          setError(`weight_${index}`, {
-            type: "manual",
-            message: "Please enter weight.",
-          });
-          isValid = false;
-        }
-      }
-    });
+  //   fieldArray.forEach((item, index) => {
+  //     if (index === indexValue) {
+  //       if (!getValues(`taka_no_${index}`)) {
+  //         setError(`taka_no_${index}`, {
+  //           type: "manual",
+  //           message: "Please enter taka no",
+  //         });
+  //         isValid = false;
+  //       }
+  //       if (!getValues(`meter_${index}`)) {
+  //         setError(`meter_${index}`, {
+  //           type: "manual",
+  //           message: "Please enter meter.",
+  //         });
+  //         isValid = false;
+  //       }
+  //       if (!getValues(`weight_${index}`)) {
+  //         setError(`weight_${index}`, {
+  //           type: "manual",
+  //           message: "Please enter weight.",
+  //         });
+  //         isValid = false;
+  //       }
+  //     }
+  //   });
 
-    if (isValid) {
-      const nextValue = fieldArray[fieldArray.length - 1] + 1;
-      setFieldArray((prev) => {
-        return [...prev, nextValue];
-      });
-    }
-  };
+  //   if (isValid) {
+  //     const nextValue = fieldArray[fieldArray.length - 1] + 1;
+  //     setFieldArray((prev) => {
+  //       return [...prev, nextValue];
+  //     });
+  //   }
+  // };
 
-  const deleteFieldRow = (field) => {
-    const newFields = [...fieldArray];
-    const actualIndex = newFields.indexOf(field);
-    newFields.splice(actualIndex, 1);
-    setFieldArray(newFields);
-  };
+  // const deleteFieldRow = (field) => {
+  //   const newFields = [...fieldArray];
+  //   const actualIndex = newFields.indexOf(field);
+  //   newFields.splice(actualIndex, 1);
+  //   setFieldArray(newFields);
+  // };
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
     queryKey: [
@@ -213,17 +223,6 @@ const AddJobTaka = () => {
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getBrokerListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
       });
       return res.data?.data;
     },
@@ -256,6 +255,40 @@ const AddJobTaka = () => {
     enabled: Boolean(companyId),
   });
 
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      supplier_name &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.find((item) => {
+        return item.supplier_name === supplier_name;
+      });
+      return obj?.supplier_company?.map((item) => {
+        return { label: item.supplier_company, value: item.supplier_id };
+      });
+    } else {
+      return [];
+    }
+  }, [supplier_name, dropdownSupplierListRes]);
+
+  useEffect(() => {
+    if (grayOrderListRes && gray_order_id) {
+      const selectedOrder = grayOrderListRes.row.find(
+        ({ id }) => gray_order_id === id
+      );
+      setValue("total_meter", selectedOrder.total_meter);
+      setValue("total_taka", selectedOrder.total_taka);
+      setValue("total_weight", selectedOrder.weight);
+      setValue(
+        "broker_name",
+        `${selectedOrder.broker.first_name} ${selectedOrder.broker.last_name}`
+      );
+      setValue("broker_id", selectedOrder.broker.id);
+      setValue("quality_id", selectedOrder.inhouse_quality.id);
+    }
+  }, [gray_order_id, grayOrderListRes, setValue]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -273,6 +306,62 @@ const AddJobTaka = () => {
         >
           <Col span={6}>
             <Form.Item
+              label="Company"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    loading={isLoadingGrayOrderList}
+                    placeholder="Select Company"
+                    options={companyListRes?.rows?.map((company) => ({
+                      label: company.company_name,
+                      value: company.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Challan Date"
+              name="challan_date"
+              validateStatus={errors.challan_date ? "error" : ""}
+              help={errors.challan_date && errors.challan_date.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_date"
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    format={"DD-MM-YYYY"}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
               label="Delivery Address"
               name="delivery_address"
               validateStatus={errors.delivery_address ? "error" : ""}
@@ -286,6 +375,51 @@ const AddJobTaka = () => {
                 render={({ field }) => {
                   return <Input {...field} placeholder="Delivery Address" />;
                 }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Gst State"
+              name="gst_state"
+              validateStatus={errors.gst_state ? "error" : ""}
+              help={errors.gst_state && errors.gst_state.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_state"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST State" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Gst In"
+              name="gst_in"
+              validateStatus={errors.gst_in ? "error" : ""}
+              help={errors.gst_in && errors.gst_in.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_in"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST In" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -304,25 +438,6 @@ const AddJobTaka = () => {
                 name="challan_no"
                 render={({ field }) => (
                   <Input {...field} placeholder="CH123456" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
                 )}
               />
             </Form.Item>
@@ -389,72 +504,18 @@ const AddJobTaka = () => {
 
           <Col span={6}>
             <Form.Item
-              label="Select Supplier"
-              name="supplier_id"
-              validateStatus={errors.supplier_id ? "error" : ""}
-              help={errors.supplier_id && errors.supplier_id.message}
+              label="Broker"
+              name="broker_name"
+              validateStatus={errors.broker_name ? "error" : ""}
+              help={errors.broker_name && errors.broker_name.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="supplier_id"
+                name="broker_name"
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Supplier"
-                    loading={isLoadingDropdownSupplierList}
-                    options={dropdownSupplierListRes?.map((supervisor) => ({
-                      label: supervisor?.supplier_name,
-                      value: supervisor?.supplier_company[0]?.supplier_id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Select Broker"
-              name="broker_id"
-              validateStatus={errors.broker_id ? "error" : ""}
-              help={errors.broker_id && errors.broker_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="broker_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingBrokerList}
-                    placeholder="Select Broker"
-                    options={brokerUserListRes?.brokerList?.rows?.map(
-                      (broker) => ({
-                        label:
-                          broker.first_name +
-                          " " +
-                          broker.last_name +
-                          " " +
-                          `| (${broker?.username})`,
-                        value: broker.id,
-                      })
-                    )}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
+                  <Input {...field} placeholder="Broker Name" disabled />
                 )}
               />
             </Form.Item>
@@ -478,6 +539,7 @@ const AddJobTaka = () => {
                       {...field}
                       placeholder="Select Quality"
                       loading={dropDownQualityLoading}
+                      disabled
                       options={
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
@@ -491,6 +553,25 @@ const AddJobTaka = () => {
               />
             </Form.Item>
           </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Gst State"
+              name="gst_state"
+              validateStatus={errors.gst_state ? "error" : ""}
+              help={errors.gst_state && errors.gst_state.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_state"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST State" />
+                )}
+              />
+            </Form.Item>
+          </Col>
         </Row>
 
         <Row
@@ -499,6 +580,68 @@ const AddJobTaka = () => {
             padding: "12px",
           }}
         >
+          <Col span={6}>
+            <Form.Item
+              label="Select Supplier"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Supplier"
+                    loading={isLoadingDropdownSupplierList}
+                    options={dropdownSupplierListRes?.map((supervisor) => ({
+                      label: supervisor?.supplier_name,
+                      value: supervisor?.supplier_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Company"
+              name="supplier_id"
+              validateStatus={errors.supplier_id ? "error" : ""}
+              help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    options={dropDownSupplierCompanyOption}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={3}>
             <Form.Item
               label="Total Meter"
@@ -511,7 +654,9 @@ const AddJobTaka = () => {
               <Controller
                 control={control}
                 name="total_meter"
-                render={({ field }) => <Input {...field} placeholder="0" />}
+                render={({ field }) => (
+                  <Input {...field} placeholder="0" disabled />
+                )}
               />
             </Form.Item>
           </Col>
@@ -528,58 +673,9 @@ const AddJobTaka = () => {
               <Controller
                 control={control}
                 name="total_weight"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Meter"
-              name="pending_meter"
-              validateStatus={errors.pending_meter ? "error" : ""}
-              help={errors.pending_meter && errors.pending_meter.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_meter"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Weight"
-              name="pending_weight"
-              validateStatus={errors.pending_weight ? "error" : ""}
-              help={errors.pending_weight && errors.pending_weight.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_weight"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Taka"
-              name="pending_taka"
-              validateStatus={errors.pending_taka ? "error" : ""}
-              help={errors.pending_taka && errors.pending_taka.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_taka"
-                render={({ field }) => <Input {...field} placeholder="0" />}
+                render={({ field }) => (
+                  <Input {...field} placeholder="0" disabled />
+                )}
               />
             </Form.Item>
           </Col>
@@ -596,28 +692,8 @@ const AddJobTaka = () => {
               <Controller
                 control={control}
                 name="total_taka"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label=" "
-              name="is_grey"
-              validateStatus={errors.is_grey ? "error" : ""}
-              help={errors.is_grey && errors.is_grey.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="is_grey"
                 render={({ field }) => (
-                  <Checkbox {...field} checked={field.value}>
-                    {" "}
-                    Is Grey{" "}
-                  </Checkbox>
+                  <Input {...field} placeholder="0" disabled />
                 )}
               />
             </Form.Item>
@@ -626,7 +702,483 @@ const AddJobTaka = () => {
 
         <Divider />
 
-        {fieldArray.map((field, index) => {
+        <Row>
+          <Col span={6}>
+            <table className="job-challan-details-table" border={1}>
+              <thead>
+                <th>#</th>
+                <th>Taka No</th>
+                <th>Meter</th>
+                <th>Weight</th>
+                <th>
+                  <MinusCircleOutlined />
+                </th>
+              </thead>
+              <tbody>
+                {jobChallanFields.slice(0, chunkSize).map((fieldNumber) => {
+                  return (
+                    <tr key={fieldNumber}>
+                      <td>{fieldNumber}</td>
+                      <td>
+                        <Form.Item
+                          name={`taka_no_${fieldNumber}`}
+                          validateStatus={
+                            errors[`taka_no_${fieldNumber}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`taka_no_${fieldNumber}`] &&
+                            errors[`taka_no_${fieldNumber}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                          style={{ marginBottom: "0px" }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`taka_no_${fieldNumber}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                style={{ width: "75px" }}
+                                disabled={fieldNumber !== activeField}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td>
+                        <Form.Item
+                          name={`meter_${fieldNumber}`}
+                          validateStatus={
+                            errors[`meter_${fieldNumber}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`meter_${fieldNumber}`] &&
+                            errors[`meter_${fieldNumber}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                          style={{ marginBottom: "0px" }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`meter_${fieldNumber}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                style={{ width: "100px" }}
+                                disabled={fieldNumber !== activeField}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td>
+                        <Form.Item
+                          name={`weight_${fieldNumber}`}
+                          validateStatus={
+                            errors[`weight_${fieldNumber}`] ? "error" : ""
+                          }
+                          help={
+                            errors[`weight_${fieldNumber}`] &&
+                            errors[`weight_${fieldNumber}`].message
+                          }
+                          required={true}
+                          wrapperCol={{ sm: 24 }}
+                          style={{ marginBottom: "0px" }}
+                        >
+                          <Controller
+                            control={control}
+                            name={`weight_${fieldNumber}`}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                style={{ width: "100px" }}
+                                disabled={fieldNumber !== activeField}
+                              />
+                            )}
+                          />
+                        </Form.Item>
+                      </td>
+                      <td>
+                        <Button
+                          icon={<MinusCircleOutlined />}
+                          disabled={fieldNumber !== activeField}
+                        ></Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <td>GT</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </Col>
+
+          <Col span={6}>
+            <table border={1} className="job-challan-details-table">
+              <thead>
+                <th>#</th>
+                <th>Taka No</th>
+                <th>Meter</th>
+                <th>Weight</th>
+                <th>
+                  <MinusCircleOutlined />
+                </th>
+              </thead>
+              <tbody>
+                {jobChallanFields
+                  .slice(chunkSize, chunkSize * 2)
+                  .map((fieldNumber) => {
+                    return (
+                      <tr key={fieldNumber}>
+                        <td>{fieldNumber}</td>
+                        <td>
+                          <Form.Item
+                            name={`taka_no_${fieldNumber}`}
+                            validateStatus={
+                              errors[`taka_no_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`taka_no_${fieldNumber}`] &&
+                              errors[`taka_no_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`taka_no_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "75px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`meter_${fieldNumber}`}
+                            validateStatus={
+                              errors[`meter_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`meter_${fieldNumber}`] &&
+                              errors[`meter_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`meter_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`weight_${fieldNumber}`}
+                            validateStatus={
+                              errors[`weight_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`weight_${fieldNumber}`] &&
+                              errors[`weight_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`weight_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Button
+                            icon={<MinusCircleOutlined />}
+                            disabled={fieldNumber !== activeField}
+                          ></Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                <tr>
+                  <td>GT</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </Col>
+
+          <Col span={6}>
+            <table border={1} className="job-challan-details-table">
+              <thead>
+                <th>#</th>
+                <th>Taka No</th>
+                <th>Meter</th>
+                <th>Weight</th>
+                <th>
+                  <MinusCircleOutlined />
+                </th>
+              </thead>
+              <tbody>
+                {jobChallanFields
+                  .slice(chunkSize * 2, chunkSize * 3)
+                  .map((fieldNumber) => {
+                    return (
+                      <tr key={fieldNumber}>
+                        <td>{fieldNumber}</td>
+                        <td>
+                          <Form.Item
+                            name={`taka_no_${fieldNumber}`}
+                            validateStatus={
+                              errors[`taka_no_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`taka_no_${fieldNumber}`] &&
+                              errors[`taka_no_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`taka_no_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "75px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`meter_${fieldNumber}`}
+                            validateStatus={
+                              errors[`meter_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`meter_${fieldNumber}`] &&
+                              errors[`meter_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`meter_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`weight_${fieldNumber}`}
+                            validateStatus={
+                              errors[`weight_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`weight_${fieldNumber}`] &&
+                              errors[`weight_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`weight_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Button
+                            icon={<MinusCircleOutlined />}
+                            disabled={fieldNumber !== activeField}
+                          ></Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                <tr>
+                  <td>GT</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </Col>
+
+          <Col span={6}>
+            <table border={1} className="job-challan-details-table">
+              <thead>
+                <th>#</th>
+                <th>Taka No</th>
+                <th>Meter</th>
+                <th>Weight</th>
+                <th>
+                  <MinusCircleOutlined />
+                </th>
+              </thead>
+              <tbody>
+                {jobChallanFields
+                  .slice(chunkSize * 3, chunkSize * 4)
+                  .map((fieldNumber) => {
+                    return (
+                      <tr key={fieldNumber}>
+                        <td>{fieldNumber}</td>
+                        <td>
+                          <Form.Item
+                            name={`taka_no_${fieldNumber}`}
+                            validateStatus={
+                              errors[`taka_no_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`taka_no_${fieldNumber}`] &&
+                              errors[`taka_no_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`taka_no_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "75px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`meter_${fieldNumber}`}
+                            validateStatus={
+                              errors[`meter_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`meter_${fieldNumber}`] &&
+                              errors[`meter_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`meter_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Form.Item
+                            name={`weight_${fieldNumber}`}
+                            validateStatus={
+                              errors[`weight_${fieldNumber}`] ? "error" : ""
+                            }
+                            help={
+                              errors[`weight_${fieldNumber}`] &&
+                              errors[`weight_${fieldNumber}`].message
+                            }
+                            required={true}
+                            wrapperCol={{ sm: 24 }}
+                            style={{ marginBottom: "0px" }}
+                          >
+                            <Controller
+                              control={control}
+                              name={`weight_${fieldNumber}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  style={{ width: "100px" }}
+                                  disabled={fieldNumber !== activeField}
+                                />
+                              )}
+                            />
+                          </Form.Item>
+                        </td>
+                        <td>
+                          <Button
+                            icon={<MinusCircleOutlined />}
+                            disabled={fieldNumber !== activeField}
+                          ></Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                <tr>
+                  <td>GT</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </Col>
+        </Row>
+
+        {/* {fieldArray.map((field, index) => {
           return (
             <Row
               gutter={18}
@@ -723,7 +1275,7 @@ const AddJobTaka = () => {
               )}
             </Row>
           );
-        })}
+        })} */}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

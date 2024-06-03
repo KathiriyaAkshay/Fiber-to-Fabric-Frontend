@@ -391,7 +391,6 @@ const MyOrderList = () => {
           onChange: onPageChange,
         }}
         summary={(tableData) => {
-          console.log({ tableData });
           let totalPendingTaka = 0;
           let totalDeliveredTaka = 0;
           let totalPendingMeter = 0;
