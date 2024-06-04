@@ -33,10 +33,24 @@ body {
   width: 80% !important;
 }
 
-.red-option-text{
+.red-option-text {
   color: red;
 }
 
-.ant-tag{
+.ant-tag {
   cursor: pointer !important;
+}
+
+.job-challan-details-table {
+  border-collapse: separate;
+  text-align: center;
+}
+
+.job-challan-details-table thead {
+  background-color: rgb(25 74 109);
+  color: #fff;
+}
+
+.job-challan-details-table thead th {
+  padding: 6px;
 }

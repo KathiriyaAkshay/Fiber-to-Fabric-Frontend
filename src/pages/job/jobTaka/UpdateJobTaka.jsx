@@ -180,7 +180,6 @@ const UpdateJobTaka = () => {
         job_challan_details,
         gray_order,
       } = jobTakaDetails;
-
       setFieldArray(() => {
         return job_challan_details.map((item, index) => index);
       });

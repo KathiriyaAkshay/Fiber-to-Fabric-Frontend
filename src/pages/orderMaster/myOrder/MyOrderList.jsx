@@ -390,6 +390,54 @@ const MyOrderList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        summary={(tableData) => {
+          let totalPendingTaka = 0;
+          let totalDeliveredTaka = 0;
+          let totalPendingMeter = 0;
+          let totalDeliveredMeter = 0;
+
+          tableData.forEach(
+            ({
+              pending_taka,
+              delivered_taka,
+              pending_meter,
+              delivered_meter,
+            }) => {
+              totalPendingTaka += pending_taka;
+              totalDeliveredTaka += delivered_taka;
+              totalPendingMeter += pending_meter;
+              totalDeliveredMeter += delivered_meter;
+            }
+          );
+          return (
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}>
+                <b>Total</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalPendingTaka}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalDeliveredTaka}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalPendingMeter}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}>
+                <b>{totalDeliveredMeter}</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={1}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}></Table.Summary.Cell>
+            </Table.Summary.Row>
+          );
+        }}
       />
     );
   }

@@ -12,7 +12,6 @@ import {
 import { useState } from "react";
 
 const FinishBeamCardModal = ({ details = [] }) => {
-  console.log({ details });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [finishValue, setFinishValue] = useState("bhidan(finish)");
 
