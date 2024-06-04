@@ -17,7 +17,7 @@ export function getReceiveSizeBeamListRequest({ params }) {
 }
 
 export function updateReceiveSizeBeamRequest({ id, data, params }) {
-  return api.put(`/order-master/recive-size-beam/update/${id}`, data, {
+  return api.patch(`/order-master/recive-size-beam/update/${id}`, data, {
     params,
   });
 }

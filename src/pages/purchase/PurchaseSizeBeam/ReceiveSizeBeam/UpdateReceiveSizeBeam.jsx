@@ -19,7 +19,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import dayjs from "dayjs";
-import { createReceiveSizeBeamRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import { createReceiveSizeBeamRequest, updateReceiveSizeBeamRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
@@ -29,41 +29,40 @@ import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
 import { getReceiveSizeBeamOrderRequest } from "../../../../api/requests/purchase/yarnReceive";
+import UpdateSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateSizeBeamDetails";
 
-const addReceiveSizeBeamSchemaResolver = yupResolver(
-  yup.object().shape({ 
-    // size_beam_order_id: yup.string().required("Please select order"),
-    quality_id: yup.string().required("Please select Quality"),
-    supplier_id: yup.string().required("Please select supplier"),
-    challan_no: yup.string().required("Please enter challan number"),
-    // beam_type: yup.string().required("Please select Beam type"),
-    receive_date: yup.string().required("Please select Date"),
-    // total_meter:yup.string().required("Please enter Total meter"),
-    // remaining_meter: yup.string().required("Please enter remaining meter"),
-    // machine_name: yup.string().required("Please enter machine name"),
-    beam_details: yup.array().of(
-      yup.object().shape({
-        ends_or_tars: yup.string().required("Please enter ends of tars"),
-        tpm: yup.string().required("Please enter tpm"),
-        // grade: yup.string().required("Please enter grade"),
-        meters: yup.string().required("Please enter meters"),
-        pano: yup.string().required("Please enter pano"),
-        remark: yup.string().optional(),
-        beam_no: yup.string().required("Please enter beam no"),
-        supplier_beam_no: yup
-          .string()
-          .required("Please enter supplier beam no"),
-        taka: yup.string().required("Please enter taka"),
-        net_weight: yup.string().required("Please enter net weight"),
-      })
-    ),
-  })
-);
+  const addReceiveSizeBeamSchemaResolver = yupResolver(
+    yup.object().shape({
+      // size_beam_order_id: yup.string().required("Please select order"),
+      // quality_id: yup.string().required("Please select Quality"),
+      supplier_id: yup.string().required("Please select supplier"),
+      challan_no: yup.string().required("Please enter challan number"),
+      // beam_type: yup.string().required("Please select Beam type"),
+      receive_date: yup.string().required("Please select Date"),
+      // total_meter:yup.string().required("Please enter Total meter"),
+      // remaining_meter: yup.string().required("Please enter remaining meter"),
+      // machine_name: yup.string().required("Please enter machine name"),
+      beam_details: yup.array().of(
+        yup.object().shape({
+          ends_or_tars: yup.string().required("Please enter ends of tars"),
+          tpm: yup.string().required("Please enter tpm"),
+          // grade: yup.string().optional(),
+          meters: yup.string().notRequired(), 
+          pano: yup.string().required("Please enter pano"),
+          // remark: yup.string().optional(),
+          // beam_no: yup.string().optional(),
+          // taka: yup.string().optional(),
+          // net_weight: yup.string().optional(),
+          // supplier_beam_no: yup.string().optional()
+        })
+      ),
+    })
+  );
 
 function UpdateReceiveSizeBeam() {
   const navigate = useNavigate();
-  const params = useParams() ; 
-  const {id} = params ; 
+  const params = useParams();
+  const { id } = params;
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
 
@@ -82,7 +81,7 @@ function UpdateReceiveSizeBeam() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
@@ -113,23 +112,24 @@ function UpdateReceiveSizeBeam() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
-  const {data: receiveSizeBeamDetails} = useQuery({
-    queryKey: ["order-master/recive-size-beam/get", id], 
+  const { data: receiveSizeBeamDetails } = useQuery({
+    queryKey: ["order-master/recive-size-beam/get", id],
     queryFn: async () => {
-      const res = await  getReceiveSizeBeamOrderRequest({
-        id, 
-        params: {company_id: companyId}
+      const res = await getReceiveSizeBeamOrderRequest({
+        id,
+        params: { company_id: companyId }
       })
-      return res?.data?.data ; 
+      return res?.data?.data;
     },
     enabled: Boolean(companyId)
   })
 
-  const { mutateAsync: createReceiveSizeBeam } = useMutation({
+  const { mutateAsync: updateReceiveSizeBeam } = useMutation({
     mutationFn: async (data) => {
-      const res = await createReceiveSizeBeamRequest({
+      const res = await updateReceiveSizeBeamRequest({
+        id, 
         data,
         params: { company_id: companyId },
       });
@@ -157,7 +157,8 @@ function UpdateReceiveSizeBeam() {
     delete data?.supplier_company;
     console.log("Run submission functionality");
     console.log(data);
-    // await createReceiveSizeBeam(data);
+    await updateReceiveSizeBeam(data);
+
   }
 
   const {
@@ -191,7 +192,7 @@ function UpdateReceiveSizeBeam() {
           setValue("supplier_name", supplier_name);
           setValue("supplier_company", supplier_company);
           setValue("total_meter", total_meters);
-          setTotalMeter(total_meters) ; 
+          setTotalMeter(total_meters);
           setValue("remaining_meter", total_meters);
         }
       }
@@ -199,14 +200,29 @@ function UpdateReceiveSizeBeam() {
   }, [setValue, sizeBeamOrderListRes?.SizeBeamOrderList, size_beam_order_id]);
 
   useEffect(() => {
-    if (receiveSizeBeamDetails){
+    if (receiveSizeBeamDetails) {
+      let temp = [] ; 
+      receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
+        let value = {
+          ends_or_tars: element?.ends_or_tars, 
+          grade: element?.grade, 
+          meters: element?.meters, 
+          pano: element?.pano, 
+          remark: element?.remark, 
+          beam_no: element?.beam_no, 
+          taka: element?.taka, 
+          net_weight: element?.net_weight, 
+          tpm: element?.tpm
+        } ; 
+        temp.push(value)  ; 
+      })
       reset({
-        size_beam_order_id: receiveSizeBeamDetails?.size_beam_order?.order_no, 
-        quality_id: receiveSizeBeamDetails?.inhouse_quality?.id, 
-        machine_name: receiveSizeBeamDetails?.machine_name, 
-        challan_no: receiveSizeBeamDetails?.challan_no, 
-        beam_type: receiveSizeBeamDetails?.beam_type, 
-        beam_details: receiveSizeBeamDetails?.recieve_size_beam_details
+        size_beam_order_id: receiveSizeBeamDetails?.size_beam_order?.order_no,
+        quality_id: receiveSizeBeamDetails?.inhouse_quality?.id,
+        machine_name: receiveSizeBeamDetails?.machine_name,
+        challan_no: receiveSizeBeamDetails?.challan_no,
+        beam_type: receiveSizeBeamDetails?.beam_type,
+        beam_details: temp
       })
     }
   }, [receiveSizeBeamDetails, reset])
@@ -290,7 +306,7 @@ function UpdateReceiveSizeBeam() {
               required={true}
             >
               <Controller
-                // disabled
+                disabled
                 control={control}
                 name="quality_id"
                 render={({ field }) => (
@@ -316,7 +332,7 @@ function UpdateReceiveSizeBeam() {
               label="Machine name"
               name="machine_name"
               validateStatus={errors.machine_name ? "error" : ""}
-              help={errors.quality_id && errors.machine_name.message}
+              help={errors.machine_name && errors.machine_name.message}
               required={true}
             >
               <Controller
@@ -474,8 +490,8 @@ function UpdateReceiveSizeBeam() {
             </Form.Item>
           </Col>
         </Row>
-        
-        <ReceiveSizeBeamDetail control={control} errors={errors} />
+
+        <UpdateSizeBeamDetail control={control} errors={errors} />
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
