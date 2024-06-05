@@ -23,6 +23,8 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useCompanyList } from "../../../../api/hooks/company";
 import * as yup from "yup";
 import moment from "moment";
+import { createReceiveSizeBeamBillRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const toWords = new ToWords({
     localeCode: "en-IN",
@@ -46,7 +48,7 @@ const toWords = new ToWords({
 });
 
 const addSizeBeamReceive = yup.object().shape({
-    invoice_no: yup.string().required("Please enter invoice no."),
+    invoice_number: yup.string().required("Please enter invoice no."),
     bill_date: yup.string().required("Please enter bill date"),
     due_date: yup.string().required("Please enter due date"),
     freight_value: yup.string().required("Please enter freight value"),
@@ -83,7 +85,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         defaultValues: {
             bill_date: dayjs(),
             due_date: dayjs(),
-            is_discount: false,
             discount_amount: 0, 
             discount_value: 0,
             freight_value: 0  , 
@@ -103,6 +104,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
             //   yarn_stock_company_id: yarn_stock_company_id,
         },
     });
+    const {companyId} = useContext(GlobalContext) ; 
     const [isModelOpen, setIsModalOpen] = useState(false);
     const { data: companyListRes, isLoading: isLoadingCompanyList } =
         useCompanyList();
@@ -150,6 +152,9 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         total = total + Number(currentValues?.CGST_amount) ; 
 
         let roundOffAmount = Math.round(total) - total ; 
+        if (roundOffAmount < 0){
+            roundOffAmount = 0
+        }
         setValue("round_off", parseFloat(roundOffAmount).toFixed(2)) ; 
         setValue("net_amount",  parseFloat(total).toFixed(2)) ; 
     }, [currentValues?.freight_amount, currentValues?.IGST_amount, currentValues?.SGST_amount, currentValues?.CGST_amount]) ; 
@@ -178,8 +183,43 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         return current && current > new Date().setHours(0, 0, 0, 0);
     }
 
+    const { mutateAsync: createSizeBeamBill } = useMutation({
+        mutationFn: async (data) => {
+          const res = await createReceiveSizeBeamBillRequest({
+            data,
+            params: { company_id: companyId },
+          });
+          return res.data;
+        },
+        mutationKey: ["yarn-stock/yarn-receive-challan/create"],
+        onSuccess: (res) => {
+            const successMessage = res?.message;
+            if (successMessage) {
+                message.success(successMessage);
+            }
+            // handleCancel();
+        },
+        onError: (error) => {
+          mutationOnErrorHandler({ error, message });
+        },
+    });
+
     const onSubmit = async (values) => {
-        console.log(values);
+        let requestData = values ; 
+        requestData["bill_date"] = moment(values?.bill_date).format("YYYY-MM-DD")
+        requestData["due_date"] = moment(values?.bill_date).format("YYYY-MM-DD")
+        requestData["SGST_amount"] = parseFloat(values?.SGST_amount).toFixed(2)
+        requestData["receive_size_beam_id"] = details?.id ;
+        requestData["total_kg"]= totalKG ; 
+        requestData["inhouse_quality_id"] = details?.inhouse_quality?.id ; 
+        requestData["total_taka"] = totalTaka ; 
+        requestData["total_meter"] = totalMeter ; 
+        requestData["bill_number"] = "BILL-2024-001" ; 
+        requestData["supplier_id"] = details?.supplier?.id ; 
+
+        console.log(requestData);
+
+        await createSizeBeamBill(requestData) ; 
     }
     
     return (
@@ -259,15 +299,15 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                     <Col span={16}>
                                         <Form.Item
                                             // label="Invoice No."
-                                            name="invoice_no"
-                                            validateStatus={errors.invoice_no ? "error" : ""}
-                                            help={errors.invoice_no && errors.invoice_no.message}
+                                            name="invoice_number"
+                                            validateStatus={errors.invoice_number ? "error" : ""}
+                                            help={errors.invoice_number && errors.invoice_number.message}
                                             required={true}
                                         // className="mb-0"
                                         >
                                             <Controller
                                                 control={control}
-                                                name="invoice_no"
+                                                name="invoice_number"
                                                 render={({ field }) => (
                                                     <Input {...field} placeholder="Invoice No." />
                                                 )}
