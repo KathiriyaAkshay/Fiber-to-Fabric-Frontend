@@ -28,6 +28,18 @@ export function deleteYarnReceiveRequest({ id, params }) {
   });
 }
 
+export function deleteReceiveSizeBeamOrderRequest({id, params}) {
+  return api.delete(`/order-master/recive-size-beam/delete/${id}`, {
+    params
+  })
+}
+
+export function getReceiveSizeBeamOrderRequest({id, params}) {
+  return api.get(`order-master/recive-size-beam/get/${id}`, {
+    params
+  })
+}
+
 export function createYarnReceiveBillRequest({ data, params }) {
   return api.post(`/yarn-stock/yarn-receive-challan/bill/create`, data, {
     params,

@@ -6,6 +6,7 @@ import {
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
@@ -17,6 +18,8 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getReceiveSizeBeamListRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import DeleteSizeBeamOrderButton from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/DeleteSizeBeamButton";
+import SizeBeamChallanModal from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -83,12 +86,8 @@ function ReceiveSizeBeamList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page*pageSize) + index) + 1
     },
-    // {
-    //   title: "Order No",
-    //   dataIndex: "order_no",
-    //   key: "order_no",
-    // },
     {
       title: "Challan Date",
       key: "challan_date",
@@ -103,14 +102,59 @@ function ReceiveSizeBeamList() {
     },
     {
       title: "Quantity KG",
-      dataIndex: "receive_quantity",
-      key: "receive_quantity",
+      dataIndex: "inhouse_quality",
+      key: "inhouse_quality",
+      render : (text, record) => (
+        `${record?.inhouse_quality?.quality_name} - ${record?.inhouse_quality?.quality_weight}KG`
+      )
     },
     {
-      title: "Cartoon",
-      dataIndex: "receive_cartoon_pallet",
+      title : "Supplier", 
+      dataIndex: "supplier", 
+      render: (text, record) => (
+        `${record?.supplier?.first_name} ${record?.supplier?.last_name}`
+      )
+    },  
+    {
+      title: "Total meter", 
+      dataIndex: "total_meter"
+    },
+    {
+      title: "Total taka", 
+      dataIndex: "recieve_size_beam_details",
+      render: (text, record) => {
+        let total_taka = 0; 
+        text.map((element) => {
+          total_taka = total_taka + element?.taka ; 
+        })
+        return(
+          `${total_taka}`
+        )
+      }
+    },
+    {
+      title: "No Of Beam", 
+      dataIndex: "recieve_size_beam_details", 
+      render: (text, record) => (
+        `${text?.length}`
+      )
+    }, 
+    {
+      title: "Beam Type",
+      dataIndex: "beam_type",
       key: "receive_cartoon_pallet",
     },
+    {
+      title: "Bill status", 
+      dataIndex: "bill_status", 
+      render: (text, record) => (
+        record == "pending"?<>
+          <Tag color="red">Pending</Tag>
+        </>:<>
+          <Tag color="green">{text}</Tag>
+        </>
+      )
+    }, 
     {
       title: "Action",
       render: (details) => {
@@ -125,6 +169,12 @@ function ReceiveSizeBeamList() {
             </Button>
             {/* <DeleteYarnReceiveButton details={details} />
             <YarnReceiveChallanModal details={details} /> */}
+            <DeleteSizeBeamOrderButton
+              details={details}
+            />
+            <SizeBeamChallanModal
+              details={details}
+            />
           </Space>
         );
       },

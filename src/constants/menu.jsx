@@ -382,6 +382,18 @@ export const menubarOptionsList = [
             ),
           },
           {
+            path: "job-work",
+            key: "Job Work",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/challan/job-work"
+              >
+                Job Work
+              </Link>
+            ),
+          },
+          {
             path: "beam-sale",
             key: "Beam Sale",
             label: (
