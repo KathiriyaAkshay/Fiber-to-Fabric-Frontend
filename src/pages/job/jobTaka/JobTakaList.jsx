@@ -58,7 +58,7 @@ const JobTakaList = () => {
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
-
+  console.log({ debouncedType });
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
@@ -126,9 +126,12 @@ const JobTakaList = () => {
         company_id: companyId,
         page,
         pageSize,
-        // vehicle_id: debouncedVehicle,
-        // quality_id: debouncedQuality,
-        // party_id: debouncedParty,
+        from: debouncedFromDate,
+        to: debouncedToDate,
+        quality_id: debouncedQuality,
+        challan_no: debouncedChallanNo,
+        supplier_id: debouncedSupplierCompany,
+        in_stock: debouncedType === "in_stock" ? true : false,
       },
     ],
     queryFn: async () => {
@@ -137,9 +140,12 @@ const JobTakaList = () => {
           company_id: companyId,
           page,
           pageSize,
-          // vehicle_id: debouncedVehicle,
-          // quality_id: debouncedQuality,
-          // party_id: debouncedParty,
+          from: debouncedFromDate,
+          to: debouncedToDate,
+          quality_id: debouncedQuality,
+          challan_no: debouncedChallanNo,
+          supplier_id: debouncedSupplierCompany,
+          in_stock: debouncedType === "in_stock" ? true : false,
         },
       });
       return res.data?.data;

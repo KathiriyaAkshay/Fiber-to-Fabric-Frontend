@@ -10,6 +10,7 @@ import {
   Input,
   Row,
   Select,
+  Typography,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -29,7 +30,8 @@ const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
     delivery_address: yup.string().required("Please enter delivery address."),
     gst_state: yup.string().required("Please enter GST State."),
-    gst_in: yup.string().required("Please enter GST In."),
+    gst_in_1: yup.string().required("Please enter GST In."),
+    gst_in_2: yup.string().required("Please enter GST In."),
     challan_no: yup.string().required("Please enter challan no."),
     gray_order_id: yup.string().required("Please select order."),
     supplier_id: yup.string().required("Please select supplier."),
@@ -53,6 +55,10 @@ const AddJobTaka = () => {
 
   const [jobChallanFields] = useState(jobChallanFieldsInitialValues);
   const [activeField, setActiveField] = useState(1);
+  console.log({ activeField });
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [pendingMeter, setPendingMeter] = useState("");
+  const [pendingTaka, setPendingTaka] = useState("");
 
   const navigate = useNavigate();
   //   const { data: user } = useCurrentUser();
@@ -85,19 +91,18 @@ const AddJobTaka = () => {
       message.error(errorMessage);
     },
   });
-  console.count("component render");
 
   async function onSubmit(data) {
+    console.log({ data });
     const jobChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
     );
-    console.log({ jobChallanDetailArr });
 
     const newData = {
       delivery_address: data.delivery_address,
       gst_state: data.gst_state,
-      gst_in: data.gst_in,
+      gst_in: data.gst_in_2,
       challan_no: data.challan_no,
       gray_order_id: +data.gray_order_id,
       supplier_id: +data.supplier_id,
@@ -105,11 +110,11 @@ const AddJobTaka = () => {
       quality_id: +data.quality_id,
       total_meter: +data.total_meter,
       total_weight: +data.total_weight,
-      pending_meter: +data.pending_meter,
-      // pending_weight: parseInt(data.pending_weight),
-      // pending_taka: parseInt(data.pending_taka),
-      total_taka: parseInt(data.total_taka),
-      // is_grey: data.is_grey,
+      pending_meter: +pendingMeter,
+      pending_weight: 0,
+      pending_taka: +pendingTaka,
+      total_taka: +data.total_taka,
+      is_grey: true,
       job_challan_detail: jobChallanDetailArr.map((field) => {
         return {
           taka_no: parseInt(data[`taka_no_${field}`]),
@@ -118,7 +123,6 @@ const AddJobTaka = () => {
         };
       }),
     };
-    console.log({ data, newData });
     await AddJobTaka(newData);
   }
 
@@ -129,13 +133,15 @@ const AddJobTaka = () => {
     reset,
     watch,
     setValue,
+    setFocus,
   } = useForm({
     defaultValues: {
       company_id: null,
       challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
-      gst_in: "",
+      gst_in_1: "",
+      gst_in_2: "",
       challan_no: "",
       gray_order_id: null,
       supplier_name: null,
@@ -143,7 +149,6 @@ const AddJobTaka = () => {
       broker_id: null,
       broker_name: "",
       quality_id: null,
-      pending_meter: "",
       total_meter: "",
       total_weight: "",
       total_taka: "",
@@ -151,7 +156,8 @@ const AddJobTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id } = watch();
+  const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
+
   // ------------------------------------------------------------------------------------------
 
   // const addNewFieldRow = (indexValue) => {
@@ -231,7 +237,7 @@ const AddJobTaka = () => {
 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: ["party", "list", { company_id: companyId }],
+      queryKey: ["party", "list", { company_id: companyId, order_type: "job" }],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
           params: { company_id: companyId, order_type: "job" },
@@ -264,9 +270,10 @@ const AddJobTaka = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      return obj?.supplier_company?.map((item) => {
-        return { label: item.supplier_company, value: item.supplier_id };
-      });
+      // return obj?.supplier_company?.map((item) => {
+      //   return { label: item.supplier_company, value: item.supplier_id };
+      // });
+      return obj?.supplier_company;
     } else {
       return [];
     }
@@ -274,20 +281,61 @@ const AddJobTaka = () => {
 
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
-      const selectedOrder = grayOrderListRes.row.find(
-        ({ id }) => gray_order_id === id
-      );
-      setValue("total_meter", selectedOrder.total_meter);
-      setValue("total_taka", selectedOrder.total_taka);
-      setValue("total_weight", selectedOrder.weight);
+      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+      setSelectedOrder(order);
+      setValue("total_meter", order.total_meter);
+      setValue("total_taka", order.total_taka);
+      setValue("total_weight", order.weight);
       setValue(
         "broker_name",
-        `${selectedOrder.broker.first_name} ${selectedOrder.broker.last_name}`
+        `${order.broker.first_name} ${order.broker.last_name}`
       );
-      setValue("broker_id", selectedOrder.broker.id);
-      setValue("quality_id", selectedOrder.inhouse_quality.id);
+      setValue("broker_id", order.broker.id);
+      setValue("quality_id", order.inhouse_quality.id);
+      setValue("supplier_name", order.supplier_name);
+      setValue("pending_meter", order.pending_meter);
+
+      setPendingMeter(order.pending_meter);
+      setPendingTaka(order.pending_taka);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
+
+  useEffect(() => {
+    if (company_id) {
+      const selectedCompany = companyListRes?.rows?.find(
+        ({ id }) => id === company_id
+      );
+      setValue("gst_in_1", selectedCompany.gst_no);
+    }
+  }, [companyListRes, company_id, setValue]);
+
+  useEffect(() => {
+    if (supplier_id) {
+      const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
+        (item) => item.supplier_id === supplier_id
+      );
+      setValue("delivery_address", selectedSupplierCompany?.users?.address);
+      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
+    }
+  }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
+
+  const activeNextField = (event, fieldNumber) => {
+    if (event.keyCode === 32) {
+      setActiveField((prev) => prev + 1);
+      setTimeout(() => {
+        setFocus(`taka_no_${fieldNumber + 1}`);
+      }, 0);
+    }
+  };
+
+  const removeCurrentField = (fieldNumber) => {
+    if (fieldNumber) {
+      setActiveField((prev) => prev - 1);
+      setValue(`taka_no_${fieldNumber}`, "");
+      setValue(`meter_${fieldNumber}`, "");
+      setValue(`weight_${fieldNumber}`, "");
+    }
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -373,7 +421,9 @@ const AddJobTaka = () => {
                 control={control}
                 name="delivery_address"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="Delivery Address" />;
+                  return (
+                    <Input {...field} placeholder="Delivery Address" disabled />
+                  );
                 }}
               />
             </Form.Item>
@@ -408,17 +458,17 @@ const AddJobTaka = () => {
           <Col span={6}>
             <Form.Item
               label="Gst In"
-              name="gst_in"
-              validateStatus={errors.gst_in ? "error" : ""}
-              help={errors.gst_in && errors.gst_in.message}
+              name="gst_in_1"
+              validateStatus={errors.gst_in_1 ? "error" : ""}
+              help={errors.gst_in_1 && errors.gst_in_1.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="gst_in"
+                name="gst_in_1"
                 render={({ field }) => (
-                  <Input {...field} placeholder="GST In" />
+                  <Input {...field} placeholder="GST In" disabled />
                 )}
               />
             </Form.Item>
@@ -446,17 +496,17 @@ const AddJobTaka = () => {
           <Col span={6}>
             <Form.Item
               label="Gst In"
-              name="gst_in"
-              validateStatus={errors.gst_in ? "error" : ""}
-              help={errors.gst_in && errors.gst_in.message}
+              name="gst_in_2"
+              validateStatus={errors.gst_in_2 ? "error" : ""}
+              help={errors.gst_in_2 && errors.gst_in_2.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="gst_in"
+                name="gst_in_2"
                 render={({ field }) => (
-                  <Input {...field} placeholder="GST In" />
+                  <Input {...field} placeholder="GST In" disabled />
                 )}
               />
             </Form.Item>
@@ -554,7 +604,7 @@ const AddJobTaka = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Gst State"
               name="gst_state"
@@ -571,7 +621,7 @@ const AddJobTaka = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
         </Row>
 
         <Row
@@ -596,6 +646,7 @@ const AddJobTaka = () => {
                   <Select
                     {...field}
                     placeholder="Select Supplier"
+                    disabled={selectedOrder?.supplier_name ? true : false}
                     loading={isLoadingDropdownSupplierList}
                     options={dropdownSupplierListRes?.map((supervisor) => ({
                       label: supervisor?.supplier_name,
@@ -629,7 +680,11 @@ const AddJobTaka = () => {
                   <Select
                     {...field}
                     placeholder="Select Company"
-                    options={dropDownSupplierCompanyOption}
+                    options={dropDownSupplierCompanyOption.map(
+                      ({ supplier_id, supplier_company }) => {
+                        return { label: supplier_company, value: supplier_id };
+                      }
+                    )}
                     style={{
                       textTransform: "capitalize",
                     }}
@@ -700,6 +755,33 @@ const AddJobTaka = () => {
           </Col>
         </Row>
 
+        {pendingMeter && pendingTaka ? (
+          <Row
+            gutter={18}
+            style={{
+              padding: "12px",
+            }}
+          >
+            <Col span={6}></Col>
+
+            <Col span={6} style={{ textAlign: "end" }}>
+              <Typography style={{ color: "red" }}>Pending</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>0</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+            </Col>
+          </Row>
+        ) : null}
+
         <Divider />
 
         <Row>
@@ -739,8 +821,9 @@ const AddJobTaka = () => {
                             render={({ field }) => (
                               <Input
                                 {...field}
+                                type="number"
                                 style={{ width: "75px" }}
-                                disabled={fieldNumber !== activeField}
+                                disabled={fieldNumber > activeField}
                               />
                             )}
                           />
@@ -766,8 +849,9 @@ const AddJobTaka = () => {
                             render={({ field }) => (
                               <Input
                                 {...field}
+                                type="number"
                                 style={{ width: "100px" }}
-                                disabled={fieldNumber !== activeField}
+                                disabled={fieldNumber > activeField}
                               />
                             )}
                           />
@@ -793,8 +877,22 @@ const AddJobTaka = () => {
                             render={({ field }) => (
                               <Input
                                 {...field}
+                                type="number"
                                 style={{ width: "100px" }}
-                                disabled={fieldNumber !== activeField}
+                                disabled={fieldNumber > activeField}
+                                // onChange={(e) => {
+                                //   console.log("space bar click", e);
+                                //   if (e.key === " ") {
+                                //     e.stopPropagation();
+                                //   }
+                                //   setValue(
+                                //     `weight_${fieldNumber}`,
+                                //     e.target.value
+                                //   );
+                                // }}
+                                onKeyDown={(event) =>
+                                  activeNextField(event, fieldNumber)
+                                }
                               />
                             )}
                           />
@@ -804,6 +902,7 @@ const AddJobTaka = () => {
                         <Button
                           icon={<MinusCircleOutlined />}
                           disabled={fieldNumber !== activeField}
+                          onClick={() => removeCurrentField(fieldNumber)}
                         ></Button>
                       </td>
                     </tr>
