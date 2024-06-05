@@ -73,6 +73,9 @@ const addSizeBeamReceive = yup.object().shape({
 
 const YarnSaleChallanModel = ({details = {}}) => {
 
+    console.log("Yarn sale information");
+    console.log(details);
+
     const {
         control,
         handleSubmit,
@@ -117,7 +120,8 @@ const YarnSaleChallanModel = ({details = {}}) => {
         return current && current > new Date().setHours(0, 0, 0, 0);
     }
     
-    const onSubmit = async (values) => {}
+    const onSubmit = async (values) => {} ; 
+
     return(
         <>
         
