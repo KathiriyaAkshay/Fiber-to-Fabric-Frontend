@@ -19,6 +19,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getReceiveSizeBeamListRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import DeleteSizeBeamOrderButton from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/DeleteSizeBeamButton";
+import SizeBeamChallanModal from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -169,6 +170,9 @@ function ReceiveSizeBeamList() {
             {/* <DeleteYarnReceiveButton details={details} />
             <YarnReceiveChallanModal details={details} /> */}
             <DeleteSizeBeamOrderButton
+              details={details}
+            />
+            <SizeBeamChallanModal
               details={details}
             />
           </Space>

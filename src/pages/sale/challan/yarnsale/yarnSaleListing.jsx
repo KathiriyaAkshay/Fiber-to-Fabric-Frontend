@@ -13,6 +13,7 @@ import DeleteSaleYarnChallan from "../../../../components/sale/challan/yarn/Dele
 import { EditOutlined } from "@ant-design/icons";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import useDebounce from "../../../../hooks/useDebounce";
+import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
 
 function YarnSaleChallanList() {
     const navigation = useNavigate();
@@ -157,6 +158,9 @@ function YarnSaleChallanList() {
                         <EditOutlined />
                     </Button>
                     <DeleteSaleYarnChallan
+                        details={record}
+                    />
+                    <YarnSaleChallanModel
                         details={record}
                     />
                 </Space>
