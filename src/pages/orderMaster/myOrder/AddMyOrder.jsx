@@ -24,6 +24,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 import {
   getBrokerListRequest,
+  getDropdownSupplierListRequest,
   getPartyListRequest,
 } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../api/hooks/auth";
@@ -43,14 +44,18 @@ const addYSCSchemaResolver = yupResolver(
     quality_id: yup.string().required("Please select quality."),
     order_type: yup.string().required("Please select order type."),
     broker_id: yup.string().required("Please select broker."),
-    party_id: yup.string().required("Please select party."),
-    // gray_stock_meter: yup.string().required("Please enter meter."),
-    // taka: yup.string().required("Please enter taka."),
-    // yarn_stock_total_kg: yup
-    //   .string()
-    //   .required("Please enter yarn stock total kg."),
-    // beam_stock: yup.string().required("Please enter beam stock."),
-    // remark: yup.string().required("Please enter remark."),
+    // party_id: yup.string().required("Please select party."),
+    // party_id: yup.string().when("order_type", {
+    //   is: (val) => val === "taka(inhouse)",
+    //   then: () => yup.string().required("Please select party."),
+    //   otherwise: () => yup.string(),
+    // }),
+    // supplier_name: yup.string().required("Please select supplier."),
+    // supplier_name: yup.string().when("order_type", {
+    //   is: (val) => val === "job" || val === "purchase/trading",
+    //   then: () => yup.string().required("Please select supplier."),
+    //   otherwise: () => yup.string(),
+    // }),
   })
 );
 
@@ -89,11 +94,31 @@ const AddMyOrder = () => {
   });
 
   async function onSubmit(data) {
+    console.log(data.order_type, data.party_id, data.supplier_name);
+    if (data.order_type === "taka(inhouse)") {
+      if (!data.party_id) {
+        setError("party_id", {
+          type: "manual",
+          message: "Please select party.",
+        });
+        return;
+      }
+    }
+    if (data.order_type === "job" || data.order_type === "purchase/trading") {
+      if (!data.supplier_name) {
+        setError("supplier_name", {
+          type: "manual",
+          message: "Please select supplier.",
+        });
+        return;
+      }
+    }
     const newData = {
       machine_name: data.machine_name,
       order_type: data.order_type,
       broker_id: parseInt(data.broker_id),
       party_id: parseInt(data.party_id),
+      supplier_name: data.supplier_name,
       quality_id: parseInt(data.quality_id),
 
       order_date: dayjs(data.order_date).format("YYYY-MM-DD"),
@@ -113,6 +138,7 @@ const AddMyOrder = () => {
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
+    console.log({ newData });
     await addMyOrder(newData);
   }
 
@@ -123,12 +149,14 @@ const AddMyOrder = () => {
     reset,
     watch,
     setValue,
+    setError,
   } = useForm({
     defaultValues: {
       machine_name: null,
       order_type: "taka(inhouse)",
       broker_id: null,
       party_id: null,
+      supplier_name: null,
       quality_id: null,
 
       order_date: dayjs(),
@@ -151,8 +179,7 @@ const AddMyOrder = () => {
     },
     resolver: addYSCSchemaResolver,
   });
-
-  const { machine_name, credit_days } = watch();
+  const { machine_name, credit_days, order_type } = watch();
 
   useEffect(() => {
     if (credit_days) {
@@ -225,6 +252,20 @@ const AddMyOrder = () => {
         params: { company_id: companyId },
       });
       return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
@@ -362,48 +403,83 @@ const AddMyOrder = () => {
             />
           </Col>
 
-          <Col span={6} className="flex items-end gap-2">
-            <Form.Item
-              label="Party"
-              name="party_id"
-              validateStatus={errors.party_id ? "error" : ""}
-              help={errors.party_id && errors.party_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
+          {order_type === "taka(inhouse)" ? (
+            <Col span={6} className="flex items-end gap-2">
+              <Form.Item
+                label="Party"
                 name="party_id"
-                render={({ field }) => {
-                  return (
+                validateStatus={errors.party_id ? "error" : ""}
+                help={errors.party_id && errors.party_id.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+                className="flex-grow"
+              >
+                <Controller
+                  control={control}
+                  name="party_id"
+                  render={({ field }) => {
+                    return (
+                      <Select
+                        {...field}
+                        placeholder="Select Party"
+                        loading={isLoadingPartyList}
+                        options={partyUserListRes?.partyList?.rows?.map(
+                          (party) => ({
+                            label:
+                              party.first_name +
+                              " " +
+                              party.last_name +
+                              " " +
+                              `| ( ${party?.username})`,
+                            value: party.id,
+                          })
+                        )}
+                      />
+                    );
+                  }}
+                />
+              </Form.Item>
+              <Button
+                icon={<PlusCircleOutlined />}
+                onClick={goToAddParty}
+                className="mb-6"
+                type="primary"
+              />
+            </Col>
+          ) : (
+            <Col span={6}>
+              <Form.Item
+                label="Select Supplier"
+                name="supplier_name"
+                validateStatus={errors.supplier_name ? "error" : ""}
+                help={errors.supplier_name && errors.supplier_name.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="supplier_name"
+                  render={({ field }) => (
                     <Select
                       {...field}
-                      placeholder="Select Party"
-                      loading={isLoadingPartyList}
-                      options={partyUserListRes?.partyList?.rows?.map(
-                        (party) => ({
-                          label:
-                            party.first_name +
-                            " " +
-                            party.last_name +
-                            " " +
-                            `| ( ${party?.username})`,
-                          value: party.id,
-                        })
-                      )}
+                      placeholder="Select Supplier"
+                      loading={isLoadingDropdownSupplierList}
+                      options={dropdownSupplierListRes?.map((supervisor) => ({
+                        label: supervisor?.supplier_name,
+                        value: supervisor?.supplier_name,
+                      }))}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
                     />
-                  );
-                }}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddParty}
-              className="mb-6"
-              type="primary"
-            />
-          </Col>
+                  )}
+                />
+              </Form.Item>
+            </Col>
+          )}
         </Row>
 
         <Row

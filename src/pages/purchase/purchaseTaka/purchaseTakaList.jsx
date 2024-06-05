@@ -27,14 +27,14 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
-import { getJobTakaDetailListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
+import { getPurchaseTakaDetailListRequest } from "../../../api/requests/purchase/purchaseTaka";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
-const JobTakaList = () => {
+const PurchaseTakaList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
@@ -58,7 +58,6 @@ const JobTakaList = () => {
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
-  console.log({ debouncedType });
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
@@ -118,9 +117,9 @@ const JobTakaList = () => {
     }
   }, [debouncedSupplier, dropdownSupplierListRes]);
 
-  const { data: jobTakaList, isLoading } = useQuery({
+  const { data: purchaseTakaList, isLoading } = useQuery({
     queryKey: [
-      "jobTaka",
+      "purchaseTaka",
       "list",
       {
         company_id: companyId,
@@ -135,7 +134,7 @@ const JobTakaList = () => {
       },
     ],
     queryFn: async () => {
-      const res = await getJobTakaDetailListRequest({
+      const res = await getPurchaseTakaDetailListRequest({
         params: {
           company_id: companyId,
           page,
@@ -154,7 +153,7 @@ const JobTakaList = () => {
   });
 
   function navigateToAdd() {
-    navigate("/job/job-taka/add");
+    navigate("/purchase/purchased-taka/add");
   }
 
   // function navigateToUpdate(id) {
@@ -163,7 +162,7 @@ const JobTakaList = () => {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = jobTakaList?.rows?.map((user, index) => {
+    const body = purchaseTakaList?.rows?.map((user, index) => {
       const { challan_no } = user;
       return [index + 1, challan_no];
     });
@@ -186,13 +185,14 @@ const JobTakaList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details.job_taka_challan.inhouse_quality.quality_name} (${details.job_taka_challan.inhouse_quality.quality_weight}KG)`;
+        console.log(details);
+        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
       },
     },
     {
       title: "Purchase Challan No",
       render: (details) => {
-        return details.job_taka_challan.challan_no;
+        return details.challan_no;
       },
     },
     {
@@ -234,20 +234,21 @@ const JobTakaList = () => {
     {
       title: "Action",
       render: (details) => {
+        console.log({ details });
         return (
           <Space>
-            <ViewJobTakaDetailsModal
-              title="Job Taka Details"
+            <ViewPurchaseTakaDetailsModal
+              title="Purchase Taka Details"
               details={details}
             />
             {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteJobTaka details={details} /> */}
+                onClick={() => {
+                  navigateToUpdate(details.id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              <DeleteJobTaka details={details} /> */}
           </Space>
         );
       },
@@ -265,11 +266,11 @@ const JobTakaList = () => {
 
     return (
       <Table
-        dataSource={jobTakaList?.rows || []}
+        dataSource={purchaseTakaList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: jobTakaList?.rows?.count || 0,
+          total: purchaseTakaList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -295,7 +296,7 @@ const JobTakaList = () => {
 
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Job Production List</h3>
+          <h3 className="m-0 text-primary">Purchase Production List</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -379,7 +380,7 @@ const JobTakaList = () => {
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!jobTakaList?.rows?.length}
+            disabled={!purchaseTakaList?.rows?.length}
             onClick={downloadPdf}
             className="flex-none"
           />
@@ -457,9 +458,9 @@ const JobTakaList = () => {
   );
 };
 
-export default JobTakaList;
+export default PurchaseTakaList;
 
-const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
+const ViewPurchaseTakaDetailsModal = ({ title = "-", details = [] }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -472,7 +473,7 @@ const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
   const jobTakaDetails = [
     {
       title: "Quality Name",
-      value: details.job_taka_challan.inhouse_quality.quality_name,
+      value: details.inhouse_quality.quality_name,
     },
     // { title: "Company Name", value: details.delivery_address },
     { title: "Date", value: dayjs(details.createdAt).format("DD-MM-YYYY") },
@@ -484,7 +485,7 @@ const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
     { title: "Sale Challan No", value: details.total_weight },
     {
       title: "Order Type",
-      value: details.job_taka_challan.gray_order.order_type,
+      value: details.gray_order.order_type,
     },
     { title: "Average", value: details.total_weight },
     { title: "Purchase Challan No", value: details.total_weight },
@@ -539,30 +540,30 @@ const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
           })}
 
           {/* {job_challan_details.map((item, index) => {
-            return (
-              <>
-                <Divider />
-                <Row
-                  gutter={12}
-                  className="flex-grow"
-                  key={index + "_job_challan_details"}
-                >
-                  <Col span={4} className="font-medium">
-                    Taka No:
-                  </Col>
-                  <Col span={4}>{item.taka_no}</Col>
-                  <Col span={3} className="font-medium">
-                    Meter:
-                  </Col>
-                  <Col span={4}>{item.meter}</Col>
-                  <Col span={3} className="font-medium">
-                    Weight:
-                  </Col>
-                  <Col span={4}>{item.weight}</Col>
-                </Row>
-              </>
-            );
-          })} */}
+              return (
+                <>
+                  <Divider />
+                  <Row
+                    gutter={12}
+                    className="flex-grow"
+                    key={index + "_job_challan_details"}
+                  >
+                    <Col span={4} className="font-medium">
+                      Taka No:
+                    </Col>
+                    <Col span={4}>{item.taka_no}</Col>
+                    <Col span={3} className="font-medium">
+                      Meter:
+                    </Col>
+                    <Col span={4}>{item.meter}</Col>
+                    <Col span={3} className="font-medium">
+                      Weight:
+                    </Col>
+                    <Col span={4}>{item.weight}</Col>
+                  </Row>
+                </>
+              );
+            })} */}
         </Flex>
       </Modal>
     </>

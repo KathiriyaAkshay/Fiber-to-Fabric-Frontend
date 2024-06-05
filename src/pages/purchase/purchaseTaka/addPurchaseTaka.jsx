@@ -23,9 +23,9 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
-import { addJobTakaRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import FieldTable from "../../../components/fieldTable";
+import { addPurchaseTakaRequest } from "../../../api/requests/purchase/purchaseTaka";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -44,12 +44,11 @@ const addJobTakaSchemaResolver = yupResolver(
   })
 );
 
-const AddJobTaka = () => {
+const AddPurchaseTaka = () => {
   const queryClient = useQueryClient();
   // const [fieldArray, setFieldArray] = useState([0]);
 
   const [activeField, setActiveField] = useState(1);
-  console.log({ activeField });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
@@ -61,9 +60,9 @@ const AddJobTaka = () => {
     navigate(-1);
   }
 
-  const { mutateAsync: AddJobTaka, isPending } = useMutation({
+  const { mutateAsync: AddPurchaseTaka, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await addJobTakaRequest({
+      const res = await addPurchaseTakaRequest({
         data,
         params: {
           company_id: companyId,
@@ -71,9 +70,9 @@ const AddJobTaka = () => {
       });
       return res.data;
     },
-    mutationKey: ["job", "taka", "add"],
+    mutationKey: ["purchase", "taka", "add"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
+      queryClient.invalidateQueries(["purchaseTaka", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -87,7 +86,6 @@ const AddJobTaka = () => {
   });
 
   async function onSubmit(data) {
-    console.log({ data });
     const jobChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
@@ -117,7 +115,7 @@ const AddJobTaka = () => {
         };
       }),
     };
-    await AddJobTaka(newData);
+    await AddPurchaseTaka(newData);
   }
 
   const {
@@ -231,10 +229,14 @@ const AddJobTaka = () => {
 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: ["party", "list", { company_id: companyId, order_type: "job" }],
+      queryKey: [
+        "party",
+        "list",
+        { company_id: companyId, order_type: "purchase/trading" },
+      ],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "job" },
+          params: { company_id: companyId, order_type: "purchase/trading" },
         });
         return res.data?.data;
       },
@@ -319,7 +321,7 @@ const AddJobTaka = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Create Job Taka</h3>
+        <h3 className="m-0 text-primary">Create Purchase Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -881,4 +883,4 @@ const AddJobTaka = () => {
   );
 };
 
-export default AddJobTaka;
+export default AddPurchaseTaka;

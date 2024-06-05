@@ -23,6 +23,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 import {
   getBrokerListRequest,
+  getDropdownSupplierListRequest,
   getPartyListRequest,
 } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../api/hooks/auth";
@@ -131,7 +132,7 @@ const UpdateMyOrder = () => {
   } = useForm({
     defaultValues: {
       machine_name: null,
-      order_type: "taka(inhouse)",
+      order_type: "",
       broker_id: null,
       party_id: null,
       quality_id: null,
@@ -157,7 +158,7 @@ const UpdateMyOrder = () => {
     resolver: addYSCSchemaResolver,
   });
 
-  const { machine_name, credit_days } = watch();
+  const { machine_name, credit_days, order_type } = watch();
 
   useEffect(() => {
     if (credit_days) {
@@ -246,6 +247,20 @@ const UpdateMyOrder = () => {
     enabled: Boolean(companyId),
   });
 
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
   useEffect(() => {
     if (orderDetails) {
       console.log({ orderDetails });
@@ -257,6 +272,9 @@ const UpdateMyOrder = () => {
         notes,
         party_notes,
         order_date,
+        order_type,
+
+        supplier_name,
 
         weight,
         total_taka,
@@ -280,6 +298,9 @@ const UpdateMyOrder = () => {
         notes,
         party_notes,
         order_date: dayjs(order_date),
+        order_type,
+
+        supplier_name,
 
         weight,
         total_taka,
@@ -414,42 +435,78 @@ const UpdateMyOrder = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
-            <Form.Item
-              label="Party"
-              name="party_id"
-              validateStatus={errors.party_id ? "error" : ""}
-              help={errors.party_id && errors.party_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
+          {order_type === "taka(inhouse)" ? (
+            <Col span={6}>
+              <Form.Item
+                label="Party"
                 name="party_id"
-                render={({ field }) => {
-                  return (
+                validateStatus={errors.party_id ? "error" : ""}
+                help={errors.party_id && errors.party_id.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="party_id"
+                  render={({ field }) => {
+                    return (
+                      <Select
+                        {...field}
+                        disabled
+                        placeholder="Select Supervisor"
+                        loading={isLoadingPartyList}
+                        options={partyUserListRes?.partyList?.rows?.map(
+                          (party) => ({
+                            label:
+                              party.first_name +
+                              " " +
+                              party.last_name +
+                              " " +
+                              `| ( ${party?.username})`,
+                            value: party.id,
+                          })
+                        )}
+                      />
+                    );
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          ) : (
+            <Col span={6}>
+              <Form.Item
+                label="Select Supplier"
+                name="supplier_name"
+                validateStatus={errors.supplier_name ? "error" : ""}
+                help={errors.supplier_name && errors.supplier_name.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="supplier_name"
+                  render={({ field }) => (
                     <Select
                       {...field}
+                      placeholder="Select Supplier"
                       disabled
-                      placeholder="Select Supervisor"
-                      loading={isLoadingPartyList}
-                      options={partyUserListRes?.partyList?.rows?.map(
-                        (party) => ({
-                          label:
-                            party.first_name +
-                            " " +
-                            party.last_name +
-                            " " +
-                            `| ( ${party?.username})`,
-                          value: party.id,
-                        })
-                      )}
+                      loading={isLoadingDropdownSupplierList}
+                      options={dropdownSupplierListRes?.map((supervisor) => ({
+                        label: supervisor?.supplier_name,
+                        value: supervisor?.supplier_name,
+                      }))}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
                     />
-                  );
-                }}
-              />
-            </Form.Item>
-          </Col>
+                  )}
+                />
+              </Form.Item>
+            </Col>
+          )}
         </Row>
 
         <Row

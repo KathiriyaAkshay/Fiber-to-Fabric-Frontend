@@ -83,6 +83,8 @@ import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
 import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
 import AddBeamCard from "./pages/beamCard/AddBeamCard";
 import UpdateBeamCard from "./pages/beamCard/UpdateBeamCard";
+import PurchaseTakaList from "./pages/purchase/purchaseTaka/purchaseTakaList";
+import AddPurchaseTaka from "./pages/purchase/purchaseTaka/addPurchaseTaka";
 import AddYarnSaleChallan from "./pages/sale/challan/yarnsale/addYarnSale";
 import YarnSaleChallanList from "./pages/sale/challan/yarnsale/yarnSaleListing";
 import UpdateYarnSaleChallan from "./pages/sale/challan/yarnsale/updateYarnSale";
@@ -299,8 +301,12 @@ const router = createBrowserRouter([
         path: "sales",
         children: [
           { index: true, element: <div>sales</div> },
-          { path: "taka-return-request", element: <div>taka-return-request</div>},
-          { path: "challan", 
+          {
+            path: "taka-return-request",
+            element: <div>taka-return-request</div>,
+          },
+          {
+            path: "challan",
             children: [
               { index: true, element: <div>challan</div> },
               {
@@ -309,19 +315,19 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-sale",
-                children:[
-                  {index: true, element: <YarnSaleChallanList/>}, 
-                  {path: "add", element: <AddYarnSaleChallan/>}, 
-                  {path: "update/:id", element: <UpdateYarnSaleChallan/>}
-                ]
+                children: [
+                  { index: true, element: <YarnSaleChallanList /> },
+                  { path: "add", element: <AddYarnSaleChallan /> },
+                  { path: "update/:id", element: <UpdateYarnSaleChallan /> },
+                ],
               },
               {
                 path: "job-work",
-                children:[
-                  {index: true, element: <JobWorkChallanList/>}, 
-                  {path: "add", element: <AddJobWorkSaleChallan/>}, 
-                  {path: "update/:id", element: <UpdateJobWorkChallan/>}
-                ]
+                children: [
+                  { index: true, element: <JobWorkChallanList /> },
+                  { path: "add", element: <AddJobWorkSaleChallan /> },
+                  { path: "update/:id", element: <UpdateJobWorkChallan /> },
+                ],
               },
               {
                 path: "beam-sale",
@@ -368,7 +374,10 @@ const router = createBrowserRouter([
         children: [
           {
             path: "purchased-taka",
-            element: <div>purchased-taka</div>,
+            children: [
+              { index: true, element: <PurchaseTakaList /> },
+              { path: "add", element: <AddPurchaseTaka /> },
+            ],
           },
           {
             path: "general-purchase-entry",
