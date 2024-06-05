@@ -15,6 +15,7 @@ import { EditOutlined } from "@ant-design/icons";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import useDebounce from "../../../../hooks/useDebounce";
 import { saleJobWorkChallanListRequest } from "../../../../api/requests/sale/challan/challan";
+import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
 
 function JobWorkChallanList(){
     const navigation = useNavigate();
@@ -158,6 +159,9 @@ function JobWorkChallanList(){
                         <EditOutlined />
                     </Button>
                     <DeleteJobWorkChallan
+                        details={record}
+                    />
+                    <JobWorkSaleChallanModel
                         details={record}
                     />
                 </Space>
