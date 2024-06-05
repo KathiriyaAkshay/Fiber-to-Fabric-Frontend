@@ -13,6 +13,7 @@ import {
     Typography,
     message,
 } from "antd";
+const { Text, Title } = Typography;
 import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
@@ -106,6 +107,15 @@ const YarnSaleChallanModel = ({details = {}}) => {
 
     const {companyId} = useContext(GlobalContext) ; 
     const [isModelOpen, setIsModalOpen] = useState(false)   ; 
+    const currentValues = watch() ; 
+
+    const disablePastDates = (current) => {
+        return current && current < new Date().setHours(0, 0, 0, 0);
+    };
+
+    const disableFutureDates = (current) => {
+        return current && current > new Date().setHours(0, 0, 0, 0);
+    }
     
     const onSubmit = async (values) => {}
     return(
@@ -152,9 +162,690 @@ const YarnSaleChallanModel = ({details = {}}) => {
                                 span={24}
                                 className="flex items-center justify-center border"
                             >
-                                <Typography.Text className="font-semibold text-center">
+                                <Typography.Text className="font-semibold text-center" style={{fontSize: 24}}>
                                     :: SHREE GANESHAY NAMAH ::
                                 </Typography.Text>
+                            </Col>
+                        </Row>
+                        <Row className="p-2 border-0 border-b border-solid">
+                            <Col
+                                span={24}
+                                className="flex items-center justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    MFG OF FANCY & GREY CLOTH
+                                </Typography.Text>
+                            </Col>
+                        </Row>
+
+                        <Row className="p-2 border-0 border-b border-solid">
+                            <Col
+                                span={8}
+                                className="flex items-center justify-center border"
+                            >   
+                                <Typography.Text className="font-semibold text-center">
+                                    GST IN: GST number information
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-center justify-center border"
+                            >   
+                                <Typography.Text className="font-semibold text-center">
+                                    PAN NO : ABHPP6021C
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="flex items-center justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    Bill date
+                                </Typography.Text>
+                            </Col>
+
+                            <Col
+                                span={4}
+                                className="flex items-center justify-center border"
+                            >   
+                               <Form.Item
+                                    // label="BILL Date"
+                                    name="bill_date"
+                                    validateStatus={errors.bill_date ? "error" : ""}
+                                    help={errors.bill_date && errors.bill_date.message}
+                                    required={true}
+                                    wrapperCol={{ sm: 24 }}
+                                    style={{margin: 0}}
+                                // className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="bill_date"
+                                        render={({ field }) => (
+                                            <DatePicker
+                                                {...field}
+                                                disabledDate={disableFutureDates}
+                                                style={{
+                                                    width: "100%",
+                                                }}
+                                                format="DD-MM-YYYY"
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row className="p-2 border-0 border-b">
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                   M/s.
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    SUPPLIER_2
+                                    ADDRESS OF SUPPLIER OF SUPPLIER NAME 123
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                   INVOICE NO
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-left border"
+                            >
+                                <Typography.Text className="font-semibold text-center text-left">
+                                    12
+                                </Typography.Text>
+                            </Col>
+                        </Row>
+                        <Row className="p-2 border-0 border-b">
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    GST IN
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-left border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    24ABHPP6021C1Z4              
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    CHALLAN NO.
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-left border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    Y-6
+                                </Typography.Text>
+                            </Col>
+                        </Row>
+                        <Row className="p-3 border-0 border-b border-solid mt-4">
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    E-WAY BILL NO
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-left borde"
+                            >
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="invoice_number"
+                                    validateStatus={errors.invoice_number ? "error" : ""}
+                                    help={errors.invoice_number && errors.invoice_number.message}
+                                    required={true}
+                                    className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="invoice_number"
+                                        render={({ field }) => (
+                                            <Input {...field} placeholder="Invoice No." />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="flex items-right justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    VEHICLE NO
+                                </Typography.Text>
+                            </Col>
+                            <Col
+                                span={8}
+                                className="flex items-right justify-left border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    Y-6
+                                </Typography.Text>
+                            </Col>
+                        </Row>
+
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                DENNIER
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                HSN NO
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                CARTOON
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                Total KG
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                RATE
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                AMOUNT
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                DENNIER
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                HSN NO
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                CARTOON
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                Total KG
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="rate"
+                                    validateStatus={errors.rate ? "error" : ""}
+                                    help={errors.rate && errors.rate.message}
+                                    required={true}
+                                    className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="rate"
+                                        render={({ field }) => (
+                                            <Input {...field}
+                                                placeholder="Rate" 
+                                                type="number" 
+                                                onChange={(e) => {
+                                                    setValue("rate", e.target.value) ; 
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                Discount
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="discount_value"
+                                    validateStatus={errors.discount_value ? "error" : ""}
+                                    help={errors.discount_value && errors.discount_value.message}
+                                    required={true}
+                                // className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="discount_value"
+                                        render={({ field }) => (
+                                            <Input {...field}
+                                                placeholder="Discount" 
+                                                type="number" 
+                                                onChange={(e) => {
+                                                    setValue("discount_value", e.target.value) ; 
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                SGST(%)
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="SGST_value"
+                                    validateStatus={errors.SGST_value ? "error" : ""}
+                                    help={errors.SGST_value && errors.SGST_value.message}
+                                    required={true}
+                                // className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="SGST_value"
+                                        render={({ field }) => (
+                                            <Input {...field}
+                                                placeholder="SGST" 
+                                                type="number" 
+                                                onChange={(e) => {
+                                                    setValue("SGST_value", e.target.value) ; 
+                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    // console.log(tempDiscount); 
+                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
+                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                CGST(%)
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="SGST_value"
+                                    validateStatus={errors.SGST_value ? "error" : ""}
+                                    help={errors.SGST_value && errors.SGST_value.message}
+                                    required={true}
+                                // className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="CGST_value"
+                                        render={({ field }) => (
+                                            <Input {...field}
+                                                placeholder="SGST" 
+                                                type="number" 
+                                                onChange={(e) => {
+                                                    setValue("CGST_value", e.target.value) ; 
+                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    // console.log(tempDiscount); 
+                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
+                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                IGST(%)
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            > 
+                                <Form.Item
+                                    // label="Invoice No."
+                                    name="IGST_value"
+                                    validateStatus={errors.IGST_value ? "error" : ""}
+                                    help={errors.IGST_value && errors.IGST_value.message}
+                                    required={true}
+                                // className="mb-0"
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="IGST_value"
+                                        render={({ field }) => (
+                                            <Input {...field}
+                                                placeholder="SGST" 
+                                                type="number" 
+                                                onChange={(e) => {
+                                                    setValue("IGST_value", e.target.value) ; 
+                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    // console.log(tempDiscount); 
+                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
+                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                Round Off
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            > 
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r "
+                            >
+                                NO DYEING GUARANTEE
+                            </Col>
+                            <Col
+                                span={8}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                <Form.Item
+                                    // label="BILL Date"
+                                    name="bill_date"
+                                    validateStatus={errors.due_date ? "error" : ""}
+                                    help={errors.bill_date && errors.due_date.message}
+                                    required={true}
+                                    wrapperCol={{ sm: 24 }}
+                                    style={{marginBottom: 0}}
+                                >
+                                    <Controller
+                                        control={control}
+                                        name="due_date"
+                                        render={({ field }) => (
+                                            <DatePicker
+                                                {...field}
+                                                style={{
+                                                    width: "100%",
+                                                }}
+                                                format="DD-MM-YYYY"
+                                                disabledDate={disablePastDates}
+                                            />
+                                        )}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            > 
+                                NET AMOUNT
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                                {currentValues?.amount}
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={24}
+                                className="p-2 font-medium border-0 border-r "
+                            >
+                                NET RATE: 10Rs/Kg
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b !m-0 p-4">
+                            <Col span={16} className="p-2">
+                                <Title level={5} className="m-0">
+                                ➤ TERMS OF SALES :-
+                                </Title>
+                                <Text className="block">1. Interest at 2% per month will be charged remaining unpaid from the date bill.</Text>
+                                <Text className="block">2. Complaint if any regarding this invoice must be settled within 24 hours.</Text>
+                                <Text className="block">3. Disputes shall be settled in SURAT court only.</Text>
+                                <Text className="block">4. We are not responsible for processed goods & width.</Text>
+                                <Text className="block">5. Subject to SURAT Jurisdiction.</Text>
+                                <Text className="block mt-2">
+                                </Text>
+                            </Col>
+                            <Col span={8} className="p-2 text-right">
+                                <Text strong>For, SONU TEXTILES</Text>
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b border-solid !m-0 p-4" style={{paddingTop:0}}>
+                            <Col span={16} className="p-2">
+                                <Text strong>Bank Details:</Text> MESHANA URBAN
+                                <br />
+                                <Text strong>A/C No:</Text> 0021101005190
+                                <br />
+                                <Text strong>IFSC Code:</Text> MSNU0000021
+                                <br />
+                                <Text>IRN: --</Text>
+                                <br />
+                                <Text>ACK NO: --</Text>
+                                <br />
+                                <Text>ACK DATE: --</Text>
+                            </Col>
+                            <Col span={8} className="p-2 text-right">
+                                <Text strong>Authorised Signatory</Text>
+                            </Col>
+                        </Row>
+
+                        <Row className="p-2 border-0 border-b border-solid">
+                            <Col
+                                span={24}
+                                className="flex items-center justify-center border"
+                            >
+                                <Typography.Text className="font-semibold text-center">
+                                    PAID DETAILS
+                                </Typography.Text>
+                            </Col>
+                        </Row>
+
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                RECEIVED RS.
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                CHQ/DD NO.
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                DATE
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                                PARTY'S BANK
+                            </Col>
+                        </Row>
+                        <Row className="border-0 border-b border-solid !m-0">
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={6}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
                             </Col>
                         </Row>
                     </Flex>
