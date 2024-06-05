@@ -2,7 +2,6 @@ import axios from "axios";
 
 const authToken = localStorage.getItem("authToken");
 const baseURL = import.meta.env.VITE_BACKEND_BASE_URL;
-// console.log("baseURL", baseURL);
 
 export const api = axios.create({
   baseURL: baseURL,
@@ -13,12 +12,12 @@ export const api = axios.create({
 
 // Add a request interceptor
 api.interceptors.request.use(
-  function (config) {
+  function(config) {
     const authToken = localStorage.getItem("authToken");
     config.headers.Authorization = authToken;
     return config;
   },
-  function (error) {
+  function(error) {
     // Do something with request error
     return Promise.reject(error);
   }
@@ -26,11 +25,11 @@ api.interceptors.request.use(
 
 // Add a response interceptor
 api.interceptors.response.use(
-  function (response) {
+  function(response) {
     // Any status code that lie within the range of 2xx cause this function to trigger
     return response;
   },
-  function (error) {
+  function(error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     if (
       error?.response?.status === 401 &&

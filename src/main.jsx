@@ -83,6 +83,8 @@ import AddJobTaka from "./pages/job/jobTaka/AddJobTaka";
 import UpdateJobTaka from "./pages/job/jobTaka/UpdateJobTaka";
 import AddBeamCard from "./pages/beamCard/AddBeamCard";
 import UpdateBeamCard from "./pages/beamCard/UpdateBeamCard";
+import PurchaseTakaList from "./pages/purchase/purchaseTaka/purchaseTakaList";
+import AddPurchaseTaka from "./pages/purchase/purchaseTaka/addPurchaseTaka";
 
 const queryClient = new QueryClient();
 
@@ -366,7 +368,10 @@ const router = createBrowserRouter([
         children: [
           {
             path: "purchased-taka",
-            element: <div>purchased-taka</div>,
+            children: [
+              { index: true, element: <PurchaseTakaList /> },
+              { path: "add", element: <AddPurchaseTaka /> },
+            ],
           },
           {
             path: "general-purchase-entry",
