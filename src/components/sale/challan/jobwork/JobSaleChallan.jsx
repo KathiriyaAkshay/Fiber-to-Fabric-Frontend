@@ -582,7 +582,7 @@ const JobWorkSaleChallanModel = ({details = {}}) => {
                             >
                                 <Form.Item
                                     // label="Invoice No."
-                                    name="SGST_value"
+                                    name="CGST_value"
                                     validateStatus={errors.SGST_value ? "error" : ""}
                                     help={errors.SGST_value && errors.SGST_value.message}
                                     required={true}

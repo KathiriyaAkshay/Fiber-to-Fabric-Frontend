@@ -33,6 +33,7 @@ import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
 
 const JobTakaList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -238,6 +239,9 @@ const JobTakaList = () => {
           <Space>
             <ViewJobTakaDetailsModal
               title="Job Taka Details"
+              details={details}
+            />
+            <JobTakaChallanModal
               details={details}
             />
             {/* <Button
