@@ -381,7 +381,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   help={errors.order_id && errors.order_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -448,7 +448,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   help={errors.company_id && errors.company_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -480,7 +480,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.invoice_no ? "error" : ""}
                   help={errors.invoice_no && errors.invoice_no.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -519,7 +519,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   help={errors.bill_date && errors.bill_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -544,7 +544,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   help={errors.due_date && errors.due_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -627,7 +627,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.quantity_rate ? "error" : ""}
                   help={errors.quantity_rate && errors.quantity_rate.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -666,14 +666,14 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                       <Typography.Text type="success">{`Disc: ${parseFloat(
                         (Number(quantity_amount) *
                           Number(discount_brokerage_value)) /
-                        100
+                          100
                       ).toFixed(2)}`}</Typography.Text>
                     ) : (
                       errors.quantity_amount && errors.quantity_amount.message
                     )
                   }
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -722,7 +722,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.freight_value ? "error" : ""}
                   help={errors.freight_value && errors.freight_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -758,7 +758,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.freight_amount ? "error" : ""}
                   help={errors.freight_amount && errors.freight_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -829,7 +829,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                     errors.discount_brokerage_value.message
                   }
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -873,7 +873,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -908,7 +908,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.SGST_amount ? "error" : ""}
                   help={errors.SGST_amount && errors.SGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -959,7 +959,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.CGST_value ? "error" : ""}
                   help={errors.CGST_value && errors.CGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -994,7 +994,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.CGST_amount ? "error" : ""}
                   help={errors.CGST_amount && errors.CGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1045,7 +1045,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1080,7 +1080,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.IGST_amount ? "error" : ""}
                   help={errors.IGST_amount && errors.IGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1131,7 +1131,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.TCS_value ? "error" : ""}
                   help={errors.TCS_value && errors.TCS_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1170,7 +1170,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                   validateStatus={errors.TCS_amount ? "error" : ""}
                   help={errors.TCS_amount && errors.TCS_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1253,7 +1253,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
               <Col span={20} className="p-2 font-semibold">
                 {Number(net_amount)
                   ? // ? toWords.convert(Math.ceil(net_amount))
-                  toWords.convert(net_amount)
+                    toWords.convert(net_amount)
                   : ""}
               </Col>
             </Row>
@@ -1269,7 +1269,7 @@ const YarnReceiveChallanModal = ({ details = {} }) => {
                 validateStatus={errors.TDS_amount ? "error" : ""}
                 help={errors.TDS_amount && errors.TDS_amount.message}
                 required={true}
-              // className="mb-0"
+                // className="mb-0"
               >
                 <Controller
                   control={control}
