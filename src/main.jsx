@@ -93,6 +93,7 @@ import JobWorkChallanList from "./pages/sale/challan/jobwork/saleJobWorkList";
 import UpdateJobWorkChallan from "./pages/sale/challan/jobwork/updateJobWork";
 import YarnSalesBillList from "./pages/sale/bill/yarnSalesBill/yarnSalesBillList";
 import JobWorkBillList from "./pages/sale/bill/jobWorkBill/jobWorkBillList";
+import SaleBillList from "./pages/sale/bill/saleBill/saleBillList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -358,7 +359,7 @@ const router = createBrowserRouter([
               { index: true, element: <div>bill</div> },
               {
                 path: "sales-bill-list",
-                element: <div>sales-bill-list</div>,
+                element: <SaleBillList/>,
               },
               {
                 path: "yarn-sales-bill-list",
