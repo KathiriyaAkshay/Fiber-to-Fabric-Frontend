@@ -479,6 +479,30 @@ export const menubarOptionsList = [
               </Link>
             ),
           },
+          {
+            path: "job-grey-sales-bill-list",
+            key: "Job Grey Sales Bill List",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/bill/job-grey-sales-bill-list"
+              >
+                Job Grey Sales Bill List
+              </Link>
+            ),
+          },
+          {
+            path: "job-work-bill-list",
+            key: "Job Work Bill List",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/bill/job-work-bill-list"
+              >
+                Job Work Bill List
+              </Link>
+            ),
+          },
         ],
       },
     ],

@@ -91,8 +91,17 @@ import UpdateYarnSaleChallan from "./pages/sale/challan/yarnsale/updateYarnSale"
 import AddJobWorkSaleChallan from "./pages/sale/challan/jobwork/addSaleJobWork";
 import JobWorkChallanList from "./pages/sale/challan/jobwork/saleJobWorkList";
 import UpdateJobWorkChallan from "./pages/sale/challan/jobwork/updateJobWork";
+import YarnSalesBillList from "./pages/sale/bill/yarnSalesBill/yarnSalesBillList";
+import JobWorkBillList from "./pages/sale/bill/jobWorkBill/jobWorkBillList";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      refetchOnWindowFocus: "always",
+    },
+  },
+});
 
 const router = createBrowserRouter([
   {
@@ -345,12 +354,6 @@ const router = createBrowserRouter([
           },
           {
             path: "bill",
-            element: (
-              <div>
-                <div>bill</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>bill</div> },
               {
@@ -359,11 +362,19 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-sales-bill-list",
-                element: <div>yarn-sales-bill-list</div>,
+                element: <YarnSalesBillList />,
               },
               {
                 path: "beam-sales-bill-list",
                 element: <div>beam-sales-bill-list</div>,
+              },
+              {
+                path: "job-grey-sales-bill-list",
+                element: <div>job-grey-sales-bill-list</div>,
+              },
+              {
+                path: "job-work-bill-list",
+                element: <JobWorkBillList />,
               },
             ],
           },
