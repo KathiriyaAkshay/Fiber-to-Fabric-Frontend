@@ -19,12 +19,12 @@ import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-
-const SaleBillComp = ({ details }) => {
+const JobGrayBillComp = ({ details }) => {
     const [isModelOpen, setIsModalOpen] = useState(true);
     const onSubmit = async (values) => {
 
     }
+
     return (
         <>
             <Modal
@@ -83,6 +83,7 @@ const SaleBillComp = ({ details }) => {
                             </Typography.Text>
                         </Col>
                     </Row>
+
                     <Row className="p-2 border-0 border-b border-solid">
                         <Col
                             span={24}
@@ -170,6 +171,7 @@ const SaleBillComp = ({ details }) => {
                             AMOUNT
                         </Col>
                     </Row>
+
                     <Row className="border-0 border-b !m-0">
                         <Col
                             span={8}
@@ -437,7 +439,6 @@ const SaleBillComp = ({ details }) => {
                             15129
                         </Col>
                     </Row>
-
                     <Row className="border-0 border-b border-solid !m-0 p-2">
                         <Col span={18}>
                             <Typography.Text className="block font-semibold">♦ DELIVERY AT:</Typography.Text>
@@ -469,7 +470,7 @@ const SaleBillComp = ({ details }) => {
                         </Col>
                     </Row>
                     <Row className="border-0 border-b border-solid !m-0 ">
-                        <Col span={24} className="pt-2 pb-2 pl-2 border-0 border-r border-solid">
+                        <Col span={24} className="pt-2 pb-2 pl-2 border-0 border-r">
                             <Typography.Text className="font-semibold">Tax Amount(IN WORDS):INR Fifteen Thousand One Hundred and Twenty Nine only</Typography.Text>
                         </Col>
                     </Row>
@@ -555,16 +556,15 @@ const SaleBillComp = ({ details }) => {
                         </Col>
                         <Col
                             span={6}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r"
                         >
                             {"PARTY'S BANK"}
                         </Col>
                     </Row>
-
                 </Flex>
             </Modal>
         </>
     )
 }
 
-export default SaleBillComp; 
+export default JobGrayBillComp; 

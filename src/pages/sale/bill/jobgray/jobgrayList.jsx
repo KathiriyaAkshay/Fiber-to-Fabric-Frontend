@@ -15,10 +15,9 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import dayjs from "dayjs";
 import moment from "moment";
-import SaleBillComp from "../../../../components/sale/bill/saleBillComp";
+import JobGrayBillComp from "../../../../components/sale/bill/jobGrayBillComp";
 
-const SaleBillList = () => {
-
+const JobGrayList = () => {
     const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
     const [modelLayout, setModelLayout] = useState(false) ; 
 
@@ -120,7 +119,7 @@ const SaleBillList = () => {
             <div className="flex flex-col p-4">
                 <div className="flex items-center justify-between gap-5 mx-3 mb-3">
                     <div className="flex items-center gap-2">
-                        <h3 className="m-0 text-primary">Sale Bill List</h3>
+                        <h3 className="m-0 text-primary">Job Grey Sale Bill List</h3>
                     </div>
 
                 </div>
@@ -128,10 +127,10 @@ const SaleBillList = () => {
                 {renderTable()}
             </div>
 
-            <SaleBillComp/>
+            <JobGrayBillComp/>
         
         </>
     )
 }
 
-export default SaleBillList; 
+export default JobGrayList ; 
