@@ -193,7 +193,7 @@ const YarnSalesBillList = () => {
     {
       title: "Due Date",
       render: (record) => {
-        return dayjs(record.yarn_sale_bill.due_date).format("DD-MM-YYYY");
+        return dayjs(record?.yarn_sale_bill?.due_date).format("DD-MM-YYYY");
       },
     },
     {

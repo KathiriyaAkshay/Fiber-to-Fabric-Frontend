@@ -177,7 +177,7 @@ const JobWorkBillList = () => {
     {
       title: "Due Date",
       render: (record) => {
-        return dayjs(record.job_work_bill.due_date).format("DD-MM-YYYY");
+        return dayjs(record?.job_work_bill?.due_date).format("DD-MM-YYYY");
       },
     },
     {
