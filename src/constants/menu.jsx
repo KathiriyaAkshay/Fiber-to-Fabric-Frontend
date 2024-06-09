@@ -708,11 +708,11 @@ export const menubarOptionsList = [
     children: [
       {
         path: "taka",
-        key: "Taka",
+        key: "Taka",  
         label: (
           <Link
             className="text-current no-underline hover:text-current"
-            to="job/job-taka"
+            to="job/taka"
           >
             Taka
           </Link>

@@ -95,6 +95,7 @@ import YarnSalesBillList from "./pages/sale/bill/yarnSalesBill/yarnSalesBillList
 import JobWorkBillList from "./pages/sale/bill/jobWorkBill/jobWorkBillList";
 import SaleBillList from "./pages/sale/bill/saleBill/saleBillList";
 import JobGrayList from "./pages/sale/bill/jobgray/jobgrayList";
+import StockTaka from "./pages/job/jobTaka/stockTaka";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -487,6 +488,12 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateJobTaka /> },
             ],
           },
+          {
+            path:"taka", 
+            children:[
+              {index: true, element: <StockTaka/>}
+            ]
+          }, 
           {
             path: "sent",
             children: [
