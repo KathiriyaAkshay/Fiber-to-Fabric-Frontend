@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Button,
   Flex,
@@ -10,41 +9,49 @@ import {
   Typography,
   Select,
 } from "antd";
-import { FileTextOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { FileTextOutlined } from "@ant-design/icons";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
+import {
+  //   getSaleYarnChallanBillListRequest,
+  saleYarnChallanListRequest,
+} from "../../../../api/requests/sale/challan/challan";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import DeleteJobWorkChallan from "../../../../components/sale/challan/jobwork/deleteJobWorkChallan";
-import { EditOutlined } from "@ant-design/icons";
+// import DeleteSaleYarnChallan from "../../../../components/sale/challan/yarn/DeleteYarnSaleChallan";
+// import { EditOutlined } from "@ant-design/icons";
 import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import useDebounce from "../../../../hooks/useDebounce";
-import { saleJobWorkChallanListRequest } from "../../../../api/requests/sale/challan/challan";
-import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
+import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
+import dayjs from "dayjs";
 
-function JobWorkChallanList() {
-  const navigation = useNavigate();
+const YarnSalesBillList = () => {
+  //   const navigation = useNavigate();
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const [party, setParty] = useState(null);
-  const debounceParty = useDebounce(party, 500);
-  const [vehicle, setVehicle] = useState(null);
-  const debouncedVehicle = useDebounce(vehicle, 500);
-
-  const [jobWorkSaleChallanModel, setJobWorkSaleChallanModel] = useState({
+  const [yarnSaleChallanModel, setYarnSaleChallanModel] = useState({
     isModalOpen: false,
     details: null,
     mode: "",
   });
 
   const handleCloseModal = () => {
-    setJobWorkSaleChallanModel((prev) => ({ ...prev, isModalOpen: false, mode: "" }));
+    setYarnSaleChallanModel((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
   };
+
+  const [party, setParty] = useState(null);
+  const debounceParty = useDebounce(party, 500);
+  const [vehicle, setVehicle] = useState(null);
+  const debouncedVehicle = useDebounce(vehicle, 500);
 
   const {
     data: dropdownSupplierListRes,
@@ -75,7 +82,37 @@ function JobWorkChallanList() {
     enabled: Boolean(companyId),
   });
 
-  const { data: saleYarnChallanData, isLoading: isLoadingSaleYarnChallan } =
+  //   const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
+  //     useQuery({
+  //       queryKey: [
+  //         "sale/bill/yarn-sale/list",
+  //         {
+  //           company_id: companyId,
+  //           page,
+  //           pageSize,
+  //           supplier_name: debounceParty,
+  //           end: financialYearEnd,
+  //           vehicle_id: debouncedVehicle,
+  //         },
+  //       ],
+  //       queryFn: async () => {
+  //         const res = await getSaleYarnChallanBillListRequest({
+  //           companyId,
+  //           params: {
+  //             company_id: companyId,
+  //             page,
+  //             pageSize,
+  //             supplier_name: debounceParty,
+  //             end: financialYearEnd,
+  //             vehicle_id: debouncedVehicle,
+  //           },
+  //         });
+  //         return res.data?.data;
+  //       },
+  //       enabled: Boolean(companyId),
+  //     });
+
+  const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
     useQuery({
       queryKey: [
         "sale/challan/yarn-sale/list",
@@ -84,27 +121,20 @@ function JobWorkChallanList() {
           page,
           pageSize,
           supplier_name: debounceParty,
-          // search: debouncedSearch,
-          // toDate: debouncedToDate,
-          // fromDate: debouncedFromDate,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
         },
       ],
       queryFn: async () => {
-        const res = await saleJobWorkChallanListRequest({
+        const res = await saleYarnChallanListRequest({
           companyId,
           params: {
             company_id: companyId,
             page,
             pageSize,
             supplier_name: debounceParty,
-            // search: debouncedSearch,
-            // toDate: debouncedToDate,
-            // fromDate: debouncedFromDate,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
-            // pending: true,
           },
         });
         return res.data?.data;
@@ -121,8 +151,8 @@ function JobWorkChallanList() {
     },
     {
       title: "Date",
-      dataIndex: "createdAt",
-      key: "date",
+      dataIndex: "bill_date",
+      key: "bill_date",
       render: (text) => moment(text).format("DD-MM-YYYY"),
     },
     {
@@ -131,7 +161,9 @@ function JobWorkChallanList() {
     },
     {
       title: "Challan No",
-      dataIndex: "challan_no",
+      render: (record) => {
+        return `${record.challan_no}`;
+      },
     },
     {
       title: "Yarn Company",
@@ -143,51 +175,62 @@ function JobWorkChallanList() {
       render: (text) =>
         `${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`,
     },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-    },
+
     {
       title: "KG",
-      dataIndex: "kg",
+      render: (record) => {
+        return `${record.kg}`;
+      },
+    },
+    {
+      title: "Rate",
+      dataIndex: ["yarn_sale_bill", "rate"],
+    },
+    {
+      title: "Amount",
+      dataIndex: ["yarn_sale_bill", "amount"],
+    },
+    {
+      title: "Due Date",
+      render: (record) => {
+        return dayjs(record.yarn_sale_bill.due_date).format("DD-MM-YYYY");
+      },
+    },
+    {
+      title: "Due Days",
+      //   render: (record) => {
+      //     return `${record.yarn_sale.kg}`;
+      //   },
     },
     {
       title: "Bill Status",
-      dataIndex: "bill_status",
+      dataIndex: ["yarn_sale_bill", "is_paid"],
       render: (text) =>
-        text.toLowerCase() === "pending" ? (
-          <Tag color="red">{text}</Tag>
-        ) : (
-          <Tag color="green">{text}</Tag>
-        ),
+        text ? <Tag color="green">Paid</Tag> : <Tag color="red">Un-Paid</Tag>,
     },
     {
       title: "Actions",
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
-          <Button
+          {/* <Button
             onClick={() => {
-              navigation(`/sales/challan/job-work/update/${record?.id}`);
+              navigation(`/sales/challan/yarn-sale/update/${record?.id}`);
             }}
           >
             <EditOutlined />
           </Button>
-          <DeleteJobWorkChallan details={record} />
-          {/* <JobWorkSaleChallanModel jobSaleDetails={record} /> */}
+          <DeleteSaleYarnChallan details={record} /> */}
+          {/* <YarnSaleChallanModel yarnSaleDetails={record} /> */}
           <Button
             onClick={() => {
               let MODE;
-              if (record.bill_status) {
-                if (record.bill_status.toLowerCase() === "pending") {
-                  MODE = "ADD";
-                } else if (record.bill_status.toLowerCase() === "confirmed") {
-                  MODE = "VIEW";
-                }
+              if (record.yarn_sale_bill.is_paid) {
+                MODE = "VIEW";
               } else {
-                MODE = "ADD";
+                MODE = "UPDATE";
               }
-              setJobWorkSaleChallanModel((prev) => {
+              setYarnSaleChallanModel((prev) => {
                 return {
                   ...prev,
                   isModalOpen: true,
@@ -205,7 +248,7 @@ function JobWorkChallanList() {
   ];
 
   function renderTable() {
-    if (isLoadingSaleYarnChallan) {
+    if (isLoadingYarnSaleBill) {
       return (
         <Spin tip="Loading" size="large">
           <div className="p-14"></div>
@@ -215,11 +258,11 @@ function JobWorkChallanList() {
 
     return (
       <Table
-        dataSource={saleYarnChallanData?.list || []}
+        dataSource={yarnSaleBillListData?.list || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: saleYarnChallanData?.count || 0,
+          total: yarnSaleBillListData?.list || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -233,14 +276,14 @@ function JobWorkChallanList() {
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Job Work Sale Challan List</h3>
-            <Button
+            <h3 className="m-0 text-primary">Yarn Sale Bill List</h3>
+            {/* <Button
               onClick={() => {
-                navigation("/sales/challan/job-work/add");
+                navigation("/sales/challan/yarn-sale/add");
               }}
               icon={<PlusCircleOutlined />}
               type="text"
-            />
+            /> */}
           </div>
 
           <Flex align="center" gap={10}>
@@ -298,17 +341,16 @@ function JobWorkChallanList() {
 
         {renderTable()}
       </div>
-
-      {jobWorkSaleChallanModel.isModalOpen && (
-        <JobWorkSaleChallanModel
-          details={jobWorkSaleChallanModel.details}
-          isModelOpen={jobWorkSaleChallanModel.isModalOpen}
+      {yarnSaleChallanModel.isModalOpen && (
+        <YarnSaleChallanModel
+          details={yarnSaleChallanModel.details}
+          isModelOpen={yarnSaleChallanModel.isModalOpen}
           handleCloseModal={handleCloseModal}
-          MODE={jobWorkSaleChallanModel.mode}
+          MODE={yarnSaleChallanModel.mode}
         />
       )}
     </>
   );
-}
+};
 
-export default JobWorkChallanList;
+export default YarnSalesBillList;

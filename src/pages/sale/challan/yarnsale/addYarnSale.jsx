@@ -97,8 +97,6 @@ function AddYarnSaleChallan() {
   const { yarn_company_name, supplier_name, current_stock, cartoon } = watch();
 
   useEffect(() => {
-    console.log("current stock", current_stock);
-    console.log("Cartoob", cartoon);
     let temp_remain_stock = current_stock - cartoon;
     setValue("remaining_stock", temp_remain_stock);
   }, [cartoon, current_stock, setValue]);
@@ -189,7 +187,6 @@ function AddYarnSaleChallan() {
   });
 
   async function onSubmit(data) {
-    console.log(data);
     delete data?.remaining_stock;
     delete data?.supplier_name;
     delete data?.order_date;
@@ -447,7 +444,6 @@ function AddYarnSaleChallan() {
                       textTransform: "capitalize",
                     }}
                     onChange={(value, option) => {
-                      console.log(option);
                       setValue("yarn_company_id", value);
                       setValue("current_stock", option?.current_stock);
                     }}

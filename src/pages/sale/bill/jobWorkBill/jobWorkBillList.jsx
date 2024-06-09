@@ -1,40 +1,30 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  Flex,
-  Space,
-  Spin,
-  Table,
-  Tag,
-  Typography,
-  Select,
-} from "antd";
-import { FileTextOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Space, Spin, Table, Tag } from "antd";
+import { FileTextOutlined } from "@ant-design/icons";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import DeleteJobWorkChallan from "../../../../components/sale/challan/jobwork/deleteJobWorkChallan";
-import { EditOutlined } from "@ant-design/icons";
+// import DeleteJobWorkChallan from "../../../../components/sale/challan/jobwork/deleteJobWorkChallan";
+// import { EditOutlined } from "@ant-design/icons";
+// import useDebounce from "../../../../hooks/useDebounce";
 import {
-  getDropdownSupplierListRequest,
-  getVehicleUserListRequest,
-} from "../../../../api/requests/users";
-import useDebounce from "../../../../hooks/useDebounce";
-import { saleJobWorkChallanListRequest } from "../../../../api/requests/sale/challan/challan";
+  //   getSaleJobWorkBillListRequest,
+  saleJobWorkChallanListRequest,
+} from "../../../../api/requests/sale/challan/challan";
 import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
+import dayjs from "dayjs";
 
-function JobWorkChallanList() {
-  const navigation = useNavigate();
+const JobWorkBillList = () => {
+  //   const navigation = useNavigate();
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const [party, setParty] = useState(null);
-  const debounceParty = useDebounce(party, 500);
-  const [vehicle, setVehicle] = useState(null);
-  const debouncedVehicle = useDebounce(vehicle, 500);
+  //   const [party, setParty] = useState(null);
+  //   const debounceParty = useDebounce(party, 500);
+  //   const [vehicle, setVehicle] = useState(null);
+  //   const debouncedVehicle = useDebounce(vehicle, 500);
 
   const [jobWorkSaleChallanModel, setJobWorkSaleChallanModel] = useState({
     isModalOpen: false,
@@ -43,74 +33,99 @@ function JobWorkChallanList() {
   });
 
   const handleCloseModal = () => {
-    setJobWorkSaleChallanModel((prev) => ({ ...prev, isModalOpen: false, mode: "" }));
+    setJobWorkSaleChallanModel((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
   };
 
-  const {
-    data: dropdownSupplierListRes,
-    isLoading: isLoadingDropdownSupplierList,
-  } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.supplierList;
-    },
-    enabled: Boolean(companyId),
-  });
+  //   const {
+  //     data: dropdownSupplierListRes,
+  //     isLoading: isLoadingDropdownSupplierList,
+  //   } = useQuery({
+  //     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+  //     queryFn: async () => {
+  //       const res = await getDropdownSupplierListRequest({
+  //         params: { company_id: companyId },
+  //       });
+  //       return res.data?.data?.supplierList;
+  //     },
+  //     enabled: Boolean(companyId),
+  //   });
 
-  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+  //   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+  //     queryKey: [
+  //       "vehicle",
+  //       "list",
+  //       { company_id: companyId, page: 0, pageSize: 99999 },
+  //     ],
+  //     queryFn: async () => {
+  //       const res = await getVehicleUserListRequest({
+  //         params: { company_id: companyId, page: 0, pageSize: 99999 },
+  //       });
+  //       return res.data?.data;
+  //     },
+  //     enabled: Boolean(companyId),
+  //   });
+
+  //   const { data: saleJobWorkListData, isLoading: isLoadingSaleJobWorkBill } =
+  //     useQuery({
+  //       queryKey: [
+  //         "sale/challan/job-work/bill/list",
+  //         {
+  //           company_id: companyId,
+  //           page,
+  //           pageSize,
+  //           //   supplier_name: debounceParty,
+  //           end: financialYearEnd,
+  //           //   vehicle_id: debouncedVehicle,
+  //         },
+  //       ],
+  //       queryFn: async () => {
+  //         const res = await getSaleJobWorkBillListRequest({
+  //           companyId,
+  //           params: {
+  //             company_id: companyId,
+  //             page,
+  //             pageSize,
+  //             // supplier_name: debounceParty,
+  //             end: financialYearEnd,
+  //             // vehicle_id: debouncedVehicle,
+  //           },
+  //         });
+  //         return res.data?.data;
+  //       },
+  //       enabled: Boolean(companyId),
+  //     });
+
+  const {
+    data: saleJobWorkChallanListData,
+    isLoading: isLoadingSaleJobWorkData,
+  } = useQuery({
     queryKey: [
-      "vehicle",
-      "list",
-      { company_id: companyId, page: 0, pageSize: 99999 },
+      "sale/challan/yarn-sale/list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        end: financialYearEnd,
+      },
     ],
     queryFn: async () => {
-      const res = await getVehicleUserListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
+      const res = await saleJobWorkChallanListRequest({
+        companyId,
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          end: financialYearEnd,
+        },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
-
-  const { data: saleYarnChallanData, isLoading: isLoadingSaleYarnChallan } =
-    useQuery({
-      queryKey: [
-        "sale/challan/yarn-sale/list",
-        {
-          company_id: companyId,
-          page,
-          pageSize,
-          supplier_name: debounceParty,
-          // search: debouncedSearch,
-          // toDate: debouncedToDate,
-          // fromDate: debouncedFromDate,
-          end: financialYearEnd,
-          vehicle_id: debouncedVehicle,
-        },
-      ],
-      queryFn: async () => {
-        const res = await saleJobWorkChallanListRequest({
-          companyId,
-          params: {
-            company_id: companyId,
-            page,
-            pageSize,
-            supplier_name: debounceParty,
-            // search: debouncedSearch,
-            // toDate: debouncedToDate,
-            // fromDate: debouncedFromDate,
-            end: financialYearEnd,
-            vehicle_id: debouncedVehicle,
-            // pending: true,
-          },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
 
   const columns = [
     {
@@ -131,7 +146,9 @@ function JobWorkChallanList() {
     },
     {
       title: "Challan No",
-      dataIndex: "challan_no",
+      render: (record) => {
+        return `${record.challan_no}`;
+      },
     },
     {
       title: "Yarn Company",
@@ -144,48 +161,55 @@ function JobWorkChallanList() {
         `${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`,
     },
     {
-      title: "Quantity",
-      dataIndex: "quantity",
-    },
-    {
       title: "KG",
       dataIndex: "kg",
+      key: "kg",
+    },
+    {
+      title: "Rate",
+      dataIndex: ["job_work_bill"],
+      render: (text) => text.rate,
+    },
+    {
+      title: "Amount",
+      dataIndex: ["job_work_bill", "amount"],
+    },
+    {
+      title: "Due Date",
+      render: (record) => {
+        return dayjs(record.job_work_bill.due_date).format("DD-MM-YYYY");
+      },
+    },
+    {
+      title: "Due Days",
     },
     {
       title: "Bill Status",
-      dataIndex: "bill_status",
+      dataIndex: ["job_work_bill", "is_paid"],
       render: (text) =>
-        text.toLowerCase() === "pending" ? (
-          <Tag color="red">{text}</Tag>
-        ) : (
-          <Tag color="green">{text}</Tag>
-        ),
+        text ? <Tag color="green">Paid</Tag> : <Tag color="red">Un-Paid</Tag>,
     },
     {
       title: "Actions",
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
-          <Button
+          {/* <Button
             onClick={() => {
               navigation(`/sales/challan/job-work/update/${record?.id}`);
             }}
           >
             <EditOutlined />
           </Button>
-          <DeleteJobWorkChallan details={record} />
+          <DeleteJobWorkChallan details={record} /> */}
           {/* <JobWorkSaleChallanModel jobSaleDetails={record} /> */}
           <Button
             onClick={() => {
               let MODE;
-              if (record.bill_status) {
-                if (record.bill_status.toLowerCase() === "pending") {
-                  MODE = "ADD";
-                } else if (record.bill_status.toLowerCase() === "confirmed") {
-                  MODE = "VIEW";
-                }
+              if (record.job_work_bill.is_paid) {
+                MODE = "VIEW";
               } else {
-                MODE = "ADD";
+                MODE = "UPDATE";
               }
               setJobWorkSaleChallanModel((prev) => {
                 return {
@@ -205,7 +229,7 @@ function JobWorkChallanList() {
   ];
 
   function renderTable() {
-    if (isLoadingSaleYarnChallan) {
+    if (isLoadingSaleJobWorkData) {
       return (
         <Spin tip="Loading" size="large">
           <div className="p-14"></div>
@@ -215,11 +239,11 @@ function JobWorkChallanList() {
 
     return (
       <Table
-        dataSource={saleYarnChallanData?.list || []}
+        dataSource={saleJobWorkChallanListData?.list || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: saleYarnChallanData?.count || 0,
+          total: saleJobWorkChallanListData?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -227,23 +251,22 @@ function JobWorkChallanList() {
       />
     );
   }
-
   return (
     <>
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Job Work Sale Challan List</h3>
-            <Button
+            <h3 className="m-0 text-primary">Job Work Sale Bill List</h3>
+            {/* <Button
               onClick={() => {
                 navigation("/sales/challan/job-work/add");
               }}
               icon={<PlusCircleOutlined />}
               type="text"
-            />
+            /> */}
           </div>
 
-          <Flex align="center" gap={10}>
+          {/* <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 Party
@@ -293,7 +316,7 @@ function JobWorkChallanList() {
                 className="min-w-40"
               />
             </Flex>
-          </Flex>
+          </Flex> */}
         </div>
 
         {renderTable()}
@@ -304,11 +327,11 @@ function JobWorkChallanList() {
           details={jobWorkSaleChallanModel.details}
           isModelOpen={jobWorkSaleChallanModel.isModalOpen}
           handleCloseModal={handleCloseModal}
-          MODE={jobWorkSaleChallanModel.mode}
+          MODE={"UPDATE"}
         />
       )}
     </>
   );
-}
+};
 
-export default JobWorkChallanList;
+export default JobWorkBillList;

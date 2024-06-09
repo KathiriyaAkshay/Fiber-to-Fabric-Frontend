@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import {
   Button,
   Col,
@@ -13,14 +13,17 @@ import {
 } from "antd";
 const { Text, Title } = Typography;
 import * as yup from "yup";
-import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
+import { CloseOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 // import { ToWords } from "to-words";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { createSaleYarnChallanBillRequest } from "../../../../api/requests/sale/challan/challan";
+import {
+  createSaleYarnChallanBillRequest,
+  getSaleYarnChallanBillByIdRequest,
+} from "../../../../api/requests/sale/challan/challan";
 
 // const toWords = new ToWords({
 //   localeCode: "en-IN",
@@ -61,11 +64,57 @@ const addSizeBeamReceive = yup.object().shape({
   net_amount: yup.string().required("Please enter net amount"),
 });
 
-const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
-  const details = { ...yarnSaleDetails, kg: 20 };
-
+const YarnSaleChallanModel = ({
+  details = {},
+  isModelOpen,
+  handleCloseModal,
+  MODE,
+}) => {
   const queryClient = useQueryClient();
-  const MODE = details.bill_status.toLowerCase() === "pending" ? "ADD" : "VIEW";
+  const { companyId } = useContext(GlobalContext);
+  // const [isModelOpen, setIsModalOpen] = useState(false);
+  console.log({ details });
+
+  const disablePastDates = (current) => {
+    return current && current < new Date().setHours(0, 0, 0, 0);
+  };
+
+  const disableFutureDates = (current) => {
+    return current && current > new Date().setHours(0, 0, 0, 0);
+  };
+
+  // const details = { ...yarnSaleDetails };
+
+  // const MODE = useMemo(() => {
+  //   if (details.bill_status) {
+  //     if (details.bill_status.toLowerCase() === "pending") {
+  //       return "ADD";
+  //     }
+  //     if (
+  //       details.bill_status.toLowerCase() === "unpaid" ||
+  //       details.is_paid.toLowerCase() === "unpaid"
+  //     ) {
+  //       return "UPDATE";
+  //     }
+  //     if (details.bill_status.toLowerCase() === "confirmed") {
+  //       return "VIEW";
+  //     }
+  //   }
+  // }, [details.bill_status, details.is_paid]);
+
+  const { data: yarnSalesBillDetail = null } = useQuery({
+    queryKey: ["/sale/challan/yarn-sale/bill/get", MODE, { id: details.id }],
+    queryFn: async () => {
+      if (MODE === "VIEW" || MODE === "UPDATE") {
+        const res = await getSaleYarnChallanBillByIdRequest({
+          id: details.id,
+          params: { company_id: companyId },
+        });
+        return res?.data?.data;
+      }
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { mutateAsync: generateYarnSale, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -84,7 +133,8 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
       if (successMessage) {
         message.success(successMessage);
       }
-      setIsModalOpen(false);
+      // setIsModalOpen(false);
+      handleCloseModal();
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
@@ -92,38 +142,13 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
     },
   });
 
-  function calculateDiscount(value = 0) {
-    const discountValue = (+getValues("amount") * +value) / 100;
-    setValue(
-      "discount_amount",
-      parseFloat(+getValues("amount") - discountValue).toFixed(2)
-    );
-  }
-
-  function calculateAmount(rate, kg) {
-    setValue("amount", (+rate * kg).toFixed(2));
-    calculateDiscount(currentValues.discount_value);
-  }
-  function calculateRate(amount, kg) {
-    setValue("rate", (+amount / kg).toFixed(2));
-    calculateDiscount(currentValues.discount_value);
-  }
-
-  function calculatePercent(value, setName) {
-    // return (amount * percentage) / 100;
-    const finalValue = parseFloat(
-      (+getValues("discount_amount") * +value) / 100
-    ).toFixed(2);
-    setValue(setName, finalValue);
-  }
-
   const onSubmit = async (data) => {
     const newData = {
+      yarn_sale_id: details.id,
       E_way_bill_no: data.E_way_bill_no,
       invoice_no: data.E_way_bill_no,
       bill_date: dayjs(data.bill_date).format("YYYY-MM-DD"),
       due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
-      yarn_sale_id: 1,
       discount_value: +data.discount_value,
       discount_amount: +data.discount_amount,
       SGST_value: +data.SGST_value,
@@ -177,38 +202,65 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
       CGST_value: 0,
 
       round_off: 0,
-      //   receive_quantity: receive_quantity,
-      //   yarn_challan_id: yarn_challan_id,
-      //   yarn_stock_company_id: yarn_stock_company_id,
     },
   });
-
-  const { companyId } = useContext(GlobalContext);
-  const [isModelOpen, setIsModalOpen] = useState(false);
   const currentValues = watch();
 
-  const disablePastDates = (current) => {
-    return current && current < new Date().setHours(0, 0, 0, 0);
-  };
+  //  CALCULATION START----------------------------------------------
 
-  const disableFutureDates = (current) => {
-    return current && current > new Date().setHours(0, 0, 0, 0);
-  };
+  function calculateDiscount(value = 0) {
+    const discountValue = (+getValues("amount") * +value) / 100;
+    setValue(
+      "discount_amount",
+      parseFloat(+getValues("amount") - discountValue).toFixed(2)
+    );
+
+    if (getValues("SGST_value")) {
+      calculatePercent(getValues("SGST_value"), "SGST_amount");
+    }
+    if (getValues("CGST_value")) {
+      calculatePercent(getValues("CGST_value"), "CGST_amount");
+    }
+    if (getValues("IGST_value")) {
+      calculatePercent(getValues("IGST_value"), "IGST_amount");
+    }
+  }
+
+  function calculateAmount(rate, kg) {
+    setValue("amount", (+rate * kg).toFixed(2));
+    calculateDiscount(currentValues.discount_value);
+  }
+  function calculateRate(amount, kg) {
+    setValue("rate", (+amount / kg).toFixed(2));
+    calculateDiscount(currentValues.discount_value);
+  }
+
+  function calculatePercent(value, setName) {
+    // return (amount * percentage) / 100;
+    const finalValue = parseFloat(
+      (+getValues("discount_amount") * +value) / 100
+    ).toFixed(2);
+    setValue(setName, finalValue);
+  }
 
   useEffect(() => {
-    const finalAmount = parseFloat(
+    const finalNetAmount = parseFloat(
       +currentValues.discount_amount +
         +currentValues.SGST_amount +
         +currentValues.CGST_amount +
         +currentValues.IGST_amount
     ).toFixed(2);
-    setValue("net_amount", finalAmount);
+    const roundedNetAmount = Math.round(finalNetAmount);
+    const roundOffValue = (roundedNetAmount - finalNetAmount).toFixed(2);
+
+    setValue("net_amount", roundedNetAmount);
 
     // calculate net rate
-    setValue("net_rate", +(+finalAmount / details.kg).toFixed(2));
+    setValue("net_rate", +(+roundedNetAmount / details.kg).toFixed(2));
 
     // calculate round off amount
-    setValue("round_off", (Math.round(+finalAmount) - +finalAmount).toFixed(2));
+    // setValue("round_off", (Math.round(+finalAmount) - +finalAmount).toFixed(2));
+    setValue("round_off", roundOffValue);
   }, [
     currentValues.discount_amount,
     currentValues.SGST_amount,
@@ -218,15 +270,38 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
     details.kg,
   ]);
 
+  //  CALCULATION END------------------------------------------------
+
+  useEffect(() => {
+    if (yarnSalesBillDetail) {
+      setValue("E_way_bill_no", yarnSalesBillDetail.E_way_bill_no);
+      setValue("rate", yarnSalesBillDetail.rate);
+      setValue("amount", yarnSalesBillDetail.amount);
+
+      setValue("net_amount", yarnSalesBillDetail.net_amount);
+      setValue("net_rate", yarnSalesBillDetail.net_rate);
+      setValue("round_off", yarnSalesBillDetail.round_off_amount);
+      setValue("bill_date", dayjs(yarnSalesBillDetail.bill_date));
+      setValue("due_date", dayjs(yarnSalesBillDetail.due_date));
+
+      setValue("discount_amount", yarnSalesBillDetail.discount_amount);
+      setValue("discount_value", yarnSalesBillDetail.discount_value);
+      setValue("IGST_amount", yarnSalesBillDetail.IGST_amount);
+      setValue("IGST_value", yarnSalesBillDetail.IGST_value);
+      setValue("CGST_amount", yarnSalesBillDetail.CGST_amount);
+      setValue("CGST_value", yarnSalesBillDetail.CGST_value);
+      setValue("SGST_amount", yarnSalesBillDetail.SGST_amount);
+      setValue("SGST_value", yarnSalesBillDetail.SGST_value);
+    }
+  }, [yarnSalesBillDetail, setValue]);
+
   return (
     <>
-      <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
+      {/* <Button
+        onClick={handleCloseModal}
       >
         <FileTextOutlined />
-      </Button>
+      </Button> */}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -236,9 +311,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
         }
         open={isModelOpen}
         footer={null}
-        onCancel={() => {
-          setIsModalOpen(false);
-        }}
+        onCancel={handleCloseModal}
         className={{
           header: "text-center",
         }}
@@ -325,6 +398,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                           width: "100%",
                         }}
                         format="DD-MM-YYYY"
+                        disabled={MODE === "VIEW" || MODE === "UPDATE"}
                       />
                     )}
                   />
@@ -350,7 +424,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
               </Col>
               <Col span={8} className="flex items-right justify-left border">
                 <Typography.Text className="font-semibold text-center text-left">
-                  12
+                  {details.challan_no}
                 </Typography.Text>
               </Col>
             </Row>
@@ -372,7 +446,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
               </Col>
               <Col span={8} className="flex items-right justify-left border">
                 <Typography.Text className="font-semibold text-center">
-                  Y-6
+                  {details.challan_no}
                 </Typography.Text>
               </Col>
             </Row>
@@ -395,7 +469,11 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                     control={control}
                     name="E_way_bill_no"
                     render={({ field }) => (
-                      <Input {...field} placeholder="Invoice No." />
+                      <Input
+                        {...field}
+                        placeholder="Invoice No."
+                        disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                      />
                     )}
                   />
                 </Form.Item>
@@ -407,7 +485,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
               </Col>
               <Col span={8} className="flex items-right justify-left border">
                 <Typography.Text className="font-semibold text-center">
-                  Y-6
+                  {details.vehicle.vehicle.vehicleNo}
                 </Typography.Text>
               </Col>
             </Row>
@@ -453,13 +531,13 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                 className="p-2 font-medium border-0 border-r border-solid"
               >
                 {/* DENNIER */}
-                {`${details.yarn_stock_company.yarn_denier}D/${details.yarn_stock_company.filament}F (${details.yarn_stock_company.luster_type} - ${details.yarn_stock_company.yarn_color})`}
+                {`${details?.yarn_stock_company?.yarn_denier}D/${details?.yarn_stock_company?.filament}F (${details?.yarn_stock_company?.luster_type} - ${details?.yarn_stock_company?.yarn_color})`}
               </Col>
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.yarn_stock_company.hsn_no}
+                {details.yarn_stock_company?.hsn_no}
               </Col>
               <Col
                 span={3}
@@ -496,11 +574,8 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         onChange={(e) => {
                           setValue("rate", e.target.value);
                           calculateAmount(e.target.value, details.kg);
-                          // setValue(
-                          //   "amount",
-                          //   parseFloat(+e.target.value * details.kg).toFixed(2)
-                          // );
                         }}
+                        disabled={MODE === "VIEW"}
                       />
                     )}
                   />
@@ -524,13 +599,10 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         {...field}
                         placeholder="Amount"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("amount", e.target.value);
                           calculateRate(e.target.value, details.kg);
-                          // setValue(
-                          //   "amount",
-                          //   parseFloat(+e.target.value * details.kg).toFixed(2)
-                          // );
                         }}
                       />
                     )}
@@ -577,6 +649,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         {...field}
                         placeholder="Discount"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("discount_value", e.target.value);
                           calculateDiscount(e.target.value);
@@ -629,6 +702,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         {...field}
                         placeholder="SGST"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("SGST_value", e.target.value);
                           calculatePercent(e.target.value, "SGST_amount");
@@ -667,7 +741,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
               >
                 <Form.Item
                   // label="Invoice No."
-                  name="SGST_value"
+                  name="CGST_value"
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
@@ -679,8 +753,9 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                     render={({ field }) => (
                       <Input
                         {...field}
-                        placeholder="SGST"
+                        placeholder="CGST"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("CGST_value", e.target.value);
                           calculatePercent(e.target.value, "CGST_amount");
@@ -733,6 +808,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         {...field}
                         placeholder="SGST"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("IGST_value", e.target.value);
                           calculatePercent(e.target.value, "IGST_amount");
@@ -783,7 +859,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
               >
                 <Form.Item
                   // label="BILL Date"
-                  name="bill_date"
+                  name="due_date"
                   validateStatus={errors.due_date ? "error" : ""}
                   help={errors.bill_date && errors.due_date.message}
                   required={true}
@@ -799,6 +875,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                         style={{
                           width: "100%",
                         }}
+                        disabled={MODE === "VIEW" || MODE === "UPDATE"}
                         format="DD-MM-YYYY"
                         disabledDate={disablePastDates}
                       />
@@ -818,7 +895,7 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
             </Row>
             <Row className="border-0 border-b border-solid !m-0">
               <Col span={24} className="p-2 font-medium border-0 border-r ">
-                NET RATE: {currentValues.net_rate}/Kg
+                NET RATE: {currentValues.net_rate}Rs/Kg
               </Col>
             </Row>
             <Row className="border-0 border-b !m-0 p-4">
@@ -934,9 +1011,18 @@ const YarnSaleChallanModel = ({ yarnSaleDetails = {} }) => {
                 Generate Bill
               </Button>
             </Flex>
+          ) : MODE === "UPDATE" ? (
+            <Flex gap={10} justify="flex-end" className="mt-3">
+              <Button htmlType="button" onClick={handleCloseModal}>
+                Close
+              </Button>
+              <Button type="primary" htmlType="submit" loading={isPending}>
+                Update
+              </Button>
+            </Flex>
           ) : (
             <Flex gap={10} justify="flex-end" className="mt-3">
-              <Button htmlType="button" onClick={() => setIsModalOpen(false)}>
+              <Button htmlType="button" onClick={handleCloseModal}>
                 Close
               </Button>
             </Flex>
