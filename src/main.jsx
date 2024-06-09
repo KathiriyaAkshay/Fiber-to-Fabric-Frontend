@@ -93,6 +93,8 @@ import JobWorkChallanList from "./pages/sale/challan/jobwork/saleJobWorkList";
 import UpdateJobWorkChallan from "./pages/sale/challan/jobwork/updateJobWork";
 import YarnSalesBillList from "./pages/sale/bill/yarnSalesBill/yarnSalesBillList";
 import JobWorkBillList from "./pages/sale/bill/jobWorkBill/jobWorkBillList";
+import JobBillList from "./pages/job/bill/jobBillList";
+import JobChallanList from "./pages/job/challan/jobChallan/jobChallanList";
 import SaleBillList from "./pages/sale/bill/saleBill/saleBillList";
 import JobGrayList from "./pages/sale/bill/jobgray/jobgrayList";
 import StockTaka from "./pages/job/jobTaka/stockTaka";
@@ -361,7 +363,7 @@ const router = createBrowserRouter([
               { index: true, element: <div>bill</div> },
               {
                 path: "sales-bill-list",
-                element: <SaleBillList/>,
+                element: <SaleBillList />,
               },
               {
                 path: "yarn-sales-bill-list",
@@ -373,7 +375,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "job-grey-sales-bill-list",
-                element: <JobGrayList/>,
+                element: <JobGrayList />,
               },
               {
                 path: "job-work-bill-list",
@@ -567,17 +569,11 @@ const router = createBrowserRouter([
           },
           {
             path: "challan",
-            element: (
-              <div>
-                <div>challan</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>challan</div> },
+              { index: true, element: <JobChallanList /> },
               {
                 path: "job-challan",
-                element: <div>job-challan</div>,
+                element: <JobChallanList />,
               },
               {
                 path: "sale-job-taka",
@@ -595,17 +591,11 @@ const router = createBrowserRouter([
           },
           {
             path: "bill",
-            element: (
-              <div>
-                <div>bill</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>bill</div> },
               {
                 path: "job-bill",
-                element: <div>job-bill</div>,
+                element: <JobBillList />,
               },
               {
                 path: "rework-challan-bill",
