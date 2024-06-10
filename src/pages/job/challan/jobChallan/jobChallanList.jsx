@@ -1,65 +1,74 @@
 import {
   Button,
-  Col,
   DatePicker,
   Flex,
   Input,
-  Modal,
-  Radio,
-  Row,
   Select,
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import {
-  CloseOutlined,
-  EyeOutlined,
   FilePdfOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { usePagination } from "../../../hooks/usePagination";
-import { useContext, useMemo, useState } from "react";
-import { GlobalContext } from "../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { getJobTakaDetailListRequest } from "../../../api/requests/job/jobTaka";
+import { usePagination } from "../../../../hooks/usePagination";
+import { useContext, useState } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import {
+  downloadUserPdf,
+  getPDFTitleContent,
+} from "../../../../lib/pdf/userPdf";
+import { useCurrentUser } from "../../../../api/hooks/auth";
+import { getJobTakaListRequest } from "../../../../api/requests/job/jobTaka";
+import useDebounce from "../../../../hooks/useDebounce";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import JobTakaChallanModal from "../../../../components/job/jobTaka/JobTakaChallan";
 import dayjs from "dayjs";
-import useDebounce from "../../../hooks/useDebounce";
-import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
-import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
-import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
 
-const JobTakaList = () => {
+const JobChallanList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
-  const [state, setState] = useState("current");
+  //   const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  const [type, setType] = useState();
+  //   const [type, setType] = useState();
   const [quality, setQuality] = useState();
-  const [takaNo, setTakaNo] = useState("");
+  const [orderNo, setOrderNo] = useState("");
   const [challanNo, setChallanNo] = useState("");
   const [supplier, setSupplier] = useState();
-  const [supplierCompany, setSupplierCompany] = useState();
+  //   const [supplierCompany, setSupplierCompany] = useState();
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
-  const debouncedType = useDebounce(type, 500);
+  //   const debouncedType = useDebounce(type, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const debouncedState = useDebounce(state, 500);
-  const debouncedTakaNo = useDebounce(takaNo, 500);
+  //   const debouncedState = useDebounce(state, 500);
+  const debouncedOrderNo = useDebounce(orderNo, 500);
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
-  const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
+  //   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
+
+  const [jobTakaChallanModal, setJobTakaChallanModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+  });
+  const handleCloseModal = () => {
+    setJobTakaChallanModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
+  };
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -102,27 +111,28 @@ const JobTakaList = () => {
     enabled: Boolean(companyId),
   });
 
-  const dropDownSupplierCompanyOption = useMemo(() => {
-    if (
-      debouncedSupplier &&
-      dropdownSupplierListRes &&
-      dropdownSupplierListRes.length
-    ) {
-      const obj = dropdownSupplierListRes.filter((item) => {
-        return item.supplier_name === debouncedSupplier;
-      })[0];
+  //   const dropDownSupplierCompanyOption = useMemo(() => {
+  //     if (
+  //       debouncedSupplier &&
+  //       dropdownSupplierListRes &&
+  //       dropdownSupplierListRes.length
+  //     ) {
+  //       const obj = dropdownSupplierListRes.filter((item) => {
+  //         return item.supplier_name === debouncedSupplier;
+  //       })[0];
 
-      return obj?.supplier_company?.map((item) => {
-        return { label: item.supplier_company, value: item.supplier_id };
-      });
-    } else {
-      return [];
-    }
-  }, [debouncedSupplier, dropdownSupplierListRes]);
+  //       return obj?.supplier_company?.map((item) => {
+  //         return { label: item.supplier_company, value: item.supplier_id };
+  //       });
+  //     } else {
+  //       return [];
+  //     }
+  //   }, [debouncedSupplier, dropdownSupplierListRes]);
 
-  const { data: jobTakaList, isLoading } = useQuery({
+  const { data: jobChallanList, isLoading } = useQuery({
     queryKey: [
-      "jobTaka",
+      "job",
+      "challan",
       "list",
       {
         company_id: companyId,
@@ -132,12 +142,12 @@ const JobTakaList = () => {
         to: debouncedToDate,
         quality_id: debouncedQuality,
         challan_no: debouncedChallanNo,
-        supplier_id: debouncedSupplierCompany,
-        in_stock: debouncedType === "in_stock" ? true : false,
+        order_no: debouncedOrderNo,
+        supplier_name: debouncedSupplier,
       },
     ],
     queryFn: async () => {
-      const res = await getJobTakaDetailListRequest({
+      const res = await getJobTakaListRequest({
         params: {
           company_id: companyId,
           page,
@@ -146,8 +156,8 @@ const JobTakaList = () => {
           to: debouncedToDate,
           quality_id: debouncedQuality,
           challan_no: debouncedChallanNo,
-          supplier_id: debouncedSupplierCompany,
-          in_stock: debouncedType === "in_stock" ? true : false,
+          order_no: debouncedOrderNo,
+          supplier_name: debouncedSupplier,
         },
       });
       return res.data?.data;
@@ -165,7 +175,7 @@ const JobTakaList = () => {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = jobTakaList?.rows?.map((user, index) => {
+    const body = jobChallanList?.rows?.map((user, index) => {
       const { challan_no } = user;
       return [index + 1, challan_no];
     });
@@ -186,31 +196,47 @@ const JobTakaList = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Quality Name",
+      title: "Challan Date",
       render: (details) => {
-        return `${details.job_taka_challan.inhouse_quality.quality_name} (${details.job_taka_challan.inhouse_quality.quality_weight}KG)`;
+        return dayjs(details.createdAt).format("DD-MM-YYYY");
       },
     },
     {
-      title: "Purchase Challan No",
+      title: "Quality Name",
       render: (details) => {
-        return details.job_taka_challan.challan_no;
+        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
       },
+    },
+    {
+      title: "Challan No",
+      render: (details) => {
+        return details.challan_no;
+      },
+    },
+    {
+      title: "Order No",
+      render: (details) => {
+        return details.challan_no;
+      },
+    },
+    {
+      title: "Supplier Name",
+      dataIndex: ["supplier", "supplier_name"],
     },
     {
       title: "Taka No",
-      dataIndex: "taka_no",
-      key: "taka_no",
+      dataIndex: "total_taka",
+      key: "total_taka",
     },
     {
       title: "Meter",
-      dataIndex: "meter",
-      key: "meter",
+      dataIndex: "total_meter",
+      key: "total_meter",
     },
     {
       title: "Weight",
-      dataIndex: "weight",
-      key: "weight",
+      dataIndex: "total_weight",
+      key: "total_weight",
     },
 
     {
@@ -224,12 +250,22 @@ const JobTakaList = () => {
       key: "total_taka",
     },
     {
-      title: "Status",
+      title: "Bill Status",
       render: (details) => {
-        return details.in_stock ? (
-          <span style={{ color: "green" }}>In Stock</span>
+        return details.bill_status === "received" ? (
+          <Tag color="green">Received</Tag>
         ) : (
-          <span style={{ color: "red" }}>Sold</span>
+          <Tag color="red">Not Received</Tag>
+        );
+      },
+    },
+    {
+      title: "Payment Status",
+      render: (details) => {
+        return details.payment_status === "paid" ? (
+          <Tag color="green">Paid</Tag>
+        ) : (
+          <Tag color="red">Un-Paid</Tag>
         );
       },
     },
@@ -238,10 +274,31 @@ const JobTakaList = () => {
       render: (details) => {
         return (
           <Space>
-            <ViewJobTakaDetailsModal
+            {/* <ViewJobTakaDetailsModal
               title="Job Taka Details"
               details={details}
-            />
+            /> */}
+            {/* <JobTakaChallanModal details={details} /> */}
+            <Button
+              onClick={() => {
+                let MODE;
+                if (details.payment_status === "paid") {
+                  MODE = "VIEW";
+                } else if (details.payment_status === "not_paid") {
+                  MODE = "ADD";
+                }
+                setJobTakaChallanModal((prev) => {
+                  return {
+                    ...prev,
+                    isModalOpen: true,
+                    details: details,
+                    mode: MODE,
+                  };
+                });
+              }}
+            >
+              <FileTextOutlined />
+            </Button>
             {/* <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -267,11 +324,11 @@ const JobTakaList = () => {
 
     return (
       <Table
-        dataSource={jobTakaList?.rows || []}
+        dataSource={jobChallanList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: jobTakaList?.rows?.count || 0,
+          total: jobChallanList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -283,22 +340,9 @@ const JobTakaList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-          <Radio.Group
-            name="filter"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-          >
-            <Flex align="center" gap={10}>
-              <Radio value={"current"}> Current</Radio>
-              <Radio value={"previous"}> Previous </Radio>
-            </Flex>
-          </Radio.Group>
-        </div>
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Job Production List</h3>
+            <h3 className="m-0 text-primary">Job Challan List</h3>
             <Button
               onClick={navigateToAdd}
               icon={<PlusCircleOutlined />}
@@ -307,7 +351,7 @@ const JobTakaList = () => {
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
-              <Flex align="center" gap={10}>
+              {/* <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Type
                 </Typography.Text>
@@ -323,6 +367,28 @@ const JobTakaList = () => {
                     textTransform: "capitalize",
                   }}
                   onChange={setType}
+                  style={{
+                    textTransform: "capitalize",
+                  }}
+                  className="min-w-40"
+                />
+              </Flex> */}
+              <Flex align="center" gap={10}>
+                <Typography.Text className="whitespace-nowrap">
+                  Supplier
+                </Typography.Text>
+                <Select
+                  placeholder="Select supplier"
+                  loading={isLoadingDropdownSupplierList}
+                  options={dropdownSupplierListRes?.map((supervisor) => ({
+                    label: supervisor?.supplier_name,
+                    value: supervisor?.supplier_name,
+                  }))}
+                  dropdownStyle={{
+                    textTransform: "capitalize",
+                  }}
+                  value={supplier}
+                  onChange={setSupplier}
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -382,7 +448,7 @@ const JobTakaList = () => {
             <Button
               icon={<FilePdfOutlined />}
               type="primary"
-              disabled={!jobTakaList?.rows?.length}
+              disabled={!jobChallanList?.rows?.length}
               onClick={downloadPdf}
               className="flex-none"
             />
@@ -391,29 +457,7 @@ const JobTakaList = () => {
 
         <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
           <Flex align="center" gap={10}>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Supplier
-              </Typography.Text>
-              <Select
-                placeholder="Select supplier"
-                loading={isLoadingDropdownSupplierList}
-                options={dropdownSupplierListRes?.map((supervisor) => ({
-                  label: supervisor?.supplier_name,
-                  value: supervisor?.supplier_name,
-                }))}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                value={supplier}
-                onChange={setSupplier}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex>
-            <Flex align="center" gap={10}>
+            {/* <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 Supplier Company
               </Typography.Text>
@@ -430,26 +474,26 @@ const JobTakaList = () => {
                 }}
                 className="min-w-40"
               />
-            </Flex>
+            </Flex> */}
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                Taka No
+                Challan No
               </Typography.Text>
               <Input
-                placeholder="Taka No"
-                value={takaNo}
-                onChange={(e) => setTakaNo(e.target.value)}
+                placeholder="Challan NO"
+                value={challanNo}
+                onChange={(e) => setChallanNo(e.target.value)}
                 style={{ width: "200px" }}
               />
             </Flex>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                J. Challan No
+                Order No
               </Typography.Text>
               <Input
-                placeholder="J. Challan NO"
-                value={challanNo}
-                onChange={(e) => setChallanNo(e.target.value)}
+                placeholder="Order No"
+                value={orderNo}
+                onChange={(e) => setOrderNo(e.target.value)}
                 style={{ width: "200px" }}
               />
             </Flex>
@@ -457,118 +501,16 @@ const JobTakaList = () => {
         </div>
         {renderTable()}
       </div>
+      {jobTakaChallanModal.isModalOpen && (
+        <JobTakaChallanModal
+          details={jobTakaChallanModal.details}
+          isModelOpen={jobTakaChallanModal.isModalOpen}
+          handleCloseModal={handleCloseModal}
+          MODE={jobTakaChallanModal.mode}
+        />
+      )}
     </>
   );
 };
 
-export default JobTakaList;
-
-const ViewJobTakaDetailsModal = ({ title = "-", details = [] }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const jobTakaDetails = [
-    {
-      title: "Quality Name",
-      value: details.job_taka_challan.inhouse_quality.quality_name,
-    },
-    // { title: "Company Name", value: details.delivery_address },
-    { title: "Date", value: dayjs(details.createdAt).format("DD-MM-YYYY") },
-    { title: "Taka No", value: details.taka_no },
-    { title: "Meter", value: details.meter },
-    { title: "Weight", value: details.weight },
-
-    { title: "Return Sale Challan No", value: details.total_weight },
-    { title: "Sale Challan No", value: details.total_weight },
-    {
-      title: "Order Type",
-      value: details.job_taka_challan.gray_order.order_type,
-    },
-    { title: "Average", value: details.total_weight },
-    { title: "Purchase Challan No", value: details.total_weight },
-    { title: "Supplier Name", value: details.total_weight },
-    { title: "Purchase Company Name", value: details.total_weight },
-  ];
-
-  return (
-    <>
-      <Button type="primary" onClick={showModal}>
-        <EyeOutlined />
-      </Button>
-      <Modal
-        closeIcon={<CloseOutlined className="text-white" />}
-        title={
-          <Typography.Text className="text-xl font-medium text-white">
-            {title}
-          </Typography.Text>
-        }
-        open={isModalOpen}
-        footer={null}
-        onCancel={handleCancel}
-        centered={true}
-        // className="view-in-house-quality-model"
-        classNames={{
-          header: "text-center",
-        }}
-        styles={{
-          content: {
-            padding: 0,
-            width: "600px",
-          },
-          header: {
-            padding: "16px",
-            margin: 0,
-          },
-          body: {
-            padding: "10px 16px",
-          },
-        }}
-      >
-        <Flex className="flex-col gap-1">
-          {jobTakaDetails?.map(({ title = "", value }) => {
-            return (
-              <Row gutter={12} className="flex-grow" key={title}>
-                <Col span={10} className="font-medium">
-                  {title}
-                </Col>
-                <Col span={14}>{value ?? "-"}</Col>
-              </Row>
-            );
-          })}
-
-          {/* {job_challan_details.map((item, index) => {
-            return (
-              <>
-                <Divider />
-                <Row
-                  gutter={12}
-                  className="flex-grow"
-                  key={index + "_job_challan_details"}
-                >
-                  <Col span={4} className="font-medium">
-                    Taka No:
-                  </Col>
-                  <Col span={4}>{item.taka_no}</Col>
-                  <Col span={3} className="font-medium">
-                    Meter:
-                  </Col>
-                  <Col span={4}>{item.meter}</Col>
-                  <Col span={3} className="font-medium">
-                    Weight:
-                  </Col>
-                  <Col span={4}>{item.weight}</Col>
-                </Row>
-              </>
-            );
-          })} */}
-        </Flex>
-      </Modal>
-    </>
-  );
-};
+export default JobChallanList;
