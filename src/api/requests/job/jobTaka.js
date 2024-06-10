@@ -8,6 +8,14 @@ export function getJobTakaDetailListRequest({ params }) {
     return api.get(`/job/taka/detail/list`, { params });
 }
 
+export function getStockTakaListRequest({params}) {
+    return api.get(`/job/taka/detail/list`, {params}) ; 
+}
+
+export function getPurchaseTakaListRequest({params}) {
+    return api.get(`/purchase/taka/detail/list`, {params}) ; 
+}
+
 export function updateJobTakaRequest({ id, data, params }) {
     return api.patch(`/job/taka/update/${id}`, data, { params });
 }
