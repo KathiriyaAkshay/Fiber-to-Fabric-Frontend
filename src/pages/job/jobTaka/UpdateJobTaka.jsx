@@ -1,44 +1,41 @@
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
-  Checkbox,
   Col,
+  DatePicker,
   Divider,
   Flex,
   Form,
   Input,
   Row,
   Select,
+  Typography,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
-import {
-  getBrokerListRequest,
-  getDropdownSupplierListRequest,
-} from "../../../api/requests/users";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import {
   getJobTakaByIdRequest,
   updateJobTakaRequest,
 } from "../../../api/requests/job/jobTaka";
+import FieldTable from "../../../components/fieldTable";
+import dayjs from "dayjs";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
     delivery_address: yup.string().required("Please enter delivery address."),
     gst_state: yup.string().required("Please enter GST State."),
-    gst_in: yup.string().required("Please enter GST In."),
+    gst_in_1: yup.string().required("Please enter GST In."),
+    gst_in_2: yup.string().required("Please enter GST In."),
     challan_no: yup.string().required("Please enter challan no."),
     gray_order_id: yup.string().required("Please select order."),
     supplier_id: yup.string().required("Please select supplier."),
@@ -46,9 +43,6 @@ const addJobTakaSchemaResolver = yupResolver(
     quality_id: yup.string().required("Please select quality."),
     total_meter: yup.string().required("Please enter total meter."),
     total_weight: yup.string().required("Please enter total weight."),
-    pending_meter: yup.string().required("Please enter pending meter."),
-    pending_weight: yup.string().required("Please enter pending weight."),
-    pending_taka: yup.string().required("Please enter pending taka."),
     total_taka: yup.string().required("Please enter total taka."),
   })
 );
@@ -58,11 +52,15 @@ const UpdateJobTaka = () => {
   const { id } = params;
 
   const queryClient = useQueryClient();
-  const [fieldArray, setFieldArray] = useState([0]);
+  const [activeField, setActiveField] = useState(1);
+  // const [fieldArray, setFieldArray] = useState([0]);
+  // const [selectedOrder, setSelectedOrder] = useState(null);
+  const [pendingMeter, setPendingMeter] = useState("");
+  const [pendingTaka, setPendingTaka] = useState("");
 
   const navigate = useNavigate();
   //   const { data: user } = useCurrentUser();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
@@ -106,6 +104,11 @@ const UpdateJobTaka = () => {
   });
 
   async function onSubmit(data) {
+    console.log({ data });
+    const jobChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
     const newData = {
       delivery_address: data.delivery_address,
       gst_state: data.gst_state,
@@ -121,8 +124,8 @@ const UpdateJobTaka = () => {
       pending_weight: parseInt(data.pending_weight),
       pending_taka: parseInt(data.pending_taka),
       total_taka: parseInt(data.total_taka),
-      is_grey: data.is_grey,
-      job_challan_detail: fieldArray.map((field) => {
+      is_grey: true,
+      job_challan_detail: jobChallanDetailArr.map((field) => {
         return {
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
@@ -137,40 +140,46 @@ const UpdateJobTaka = () => {
     control,
     handleSubmit,
     formState: { errors },
-    clearErrors,
-    setError,
-    getValues,
+    setValue,
+    setFocus,
     reset,
+    watch,
   } = useForm({
     defaultValues: {
+      company_id: null,
+      challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
-      gst_in: "",
+      gst_in_1: "",
+      gst_in_2: "",
       challan_no: "",
       gray_order_id: null,
+      supplier_name: null,
       supplier_id: null,
       broker_id: null,
+      broker_name: "",
       quality_id: null,
       total_meter: "",
       total_weight: "",
-      pending_meter: "",
-      pending_weight: "",
-      pending_taka: "",
       total_taka: "",
       is_grey: true,
     },
     resolver: addJobTakaSchemaResolver,
   });
+  const { supplier_name } = watch();
+  const currentValue = watch();
+  console.log({ errors, currentValue });
 
   useEffect(() => {
     if (jobTakaDetails) {
+      console.log({ jobTakaDetails });
       const {
+        company_id,
         challan_no,
         delivery_address,
         gst_in,
         gst_state,
         quality_id,
-        broker_id,
         supplier_id,
         gray_order_id,
         total_meter,
@@ -179,88 +188,46 @@ const UpdateJobTaka = () => {
         is_grey,
         job_challan_details,
         gray_order,
+        supplier,
+        createdAt,
+        broker_id,
+        broker,
       } = jobTakaDetails;
-      setFieldArray(() => {
-        return job_challan_details.map((item, index) => index);
-      });
+
+      setActiveField(job_challan_details.length + 1);
       let jobChallanDetails = {};
       job_challan_details.forEach((item, index) => {
-        jobChallanDetails[`taka_no_${index}`] = item.taka_no;
-        jobChallanDetails[`meter_${index}`] = item.meter;
-        jobChallanDetails[`weight_${index}`] = item.weight;
+        jobChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
+        jobChallanDetails[`meter_${index + 1}`] = item.meter;
+        jobChallanDetails[`weight_${index + 1}`] = item.weight;
       });
       reset({
+        company_id,
         challan_no,
         delivery_address,
-        gst_in,
+        gst_in_1: gst_in,
+        gst_in_2: gst_in,
         gst_state,
         quality_id,
-        broker_id,
+        broker_id: broker_id,
+        broker_name: `${broker.first_name} ${broker.last_name}`,
         supplier_id,
         gray_order_id,
         total_meter,
         total_taka,
         total_weight,
-        pending_meter: gray_order.pending_meter,
-        pending_taka: gray_order.pending_taka,
-        pending_weight: gray_order.pending_weight,
+        // pending_meter: gray_order.pending_meter,
+        // pending_taka: gray_order.pending_taka,
+        // pending_weight: gray_order.pending_weight,
         is_grey,
+        supplier_name: supplier.supplier_name,
+        challan_date: dayjs(createdAt),
         ...jobChallanDetails,
       });
+      setPendingMeter(gray_order.pending_meter);
+      setPendingTaka(gray_order.pending_taka);
     }
   }, [jobTakaDetails, reset]);
-
-  // ------------------------------------------------------------------------------------------
-
-  const addNewFieldRow = (indexValue) => {
-    let isValid = true;
-
-    fieldArray.forEach((item, index) => {
-      clearErrors(`taka_no_${index}`);
-      clearErrors(`meter_${index}`);
-      clearErrors(`weight_${index}`);
-    });
-
-    fieldArray.forEach((item, index) => {
-      if (index === indexValue) {
-        if (!getValues(`taka_no_${index}`)) {
-          setError(`taka_no_${index}`, {
-            type: "manual",
-            message: "Please enter taka no",
-          });
-          isValid = false;
-        }
-        if (!getValues(`meter_${index}`)) {
-          setError(`meter_${index}`, {
-            type: "manual",
-            message: "Please enter meter.",
-          });
-          isValid = false;
-        }
-        if (!getValues(`weight_${index}`)) {
-          setError(`weight_${index}`, {
-            type: "manual",
-            message: "Please enter weight.",
-          });
-          isValid = false;
-        }
-      }
-    });
-
-    if (isValid) {
-      const nextValue = fieldArray[fieldArray.length - 1] + 1;
-      setFieldArray((prev) => {
-        return [...prev, nextValue];
-      });
-    }
-  };
-
-  const deleteFieldRow = (field) => {
-    const newFields = [...fieldArray];
-    const actualIndex = newFields.indexOf(field);
-    newFields.splice(actualIndex, 1);
-    setFieldArray(newFields);
-  };
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
     queryKey: [
@@ -287,16 +254,16 @@ const UpdateJobTaka = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getBrokerListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
+  //   queryKey: ["broker", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getBrokerListRequest({
+  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
@@ -324,6 +291,24 @@ const UpdateJobTaka = () => {
     enabled: Boolean(companyId),
   });
 
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      supplier_name &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.find((item) => {
+        return item.supplier_name === supplier_name;
+      });
+      // return obj?.supplier_company?.map((item) => {
+      //   return { label: item.supplier_company, value: item.supplier_id };
+      // });
+      return obj?.supplier_company;
+    } else {
+      return [];
+    }
+  }, [supplier_name, dropdownSupplierListRes]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -341,6 +326,63 @@ const UpdateJobTaka = () => {
         >
           <Col span={6}>
             <Form.Item
+              label="Company"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    loading={isLoadingGrayOrderList}
+                    placeholder="Select Company"
+                    options={companyListRes?.rows?.map((company) => ({
+                      label: company.company_name,
+                      value: company.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                    disabled
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Challan Date"
+              name="challan_date"
+              validateStatus={errors.challan_date ? "error" : ""}
+              help={errors.challan_date && errors.challan_date.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_date"
+                render={({ field }) => (
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    format={"DD-MM-YYYY"}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={12}>
+            <Form.Item
               label="Delivery Address"
               name="delivery_address"
               validateStatus={errors.delivery_address ? "error" : ""}
@@ -352,8 +394,55 @@ const UpdateJobTaka = () => {
                 control={control}
                 name="delivery_address"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="Delivery Address" />;
+                  return (
+                    <Input {...field} placeholder="Delivery Address" disabled />
+                  );
                 }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Gst State"
+              name="gst_state"
+              validateStatus={errors.gst_state ? "error" : ""}
+              help={errors.gst_state && errors.gst_state.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_state"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST State" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Gst In"
+              name="gst_in_1"
+              validateStatus={errors.gst_in_1 ? "error" : ""}
+              help={errors.gst_in_1 && errors.gst_in_1.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_in_1"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST In" disabled />
+                )}
               />
             </Form.Item>
           </Col>
@@ -379,37 +468,18 @@ const UpdateJobTaka = () => {
 
           <Col span={6}>
             <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
               label="Gst In"
-              name="gst_in"
-              validateStatus={errors.gst_in ? "error" : ""}
-              help={errors.gst_in && errors.gst_in.message}
+              name="gst_in_2"
+              validateStatus={errors.gst_in_2 ? "error" : ""}
+              help={errors.gst_in_2 && errors.gst_in_2.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="gst_in"
+                name="gst_in_2"
                 render={({ field }) => (
-                  <Input {...field} placeholder="GST In" />
+                  <Input {...field} placeholder="GST In" disabled />
                 )}
               />
             </Form.Item>
@@ -449,6 +519,7 @@ const UpdateJobTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -457,72 +528,18 @@ const UpdateJobTaka = () => {
 
           <Col span={6}>
             <Form.Item
-              label="Select Supplier"
-              name="supplier_id"
-              validateStatus={errors.supplier_id ? "error" : ""}
-              help={errors.supplier_id && errors.supplier_id.message}
+              label="Broker"
+              name="broker_name"
+              validateStatus={errors.broker_name ? "error" : ""}
+              help={errors.broker_name && errors.broker_name.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="supplier_id"
+                name="broker_name"
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Supplier"
-                    loading={isLoadingDropdownSupplierList}
-                    options={dropdownSupplierListRes?.map((supervisor) => ({
-                      label: supervisor?.supplier_name,
-                      value: supervisor?.supplier_company[0]?.supplier_id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Select Broker"
-              name="broker_id"
-              validateStatus={errors.broker_id ? "error" : ""}
-              help={errors.broker_id && errors.broker_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="broker_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingBrokerList}
-                    placeholder="Select Broker"
-                    options={brokerUserListRes?.brokerList?.rows?.map(
-                      (broker) => ({
-                        label:
-                          broker.first_name +
-                          " " +
-                          broker.last_name +
-                          " " +
-                          `| (${broker?.username})`,
-                        value: broker.id,
-                      })
-                    )}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
+                  <Input {...field} placeholder="Broker Name" disabled />
                 )}
               />
             </Form.Item>
@@ -546,6 +563,7 @@ const UpdateJobTaka = () => {
                       {...field}
                       placeholder="Select Quality"
                       loading={dropDownQualityLoading}
+                      disabled
                       options={
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
@@ -559,6 +577,25 @@ const UpdateJobTaka = () => {
               />
             </Form.Item>
           </Col>
+
+          {/* <Col span={6}>
+            <Form.Item
+              label="Gst State"
+              name="gst_state"
+              validateStatus={errors.gst_state ? "error" : ""}
+              help={errors.gst_state && errors.gst_state.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_state"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST State" />
+                )}
+              />
+            </Form.Item>
+          </Col> */}
         </Row>
 
         <Row
@@ -567,6 +604,75 @@ const UpdateJobTaka = () => {
             padding: "12px",
           }}
         >
+          <Col span={6}>
+            <Form.Item
+              label="Select Supplier"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Supplier"
+                    // disabled={selectedOrder?.supplier_name ? true : false}
+                    disabled={true}
+                    loading={isLoadingDropdownSupplierList}
+                    options={dropdownSupplierListRes?.map((supervisor) => ({
+                      label: supervisor?.supplier_name,
+                      value: supervisor?.supplier_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Company"
+              name="supplier_id"
+              validateStatus={errors.supplier_id ? "error" : ""}
+              help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    disabled={true}
+                    options={dropDownSupplierCompanyOption.map(
+                      ({ supplier_id, supplier_company }) => {
+                        return { label: supplier_company, value: supplier_id };
+                      }
+                    )}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={3}>
             <Form.Item
               label="Total Meter"
@@ -579,7 +685,9 @@ const UpdateJobTaka = () => {
               <Controller
                 control={control}
                 name="total_meter"
-                render={({ field }) => <Input {...field} placeholder="0" />}
+                render={({ field }) => (
+                  <Input {...field} placeholder="0" disabled />
+                )}
               />
             </Form.Item>
           </Col>
@@ -596,58 +704,9 @@ const UpdateJobTaka = () => {
               <Controller
                 control={control}
                 name="total_weight"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Meter"
-              name="pending_meter"
-              validateStatus={errors.pending_meter ? "error" : ""}
-              help={errors.pending_meter && errors.pending_meter.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_meter"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Weight"
-              name="pending_weight"
-              validateStatus={errors.pending_weight ? "error" : ""}
-              help={errors.pending_weight && errors.pending_weight.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_weight"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Pending Taka"
-              name="pending_taka"
-              validateStatus={errors.pending_taka ? "error" : ""}
-              help={errors.pending_taka && errors.pending_taka.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="pending_taka"
-                render={({ field }) => <Input {...field} placeholder="0" />}
+                render={({ field }) => (
+                  <Input {...field} placeholder="0" disabled />
+                )}
               />
             </Form.Item>
           </Col>
@@ -664,136 +723,53 @@ const UpdateJobTaka = () => {
               <Controller
                 control={control}
                 name="total_taka"
-                render={({ field }) => <Input {...field} placeholder="0" />}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label=" "
-              name="is_grey"
-              validateStatus={errors.is_grey ? "error" : ""}
-              help={errors.is_grey && errors.is_grey.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="is_grey"
                 render={({ field }) => (
-                  <Checkbox {...field} checked={field.value}>
-                    {" "}
-                    Is Grey{" "}
-                  </Checkbox>
+                  <Input {...field} placeholder="0" disabled />
                 )}
               />
             </Form.Item>
           </Col>
         </Row>
 
+        {pendingMeter && pendingTaka ? (
+          <Row
+            gutter={18}
+            style={{
+              padding: "12px",
+            }}
+          >
+            <Col span={6}></Col>
+
+            <Col span={6} style={{ textAlign: "end" }}>
+              <Typography style={{ color: "red" }}>Pending</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>0</Typography>
+            </Col>
+
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+            </Col>
+          </Row>
+        ) : null}
+
         <Divider />
 
-        {fieldArray.map((field, index) => {
-          return (
-            <Row
-              gutter={18}
-              style={{
-                padding: "12px",
-              }}
-              key={`${field}_add_job_taka`}
-            >
-              <Col span={3}>
-                <Form.Item
-                  label="Taka No"
-                  name={`taka_no_${field}`}
-                  validateStatus={errors[`taka_no_${field}`] ? "error" : ""}
-                  help={
-                    errors[`taka_no_${field}`] &&
-                    errors[`taka_no_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`taka_no_${field}`}
-                    render={({ field }) => <Input {...field} placeholder="1" />}
-                  />
-                </Form.Item>
-              </Col>
+        <FieldTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          setValue={setValue}
+          activeField={activeField}
+          setActiveField={setActiveField}
+        />
 
-              <Col span={3}>
-                <Form.Item
-                  label="Meter"
-                  name={`meter_${field}`}
-                  validateStatus={errors[`meter_${field}`] ? "error" : ""}
-                  help={
-                    errors[`meter_${field}`] && errors[`meter_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`meter_${field}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="23" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col span={3}>
-                <Form.Item
-                  label="Weight"
-                  name={`weight_${field}`}
-                  validateStatus={errors[`weight_${field}`] ? "error" : ""}
-                  help={
-                    errors[`weight_${field}`] &&
-                    errors[`weight_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`weight_${field}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="23" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-
-              {fieldArray.length > 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<DeleteOutlined />}
-                    type="primary"
-                    onClick={deleteFieldRow.bind(null, field)}
-                    className="flex-none"
-                  />
-                </Col>
-              )}
-
-              {index === fieldArray.length - 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<PlusOutlined />}
-                    type="primary"
-                    onClick={addNewFieldRow.bind(null, index)}
-                    className="flex-none"
-                  />
-                </Col>
-              )}
-            </Row>
-          );
-        })}
-
-        <Flex gap={10} justify="flex-end">
+        <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>

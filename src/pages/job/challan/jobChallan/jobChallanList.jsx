@@ -11,6 +11,7 @@ import {
   Typography,
 } from "antd";
 import {
+  EditOutlined,
   FilePdfOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
@@ -31,6 +32,7 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import JobTakaChallanModal from "../../../../components/job/jobTaka/JobTakaChallan";
 import dayjs from "dayjs";
+import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
 
 const JobChallanList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -169,9 +171,9 @@ const JobChallanList = () => {
     navigate("/job/job-taka/add");
   }
 
-  // function navigateToUpdate(id) {
-  //   navigate(`/job/job-taka/update/${id}`);
-  // }
+  function navigateToUpdate(id) {
+    navigate(`/job/job-taka/update/${id}`);
+  }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -281,6 +283,14 @@ const JobChallanList = () => {
             {/* <JobTakaChallanModal details={details} /> */}
             <Button
               onClick={() => {
+                navigateToUpdate(details.id);
+              }}
+            >
+              <EditOutlined />
+            </Button>
+            <DeleteJobTaka details={details} />
+            <Button
+              onClick={() => {
                 let MODE;
                 if (details.payment_status === "paid") {
                   MODE = "VIEW";
@@ -299,14 +309,6 @@ const JobChallanList = () => {
             >
               <FileTextOutlined />
             </Button>
-            {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteJobTaka details={details} /> */}
           </Space>
         );
       },
