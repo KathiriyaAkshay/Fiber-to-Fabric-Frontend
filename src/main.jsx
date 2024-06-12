@@ -99,6 +99,8 @@ import SaleBillList from "./pages/sale/bill/saleBill/saleBillList";
 import JobGrayList from "./pages/sale/bill/jobgray/jobgrayList";
 import StockTaka from "./pages/job/jobTaka/stockTaka";
 import StockPurchaseTaka from "./pages/purchase/purchaseTaka/stockPurchaseTaka";
+import PurchaseChallanList from "./pages/purchase/challan/purchaseChallan/purchaseChallanList";
+import GrayPurchaseBillList from "./pages/purchase/bill/grayPurchaseBill/grayPurchaseBillList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -391,9 +393,7 @@ const router = createBrowserRouter([
         children: [
           {
             path: "taka",
-            children: [
-              { index: true, element: <StockPurchaseTaka/> },
-            ],
+            children: [{ index: true, element: <StockPurchaseTaka /> }],
           },
           {
             path: "purchased-taka",
@@ -441,17 +441,11 @@ const router = createBrowserRouter([
           },
           {
             path: "challan",
-            element: (
-              <div>
-                <div>challan</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>challan</div> },
               {
                 path: "purchase-challan",
-                element: <div>purchase-challan</div>,
+                element: <PurchaseChallanList />,
               },
               {
                 path: "purchased-return",
@@ -465,17 +459,11 @@ const router = createBrowserRouter([
           },
           {
             path: "bill",
-            element: (
-              <div>
-                <div>bill</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>bill</div> },
               {
                 path: "grey-purchased-bill",
-                element: <div>grey-purchased-bill</div>,
+                element: <GrayPurchaseBillList />,
               },
               {
                 path: "yarn-bills",
@@ -498,11 +486,9 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path:"taka", 
-            children:[
-              {index: true, element: <StockTaka/>}
-            ]
-          }, 
+            path: "taka",
+            children: [{ index: true, element: <StockTaka /> }],
+          },
           {
             path: "sent",
             children: [
