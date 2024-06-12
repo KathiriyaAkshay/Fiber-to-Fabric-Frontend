@@ -229,7 +229,11 @@ const MyOrderList = () => {
     {
       title: "Party / Supplier Name",
       render: (details) => {
-        return `${details.party.first_name} ${details.party.last_name}`;
+        if (details.party) {
+          return `${details.party.first_name} ${details.party.last_name}`;
+        } else {
+          return `${details.supplier_name}`;
+        }
       },
     },
     {
@@ -314,8 +318,12 @@ const MyOrderList = () => {
                 },
                 { title: "Soda Code", value: "" },
                 {
-                  title: "Party Name",
-                  value: `${details.party.first_name} ${details.party.last_name}`,
+                  title: "Party / Supplier Name",
+                  value: `${
+                    details.party
+                      ? `${details.party.first_name} ${details.party.last_name}`
+                      : `${details.supplier_name}`
+                  }`,
                 },
                 {
                   title: "Quality Name",

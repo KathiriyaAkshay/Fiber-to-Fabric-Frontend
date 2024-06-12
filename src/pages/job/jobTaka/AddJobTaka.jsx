@@ -49,7 +49,7 @@ const AddJobTaka = () => {
   // const [fieldArray, setFieldArray] = useState([0]);
 
   const [activeField, setActiveField] = useState(1);
-  console.log({ activeField });
+
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
@@ -151,58 +151,6 @@ const AddJobTaka = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
-
-  // ------------------------------------------------------------------------------------------
-
-  // const addNewFieldRow = (indexValue) => {
-  //   let isValid = true;
-
-  //   fieldArray.forEach((item, index) => {
-  //     clearErrors(`taka_no_${index}`);
-  //     clearErrors(`meter_${index}`);
-  //     clearErrors(`weight_${index}`);
-  //   });
-
-  //   fieldArray.forEach((item, index) => {
-  //     if (index === indexValue) {
-  //       if (!getValues(`taka_no_${index}`)) {
-  //         setError(`taka_no_${index}`, {
-  //           type: "manual",
-  //           message: "Please enter taka no",
-  //         });
-  //         isValid = false;
-  //       }
-  //       if (!getValues(`meter_${index}`)) {
-  //         setError(`meter_${index}`, {
-  //           type: "manual",
-  //           message: "Please enter meter.",
-  //         });
-  //         isValid = false;
-  //       }
-  //       if (!getValues(`weight_${index}`)) {
-  //         setError(`weight_${index}`, {
-  //           type: "manual",
-  //           message: "Please enter weight.",
-  //         });
-  //         isValid = false;
-  //       }
-  //     }
-  //   });
-
-  //   if (isValid) {
-  //     const nextValue = fieldArray[fieldArray.length - 1] + 1;
-  //     setFieldArray((prev) => {
-  //       return [...prev, nextValue];
-  //     });
-  //   }
-  // };
-
-  // const deleteFieldRow = (field) => {
-  //   const newFields = [...fieldArray];
-  //   const actualIndex = newFields.indexOf(field);
-  //   newFields.splice(actualIndex, 1);
-  //   setFieldArray(newFields);
-  // };
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
     queryKey: [
@@ -768,105 +716,6 @@ const AddJobTaka = () => {
           activeField={activeField}
           setActiveField={setActiveField}
         />
-
-        {/* {fieldArray.map((field, index) => {
-          return (
-            <Row
-              gutter={18}
-              style={{
-                padding: "12px",
-              }}
-              key={`${field}_add_job_taka`}
-            >
-              <Col span={3}>
-                <Form.Item
-                  label="Taka No"
-                  name={`taka_no_${field}`}
-                  validateStatus={errors[`taka_no_${field}`] ? "error" : ""}
-                  help={
-                    errors[`taka_no_${field}`] &&
-                    errors[`taka_no_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`taka_no_${field}`}
-                    render={({ field }) => <Input {...field} placeholder="1" />}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col span={3}>
-                <Form.Item
-                  label="Meter"
-                  name={`meter_${field}`}
-                  validateStatus={errors[`meter_${field}`] ? "error" : ""}
-                  help={
-                    errors[`meter_${field}`] && errors[`meter_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`meter_${field}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="23" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-
-              <Col span={3}>
-                <Form.Item
-                  label="Weight"
-                  name={`weight_${field}`}
-                  validateStatus={errors[`weight_${field}`] ? "error" : ""}
-                  help={
-                    errors[`weight_${field}`] &&
-                    errors[`weight_${field}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name={`weight_${field}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="23" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-
-              {fieldArray.length > 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<DeleteOutlined />}
-                    type="primary"
-                    onClick={deleteFieldRow.bind(null, field)}
-                    className="flex-none"
-                  />
-                </Col>
-              )}
-
-              {index === fieldArray.length - 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<PlusOutlined />}
-                    type="primary"
-                    onClick={addNewFieldRow.bind(null, index)}
-                    className="flex-none"
-                  />
-                </Col>
-              )}
-            </Row>
-          );
-        })} */}
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button htmlType="button" onClick={() => reset()}>

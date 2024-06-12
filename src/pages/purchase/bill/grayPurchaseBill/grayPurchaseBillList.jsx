@@ -14,27 +14,28 @@ import {
   EditOutlined,
   FilePdfOutlined,
   FileTextOutlined,
-  PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+// import useDebounce from "../../../hooks/useDebounce";
 import {
   downloadUserPdf,
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
-import { getJobTakaListRequest } from "../../../../api/requests/job/jobTaka";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import JobTakaChallanModal from "../../../../components/job/jobTaka/JobTakaChallan";
+import { getPurchaseTakaListRequest } from "../../../../api/requests/purchase/purchaseTaka";
 import dayjs from "dayjs";
-import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
+import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
+import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
+// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
-const JobChallanList = () => {
+const GrayPurchaseBillList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
@@ -44,35 +45,35 @@ const JobChallanList = () => {
   const [toDate, setToDate] = useState();
   //   const [type, setType] = useState();
   const [quality, setQuality] = useState();
+  const [payment, setPayment] = useState();
   const [orderNo, setOrderNo] = useState("");
-  const [challanNo, setChallanNo] = useState("");
+  const [billNo, setBillNo] = useState("");
   const [supplier, setSupplier] = useState();
   //   const [supplierCompany, setSupplierCompany] = useState();
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
-  //   const debouncedType = useDebounce(type, 500);
+  const debouncedPayment = useDebounce(payment, 500);
   const debouncedQuality = useDebounce(quality, 500);
   //   const debouncedState = useDebounce(state, 500);
   const debouncedOrderNo = useDebounce(orderNo, 500);
-  const debouncedChallanNo = useDebounce(challanNo, 500);
+  const debouncedBillNo = useDebounce(billNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
   //   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const [jobTakaChallanModal, setJobTakaChallanModal] = useState({
+  const [puchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
     isModalOpen: false,
     details: null,
     mode: "",
   });
   const handleCloseModal = () => {
-    setJobTakaChallanModal((prev) => ({
+    setPurchaseTakaChallanModal((prev) => ({
       ...prev,
       isModalOpen: false,
       mode: "",
     }));
   };
-
-  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
     queryKey: [
@@ -131,10 +132,10 @@ const JobChallanList = () => {
   //     }
   //   }, [debouncedSupplier, dropdownSupplierListRes]);
 
-  const { data: jobChallanList, isLoading } = useQuery({
+  const { data: grayPurchaseBillList, isLoading } = useQuery({
     queryKey: [
-      "job",
-      "challan",
+      "grayPurchase",
+      "bill",
       "list",
       {
         company_id: companyId,
@@ -143,13 +144,15 @@ const JobChallanList = () => {
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
-        challan_no: debouncedChallanNo,
+        bill_no: debouncedBillNo,
         order_no: debouncedOrderNo,
         supplier_name: debouncedSupplier,
+        payment_status: debouncedPayment,
+        // in_stock: debouncedType === "in_stock" ? true : false,
       },
     ],
     queryFn: async () => {
-      const res = await getJobTakaListRequest({
+      const res = await getPurchaseTakaListRequest({
         params: {
           company_id: companyId,
           page,
@@ -157,9 +160,11 @@ const JobChallanList = () => {
           from: debouncedFromDate,
           to: debouncedToDate,
           quality_id: debouncedQuality,
-          challan_no: debouncedChallanNo,
+          bill_no: debouncedBillNo,
           order_no: debouncedOrderNo,
           supplier_name: debouncedSupplier,
+          payment_status: debouncedPayment,
+          //   in_stock: debouncedType === "in_stock" ? true : false,
         },
       });
       return res.data?.data;
@@ -167,17 +172,17 @@ const JobChallanList = () => {
     enabled: Boolean(companyId),
   });
 
-  function navigateToAdd() {
-    navigate("/job/job-taka/add");
-  }
+  //   function navigateToAdd() {
+  //     navigate("/purchase/purchased-taka/add");
+  //   }
 
   function navigateToUpdate(id) {
-    navigate(`/job/job-taka/update/${id}`);
+    navigate(`/purchase/purchase-taka/update/${id}`);
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = jobChallanList?.rows?.map((user, index) => {
+    const body = grayPurchaseBillList?.rows?.map((user, index) => {
       const { challan_no } = user;
       return [index + 1, challan_no];
     });
@@ -186,7 +191,7 @@ const JobChallanList = () => {
       head: [["ID", "Challan NO"]],
       leftContent,
       rightContent,
-      title: "Job Taka List",
+      title: "Purchase Challan List",
     });
   }
 
@@ -198,10 +203,26 @@ const JobChallanList = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Challan Date",
-      render: (details) => {
-        return dayjs(details.createdAt).format("DD-MM-YYYY");
+      title: "Bill Date",
+      dataIndex: ["purchase_taka_bill", "bill_date"],
+      render: (text) => {
+        return dayjs(text).format("DD-MM-YYYY");
       },
+    },
+    {
+      title: "Order No",
+      dataIndex: ["gray_order", "order_no"],
+      key: "order_no",
+    },
+    {
+      title: "Supplier Name",
+      dataIndex: ["supplier", "supplier_name"],
+      key: "supplier_name",
+    },
+    {
+      title: "Bill No",
+      dataIndex: ["purchase_taka_bill", "invoice_no"],
+      key: "bill_no",
     },
     {
       title: "Quality Name",
@@ -210,51 +231,47 @@ const JobChallanList = () => {
       },
     },
     {
-      title: "Challan No",
-      render: (details) => {
-        return details.challan_no;
-      },
-    },
-    {
-      title: "Order No",
-      render: (details) => {
-        return details.challan_no;
-      },
-    },
-    {
-      title: "Supplier Name",
-      dataIndex: ["supplier", "supplier_name"],
-    },
-    {
-      title: "Taka No",
+      title: "Total Taka",
       dataIndex: "total_taka",
       key: "total_taka",
     },
     {
-      title: "Meter",
+      title: "Total Meter",
       dataIndex: "total_meter",
       key: "total_meter",
     },
     {
-      title: "Weight",
-      dataIndex: "total_weight",
-      key: "total_weight",
-    },
-
-    {
-      title: "Average",
-      dataIndex: "total_meter",
-      key: "total_meter",
+      title: "Rate",
+      dataIndex: ["purchase_taka_bill", "rate"],
+      key: "rate",
     },
     {
-      title: "Sale Ch.No.",
-      dataIndex: "total_taka",
-      key: "total_taka",
+      title: "Amount",
+      dataIndex: ["purchase_taka_bill", "amount"],
+      key: "amount",
+    },
+    {
+      title: "Net Amount",
+      dataIndex: ["purchase_taka_bill", "net_amount"],
+      key: "net_amount",
+    },
+    {
+      title: "Due Date",
+      dataIndex: ["purchase_taka_bill", "due_date"],
+      render: (text) => {
+        return dayjs(text).format("DD-MM-YYYY");
+      },
+    },
+    {
+      title: "Due Days",
+      dataIndex: ["purchase_taka_bill", "due_days"],
+      key: "due_days",
     },
     {
       title: "Bill Status",
-      render: (details) => {
-        return details.bill_status === "received" ? (
+      dataIndex: "bill_status",
+      render: (text) => {
+        return text.toLowerCase() === "received" ? (
           <Tag color="green">Received</Tag>
         ) : (
           <Tag color="red">Not Received</Tag>
@@ -262,9 +279,10 @@ const JobChallanList = () => {
       },
     },
     {
-      title: "Payment Status",
-      render: (details) => {
-        return details.payment_status === "paid" ? (
+      title: "Status",
+      dataIndex: "payment_status",
+      render: (text) => {
+        return text.toLowerCase() === "paid" ? (
           <Tag color="green">Paid</Tag>
         ) : (
           <Tag color="red">Un-Paid</Tag>
@@ -276,11 +294,10 @@ const JobChallanList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewJobTakaDetailsModal
-              title="Job Taka Details"
+            {/* <ViewPurchaseTakaDetailsModal
+              title="Purchase Taka Details"
               details={details}
             /> */}
-            {/* <JobTakaChallanModal details={details} /> */}
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -288,16 +305,16 @@ const JobChallanList = () => {
             >
               <EditOutlined />
             </Button>
-            <DeleteJobTaka details={details} />
+            <DeletePurchaseTaka details={details} />
             <Button
               onClick={() => {
                 let MODE;
                 if (details.payment_status === "paid") {
                   MODE = "VIEW";
                 } else if (details.payment_status === "not_paid") {
-                  MODE = "ADD";
+                  MODE = "UPDATE";
                 }
-                setJobTakaChallanModal((prev) => {
+                setPurchaseTakaChallanModal((prev) => {
                   return {
                     ...prev,
                     isModalOpen: true,
@@ -326,14 +343,55 @@ const JobChallanList = () => {
 
     return (
       <Table
-        dataSource={jobChallanList?.rows || []}
+        dataSource={grayPurchaseBillList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: jobChallanList?.rows?.count || 0,
+          total: grayPurchaseBillList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalGrandMeter = 0;
+          let totalRate = 0;
+          let totalAmount = 0;
+          let totalNetAmount = 0;
+
+          pageData.forEach(({ total_meter, purchase_taka_bill }) => {
+            totalGrandMeter += +total_meter;
+            totalRate += +purchase_taka_bill.rate;
+            totalAmount += +purchase_taka_bill.amount;
+            totalNetAmount += +purchase_taka_bill.net_amount;
+          });
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalGrandMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalRate}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalAmount}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalNetAmount}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
@@ -342,39 +400,52 @@ const JobChallanList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
+        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+        <Radio.Group
+          name="filter"
+          value={state}
+          onChange={(e) => setState(e.target.value)}
+        >
+          <Flex align="center" gap={10}>
+            <Radio value={"current"}> Current</Radio>
+            <Radio value={"previous"}> Previous </Radio>
+          </Flex>
+        </Radio.Group>
+      </div> */}
+
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Job Challan List</h3>
-            <Button
+            <h3 className="m-0 text-primary">Gray Purchase Bills</h3>
+            {/* <Button
               onClick={navigateToAdd}
               icon={<PlusCircleOutlined />}
               type="text"
-            />
+            /> */}
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               {/* <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  Type
-                </Typography.Text>
-                <Select
-                  allowClear
-                  placeholder="Select Type"
-                  value={type}
-                  options={[
-                    { label: "In Stock", value: "in_stock" },
-                    { label: "Sold", value: "sold" },
-                  ]}
-                  dropdownStyle={{
-                    textTransform: "capitalize",
-                  }}
-                  onChange={setType}
-                  style={{
-                    textTransform: "capitalize",
-                  }}
-                  className="min-w-40"
-                />
-              </Flex> */}
+              <Typography.Text className="whitespace-nowrap">
+                Type
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select Type"
+                value={type}
+                options={[
+                  { label: "In Stock", value: "in_stock" },
+                  { label: "Sold", value: "sold" },
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setType}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+            </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Supplier
@@ -397,6 +468,24 @@ const JobChallanList = () => {
                   className="min-w-40"
                 />
               </Flex>
+              {/* <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Supplier Company
+              </Typography.Text>
+              <Select
+                placeholder="Select Company"
+                options={dropDownSupplierCompanyOption}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                value={supplierCompany}
+                onChange={setSupplierCompany}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+            </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Quality
@@ -434,23 +523,23 @@ const JobChallanList = () => {
                   format={"DD-MM-YYYY"}
                 />
               </Flex>
+            </Flex>
 
-              <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  To
-                </Typography.Text>
-                <DatePicker
-                  value={toDate}
-                  onChange={setToDate}
-                  className="min-w-40"
-                  format={"DD-MM-YYYY"}
-                />
-              </Flex>
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                To
+              </Typography.Text>
+              <DatePicker
+                value={toDate}
+                onChange={setToDate}
+                className="min-w-40"
+                format={"DD-MM-YYYY"}
+              />
             </Flex>
             <Button
               icon={<FilePdfOutlined />}
               type="primary"
-              disabled={!jobChallanList?.rows?.length}
+              disabled={!grayPurchaseBillList?.rows?.length}
               onClick={downloadPdf}
               className="flex-none"
             />
@@ -459,32 +548,36 @@ const JobChallanList = () => {
 
         <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
           <Flex align="center" gap={10}>
-            {/* <Flex align="center" gap={10}>
+            <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                Supplier Company
+                Payment
               </Typography.Text>
               <Select
-                placeholder="Select Company"
-                options={dropDownSupplierCompanyOption}
+                allowClear
+                placeholder="Select Payment"
+                value={payment}
+                options={[
+                  { label: "Paid", value: "paid" },
+                  { label: "Un-Paid", value: "not_paid" },
+                ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                value={supplierCompany}
-                onChange={setSupplierCompany}
+                onChange={setPayment}
                 style={{
                   textTransform: "capitalize",
                 }}
                 className="min-w-40"
               />
-            </Flex> */}
+            </Flex>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                Challan No
+                Bill No
               </Typography.Text>
               <Input
                 placeholder="Challan NO"
-                value={challanNo}
-                onChange={(e) => setChallanNo(e.target.value)}
+                value={billNo}
+                onChange={(e) => setBillNo(e.target.value)}
                 style={{ width: "200px" }}
               />
             </Flex>
@@ -503,16 +596,16 @@ const JobChallanList = () => {
         </div>
         {renderTable()}
       </div>
-      {jobTakaChallanModal.isModalOpen && (
-        <JobTakaChallanModal
-          details={jobTakaChallanModal.details}
-          isModelOpen={jobTakaChallanModal.isModalOpen}
+      {puchaseTakaChallanModal.isModalOpen && (
+        <PurchaseTakaChallanModal
+          details={puchaseTakaChallanModal.details}
+          isModelOpen={puchaseTakaChallanModal.isModalOpen}
           handleCloseModal={handleCloseModal}
-          MODE={jobTakaChallanModal.mode}
+          MODE={puchaseTakaChallanModal.mode}
         />
       )}
     </>
   );
 };
 
-export default JobChallanList;
+export default GrayPurchaseBillList;

@@ -17,7 +17,7 @@ import {
   CloseOutlined,
   EyeOutlined,
   FilePdfOutlined,
-  FileTextOutlined,
+  // FileTextOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
-import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
+// import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
 
 const JobTakaList = () => {
   const { company, companyId } = useContext(GlobalContext);
