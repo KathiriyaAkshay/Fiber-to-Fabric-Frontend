@@ -101,6 +101,9 @@ import StockTaka from "./pages/job/jobTaka/stockTaka";
 import StockPurchaseTaka from "./pages/purchase/purchaseTaka/stockPurchaseTaka";
 import PurchaseChallanList from "./pages/purchase/challan/purchaseChallan/purchaseChallanList";
 import GrayPurchaseBillList from "./pages/purchase/bill/grayPurchaseBill/grayPurchaseBillList";
+import BeamReceiveList from "./pages/job/receive/beamReceive/beamReceiveList";
+import AddBeamReceive from "./pages/job/receive/beamReceive/addBeamReceive";
+import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -509,17 +512,15 @@ const router = createBrowserRouter([
           },
           {
             path: "receive",
-            element: (
-              <div>
-                <div>receive</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>receive</div> },
               {
                 path: "beam-receive",
-                element: <div>beam-receive</div>,
+                children: [
+                  { index: true, element: <BeamReceiveList /> },
+                  { path: "add", element: <AddBeamReceive /> },
+                  { path: "update/:id", element: <UpdateBeamReceive /> },
+                ],
               },
               {
                 path: "taka-receive",
