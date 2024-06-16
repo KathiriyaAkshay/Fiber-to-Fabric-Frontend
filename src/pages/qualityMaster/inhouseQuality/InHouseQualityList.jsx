@@ -510,7 +510,7 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
             <Col span={2.5} className="font-medium">
               VAT HSN NO:
             </Col>
-            <Col span={3}>-</Col>
+            <Col span={3}>{details?.vat_hsn_no}</Col>
 
             <Col span={2.5} className="font-medium">
               Weight of 100 Mtr:
