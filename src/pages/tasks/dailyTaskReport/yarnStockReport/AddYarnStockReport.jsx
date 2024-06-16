@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
+import moment from "moment/moment";
 import {
   createYarnStockReportRequest,
   getYSCDropdownList,
@@ -174,6 +175,11 @@ function AddYarnStockReport() {
     setValue("require_stock", Math.max(0, require_stock));
   }, [avg_stock, current_stock, setValue]);
 
+  const disabledDate = (current) => {
+    // Can not select days after today
+    return current && current > moment().endOf('day');
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -204,6 +210,7 @@ function AddYarnStockReport() {
                 render={({ field }) => (
                   <DatePicker
                     {...field}
+                    disabledDate={disabledDate}
                     style={{
                       width: "100%",
                     }}

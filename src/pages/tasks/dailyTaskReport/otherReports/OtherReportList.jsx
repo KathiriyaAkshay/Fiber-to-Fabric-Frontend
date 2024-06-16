@@ -81,6 +81,7 @@ function OtherReportList() {
     {
       title: "ID",
       dataIndex: "id",
+      width: 90,
       key: "id",
       render: (text, record, index) => ((page * pageSize) + index) + 1
     },
@@ -105,6 +106,7 @@ function OtherReportList() {
     },
     {
       title: "Action",
+      width: 200,
       render: (reportDetails) => {
         const { report_date, notes } = reportDetails;
         return (
