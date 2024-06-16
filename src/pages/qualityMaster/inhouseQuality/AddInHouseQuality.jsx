@@ -445,11 +445,10 @@ const AddInHouseQuality = () => {
   });
 
   useEffect(() => {
-    // set options for denier selection on yarn stock company select
+    let temp = [] ; 
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      // const { yarn_company_name: name = "", yarn_details = [] } = ysc;
       const { yarn_details = [] } = ysc;
-      // if (name === yarn_company_name) {
+      const yarn_company_name = ysc?.yarn_company_name ; 
       const options = yarn_details?.map(
         ({
           yarn_company_id = 0,
@@ -459,16 +458,18 @@ const AddInHouseQuality = () => {
           yarn_color = "",
         }) => {
           return {
-            label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+            label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color}) ${yarn_company_name}`,
             value: yarn_company_id,
           };
         }
       );
+
+
       if (options?.length) {
-        setDenierOptions(options);
+        temp = [...temp, ...options] ; 
       }
-      // }
     });
+    setDenierOptions(temp);
   }, [yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
