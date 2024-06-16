@@ -157,6 +157,11 @@ const TradingQualityList = () => {
       key: "quality_group",
     },
     {
+      title: "Machine",
+      dataIndex: "machine_name",
+      key: "machine_name",
+    },
+    {
       title: "Production Type",
       dataIndex: "production_type",
       key: "production_type",
