@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Flex, Space, Spin, Table, Tag, Typography, DatePicker } from "antd";
 import { EditOutlined, FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,22 +8,27 @@ import dayjs from "dayjs";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getSizeBeamOrderListRequest } from "../../../api/requests/orderMaster";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import DeleteSizeBeamOrderButton from "../../../components/orderMaster/sizeBeamOrder/DeleteSizeBeamOrderButton";
+import useDebounce from "../../../hooks/useDebounce";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const debouncedFromDate = useDebounce(fromDate, 500);
+  const debouncedToDate = useDebounce(toDate, 500);
 
   const { data: sizeBeamOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
       "size-beam-order",
       "list",
-      { company_id: companyId, page, pageSize, end: financialYearEnd },
+      { company_id: companyId, page, pageSize, end: financialYearEnd, fromDate: debouncedFromDate, toDate: debouncedToDate },
     ],
     queryFn: async () => {
       const res = await getSizeBeamOrderListRequest({
@@ -33,6 +38,8 @@ function SizeBeamOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
+          FromDate: debouncedFromDate, 
+          toDate: debouncedToDate
         },
       });
       return res.data?.data;
@@ -105,6 +112,7 @@ function SizeBeamOrderList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1,
     },
     {
       title: "Date",
@@ -114,12 +122,22 @@ function SizeBeamOrderList() {
       key: "order_date",
     },
     {
-      title: "From",
+      title: "Order No",
+      key: "order_no",
+      dataIndex: "order_no"
+    },
+    {
+      title: "Supplier",
+      key: "supplier_name",
+      dataIndex: ["supplier", "supplier_name"]
+    },
+    {
+      title: "Supplier company",
       dataIndex: ["yarn_stock_company", "yarn_company_name"],
       key: "yarn_stock_company.yarn_company_name",
     },
     {
-      title: "To",
+      title: "Purchase company",
       dataIndex: ["company", "company_name"],
       key: "company.company_name",
     },
@@ -135,22 +153,36 @@ function SizeBeamOrderList() {
     },
     {
       title: "Pending Meter",
-      dataIndex: "pending_meters",
+      dataIndex: "pending_meter",
       key: "pending_meters",
     },
     {
       title: "Order Status",
       dataIndex: "status",
       key: "status",
+      render: (text, record) => (
+        text == "FINISHED" ? <>
+          <Tag color="green">{text}</Tag>
+        </> : <>
+          <Tag color="red">{text}</Tag>
+        </>
+      )
     },
     {
       title: "Print Challan",
       dataIndex: "print_challan_status",
       key: "print_challan_status",
+      render: (text, record) => (
+        text == "FINISHED" ? <>
+          <Tag color="green">{text}</Tag>
+        </> : <>
+          <Tag color="red">{text}</Tag>
+        </>
+      )
     },
     {
       title: "Action",
-      render: (sizeBeamOrder) => {
+      render: (sizeBeamOrder, record) => {
         const {
           id,
           order_date,
@@ -183,14 +215,19 @@ function SizeBeamOrderList() {
                 { title: "Print Challan", value: print_challan_status },
               ]}
             />
-            <Button
-              onClick={() => {
-                navigateToUpdate(id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
+
+            {record?.status == "PENDING" && (
+              <>
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
+              </>
+            )}
           </Space>
         );
       },
@@ -234,6 +271,31 @@ function SizeBeamOrderList() {
             type="text"
           />
         </div>
+        <Flex style={{marginLeft:"auto"}} gap={10}>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              From
+            </Typography.Text>
+            <DatePicker
+              value={fromDate}
+              onChange={setFromDate}
+              className="min-w-40"
+              format={"DD-MM-YYYY"}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              To
+            </Typography.Text>
+            <DatePicker
+              value={toDate}
+              onChange={setToDate}
+              className="min-w-40"
+              format={"DD-MM-YYYY"}
+            />
+          </Flex>
+        </Flex>
         <Button
           icon={<FilePdfOutlined />}
           type="primary"

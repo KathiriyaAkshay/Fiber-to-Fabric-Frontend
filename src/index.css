@@ -54,3 +54,12 @@ body {
 .job-challan-details-table thead th {
   padding: 6px;
 }
+
+
+.ant-table{
+  font-size: 14px !important;
+
+  .ant-table-cell{
+    padding: 12px !important;
+  }
+}

@@ -1,4 +1,4 @@
-import { Button, Space, Spin, Table, Typography } from "antd";
+import { Button, Flex, Space, Spin, Table, Tag, Typography, Select } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
 
@@ -17,6 +17,7 @@ function YarnOrderList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const [orderStatus, setOrderStatus] = useState(null) ; 
 
   const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
@@ -121,9 +122,11 @@ function YarnOrderList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1,
     },
     {
       title: "Order Date",
+      width: 150,
       render: ({ order_date }) => {
         return dayjs(order_date).format("DD-MM-YYYY");
       },
@@ -197,6 +200,13 @@ function YarnOrderList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (text, record) => (
+        text == "PENDING"?<>
+          <Tag color="green">PENDING</Tag>
+        </>:<>
+          <Tag color="red">{text  }</Tag>
+        </>
+      )
     },
     {
       title: "Action",
@@ -339,6 +349,34 @@ function YarnOrderList() {
             type="text"
           />
         </div>
+
+        <Flex style={{marginLeft:"auto"}} gap={10}>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Order Status
+            </Typography.Text>
+            <Select
+              placeholder="Select order status"
+              loading={isLoading}
+              options={[
+                {
+                  label: "Pending", 
+                  value: "PENDING"
+                }
+              ]}
+              value={orderStatus}
+              onChange={setOrderStatus}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear={true}
+            />
+          </Flex>
+        </Flex>
         <Button
           icon={<FilePdfOutlined />}
           type="primary"

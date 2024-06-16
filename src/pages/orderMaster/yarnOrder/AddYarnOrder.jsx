@@ -398,7 +398,7 @@ function AddYarnOrder() {
                     placeholder="Select supplier"
                     loading={isLoadingSupplierList}
                     options={supplierListRes?.rows?.map((supervisor) => ({
-                      label: supervisor?.first_name,
+                      label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
                       value: supervisor?.id,
                     }))}
                   />

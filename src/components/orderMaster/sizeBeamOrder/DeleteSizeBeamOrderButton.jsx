@@ -52,6 +52,7 @@ const DeleteSizeBeamOrderButton = ({ data }) => {
     <div>
       {/* Trigger to open the delete confirmation dialog */}
       <Button
+        danger
         onClick={() => {
           setIsOpenDeleteDialog(true);
         }}

@@ -196,6 +196,8 @@ function UpdateSizeBeamOrder() {
         ...sizeBeamOrderDetails,
         order_date: dayjs(sizeBeamOrderDetails?.order_date),
         order_details: sizeBeamOrderDetails?.size_beam_order_details,
+        supplier_name: sizeBeamOrderDetails?.supplier?.supplier_name, 
+        yarn_company_name: sizeBeamOrderDetails?.yarn_stock_company?.yarn_company_name
       });
     }
   }, [sizeBeamOrderDetails, reset]);

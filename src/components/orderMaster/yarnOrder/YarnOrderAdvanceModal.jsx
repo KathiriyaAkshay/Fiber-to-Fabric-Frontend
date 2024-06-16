@@ -41,7 +41,11 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
   };
 
   const columns = [
-    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "ID",
+      dataIndex: "id", 
+      key: "id",
+      render: (text, record, index) => (index + 1)
+    },
     {
       title: "Date",
       render: ({ createdAt }) => {
@@ -108,9 +112,11 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
         }}
       >
         <YarnOrderAdvanceForm yarnOrder={yarnOrder} />
-        <Typography.Text className="text-xl font-medium text-primary">
+        
+        <Typography.Text className="text-xl font-medium text-primary" style={{marginBottom: 10}}>
           {`Advance List (Order: ${yarnOrder.order_no})`}
         </Typography.Text>
+
         <Table
           dataSource={yarnOrderAdvanceListRes?.yarnOrderAdvances?.rows || []}
           columns={columns}
