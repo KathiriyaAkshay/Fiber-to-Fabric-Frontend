@@ -104,6 +104,8 @@ import GrayPurchaseBillList from "./pages/purchase/bill/grayPurchaseBill/grayPur
 import BeamReceiveList from "./pages/job/receive/beamReceive/beamReceiveList";
 import AddBeamReceive from "./pages/job/receive/beamReceive/addBeamReceive";
 import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive";
+import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
+import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -366,10 +368,14 @@ const router = createBrowserRouter([
           {
             path: "bill",
             children: [
-              { index: true, element: <div>bill</div> },
+              { index: true, element: <SaleBillList /> },
               {
                 path: "sales-bill-list",
-                element: <SaleBillList />,
+                children: [
+                  { index: true, element: <SaleBillList /> },
+                  { path: "add", element: <AddSaleBill /> },
+                  { path: "update/:id", element: <UpdateSaleBill /> },
+                ],
               },
               {
                 path: "yarn-sales-bill-list",
