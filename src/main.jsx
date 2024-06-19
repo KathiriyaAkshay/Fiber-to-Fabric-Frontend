@@ -106,6 +106,7 @@ import AddBeamReceive from "./pages/job/receive/beamReceive/addBeamReceive";
 import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive";
 import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
 import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
+import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -387,7 +388,10 @@ const router = createBrowserRouter([
               },
               {
                 path: "job-grey-sales-bill-list",
-                element: <JobGrayList />,
+                children: [
+                  { index: true, element: <JobGrayList /> },
+                  { path: "add", element: <AddJobGrayBill /> },
+                ],
               },
               {
                 path: "job-work-bill-list",

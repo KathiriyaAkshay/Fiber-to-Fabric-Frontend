@@ -351,6 +351,10 @@ const SaleBillList = () => {
               <Table.Summary.Cell index={10}>
                 <b>{totalNetAmount}</b>
               </Table.Summary.Cell>
+              <Table.Summary.Cell index={11}></Table.Summary.Cell>
+              <Table.Summary.Cell index={12}></Table.Summary.Cell>
+              <Table.Summary.Cell index={13}></Table.Summary.Cell>
+              <Table.Summary.Cell index={14}></Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}
