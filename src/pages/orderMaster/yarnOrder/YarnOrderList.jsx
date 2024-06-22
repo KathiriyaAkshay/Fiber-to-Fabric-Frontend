@@ -1,5 +1,9 @@
-import { Button, Space, Spin, Table, Typography } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Flex, Select, Space, Spin, Table, Typography } from "antd";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
@@ -8,22 +12,47 @@ import dayjs from "dayjs";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
+import DeleteYarnOrder from "../../../components/orderMaster/yarnOrder/DeleteYarnOrder";
+import { ORDER_STATUS } from "../../../constants/orderMaster";
+import useDebounce from "../../../hooks/useDebounce";
+import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
+import { getSupplierListRequest } from "../../../api/requests/users";
 
 function YarnOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const [denierOptions, setDenierOptions] = useState([]);
+
+  const [orderStatus, setOrderStatus] = useState();
+  const [yarnCompanyName, setYarnCompanyName] = useState(null);
+  const [denierValue, setDenierValue] = useState(null);
+  const [supplier, setSupplier] = useState(null);
+
+  const debouncedOrderStatus = useDebounce(orderStatus, 500);
+  const debouncedYarnCompany = useDebounce(yarnCompanyName, 500);
+  const debouncedDenier = useDebounce(denierValue, 500);
+  const debouncedSupplier = useDebounce(supplier, 500);
 
   const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
       "order-master",
       "yarn-order",
       "list",
-      { company_id: companyId, page, pageSize, end: financialYearEnd },
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        end: financialYearEnd,
+        status: debouncedOrderStatus,
+        yarn_company_name: debouncedYarnCompany,
+        yarn_company_id: debouncedDenier,
+        supplier_id: debouncedSupplier,
+      },
     ],
     queryFn: async () => {
       const res = await getYarnOrderListRequest({
@@ -33,6 +62,10 @@ function YarnOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
+          status: debouncedOrderStatus,
+          yarn_company_name: debouncedYarnCompany,
+          yarn_company_id: debouncedDenier,
+          supplier_id: debouncedSupplier,
         },
       });
       return res.data?.data;
@@ -40,13 +73,65 @@ function YarnOrderList() {
     enabled: Boolean(companyId),
   });
 
+  const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
+    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
+    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getYSCDropdownList({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  useEffect(() => {
+    // set options for denier selection on yarn stock company select
+    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
+      if (name === yarnCompanyName) {
+        const options = yarn_details?.map(
+          ({
+            yarn_company_id = 0,
+            filament = 0,
+            yarn_denier = 0,
+            luster_type = "",
+            yarn_color = "",
+            // yarn_count,
+            // current_stock,
+            // avg_daily_stock,
+            // pending_quantity,
+          }) => {
+            return {
+              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+              value: yarn_company_id,
+            };
+          }
+        );
+        if (options?.length) {
+          setDenierOptions(options);
+        }
+      }
+    });
+  }, [yarnCompanyName, yscdListRes?.yarnCompanyList]);
+
   function navigateToAdd() {
     navigate("/order-master/my-yarn-orders/add");
   }
 
-  // function navigateToUpdate(id) {
-  //   navigate(`/order-master/my-yarn-orders/update/${id}`);
-  // }
+  function navigateToUpdate(id) {
+    navigate(`/order-master/my-yarn-orders/update/${id}`);
+  }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -259,6 +344,14 @@ function YarnOrderList() {
                 // { title: "Remaining Amount", value: "" },
               ]}
             />
+            <Button
+              onClick={() => {
+                navigateToUpdate(yarnOrder.id);
+              }}
+            >
+              <EditOutlined />
+            </Button>
+            <DeleteYarnOrder details={yarnOrder} />
             <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
           </Space>
         );
@@ -339,12 +432,105 @@ function YarnOrderList() {
             type="text"
           />
         </div>
-        <Button
-          icon={<FilePdfOutlined />}
-          type="primary"
-          disabled={!yarnOrderListRes?.yarnOrderList?.rows?.length}
-          onClick={downloadPdf}
-        />
+
+        <Flex align="center" gap={10}>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Order Status
+            </Typography.Text>
+            <Select
+              placeholder="Select Status"
+              value={orderStatus}
+              options={ORDER_STATUS}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setOrderStatus}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Yarn Company
+            </Typography.Text>
+            <Select
+              placeholder="Select Yarn Company"
+              loading={isLoadingYSCDList}
+              value={yarnCompanyName}
+              options={yscdListRes?.yarnCompanyList?.map(
+                ({ yarn_company_name = "" }) => {
+                  return {
+                    label: yarn_company_name,
+                    value: yarn_company_name,
+                  };
+                }
+              )}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setYarnCompanyName}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Denier
+            </Typography.Text>
+            <Select
+              placeholder="Select Denier"
+              value={denierValue}
+              options={denierOptions}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setDenierValue}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Supplier
+            </Typography.Text>
+            <Select
+              placeholder="Select Supplier"
+              value={supplier}
+              loading={isLoadingSupplierList}
+              options={supplierListRes?.rows?.map((supervisor) => ({
+                label: supervisor?.first_name,
+                value: supervisor?.id,
+              }))}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setSupplier}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear
+            />
+          </Flex>
+
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!yarnOrderListRes?.yarnOrderList?.rows?.length}
+            onClick={downloadPdf}
+          />
+        </Flex>
       </div>
       {renderTable()}
     </div>

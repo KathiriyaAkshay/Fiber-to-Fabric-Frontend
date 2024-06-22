@@ -21,11 +21,14 @@ import UpdateWastageReportTask from "../pages/tasks/dailyTaskReport/WastageRepor
 import WastageReportTaskList from "../pages/tasks/dailyTaskReport/WastageReport/WastageReportTaskList";
 import AddWastageSalesReport from "../pages/tasks/dailyTaskReport/WastageSalesReport/AddWastageSalesReport";
 import WastageSalesReportList from "../pages/tasks/dailyTaskReport/WastageSalesReport/WastageSalesReportList";
+import AddBeamStockReport from "../pages/tasks/dailyTaskReport/beamStockReport/addBeamStockReport";
+import BeamStockReportList from "../pages/tasks/dailyTaskReport/beamStockReport/beamStockReportList";
 import AddDenierwiseWastageReport from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/AddDenierwiseWastageReport";
 import DenierwiseWastageReportList from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/DenierwiseWastageReportList";
 import UpdateDenierwiseWastageReport from "../pages/tasks/dailyTaskReport/denierwiseWastageReport/UpdateDenierwiseWastageReport";
 import AddEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/AddEmployeeAttendanceReport";
 import EmployeeAttendanceReportList from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/EmployeeAttendanceReportList";
+// import UpdateEmployeeAttendanceReport from "../pages/tbeam-stock-reportasks/dailyTaskReport/employeeAttendanceReport/UpdateEmployeeAttendanceReport";
 import UpdateEmployeeAttendanceReport from "../pages/tasks/dailyTaskReport/employeeAttendanceReport/UpdateEmployeeAttendanceReport";
 import AddOtherReport from "../pages/tasks/dailyTaskReport/otherReports/AddOtherReport";
 import OtherReportList from "../pages/tasks/dailyTaskReport/otherReports/OtherReportList";
@@ -78,8 +81,8 @@ export const dailyTaskReportRoutes = {
     {
       path: "beam-stock-report",
       children: [
-        { index: true, element: <DailyTaskList /> },
-        { path: "add", element: <AddDailyTask /> },
+        { index: true, element: <BeamStockReportList /> },
+        { path: "add", element: <AddBeamStockReport /> },
         { path: "update/:id", element: <UpdateDailyTask /> },
       ],
     },

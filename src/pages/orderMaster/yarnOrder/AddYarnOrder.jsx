@@ -86,7 +86,7 @@ function AddYarnOrder() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createYarnOrder } = useMutation({
+  const { mutateAsync: createYarnOrder, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createYarnOrderRequest({
         data,
@@ -767,12 +767,11 @@ function AddYarnOrder() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
