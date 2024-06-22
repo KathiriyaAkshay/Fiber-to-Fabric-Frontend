@@ -61,7 +61,7 @@ const AddInHouseQuality = () => {
   const [designNo, setDesignNo] = useState([]);
   const [designNoOption, setDesignNoOption] = useState([]);
   const [denierOptions, setDenierOptions] = useState([]);
-  // console.log({ denierOptions });
+
   const [needQualityNameInChallan, setNeedQualityNameInChallan] =
     useState(true);
   const [needQualityGroupInChallan, setNeedQualityGroupInChallan] =
@@ -444,6 +444,7 @@ const AddInHouseQuality = () => {
 
   useEffect(() => {
     // set options for denier selection on yarn stock company select
+    let denierOptions = [];
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       // const { yarn_company_name: name = "", yarn_details = [] } = ysc;
       const { yarn_details = [] } = ysc;
@@ -462,11 +463,12 @@ const AddInHouseQuality = () => {
           };
         }
       );
-      if (options?.length) {
-        setDenierOptions(options);
-      }
+      denierOptions = [...denierOptions, ...options];
       // }
     });
+    if (denierOptions?.length) {
+      setDenierOptions(denierOptions);
+    }
   }, [yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
@@ -655,11 +657,14 @@ const AddInHouseQuality = () => {
 
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_details = [] } = ysc;
-      denier = yarn_details?.find(
+      const selectedDenier = yarn_details?.find(
         ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
-      ).yarn_denier;
-      if (denier) {
-        return;
+      );
+      if (selectedDenier) {
+        denier = selectedDenier.yarn_denier;
+        if (denier) {
+          return;
+        }
       }
     });
 
@@ -690,11 +695,14 @@ const AddInHouseQuality = () => {
 
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_details = [] } = ysc;
-      denier = yarn_details?.find(
+      const selectedDenier = yarn_details?.find(
         ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
-      ).yarn_denier;
-      if (denier) {
-        return;
+      );
+      if (selectedDenier) {
+        denier = selectedDenier.yarn_denier;
+        if (denier) {
+          return;
+        }
       }
     });
 
@@ -2039,7 +2047,6 @@ const AddInHouseQuality = () => {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 };
