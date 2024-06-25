@@ -104,6 +104,9 @@ import GrayPurchaseBillList from "./pages/purchase/bill/grayPurchaseBill/grayPur
 import BeamReceiveList from "./pages/job/receive/beamReceive/beamReceiveList";
 import AddBeamReceive from "./pages/job/receive/beamReceive/addBeamReceive";
 import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive";
+import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
+import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
+import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
 import AddProduction from "./pages/production/AddProduction";
 import InhouseProduction from "./pages/production/InhouseProduction";
 import OpenProduction from "./pages/production/OpenProduction";
@@ -370,10 +373,14 @@ const router = createBrowserRouter([
           {
             path: "bill",
             children: [
-              { index: true, element: <div>bill</div> },
+              { index: true, element: <SaleBillList /> },
               {
                 path: "sales-bill-list",
-                element: <SaleBillList />,
+                children: [
+                  { index: true, element: <SaleBillList /> },
+                  { path: "add", element: <AddSaleBill /> },
+                  { path: "update/:id", element: <UpdateSaleBill /> },
+                ],
               },
               {
                 path: "yarn-sales-bill-list",
@@ -385,7 +392,10 @@ const router = createBrowserRouter([
               },
               {
                 path: "job-grey-sales-bill-list",
-                element: <JobGrayList />,
+                children: [
+                  { index: true, element: <JobGrayList /> },
+                  { path: "add", element: <AddJobGrayBill /> },
+                ],
               },
               {
                 path: "job-work-bill-list",
