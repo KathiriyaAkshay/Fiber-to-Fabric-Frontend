@@ -1,4 +1,4 @@
-import { Button, Flex, Select, Space, Spin, Table, Typography } from "antd";
+import { Button, Flex, Select, Space, Spin, Table, Typography, Tag } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -28,6 +28,7 @@ import {
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder";
 import { ORDER_STATUS, ORDER_TYPE } from "../../../constants/orderMaster";
+import { render } from "react-dom";
 
 const MyOrderList = () => {
   // const [search, setSearch] = useState();
@@ -213,10 +214,11 @@ const MyOrderList = () => {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => index + 1,
+      render: (text, record, index) => ((page * pageSize) + index) + 1,
     },
     {
       title: "Order Date",
+      width: 150,
       render: (details) => {
         return dayjs(details.createdAt).format("DD-MM-YYYY");
       },
@@ -282,6 +284,13 @@ const MyOrderList = () => {
       title: "Order Status",
       dataIndex: "status",
       key: "status",
+      render: (text, record) => (
+        text == "complete"?<>
+          <Tag color="green">{text}</Tag>
+        </>:<>
+          <Tag color="red">{text}</Tag>
+        </>
+      )
     },
     // {
     //   title: "Status",
@@ -512,6 +521,7 @@ const MyOrderList = () => {
               textTransform: "capitalize",
             }}
             className="min-w-40"
+            allowClear
           />
         </Flex>
         <Flex align="center" gap={10}>
@@ -579,6 +589,7 @@ const MyOrderList = () => {
               textTransform: "capitalize",
             }}
             className="min-w-40"
+            allowClear
           />
         </Flex>
         <Flex align="center" gap={10}>
@@ -591,6 +602,7 @@ const MyOrderList = () => {
             dropdownStyle={{
               textTransform: "capitalize",
             }}
+            allowClear = {true}
             onChange={setBroker}
             style={{
               textTransform: "capitalize",
