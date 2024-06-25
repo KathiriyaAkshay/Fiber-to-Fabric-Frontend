@@ -1,5 +1,5 @@
 import { Button, Flex, Space, Spin, Table, Tag, Typography, Select } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { FilePdfOutlined, PlusCircleOutlined, EditOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
@@ -11,6 +11,7 @@ import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
+import DeleteYarnOrderButton from "../../../components/orderMaster/yarnOrder/DeleteYarnOrder";
 
 function YarnOrderList() {
   const navigate = useNavigate();
@@ -227,7 +228,9 @@ function YarnOrderList() {
           pending_cartoon,
           delivered_cartoon,
           approx_amount,
+          id
         } = yarnOrder;
+        
         const {
           yarn_denier,
           filament,
@@ -236,6 +239,7 @@ function YarnOrderList() {
           yarn_Sub_type,
           yarn_company_name,
         } = yarn_stock_company;
+
         const { first_name: supplierName } = user;
 
         return (
@@ -269,7 +273,16 @@ function YarnOrderList() {
                 // { title: "Remaining Amount", value: "" },
               ]}
             />
+            <Button
+              onClick={() => {
+                navigate(`update/${id}`)
+              }}
+            >
+              <EditOutlined />
+            </Button>
+            <DeleteYarnOrderButton data={yarnOrder} />
             <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
+            
           </Space>
         );
       },

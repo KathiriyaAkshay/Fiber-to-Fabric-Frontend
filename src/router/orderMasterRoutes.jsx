@@ -5,7 +5,7 @@ import AddSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/AddSizeBeamOrde
 import SizeBeamOrderList from "../pages/orderMaster/sizeBeamOrder/SizeBeamOrderList";
 import UpdateSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/UpdateSizeBeamOrder";
 import AddYarnOrder from "../pages/orderMaster/yarnOrder/AddYarnOrder";
-// import UpdateYarnOrder from "../pages/orderMaster/yarnOrder/UpdateYarnOrder";
+import UpdateYarnOrder from "../pages/orderMaster/yarnOrder/UpdateYarnOrder";
 import YarnOrderList from "../pages/orderMaster/yarnOrder/YarnOrderList";
 
 export const orderMasterRoutes = {
@@ -25,7 +25,7 @@ export const orderMasterRoutes = {
       children: [
         { index: true, element: <YarnOrderList /> },
         { path: "add", element: <AddYarnOrder /> },
-        // { path: "update/:id", element: <UpdateYarnOrder /> },
+        { path: "update/:id", element: <UpdateYarnOrder/> },
       ],
     },
     {
