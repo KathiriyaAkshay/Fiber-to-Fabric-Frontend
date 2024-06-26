@@ -190,6 +190,9 @@ function AddYarnReceive() {
     setChallanArray(newFields) ; 
   }
 
+  const [totalReceiveQuantity, setTotalReceiveQuantity] = useState(0) ; 
+  const [totalReceiveCartoon, setTotalReceiveCartoon] = useState(0) ; 
+
   async function onSubmit(data) {
     
     const ChallanDetails = challanArray.map((field, index) => {
@@ -407,8 +410,21 @@ function AddYarnReceive() {
                           name={`receive_quantity_${index}`}
                           render={({ field }) => (
                             <Input
+                              type="number"
                               {...field}
                               placeholder="Receive Quantity"
+                              onChange={(e) => {
+                                setValue(`receive_quantity_${index}`, e.target.value) ; 
+                                let total = 0 ; 
+                                challanArray.map((field, count) => {
+                                  let temp = getValues(`receive_quantity_${count}`) ; 
+                                  if (temp !== ""){
+                                   total = parseInt(total) + parseInt(temp) ; 
+                                  }
+                                })
+
+                                setTotalReceiveQuantity(total) ; 
+                              }}
                             />
                           )}
                         />
@@ -436,7 +452,23 @@ function AddYarnReceive() {
                           name={`receive_cartoon_pallet_${index}`}
                           render={({ field }) => (
                             <Input
+                              type="number"
                               {...field}
+                              onChange={(e) => {
+                                setValue(`receive_cartoon_pallet_${index}`, e.target.value) ; 
+                                let total = 0 ; 
+
+                                challanArray.map((field, count) => {
+                                  let temp = getValues(`receive_cartoon_pallet_${count}`) ; 
+                                  if (temp !== ""){
+                                    console.log(temp);
+                                    total = parseInt(total) + parseInt(temp) ; 
+                                  }
+                                })
+
+                                setTotalReceiveCartoon(total) ; 
+
+                              }}
                               placeholder="Receive cartoon pallet"
                             />
                           )}
@@ -454,24 +486,34 @@ function AddYarnReceive() {
                           className="flex-none"
                         />
                       </Col>
-                    )}
+                  )}
 
-                    {index === challanArray.length - 1 && (
-                      <Col span={1}>
-                        <Button
-                          style={{ marginTop: "1.9rem" }}
-                          icon={<PlusOutlined />}
-                          type="primary"
-                          onClick={AddChallanRow.bind(null, index)}
-                          className="flex-none"
-                        />
-                      </Col>
-                    )}
+                  {index === challanArray.length - 1 && (
+                    <Col span={1}>
+                      <Button
+                        style={{ marginTop: "1.9rem" }}
+                        icon={<PlusOutlined />}
+                        type="primary"
+                        onClick={AddChallanRow.bind(null, index)}
+                        className="flex-none"
+                      />
+                    </Col>
+                  )}
 
                 </Row>
               </>
             )
         }):null}
+
+        <Row>
+          <Col span={6}></Col>
+          <Col span={6}>
+            Total Receive quantity : {totalReceiveQuantity}
+          </Col>
+          <Col span={6}>
+            Total Receive cartoon : {totalReceiveCartoon}
+          </Col>
+        </Row>
         
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

@@ -25,6 +25,7 @@ import {
 } from "../../../../api/requests/purchase/yarnReceive";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import moment from "moment";
 
 const updateYarnReceiveSchemaResolver = yupResolver(
   yup.object().shape({
@@ -58,6 +59,10 @@ function UpdateYarnReceive() {
     },
     enabled: Boolean(companyId),
   });
+
+  const disabledDate = (current) => {
+    return current && current > moment().endOf('day');
+  };
 
   const { mutateAsync: updateYarnReceive } = useMutation({
     mutationFn: async (data) => {
@@ -195,6 +200,7 @@ function UpdateYarnReceive() {
                 render={({ field }) => (
                   <DatePicker
                     {...field}
+                    disabledDate={disabledDate}
                     style={{
                       width: "100%",
                     }}
@@ -222,6 +228,7 @@ function UpdateYarnReceive() {
                 name="yarn_company_name"
                 render={({ field }) => (
                   <Select
+                    disabled
                     {...field}
                     placeholder="Select Yarn Stock Company"
                     loading={isLoadingYSCDList}
@@ -262,6 +269,7 @@ function UpdateYarnReceive() {
                 name="yarn_stock_company_id"
                 render={({ field }) => (
                   <Select
+                    disabled
                     {...field}
                     placeholder="Select denier"
                     allowClear
@@ -289,6 +297,7 @@ function UpdateYarnReceive() {
               wrapperCol={{ sm: 24 }}
             >
               <Controller
+                disabled
                 control={control}
                 name="lot_no"
                 render={({ field }) => <Input {...field} />}
@@ -306,6 +315,7 @@ function UpdateYarnReceive() {
               wrapperCol={{ sm: 24 }}
             >
               <Controller
+                disabled
                 control={control}
                 name="challan_no"
                 render={({ field }) => <Input {...field} />}
