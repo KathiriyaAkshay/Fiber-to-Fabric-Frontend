@@ -20,6 +20,7 @@ import { getYarnReceiveListRequest } from "../../../../api/requests/purchase/yar
 import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnReceiveButton";
 import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
 import moment from "moment";
+import MultipleChallanCreateButton from "../../../../components/purchase/receive/yarnReceive/createMultipleChallan";
 
 function YarnReceiveList() {
   const [search, setSearch] = useState("");
@@ -162,6 +163,7 @@ function YarnReceiveList() {
               <EditOutlined />
             </Button>
             <DeleteYarnReceiveButton details={yarnReceiveDetails} />
+            <MultipleChallanCreateButton details={yarnReceiveDetails} />
             <YarnReceiveChallanModal details={yarnReceiveDetails} />
           </Space>
         );

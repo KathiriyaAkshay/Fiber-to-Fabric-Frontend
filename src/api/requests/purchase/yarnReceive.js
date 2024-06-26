@@ -34,6 +34,12 @@ export function deleteReceiveSizeBeamOrderRequest({id, params}) {
   })
 }
 
+export function createMultipleChallanYarnReceiveRequest({id, data, params}){
+  return api.post(`/yarn-stock/yarn-receive-challan/multiple/create/${id}`, data, {
+    params
+  }) ; 
+}
+
 export function getReceiveSizeBeamOrderRequest({id, params}) {
   return api.get(`order-master/recive-size-beam/get/${id}`, {
     params
