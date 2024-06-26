@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Radio, Table, Form, Input, Select, Row, Col, DatePicker, Flex, Divider, Space, Modal } from 'antd';
+import { Button, Radio, Table, Form, Input, Select, Row, Col, DatePicker, Flex, Divider, Space, Modal, Descriptions, Badge, Tag } from 'antd';
 import { BarcodeOutlined, DeleteOutlined, EditFilled, EyeFilled, FilePdfFilled, PlusCircleOutlined, PrinterFilled, SearchOutlined } from '@ant-design/icons';
 const InhouseProduction = () => {
     const [ProdFilter, setProdFilter] = useState('Current');
@@ -88,9 +88,9 @@ const InhouseProduction = () => {
             width: "14%",
             render: (_, record) => (
                 <Space size="middle">
-                    <Button icon={<EyeFilled />} onClick={()=>showModal()}/>
+                    <Button icon={<EyeFilled />} onClick={() => showModal()} />
                     <Button icon={<EditFilled />} />
-                    <Button icon={<BarcodeOutlined />} />
+                    <Button icon={<BarcodeOutlined />} onClick={() => showQrModal()} />
                     <Button icon={<DeleteOutlined />} />
 
                 </Space>
@@ -130,6 +130,47 @@ const InhouseProduction = () => {
                     type: selectionType,
                     ...rowSelection,
                 }}
+                summary={(tableData) => {
+                    let totalPendingTaka = 0;
+                    let totalDeliveredTaka = 0;
+                    let totalPendingMeter = 0;
+                    let totalDeliveredMeter = 0;
+
+
+                    return (
+                        <>
+                        <Table.Summary.Row>
+                            <Table.Summary.Cell index={0}>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>Total</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b></b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+
+                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                        </Table.Summary.Row>
+                        <Table.Summary.Row>
+                        <Table.Summary.Cell index={0}>
+                        </Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}><b>Grand Total</b></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}><b></b></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
+
+                        <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                    </Table.Summary.Row>
+                    </>
+                    );
+                }}
+
             />
         );
     }
@@ -155,6 +196,19 @@ const InhouseProduction = () => {
         }),
     };
 
+    //show QR modal
+
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+    const showQrModal = () => {
+        setIsQrModalOpen(true);
+    };
+    const handleQrOk = () => {
+        setIsQrModalOpen(false);
+    };
+    const handleQrCancel = () => {
+        setIsQrModalOpen(false);
+    };
+
     //show modal
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -167,6 +221,202 @@ const InhouseProduction = () => {
     const handleCancel = () => {
         setIsModalOpen(false);
     };
+
+    const items = [
+        {
+            key: '1',
+            label: 'Quality Name',
+            children: '33P PALLU PATERN (SDFSDFSDFSDFSDFSD) - (8KG)',
+            span: 2,
+
+        },
+        {
+            key: '2',
+            label: 'Order Type',
+            children: 'Sale',
+            span: 2,
+        },
+        {
+            key: '3',
+            label: 'Production Company Name',
+            children: 'SONU TEXTILES',
+            span: 2,
+        },
+        {
+            key: '4',
+            label: 'Beam status',
+            children: 'Finished',
+            span: 2,
+
+        },
+
+        {
+            key: '5',
+            label: 'Date',
+            children: '2019-04-24 18:00:00',
+            span: 2,
+        },
+        {
+            key: '6',
+            label: 'P Taka',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '7',
+            label: 'Return Sale Challan No',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '8',
+            label: 'Prod Taka',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '9',
+            label: 'Taka No',
+            children: '9',
+            span: 2,
+        },
+        {
+            key: '10',
+            label: 'Prod Mtr',
+            children: '23',
+            span: 2,
+        },
+        {
+            key: '11',
+            label: 'Meter',
+            children: '1023',
+            span: 2,
+        },
+        {
+            key: '12',
+            label: 'Pend mtr',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '13',
+            label: 'Weight',
+            children: '840.09',
+            span: 2,
+        },
+        {
+            key: '14',
+            label: 'Purchase Challan No.',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '15',
+            label: 'Average',
+            children: '82.12',
+            span: 2,
+        },
+        {
+            key: '16',
+            label: 'Supplier Name',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '17',
+            label: 'Old Meter',
+            children: '1023',
+            span: 2,
+        },
+        {
+            key: '18',
+            label: 'Purchase Company Name',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '19',
+            label: 'Old Weight',
+            children: '840.09',
+            span: 2,
+        },
+        {
+            key: '20',
+            label: 'Sale Challan Company Name',
+            children: '--',
+            span: 2,
+        },
+        {
+            key: '21',
+            label: 'Old Average',
+            children: '82.12',
+            span: 2,
+        },
+        {
+            key: '22',
+            label: 'Challan No',
+            children: '1023',
+            span: 2,
+        },
+        {
+            key: '23',
+            label: 'Machine No',
+            children: '4',
+            span: 2,
+        },
+        {
+            key: '24',
+            label: 'Party',
+            children: '--',
+            span: 2,
+        },
+    ];
+
+
+    const columnsModal = [
+        {
+            title: 'Date',
+            dataIndex: 'date',
+            key: 'date',
+        },
+        {
+            title: 'Employee Name',
+            dataIndex: 'employee_name',
+            key: 'employee_name',
+        },
+        {
+            title: 'Meter',
+            dataIndex: 'meter',
+            key: 'meter',
+        },
+        {
+            title: 'Taka No',
+            key: 'taka_no',
+            dataIndex: 'taka_no',
+        },
+        {
+            title: 'Machine No',
+            key: 'machine_no',
+            dataIndex: 'machine_no',
+        },
+        {
+            title: 'Beam No',
+            key: 'beam_no',
+            dataIndex: 'beam_no',
+        },
+    ];
+    const data = [
+        {
+            key: '1',
+            date: '11-1-11',
+            employee_name: "John",
+            meter: '',
+            taka_no: '',
+            machine_no: '',
+            beam_no: '',
+        },
+    ];
+
     return (
         <div className="flex flex-col gap-2 p-4">
             <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -386,10 +636,34 @@ const InhouseProduction = () => {
             {renderTable()}
 
 
-            <Modal title="" open={isModalOpen} onOk={handleOk} onCancel={handleCancel}>
-                <p>Some contents...</p>
-                <p>Some contents...</p>
-                <p>Some contents...</p>
+            <Modal title="" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} width="100%">
+                <Descriptions title="Production Details" bordered items={items} size='small' />
+
+                <div className='text-center' style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+                    Employee Avg. Report
+                </div>
+                <Table columns={columnsModal} dataSource={data} />
+            </Modal>
+
+            <Modal title="" open={isQrModalOpen} onOk={handleQrOk} onCancel={handleQrCancel} width="50%">
+
+                <Flex>
+                    <img
+                        width={200}
+                        src="https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"
+                    />
+                    <div className='ms-2'>
+                        <Descriptions title="">
+                            <Descriptions.Item label="Taka" span={3}>Zhou Maomao</Descriptions.Item>
+                            <Descriptions.Item label="Meter" span={3}>Zhou Maomao</Descriptions.Item>
+                            <Descriptions.Item label="M.N." span={3}>Zhou Maomao</Descriptions.Item>
+                            <Descriptions.Item label="Q" span={3}>Zhou Maomao</Descriptions.Item>
+                        </Descriptions>
+                        <Button type='primary'>Print</Button>
+                    </div>
+
+                </Flex>
+
             </Modal>
 
         </div>

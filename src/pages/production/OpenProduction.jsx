@@ -1,8 +1,14 @@
 import React from 'react'
 import { useState } from 'react'
-import { Button, Checkbox, Col, Flex, Radio, Row, Form, Select, Input, Space,Table } from 'antd'
+import { Button, Checkbox, Col, Flex, Radio, Row, Form, Select, Input, Space, Table, DatePicker } from 'antd'
 import { EyeFilled, LineOutlined, PlusCircleOutlined } from '@ant-design/icons'
 const OpenProduction = () => {
+    const [checked, setChecked] = useState(true);
+    const onChange = (e) => {
+        console.log('checked = ', e.target.checked);
+        setChecked(e.target.checked);
+    };
+
     const [form] = Form.useForm();
     const [ProdFilter, setProdFilter] = useState('Current');
 
@@ -23,9 +29,9 @@ const OpenProduction = () => {
         console.log(`selected ${value}`);
     };
 
-    const dataSource=[];
+    const dataSource = [];
 
-    const columns=[
+    const columns = [
         {
             title: 'No',
             dataIndex: 'no',
@@ -57,11 +63,11 @@ const OpenProduction = () => {
             key: 'average',
         },
         {
-            title: <LineOutlined/>,
+            title: <LineOutlined />,
             dataIndex: 'average',
             key: 'average',
         },
-]
+    ]
 
     function renderTable() {
         // if (isLoading) {
@@ -84,6 +90,31 @@ const OpenProduction = () => {
                     //   onShowSizeChange: onShowSizeChange,
                     //   onChange: onPageChange,
                 }}
+                summary={(tableData) => {
+                    let totalPendingTaka = 0;
+                    let totalDeliveredTaka = 0;
+                    let totalPendingMeter = 0;
+                    let totalDeliveredMeter = 0;
+
+
+                    return (
+                        <>
+                            <Table.Summary.Row>
+                                <Table.Summary.Cell index={0}><b>Total</b></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}><b></b></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}><b></b></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+
+                                <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            </Table.Summary.Row>
+
+                        </>
+                    );
+                }}
             />
         );
     }
@@ -98,7 +129,7 @@ const OpenProduction = () => {
                 </div>
                 <div>
 
-                    <Checkbox className='pe-6'>
+                    <Checkbox checked={checked} onChange={onChange}>
                         Challan
                     </Checkbox>
                     <Radio.Group options={plainOptions} onChange={onChange1} value={ProdFilter} />
@@ -117,108 +148,139 @@ const OpenProduction = () => {
             // }}
             >
 
-                <Row style={{ width: "100%" }}>
-                    <Col span={12}>
+                {checked == true ?
+                    <Row style={{ width: "100%" }}>
+                        <Col span={12}>
 
-                        <Row>
-                            <Col span={24}>
-                                <Form.Item
-                                    label="Company"
-                                    name="company"
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please input your company!',
-                                        },
-                                    ]}
-                                >
-                                    <Select
-                                        defaultValue="looms"
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                        onChange={handleChange}
-                                        options={[
+                            <Row>
+                                <Col span={24}>
+                                    <Form.Item
+                                        label="Company"
+                                        name="company"
+                                        rules={[
                                             {
-                                                value: 'looms',
-                                                label: 'Looms',
+                                                required: true,
+                                                message: 'Please input your company!',
                                             },
-                                            {
-                                                value: 'jacquard',
-                                                label: 'Jacquard',
-                                            },
-
                                         ]}
-                                    />
-                                </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                                <Form.Item
-                                    label="GST State"
-                                    name="gst_state"
-                                    {...formItemLayout}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="GSTIN"
-                                    name="gstin"
-                                    {...formItemLayout}
-
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please input your GSTIN!',
-                                        },
-                                    ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Order No"
-                                    name="order no."
-                                    {...formItemLayout}
-
-                                >
-                                    <Space.Compact
-                                        style={{
-                                            width: '100%',
-                                        }}
                                     >
-                                        <Input placeholder="Order No" />
-                                        <Button type="primary" icon={<EyeFilled />}></Button>
-                                    </Space.Compact>
-                                </Form.Item>
-                            </Col>
+                                        <Select
+                                            defaultValue="looms"
+                                            style={{
+                                                width: "100%",
+                                            }}
+                                            onChange={handleChange}
+                                            options={[
+                                                {
+                                                    value: 'looms',
+                                                    label: 'Looms',
+                                                },
+                                                {
+                                                    value: 'jacquard',
+                                                    label: 'Jacquard',
+                                                },
 
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Broker"
-                                    name="broker"
-                                    {...formItemLayout}
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
 
-                                >
-                                    <Input placeholder='broker name' />
-                                </Form.Item>
-                            </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="GST State"
+                                        name="gst_state"
+                                        {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="GSTIN"
+                                        name="gstin"
+                                        {...formItemLayout}
 
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Party"
-                                    name="party"
-                                    {...formItemLayout}
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input your GSTIN!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
 
-                                >
-                                    <Space.Compact
-                                        style={{
-                                            width: '100%',
-                                        }}
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Order No"
+                                        name="order no."
+                                        {...formItemLayout}
+
+                                    >
+                                        <Space.Compact
+                                            style={{
+                                                width: '100%',
+                                            }}
+                                        >
+                                            <Input placeholder="Order No" />
+                                            <Button type="primary" icon={<EyeFilled />}></Button>
+                                        </Space.Compact>
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Broker"
+                                        name="broker"
+                                        {...formItemLayout}
+
+                                    >
+                                        <Input placeholder='broker name' />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Party"
+                                        name="party"
+                                        {...formItemLayout}
+
+                                    >
+                                        <Space.Compact
+                                            style={{
+                                                width: '100%',
+                                            }}
+                                        >
+                                            <Select
+                                                defaultValue="Cisco1"
+                                                style={{
+                                                    width: "100%",
+                                                }}
+                                                onChange={handleChange}
+                                                options={[
+                                                    {
+                                                        value: 'Cisco1',
+                                                        label: 'Cisco1',
+                                                    },
+                                                    {
+                                                        value: 'Cisco2',
+                                                        label: 'Cisco2',
+                                                    },
+
+                                                ]}
+                                            />
+                                            <Button type="primary" icon={<PlusCircleOutlined />}></Button>
+                                        </Space.Compact>
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Company"
+                                        name="comany"
+                                        {...formItemLayout}
+
                                     >
                                         <Select
                                             defaultValue="Cisco1"
@@ -232,199 +294,244 @@ const OpenProduction = () => {
                                                     label: 'Cisco1',
                                                 },
                                                 {
-                                                    value: 'Cisco2',
-                                                    label: 'Cisco2',
+                                                    value: 'Cisco223',
+                                                    label: 'Cisco2342',
                                                 },
 
                                             ]}
                                         />
-                                        <Button type="primary" icon={<PlusCircleOutlined />}></Button>
-                                    </Space.Compact>
-                                </Form.Item>
-                            </Col>
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="GST State"
+                                        name="gst_state"
+                                        {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="GSTIN"
+                                        name="gstin"
+                                        {...formItemLayout}
 
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Company"
-                                    name="comany"
-                                    {...formItemLayout}
-
-                                >
-                                    <Select
-                                        defaultValue="Cisco1"
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                        onChange={handleChange}
-                                        options={[
+                                        rules={[
                                             {
-                                                value: 'Cisco1',
-                                                label: 'Cisco1',
+                                                required: true,
+                                                message: 'Please input your GSTIN!',
                                             },
-                                            {
-                                                value: 'Cisco223',
-                                                label: 'Cisco2342',
-                                            },
-
                                         ]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="GST State"
-                                    name="gst_state"
-                                    {...formItemLayout}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="GSTIN"
-                                    name="gstin"
-                                    {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
 
-                                    rules={[
+                                <Col span={12}>
+                                    <Form.Item label="Last Entered Taka No." {...formItemLayout}>
+                                        <Row >
+                                            <Col span={8}>
+                                                <Input />
+                                            </Col>
+                                            <Col span={16}>
+                                                <Input />
+                                            </Col>
+                                        </Row>
+                                    </Form.Item>
+                                </Col>
+
+                            </Row>
+                        </Col>
+
+                        <Col span={12}>
+                            <Row>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Challan No."
+                                        name="challan_no"
+                                        {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Challan Date"
+                                        name="challan_date"
+                                        {...formItemLayout}
+
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input your GSTIN!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={24}>
+                                    <Form.Item
+                                        label={<span>Delivery Address</span>}
+                                        name="del_add"
+                                        labelWrap
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input your Delivery Address!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Qualtity"
+                                        name="quality"
+                                        {...formItemLayout}
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input quality!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={12}>
+                                    <Form.Item
+                                        label="Vehicle"
+                                        name="vehicle"
+                                        {...formItemLayout}
+
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input vehicle!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item
+                                        label="Total Meter."
+                                        name="total_meter"
+                                        {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item
+                                        label="Total Weight"
+                                        name="total_weight"
+                                        {...formItemLayout}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={8}>
+                                    <Form.Item
+                                        label="Total taka"
+                                        name="total_taka"
+                                        {...formItemLayout}
+
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Please input your GSTIN!',
+                                            },
+                                        ]}
+                                    >
+                                        <Input />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                        </Col>
+
+                    </Row>
+                    :
+
+                    <Row className='w-100' justify={"start"}>
+                        <Col span={8}>
+                            <Form.Item label="Machine" {...formItemLayout}>
+                                <Select
+                                    defaultValue="looms"
+                                    style={{
+                                        width: "100%",
+                                    }}
+                                    options={[
                                         {
-                                            required: true,
-                                            message: 'Please input your GSTIN!',
+                                            value: 'looms',
+                                            label: 'Looms',
                                         },
-                                    ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item label="Last Entered Taka No." {...formItemLayout}>
-                                    <Row >
-                                        <Col span={8}>
-                                            <Input />
-                                        </Col>
-                                        <Col span={16}>
-                                            <Input />
-                                        </Col>
-                                    </Row>
-                                </Form.Item>
-                            </Col>
-
-                        </Row>
-                    </Col>
-
-                    <Col span={12}>
-                        <Row>
-
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Challan No."
-                                    name="challan_no"
-                                    {...formItemLayout}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Challan Date"
-                                    name="challan_date"
-                                    {...formItemLayout}
-
-                                    rules={[
                                         {
-                                            required: true,
-                                            message: 'Please input your GSTIN!',
+                                            value: 'jacquard',
+                                            label: 'Jacquard',
                                         },
+
                                     ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item
-                                    label={<span>Delivery Address</span>}
-                                    name="del_add"
-                                    labelWrap
-                                    rules={[
+                                />
+                            </Form.Item>
+                        </Col>
+
+                        <Col span={8}>
+                            <Form.Item label="Quality" {...formItemLayout}>
+                                <Select
+                                    defaultValue="Select Quality Name"
+                                    style={{
+                                        width: "100%",
+                                    }}
+                                    options={[
                                         {
-                                            required: true,
-                                            message: 'Please input your Delivery Address!',
+                                            value: 'wl',
+                                            label: 'WEIGHTLESS - (6.5 KG)',
                                         },
-                                    ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Qualtity"
-                                    name="quality"
-                                    {...formItemLayout}
-                                    rules={[
                                         {
-                                            required: true,
-                                            message: 'Please input quality!',
+                                            value: '33p',
+                                            label: '33P PALLU PATTERN - (8 KG)',
                                         },
+
                                     ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    label="Vehicle"
-                                    name="vehicle"
-                                    {...formItemLayout}
+                                />
+                            </Form.Item>
+                        </Col>
 
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please input vehicle!',
-                                        },
-                                    ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    label="Total Meter."
-                                    name="total_meter"
-                                    {...formItemLayout}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    label="Total Weight"
-                                    name="total_weight"
-                                    {...formItemLayout}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    label="Total taka"
-                                    name="total_taka"
-                                    {...formItemLayout}
 
-                                    rules={[
-                                        {
-                                            required: true,
-                                            message: 'Please input your GSTIN!',
-                                        },
-                                    ]}
-                                >
-                                    <Input />
-                                </Form.Item>
-                            </Col>
-                        </Row>
 
-                    </Col>
 
-                </Row>
+                        <Col span={8}>
+                            <Form.Item label="Date" {...formItemLayout}>
+                                <DatePicker className='w-100' style={{ width: "100%" }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
+                            <Form.Item label="Last Entered Taka No." {...formItemLayout}>
+                                <Row >
+                                    <Col span={8}>
+                                        <Input />
+                                    </Col>
+                                    <Col span={16}>
+                                        <Input />
+                                    </Col>
+                                </Row>
+                            </Form.Item>
+                        </Col>
+
+
+                    </Row>
+
+                }
+
+
                 <Flex justify='flex-end'>
                     <Button type='primary'>Submit</Button>
                 </Flex>
@@ -434,8 +541,8 @@ const OpenProduction = () => {
             {renderTable()}
 
             <Flex justify='flex-end'>
-                    <Button type='primary' danger>Back</Button>
-                </Flex>
+                <Button type='primary' danger>Back</Button>
+            </Flex>
 
 
         </div>
