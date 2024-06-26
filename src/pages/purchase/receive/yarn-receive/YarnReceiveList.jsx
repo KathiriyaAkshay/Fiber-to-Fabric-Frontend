@@ -19,6 +19,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getYarnReceiveListRequest } from "../../../../api/requests/purchase/yarnReceive";
 import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnReceiveButton";
 import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
+import moment from "moment";
 
 function YarnReceiveList() {
   const [search, setSearch] = useState("");
@@ -36,6 +37,7 @@ function YarnReceiveList() {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
 
   const { data: yarnReceiveListRes, isLoading: isLoadingYarnReceiveList } =
     useQuery({
@@ -83,6 +85,7 @@ function YarnReceiveList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      render: (text, record, index) => ((page * pageSize) + index) + 1
     },
     // {
     //   title: "Order No",
