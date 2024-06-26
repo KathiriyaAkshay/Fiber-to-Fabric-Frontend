@@ -6,6 +6,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
   Flex,
@@ -28,9 +29,11 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
+  createBeamStockPasarelaRequest,
   createBeamStockReportRequest,
   getLastBeamNumberRequest,
   getNonPasarelaBeamRequest,
+  getSecondaryBeamRequest,
 } from "../../../../api/requests/reports/beamStockReport";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 
@@ -56,9 +59,36 @@ const AddBeamStockReport = () => {
   const [existingTars, setExistingTars] = useState();
   const [existingPano, setExistingPano] = useState();
 
+  const [selectedNonPasarela, setSelectedNonPasarela] = useState([]);
+
   function goBack() {
     navigate(-1);
   }
+
+  const { mutateAsync: addPasarelaBeamStockReport } = useMutation({
+    mutationFn: async (data) => {
+      const res = await createBeamStockPasarelaRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["pasarela", "beamStock", "report", "add"],
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["beamStock", "report", "list"]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
 
   const { mutateAsync: addBeamStockReport, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -77,7 +107,7 @@ const AddBeamStockReport = () => {
       if (successMessage) {
         message.success(successMessage);
       }
-      navigate(-1);
+      reset();
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
@@ -86,35 +116,65 @@ const AddBeamStockReport = () => {
   });
 
   async function onSubmit(data) {
-    const newData = {
-      machine_name: data.machine_name,
-      quality_id: +data.quality_id,
-      employee_id: data.employee,
-      beam_type: data.beam_type,
-      quality_group: data.quality_group,
-    };
-    if (data.quality_group === "job") {
-      newData.beam_details = fieldArray.map((fieldNumber) => {
-        return {
-          beam_no: `IJBN-${data[`beam_no_${fieldNumber}`]}`,
-          ends_or_tars: +data[`taar_${fieldNumber}`],
-          meters: +data[`meter_${fieldNumber}`],
-          pano: +data[`pano_${fieldNumber}`],
-          taka: +data[`taka_${fieldNumber}`],
-        };
-      });
-    } else {
-      newData.beam_details = fieldArray.map((fieldNumber) => {
-        return {
-          beam_no: `BN-${data[`beam_no_${fieldNumber}`]}`,
-          ends_or_tars: +data[`taar_${fieldNumber}`],
-          meters: +data[`meter_${fieldNumber}`],
-          pano: +data[`pano_${fieldNumber}`],
-          taka: +data[`taka_${fieldNumber}`],
-        };
-      });
+    if (data.beam_type === "non pasarela (primary)") {
+      const newData = {
+        machine_name: data.machine_name,
+        quality_id: +data.quality_id,
+        employee_id: data.employee,
+        beam_type: data.beam_type,
+        quality_group: data.quality_group,
+      };
+      if (data.quality_group === "job") {
+        newData.beam_details = fieldArray.map((fieldNumber) => {
+          return {
+            beam_no: `IJBN-${data[`beam_no_${fieldNumber}`]}`,
+            ends_or_tars: +data[`taar_${fieldNumber}`],
+            meters: +data[`meter_${fieldNumber}`],
+            pano: +data[`pano_${fieldNumber}`],
+            taka: +data[`taka_${fieldNumber}`],
+          };
+        });
+      } else {
+        newData.beam_details = fieldArray.map((fieldNumber) => {
+          return {
+            beam_no: `BN-${data[`beam_no_${fieldNumber}`]}`,
+            ends_or_tars: +data[`taar_${fieldNumber}`],
+            meters: +data[`meter_${fieldNumber}`],
+            pano: +data[`pano_${fieldNumber}`],
+            taka: +data[`taka_${fieldNumber}`],
+          };
+        });
+      }
+      await addBeamStockReport(newData);
     }
-    await addBeamStockReport(newData);
+
+    if (data.beam_type === "pasarela (primary)") {
+      const formData = [];
+      selectedNonPasarela.forEach((index) => {
+        formData.push({
+          beam_load_id: nonPasarelaList[index].beam_load_id,
+          receive_size_beam_details_id:
+            nonPasarelaList[index].receive_size_beam_details_id,
+          job_beam_receive_details_id:
+            nonPasarelaList[index].job_beam_receive_details_id,
+          non_pasarela_beam_details_id:
+            nonPasarelaList[index].non_pasarela_beam_details_id,
+        });
+
+        const secondaryBeamNo = data[`secondary_beam_no_${index}`];
+        if (secondaryBeamNo) {
+          const { secondary_job_beam_no, secondary_receive_beam_no } =
+            secondaryBeamDropDown.find(
+              ({ beam_no }) => beam_no === data[`secondary_beam_no_${index}`]
+            );
+
+          formData.secondary_job_beam_no = secondary_job_beam_no;
+          formData.secondary_receive_beam_no = secondary_receive_beam_no;
+        }
+      });
+
+      await addPasarelaBeamStockReport(formData);
+    }
   }
 
   const {
@@ -152,13 +212,32 @@ const AddBeamStockReport = () => {
           companyId,
           params: { company_id: companyId, quality_id },
         });
-        return res.data?.data?.empoloyeeList;
+        return res.data?.data?.rows;
       }
     },
     enabled: Boolean(companyId),
-    initialData: { rows: [] },
+    initialData: [],
   });
-  console.log({ nonPasarelaList });
+
+  const { data: secondaryBeamDropDown } = useQuery({
+    queryKey: [
+      "secondary",
+      "beam",
+      "list",
+      { company_id: companyId, quality_id, beam_type },
+    ],
+    queryFn: async () => {
+      if (beam_type === "pasarela (primary)" && quality_id) {
+        const res = await getSecondaryBeamRequest({
+          companyId,
+          params: { company_id: companyId, quality_id },
+        });
+        return res.data?.data.rows;
+      }
+    },
+    enabled: Boolean(companyId),
+    initialData: [],
+  });
 
   const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
     queryKey: ["employee", "list", { company_id: companyId }],
@@ -185,47 +264,52 @@ const AddBeamStockReport = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        type: quality_group,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          type: quality_group,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              type: quality_group,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { rows: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            type: quality_group,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+      initialData: { rows: [] },
+    });
 
   const { data: lastBeamNumber } = useQuery({
     queryKey: [
       "lastBeam",
       "Number",
-      { company_id: companyId, type: quality_group },
+      { company_id: companyId, type: quality_group, beam_type },
     ],
     queryFn: async () => {
-      if (quality_group === "inhouse(gray)") {
+      if (
+        quality_group === "inhouse(gray)" &&
+        beam_type === "non pasarela (primary)"
+      ) {
         const res = await getLastBeamNumberRequest({
           params: { company_id: companyId, type: quality_group },
         });
@@ -331,7 +415,7 @@ const AddBeamStockReport = () => {
 
   useEffect(() => {
     if (quality_id) {
-      const selectedQuality = dropDownQualityListRes.rows.find(
+      const selectedQuality = dropDownQualityListRes?.rows?.find(
         ({ id }) => id === quality_id
       );
       setExistingTars(selectedQuality.inhouse_waraping_details[0].tars);
@@ -349,7 +433,7 @@ const AddBeamStockReport = () => {
           <h3 className="m-0 text-primary">Add New Beam Stock Report</h3>
         </div>
         <div className="flex items-center gap-5">
-          {beam_type === "non-pasarela (primary)" &&
+          {beam_type === "non pasarela (primary)" &&
             quality_group === "inhouse(gray)" &&
             quality_id &&
             machine_name && (
@@ -478,8 +562,9 @@ const AddBeamStockReport = () => {
                       }
                       onChange={(value) => {
                         field.onChange(value);
-                        beam_type === "non-pasarela (primary)" &&
+                        if (beam_type === "non pasarela (primary)") {
                           addNewFieldRow(-1);
+                        }
                       }}
                     />
                   );
@@ -511,13 +596,13 @@ const AddBeamStockReport = () => {
                           value: "pasarela (primary)",
                         },
                         {
-                          label: "Non-Pasarela (Primary)",
-                          value: "non-pasarela (primary)",
+                          label: "Non Pasarela (Primary)",
+                          value: "non pasarela (primary)",
                         },
                       ]}
                       onChange={(value) => {
                         field.onChange(value);
-                        value === "non-pasarela (primary)" &&
+                        value === "non pasarela (primary)" &&
                           addNewFieldRow(-1);
                       }}
                     />
@@ -561,7 +646,7 @@ const AddBeamStockReport = () => {
           </Col>
         </Row>
 
-        {beam_type === "non-pasarela (primary)" &&
+        {beam_type === "non pasarela (primary)" &&
           quality_id &&
           machine_name &&
           fieldArray.map((fieldNumber, index) => {
@@ -578,6 +663,23 @@ const AddBeamStockReport = () => {
                 setValue={setValue}
                 lastBeamNumber={lastBeamNumber}
                 quality_group={quality_group}
+              />
+            );
+          })}
+
+        {beam_type === "pasarela (primary)" &&
+          nonPasarelaList?.map((row, index) => {
+            return (
+              <PasarelaFormRow
+                key={index + "_form_row"}
+                index={index}
+                row={row}
+                fieldNumber={index}
+                control={control}
+                errors={errors}
+                secondaryBeamDropDown={secondaryBeamDropDown}
+                selectedNonPasarela={selectedNonPasarela}
+                setSelectedNonPasarela={setSelectedNonPasarela}
               />
             );
           })}
@@ -758,6 +860,235 @@ const FormRow = ({
             />
           </Col>
         )}
+      </Row>
+    </>
+  );
+};
+
+const PasarelaFormRow = ({
+  index,
+  row,
+  fieldNumber,
+  errors,
+  control,
+  secondaryBeamDropDown,
+  selectedNonPasarela,
+  setSelectedNonPasarela,
+}) => {
+  const actionHandler = (e) => {
+    if (e.target.checked) {
+      setSelectedNonPasarela((prev) => {
+        return [...prev, index];
+      });
+    } else {
+      setSelectedNonPasarela((prev) => {
+        return [...prev.filter((item) => item !== index)];
+      });
+    }
+  };
+
+  return (
+    <>
+      <Row
+        key={index + "_add_beam_receive"}
+        gutter={18}
+        style={{
+          padding: "12px",
+        }}
+      >
+        <Col span={3}>
+          <Form.Item
+            label="Beam No"
+            name={`beam_no_${fieldNumber}`}
+            validateStatus={errors[`beam_no_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`beam_no_${fieldNumber}`] &&
+              errors[`beam_no_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`beam_no_${fieldNumber}`}
+              render={({ field }) => (
+                <Flex gap={8}>
+                  <Input
+                    {...field}
+                    placeholder="0"
+                    value={row.beam_no}
+                    style={{ width: "480px" }}
+                    disabled
+                  />
+                </Flex>
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={4}>
+          <Form.Item
+            label="Secondary Beam No"
+            name={`secondary_beam_no_${fieldNumber}`}
+            validateStatus={
+              errors[`secondary_beam_no_${fieldNumber}`] ? "error" : ""
+            }
+            help={
+              errors[`secondary_beam_no_${fieldNumber}`] &&
+              errors[`secondary_beam_no_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`secondary_beam_no_${fieldNumber}`}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  name={`secondary_beam_no_${fieldNumber}`}
+                  placeholder="Select secondary beam"
+                  options={secondaryBeamDropDown.map(({ beam_no }) => {
+                    return { label: beam_no, value: beam_no };
+                  })}
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={3}>
+          <Form.Item
+            label="Taar/Ends"
+            name={`taar_${fieldNumber}`}
+            validateStatus={errors[`taar_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`taar_${fieldNumber}`] &&
+              errors[`taar_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`taar_${fieldNumber}`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="number"
+                  value={row.tars}
+                  placeholder="0"
+                  disabled
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={3}>
+          <Form.Item
+            label="Pano"
+            name={`pano_${fieldNumber}`}
+            validateStatus={errors[`pano_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`pano_${fieldNumber}`] &&
+              errors[`pano_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`pano_${fieldNumber}`}
+              render={({ field }) => (
+                <Input {...field} value={row.pano} placeholder="0" disabled />
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={3}>
+          <Form.Item
+            label="Taka"
+            name={`taka_${fieldNumber}`}
+            validateStatus={errors[`taka_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`taka_${fieldNumber}`] &&
+              errors[`taka_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`taka_${fieldNumber}`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="number"
+                  value={row.taka}
+                  placeholder="0"
+                  disabled
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={3}>
+          <Form.Item
+            label="Meter"
+            name={`meter_${fieldNumber}`}
+            validateStatus={errors[`meter_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`meter_${fieldNumber}`] &&
+              errors[`meter_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`meter_${fieldNumber}`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="number"
+                  value={row.meter}
+                  placeholder="0"
+                  disabled
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
+
+        <Col span={3}>
+          <Form.Item
+            label="Action"
+            name={`action_${fieldNumber}`}
+            validateStatus={errors[`action_${fieldNumber}`] ? "error" : ""}
+            help={
+              errors[`action_${fieldNumber}`] &&
+              errors[`action_${fieldNumber}`].message
+            }
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          >
+            <Controller
+              control={control}
+              name={`action_${fieldNumber}`}
+              render={({ field }) => (
+                <Checkbox
+                  {...field}
+                  name={`action_${fieldNumber}`}
+                  checked={selectedNonPasarela.includes(index) ? true : false}
+                  onClick={actionHandler}
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
       </Row>
     </>
   );

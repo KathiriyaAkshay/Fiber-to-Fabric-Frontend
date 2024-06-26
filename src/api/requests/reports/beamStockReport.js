@@ -14,3 +14,14 @@ export function createBeamStockReportRequest({ data, params }) {
 export function getNonPasarelaBeamRequest({ params }) {
     return api.get(`/beam/stock/non-pasarela/list`, { params });
 }
+
+export function getSecondaryBeamRequest({ params }) {
+    return api.get(`/beam//stock/non-pasarela/secondary-beam/list`, { params });
+}
+
+
+export function createBeamStockPasarelaRequest({ data, params }) {
+    return api.post(`/beam/stock/pasarela/create`, data, {
+        params,
+    });
+}
