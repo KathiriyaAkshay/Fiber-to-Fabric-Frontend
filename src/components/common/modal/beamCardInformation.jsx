@@ -4,7 +4,6 @@ import { BarChartOutlined, BarcodeOutlined, CloseOutlined } from "@ant-design/ic
 
 const BeamCardInformationModel = ({data}) => {
     const [isModalOpen, setIsModalOpen] = useState(false) ; 
-    console.log(data);
     return(
         <>
             <Button type="primary" onClick={() => {setIsModalOpen(true)}}>
