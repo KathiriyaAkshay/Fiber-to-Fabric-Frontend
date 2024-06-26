@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Button, Radio, Table, Form, Input, Select, Row, Col, DatePicker, Flex } from 'antd';
+import { Button, Radio, Table, Form, Input, Select, Row, Col, DatePicker, Flex, Checkbox } from 'antd';
 import { PlusCircleOutlined } from '@ant-design/icons';
 const AddProduction = () => {
     const [ProdFilter, setProdFilter] = useState('Quality Wise');
@@ -98,40 +98,7 @@ const AddProduction = () => {
         {
             taka_no: "1",
         },
-        {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        },
-        {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }, {
-            taka_no: "1",
-        }
+
     ]
 
     function renderTable() {
@@ -160,27 +127,27 @@ const AddProduction = () => {
                     let totalDeliveredTaka = 0;
                     let totalPendingMeter = 0;
                     let totalDeliveredMeter = 0;
-          
+
 
                     return (
-                      <Table.Summary.Row>
-                        <Table.Summary.Cell index={0}>
-                          <b>Total</b>
-                        </Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}><b>0.00</b></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                      </Table.Summary.Row>
+                        <Table.Summary.Row>
+                            <Table.Summary.Cell index={0}>
+                                <b>Total</b>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>0.00</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                        </Table.Summary.Row>
                     );
-                  }}
-                
+                }}
+
             />
         );
     }
@@ -204,8 +171,14 @@ const AddProduction = () => {
                 </div>
                 <div>
                     <Radio.Group options={plainOptions} onChange={onChange1} value={ProdFilter} />
-
-                </div>  
+                    {ProdFilter == "Machine Wise" ?
+                        <>
+                            <Checkbox> Generate QR Code</Checkbox>
+                        </>
+                        :
+                        <></>
+                    }
+                </div>
 
             </div>
 
@@ -278,56 +251,58 @@ const AddProduction = () => {
                     </Row>
 
 
-                        <Row style={{width:"100%"}} className='w-100' justify={"start"}>
+                    <Row style={{ width: "100%" }} className='w-100' justify={"start"}>
 
                         {ProdFilter == "Machine Wise" ?
-                      <Col span={8}>
-                      <Form.Item label="M. No" {...formItemLayout}>
-                          <Select
-                              defaultValue="1"
-                              style={{
-                                  width: "100%",
-                              }}
-                              onChange={handleChange}
-                              options={[
-                                  {
-                                      value: '1',
-                                      label: '1',
-                                  },
-                                  {
-                                      value: '2',
-                                      label: '2',
-                                  },
-
-                              ]}
-                          />
-                      </Form.Item>
-                  </Col>    
-                        :
-                            <>
-                            </>}
                             <Col span={8}>
-                                <Form.Item label="Last Entered Taka No." {...takaLayout}>
-                                    <Row >
-                                        <Col span={8}>
-                                            <Input />
-                                        </Col>
-                                        <Col span={10}>
-                                            <Input />
-                                        </Col>
-                                    </Row>
+                                <Form.Item label="M. No" {...formItemLayout}>
+                                    <Select
+                                        defaultValue="1"
+                                        style={{
+                                            width: "100%",
+                                        }}
+                                        onChange={handleChange}
+                                        options={[
+                                            {
+                                                value: '1',
+                                                label: '1',
+                                            },
+                                            {
+                                                value: '2',
+                                                label: '2',
+                                            },
+
+                                        ]}
+                                    />
                                 </Form.Item>
                             </Col>
+                            :
+                            <>
+                            </>}
+                        <Col span={8}>
+                            <Form.Item label="Last Entered Taka No." {...takaLayout}>
+                                <Row >
+                                    <Col span={8}>
+                                        <Input />
+                                    </Col>
+                                    <Col span={10}>
+                                        <Input />
+                                    </Col>
+                                </Row>
+                            </Form.Item>
+                        </Col>
 
-                            <Col>
-                            <Form.Item>
-                            <Button type="primary">Back</Button>
-                        </Form.Item>
+                        <Col span={ProdFilter == "Machine Wise" ? 8 : 16}>
+                            <Flex justify='flex-end'>
+                                <Form.Item>
+                                    <Button type="primary">Back</Button>
+                                </Form.Item>
+                            </Flex>
 
-</Col>
-                        </Row>
+                        </Col>
+                    </Row>
 
-                       
+
 
 
                 </Form>
