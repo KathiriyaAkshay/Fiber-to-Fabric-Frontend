@@ -20,6 +20,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getReceiveSizeBeamListRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import DeleteSizeBeamOrderButton from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/DeleteSizeBeamButton";
 import SizeBeamChallanModal from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
+import BeamCardInformationModel from "../../../../components/common/modal/beamCardInformation";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -167,13 +168,14 @@ function ReceiveSizeBeamList() {
             >
               <EditOutlined />
             </Button>
-            {/* <DeleteYarnReceiveButton details={details} />
-            <YarnReceiveChallanModal details={details} /> */}
             <DeleteSizeBeamOrderButton
               details={details}
             />
             <SizeBeamChallanModal
               details={details}
+            />
+            <BeamCardInformationModel
+              data = {details}
             />
           </Space>
         );
