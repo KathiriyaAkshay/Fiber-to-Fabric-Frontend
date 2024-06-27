@@ -107,6 +107,10 @@ import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive
 import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
 import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
 import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
+import AddProduction from "./pages/production/AddProduction";
+import InhouseProduction from "./pages/production/InhouseProduction";
+import OpenProduction from "./pages/production/OpenProduction";
+import Payment from "./pages/accounts/Payment";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -283,15 +287,15 @@ const router = createBrowserRouter([
           { index: true, element: <div>production</div> },
           {
             path: "add-new-production",
-            element: <div>add-new-production</div>,
+            element:<AddProduction/>,
           },
           {
             path: "inhouse-production",
-            element: <div>inhouse-production</div>,
+            element: <InhouseProduction/>,
           },
           {
             path: "opening-production",
-            element: <div>opening-production</div>,
+            element: <OpenProduction/>,
           },
           { path: "taka-tp-cutting", element: <div>taka-tp-cutting</div> },
           {
@@ -626,7 +630,7 @@ const router = createBrowserRouter([
           },
           {
             path: "payment",
-            element: <div>payment</div>,
+            element: <Payment/>,
           },
           {
             path: "balance-sheet",
