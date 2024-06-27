@@ -107,6 +107,7 @@ import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive
 import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
 import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
 import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
+import YarnBillList from "./pages/purchase/bill/yarnbill/yarnBillList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -480,7 +481,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-bills",
-                element: <div>yarn-bills</div>,
+                element: <YarnBillList/>,
               },
             ],
           },

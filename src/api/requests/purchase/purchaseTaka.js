@@ -23,3 +23,11 @@ export function getPurchaseTakaByIdRequest({ id, params }) {
 export function deletePurchaseTakaRequest({ id, params }) {
     return api.delete(`/purchase/taka/delete/${id}`, { params });
 }
+
+export function getYarnBillListRequest({params}) {
+    return api.get(`/yarn-stock/yarn-receive-challan/bill/list`, {params}) ; 
+}
+
+export function getYarnBillById({id, params}){
+    return api.get(`/yarn-stock/yarn-receive-challan/bill/get/${id}`, {params}) ; 
+}
