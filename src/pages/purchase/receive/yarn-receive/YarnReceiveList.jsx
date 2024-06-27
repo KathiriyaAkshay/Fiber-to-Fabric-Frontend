@@ -8,7 +8,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusCircleOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -19,7 +19,6 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getYarnReceiveListRequest } from "../../../../api/requests/purchase/yarnReceive";
 import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnReceiveButton";
 import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
-import moment from "moment";
 import MultipleChallanCreateButton from "../../../../components/purchase/receive/yarnReceive/createMultipleChallan";
 
 function YarnReceiveList() {
@@ -172,6 +171,40 @@ function YarnReceiveList() {
     },
   ];
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]) ; 
+  const [selecteChallanId, setSelectecdChallanId] = useState(null)
+  
+  const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
+
+    let lastElement = newSelectedRows[newSelectedRows?.length - 1] ; 
+    let lastElement_yarn_stock_company_id = lastElement?.yarn_stock_company_id ; 
+   
+    if (selecteChallanId == null){
+      setSelectecdChallanId(lastElement_yarn_stock_company_id) ; 
+      setSelectedRowKeys(newSelectedRowKeys) ; 
+    
+    } else if (selecteChallanId == lastElement_yarn_stock_company_id){
+      setSelectedRowKeys(newSelectedRowKeys) ; 
+      
+    } else {
+      setSelectecdChallanId(lastElement_yarn_stock_company_id) ; 
+      setSelectedRowKeys([lastElement?.id])
+    }
+    setSelectedRows(newSelectedRows)
+
+  };
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    selections: [
+      Table.SELECTION_ALL,
+      Table.SELECTION_INVERT,
+      Table.SELECTION_NONE
+    ],
+  };
+
   function renderTable() {
     if (isLoadingYarnReceiveList) {
       return (
@@ -183,6 +216,7 @@ function YarnReceiveList() {
 
     return (
       <Table
+        rowSelection={rowSelection}
         dataSource={yarnReceiveListRes?.row || []}
         columns={columns}
         rowKey={"id"}
@@ -211,6 +245,13 @@ function YarnReceiveList() {
           />
         </div>
         <Flex align="center" gap={10} wrap="wrap">
+          
+          <Flex align="center" gap={20}>
+            {selectedRows?.length > 0 && (
+              <YarnReceiveChallanModal details={selectedRows} />
+            )}
+          </Flex>
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               From
