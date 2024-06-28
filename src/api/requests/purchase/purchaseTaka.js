@@ -31,3 +31,7 @@ export function getYarnBillListRequest({params}) {
 export function getYarnBillById({id, params}){
     return api.get(`/yarn-stock/yarn-receive-challan/bill/get/${id}`, {params}) ; 
 }
+
+export function deleteYarnBill({id, params}) {
+    return api.delete(`yarn-stock/yarn-receive-challan/bill/delete/${id}`, { params });
+}

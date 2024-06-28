@@ -10,6 +10,10 @@ import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getYarnBillListRequest } from "../../../../api/requests/purchase/purchaseTaka";
 import moment from "moment";
 import ViewYarnReceiveChallan from "../../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
+import DeleteYarnBillButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnBillButton";
+import useDebounce from "../../../../hooks/useDebounce";
+import dayjs from "dayjs";
+import UpdateYarnChallanModel from "../../../../components/purchase/receive/yarnReceive/updateYarnChallanModel";
 
 const YarnBillList = () => {
     const { company, companyId } = useContext(GlobalContext);
@@ -18,82 +22,102 @@ const YarnBillList = () => {
     const navigatte = useNavigate();
 
     const [supplier, setSupplier] = useState();
+    const debounceSupplier = useDebounce(supplier, 500);
+
+    const [toDate, setToDate] = useState();
+    const debouncedToDate = useDebounce(
+        toDate && dayjs(toDate).format("YYYY-MM-DD"),
+        500
+    );
+    const [fromDate, setFromDate] = useState();
+    const debouncedFromDate = useDebounce(
+        fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
+        500
+    );
+
+    const [status, setStatus] = useState() ;
+    const debounceStatus = useDebounce(status, 600); 
 
     const {
         data: dropdownSupplierListRes,
         isLoading: isLoadingDropdownSupplierList,
-      } = useQuery({
+    } = useQuery({
         queryKey: ["dropdown/supplier/list", { company_id: companyId }],
         queryFn: async () => {
-          const res = await getDropdownSupplierListRequest({
-            params: { company_id: companyId },
-          });
-          return res.data?.data?.supplierList;
+            const res = await getDropdownSupplierListRequest({
+                params: { company_id: companyId },
+            });
+            return res.data?.data?.supplierList;
         },
         enabled: Boolean(companyId),
     });
 
-    const {data: yarnBillData, isLoading} = useQuery({
-        queryKey:[
-            "yarn", 
-            "bill", 
-            "list", 
+    const { data: yarnBillData, isLoading } = useQuery({
+        queryKey: [
+            "yarn/bill/list",
             {
                 company_id: companyId,
-                page, 
-                pageSize
+                page,
+                pageSize,
+                supplier_company: debounceSupplier, 
+                bill_from: debouncedFromDate,
+                bill_to: debouncedToDate
             }
-        ], 
+        ],
         queryFn: async () => {
             const res = await getYarnBillListRequest({
                 params: {
                     company_id: companyId,
-                    page, 
-                    pageSize
+                    page,
+                    pageSize,
+                    supplier_company: debounceSupplier, 
+                    bill_from: debouncedFromDate,
+                    bill_to: debouncedToDate
                 }
             })
-            return res?.data?.data ; 
+            return res?.data?.data;
         },
-        enabled : Boolean(companyId) 
+        enabled: Boolean(companyId)
     })
 
     const columns = [
         {
-            title: "ID", 
-            dataIndex: "id"
-        }, 
+            title: "ID",
+            dataIndex: "id",
+            render: (text, record, index) => ((page * pageSize) + index) + 1
+        },
         {
-            title: "Bill Date", 
-            dataIndex: "bill_date", 
+            title: "Bill Date",
+            dataIndex: "bill_date",
             render: (text, record) => (
                 moment(text).format("DD-MM-YYYY")
             )
-        }, 
+        },
         {
-            title: "Bill No", 
+            title: "Bill No",
             dataIndex: "invoice_no"
-        }, 
+        },
         {
-            title: "Supplier name", 
+            title: "Supplier name",
             dataIndex: ["supplier", "supplier", "supplier_name"]
-        }, 
+        },
         {
-            title: "Supplier Company", 
+            title: "Supplier Company",
             dataIndex: ["supplier", "supplier", "supplier_company"]
-        }, 
+        },
         {
-            title: "Yarn Company", 
+            title: "Yarn Company",
             dataIndex: [""]
-        }, 
+        },
         {
-            title: "Yarn dennier", 
+            title: "Yarn dennier",
             dataIndex: [""]
-        }, 
+        },
         {
-            title :"Quantity KG", 
-            dataIndex: "yarn_bill_details", 
-            render: (text,  record) => {
-                let total_quantity = 0 ; 
+            title: "Quantity KG",
+            dataIndex: "yarn_bill_details",
+            render: (text, record) => {
+                let total_quantity = 0;
                 text?.map((element) => {
                     total_quantity = total_quantity + Number(element?.quantity_amount)
                 })
@@ -101,53 +125,55 @@ const YarnBillList = () => {
                     <div>{total_quantity}</div>
                 )
             }
-        }, 
+        },
         {
-            title: "Quantity Rate", 
-            dataIndex: "yarn_bill_details", 
+            title: "Quantity Rate",
+            dataIndex: "yarn_bill_details",
             render: (text, record) => {
-                return(
+                return (
                     <div>{text[0]?.quantity_rate}</div>
                 )
             }
-        }, 
+        },
         {
-            title: "SGST", 
-            dataIndex: "SGST_amount" 
-        }, 
+            title: "SGST",
+            dataIndex: "SGST_amount"
+        },
         {
-            title: "CGST", 
-            dataIndex :"CGST_amount"
-        }, 
+            title: "CGST",
+            dataIndex: "CGST_amount"
+        },
         {
-            title: "IGST", 
+            title: "IGST",
             dataIndex: "IGST_amount"
-        }, 
+        },
         {
-            title: "Total Amount", 
+            title: "Total Amount",
             dataIndex: "net_amount"
-        }, 
+        },
         {
             title: "Amt incl. gst.",
-            dataIndex :"after_TDS_amount"
-        }, 
+            dataIndex: "after_TDS_amount"
+        },
         {
-            title: "Due Date", 
-            dataIndex: "due_date", 
+            title: "Due Date",
+            dataIndex: "due_date",
             render: (text, record) => (
                 moment(text).format("MM-DD-YYYY")
             )
-        }, 
+        },
         {
-            title: "Due Days", 
-            dataIndex :""
-        }, 
+            title: "Due Days",
+            dataIndex: ""
+        },
         {
-            title : "Action", 
+            title: "Action",
             render: (record) => {
-                return(
+                return (
                     <Space>
-                        <ViewYarnReceiveChallan details={record}/>
+                        <ViewYarnReceiveChallan details={record} />
+                        <DeleteYarnBillButton details={record} />
+                        <UpdateYarnChallanModel details={record} />
                     </Space>
                 )
             }
@@ -157,13 +183,13 @@ const YarnBillList = () => {
     function renderTable() {
         if (isLoading) {
             return (
-              <Spin tip="Loading" size="large">
-                <div className="p-14" />
-              </Spin>
+                <Spin tip="Loading" size="large">
+                    <div className="p-14" />
+                </Spin>
             );
         }
 
-        return(
+        return (
             <Table
                 dataSource={yarnBillData?.row || []}
                 columns={columns}
@@ -175,24 +201,24 @@ const YarnBillList = () => {
                     onChange: onPageChange,
                 }}
                 summary={(pageData) => {
-                    return(
+                    return (
                         <Table.Summary.Row className="font-semibold">
                             <Table.Summary.Cell>Total</Table.Summary.Cell>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
                             <Table.Summary.Cell>
                                 <Typography.Text>100</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell>
                                 <Typography.Text>100</Typography.Text>
                             </Table.Summary.Cell>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
-                            <Table.Summary.Cell/>
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
                             <Table.Summary.Cell>
                                 <Typography.Text>100</Typography.Text>
                             </Table.Summary.Cell>
@@ -217,6 +243,29 @@ const YarnBillList = () => {
                         <Flex align="center" gap={10}>
                             <Flex align="center" gap={10}>
                                 <Typography.Text className="whitespace-nowrap">
+                                    payment status
+                                </Typography.Text>
+                                <Select
+                                    placeholder="Payment status"
+                                    options={[
+                                        {label:"paid", value: "paid"},
+                                        {label: "Unpaid", value: "unpaid"}
+                                    ]}
+                                    dropdownStyle={{
+                                        textTransform: "capitalize",
+                                    }}
+                                    value={status}
+                                    onChange={setStatus}
+                                    style={{
+                                        textTransform: "capitalize",
+                                    }}
+                                    allowClear
+                                    className="min-w-40"
+                                />
+                            </Flex>
+
+                            <Flex align="center" gap={10}>
+                                <Typography.Text className="whitespace-nowrap">
                                     Supplier
                                 </Typography.Text>
                                 <Select
@@ -234,12 +283,41 @@ const YarnBillList = () => {
                                     style={{
                                         textTransform: "capitalize",
                                     }}
+                                    allowClear
                                     className="min-w-40"
+                                />
+                            </Flex>
+
+                            <Flex align="center" gap={10}>
+                                <Typography.Text className="whitespace-nowrap">
+                                    From
+                                </Typography.Text>
+                                <DatePicker
+                                    allowClear={true}
+                                    style={{
+                                        width: "200px",
+                                    }}
+                                    format="YYYY-MM-DD"
+                                    value={fromDate}
+                                    onChange={setFromDate}
+                                />
+                            </Flex>
+
+                            <Flex align="center" gap={10}>
+                                <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+                                <DatePicker
+                                    allowClear={true}
+                                    style={{
+                                        width: "200px",
+                                    }}
+                                    format="YYYY-MM-DD"
+                                    value={toDate}
+                                    onChange={setToDate}
                                 />
                             </Flex>
                         </Flex>
                     </Flex>
-                
+
                 </div>
                 {renderTable()}
             </div>
