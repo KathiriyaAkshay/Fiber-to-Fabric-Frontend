@@ -59,11 +59,19 @@ body {
 .ant-table{
   font-size: 14px !important;
 
+  .ant-table-thead{
+    .ant-table-cell{
+      padding-top: 12px !important;
+      padding-bottom: 12px !important;
+    }  
+  }
+
   .ant-table-cell{
-    padding: 12px !important;
+    padding: 9px !important;
   }
 }
 
 .ant-icon{
   font-size: 9px !important;
 }
+

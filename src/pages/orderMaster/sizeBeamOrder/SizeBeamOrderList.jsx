@@ -12,6 +12,7 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import DeleteSizeBeamOrderButton from "../../../components/orderMaster/sizeBeamOrder/DeleteSizeBeamOrderButton";
 import useDebounce from "../../../hooks/useDebounce";
+import BeamPipeChallanModel from "../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/BeamPipeChallanMode";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ function SizeBeamOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
-          FromDate: debouncedFromDate, 
+          FromDate: debouncedFromDate,
           toDate: debouncedToDate
         },
       });
@@ -199,7 +200,7 @@ function SizeBeamOrderList() {
 
         return (
           <Space>
-            <ViewDetailModal
+            {/* <ViewDetailModal
               title="Beam Pipe Challan"
               details={[
                 {
@@ -214,7 +215,8 @@ function SizeBeamOrderList() {
                 { title: "Order Status", value: status },
                 { title: "Print Challan", value: print_challan_status },
               ]}
-            />
+            /> */}
+            <BeamPipeChallanModel details={record} />
 
             {record?.status == "PENDING" && (
               <>
@@ -271,7 +273,7 @@ function SizeBeamOrderList() {
             type="text"
           />
         </div>
-        <Flex style={{marginLeft:"auto"}} gap={10}>
+        <Flex style={{ marginLeft: "auto" }} gap={10}>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               From

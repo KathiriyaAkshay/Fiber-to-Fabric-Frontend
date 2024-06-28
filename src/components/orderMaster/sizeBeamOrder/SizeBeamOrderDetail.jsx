@@ -1,7 +1,8 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Select, Table } from "antd";
+import { Button, Flex, Form, Input, Select, Table, message } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 // import { initialOrderDetail } from "../../../constants/orderMaster";
 
 function SizeBeamOrderDetail({ control, errors }) {
@@ -9,6 +10,12 @@ function SizeBeamOrderDetail({ control, errors }) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: "order_details",
+  });
+
+  const { controller, register, handleSubmit, setValue } = useForm({
+    defaultValues: {
+      order_details: [{ item: '' }] // setting the default value for the array
+    }
   });
 
   const columns = [
@@ -225,9 +232,14 @@ function SizeBeamOrderDetail({ control, errors }) {
       render: (text, record, index) => {
         return (
           <Button
+            danger
             key={text?.id}
             onClick={() => {
-              remove(index);
+              if (fields.length == 1){
+                message.warning("At least required one beam in order")
+              } else {
+                remove(index)
+              }
             }}
           >
             <DeleteOutlined />
