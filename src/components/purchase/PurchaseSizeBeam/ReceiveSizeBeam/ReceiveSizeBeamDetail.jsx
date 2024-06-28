@@ -1,5 +1,5 @@
-import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Table } from "antd";
+import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
+import { Button, Flex, Form, Input, Space, Table, message } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 
@@ -9,11 +9,6 @@ function ReceiveSizeBeamDetail({ control, errors }) {
     control,
     name: "beam_details",
   });
-
-  useEffect(() => {
-    console.log("Fields information");
-    console.log(fields);
-  }, [fields])
 
   const columns = [
     {
@@ -240,14 +235,26 @@ function ReceiveSizeBeamDetail({ control, errors }) {
       key: "actions",
       render: (text, record, index) => {
         return (
-          <Button
-            key={text?.id}
-            onClick={() => {
-              remove(index);
-            }}
-          >
-            <DeleteOutlined />
-          </Button>
+          <Space>
+            <Button
+              danger
+              key={text?.id}
+              onClick={() => {
+                if (fields?.length == 1){
+                  message.warning("At least required one beam in receive size beam") ; 
+                } else{
+                  remove(index);
+                }
+              }}
+            >
+              <DeleteOutlined />
+            </Button>
+            <Button onClick={() => {
+              console.log(fields);
+            }}>
+              <PlusCircleFilled/>
+            </Button>
+          </Space>
         );
       },
       className: "align-top",

@@ -12,6 +12,7 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
 import DeleteYarnOrderButton from "../../../components/orderMaster/yarnOrder/DeleteYarnOrder";
+import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 function YarnOrderList() {
   const navigate = useNavigate();
@@ -244,33 +245,31 @@ function YarnOrderList() {
 
         return (
           <Space>
-            <ViewDetailModal
-              title="Yarn Order Detail"
+            <GridInformationModel
+              title = "Yarn Order Details"
               details={[
-                { title: "Yarn Company", value: yarn_company_name },
+                { label: "Yarn Company", value: yarn_company_name },
                 {
-                  title: "Dennier",
+                  label: "Dennier",
                   value: `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
                 },
                 {
-                  title: "Order Date",
+                  label: "Order Date",
                   value: dayjs(order_date).format("DD-MM-YYYY"),
                 },
-                { title: "Supplier Name", value: supplierName },
-                { title: "Order No.", value: order_no },
-                { title: "Lot No.", value: lot_no },
-                { title: "Yarn Grade", value: yarn_grade },
-                { title: "Rate", value: rate },
-                { title: "Credit Days", value: credit_days },
-                { title: "Quantity", value: quantity },
-                { title: "Pending Quantity", value: pending_quantity },
-                { title: "Delivered Quantity", value: delivered_quantity },
-                { title: "Approx Cartoon", value: approx_cartoon },
-                { title: "Pending Cartoon", value: pending_cartoon },
-                { title: "Delivered Cartoon", value: delivered_cartoon },
-                { title: "Approx Amount", value: approx_amount },
-                // { title: "Advance Amount", value: "" },
-                // { title: "Remaining Amount", value: "" },
+                { label: "Supplier Name", value: supplierName },
+                { label: "Order No.", value: order_no },
+                { label: "Lot No.", value: lot_no },
+                { label: "Yarn Grade", value: yarn_grade },
+                { label: "Rate", value: rate },
+                { label: "Credit Days", value: credit_days },
+                { label: "Quantity", value: quantity },
+                { label: "Pending Quantity", value: pending_quantity },
+                { label: "Delivered Quantity", value: delivered_quantity },
+                { label: "Approx Cartoon", value: approx_cartoon },
+                { label: "Pending Cartoon", value: pending_cartoon },
+                { label: "Delivered Cartoon", value: delivered_cartoon },
+                { label: "Approx Amount", value: approx_amount },
               ]}
             />
             <Button

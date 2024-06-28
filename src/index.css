@@ -75,3 +75,24 @@ body {
   font-size: 9px !important;
 }
 
+/* Grid information model  */
+
+.grid-information-model{
+  .ant-descriptions-item-label{
+    max-width: 40% !important;
+    padding: 8px !important;
+    padding-left: 10px !important;
+
+    span{
+      font-weight: 600 !important;
+      color: black !important;
+    }
+  }
+
+  .ant-descriptions-item-content{
+    max-width: 70%;
+    min-width: 70% !important;
+    padding: 8px !important;
+    padding-left: 12px !important;
+  }
+}

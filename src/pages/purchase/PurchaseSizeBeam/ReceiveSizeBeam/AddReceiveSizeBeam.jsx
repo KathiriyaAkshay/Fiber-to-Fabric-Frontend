@@ -79,7 +79,7 @@ function AddReceiveSizeBeam() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
@@ -91,7 +91,7 @@ function AddReceiveSizeBeam() {
       return res.data?.data?.machineList;
     },
     enabled: Boolean(companyId),
-  }); 
+  });
 
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
@@ -208,16 +208,16 @@ function AddReceiveSizeBeam() {
       }
     );
   }, [setValue, sizeBeamOrderListRes?.SizeBeamOrderList, size_beam_order_id]);
-  
+
   function disabledDate(current) {
     // Disable future dates
     if (current && current > moment().endOf('day')) {
-     return true;
+      return true;
     }
   }
 
-  const [pendingMeter, setPendingMeter] = useState(0) ; 
-  const [totalMeter, setTotalMeter] = useState(0) ; 
+  const [pendingMeter, setPendingMeter] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
 
   return (
     <div className="flex flex-col p-4">
@@ -271,7 +271,7 @@ function AddReceiveSizeBeam() {
                       }
                     )}
                     onSelect={(value, option) => {
-                      setTotalMeter(option?.total_meter == null?0:option?.total_meter)
+                      setTotalMeter(option?.total_meter == null ? 0 : option?.total_meter)
                     }}
                   />
                 )}
@@ -388,7 +388,7 @@ function AddReceiveSizeBeam() {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} disabled={!size_beam_order_id} />
+                  <Input type="number" {...field} disabled={!size_beam_order_id} />
                 )}
               />
             </Form.Item>

@@ -19,8 +19,8 @@ export const initialOrderDetail = {
 
 export const BEAM_TYPE_OPTION_LIST = [
   { value: "pasarela(primary)", label: "Pasarela (Primary)" },
-  { value: "non-pasarela(primary)", label: "Non-Pasarela (Primary)" },
-  { value: "non-pasarela(secondary)", label: "Non-Pasarela (Secondary)" },
+  { value: "non pasarela (primary)", label: "Non-Pasarela (Primary)" },
+  { value: "non pasarela (secondary)", label: "Non-Pasarela (Secondary)" },
 ];
 export const ORDER_STATUS = [
   { label: "Pending", value: "pending" },
