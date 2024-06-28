@@ -826,10 +826,19 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 </Form.Item>
                             </Col> */}
                             <Col span={4} className="p-2 border-0 border-r border-solid">
-                                NET Amount
+                                <strong>NET Amount</strong>
                             </Col>
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.net_amount}
+                            </Col>
+                        </Row>
+
+                        <Row  className="border-0 border-b border-solid !m-0">
+                            <Col span={4} className="p-2 font-semibold">
+                                Rs.(IN WORDS):
+                            </Col>
+                            <Col span={20} className="p-2 font-semibold">
+                                {Number(currentValues?.net_amount)?toWords.convert(currentValues?.net_amount):""}
                             </Col>
                         </Row>
 

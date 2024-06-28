@@ -28,7 +28,7 @@ import {
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder";
 import { ORDER_STATUS, ORDER_TYPE } from "../../../constants/orderMaster";
-import { render } from "react-dom";
+import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const MyOrderList = () => {
   // const [search, setSearch] = useState();
@@ -288,7 +288,7 @@ const MyOrderList = () => {
         text == "complete"?<>
           <Tag color="green">{text}</Tag>
         </>:<>
-          <Tag color="red">{text}</Tag>
+          <Tag color="red">{String(text).toUpperCase()}</Tag>
         </>
       )
     },
@@ -314,20 +314,25 @@ const MyOrderList = () => {
     {
       title: "Action",
       render: (details) => {
+        console.log(details);
         return (
           <Space>
-            <ViewDetailModal
+            <GridInformationModel
               title="Order Details"
               isScroll={true}
               details={[
-                { title: "Order Type", value: details.order_type },
+                { label: "Order Type", value: details.order_type },
                 {
-                  title: "Order Date",
+                  label: "Order Date",
                   value: dayjs(details.order_date).format("DD-MM-YYYY"),
                 },
-                { title: "Soda Code", value: "" },
                 {
-                  title: "Party / Supplier Name",
+                  label: "Order Time",
+                  value: dayjs(details.order_date).format("HH:mm:ss"),
+                },
+                { label: "Soda Code", value: details?.order_no },
+                {
+                  label: "Party / Supplier Name",
                   value: `${
                     details.party
                       ? `${details.party.first_name} ${details.party.last_name}`
@@ -335,35 +340,33 @@ const MyOrderList = () => {
                   }`,
                 },
                 {
-                  title: "Quality Name",
+                  label: "Quality Name",
                   value: details.inhouse_quality.quality_name,
                 },
                 {
-                  title: "Broker Name",
+                  label: "Broker name", 
                   value: `${details.broker.first_name} ${details.broker.last_name}`,
                 },
-                { title: "Total Lot", value: details.total_lot },
-                { title: "Total Taka", value: details.total_taka },
-                { title: "Total Meter", value: details.total_meter },
-                { title: "Rate", value: details.rate },
-                { title: "Approx Amount", value: "" },
-                { title: "Brokerage(%)", value: "" },
-                { title: "Brokerage(Rs)", value: "" },
-                { title: "Total Amount", value: details.amount },
+                { label: "Total Lot", value: details.total_lot },
+                { label: "Total Taka", value: details.total_taka },
+                { label: "Total Meter", value: details.total_meter },
+                { label: "Rate", value: details.rate },
+                { label: "Approx Amount", value: details?.amount },
+                { label: "Brokerage(%)", value: 0 },
+                { label: "Brokerage(Rs)", value: 0 },
+                { label: "Total Amount", value: details.total_amount },
 
-                { title: "Credit Days", value: "" },
-                { title: "Remarks", value: "" },
-                { title: "Delivered Lot", value: "" },
-                { title: "Delivered Taka", value: details.delivered_taka },
-                { title: "Delivered Meter", value: details.delivered_meter },
-                { title: "Pending Meter", value: details.pending_meter },
-                { title: "Return Taka", value: "" },
-                { title: "Return Meter", value: "" },
-                { title: "Delivered", value: "" },
-                { title: "Date", value: "" },
-                { title: "Time", value: "" },
-                { title: "Checker Name", value: "" },
-                { title: "Checker Mobile No.", value: "" },
+                { label: "Credit Days", value: details?.credit_days },
+                { label: "Remarks", value: details?.notes },
+                { label: "Delivered Lot", value: "" },
+                { label: "Delivered Taka", value: details.delivered_taka },
+                { label: "Delivered Meter", value: details.delivered_meter },
+                { label: "Pending Meter", value: details.pending_meter },
+                { label: "Pending Taka", value: details.pending_taka },
+                { label: "Return Taka", value: "" },
+                { label: "Return Meter", value: "" },
+                { label: "Checker Name", value: "" },
+                { label: "Checker Mobile No.", value: "" },
               ]}
             />
             <Button
