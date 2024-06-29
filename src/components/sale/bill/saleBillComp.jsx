@@ -88,10 +88,17 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     mutationKey: ["sale", "bill", "add"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["saleBill", "list", companyId]);
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
+      
+      if (MODE == "UPDATE"){
+        message.success("Job Gery bill updated successfully")
+      } else {
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
       }
+      
+
       handleCloseModal();
     },
     onError: (error) => {
@@ -1040,7 +1047,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               </Col>
               <Col
                 span={6}
-                className="p-2 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0"
               >
                 {"PARTY'S BANK"}
               </Col>

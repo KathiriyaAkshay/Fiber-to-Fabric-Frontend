@@ -149,6 +149,7 @@ const SaleBillList = () => {
   // function navigateToUpdate(id) {
   //   navigate(`/sales/bill/sales-bill-list/update/${id}`);
   // }
+  
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -225,6 +226,14 @@ const SaleBillList = () => {
       title: "Due Date",
       // dataIndex: "total_meter",
       // key: "total_meter",
+      render: (text, record) => {
+        let result = new Date(record?.createdAt) ; 
+        result.setDate(result.getDate() + record?.due_days);
+        console.log(result);
+        return(
+          <div>{dayjs(result).format("DD-MM-YYYY")}</div>
+        )
+      }
     },
     {
       title: "Due Days",
