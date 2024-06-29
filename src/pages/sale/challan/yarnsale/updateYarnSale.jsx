@@ -20,14 +20,16 @@ import { getYarnSaleChallanByIdRequest } from "../../../../api/requests/sale/cha
 const yarnSaleChallanResolver = yupResolver(
     yup.object().shape({
         cartoon: yup.string().required("Please, enter cartoon"),
-        kg: yup.string().required("Please, enter kg value"), 
+        kg: yup.string().required("Please, enter kg value"),
     })
 );
 
 function UpdateYarnSaleChallan() {
     const navigation = useNavigate();
     const queryClient = useQueryClient();
-    const {id} = useParams() ; 
+    const [currentStockInfo, setCurrentStockInfo] = useState(0);
+    const [createOption, setCreateOption] = useState(true);
+    const { id } = useParams();
     const {
         control,
         handleSubmit,
@@ -38,8 +40,8 @@ function UpdateYarnSaleChallan() {
     } = useForm({
         resolver: yarnSaleChallanResolver,
         defaultValues: {
-            cartoon: 0, 
-            current_stock: 0, 
+            cartoon: 0,
+            current_stock: 0,
             remaining_stock: 0,
             order_date: dayjs(),
         },
@@ -47,6 +49,7 @@ function UpdateYarnSaleChallan() {
     const { companyId, companyListRes } = useContext(GlobalContext);
 
     const [denierOptions, setDenierOptions] = useState([]);
+    const [pendingKG, setPendingKG] = useState(0) ; 
     const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
     const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
         queryKey: [
@@ -74,10 +77,10 @@ function UpdateYarnSaleChallan() {
         enabled: Boolean(companyId),
     });
 
-    const { data: yarnSaleChallanDetails} = useQuery({
+    const { data: yarnSaleChallanDetails } = useQuery({
         queryFn: async () => {
             const res = await getYarnSaleChallanByIdRequest({
-                id, 
+                id,
                 params: { company_id: companyId },
             });
             return res.data?.data;
@@ -88,9 +91,9 @@ function UpdateYarnSaleChallan() {
     const { yarn_company_name, supplier_name, current_stock, cartoon } = watch();
 
     useEffect(() => {
-        let temp_remain_stock = current_stock - cartoon ; 
-        setValue("remaining_stock", temp_remain_stock) ; 
-    }, [cartoon, current_stock, setValue]) ; 
+        let temp_remain_stock = current_stock - cartoon;
+        setValue("remaining_stock", temp_remain_stock);
+    }, [cartoon, current_stock, setValue]);
 
     useEffect(() => {
         yarnSaleChallanDetails && yscdListRes?.yarnCompanyList?.forEach((ysc) => {
@@ -103,11 +106,21 @@ function UpdateYarnSaleChallan() {
                         yarn_denier = 0,
                         luster_type = "",
                         yarn_color = "",
-                        current_stock = 0 
+                        current_stock = 0
                     }) => {
 
-                        if (yarnSaleChallanDetails?.yarn_stock_company?.id == yarn_company_id){
-                            setValue("current_stock", current_stock)
+                        if (yarnSaleChallanDetails?.yarn_stock_company?.id == yarn_company_id) {
+                            
+                            // ==== Set Stock information ==== // 
+
+                            let temp_current_stock = current_stock + yarnSaleChallanDetails?.kg ; 
+                            setValue("current_stock", temp_current_stock)
+                            setCurrentStockInfo(temp_current_stock) ; 
+                            
+                            let remain_stock = Number(temp_current_stock) - Number(yarnSaleChallanDetails?.kg) ; 
+                            setValue("pending_kg", remain_stock) ; 
+                            setPendingKG(remain_stock) ; 
+
                         }
                         return {
                             label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
@@ -159,54 +172,56 @@ function UpdateYarnSaleChallan() {
 
     const { mutateAsync: updateYarnSaleChallan } = useMutation({
         mutationFn: async (data) => {
-          const res = await updateYarnSalerChallanRequest({
-            id,
-            data,
-            params: { company_id: companyId },
-          });
-          return res.data;
+            const res = await updateYarnSalerChallanRequest({
+                id,
+                data,
+                params: { company_id: companyId },
+            });
+            return res.data;
         },
         onSuccess: (res) => {
             message.success("Update yarn sale challan successfully")
             navigation(-1);
         },
         onError: (error) => {
-          const errorMessage = error?.response?.data?.message || error.message;
-          message.error(errorMessage);
+            const errorMessage = error?.response?.data?.message || error.message;
+            message.error(errorMessage);
         },
     });
 
     useEffect(() => {
-        if (yarnSaleChallanDetails){
+        if (yarnSaleChallanDetails) {
             reset({
-                order_date: dayjs( yarnSaleChallanDetails?.createdAt), 
-                supplier_name: yarnSaleChallanDetails?.supplier?.supplier_name, 
-                supplier_id: yarnSaleChallanDetails?.supplier?.user_id, 
-                challan_no: yarnSaleChallanDetails?.challan_no, 
-                vehicle_id: yarnSaleChallanDetails?.vehicle?.id, 
-                yarn_company_name: yarnSaleChallanDetails?.yarn_stock_company?.yarn_company_name, 
-                yarn_company_id: yarnSaleChallanDetails?.yarn_stock_company?.id, 
-                cartoon: yarnSaleChallanDetails?.cartoon, 
-                kg: yarnSaleChallanDetails?.kg, 
+                order_date: dayjs(yarnSaleChallanDetails?.createdAt),
+                supplier_name: yarnSaleChallanDetails?.supplier?.supplier_name,
+                supplier_id: yarnSaleChallanDetails?.supplier?.user_id,
+                challan_no: yarnSaleChallanDetails?.challan_no,
+                vehicle_id: yarnSaleChallanDetails?.vehicle?.id,
+                yarn_company_name: yarnSaleChallanDetails?.yarn_stock_company?.yarn_company_name,
+                yarn_company_id: yarnSaleChallanDetails?.yarn_stock_company?.id,
+                cartoon: yarnSaleChallanDetails?.cartoon,
+                kg: yarnSaleChallanDetails?.kg,
                 // pending_kg: yarnSaleChallanDetails?.pending_kg
             })
+            
         }
     }, [yarnSaleChallanDetails, reset])
 
 
     async function onSubmit(data) {
-        delete data?.remaining_stock ; 
-        delete data?.supplier_name ;
-        delete data?.order_date ; 
-        delete data?.yarn_company_name ; 
-        delete data?.order_type ; 
-        delete data?.yarn_company_id ; 
-        delete data?.supplier_id ; 
-        delete data?.vehicle_id ; 
-        delete data?.current_stock ; 
-        delete data?.challan_no ; 
+        delete data?.remaining_stock;
+        delete data?.supplier_name;
+        delete data?.order_date;
+        delete data?.yarn_company_name;
+        delete data?.order_type;
+        delete data?.yarn_company_id;
+        delete data?.supplier_id;
+        delete data?.vehicle_id;
+        delete data?.current_stock;
+        delete data?.challan_no;
+        data["pending_kg"] = pendingKG ; 
 
-        await updateYarnSaleChallan(data) ; 
+        await updateYarnSaleChallan(data);
     };
 
     const disabledDate = (current) => {
@@ -469,6 +484,7 @@ function UpdateYarnSaleChallan() {
                                         onChange={(value, option) => {
                                             setValue("yarn_company_id", value)
                                             setValue("current_stock", option?.current_stock)
+                                            setCurrentStockInfo(option?.current_stock) ; 
                                         }}
                                     />
                                 )}
@@ -537,6 +553,21 @@ function UpdateYarnSaleChallan() {
                                     <Input
                                         {...field}
                                         type="number"
+                                        onChange={(e) => {
+                                            setValue("kg", e.target.value);
+
+                                            let current_cartoon = Number(e.target.value);
+                                            let remaining_stock = Number(currentStockInfo) - current_cartoon;
+                                            if (remaining_stock < 0) {
+                                                setValue("pending_kg", 0);
+                                                setPendingKG(0) ; 
+                                                setCreateOption(false);
+                                            } else {
+                                                setCreateOption(true);
+                                                setValue("pending_kg", remaining_stock);
+                                                setPendingKG(remaining_stock) ; 
+                                            }
+                                        }}
                                     />
                                 )}
                             />
@@ -555,7 +586,7 @@ function UpdateYarnSaleChallan() {
                             <Controller
                                 control={control}
                                 name="pending_kg"
-                                // disabled
+                                disabled
                                 render={({ field }) => (
                                     <Input
                                         {...field}
@@ -570,9 +601,11 @@ function UpdateYarnSaleChallan() {
                     <Button htmlType="button" onClick={() => reset()}>
                         Reset
                     </Button>
-                    <Button type="primary" htmlType="submit">
-                        Update
-                    </Button>
+                    {createOption && (
+                        <Button type="primary" htmlType="submit">
+                            Update
+                        </Button>
+                    )}
                 </Flex>
             </Form>
         </div>

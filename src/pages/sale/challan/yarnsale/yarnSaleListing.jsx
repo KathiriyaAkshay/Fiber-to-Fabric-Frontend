@@ -1,4 +1,4 @@
-import { useState } from "react";
+  import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Button,
@@ -25,6 +25,8 @@ import {
 } from "../../../../api/requests/users";
 import useDebounce from "../../../../hooks/useDebounce";
 import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
+import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
+import YarnSaleCreditNote from "../../../../components/sale/challan/yarn/yarnSaleCreditNote";
 
 function YarnSaleChallanList() {
   const navigation = useNavigate();
@@ -149,9 +151,9 @@ function YarnSaleChallanList() {
       dataIndex: "bill_status",
       render: (text) =>
         text.toLowerCase() === "pending" ? (
-          <Tag color="red">{text}</Tag>
+          <Tag color="red">{String(text).toUpperCase()}</Tag>
         ) : (
-          <Tag color="green">{text}</Tag>
+          <Tag color="green">{String(text).toUpperCase()}</Tag>
         ),
     },
     {
@@ -159,14 +161,23 @@ function YarnSaleChallanList() {
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
-          <Button
-            onClick={() => {
-              navigation(`/sales/challan/yarn-sale/update/${record?.id}`);
-            }}
-          >
-            <EditOutlined />
-          </Button>
-          <DeleteSaleYarnChallan details={record} />
+          <PrintYarnSaleChallan details={record} />
+          {record?.bill_status == "pending" && (
+            <>
+              <Button
+                onClick={() => {
+                  navigation(`/sales/challan/yarn-sale/update/${record?.id}`);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              <DeleteSaleYarnChallan details={record} />
+            </>
+          )}
+
+          {record?.bill_status != "pending" && (
+            <YarnSaleCreditNote details={record} />
+          )}
           {/* <YarnSaleChallanModel yarnSaleDetails={record} /> */}
           <Button
             onClick={() => {

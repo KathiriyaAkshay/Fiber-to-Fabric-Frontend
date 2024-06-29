@@ -73,8 +73,6 @@ const YarnSaleChallanModel = ({
   const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
   // const [isModelOpen, setIsModalOpen] = useState(false);
-  console.log({ details });
-
   const disablePastDates = (current) => {
     return current && current < new Date().setHours(0, 0, 0, 0);
   };
@@ -440,7 +438,7 @@ const YarnSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
-                <Typography.Text className="font-semibold text-center">
+                <Typography.Text className="font-semibold text-center" style={{marginBottom: 0}}>
                   CHALLAN NO.
                 </Typography.Text>
               </Col>
@@ -470,6 +468,7 @@ const YarnSaleChallanModel = ({
                     name="E_way_bill_no"
                     render={({ field }) => (
                       <Input
+                        type="number"
                         {...field}
                         placeholder="Invoice No."
                         disabled={MODE === "VIEW" || MODE === "UPDATE"}

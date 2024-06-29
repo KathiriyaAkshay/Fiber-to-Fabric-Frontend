@@ -65,8 +65,6 @@ const ViewYarnReceiveChallan = ({ details }) => {
         setTotalAmount(tempTotalAmount.toFixed(2)) ; 
     }, [details]) ; 
 
-    console.log(details);
-
     return (
         <>
             <Button onClick={() => { setIsModalOpen(true) }}>

@@ -28,6 +28,7 @@ import {
 import useDebounce from "../../../../hooks/useDebounce";
 import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
 import dayjs from "dayjs";
+import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
 
 const YarnSalesBillList = () => {
   //   const navigation = useNavigate();
@@ -213,6 +214,7 @@ const YarnSalesBillList = () => {
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
+          <PrintYarnSaleChallan details={record} />
           {/* <Button
             onClick={() => {
               navigation(`/sales/challan/yarn-sale/update/${record?.id}`);

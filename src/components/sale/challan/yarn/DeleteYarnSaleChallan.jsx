@@ -25,7 +25,7 @@ const DeleteSaleYarnChallan = ({details}) => {
         onSuccess: (res) => {
           const successMessage = res?.message;
           if (successMessage) {
-            message.success(successMessage);
+            message.success("Delete yarn sale record successfully");
           }
           queryClient.invalidateQueries(["sale", "challan", "yarn-sale", "list", companyId]);
         },
