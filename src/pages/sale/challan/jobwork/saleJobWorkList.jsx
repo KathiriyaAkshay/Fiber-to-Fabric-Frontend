@@ -25,6 +25,7 @@ import {
 import useDebounce from "../../../../hooks/useDebounce";
 import { saleJobWorkChallanListRequest } from "../../../../api/requests/sale/challan/challan";
 import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
+import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
 
 function JobWorkChallanList() {
   const navigation = useNavigate();
@@ -155,10 +156,10 @@ function JobWorkChallanList() {
       title: "Bill Status",
       dataIndex: "bill_status",
       render: (text) =>
-        text.toLowerCase() === "pending" ? (
-          <Tag color="red">{text}</Tag>
+        String(text).toLowerCase() === "pending" ? (
+          <Tag color="red">{String(text).toUpperCase()}</Tag>
         ) : (
-          <Tag color="green">{text}</Tag>
+          <Tag color="green">{String(text).toUpperCase()}</Tag>
         ),
     },
     {
@@ -166,14 +167,19 @@ function JobWorkChallanList() {
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
-          <Button
-            onClick={() => {
-              navigation(`/sales/challan/job-work/update/${record?.id}`);
-            }}
-          >
-            <EditOutlined />
-          </Button>
-          <DeleteJobWorkChallan details={record} />
+          <PrintJobWorkChallan details={record} />
+          {text?.bill_status != "pending" && (
+            <>
+              <Button
+                onClick={() => {
+                  navigation(`/sales/challan/job-work/update/${record?.id}`);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              <DeleteJobWorkChallan details={record} />
+            </>
+          )}
           {/* <JobWorkSaleChallanModel jobSaleDetails={record} /> */}
           <Button
             onClick={() => {

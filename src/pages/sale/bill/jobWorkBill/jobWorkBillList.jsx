@@ -15,6 +15,7 @@ import {
 } from "../../../../api/requests/sale/challan/challan";
 import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
 import dayjs from "dayjs";
+import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
 
 const JobWorkBillList = () => {
   //   const navigation = useNavigate();
@@ -168,7 +169,11 @@ const JobWorkBillList = () => {
     {
       title: "Rate",
       dataIndex: ["job_work_bill"],
-      render: (text) => text.rate,
+      render: (text) => (
+        <>
+          {text?.rate}
+        </>
+      ),
     },
     {
       title: "Amount",
@@ -182,6 +187,16 @@ const JobWorkBillList = () => {
     },
     {
       title: "Due Days",
+      render: (text, record) => {
+        const date1 = new Date(record?.createdAt) ; 
+        const date2 = new Date(record?.job_work_bill?.due_date) ;
+        const difference = date2 - date1 ;  
+        return(
+          <div>
+            {difference}
+          </div>
+        )
+      }
     },
     {
       title: "Bill Status",
@@ -194,6 +209,7 @@ const JobWorkBillList = () => {
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
+          <PrintJobWorkChallan details={record} />
           {/* <Button
             onClick={() => {
               navigation(`/sales/challan/job-work/update/${record?.id}`);

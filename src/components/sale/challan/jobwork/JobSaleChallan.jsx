@@ -127,7 +127,11 @@ const JobWorkSaleChallanModel = ({
       queryClient.invalidateQueries(["sale/challan/yarn-sale/list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        if (MODE == "UPDATE"){
+          message.success("Bill updated successfully") ; 
+        } else {
+          message.success(successMessage);
+        }
         handleCloseModal();
       }
     },
@@ -468,6 +472,7 @@ const JobWorkSaleChallanModel = ({
                     name="E_way_bill_no"
                     render={({ field }) => (
                       <Input
+                        type="number"
                         {...field}
                         name="E_way_bill_no"
                         placeholder="Invoice No."
@@ -978,7 +983,7 @@ const JobWorkSaleChallanModel = ({
               </Col>
               <Col
                 span={6}
-                className="p-2 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0"
               >
                 {"PARTY'S BANK"}
               </Col>
@@ -998,7 +1003,7 @@ const JobWorkSaleChallanModel = ({
               ></Col>
               <Col
                 span={6}
-                className="p-2 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0"
               ></Col>
             </Row>
           </Flex>
