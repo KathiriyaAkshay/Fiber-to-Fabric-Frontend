@@ -36,6 +36,7 @@ import {
   getSecondaryBeamRequest,
 } from "../../../../api/requests/reports/beamStockReport";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
+import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -102,10 +103,16 @@ const AddBeamStockReport = () => {
     },
     mutationKey: ["beamStock", "report", "add"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["beamStock", "report", "list"]);
+      queryClient.invalidateQueries([
+        "lastBeam",
+        "Number",
+        { company_id: companyId },
+      ]);
+
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
+        setFieldArray([]);
       }
       reset();
     },
@@ -153,13 +160,18 @@ const AddBeamStockReport = () => {
       selectedNonPasarela.forEach((index) => {
         formData.push({
           beam_load_id: nonPasarelaList[index].beam_load_id,
-          receive_size_beam_details_id:
-            nonPasarelaList[index].receive_size_beam_details_id,
-          job_beam_receive_details_id:
-            nonPasarelaList[index].job_beam_receive_details_id,
-          non_pasarela_beam_details_id:
-            nonPasarelaList[index].non_pasarela_beam_details_id,
+          // receive_size_beam_details_id:
+          //   nonPasarelaList[index].receive_size_beam_details_id,
+          // job_beam_receive_details_id:
+          //   nonPasarelaList[index].job_beam_receive_details_id,
+          // non_pasarela_beam_details_id:
+          //   nonPasarelaList[index].non_pasarela_beam_details_id,
+          secondary_loaded_beam_id:
+            nonPasarelaList[index].secondary_loaded_beam_id,
         });
+
+        // "beam_load_id": 123,
+        // "secondary_loaded_beam_id" : 34
 
         const secondaryBeamNo = data[`secondary_beam_no_${index}`];
         if (secondaryBeamNo) {
@@ -172,7 +184,7 @@ const AddBeamStockReport = () => {
           formData.secondary_receive_beam_no = secondary_receive_beam_no;
         }
       });
-
+      // console.log({ formData });
       await addPasarelaBeamStockReport(formData);
     }
   }
@@ -204,13 +216,13 @@ const AddBeamStockReport = () => {
     queryKey: [
       "nonPasarela",
       "list",
-      { company_id: companyId, quality_id, beam_type },
+      { company_id: companyId, quality_id, beam_type, machine_name },
     ],
     queryFn: async () => {
-      if (beam_type === "pasarela (primary)" && quality_id) {
+      if (beam_type === "pasarela (primary)" && quality_id && machine_name) {
         const res = await getNonPasarelaBeamRequest({
           companyId,
-          params: { company_id: companyId, quality_id },
+          params: { company_id: companyId, quality_id, machine_name },
         });
         return res.data?.data?.rows;
       }
@@ -307,13 +319,19 @@ const AddBeamStockReport = () => {
     ],
     queryFn: async () => {
       if (
-        quality_group === "inhouse(gray)" &&
+        quality_group === "inhouse(gray)" ||
         beam_type === "non pasarela (primary)"
       ) {
         const res = await getLastBeamNumberRequest({
           params: { company_id: companyId, type: quality_group },
         });
-        return res.data?.data || 0;
+        if (res.data?.data) {
+          const data = res.data?.data;
+          const splitValue = data.split("-");
+          return +splitValue[1];
+        } else {
+          return 0;
+        }
       }
     },
     enabled: Boolean(companyId),
@@ -441,7 +459,7 @@ const AddBeamStockReport = () => {
                 <Typography.Text style={{ whiteSpace: "nowrap" }}>
                   Last beam no
                 </Typography.Text>
-                <Input value={lastBeamNumber || 0} disabled />
+                <Input value={`BN-${lastBeamNumber}`} disabled />
               </Flex>
             )}
           <DatePicker
@@ -519,10 +537,7 @@ const AddBeamStockReport = () => {
                     <Select
                       {...field}
                       placeholder="Select Quality Group"
-                      options={[
-                        { label: "Inhouse (Gray)", value: "inhouse(gray)" },
-                        { label: "Job", value: "job" },
-                      ]}
+                      options={QUALITY_GROUP_OPTION_LIST}
                       onChange={(value) => {
                         field.onChange(value);
                         resetField("quality_id");

@@ -1,66 +1,58 @@
 import {
   Button,
   Col,
-  DatePicker,
   Divider,
   Flex,
-  Input,
   Modal,
-  Radio,
   Row,
   Select,
   Space,
   Spin,
   Table,
-  Tag,
   Typography,
 } from "antd";
 import {
-  AppstoreOutlined,
   CloseOutlined,
   EditOutlined,
   EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
-  PrinterOutlined,
+  TruckOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
-// import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
-import { usePagination } from "../../hooks/usePagination";
+import { useCurrentUser } from "../../../../api/hooks/auth";
+import {
+  downloadUserPdf,
+  getPDFTitleContent,
+} from "../../../../lib/pdf/userPdf";
+import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
-import { GlobalContext } from "../../contexts/GlobalContext";
-import useDebounce from "../../hooks/useDebounce";
-import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-import { getCompanyMachineListRequest } from "../../api/requests/machine";
-import { BEAM_TYPE } from "../../constants/beam";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import useDebounce from "../../../../hooks/useDebounce";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import LoadNewBeamModal from "../../../../components/beamCard/LoadNewBeamModal";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
+import { getPartyListRequest } from "../../../../api/requests/users";
+import { getBeamSentListRequest } from "../../../../api/requests/job/sent/beamSent";
 import dayjs from "dayjs";
-import FinishBeamCardModal from "../../components/beamCard/FinishBeamCardModal";
-import LoadNewBeamModal from "../../components/beamCard/LoadNewBeamModal";
-import { getBeamCardListRequest } from "../../api/requests/beamCard";
+import DeleteBeamSent from "../../../../components/job/beamSent/DeleteBeamSent";
 
-const BeamCardList = () => {
+const BeamSentList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
 
-  const [search, setSearch] = useState({
-    beamNo: "",
-    machNo: "",
-  });
-
   const [isLoadBeamModalOpen, setIsLoadBeamModalOpen] = useState(false);
 
   const [machine, setMachine] = useState();
-  const [beamType, setBeamType] = useState("primary");
+  const [party, setParty] = useState();
   const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
   const [quality, setQuality] = useState(null);
 
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedParty = useDebounce(party, 500);
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedBeamTypeDropDown = useDebounce(beamTypeDropDown, 500);
   const debouncedQuality = useDebounce(quality, 500);
@@ -108,79 +100,61 @@ const BeamCardList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: beamCardList, isLoading } = useQuery({
-    queryKey: [
-      "beamCard",
-      "list",
-      {
-        company_id: companyId,
-        page,
-        pageSize,
-        search: debouncedSearch,
-        machine_name: debouncedMachine,
-        beam_type: debouncedBeamTypeDropDown,
-        quality_id: debouncedQuality,
-        // status: debouncedStatus,
-      },
-    ],
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getBeamCardListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          search: debouncedSearch,
-          machine_name: debouncedMachine,
-          beam_type: debouncedBeamTypeDropDown,
-          quality_id: debouncedQuality,
-          // status: debouncedStatus,
-        },
+      const res = await getPartyListRequest({
+        params: { company_id: companyId },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
 
-  //   const {
-  //     mutateAsync: updateTradingQuality,
-  //     isPending: updatingTradingQuality,
-  //     variables,
-  //   } = useMutation({
-  //     mutationFn: async ({ id, data }) => {
-  //       const res = await updateTradingQualityRequest({
-  //         id,
-  //         data,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data;
-  //     },
-  //     mutationKey: ["trading", "Quantity", "update"],
-  //     onSuccess: (res) => {
-  //       const successMessage = res?.message;
-  //       if (successMessage) {
-  //         message.success(successMessage);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if (errorMessage && typeof errorMessage === "string") {
-  //         message.error(errorMessage);
-  //       }
-  //     },
-  //   });
+  const { data: beamSentListData, isLoading } = useQuery({
+    queryKey: [
+      "beamSent",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        party_id: debouncedParty,
+        machine_name: debouncedMachine,
+        beam_type: debouncedBeamTypeDropDown,
+        quality_id: debouncedQuality,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getBeamSentListRequest({
+        params: {
+          company_id: companyId,
+          page,
+          pageSize,
+          party_id: debouncedParty,
+          machine_name: debouncedMachine,
+          beam_type: debouncedBeamTypeDropDown,
+          quality_id: debouncedQuality,
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+    initialData: { rows: [], count: 0 },
+  });
 
   function navigateToAdd() {
-    navigate("/beam-card/add");
+    navigate("/job/sent/beam-sent/add");
   }
 
   function navigateToUpdate(id) {
-    navigate(`/beam-card/update/${id}`);
+    navigate(`/job/sent/beam-sent/update/${id}`);
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamCardList?.rows?.map((user, index) => {
+    const body = beamSentListData?.rows?.map((user, index) => {
       const { quality_name, quality_group, production_type, is_active } = user;
       return [
         index + 1,
@@ -208,85 +182,60 @@ const BeamCardList = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Beam No",
-      dataIndex: ["non_pasarela_beam_detail", "beam_no"],
-      key: "beam_no",
-    },
-    {
-      title: "Quality",
-      render: (details) =>
-        `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
-    },
-    {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-    },
-    {
-      title: "Taka",
-      dataIndex: ["non_pasarela_beam_detail", "taka"],
-      key: "taka",
-    },
-    {
-      title: "Meter",
-      dataIndex: ["non_pasarela_beam_detail", "meters"],
-      key: "meter",
-    },
-    {
-      title: "Pending Meter",
-      dataIndex: "pending_meter",
-      key: "pending_meter",
-    },
-    {
-      title: "Shortage %",
-      dataIndex: "shortage",
-      key: "shortage",
-      render: (text) => text || 0,
-    },
-    {
-      title: "pano",
-      dataIndex: ["non_pasarela_beam_detail", "pano"],
-      key: "pano",
-    },
-    {
-      title: "Mach.No",
-      dataIndex: "machine_no",
-      key: "machine_no",
-    },
-    {
-      title: "Day Duration",
-      dataIndex: "day_duration",
-      key: "day_duration",
-    },
-    {
-      title: "Date",
+      title: "Challan Date",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (text) => <Tag>{text}</Tag>,
+      title: "Challan No",
+      dataIndex: "challan_no",
+      key: "challan_no",
+    },
+    {
+      title: "Party Company Name",
+      dataIndex: "company",
+      key: "company",
+    },
+    {
+      title: "Total Meter",
+      dataIndex: "taka",
+      key: "taka",
+    },
+    {
+      title: "Total Weight",
+      dataIndex: "meter",
+      key: "meter",
+    },
+    {
+      title: "Delivery Charge",
+      dataIndex: "delivery_charge",
+      key: "delivery_charge",
+    },
+    {
+      title: "Power Cost Per Meter",
+      dataIndex: "power_cost_per_meter",
+      key: "power_cost_per_meter",
     },
     {
       title: "Action",
       render: (details) => {
-        console.log({ details });
         return (
           <Space>
-            <BeamCardViewDetailModal title="Beam Details" details={details} />
+            <BeamSentViewDetailModal
+              title="Beam Sent Details"
+              details={details}
+            />
             <Button
               onClick={() => {
-                navigateToUpdate(details.id);
+                navigateToUpdate(1);
               }}
             >
               <EditOutlined />
             </Button>
-            <FinishBeamCardModal />
+            <DeleteBeamSent details={details} />
             <Button>
-              <AppstoreOutlined />
+              <TruckOutlined />
             </Button>
           </Space>
         );
@@ -306,11 +255,11 @@ const BeamCardList = () => {
 
     return (
       <Table
-        dataSource={beamCardList?.rows || []}
+        dataSource={beamSentListData?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: beamCardList?.rows?.count || 0,
+          total: beamSentListData?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -323,7 +272,7 @@ const BeamCardList = () => {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Beam Card List</h3>
+          <h3 className="m-0 text-primary">Beam Sent List</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -331,150 +280,118 @@ const BeamCardList = () => {
           />
         </div>
 
-        <Flex align="center" gap={10}>
-          <Radio.Group
-            name="filter"
-            value={beamType}
-            onChange={(e) => setBeamType(e.target.value)}
-          >
+        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
+          <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
-              <Radio value={"primary"}> Primary Beam</Radio>
-              <Radio value={"secondary"}> Secondary Beam </Radio>
+              <Typography.Text className="whitespace-nowrap">
+                Machine
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select Machine"
+                loading={isLoadingMachineList}
+                value={machine}
+                options={machineListRes?.rows?.map((machine) => ({
+                  label: machine?.machine_name,
+                  value: machine?.machine_name,
+                }))}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setMachine}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
             </Flex>
-          </Radio.Group>
-          <Input
-            placeholder="BN-155"
-            value={search.beamNo}
-            onChange={(e) =>
-              setSearch((prev) => ({ ...prev, beamNo: e.target.value }))
-            }
-            style={{ width: "200px" }}
-          />
-          <Input
-            placeholder="Mach No"
-            value={search.machNo}
-            onChange={(e) =>
-              setSearch((prev) => ({ ...prev, machNo: e.target.value }))
-            }
-            style={{ width: "200px" }}
-          />
-          <Button
-            type="primary"
-            onClick={() => setIsLoadBeamModalOpen(true)}
-            className="flex-none"
-          >
-            Load New Beam
-          </Button>
-          <Button
-            icon={<FilePdfOutlined />}
-            type="primary"
-            disabled={!beamCardList?.rows?.length}
-            onClick={downloadPdf}
-            className="flex-none"
-          />
-          <Button
-            icon={<PrinterOutlined />}
-            type="primary"
-            disabled={!beamCardList?.rows?.length}
-            onClick={downloadPdf}
-            className="flex-none"
-          />
-        </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Quality
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select Quality"
+                loading={dropDownQualityLoading}
+                value={quality}
+                options={
+                  dropDownQualityListRes &&
+                  dropDownQualityListRes?.rows?.map((item) => ({
+                    value: item.id,
+                    label: item.quality_name,
+                  }))
+                }
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setQuality}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Party
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select Party"
+                value={party}
+                loading={isLoadingPartyList}
+                options={partyUserListRes?.partyList?.rows?.map((party) => ({
+                  label:
+                    party.first_name +
+                    " " +
+                    party.last_name +
+                    " " +
+                    `| ( ${party?.username})`,
+                  value: party.id,
+                }))}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setParty}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Beam Type
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select Beam Type"
+                value={beamTypeDropDown}
+                options={BEAM_TYPE_OPTION_LIST}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setBeamTypeDropDow}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+            </Flex>
+            <Button
+              icon={<FilePdfOutlined />}
+              type="primary"
+              disabled={!beamSentListData?.rows?.length}
+              onClick={downloadPdf}
+              className="flex-none"
+            />
+          </Flex>
+        </div>
       </div>
 
-      <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
-        <Flex align="center" gap={10}>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Beam Type
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select Beam Type"
-              value={beamTypeDropDown}
-              options={BEAM_TYPE}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              onChange={setBeamTypeDropDow}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Machine
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select Machine"
-              loading={isLoadingMachineList}
-              value={machine}
-              options={machineListRes?.rows?.map((machine) => ({
-                label: machine?.machine_name,
-                value: machine?.machine_name,
-              }))}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              onChange={setMachine}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
-
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Quality
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select Quality"
-              loading={dropDownQualityLoading}
-              value={quality}
-              options={
-                dropDownQualityListRes &&
-                dropDownQualityListRes?.rows?.map((item) => ({
-                  value: item.id,
-                  label: item.quality_name,
-                }))
-              }
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              onChange={setQuality}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
-
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              From
-            </Typography.Text>
-            <DatePicker
-              //   value={machine}
-              onChange={setMachine}
-              className="min-w-40"
-            />
-          </Flex>
-
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker
-              //   value={machine}
-              onChange={setMachine}
-              className="min-w-40"
-            />
-          </Flex>
-        </Flex>
-      </div>
       {renderTable()}
 
       {isLoadBeamModalOpen && (
@@ -487,13 +404,14 @@ const BeamCardList = () => {
   );
 };
 
-export default BeamCardList;
+export default BeamSentList;
 
-const BeamCardViewDetailModal = ({
+const BeamSentViewDetailModal = ({
   title = "-",
   isScroll = false,
   details = [],
 }) => {
+  console.log({ viewDetails: details });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -545,20 +463,20 @@ const BeamCardViewDetailModal = ({
       >
         <Flex className="flex-col gap-1">
           {/* {details?.map(({ title = "", value }) => {
-            return (
-              <Row
-                gutter={12}
-                className="flex-grow"
-                style={{ marginTop: "0.40rem" }}
-                key={title}
-              >
-                <Col span={10} className="font-medium">
-                  {title}
-                </Col>
-                <Col span={14}>{value ?? "-"}</Col>
-              </Row>
-            );
-          })} */}
+              return (
+                <Row
+                  gutter={12}
+                  className="flex-grow"
+                  style={{ marginTop: "0.40rem" }}
+                  key={title}
+                >
+                  <Col span={10} className="font-medium">
+                    {title}
+                  </Col>
+                  <Col span={14}>{value ?? "-"}</Col>
+                </Row>
+              );
+            })} */}
           <Row
             gutter={12}
             className="flex-grow"
@@ -573,7 +491,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}</Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -595,9 +513,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.beam_no}
-                  </Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -607,9 +523,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {dayjs(details.createdAt).format("DD-MM-YYYY")}
-                  </Typography.Text>
+                  <Typography.Text>Beam Type</Typography.Text>
                 </Col>
               </Row>
             </Col>
@@ -705,9 +619,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.end_of_tars}
-                  </Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -717,9 +629,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.pano}
-                  </Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -729,7 +639,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{details.peak}</Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
             </Col>
@@ -741,9 +651,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.taka}
-                  </Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -753,9 +661,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.meters}
-                  </Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -765,7 +671,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{details.read}</Typography.Text>
+                  <Typography.Text>value</Typography.Text>
                 </Col>
               </Row>
             </Col>

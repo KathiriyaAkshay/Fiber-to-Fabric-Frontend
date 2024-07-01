@@ -107,12 +107,14 @@ import UpdateBeamReceive from "./pages/job/receive/beamReceive/updateBeamReceive
 import AddSaleBill from "./pages/sale/bill/saleBill/addSaleBill";
 import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
 import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
+import BeamSentList from "./pages/job/sent/beamSent/beamSentList";
+import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,
-      refetchOnWindowFocus: "always",
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -505,10 +507,14 @@ const router = createBrowserRouter([
           {
             path: "sent",
             children: [
-              { index: true, element: <div>sent</div> },
+              { index: true, element: <BeamSentList /> },
               {
                 path: "beam-sent",
-                element: <div>beam-sent</div>,
+                children: [
+                  { index: true, element: <BeamSentList /> },
+                  { path: "add", element: <AddBeamSent /> },
+                  { path: "update/:id", element: <AddBeamSent /> },
+                ],
               },
               {
                 path: "yarn-sent",

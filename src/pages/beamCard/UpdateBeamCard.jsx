@@ -16,14 +16,17 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-import { getBrokerListRequest } from "../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
-import { addJobTakaRequest } from "../../api/requests/job/jobTaka";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import dayjs from "dayjs";
+import {
+  getBeamCardByIdRequest,
+  getLoadedMachineListRequest,
+  getPasarelaBeamListRequest,
+  updateLoadNewBeamRequest,
+} from "../../api/requests/beamCard";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -50,28 +53,27 @@ const UpdateBeamCard = () => {
   const { id } = params;
 
   const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
   const { companyId, company } = useContext(GlobalContext);
 
   function goBack() {
     navigate(-1);
   }
 
-  //   const { data: beamCardDetails } = useQuery({
-  //     queryKey: ["yarnSentDetail", "get", id, { company_id: companyId }],
-  //     queryFn: async () => {
-  //       const res = await getJobTakaByIdRequest({
-  //         id,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data?.data;
-  //     },
-  //     enabled: Boolean(companyId),
-  //   });
+  const { data: beamCardDetails } = useQuery({
+    queryKey: ["beamCardDetails", "get", id, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getBeamCardByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { mutateAsync: updateNewBeam, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await addJobTakaRequest({
+      const res = await updateLoadNewBeamRequest({
         id,
         data,
         params: {
@@ -80,9 +82,9 @@ const UpdateBeamCard = () => {
       });
       return res.data;
     },
-    mutationKey: ["job", "taka", "add"],
+    mutationKey: ["beam", "card", "update"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
+      queryClient.invalidateQueries(["beamCard", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -96,32 +98,23 @@ const UpdateBeamCard = () => {
   });
 
   async function onSubmit(data) {
-    // const newData = {
-    //   delivery_address: data.delivery_address,
-    //   gst_state: data.gst_state,
-    //   gst_in: data.gst_in,
-    //   challan_no: data.challan_no,
-    //   gray_order_id: data.gray_order_id,
-    //   supplier_id: data.supplier_id,
-    //   broker_id: data.broker_id,
-    //   quality_id: data.quality_id,
-    //   total_meter: parseInt(data.total_meter),
-    //   total_weight: parseInt(data.total_weight),
-    //   pending_meter: parseInt(data.pending_meter),
-    //   pending_weight: parseInt(data.pending_weight),
-    //   pending_taka: parseInt(data.pending_taka),
-    //   total_taka: parseInt(data.total_taka),
-    //   is_grey: data.is_grey,
-    //   job_challan_detail: fieldArray.map((field) => {
-    //     return {
-    //       taka_no: parseInt(data[`taka_no_${field}`]),
-    //       meter: parseInt(data[`meter_${field}`]),
-    //       weight: parseInt(data[`weight_${field}`]),
-    //     };
-    //   }),
-    // };
-    console.log({ data });
-    // await AddJobTaka(newData);
+    const newData = {
+      loaded_beam_id: +data.beam_no,
+      machine_name: data.machine_name,
+      beam_type: data.beam_type,
+      machine_no: data.machine_no,
+      quality_id: +data.quality_id,
+      pbn_id: data.pbn_id,
+      jbn_id: data.jbn_id,
+      non_pasarela_beam_id: +data.non_pasarela_beam_id,
+      load_date: dayjs(data.date).format("YYYY-MM-DD"),
+      remark: data.remark,
+      pending_meter: +data.meter,
+      peak: +data.peak,
+      read: +data.read,
+    };
+    console.log({ newData });
+    await updateNewBeam(newData);
   }
 
   const {
@@ -130,13 +123,11 @@ const UpdateBeamCard = () => {
     formState: { errors },
     reset,
     watch,
-    setValue,
   } = useForm({
     defaultValues: {
       machine_name: null,
       machine_no: null,
       beam_type: "Primary (Advance Beam)",
-      broker_id: null,
       quality_id: null,
       beam_no: null,
       company_name: "",
@@ -149,13 +140,18 @@ const UpdateBeamCard = () => {
       date: dayjs(),
       time: dayjs(),
       remark: "",
+
+      pbn_id: null,
+      jbn_id: null,
+      non_pasarela_beam_id: null,
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name } = watch();
+  const { machine_name, quality_id } = watch();
   // ------------------------------------------------------------------------------------------
 
-  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+  // const { data: machineListRes, isLoading: isLoadingMachineList } =
+  useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
@@ -198,20 +194,164 @@ const UpdateBeamCard = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId }],
+  const { data: pasarelaBeamList, isLoading: isLoadingPasarelaBeam } = useQuery(
+    {
+      queryKey: [
+        "pasarela",
+        "beam",
+        "list",
+        { company_id: companyId, machine_name, quality_id },
+      ],
+      queryFn: async () => {
+        if (machine_name && quality_id) {
+          const res = await getPasarelaBeamListRequest({
+            params: { company_id: companyId, machine_name, quality_id },
+          });
+          return res.data?.data;
+        }
+      },
+      enabled: Boolean(companyId),
+      initialData: { rows: [], machineDetail: {} },
+    }
+  );
+
+  const { data: loadedMachineList } = useQuery({
+    queryKey: [
+      "loaded",
+      "machine",
+      "list",
+      { company_id: companyId, machine_name },
+    ],
     queryFn: async () => {
-      const res = await getBrokerListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
-      });
-      return res.data?.data;
+      if (machine_name) {
+        const res = await getLoadedMachineListRequest({
+          params: { company_id: companyId, machine_name },
+        });
+        return res.data?.data;
+      }
     },
     enabled: Boolean(companyId),
+    initialData: { rows: [], machineDetail: {} },
   });
 
+  const machineNoOption = useMemo(() => {
+    if (loadedMachineList.machineDetail) {
+      let array = [];
+      for (
+        let i = 1;
+        i <= loadedMachineList.machineDetail.no_of_machines;
+        i++
+      ) {
+        const isExist = loadedMachineList.rows.find(
+          ({ machine_no }) => i === +machine_no
+        );
+        if (!isExist) {
+          array.push(i);
+        }
+      }
+      return array;
+    }
+  }, [loadedMachineList]);
+
+  // useEffect(() => {
+  //   if (beam_no && pasarelaBeamList?.rows.length) {
+  //     const selectedBeamNo = pasarelaBeamList.rows.find(
+  //       ({ id }) => id === beam_no
+  //     );
+  //     console.log({ selectedBeamNo });
+  //     setValue("non_pasarela_beam_id", selectedBeamNo.non_pasarela_beam_id);
+  //     setValue("pbn_id", selectedBeamNo.pbn_id);
+  //     setValue("jbn_id", selectedBeamNo.jbn_id);
+
+  //     if (selectedBeamNo.non_pasarela_beam_detail) {
+  //       setValue("meter", selectedBeamNo.non_pasarela_beam_detail.meters);
+  //       setValue("peak", selectedBeamNo.peak || 0);
+  //       setValue("read", selectedBeamNo.read || 0);
+
+  //       setValue("taka", selectedBeamNo.non_pasarela_beam_detail.taka);
+  //       setValue("pano", selectedBeamNo.non_pasarela_beam_detail.pano);
+  //       setValue("tar", selectedBeamNo.non_pasarela_beam_detail.ends_or_tars);
+  //     }
+  //     if (selectedBeamNo.job_beam_receive_detail) {
+  //       setValue("meter", selectedBeamNo.job_beam_receive_detail.meters);
+  //       setValue("peak", selectedBeamNo.peak || 0);
+  //       setValue("read", selectedBeamNo.read || 0);
+
+  //       setValue("taka", selectedBeamNo.job_beam_receive_detail.taka);
+  //       setValue("pano", selectedBeamNo.job_beam_receive_detail.pano);
+  //       setValue("tar", selectedBeamNo.job_beam_receive_detail.ends_or_tars);
+  //     }
+  //     if (selectedBeamNo.recieve_size_beam_detail) {
+  //       setValue("meter", selectedBeamNo.recieve_size_beam_detail.meters);
+  //       setValue("peak", selectedBeamNo.peak || 0);
+  //       setValue("read", selectedBeamNo.read || 0);
+
+  //       setValue("taka", selectedBeamNo.recieve_size_beam_detail.taka);
+  //       setValue("pano", selectedBeamNo.recieve_size_beam_detail.pano);
+  //       setValue("tar", selectedBeamNo.recieve_size_beam_detail.ends_or_tars);
+  //     }
+  //   }
+  // }, [pasarelaBeamList, beam_no, setValue]);
+
+  // useEffect(() => {
+  //   company && setValue("company_name", company.company_name);
+  // }, [company, setValue]);
+
   useEffect(() => {
-    company && setValue("company_name", company.company_name);
-  }, [company, setValue]);
+    if (beamCardDetails) {
+      console.log({ beamCardDetails });
+      const {
+        id,
+        remark,
+        peak,
+        read,
+        company_id,
+        quality_id,
+        machine_name,
+        machine_no,
+        createdAt,
+        beam_type,
+        non_pasarela_beam_detail,
+        job_beam_receive_detail,
+        recieve_size_beam_detail,
+
+        non_pasarela_beam_id,
+        pbn_id,
+        jbn_id,
+      } = beamCardDetails.loadedBeam;
+
+      const obj =
+        non_pasarela_beam_detail ||
+        job_beam_receive_detail ||
+        recieve_size_beam_detail;
+
+      console.log({ tar: obj.ends_or_tars });
+
+      reset({
+        beam_type,
+        machine_name,
+        beam_no: id,
+        // beam_no: obj.beam_no,
+        machine_no,
+        remark,
+        peak,
+        read,
+        company_name:
+          company && company.id === company_id ? company.company_name : "",
+        quality_id,
+        date: dayjs(createdAt),
+
+        taka: obj.taka,
+        meter: obj.meters,
+        pano: obj.pano,
+        tar: obj.ends_or_tars,
+
+        non_pasarela_beam_id,
+        pbn_id,
+        jbn_id,
+      });
+    }
+  }, [beamCardDetails, reset, company]);
 
   return (
     <div className="flex flex-col p-4">
@@ -228,7 +368,7 @@ const UpdateBeamCard = () => {
             padding: "12px",
           }}
         >
-          <Col span={12}>
+          {/* <Col span={12}>
             <Form.Item
               label="Machine Name"
               name="machine_name"
@@ -259,9 +399,9 @@ const UpdateBeamCard = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Beam Type"
               name="beam_type"
@@ -278,48 +418,7 @@ const UpdateBeamCard = () => {
                 }}
               />
             </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Machine No"
-              name="machine_no"
-              validateStatus={errors.machine_no ? "error" : ""}
-              help={errors.machine_no && errors.machine_no.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="machine_no"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Machine No"
-                    loading={isLoadingMachineList}
-                    options={machineListRes?.rows?.map((machine) => ({
-                      label: machine?.machine_name,
-                      value: machine?.machine_name,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-          }}
-        >
+          </Col> */}
           <Col span={12}>
             <Form.Item
               label="Select Quality"
@@ -352,7 +451,7 @@ const UpdateBeamCard = () => {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item
               label="Beam No"
               name="beam_no"
@@ -367,19 +466,45 @@ const UpdateBeamCard = () => {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    loading={isLoadingBrokerList}
+                    disabled
+                    loading={isLoadingPasarelaBeam}
                     placeholder="Select Beam No"
-                    options={brokerUserListRes?.brokerList?.rows?.map(
-                      (broker) => ({
-                        label:
-                          broker.first_name +
-                          " " +
-                          broker.last_name +
-                          " " +
-                          `| (${broker?.username})`,
-                        value: broker.id,
-                      })
-                    )}
+                    options={pasarelaBeamList?.rows?.map(({ beam_no, id }) => {
+                      return { label: beam_no, value: id };
+                    })}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Machine No"
+              name="machine_no"
+              validateStatus={errors.machine_no ? "error" : ""}
+              help={errors.machine_no && errors.machine_no.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="machine_no"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    disabled
+                    placeholder="Select Machine No"
+                    options={machineNoOption?.map((item) => ({
+                      label: item,
+                      value: item,
+                    }))}
                     style={{
                       textTransform: "capitalize",
                     }}
@@ -428,7 +553,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="taka"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} disabled placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -445,7 +572,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="meter"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} disabled placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -469,7 +598,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="peak"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} type="number" placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -486,7 +617,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="read"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} type="number" placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -503,7 +636,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="pano"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} disabled placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -520,7 +655,9 @@ const UpdateBeamCard = () => {
               <Controller
                 control={control}
                 name="tar"
-                render={({ field }) => <Input {...field} placeholder="12" />}
+                render={({ field }) => (
+                  <Input {...field} disabled placeholder="12" />
+                )}
               />
             </Form.Item>
           </Col>
@@ -549,6 +686,7 @@ const UpdateBeamCard = () => {
                     {...field}
                     format={"DD-MM-YYYY"}
                     style={{ width: "100%" }}
+                    disabled
                   />
                 )}
               />
@@ -568,7 +706,7 @@ const UpdateBeamCard = () => {
                 control={control}
                 name="time"
                 render={({ field }) => (
-                  <TimePicker {...field} style={{ width: "100%" }} />
+                  <TimePicker {...field} style={{ width: "100%" }} disabled />
                 )}
               />
             </Form.Item>
@@ -594,11 +732,8 @@ const UpdateBeamCard = () => {
           </Col>
         </Row>
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
