@@ -109,6 +109,7 @@ import UpdateSaleBill from "./pages/sale/bill/saleBill/updateSaleBill";
 import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
 import BeamSentList from "./pages/job/sent/beamSent/beamSentList";
 import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
+import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -513,7 +514,7 @@ const router = createBrowserRouter([
                 children: [
                   { index: true, element: <BeamSentList /> },
                   { path: "add", element: <AddBeamSent /> },
-                  { path: "update/:id", element: <AddBeamSent /> },
+                  { path: "update/:id", element: <UpdateBeamSent /> },
                 ],
               },
               {

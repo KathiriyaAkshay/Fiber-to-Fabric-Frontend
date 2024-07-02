@@ -194,18 +194,42 @@ const BeamSentList = () => {
     },
     {
       title: "Party Company Name",
-      dataIndex: "company",
-      key: "company",
+      dataIndex: ["supplier", "supplier_company"],
+      key: ["supplier", "supplier_company"],
     },
     {
       title: "Total Meter",
-      dataIndex: "taka",
-      key: "taka",
+      render: (detail) => {
+        const { job_beam_sent_details } = detail;
+        let totalMeter = 0;
+        job_beam_sent_details?.map((item) => {
+          const obj =
+            item.loaded_beam.non_pasarela_beam_detail ||
+            item.loaded_beam.recieve_size_beam_detail ||
+            item.loaded_beam.job_beam_receive_detail;
+
+          totalMeter += obj.meters;
+        });
+
+        return totalMeter;
+      },
     },
     {
       title: "Total Weight",
-      dataIndex: "meter",
-      key: "meter",
+      render: (detail) => {
+        const { job_beam_sent_details } = detail;
+        let totalWeight = 0;
+        job_beam_sent_details?.map((item) => {
+          const obj =
+            item.loaded_beam.non_pasarela_beam_detail ||
+            item.loaded_beam.recieve_size_beam_detail ||
+            item.loaded_beam.job_beam_receive_detail;
+
+          totalWeight += obj.net_weight || 0;
+        });
+
+        return totalWeight;
+      },
     },
     {
       title: "Delivery Charge",
@@ -220,6 +244,7 @@ const BeamSentList = () => {
     {
       title: "Action",
       render: (details) => {
+        console.log({ details });
         return (
           <Space>
             <BeamSentViewDetailModal
@@ -228,7 +253,7 @@ const BeamSentList = () => {
             />
             <Button
               onClick={() => {
-                navigateToUpdate(1);
+                navigateToUpdate(details.id);
               }}
             >
               <EditOutlined />
@@ -411,7 +436,7 @@ const BeamSentViewDetailModal = ({
   isScroll = false,
   details = [],
 }) => {
-  console.log({ viewDetails: details });
+  console.log("BeamSentViewDetailModal", details);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);

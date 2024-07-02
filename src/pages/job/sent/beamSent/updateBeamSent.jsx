@@ -15,25 +15,24 @@ import {
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
-import {
-  getNonPasarelaBeamListRequest,
-  getPasarelaBeamListRequest,
-} from "../../../../api/requests/beamCard";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-import { addBeamSentRequest } from "../../../../api/requests/job/sent/beamSent";
+import {
+  getBeamSentByIdRequest,
+  updateBeamSentRequest,
+} from "../../../../api/requests/job/sent/beamSent";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -53,9 +52,10 @@ const addJobTakaSchemaResolver = yupResolver(
   })
 );
 
-const AddBeamSent = () => {
+const UpdateBeamSent = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const { companyId } = useContext(GlobalContext);
 
@@ -67,9 +67,22 @@ const AddBeamSent = () => {
     navigate(-1);
   }
 
-  const { mutateAsync: addBeamSent, isPending } = useMutation({
+  const { data: beamSentDetails } = useQuery({
+    queryKey: ["beamSent", "get", id, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getBeamSentByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { mutateAsync: updateBeamSent, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await addBeamSentRequest({
+      const res = await updateBeamSentRequest({
+        id,
         data,
         params: {
           company_id: companyId,
@@ -77,7 +90,7 @@ const AddBeamSent = () => {
       });
       return res.data;
     },
-    mutationKey: ["add", "beam", "sent"],
+    mutationKey: ["update", "beam", "sent"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["beamSent", "list", companyId]);
       const successMessage = res?.message;
@@ -97,7 +110,6 @@ const AddBeamSent = () => {
       message.error("At least one beam should be selected.");
       return;
     }
-
     const payload = {
       supplier_id: +data.supplier_id,
       vehicle_id: +data.vehicle_id,
@@ -114,7 +126,7 @@ const AddBeamSent = () => {
     };
     delete payload.challan_date;
 
-    await addBeamSent(payload);
+    await updateBeamSent(payload);
   }
 
   const {
@@ -145,8 +157,7 @@ const AddBeamSent = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, quality_id, supplier_name, beam_type, quality_group } =
-    watch();
+  const { machine_name, quality_id, supplier_name } = watch();
 
   // ------------------------------------------------------------------------------------------
 
@@ -242,7 +253,7 @@ const AddBeamSent = () => {
     });
 
   const weftDenierDetails = useMemo(() => {
-    if (quality_id && dropDownQualityListRes.rows.length) {
+    if (quality_id && dropDownQualityListRes?.rows?.length) {
       const selectedQuality = dropDownQualityListRes.rows.find(
         ({ id }) => id === quality_id
       );
@@ -250,101 +261,101 @@ const AddBeamSent = () => {
     }
   }, [dropDownQualityListRes, quality_id]);
 
-  useQuery({
-    queryKey: [
-      "pasarela",
-      "beam",
-      "list",
-      {
-        company_id: companyId,
-        machine_name,
-        quality_id,
-        beam_type,
-        quality_group,
-      },
-    ],
-    queryFn: async () => {
-      if (machine_name && quality_id && beam_type === "pasarela(primary)") {
-        setBeamLoadIds([]);
-        setBeamTypeList();
-        resetField("total_weight");
-        resetField("total_meter");
-        const res = await getPasarelaBeamListRequest({
-          params: {
-            company_id: companyId,
-            machine_name,
-            quality_id,
-            is_job: quality_group === "job" ? true : false,
-          },
-        });
-        if (res.data?.data?.rows.length) {
-          setBeamTypeList(
-            res.data?.data?.rows.map((item) => {
-              const obj =
-                item.non_pasarela_beam_detail ||
-                item.recieve_size_beam_detail ||
-                item.job_beam_receive_detail;
-              return {
-                beam_load_id: item.id,
-                beam_no: item.beam_no,
-                ends_or_tars: obj.ends_or_tars,
-                pano: obj.pano,
-                taka: obj.taka,
-                meters: obj.meters,
-                weight: obj.net_weight,
-              };
-            })
-          );
-        } else {
-          setBeamTypeList([]);
-        }
-        // return res.data?.data;
-      }
-    },
-    enabled: Boolean(companyId),
-    initialData: { rows: [] },
-  });
+  //   useQuery({
+  //     queryKey: [
+  //       "pasarela",
+  //       "beam",
+  //       "list",
+  //       {
+  //         company_id: companyId,
+  //         machine_name,
+  //         quality_id,
+  //         beam_type,
+  //         quality_group,
+  //       },
+  //     ],
+  //     queryFn: async () => {
+  //       if (machine_name && quality_id && beam_type === "pasarela(primary)") {
+  //         setBeamLoadIds([]);
+  //         setBeamTypeList();
+  //         resetField("total_weight");
+  //         resetField("total_meter");
+  //         const res = await getPasarelaBeamListRequest({
+  //           params: {
+  //             company_id: companyId,
+  //             machine_name,
+  //             quality_id,
+  //             is_job: quality_group === "job" ? true : false,
+  //           },
+  //         });
+  //         if (res.data?.data?.rows.length) {
+  //           setBeamTypeList(
+  //             res.data?.data?.rows.map((item) => {
+  //               const obj =
+  //                 item.non_pasarela_beam_detail ||
+  //                 item.recieve_size_beam_detail ||
+  //                 item.job_beam_receive_detail;
+  //               return {
+  //                 beam_load_id: item.id,
+  //                 beam_no: item.beam_no,
+  //                 ends_or_tars: obj.ends_or_tars,
+  //                 pano: obj.pano,
+  //                 taka: obj.taka,
+  //                 meters: obj.meters,
+  //                 weight: obj.net_weight,
+  //               };
+  //             })
+  //           );
+  //         } else {
+  //           setBeamTypeList([]);
+  //         }
+  //         // return res.data?.data;
+  //       }
+  //     },
+  //     enabled: Boolean(companyId),
+  //     initialData: { rows: [] },
+  //   });
 
-  useQuery({
-    queryKey: [
-      "non-pasarela",
-      "beam",
-      "list",
-      {
-        company_id: companyId,
-        machine_name,
-        quality_id,
-        beam_type,
-        quality_group,
-      },
-    ],
-    queryFn: async () => {
-      if (
-        machine_name &&
-        quality_id &&
-        !beam_type &&
-        beam_type !== "pasarela(primary)"
-      ) {
-        setBeamLoadIds([]);
-        setBeamTypeList();
-        resetField("total_weight");
-        resetField("total_meter");
-        const params = {
-          company_id: companyId,
-          machine_name,
-          quality_id,
-          is_job: quality_group === "job" ? true : false,
-        };
-        if (beam_type === "non-pasarela(secondary)") {
-          params.is_secondary = true;
-        }
-        const res = await getNonPasarelaBeamListRequest({ params });
-        setBeamTypeList(res.data?.data?.rows);
-      }
-    },
-    enabled: Boolean(companyId),
-    initialData: { rows: [] },
-  });
+  //   useQuery({
+  //     queryKey: [
+  //       "non-pasarela",
+  //       "beam",
+  //       "list",
+  //       {
+  //         company_id: companyId,
+  //         machine_name,
+  //         quality_id,
+  //         beam_type,
+  //         quality_group,
+  //       },
+  //     ],
+  //     queryFn: async () => {
+  //       if (
+  //         machine_name &&
+  //         quality_id &&
+  // //   !beam_type &&
+  //         beam_type !== "pasarela(primary)"
+  //       ) {
+  //         setBeamLoadIds([]);
+  //         setBeamTypeList();
+  //         resetField("total_weight");
+  //         resetField("total_meter");
+  //         const params = {
+  //           company_id: companyId,
+  //           machine_name,
+  //           quality_id,
+  //           is_job: quality_group === "job" ? true : false,
+  //         };
+  //         if (beam_type === "non-pasarela(secondary)") {
+  //           params.is_secondary = true;
+  //         }
+  //         const res = await getNonPasarelaBeamListRequest({ params });
+  //         setBeamTypeList(res.data?.data?.rows);
+  //       }
+  //     },
+  //     enabled: Boolean(companyId),
+  //     initialData: { rows: [] },
+  //   });
 
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
@@ -395,13 +406,78 @@ const AddBeamSent = () => {
     }
   };
 
+  useEffect(() => {
+    if (beamSentDetails) {
+      const {
+        vehicle_id,
+        challan_no,
+        createdAt,
+        supplier: { supplier_name },
+        supplier_id,
+        machine_name,
+        quality_id,
+        quality_group,
+        beam_type,
+        power_cost_per_meter,
+        delivery_charge,
+
+        job_beam_sent_warp_deniers,
+        job_beam_sent_details,
+      } = beamSentDetails;
+
+      setInhouseWarpIds(() => {
+        return job_beam_sent_warp_deniers.map(
+          ({ inhouse_warp_id }) => inhouse_warp_id
+        );
+      });
+      setBeamLoadIds(() => {
+        return job_beam_sent_details.map(({ beam_load_id }) => beam_load_id);
+      });
+
+      setBeamTypeList(
+        job_beam_sent_details?.map((item) => {
+          const obj =
+            item.loaded_beam.non_pasarela_beam_detail ||
+            item.loaded_beam.recieve_size_beam_detail ||
+            item.loaded_beam.job_beam_receive_detail;
+          return {
+            beam_load_id: item.beam_load_id,
+            beam_no: obj.beam_no,
+            ends_or_tars: obj.ends_or_tars,
+            pano: obj.pano,
+            taka: obj.taka,
+            meters: obj.meters,
+            weight: obj.net_weight,
+          };
+        })
+      );
+
+      reset({
+        vehicle_id,
+        challan_no,
+        challan_date: dayjs(createdAt),
+        supplier_name,
+        supplier_id,
+        machine_name,
+        quality_group,
+        beam_type,
+        quality_id,
+        power_cost_per_meter,
+        delivery_charge,
+
+        total_meter: 0,
+        total_weight: 0,
+      });
+    }
+  }, [beamSentDetails, reset]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Select Beam To Send</h3>
+        <h3 className="m-0 text-primary">Edit Selected Beam To Send</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -464,7 +540,7 @@ const AddBeamSent = () => {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} placeholder="Challan No" />
+                  <Input {...field} disabled placeholder="Challan No" />
                 )}
               />
             </Form.Item>
@@ -483,7 +559,7 @@ const AddBeamSent = () => {
                 control={control}
                 name="challan_date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker {...field} disabled style={{ width: "100%" }} />
                 )}
               />
             </Form.Item>
@@ -503,9 +579,11 @@ const AddBeamSent = () => {
                 ({ id, weft_weight, yarn_stock_company }, index) => {
                   const { yarn_denier, filament, luster_type, yarn_color } =
                     yarn_stock_company;
+
                   return (
                     <Col key={index} span={5}>
                       <Checkbox
+                        checked={inhouseWarpIds?.includes(id)}
                         onChange={(e) =>
                           handleInhouseWarpIdHandler(e.target.checked, id)
                         }
@@ -559,6 +637,7 @@ const AddBeamSent = () => {
                       field.onChange(value);
                       resetField("supplier_id");
                     }}
+                    disabled
                   />
                 )}
               />
@@ -589,6 +668,7 @@ const AddBeamSent = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -626,6 +706,7 @@ const AddBeamSent = () => {
                       field.onChange(value);
                       resetField("quality_id");
                     }}
+                    disabled
                   />
                 )}
               />
@@ -655,6 +736,7 @@ const AddBeamSent = () => {
                         field.onChange(value);
                         resetField("quality_id");
                       }}
+                      disabled
                     />
                   );
                 }}
@@ -687,6 +769,7 @@ const AddBeamSent = () => {
                           label: item.quality_name,
                         }))
                       }
+                      disabled
                     />
                   );
                 }}
@@ -712,6 +795,7 @@ const AddBeamSent = () => {
                       {...field}
                       placeholder="Select Beam type"
                       options={BEAM_TYPE_OPTION_LIST}
+                      disabled
                     />
                   );
                 }}
@@ -721,7 +805,14 @@ const AddBeamSent = () => {
         </Row>
 
         {beamTypeList && (
-          <table border={1} className="custom-table">
+          <table
+            border={1}
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              textAlign: "center",
+            }}
+          >
             <thead>
               <tr>
                 <td style={{ width: "50px" }}>
@@ -755,7 +846,7 @@ const AddBeamSent = () => {
                       <tr key={index}>
                         <td width={50}>
                           <Checkbox
-                            checked={beamLoadIds.includes(beam_load_id)}
+                            checked={beamLoadIds?.includes(beam_load_id)}
                             onChange={(e) =>
                               beamLoadIdHandler(
                                 e.target.checked,
@@ -882,11 +973,8 @@ const AddBeamSent = () => {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
+            Update
           </Button>
         </Flex>
       </Form>
@@ -894,4 +982,4 @@ const AddBeamSent = () => {
   );
 };
 
-export default AddBeamSent;
+export default UpdateBeamSent;

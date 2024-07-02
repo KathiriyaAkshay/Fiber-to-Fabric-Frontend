@@ -282,16 +282,17 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             )}
           />
         </Form.Item>
+        <Button
+          type="primary"
+          disabled={!machineNoOption.length}
+          loading={isPending}
+          onClick={saveHandler}
+        >
+          Save
+        </Button>
       </Flex>
 
-      <table
-        border={1}
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          textAlign: "center",
-        }}
-      >
+      <table border={1} className="custom-table">
         <thead>
           <tr className="font-semibold">
             <th align="center">Machine No</th>
@@ -301,16 +302,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             <th align="center">Meter</th>
             <th align="center">Pano</th>
             <th align="center">Tar</th>
-            <th align="center">
-              <Button
-                type="primary"
-                disabled={!machineNoOption.length}
-                loading={isPending}
-                onClick={saveHandler}
-              >
-                Save
-              </Button>
-            </th>
+            <th align="center">Save</th>
           </tr>
         </thead>
         <tbody>
