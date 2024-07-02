@@ -112,6 +112,7 @@ import AddProduction from "./pages/production/AddProduction";
 import InhouseProduction from "./pages/production/InhouseProduction";
 import OpenProduction from "./pages/production/OpenProduction";
 import Payment from "./pages/accounts/Payment";
+import PurchaseEntryList from "./pages/purchase/purchaseEntry/PurchaseEntryList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -422,7 +423,7 @@ const router = createBrowserRouter([
           },
           {
             path: "general-purchase-entry",
-            element: <div>general-purchase-entry</div>,
+            element: <PurchaseEntryList/>,
           },
           {
             path: "receive",
