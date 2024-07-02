@@ -16,7 +16,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
-import { createYarnOrderRequest, getYarnOrderByIdRequest, updateYarnOrderRequest } from "../../../api/requests/orderMaster";
+import {
+  getYarnOrderByIdRequest,
+  updateYarnOrderRequest,
+} from "../../../api/requests/orderMaster";
 import { getSupplierListRequest } from "../../../api/requests/users";
 import { YARN_GRADE_LIST } from "../../../constants/orderMaster";
 import { useContext, useEffect, useState } from "react";
@@ -40,13 +43,12 @@ const addYarnOrderSchemaResolver = yupResolver(
     approx_cartoon: yup.string(),
     delivered_cartoon: yup.string(),
     pending_cartoon: yup.string(),
-    pending_kg: yup.string()
+    pending_kg: yup.string(),
   })
 );
 
 function UpdateYarnOrder() {
-
-  const {id} = useParams() ; 
+  const { id } = useParams();
 
   console.log("Id information", id);
   const queryClient = useQueryClient();
@@ -61,16 +63,16 @@ function UpdateYarnOrder() {
 
   const { companyId } = useContext(GlobalContext);
 
-  const {data: yarnOrderData} = useQuery({
+  const { data: yarnOrderData } = useQuery({
     queryFn: async () => {
       const res = await getYarnOrderByIdRequest({
-        id: id, 
-        params: {company_id: companyId}
-      })
-      return res?.data?.data ; 
-    }, 
-    enabled: Boolean(companyId)
-  })
+        id: id,
+        params: { company_id: companyId },
+      });
+      return res?.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -97,7 +99,7 @@ function UpdateYarnOrder() {
   const { mutateAsync: updateYarnOrder } = useMutation({
     mutationFn: async (data) => {
       const res = await updateYarnOrderRequest({
-        id, 
+        id,
         data,
         params: {
           company_id: companyId,
@@ -126,11 +128,11 @@ function UpdateYarnOrder() {
   async function onSubmit(data) {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
-    delete data?.order_no ; 
-    delete data?.supplier_id ; 
-    delete data?.yarn_stock_company_id
-    data["pending_kg"] = 0; 
-    data["order_date"] = yarnOrderData?.yarnOrder?.order_date ; 
+    delete data?.order_no;
+    delete data?.supplier_id;
+    delete data?.yarn_stock_company_id;
+    data["pending_kg"] = 0;
+    data["order_date"] = yarnOrderData?.yarnOrder?.order_date;
 
     await updateYarnOrder(data);
   }
@@ -157,29 +159,29 @@ function UpdateYarnOrder() {
   });
 
   useEffect(() => {
-    if (yarnOrderData){
+    if (yarnOrderData) {
       console.log(yarnOrderData);
-      let yarnOrder = yarnOrderData?.yarnOrder ; 
+      let yarnOrder = yarnOrderData?.yarnOrder;
       reset({
-        order_type: yarnOrder?.order_type, 
-        lot_no: yarnOrder?.lot_no, 
-        yarn_grade: yarnOrder?.yarn_grade, 
-        rate: yarnOrder?.rate, 
-        freight: yarnOrder?.freight, 
-        quantity: yarnOrder?.quantity, 
+        order_type: yarnOrder?.order_type,
+        lot_no: yarnOrder?.lot_no,
+        yarn_grade: yarnOrder?.yarn_grade,
+        rate: yarnOrder?.rate,
+        freight: yarnOrder?.freight,
+        quantity: yarnOrder?.quantity,
         delivered_quantity: yarnOrder?.delivered_quantity,
-        approx_cartoon: yarnOrder?.approx_cartoon, 
-        delivered_cartoon: yarnOrder?.delivered_cartoon, 
-        pending_cartoon: yarnOrder?.pending_cartoon, 
-        credit_days: yarnOrder?.credit_days, 
-        order_date: dayjs(yarnOrder?.order_date), 
-        supplier_id: yarnOrder?.user?.id, 
-        yarn_stock_company_id: yarnOrder?.yarn_stock_company_id, 
-        yarn_company_name: yarnOrder?.yarn_stock_company?.yarn_company_name, 
-        order_no: yarnOrder?.order_no
-      })
+        approx_cartoon: yarnOrder?.approx_cartoon,
+        delivered_cartoon: yarnOrder?.delivered_cartoon,
+        pending_cartoon: yarnOrder?.pending_cartoon,
+        credit_days: yarnOrder?.credit_days,
+        order_date: dayjs(yarnOrder?.order_date),
+        supplier_id: yarnOrder?.user?.id,
+        yarn_stock_company_id: yarnOrder?.yarn_stock_company_id,
+        yarn_company_name: yarnOrder?.yarn_stock_company?.yarn_company_name,
+        order_no: yarnOrder?.order_no,
+      });
     }
-  }, [yarnOrderData, reset]) ; 
+  }, [yarnOrderData, reset]);
 
   function goToAddYarnStockCompany() {
     navigate("/yarn-stock-company/company-list/add");
@@ -269,7 +271,7 @@ function UpdateYarnOrder() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Place New Yarn Order</h3>
+        <h3 className="m-0 text-primary">Edit Yarn Order</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -383,20 +385,11 @@ function UpdateYarnOrder() {
           </Col>
 
           <Col span={6}>
-            <Form.Item
-              label="Order No"
-              name="order_no"
-              wrapperCol={{ sm: 24 }}
-            >
+            <Form.Item label="Order No" name="order_no" wrapperCol={{ sm: 24 }}>
               <Controller
                 control={control}
                 name="order_no"
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    disabled
-                  />
-                )}
+                render={({ field }) => <Input {...field} disabled />}
               />
             </Form.Item>
           </Col>
@@ -788,15 +781,21 @@ function UpdateYarnOrder() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
-          <Button disabled = { quantity >= delivered_quantity?false: approx_cartoon >=delivered_cartoon?false: true} type="primary" htmlType="submit">
+          <Button
+            disabled={
+              quantity >= delivered_quantity
+                ? false
+                : approx_cartoon >= delivered_cartoon
+                ? false
+                : true
+            }
+            type="primary"
+            htmlType="submit"
+          >
             Update
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
