@@ -42,7 +42,7 @@ body {
 }
 
 .job-challan-details-table {
-  border-collapse: separate;
+  border: 1px solid #d3d3d3; border-collapse: collapse;
   text-align: center;
 }
 
@@ -55,6 +55,21 @@ body {
   padding: 6px;
 }
 
+.job-challan-details-table td{
+  border: 0px;
+  padding: 2px;
+  border: 1px solid #d3d3d3;
+}
+
+.job-challan-taka-index-column{
+  background-color: rgb(25 74 109);
+  color: #fff;
+}
+
+.job-challan-taka-plus-option{
+  border: 0px solid;
+  background-color: transparent !important;
+}
 
 .ant-table{
   font-size: 14px !important;

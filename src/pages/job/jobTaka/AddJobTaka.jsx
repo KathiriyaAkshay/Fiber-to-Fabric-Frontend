@@ -26,6 +26,7 @@ import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import { addJobTakaRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import FieldTable from "../../../components/fieldTable";
+import moment from "moment/moment";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -261,13 +262,18 @@ const AddJobTaka = () => {
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Create Job Taka</h3>
+        <h3 className="m-0 text-primary">Create Job Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -323,6 +329,7 @@ const AddJobTaka = () => {
                 name="challan_date"
                 render={({ field }) => (
                   <DatePicker
+                    disabledDate={disabledFutureDate}
                     {...field}
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
@@ -358,6 +365,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -441,6 +449,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -552,6 +561,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -684,24 +694,24 @@ const AddJobTaka = () => {
             gutter={18}
             style={{
               padding: "12px",
+              marginTop: "-30px", 
             }}
           >
             <Col span={6}></Col>
-
             <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red" }}>Pending</Typography>
+              <Typography style={{ color: "red", paddingLeft:"10px" }}>Pending</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+            <Col span={3} style={{ textAlign: "start" }}>
+              <Typography style={{ color: "red", paddingLeft:"10px"  }}>{pendingMeter}</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>0</Typography>
+            <Col span={3} style={{ textAlign: "start" }}>
+              <Typography style={{ color: "red", paddingLeft:"10px"  }}>0</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+            <Col span={3} style={{ textAlign: "start" }}>
+              <Typography style={{ color: "red", paddingLeft:"10px" }}>{pendingTaka}</Typography>
             </Col>
           </Row>
         ) : null}

@@ -32,7 +32,7 @@ const FieldTable = ({
   };
 
   return (
-    <Row>
+    <Row style={{marginTop: "-20"}}>
       <Col span={6}>
         <table className="job-challan-details-table" border={1}>
           <thead>
@@ -48,7 +48,7 @@ const FieldTable = ({
             {numOfFields.slice(0, chunkSize).map((fieldNumber) => {
               return (
                 <tr key={fieldNumber}>
-                  <td>{fieldNumber}</td>
+                  <td className="job-challan-taka-index-column">{fieldNumber}</td>
                   <td>
                     <Form.Item
                       name={`taka_no_${fieldNumber}`}
@@ -61,7 +61,7 @@ const FieldTable = ({
                       }
                       required={true}
                       wrapperCol={{ sm: 24 }}
-                      style={{ marginBottom: "0px" }}
+                      style={{ marginBottom: "0px", border: "0px solid !important" }}
                     >
                       <Controller
                         control={control}
@@ -70,7 +70,7 @@ const FieldTable = ({
                           <Input
                             {...field}
                             type="number"
-                            style={{ width: "75px" }}
+                            style={{ width: "75px",  border: "0px solid", borderRadius: "0px"  }}
                             disabled={fieldNumber > activeField}
                           />
                         )}
@@ -98,7 +98,7 @@ const FieldTable = ({
                           <Input
                             {...field}
                             type="number"
-                            style={{ width: "100px" }}
+                            style={{ width: "100px",  border: "0px solid", borderRadius: "0px" }}
                             disabled={fieldNumber > activeField}
                           />
                         )}
@@ -126,7 +126,7 @@ const FieldTable = ({
                           <Input
                             {...field}
                             type="number"
-                            style={{ width: "100px" }}
+                            style={{ width: "100px", border: "0px solid", borderRadius: "0px" }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
                             //   console.log("space bar click", e);
@@ -148,6 +148,7 @@ const FieldTable = ({
                   </td>
                   <td>
                     <Button
+                      className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
                       disabled={fieldNumber !== activeField}
                       onClick={() => removeCurrentField(fieldNumber)}
@@ -182,7 +183,7 @@ const FieldTable = ({
             {numOfFields.slice(chunkSize, chunkSize * 2).map((fieldNumber) => {
               return (
                 <tr key={fieldNumber}>
-                  <td>{fieldNumber}</td>
+                  <td className="job-challan-taka-index-column">{fieldNumber}</td>
                   <td>
                     <Form.Item
                       name={`taka_no_${fieldNumber}`}
@@ -203,7 +204,7 @@ const FieldTable = ({
                         render={({ field }) => (
                           <Input
                             {...field}
-                            style={{ width: "75px" }}
+                            style={{ width: "75px", border: "0px solid", borderRadius: "0px"  }}
                             disabled={fieldNumber !== activeField}
                           />
                         )}
@@ -230,7 +231,7 @@ const FieldTable = ({
                         render={({ field }) => (
                           <Input
                             {...field}
-                            style={{ width: "100px" }}
+                            style={{ width: "100px",  border: "0px solid", borderRadius: "0px" }}
                             disabled={fieldNumber !== activeField}
                           />
                         )}
@@ -257,7 +258,7 @@ const FieldTable = ({
                         render={({ field }) => (
                           <Input
                             {...field}
-                            style={{ width: "100px" }}
+                            style={{ width: "100px",  border: "0px solid", borderRadius: "0px" }}
                             disabled={fieldNumber !== activeField}
                           />
                         )}
@@ -266,6 +267,7 @@ const FieldTable = ({
                   </td>
                   <td>
                     <Button
+                      className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
                       disabled={fieldNumber !== activeField}
                     ></Button>
@@ -301,7 +303,7 @@ const FieldTable = ({
               .map((fieldNumber) => {
                 return (
                   <tr key={fieldNumber}>
-                    <td>{fieldNumber}</td>
+                    <td className="job-challan-taka-index-column">{fieldNumber}</td>
                     <td>
                       <Form.Item
                         name={`taka_no_${fieldNumber}`}
@@ -322,7 +324,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "75px" }}
+                              style={{ width: "75px",  border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -349,7 +351,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "100px" }}
+                              style={{ width: "100px",  border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -376,7 +378,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "100px" }}
+                              style={{ width: "100px",  border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -385,6 +387,7 @@ const FieldTable = ({
                     </td>
                     <td>
                       <Button
+                        className="job-challan-taka-plus-option"
                         icon={<MinusCircleOutlined />}
                         disabled={fieldNumber !== activeField}
                       ></Button>
@@ -420,7 +423,7 @@ const FieldTable = ({
               .map((fieldNumber) => {
                 return (
                   <tr key={fieldNumber}>
-                    <td>{fieldNumber}</td>
+                    <td className="job-challan-taka-index-column">{fieldNumber}</td>
                     <td>
                       <Form.Item
                         name={`taka_no_${fieldNumber}`}
@@ -441,7 +444,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "75px" }}
+                              style={{ width: "75px", border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -468,7 +471,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "100px" }}
+                              style={{ width: "100px", border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -495,7 +498,7 @@ const FieldTable = ({
                           render={({ field }) => (
                             <Input
                               {...field}
-                              style={{ width: "100px" }}
+                              style={{ width: "100px", border: "0px solid", borderRadius: "0px" }}
                               disabled={fieldNumber !== activeField}
                             />
                           )}
@@ -504,6 +507,7 @@ const FieldTable = ({
                     </td>
                     <td>
                       <Button
+                        className="job-challan-taka-plus-option"
                         icon={<MinusCircleOutlined />}
                         disabled={fieldNumber !== activeField}
                       ></Button>

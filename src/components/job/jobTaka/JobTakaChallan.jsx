@@ -17,7 +17,7 @@ import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-// import { ToWords } from "to-words";
+import { ToWords } from "to-words";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 const { Text } = Typography;
 import moment from "moment";
@@ -26,26 +26,26 @@ import {
   getJobTakaBillByIdRequest,
 } from "../../../api/requests/job/bill/jobBill";
 
-// const toWords = new ToWords({
-//   localeCode: "en-IN",
-//   converterOptions: {
-//     currency: true,
-//     ignoreDecimal: false,
-//     ignoreZeroCurrency: false,
-//     doNotAddOnly: false,
-//     currencyOptions: {
-//       // can be used to override defaults for the selected locale
-//       name: "Rupee",
-//       plural: "Rupees",
-//       symbol: "₹",
-//       fractionalUnit: {
-//         name: "Paisa",
-//         plural: "Paise",
-//         symbol: "",
-//       },
-//     },
-//   },
-// });
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const addSizeBeamReceive = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
@@ -399,6 +399,7 @@ const JobTakaChallanModal = ({
                         name="invoice_no"
                         render={({ field }) => (
                           <Input
+                            type="number"
                             {...field}
                             placeholder="Invoice No."
                             style={{ width: "150px" }}
@@ -874,8 +875,11 @@ const JobTakaChallanModal = ({
               </Col>
             </Row>
             <Row className="border-0 border-b border-solid">
-              <Col span={24} className="p-2 font-medium border-0 border-r">
+              <Col span={4} className="p-2 font-medium border-0 border-r">
                 RS. (IN WORDS)
+              </Col>
+              <Col span={20} className="p-2 font-medium border-0 border-r">
+                {toWords.convert(currentValues?.net_amount)}
               </Col>
             </Row>
           </Flex>

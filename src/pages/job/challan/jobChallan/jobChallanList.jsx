@@ -33,6 +33,7 @@ import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import JobTakaChallanModal from "../../../../components/job/jobTaka/JobTakaChallan";
 import dayjs from "dayjs";
 import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
+import ViewJobTakaInfo from "../../../../components/job/jobTaka/viewJobTakaInfo";
 
 const JobChallanList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -281,6 +282,7 @@ const JobChallanList = () => {
               details={details}
             /> */}
             {/* <JobTakaChallanModal details={details} /> */}
+            <ViewJobTakaInfo details={details} />
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -353,28 +355,6 @@ const JobChallanList = () => {
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
-              {/* <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  Type
-                </Typography.Text>
-                <Select
-                  allowClear
-                  placeholder="Select Type"
-                  value={type}
-                  options={[
-                    { label: "In Stock", value: "in_stock" },
-                    { label: "Sold", value: "sold" },
-                  ]}
-                  dropdownStyle={{
-                    textTransform: "capitalize",
-                  }}
-                  onChange={setType}
-                  style={{
-                    textTransform: "capitalize",
-                  }}
-                  className="min-w-40"
-                />
-              </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Supplier
@@ -395,6 +375,7 @@ const JobChallanList = () => {
                     textTransform: "capitalize",
                   }}
                   className="min-w-40"
+                  allowClear
                 />
               </Flex>
               <Flex align="center" gap={10}>

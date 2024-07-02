@@ -29,6 +29,7 @@ import {
 } from "../../../api/requests/job/jobTaka";
 import FieldTable from "../../../components/fieldTable";
 import dayjs from "dayjs";
+import moment from "moment";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -309,6 +310,11 @@ const UpdateJobTaka = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf('day');
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -372,6 +378,7 @@ const UpdateJobTaka = () => {
                 name="challan_date"
                 render={({ field }) => (
                   <DatePicker
+                    disabledDate={disabledFutureDate}
                     {...field}
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
@@ -407,6 +414,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -490,6 +498,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -602,6 +611,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-30px"
           }}
         >
           <Col span={6}>
@@ -736,6 +746,7 @@ const UpdateJobTaka = () => {
             gutter={18}
             style={{
               padding: "12px",
+              marginTop: "-30px"
             }}
           >
             <Col span={6}></Col>
@@ -744,15 +755,15 @@ const UpdateJobTaka = () => {
               <Typography style={{ color: "red" }}>Pending</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "start" }}>
               <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "start" }}>
               <Typography style={{ color: "red" }}>0</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "start" }}>
               <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
             </Col>
           </Row>
