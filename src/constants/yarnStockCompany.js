@@ -469,6 +469,11 @@ export const QUALITY_GROUP_LIST = [
   }
 ]
 
+export const QUALITY_GROUP_OPTION_LIST = [
+  { label: "Inhouse (Gray)", value: "inhouse(gray)" },
+  { label: "Job", value: "job" },
+]
+
 export const YARN_TYPE_LIST = [
   {
     label: "S/Z",

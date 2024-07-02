@@ -14,46 +14,39 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
-import { createYarnOrderRequest, getYarnOrderByIdRequest, updateYarnOrderRequest } from "../../../api/requests/orderMaster";
-import { getSupplierListRequest } from "../../../api/requests/users";
-import { YARN_GRADE_LIST } from "../../../constants/orderMaster";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
+import { AadharRegex } from "../../../constants/regex";
+import {
+  getYarnOrderByIdRequest,
+  updateYarnOrderRequest,
+} from "../../../api/requests/orderMaster";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import dayjs from "dayjs";
-import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
-    order_type: yup.string(),
-    lot_no: yup.string().required("Please enter lot no"),
-    rate: yup.string().required("Please enter rate"),
-    freight: yup.string().required("Please enter freight"),
-    credit_days: yup.string().required("Please enter credit days"),
-    yarn_grade: yup.string().required("Please select yarn grade"),
-    approx_amount: yup.string(),
-    remark: yup.string(),
-    quantity: yup.string(),
-    delivered_quantity: yup.string(),
-    pending_quantity: yup.string(),
-    approx_cartoon: yup.string(),
-    delivered_cartoon: yup.string(),
-    pending_cartoon: yup.string(),
-    pending_kg: yup.string()
+    first_name: yup.string(),
+    last_name: yup.string(),
+    email: yup
+      .string()
+      .required("Please enter email address")
+      .email("Please enter valid email address"),
+    address: yup.string(),
+    pancard_no: yup.string(),
+    adhar_no: yup
+      .string()
+      // .required("Please enter Aadhar number")
+      .matches(AadharRegex, "Enter valid Aadhar number"),
+    gst_no: yup.string(),
+    rateType: yup.string().required("Please select rate type"),
+    pricePerRate: yup.string().required("Please provide price "),
   })
 );
 
 function UpdateYarnOrder() {
-
-  const {id} = useParams() ; 
-
-  console.log("Id information", id);
-  const queryClient = useQueryClient();
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
-
-  const [denierOptions, setDenierOptions] = useState([]);
-  const [yarnDetail, setYarnDetail] = useState();
+  const params = useParams();
+  const { id } = params;
 
   function goBack() {
     navigate(-1);
@@ -96,22 +89,11 @@ function UpdateYarnOrder() {
 
   const { mutateAsync: updateYarnOrder } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateYarnOrderRequest({
-        id, 
-        data,
-        params: {
-          company_id: companyId,
-        },
-      });
+      const res = await updateYarnOrderRequest({ id, data });
       return res.data;
     },
+    mutationKey: ["order-master", "yarn-order", "update", id],
     onSuccess: (res) => {
-      queryClient.invalidateQueries([
-        "order-master",
-        "yarn-order",
-        "list",
-        { company_id: companyId },
-      ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -119,19 +101,26 @@ function UpdateYarnOrder() {
       navigate(-1);
     },
     onError: (error) => {
-      mutationOnErrorHandler({ error, message });
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
     },
   });
 
-  async function onSubmit(data) {
-    // delete fields that are not allowed in API
-    delete data?.yarn_company_name;
-    delete data?.order_no ; 
-    delete data?.supplier_id ; 
-    delete data?.yarn_stock_company_id
-    data["pending_kg"] = 0; 
-    data["order_date"] = yarnOrderData?.yarnOrder?.order_date ; 
+  const { data: yarnOrderDetails } = useQuery({
+    queryKey: ["order-master", "yarn-order", "get", id],
+    queryFn: async () => {
+      const res = await getYarnOrderByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
+  async function onSubmit(data) {
     await updateYarnOrder(data);
   }
 
@@ -143,125 +132,22 @@ function UpdateYarnOrder() {
     setValue,
     watch,
   } = useForm({
-    resolver: addYarnOrderSchemaResolver,
-    defaultValues: {
-      order_type: "Yarn",
-      quantity: 0,
-      pending_quantity: 0,
-      delivered_quantity: 0,
-      approx_cartoon: 0,
-      pending_cartoon: 0,
-      delivered_cartoon: 0,
-      order_date: dayjs(),
-    },
+    resolver: updateYarnOrderSchemaResolver,
   });
 
   useEffect(() => {
-    if (yarnOrderData){
-      console.log(yarnOrderData);
-      let yarnOrder = yarnOrderData?.yarnOrder ; 
+    if (yarnOrderDetails) {
       reset({
-        order_type: yarnOrder?.order_type, 
-        lot_no: yarnOrder?.lot_no, 
-        yarn_grade: yarnOrder?.yarn_grade, 
-        rate: yarnOrder?.rate, 
-        freight: yarnOrder?.freight, 
-        quantity: yarnOrder?.quantity, 
-        delivered_quantity: yarnOrder?.delivered_quantity,
-        approx_cartoon: yarnOrder?.approx_cartoon, 
-        delivered_cartoon: yarnOrder?.delivered_cartoon, 
-        pending_cartoon: yarnOrder?.pending_cartoon, 
-        credit_days: yarnOrder?.credit_days, 
-        order_date: dayjs(yarnOrder?.order_date), 
-        supplier_id: yarnOrder?.user?.id, 
-        yarn_stock_company_id: yarnOrder?.yarn_stock_company_id, 
-        yarn_company_name: yarnOrder?.yarn_stock_company?.yarn_company_name, 
-        order_no: yarnOrder?.order_no
-      })
+        ...yarnOrderDetails,
+        // remove unnecessary fields
+        id: undefined,
+        deletedAt: undefined,
+        createdAt: undefined,
+        updatedAt: undefined,
+        salary: undefined,
+      });
     }
-  }, [yarnOrderData, reset]) ; 
-
-  function goToAddYarnStockCompany() {
-    navigate("/yarn-stock-company/company-list/add");
-  }
-
-  function goToAddSupplier() {
-    navigate("/user-master/my-supplier/add");
-  }
-
-  const {
-    yarn_company_name,
-    quantity,
-    delivered_quantity,
-    approx_cartoon,
-    delivered_cartoon,
-    rate,
-    credit_days,
-    yarn_stock_company_id,
-  } = watch();
-
-  useEffect(() => {
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarn_company_name) {
-        const options = yarn_details?.map(
-          ({
-            yarn_company_id = 0,
-            filament = 0,
-            yarn_denier = 0,
-            luster_type = "",
-            yarn_color = "",
-          }) => {
-            return {
-              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: yarn_company_id,
-            };
-          }
-        );
-        if (options?.length) {
-          setDenierOptions(options);
-        }
-      }
-    });
-  }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
-
-  useEffect(() => {
-    if (!yarn_company_name || !yarn_stock_company_id) {
-      return setYarnDetail();
-    }
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarn_company_name) {
-        yarn_details?.forEach((yarn_detail) => {
-          if (yarn_stock_company_id === yarn_detail.yarn_company_id) {
-            setYarnDetail(yarn_detail);
-          }
-        });
-      }
-    });
-  }, [yarn_company_name, yarn_stock_company_id, yscdListRes?.yarnCompanyList]);
-
-  useEffect(() => {
-    const pending_quantity = Number(quantity) - Number(delivered_quantity);
-    setValue("pending_quantity", Math.max(0, pending_quantity));
-  }, [delivered_quantity, quantity, setValue]);
-
-  useEffect(() => {
-    const pending_cartoon = Number(approx_cartoon) - Number(delivered_cartoon);
-    setValue("pending_cartoon", Math.max(0, pending_cartoon));
-  }, [approx_cartoon, delivered_cartoon, setValue]);
-
-  useEffect(() => {
-    const approx_amount = Number(quantity) * Number(rate);
-    setValue("approx_amount", Math.max(0, approx_amount));
-  }, [quantity, rate, setValue]);
-
-  useEffect(() => {
-    setValue(
-      "remark",
-      `payment due in ${Math.max(0, Math.floor(credit_days || 0))} days`
-    );
-  }, [credit_days, setValue]);
+  }, [yarnOrderDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -269,7 +155,7 @@ function UpdateYarnOrder() {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Place New Yarn Order</h3>
+        <h3 className="m-0 text-primary">Update Yarn Order</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -278,76 +164,7 @@ function UpdateYarnOrder() {
             padding: "12px",
           }}
         >
-          <Col span={6}>
-            <Form.Item
-              label="Order Type"
-              name="order_type"
-              validateStatus={errors.order_type ? "error" : ""}
-              help={errors.order_type && errors.order_type.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="order_type"
-                disabled
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Yarn Stock Company"
-                    options={[
-                      {
-                        label: "Yarn",
-                        value: "Yarn",
-                      },
-                    ]}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6} className="flex items-end gap-2">
-            <Form.Item
-              label="Yarn Stock Company Name"
-              name="yarn_company_name"
-              validateStatus={errors.yarn_company_name ? "error" : ""}
-              help={
-                errors.yarn_company_name && errors.yarn_company_name.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="yarn_company_name"
-                disabled
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCDList}
-                    options={yscdListRes?.yarnCompanyList?.map(
-                      ({ yarn_company_name = "" }) => {
-                        return {
-                          label: yarn_company_name,
-                          value: yarn_company_name,
-                        };
-                      }
-                    )}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddYarnStockCompany}
-              className="flex-none mb-6"
-              type="primary"
-            />
-          </Col>
-
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="Denier"
               name="yarn_stock_company_id"
@@ -361,21 +178,12 @@ function UpdateYarnOrder() {
             >
               <Controller
                 control={control}
-                name="yarn_stock_company_id"
-                disabled
+                name="first_name"
                 render={({ field }) => (
                   <Select
                     {...field}
-                    placeholder="Select denier"
-                    allowClear
-                    loading={isLoadingYSCDList}
-                    options={denierOptions}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
+                    placeholder="First Name"
+                    className="w-full"
                   />
                 )}
               />
@@ -384,59 +192,23 @@ function UpdateYarnOrder() {
 
           <Col span={6}>
             <Form.Item
-              label="Order No"
-              name="order_no"
+              label={<p className="m-0 whitespace-nowrap">Last Name</p>}
+              name="last_name"
+              validateStatus={errors.last_name ? "error" : ""}
+              help={errors.last_name && errors.last_name.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="order_no"
+                name="last_name"
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    disabled
-                  />
+                  <Input {...field} placeholder="Last Name" />
                 )}
               />
             </Form.Item>
           </Col>
 
-          <Col span={6} className="flex items-end gap-2">
-            <Form.Item
-              label="Supplier"
-              name="supplier_id"
-              validateStatus={errors.supplier_id ? "error" : ""}
-              help={errors.supplier_id && errors.supplier_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-              className="flex-grow"
-            >
-              <Controller
-                control={control}
-                name="supplier_id"
-                disabled
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select supplier"
-                    loading={isLoadingSupplierList}
-                    options={supplierListRes?.rows?.map((supervisor) => ({
-                      label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
-                      value: supervisor?.id,
-                    }))}
-                  />
-                )}
-              />
-            </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddSupplier}
-              className="flex-none mb-6"
-              type="primary"
-            />
-          </Col>
-
-          <Col span={6}>
+          <Col span={12}>
             <Form.Item
               label="Date"
               name="order_date"
@@ -447,16 +219,9 @@ function UpdateYarnOrder() {
             >
               <Controller
                 control={control}
-                name="order_date"
-                disabled
+                name="email"
                 render={({ field }) => (
-                  <DatePicker
-                    {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="DD/MM/YYYY"
-                  />
+                  <Input {...field} placeholder="Email" type="email" />
                 )}
               />
             </Form.Item>
@@ -788,15 +553,11 @@ function UpdateYarnOrder() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
-          <Button disabled = { quantity >= delivered_quantity?false: approx_cartoon >=delivered_cartoon?false: true} type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit">
             Update
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

@@ -37,9 +37,9 @@ import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockRepor
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 const PRODUCTION_TYPE = {
-  type1: "taka(in house)", 
-  type2: "purchase/trading", 
-  type3: "job"
+  type1: "taka(in house)",
+  type2: "purchase/trading",
+  type3: "job",
 };
 
 const addYSCSchemaResolver = yupResolver(
@@ -69,11 +69,11 @@ const UpdateInHouseQuality = () => {
 
   const [qualityNamesData, setQualityNamesData] = useState([]);
   const [options, setOptions] = useState([]);
-  
+
   const [designNo, setDesignNo] = useState([]);
   const [designNoOption, setDesignNoOption] = useState([]);
   const [denierOptions, setDenierOptions] = useState([]);
-  
+
   const [needQualityNameInChallan, setNeedQualityNameInChallan] =
     useState(true);
   const [needQualityGroupInChallan, setNeedQualityGroupInChallan] =
@@ -104,7 +104,6 @@ const UpdateInHouseQuality = () => {
     navigate(-1);
   }
 
-  
   const { data: inHouseQualityDetail } = useQuery({
     queryKey: ["inHouseQuality", "get", id, { company_id: companyId }],
     queryFn: async () => {
@@ -498,7 +497,7 @@ const UpdateInHouseQuality = () => {
       getYarnCompanyList();
     }
   }, [companyId, getDesignNoData, getYarnCompanyList]);
- 
+
   const addWarpingDetailRow = (indexValue) => {
     let isValid = true;
 
@@ -678,11 +677,14 @@ const UpdateInHouseQuality = () => {
 
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_details = [] } = ysc;
-      denier = yarn_details?.find(
+      const selectedDenier = yarn_details?.find(
         ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
-      ).yarn_denier;
-      if (denier) {
-        return;
+      );
+      if (selectedDenier) {
+        denier = selectedDenier.yarn_denier;
+        if (denier) {
+          return;
+        }
       }
     });
 
@@ -713,11 +715,14 @@ const UpdateInHouseQuality = () => {
 
     yscdListRes?.yarnCompanyList?.forEach((ysc) => {
       const { yarn_details = [] } = ysc;
-      denier = yarn_details?.find(
+      const selectedDenier = yarn_details?.find(
         ({ yarn_company_id }) => yarn_company_id === parseInt(yarn_company)
-      ).yarn_denier;
-      if (denier) {
-        return;
+      );
+      if (selectedDenier) {
+        denier = selectedDenier.yarn_denier;
+        if (denier) {
+          return;
+        }
       }
     });
 
@@ -739,7 +744,7 @@ const UpdateInHouseQuality = () => {
   };
 
   useEffect(() => {
-    if(inHouseQualityDetail){
+    if (inHouseQualityDetail) {
       setQualityNamesData((prev) => {
         return [
           ...prev,
@@ -747,43 +752,42 @@ const UpdateInHouseQuality = () => {
             id: inHouseQualityDetail.quality.id,
             quality_name: inHouseQualityDetail.quality.quality_name,
             quality_weight: inHouseQualityDetail.quality.quality_weight,
-          }
-        ]
-      })
+          },
+        ];
+      });
 
       setOptions([
         {
           label: inHouseQualityDetail.quality.quality_name,
           value: inHouseQualityDetail.quality.id,
-        }
+        },
       ]);
+      const {
+        id,
+        // quality_name,
+        quality_group,
+        machine_name,
+        design_no,
+        yarn_type,
+        licence_meter,
+        vat_hsn_no,
+        tpm_z,
+        tpm_s,
+        weight_from,
+        weight_to,
+        production_rate,
+        max_taka,
+        require_non_pasarela_beam,
+        require_pasarela_beam,
+        inhouse_production_types,
+        inhouse_beam_rate,
+        inhouse_waraping_details,
+        inhouse_weft_details,
 
-      const { 
-          id,
-          // quality_name, 
-          quality_group, 
-          machine_name, 
-          design_no,
-          yarn_type,
-          licence_meter,
-          vat_hsn_no,
-          tpm_z,
-          tpm_s,
-          weight_from,
-          weight_to,
-          production_rate,
-          max_taka,
-          require_non_pasarela_beam,
-          require_pasarela_beam,
-          inhouse_production_types,
-          inhouse_beam_rate,
-          inhouse_waraping_details,
-          inhouse_weft_details,
-
-          need_quality_name_in_challan,
-          need_quality_group_in_challan,
-          need_design_no_in_challan,
-          // need_weight_in_challan
+        need_quality_name_in_challan,
+        need_quality_group_in_challan,
+        need_design_no_in_challan,
+        // need_weight_in_challan
       } = inHouseQualityDetail.quality;
 
       setNeedQualityNameInChallan(need_quality_name_in_challan);
@@ -792,67 +796,74 @@ const UpdateInHouseQuality = () => {
 
       setIsTaarPasariaRate(inhouse_beam_rate.is_taar_pasaria_rate);
       setIsMeterBeamMakerPrimary(inhouse_beam_rate.is_meter_beam_maker_primary);
-      setIsMeterBeamMakerSecondary(inhouse_beam_rate.is_meter_beam_maker_secondary);
-      setIsTaarBeamPissingSecondary(inhouse_beam_rate.is_taar_beam_pissing_secondary);
+      setIsMeterBeamMakerSecondary(
+        inhouse_beam_rate.is_meter_beam_maker_secondary
+      );
+      setIsTaarBeamPissingSecondary(
+        inhouse_beam_rate.is_taar_beam_pissing_secondary
+      );
 
-      inhouse_production_types.forEach(item => {
-        if(item.production_type === PRODUCTION_TYPE.type1){
+      inhouse_production_types.forEach((item) => {
+        if (item.production_type === PRODUCTION_TYPE.type1) {
           setProductionType1(true);
         }
-        if(item.production_type === PRODUCTION_TYPE.type2){
+        if (item.production_type === PRODUCTION_TYPE.type2) {
           setProductionType2(true);
         }
-        if(item.production_type === PRODUCTION_TYPE.type3){
+        if (item.production_type === PRODUCTION_TYPE.type3) {
           setProductionType3(true);
         }
-      })
-  
-      let inHouseWarapingDetails = {}
+      });
+
+      let inHouseWarapingDetails = {};
       inhouse_waraping_details.forEach((item, index) => {
-        inHouseWarapingDetails[`yarn_stock_company_id_${index}`] = item.yarn_stock_company_id;
+        inHouseWarapingDetails[`yarn_stock_company_id_${index}`] =
+          item.yarn_stock_company_id;
         inHouseWarapingDetails[`tars_${index}`] = item.tars;
         inHouseWarapingDetails[`warping_tpm_${index}`] = item.tpm;
         inHouseWarapingDetails[`warping_weight_${index}`] = item.warping_weight;
         inHouseWarapingDetails[`is_primary_${index}`] = item.is_primary;
-      })
+      });
 
-      let inhouseWeftDetails = {}
+      let inhouseWeftDetails = {};
       inhouse_weft_details.forEach((item, index) => {
-        inhouseWeftDetails[`weft_yarn_stock_company_id_${index}`] = item.yarn_stock_company_id;
+        inhouseWeftDetails[`weft_yarn_stock_company_id_${index}`] =
+          item.yarn_stock_company_id;
         inhouseWeftDetails[`pano_${index}`] = item.pano;
         inhouseWeftDetails[`peak_${index}`] = item.peak;
         inhouseWeftDetails[`dobby_rpm_${index}`] = item.dobby_rpm;
-        inhouseWeftDetails[`production_per_day_${index}`] = item.production_per_day;
+        inhouseWeftDetails[`production_per_day_${index}`] =
+          item.production_per_day;
         inhouseWeftDetails[`read_${index}`] = item.read;
         inhouseWeftDetails[`weft_tpm_${index}`] = item.tpm;
         inhouseWeftDetails[`weft_weight_${index}`] = item.weft_weight;
-      })
-  
+      });
+
       reset({
-          quality_name: id,
-          quality_group,
-          machine_name,
-          design_no,
-          yarn_type,
-          licence_meter,
-          vat_hsn_no,
-          tpm_z,
-          tpm_s,
-          weight_from,
-          weight_to,
-          production_rate,
-          max_taka,
-          beam_spreader_pasaria_rate_taar: inhouse_beam_rate.pasaria_rate,
-          beam_maker_primary_meter: inhouse_beam_rate.beam_maker_primary,
-          beam_maker_secondary_meter: inhouse_beam_rate.beam_maker_secondary,
-          beam_pissing_secondary_taar: inhouse_beam_rate.beam_pissing_secondary,
-          ...inHouseWarapingDetails,
-          ...inhouseWeftDetails,
-          require_pasarela_beam,
-          require_non_pasarela_beam
-      })
+        quality_name: id,
+        quality_group,
+        machine_name,
+        design_no,
+        yarn_type,
+        licence_meter,
+        vat_hsn_no,
+        tpm_z,
+        tpm_s,
+        weight_from,
+        weight_to,
+        production_rate,
+        max_taka,
+        beam_spreader_pasaria_rate_taar: inhouse_beam_rate.pasaria_rate,
+        beam_maker_primary_meter: inhouse_beam_rate.beam_maker_primary,
+        beam_maker_secondary_meter: inhouse_beam_rate.beam_maker_secondary,
+        beam_pissing_secondary_taar: inhouse_beam_rate.beam_pissing_secondary,
+        ...inHouseWarapingDetails,
+        ...inhouseWeftDetails,
+        require_pasarela_beam,
+        require_non_pasarela_beam,
+      });
     }
-  }, [inHouseQualityDetail, reset])
+  }, [inHouseQualityDetail, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -903,7 +914,13 @@ const UpdateInHouseQuality = () => {
                         labelInValue
                         allowClear
                         filterOption={false}
-                        value={field.value ? options?.find(option => field.value === option.value) : null}
+                        value={
+                          field.value
+                            ? options?.find(
+                                (option) => field.value === option.value
+                              )
+                            : null
+                        }
                         onChange={(newValue) => {
                           field.onChange(newValue?.value);
                         }}
@@ -1018,7 +1035,7 @@ const UpdateInHouseQuality = () => {
                   name="design_no"
                   render={({ field }) => (
                     <Select
-                      {...field}  
+                      {...field}
                       allowClear
                       placeholder="Select Design"
                       options={designNoOption}

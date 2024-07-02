@@ -111,3 +111,26 @@ body {
     padding-left: 12px !important;
   }
 }
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.custom-table thead {
+  background-color: rgb(25 74 109);
+  color: white;
+  font-weight: 600;
+}
+
+.custom-table thead tr th,
+td {
+  padding: 6px;
+  text-align: center;
+}
+
+.custom-table tbody tr td {
+  padding: 5px;
+  text-align: center;
+}

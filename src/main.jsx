@@ -113,12 +113,15 @@ import InhouseProduction from "./pages/production/InhouseProduction";
 import OpenProduction from "./pages/production/OpenProduction";
 import Payment from "./pages/accounts/Payment";
 import PurchaseEntryList from "./pages/purchase/purchaseEntry/PurchaseEntryList";
+import BeamSentList from "./pages/job/sent/beamSent/beamSentList";
+import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
+import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,
-      refetchOnWindowFocus: "always",
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -511,10 +514,14 @@ const router = createBrowserRouter([
           {
             path: "sent",
             children: [
-              { index: true, element: <div>sent</div> },
+              { index: true, element: <BeamSentList /> },
               {
                 path: "beam-sent",
-                element: <div>beam-sent</div>,
+                children: [
+                  { index: true, element: <BeamSentList /> },
+                  { path: "add", element: <AddBeamSent /> },
+                  { path: "update/:id", element: <UpdateBeamSent /> },
+                ],
               },
               {
                 path: "yarn-sent",
