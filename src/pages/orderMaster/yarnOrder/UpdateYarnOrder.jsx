@@ -52,8 +52,6 @@ function UpdateYarnOrder() {
     navigate(-1);
   }
 
-  const { companyId } = useContext(GlobalContext);
-
   const {data: yarnOrderData} = useQuery({
     queryFn: async () => {
       const res = await getYarnOrderByIdRequest({
