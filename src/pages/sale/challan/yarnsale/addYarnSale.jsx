@@ -65,8 +65,8 @@ function AddYarnSaleChallan() {
     },
   });
   const { companyId } = useContext(GlobalContext);
-  const [currentStockInfo, setCurrentStockInfo] = useState(0) ; 
-  const [createOption, setCreateOption] = useState(true) ; 
+  const [currentStockInfo, setCurrentStockInfo] = useState(0);
+  const [createOption, setCreateOption] = useState(true);
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
@@ -171,7 +171,7 @@ function AddYarnSaleChallan() {
     mutationKey: ["yarn-stock", "yarn-report", "create"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["reports", "list", companyId]);
-      message.success("Yarn sale create successfully") ; 
+      message.success("Yarn sale create successfully");
       navigate(-1);
     },
     onError: (error) => {
@@ -437,10 +437,9 @@ function AddYarnSaleChallan() {
                       textTransform: "capitalize",
                     }}
                     onChange={(value, option) => {
-                      console.log("Runn this function");
                       setValue("yarn_company_id", value);
                       setValue("current_stock", option?.current_stock);
-                      setCurrentStockInfo(option?.current_stock) ; 
+                      setCurrentStockInfo(option?.current_stock);
                     }}
                   />
                 )}
@@ -478,15 +477,15 @@ function AddYarnSaleChallan() {
               <Controller
                 control={control}
                 name="cartoon"
-                render={({ field }) => 
-                  <Input 
-                    {...field} 
-                    type="number" 
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
                     onChange={(e) => {
-                      setValue("cartoon", e.target.value) ; 
-
-                    }}  
-                  />}
+                      setValue("cartoon", e.target.value);
+                    }}
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -503,23 +502,26 @@ function AddYarnSaleChallan() {
               <Controller
                 control={control}
                 name="kg"
-                render={({ field }) => <Input 
-                  {...field} 
-                  type="number" 
-                  onChange={(e) => {
-                    setValue("kg", e.target.value) ; 
-                      
-                    let current_cartoon = Number(e.target.value) ; 
-                    let remaining_stock = Number(currentStockInfo) - current_cartoon ; 
-                    if (remaining_stock < 0){
-                      setValue("pending_kg", 0) ; 
-                      setCreateOption(false) ; 
-                    } else {
-                      setCreateOption(true) ; 
-                      setValue("pending_kg", remaining_stock) ; 
-                    }
-                  }}
-                />}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
+                    onChange={(e) => {
+                      setValue("kg", e.target.value);
+
+                      let current_cartoon = Number(e.target.value);
+                      let remaining_stock =
+                        Number(currentStockInfo) - current_cartoon;
+                      if (remaining_stock < 0) {
+                        setValue("pending_kg", 0);
+                        setCreateOption(false);
+                      } else {
+                        setCreateOption(true);
+                        setValue("pending_kg", remaining_stock);
+                      }
+                    }}
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -547,7 +549,7 @@ function AddYarnSaleChallan() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          
+
           {createOption && (
             <Button type="primary" htmlType="submit">
               Create

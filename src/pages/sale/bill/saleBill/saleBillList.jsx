@@ -71,9 +71,14 @@ const SaleBillList = () => {
   const [toBill, setToBill] = useState("");
   const [orderNo, setOrderNo] = useState("");
 
+  // company_id, is_paid,
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
+  const debouncedParty = useDebounce(party, 500);
+  const debouncedFromBill = useDebounce(fromBill, 500);
+  const debouncedToBill = useDebounce(toBill, 500);
+  const debouncedPayment = useDebounce(payment, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -117,13 +122,18 @@ const SaleBillList = () => {
     queryKey: [
       "saleBill",
       "list",
+
       {
         company_id: companyId,
         page,
         pageSize,
-        from: debouncedFromDate,
-        to: debouncedToDate,
+        fromDate: debouncedFromDate,
+        toDate: debouncedToDate,
         quality_id: debouncedQuality,
+        party_id: debouncedParty,
+        fromBill: debouncedFromBill,
+        toBill: debouncedToBill,
+        is_paid: debouncedPayment === "received" ? true : false,
       },
     ],
     queryFn: async () => {
@@ -132,9 +142,13 @@ const SaleBillList = () => {
           company_id: companyId,
           page,
           pageSize,
-          from: debouncedFromDate,
-          to: debouncedToDate,
+          fromDate: debouncedFromDate,
+          toDate: debouncedToDate,
           quality_id: debouncedQuality,
+          party_id: debouncedParty,
+          fromBill: debouncedFromBill,
+          toBill: debouncedToBill,
+          is_paid: debouncedPayment === "received" ? true : false,
         },
       });
       return res.data?.data;
@@ -149,7 +163,6 @@ const SaleBillList = () => {
   // function navigateToUpdate(id) {
   //   navigate(`/sales/bill/sales-bill-list/update/${id}`);
   // }
-  
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -227,13 +240,10 @@ const SaleBillList = () => {
       // dataIndex: "total_meter",
       // key: "total_meter",
       render: (text, record) => {
-        let result = new Date(record?.createdAt) ; 
+        let result = new Date(record?.createdAt);
         result.setDate(result.getDate() + record?.due_days);
-        console.log(result);
-        return(
-          <div>{dayjs(result).format("DD-MM-YYYY")}</div>
-        )
-      }
+        return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
+      },
     },
     {
       title: "Due Days",

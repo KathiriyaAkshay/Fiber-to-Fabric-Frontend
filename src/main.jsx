@@ -116,6 +116,9 @@ import PurchaseEntryList from "./pages/purchase/purchaseEntry/PurchaseEntryList"
 import BeamSentList from "./pages/job/sent/beamSent/beamSentList";
 import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
 import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
+import AddBeamSale from "./pages/sale/challan/beamSale/AddBeamSale";
+import UpdateBeamSale from "./pages/sale/challan/beamSale/UpdateBeamSale";
+import BeamSaleList from "./pages/sale/challan/beamSale/BeamSaleList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -292,15 +295,15 @@ const router = createBrowserRouter([
           { index: true, element: <div>production</div> },
           {
             path: "add-new-production",
-            element:<AddProduction/>,
+            element: <AddProduction />,
           },
           {
             path: "inhouse-production",
-            element: <InhouseProduction/>,
+            element: <InhouseProduction />,
           },
           {
             path: "opening-production",
-            element: <OpenProduction/>,
+            element: <OpenProduction />,
           },
           { path: "taka-tp-cutting", element: <div>taka-tp-cutting</div> },
           {
@@ -363,7 +366,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "beam-sale",
-                element: <div>beam-sale</div>,
+                children: [
+                  { index: true, element: <BeamSaleList /> },
+                  { path: "add", element: <AddBeamSale /> },
+                  { path: "update/:id", element: <UpdateBeamSale /> },
+                ],
               },
               {
                 path: "sale-challan",
@@ -426,7 +433,7 @@ const router = createBrowserRouter([
           },
           {
             path: "general-purchase-entry",
-            element: <PurchaseEntryList/>,
+            element: <PurchaseEntryList />,
           },
           {
             path: "receive",
@@ -489,7 +496,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "yarn-bills",
-                element: <YarnBillList/>,
+                element: <YarnBillList />,
               },
             ],
           },
@@ -639,7 +646,7 @@ const router = createBrowserRouter([
           },
           {
             path: "payment",
-            element: <Payment/>,
+            element: <Payment />,
           },
           {
             path: "balance-sheet",

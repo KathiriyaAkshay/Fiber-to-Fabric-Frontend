@@ -4,7 +4,7 @@ import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
 import moment from "moment";
 const { Paragraph } = Typography;
 
-const PrintYarnSaleChallan = ({ details }) => {
+const PrintBeamSaleChallan = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -22,7 +22,7 @@ const PrintYarnSaleChallan = ({ details }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Yarn Sale
+            Beam Sale
           </Typography.Text>
         }
         open={isModelOpen}
@@ -145,37 +145,50 @@ const PrintYarnSaleChallan = ({ details }) => {
               <Col span={3}>
                 <strong>No</strong>
               </Col>
-              <Col span={7}>
-                <strong>Yarn Company</strong>
+              <Col span={3}>
+                <strong>Beam No</strong>
               </Col>
-              <Col span={6}>
-                <strong>Dennier</strong>
+              <Col span={3}>
+                <strong>Tar</strong>
+              </Col>
+              <Col span={3}>
+                <strong>Pano</strong>
               </Col>
               <Col span={4}>
-                <strong>Cartoon</strong>
+                <strong>Taka No</strong>
               </Col>
               <Col span={4}>
-                <strong>KG</strong>
+                <strong>Meter</strong>
+              </Col>
+              <Col span={4}>
+                <strong>Weight</strong>
               </Col>
             </Row>
-            <Row
-              gutter={24}
-              style={{
-                borderTop: "1px dashed",
-                paddingTop: 15,
-                paddingBottom: 15,
-              }}
-            >
-              <Col span={3}>1</Col>
-              <Col span={7}>
-                {details?.yarn_stock_company?.yarn_company_name}
-              </Col>
-              <Col
-                span={6}
-              >{`${details?.yarn_stock_company?.yarn_count}C/${details?.yarn_stock_company?.filament}F(${details?.yarn_stock_company?.luster_type}(${details?.yarn_stock_company?.yarn_Sub_type}) - ${details?.yarn_stock_company?.yarn_color})`}</Col>
-              <Col span={4}>{details?.cartoon}</Col>
-              <Col span={4}>{details?.kg}</Col>
-            </Row>
+            {details?.beam_sale_details.map((item, index) => {
+              const obj =
+                item.loaded_beam.non_pasarela_beam_detail ||
+                item.loaded_beam.recieve_size_beam_detail ||
+                item.loaded_beam.job_beam_receive_detail;
+              return (
+                <Row
+                  key={index}
+                  gutter={24}
+                  style={{
+                    borderTop: "1px dashed",
+                    paddingTop: 15,
+                    paddingBottom: 15,
+                  }}
+                >
+                  <Col span={3}>{index + 1}</Col>
+                  <Col span={3}>{obj?.beam_no || 0}</Col>
+                  <Col span={3}>{obj?.ends_or_tars || 0}</Col>
+                  <Col span={3}>{obj?.pano || 0}</Col>
+                  <Col span={4}>{obj?.taka || 0}</Col>
+                  <Col span={4}>{obj?.meters || 0}</Col>
+                  <Col span={4}>{obj?.net_weight || 0}</Col>
+                </Row>
+              );
+            })}
           </div>
           <Row
             gutter={24}
@@ -186,7 +199,7 @@ const PrintYarnSaleChallan = ({ details }) => {
             }}
           >
             <Col span={3}>
-              <strong></strong>
+              <strong>TOTAL</strong>
             </Col>
             <Col span={7}>
               <strong></strong>
@@ -195,10 +208,10 @@ const PrintYarnSaleChallan = ({ details }) => {
               <strong></strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.cartoon}</strong>
+              <strong>{details?.total_meter}</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.kg}</strong>
+              <strong>{details?.enter_weight}</strong>
             </Col>
           </Row>
 
@@ -211,16 +224,16 @@ const PrintYarnSaleChallan = ({ details }) => {
             }}
           >
             <Col span={4}>
-              <strong>TOTAL CARTOON:</strong>
+              <strong>TOTAL Meter:</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.cartoon}</strong>
+              <strong>{details?.total_meter}</strong>
             </Col>
             <Col span={4}>
-              <strong>TOTAL KG:</strong>
+              <strong>TOTAL Weight:</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.kg}</strong>
+              <strong>{details?.enter_weight}</strong>
             </Col>
           </Row>
 
@@ -276,4 +289,4 @@ const PrintYarnSaleChallan = ({ details }) => {
   );
 };
 
-export default PrintYarnSaleChallan;
+export default PrintBeamSaleChallan;

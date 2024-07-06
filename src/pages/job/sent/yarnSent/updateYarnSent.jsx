@@ -7,7 +7,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
-  DatePicker,
   Divider,
   Flex,
   Form,
@@ -20,18 +19,17 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import {
-  getPartyListRequest,
+  getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import {
   getYarnSentByIdRequest,
   updateYarnSentRequest,
 } from "../../../../api/requests/job/sent/yarnSent";
-import { disableBeforeDate } from "../../../../utils/date";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 
@@ -53,10 +51,9 @@ const UpdateYarnSent = () => {
 
   const queryClient = useQueryClient();
   const [fieldArray, setFieldArray] = useState([0]);
-  const [denierOptions, setDenierOptions] = useState([]);
+  // const [denierOptions, setDenierOptions] = useState([]);
 
   const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
   const { companyId } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
@@ -131,18 +128,23 @@ const UpdateYarnSent = () => {
     clearErrors,
     setError,
     getValues,
+    setValue,
+    watch,
   } = useForm({
     defaultValues: {
       sent_date: dayjs(),
       quality_id: null,
-      party_id: null,
+      // party_id: null,
       vehicle_id: null,
+      supplier_name: null,
+      supplier_id: null,
       challan_no: "",
       delivery_charge: "",
       power_cost: "",
     },
     resolver: addYSCSchemaResolver,
   });
+  const { supplier_name } = watch();
 
   // ------------------------------------------------------------------------------------------
 
@@ -252,16 +254,48 @@ const UpdateYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getPartyListRequest({
+      const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
+
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      supplier_name &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.filter((item) => {
+        return item.supplier_name === supplier_name;
+      })[0];
+
+      return obj?.supplier_company?.map((item) => {
+        return { label: item.supplier_company, value: item.supplier_id };
+      });
+    } else {
+      return [];
+    }
+  }, [supplier_name, dropdownSupplierListRes]);
+
+  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+  //   queryKey: ["party", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getPartyListRequest({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list"],
@@ -274,43 +308,45 @@ const UpdateYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
-  useEffect(() => {
-    // set options for denier selection on yarn stock company select
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      // const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      const { yarn_details = [] } = ysc;
-      // if (name === yarn_company_name) {
-      const options = yarn_details?.map(
-        ({
-          yarn_company_id = 0,
-          filament = 0,
-          yarn_denier = 0,
-          luster_type = "",
-          yarn_color = "",
-        }) => {
-          return {
-            label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-            value: yarn_company_id,
-          };
-        }
-      );
-      if (options?.length) {
-        setDenierOptions(options);
-      }
-      // }
-    });
-  }, [yscdListRes?.yarnCompanyList]);
+  // useEffect(() => {
+  //   // set options for denier selection on yarn stock company select
+  //   yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+  //     // const { yarn_company_name: name = "", yarn_details = [] } = ysc;
+  //     const { yarn_details = [] } = ysc;
+  //     // if (name === yarn_company_name) {
+  //     const options = yarn_details?.map(
+  //       ({
+  //         yarn_company_id = 0,
+  //         filament = 0,
+  //         yarn_denier = 0,
+  //         luster_type = "",
+  //         yarn_color = "",
+  //       }) => {
+  //         return {
+  //           label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+  //           value: yarn_company_id,
+  //         };
+  //       }
+  //     );
+  //     if (options?.length) {
+  //       setDenierOptions(options);
+  //     }
+  //     // }
+  //   });
+  // }, [yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
     if (yarnSentDetails) {
-      console.log(yarnSentDetails);
+      console.log({ yarnSentDetails });
       const {
         sent_date,
         challan_no,
         delivery_charge,
         power_cost,
         quality_id,
-        party_id,
+        supplier_id,
+        supplier: { supplier_name },
+        // party_id,
         vehicle_id,
         job_yarn_sent_details,
       } = yarnSentDetails;
@@ -319,6 +355,8 @@ const UpdateYarnSent = () => {
       });
       let jobYarnSentDetails = {};
       job_yarn_sent_details.forEach((item, index) => {
+        jobYarnSentDetails[`yarn_company_name_${index}`] =
+          item.yarn_stock_company.yarn_company_name;
         jobYarnSentDetails[`yarn_stock_company_id_${index}`] =
           item.yarn_company_id;
         jobYarnSentDetails[`current_stock_${index}`] = item.current_stock;
@@ -332,7 +370,9 @@ const UpdateYarnSent = () => {
         delivery_charge,
         power_cost,
         quality_id,
-        party_id,
+        supplier_id,
+        supplier_name,
+        // party_id,
         vehicle_id,
         ...jobYarnSentDetails,
       });
@@ -354,7 +394,7 @@ const UpdateYarnSent = () => {
             padding: "12px",
           }}
         >
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Sent Date"
               name="sent_date"
@@ -378,7 +418,7 @@ const UpdateYarnSent = () => {
                 }}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -394,6 +434,7 @@ const UpdateYarnSent = () => {
                 render={({ field }) => {
                   return (
                     <Select
+                      disabled
                       {...field}
                       placeholder="Select Quality"
                       loading={dropDownQualityLoading}
@@ -411,7 +452,7 @@ const UpdateYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Select Party"
               name="party_id"
@@ -449,8 +490,99 @@ const UpdateYarnSent = () => {
                 )}
               />
             </Form.Item>
+          </Col> */}
+
+          <Col span={6}>
+            <Form.Item
+              label="Supplier Name"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    disabled
+                    {...field}
+                    loading={isLoadingDropdownSupplierList}
+                    placeholder="Select Supplier"
+                    options={dropdownSupplierListRes?.map((supervisor) => ({
+                      label: supervisor?.supplier_name,
+                      value: supervisor?.supplier_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
           </Col>
 
+          <Col span={6}>
+            <Form.Item
+              label="Supplier Company"
+              name="supplier_id"
+              validateStatus={errors.supplier_id ? "error" : ""}
+              help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_id"
+                render={({ field }) => (
+                  <Select
+                    disabled
+                    {...field}
+                    loading={isLoadingDropdownSupplierList}
+                    placeholder="Select Supplier Company"
+                    options={dropDownSupplierCompanyOption}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Challan No"
+              name="challan_no"
+              validateStatus={errors.challan_no ? "error" : ""}
+              help={errors.challan_no && errors.challan_no.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_no"
+                render={({ field }) => (
+                  <Input disabled {...field} placeholder="CH123456" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
           <Col span={6}>
             <Form.Item
               label="Select vehicle"
@@ -486,32 +618,6 @@ const UpdateYarnSent = () => {
                       textTransform: "capitalize",
                     }}
                   />
-                )}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-          }}
-        >
-          <Col span={6}>
-            <Form.Item
-              label="Challan No"
-              name="challan_no"
-              validateStatus={errors.challan_no ? "error" : ""}
-              help={errors.challan_no && errors.challan_no.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="challan_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="CH123456" />
                 )}
               />
             </Form.Item>
@@ -554,168 +660,202 @@ const UpdateYarnSent = () => {
 
         <Divider />
 
-        {fieldArray.map((field, index) => {
+        {/* {fieldArray.map((field, index) => {
+          console.log({ field });
           return (
-            <>
-              <Row
-                gutter={18}
-                style={{
-                  padding: "12px",
-                }}
-                key={`${field}_add_yarn_sent`}
-              >
-                <Col span={6}>
-                  <Form.Item
-                    label="Denier"
+            <Row
+              gutter={18}
+              style={{
+                padding: "12px",
+              }}
+              key={`${field}_add_yarn_sent`}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="Denier"
+                  name={`yarn_stock_company_id_${field}`}
+                  validateStatus={
+                    errors[`yarn_stock_company_id_${field}`] ? "error" : ""
+                  }
+                  help={
+                    errors[`yarn_stock_company_id_${field}`] &&
+                    errors[`yarn_stock_company_id_${field}`].message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
                     name={`yarn_stock_company_id_${field}`}
-                    validateStatus={
-                      errors[`yarn_stock_company_id_${field}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`yarn_stock_company_id_${field}`] &&
-                      errors[`yarn_stock_company_id_${field}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name={`yarn_stock_company_id_${field}`}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          placeholder="Select denier"
-                          allowClear
-                          loading={isLoadingYSCDList}
-                          options={denierOptions}
-                          style={{
-                            textTransform: "capitalize",
-                          }}
-                          dropdownStyle={{
-                            textTransform: "capitalize",
-                          }}
-                        />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select denier"
+                        allowClear
+                        loading={isLoadingYSCDList}
+                        options={denierOptions}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
 
-                <Col span={3}>
-                  <Form.Item
-                    label="Current Stock"
+              <Col span={3}>
+                <Form.Item
+                  label="Current Stock"
+                  name={`current_stock_${field}`}
+                  validateStatus={
+                    errors[`current_stock_${field}`] ? "error" : ""
+                  }
+                  help={
+                    errors[`current_stock_${field}`] &&
+                    errors[`current_stock_${field}`].message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
                     name={`current_stock_${field}`}
-                    validateStatus={
-                      errors[`current_stock_${field}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`current_stock_${field}`] &&
-                      errors[`current_stock_${field}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name={`current_stock_${field}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="23" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                    render={({ field }) => (
+                      <Input {...field} placeholder="23" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
 
-                <Col span={3}>
-                  <Form.Item
-                    label="Cartoon"
+              <Col span={3}>
+                <Form.Item
+                  label="Cartoon"
+                  name={`cartoon_${field}`}
+                  validateStatus={errors[`cartoon_${field}`] ? "error" : ""}
+                  help={
+                    errors[`cartoon_${field}`] &&
+                    errors[`cartoon_${field}`].message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
                     name={`cartoon_${field}`}
-                    validateStatus={errors[`cartoon_${field}`] ? "error" : ""}
-                    help={
-                      errors[`cartoon_${field}`] &&
-                      errors[`cartoon_${field}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name={`cartoon_${field}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="23" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                    render={({ field }) => (
+                      <Input {...field} placeholder="23" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
 
-                <Col span={3}>
-                  <Form.Item
-                    label="Kg"
+              <Col span={3}>
+                <Form.Item
+                  label="Kg"
+                  name={`kg_${field}`}
+                  validateStatus={errors[`kg_${field}`] ? "error" : ""}
+                  help={errors[`kg_${field}`] && errors[`kg_${field}`].message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
                     name={`kg_${field}`}
-                    validateStatus={errors[`kg_${field}`] ? "error" : ""}
-                    help={
-                      errors[`kg_${field}`] && errors[`kg_${field}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name={`kg_${field}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="23" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                    render={({ field }) => (
+                      <Input {...field} placeholder="23" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
 
-                <Col span={3}>
-                  <Form.Item
-                    label="Remain Stock"
+              <Col span={3}>
+                <Form.Item
+                  label="Remain Stock"
+                  name={`remaining_stock_${field}`}
+                  validateStatus={
+                    errors[`remaining_stock_${field}`] ? "error" : ""
+                  }
+                  help={
+                    errors[`remaining_stock_${field}`] &&
+                    errors[`remaining_stock_${field}`].message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
                     name={`remaining_stock_${field}`}
-                    validateStatus={
-                      errors[`remaining_stock_${field}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`remaining_stock_${field}`] &&
-                      errors[`remaining_stock_${field}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name={`remaining_stock_${field}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="23" />
-                      )}
-                    />
-                  </Form.Item>
+                    render={({ field }) => (
+                      <Input {...field} placeholder="23" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+
+              {fieldArray.length > 1 && (
+                <Col span={1}>
+                  <Button
+                    style={{ marginTop: "1.9rem" }}
+                    icon={<DeleteOutlined />}
+                    type="primary"
+                    onClick={deleteFieldRow.bind(null, field)}
+                    className="flex-none"
+                  />
                 </Col>
+              )}
 
-                {fieldArray.length > 1 && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<DeleteOutlined />}
-                      type="primary"
-                      onClick={deleteFieldRow.bind(null, field)}
-                      className="flex-none"
-                    />
-                  </Col>
-                )}
+              {index === fieldArray.length - 1 && (
+                <Col span={1}>
+                  <Button
+                    style={{ marginTop: "1.9rem" }}
+                    icon={<PlusOutlined />}
+                    type="primary"
+                    onClick={addNewFieldRow.bind(null, index)}
+                    className="flex-none"
+                  />
+                </Col>
+              )}
+            </Row>
+          );
+        })} */}
+        {fieldArray.map((field, index) => {
+          // const yarnDetailObj = yarnSentDetails?.job_yarn_sent_details[index];
 
-                {index === fieldArray.length - 1 && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<PlusOutlined />}
-                      type="primary"
-                      onClick={addNewFieldRow.bind(null, index)}
-                      className="flex-none"
-                    />
-                  </Col>
-                )}
-              </Row>
-            </>
+          // const {
+          //   yarn_company_id = 0,
+          //   filament = 0,
+          //   yarn_denier = 0,
+          //   luster_type = "",
+          //   yarn_color = "",
+          // } = yarnDetailObj?.yarn_stock_company;
+
+          // const editDenierOption = [
+          //   {
+          //     label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+          //     value: yarn_company_id,
+          //   },
+          // ];
+          return (
+            <RenderDynamicFields
+              key={index}
+              field={field}
+              index={index}
+              errors={errors}
+              yscdListRes={yscdListRes}
+              isLoadingYSCDList={isLoadingYSCDList}
+              control={control}
+              fieldArray={fieldArray}
+              addNewFieldRow={addNewFieldRow}
+              deleteFieldRow={deleteFieldRow}
+              setValue={setValue}
+              setError={setError}
+              getValues={getValues}
+              clearErrors={clearErrors}
+              // editDenierOption={editDenierOption}
+            />
           );
         })}
 
@@ -730,3 +870,275 @@ const UpdateYarnSent = () => {
 };
 
 export default UpdateYarnSent;
+
+const RenderDynamicFields = ({
+  field,
+  index,
+  errors,
+  yscdListRes,
+  isLoadingYSCDList,
+  control,
+  fieldArray,
+  addNewFieldRow,
+  deleteFieldRow,
+  setValue,
+  getValues,
+  setError,
+  clearErrors,
+  // editDenierOption,
+}) => {
+  const [denierOptions, setDenierOptions] = useState([]);
+
+  const createDenierOption = (companyName) => {
+    const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
+      ({ yarn_company_name }) => companyName === yarn_company_name
+    );
+    if (selectedYarnCompany) {
+      setDenierOptions(
+        selectedYarnCompany.yarn_details.map(
+          ({
+            id = 0,
+            filament = 0,
+            yarn_denier = 0,
+            luster_type = "",
+            yarn_color = "",
+          }) => {
+            return {
+              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+              value: id,
+            };
+          }
+        )
+      );
+    } else {
+      setDenierOptions([]);
+      setValue(`yarn_stock_company_id_${field}`, null);
+    }
+  };
+
+  return (
+    <Row
+      gutter={18}
+      style={{
+        padding: "12px",
+      }}
+      key={`${field}_add_yarn_sent`}
+    >
+      <Col span={6}>
+        <Form.Item
+          label="Company Name"
+          name={`yarn_company_name_${field}`}
+          validateStatus={errors[`yarn_company_name_${field}`] ? "error" : ""}
+          help={
+            errors[`yarn_company_name_${field}`] &&
+            errors[`yarn_company_name_${field}`].message
+          }
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`yarn_company_name_${field}`}
+            render={({ field }) => (
+              <Select
+                {...field}
+                placeholder="Select company"
+                allowClear
+                loading={isLoadingYSCDList}
+                options={yscdListRes?.yarnCompanyList.map(
+                  ({ yarn_company_name }) => {
+                    return {
+                      label: yarn_company_name,
+                      value: yarn_company_name,
+                    };
+                  }
+                )}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={createDenierOption}
+              />
+            )}
+          />
+        </Form.Item>
+      </Col>
+
+      <Col span={5}>
+        <Form.Item
+          label="Denier"
+          name={`yarn_stock_company_id_${field}`}
+          validateStatus={
+            errors[`yarn_stock_company_id_${field}`] ? "error" : ""
+          }
+          help={
+            errors[`yarn_stock_company_id_${field}`] &&
+            errors[`yarn_stock_company_id_${field}`].message
+          }
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`yarn_stock_company_id_${field}`}
+            render={({ field: fields }) => (
+              <Select
+                {...fields}
+                placeholder="Select denier"
+                allowClear
+                options={denierOptions}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onSelect={(selectedValue) => {
+                  yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+                    const obj = yarn_details.find(
+                      ({ yarn_company_id }) => yarn_company_id === selectedValue
+                    );
+                    // setCurrentStockValue(obj.current_stock);
+                    setValue(`current_stock_${field}`, obj.current_stock);
+                  });
+                }}
+              />
+            )}
+          />
+        </Form.Item>
+      </Col>
+
+      <Col span={3}>
+        <Form.Item
+          label="Current Stock"
+          name={`current_stock_${field}`}
+          validateStatus={errors[`current_stock_${field}`] ? "error" : ""}
+          help={
+            errors[`current_stock_${field}`] &&
+            errors[`current_stock_${field}`].message
+          }
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`current_stock_${field}`}
+            render={({ field }) => <Input {...field} disabled />}
+          />
+        </Form.Item>
+      </Col>
+
+      <Col span={3}>
+        <Form.Item
+          label="Cartoon"
+          name={`cartoon_${field}`}
+          validateStatus={errors[`cartoon_${field}`] ? "error" : ""}
+          help={
+            errors[`cartoon_${field}`] && errors[`cartoon_${field}`].message
+          }
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`cartoon_${field}`}
+            render={({ field }) => <Input {...field} placeholder="23" />}
+          />
+        </Form.Item>
+      </Col>
+
+      <Col span={2}>
+        <Form.Item
+          label="Kg"
+          name={`kg_${field}`}
+          validateStatus={errors[`kg_${field}`] ? "error" : ""}
+          help={errors[`kg_${field}`] && errors[`kg_${field}`].message}
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`kg_${field}`}
+            render={({ field: fields }) => {
+              return (
+                <Input
+                  {...fields}
+                  placeholder="23"
+                  onChange={(e) => {
+                    setValue(`kg_${field}`, e.target.value);
+                    if (
+                      parseInt(e.target.value) >
+                      parseInt(getValues(`current_stock_${field}`))
+                    ) {
+                      setValue(`remaining_stock_${field}`, 0);
+                      setError(`kg_${field}`, {
+                        type: "manual",
+                        message: "Invalid Kg.",
+                      });
+                      return;
+                    } else {
+                      clearErrors(`kg_${field}`, "");
+                    }
+                    if (parseInt(getValues(`current_stock_${field}`))) {
+                      setValue(
+                        `remaining_stock_${field}`,
+                        parseInt(getValues(`current_stock_${field}`)) -
+                          parseInt(e.target.value)
+                      );
+                    }
+                  }}
+                />
+              );
+            }}
+          />
+        </Form.Item>
+      </Col>
+
+      <Col span={3}>
+        <Form.Item
+          label="Remain Stock"
+          name={`remaining_stock_${field}`}
+          validateStatus={errors[`remaining_stock_${field}`] ? "error" : ""}
+          help={
+            errors[`remaining_stock_${field}`] &&
+            errors[`remaining_stock_${field}`].message
+          }
+          required={true}
+          wrapperCol={{ sm: 24 }}
+        >
+          <Controller
+            control={control}
+            name={`remaining_stock_${field}`}
+            render={({ field }) => <Input {...field} disabled />}
+          />
+        </Form.Item>
+      </Col>
+
+      {fieldArray.length > 1 && (
+        <Col span={1}>
+          <Button
+            style={{ marginTop: "1.9rem" }}
+            icon={<DeleteOutlined />}
+            type="primary"
+            onClick={deleteFieldRow.bind(null, field)}
+            className="flex-none"
+          />
+        </Col>
+      )}
+
+      {index === fieldArray.length - 1 && (
+        <Col span={1}>
+          <Button
+            style={{ marginTop: "1.9rem" }}
+            icon={<PlusOutlined />}
+            type="primary"
+            onClick={addNewFieldRow.bind(null, index)}
+            className="flex-none"
+          />
+        </Col>
+      )}
+    </Row>
+  );
+};

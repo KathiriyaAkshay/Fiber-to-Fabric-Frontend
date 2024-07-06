@@ -21,3 +21,7 @@ export function getYarnSentByIdRequest({ id, params }) {
 export function deleteYarnSentRequest({ id, params }) {
     return api.delete(`/job/sent/yarn/delete/${id}`, { params });
 }
+
+export function getYarnSentLastChallanNoRequest({ params }) {
+    return api.get(`/job/sent/yarn/last-challan-no/`, { params });
+}
