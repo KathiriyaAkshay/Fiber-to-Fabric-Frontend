@@ -39,3 +39,22 @@ export function getReceiveSizeBeamBillListRequest({ params }) {
     params,
   });
 }
+
+
+export function createGeneralPurchaseEntryRequest({ data, params }) {
+  return api.post(`/purchase/general/entry/create`, data, {
+    params,
+  });
+}
+
+export function getGeneralPurchaseListRequest({ params }) {
+  return api.get(`/purchase/general/entry/list`, {
+    params,
+  });
+}
+
+export function deleteGeneralPurchaseRequest({ id, params }) {
+  return api.delete(`/purchase/general/entry/delete/${id}`, {
+    params,
+  });
+}
