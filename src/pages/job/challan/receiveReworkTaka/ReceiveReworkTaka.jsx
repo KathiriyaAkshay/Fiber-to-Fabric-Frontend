@@ -117,7 +117,10 @@ const ReceiveReworkTaka = () => {
             </div>
 
 
-            <Flex justify='end' align='center' className='mb-1'>
+            <Flex justify='end' align='center' className='mb-2 mt-3'>
+                <Typography.Text className='me-2'>
+                    Search:
+                </Typography.Text>
                 <Input
                     placeholder="Search"
                     value={searchText}
