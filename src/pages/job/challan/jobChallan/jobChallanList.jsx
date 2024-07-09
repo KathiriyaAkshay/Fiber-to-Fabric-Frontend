@@ -277,11 +277,6 @@ const JobChallanList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewJobTakaDetailsModal
-              title="Job Taka Details"
-              details={details}
-            /> */}
-            {/* <JobTakaChallanModal details={details} /> */}
             <ViewJobTakaInfo details={details} />
             <Button
               onClick={() => {

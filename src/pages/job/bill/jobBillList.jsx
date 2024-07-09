@@ -16,21 +16,19 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
 import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
+import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
 
 const JobBillList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
-  //   const navigate = useNavigate();
 
   const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
@@ -65,11 +63,7 @@ const JobBillList = () => {
       mode: "",
     }));
   };
-
-  //const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
-
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: jobTakaBillList, isLoading } = useQuery({
     queryKey: [
       "jobTaka",
@@ -83,9 +77,9 @@ const JobBillList = () => {
         quality_id: debouncedQuality,
         bill_no: debouncedBillNo,
         order_no: debouncedOrderNo,
-        // supplier_id: debouncedSupplierCompany,
         is_paid: debouncedIsPaid,
         supplier_name: debouncedSupplier,
+        bill_status : "received"
       },
     ],
     queryFn: async () => {
@@ -99,9 +93,9 @@ const JobBillList = () => {
           quality_id: debouncedQuality,
           bill_no: debouncedBillNo,
           order_no: debouncedOrderNo,
-          //   supplier_id: debouncedSupplierCompany,
           is_paid: debouncedIsPaid,
           supplier_name: debouncedSupplier,
+          bill_status : "received"
         },
       });
       return res.data?.data;
@@ -148,32 +142,6 @@ const JobBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  //   const dropDownSupplierCompanyOption = useMemo(() => {
-  //     if (
-  //       debouncedSupplier &&
-  //       dropdownSupplierListRes &&
-  //       dropdownSupplierListRes.length
-  //     ) {
-  //       const obj = dropdownSupplierListRes.filter((item) => {
-  //         return item.supplier_name === debouncedSupplier;
-  //       })[0];
-
-  //       return obj?.supplier_company?.map((item) => {
-  //         return { label: item.supplier_company, value: item.supplier_id };
-  //       });
-  //     } else {
-  //       return [];
-  //     }
-  //   }, [debouncedSupplier, dropdownSupplierListRes]);
-
-  //   function navigateToAdd() {
-  //     navigate("/job/job-taka/add");
-  //   }
-
-  // function navigateToUpdate(id) {
-  //   navigate(`/job/job-taka/update/${id}`);
-  // }
-
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = jobTakaBillList?.rows?.map((user, index) => {
@@ -214,9 +182,7 @@ const JobBillList = () => {
     },
     {
       title: "Bill No",
-      // dataIndex: ["gray_order", "order_no"],
-      // key: "order_no",
-      render: () => "-",
+      dataIndex: ["job_taka_bill", "invoice_no"],
     },
     {
       title: "Quality Name",
@@ -252,12 +218,14 @@ const JobBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["job_taka_bill", "due_date"],
-      render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      // render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      render: () => (<div>-</div>)
     },
     {
       title: "Due Days",
       dataIndex: "amount",
       key: "amount",
+      render: () => (<div>-</div>)
     },
     {
       title: "Bill Status",
@@ -284,11 +252,7 @@ const JobBillList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewJobTakaDetailsModal
-              title="Job Taka Details"
-              details={details}
-            /> */}
-            {/* <JobTakaChallanModal details={details} /> */}
+            <ViewJobTakaInfo details={details} />
             <Button
               onClick={() => {
                 let MODE;

@@ -7,7 +7,7 @@ const GridInformationModel = ({ title = "", details = []}) => {
 
     return (
         <>
-            <Button onClick={() => {setIsModalOpen(true)}}>
+            <Button type="primary" onClick={() => {setIsModalOpen(true)}}>
                 <EyeOutlined />
             </Button>
 
