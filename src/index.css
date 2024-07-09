@@ -182,3 +182,11 @@ td {
   }
 }
 
+/* Menu related css  */
+
+@media print {
+  .printable-content {
+      padding: 20px;  /* Add your desired padding */
+      margin: 20px;   /* Add your desired margin */
+  }
+}

@@ -36,6 +36,10 @@ function JobWorkChallanList() {
   const debounceParty = useDebounce(party, 500);
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
+  const [billStatus, setBillStatus] = useState(null) ; 
+  const debounceBillStatus = useDebounce(billStatus, 500) ; 
+  const [billType, setBillType] = useState(null);
+  const debounceBillType = useDebounce(billType, 500) ; 
 
   const [jobWorkSaleChallanModel, setJobWorkSaleChallanModel] = useState({
     isModalOpen: false,
@@ -85,11 +89,10 @@ function JobWorkChallanList() {
           page,
           pageSize,
           supplier_name: debounceParty,
-          // search: debouncedSearch,
-          // toDate: debouncedToDate,
-          // fromDate: debouncedFromDate,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
+          bill_status: debounceBillStatus, 
+          is_gray: debounceBillType
         },
       ],
       queryFn: async () => {
@@ -100,12 +103,10 @@ function JobWorkChallanList() {
             page,
             pageSize,
             supplier_name: debounceParty,
-            // search: debouncedSearch,
-            // toDate: debouncedToDate,
-            // fromDate: debouncedFromDate,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
-            // pending: true,
+            bill_status: debounceBillStatus, 
+            is_gray: debounceBillType
           },
         });
         return res.data?.data;
@@ -168,7 +169,7 @@ function JobWorkChallanList() {
       render: (text, record) => (
         <Space>
           <PrintJobWorkChallan details={record} />
-          {text?.bill_status != "pending" && (
+          {record?.bill_status == "pending" && (
             <>
               <Button
                 onClick={() => {
@@ -177,10 +178,10 @@ function JobWorkChallanList() {
               >
                 <EditOutlined />
               </Button>
+
               <DeleteJobWorkChallan details={record} />
             </>
           )}
-          {/* <JobWorkSaleChallanModel jobSaleDetails={record} /> */}
           <Button
             onClick={() => {
               let MODE;
@@ -251,6 +252,46 @@ function JobWorkChallanList() {
 
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Bill status
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select bill status"
+                value={billStatus}
+                options={[
+                  {label: "Pending", value: "pending"},
+                  {label: "Confirmed", value: "confirmed"}
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setBillStatus}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
+              <Typography.Text className="whitespace-nowrap">
+                Bill Type
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select bill status"
+                value={billType}
+                options={[
+                  {label: "Gery", value: 1},
+                  {label: "Cash", value: 0}
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setBillType}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
               <Typography.Text className="whitespace-nowrap">
                 Party
               </Typography.Text>

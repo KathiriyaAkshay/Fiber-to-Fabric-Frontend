@@ -45,8 +45,12 @@ function YarnSaleChallanList() {
 
   const [party, setParty] = useState(null);
   const debounceParty = useDebounce(party, 500);
+
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
+  
+  const [billStatus, setBillStatus] = useState(null) ; 
+  const debounceBillStatus = useDebounce(billStatus, 500) ; 
 
   const {
     data: dropdownSupplierListRes,
@@ -88,6 +92,7 @@ function YarnSaleChallanList() {
           supplier_name: debounceParty,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
+          bill_status: debounceBillStatus
         },
       ],
       queryFn: async () => {
@@ -100,6 +105,7 @@ function YarnSaleChallanList() {
             supplier_name: debounceParty,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
+            bill_status: debounceBillStatus
           },
         });
         return res.data?.data;
@@ -162,6 +168,7 @@ function YarnSaleChallanList() {
       render: (text, record) => (
         <Space>
           <PrintYarnSaleChallan details={record} />
+
           {record?.bill_status == "pending" && (
             <>
               <Button
@@ -178,7 +185,7 @@ function YarnSaleChallanList() {
           {record?.bill_status != "pending" && (
             <YarnSaleCreditNote details={record} />
           )}
-          {/* <YarnSaleChallanModel yarnSaleDetails={record} /> */}
+          
           <Button
             onClick={() => {
               let MODE;
@@ -249,6 +256,26 @@ function YarnSaleChallanList() {
 
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Bill status
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select bill status"
+                value={billStatus}
+                options={[
+                  {label: "Pending", value: "pending"},
+                  {label: "Confirmed", value: "confirmed"}
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setBillStatus}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
               <Typography.Text className="whitespace-nowrap">
                 Party
               </Typography.Text>

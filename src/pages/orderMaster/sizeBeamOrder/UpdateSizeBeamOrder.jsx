@@ -190,6 +190,8 @@ function UpdateSizeBeamOrder() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
+  const [orderNumber, setOrderNumber] = useState(0) ; 
+
   useEffect(() => {
     if (sizeBeamOrderDetails) {
       reset({
@@ -199,6 +201,7 @@ function UpdateSizeBeamOrder() {
         supplier_name: sizeBeamOrderDetails?.supplier?.supplier_name, 
         yarn_company_name: sizeBeamOrderDetails?.yarn_stock_company?.yarn_company_name
       });
+      setOrderNumber(sizeBeamOrderDetails?.order_no) ; 
     }
   }, [sizeBeamOrderDetails, reset]);
 
@@ -292,6 +295,28 @@ function UpdateSizeBeamOrder() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Order Number"
+              name="order_number"
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                disabled
+                control={control}
+                name="order_number"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="Order Number"
+                    value={orderNumber}
                   />
                 )}
               />
