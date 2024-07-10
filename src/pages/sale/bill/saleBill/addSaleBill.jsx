@@ -657,7 +657,7 @@ const FormRow = ({
   fieldArray,
   setValue,
   companyId,
-  getValues
+  getValues,
 }) => {
   const [qualityList, setQualityList] = useState([]);
 
@@ -737,7 +737,9 @@ const FormRow = ({
             <Controller
               control={control}
               name={`invoice_no_${fieldNumber}`}
-              render={({ field }) => <Input type="number" {...field} placeholder="0" />}
+              render={({ field }) => (
+                <Input type="number" {...field} placeholder="0" />
+              )}
             />
           </Form.Item>
         </Col>
@@ -853,19 +855,21 @@ const FormRow = ({
             <Controller
               control={control}
               name={`total_meter_${fieldNumber}`}
-              render={({ field }) => <Input 
-                {...field} 
-                placeholder="0" 
-                onChange={(e) => {
-                  setValue(`total_meter_${fieldNumber}`, e.target.value) ; 
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="0"
+                  onChange={(e) => {
+                    setValue(`total_meter_${fieldNumber}`, e.target.value);
 
-                  let totalMeter = getValues(`rate_${fieldNumber}`) ; 
-                  if (totalMeter !== "" && totalMeter !== undefined){
-                    let rate = Number(totalMeter)*Number(e.target.value) ; 
-                    setValue(`net_amount_${fieldNumber}`, rate) ; 
-                  }
-                }}
-              />}
+                    let totalMeter = getValues(`rate_${fieldNumber}`);
+                    if (totalMeter !== "" && totalMeter !== undefined) {
+                      let rate = Number(totalMeter) * Number(e.target.value);
+                      setValue(`net_amount_${fieldNumber}`, rate);
+                    }
+                  }}
+                />
+              )}
             />
           </Form.Item>
         </Col>
@@ -886,19 +890,18 @@ const FormRow = ({
               control={control}
               name={`rate_${fieldNumber}`}
               render={({ field }) => (
-                <Input 
-                  {...field} 
-                  type="number" 
-                  placeholder="0" 
+                <Input
+                  {...field}
+                  type="number"
+                  placeholder="0"
                   onChange={(e) => {
-                    setValue(`rate_${fieldNumber}`, e.target.value) ; 
+                    setValue(`rate_${fieldNumber}`, e.target.value);
 
-                    let totalMeter = getValues(`total_meter_${fieldNumber}`) ; 
-                    if (totalMeter !== "" && totalMeter !== undefined){
-                      let rate = Number(totalMeter)*Number(e.target.value) ; 
-                      setValue(`net_amount_${fieldNumber}`, rate) ; 
+                    let totalMeter = getValues(`total_meter_${fieldNumber}`);
+                    if (totalMeter !== "" && totalMeter !== undefined) {
+                      let rate = Number(totalMeter) * Number(e.target.value);
+                      setValue(`net_amount_${fieldNumber}`, rate);
                     }
-                    
                   }}
                 />
               )}

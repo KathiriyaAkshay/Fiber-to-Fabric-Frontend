@@ -264,7 +264,7 @@ const AddJobTaka = () => {
 
   function disabledFutureDate(current) {
     // Disable dates after today
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   }
 
   return (
@@ -365,7 +365,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -449,7 +449,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -561,7 +561,7 @@ const AddJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -694,24 +694,32 @@ const AddJobTaka = () => {
             gutter={18}
             style={{
               padding: "12px",
-              marginTop: "-30px", 
+              marginTop: "-30px",
             }}
           >
             <Col span={6}></Col>
             <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red", paddingLeft:"10px" }}>Pending</Typography>
+              <Typography style={{ color: "red", paddingLeft: "10px" }}>
+                Pending
+              </Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft:"10px"  }}>{pendingMeter}</Typography>
+              <Typography style={{ color: "red", paddingLeft: "10px" }}>
+                {pendingMeter}
+              </Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft:"10px"  }}>0</Typography>
+              <Typography style={{ color: "red", paddingLeft: "10px" }}>
+                0
+              </Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft:"10px" }}>{pendingTaka}</Typography>
+              <Typography style={{ color: "red", paddingLeft: "10px" }}>
+                {pendingTaka}
+              </Typography>
             </Col>
           </Row>
         ) : null}

@@ -1,317 +1,526 @@
-import React, { useState } from 'react'
-import { Button, Radio, Table, Form, Input, Select, Row, Col, DatePicker, Flex, Checkbox } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { useContext, useMemo, useState } from "react";
+import {
+  Button,
+  Radio,
+  Form,
+  Input,
+  Select,
+  Row,
+  Col,
+  DatePicker,
+  Checkbox,
+  Flex,
+  message,
+  Typography,
+} from "antd";
+import { getCompanyMachineListRequest } from "../../api/requests/machine";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { Controller, useForm } from "react-hook-form";
+import dayjs from "dayjs";
+import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
+import AddProductionTable from "../../components/production/AddProductionTable";
+import {
+  addProductionRequest,
+  getLastProductionTakaRequest,
+} from "../../api/requests/production/inhouseProduction";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
+
+const plainOptions = ["Quality Wise", "Machine Wise", "Multi Machine Wise"];
+
 const AddProduction = () => {
-    const [ProdFilter, setProdFilter] = useState('Quality Wise');
-    const [form] = Form.useForm();
+  //   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+  const { companyId } = useContext(GlobalContext);
 
-    const formItemLayout = {
-        labelAlign: "left",
-        labelCol: { span: 4 },
-        wrapperCol: { span: 18 }
-    };
-    const takaLayout = {
-        labelAlign: "left",
-        labelCol: { span: 8 },
-        wrapperCol: { span: 16 }
-    };
-    const onChange1 = ({ target: { value } }) => {
-        setProdFilter(value);
-    };
+  const [activeField, setActiveField] = useState(1);
 
-    const plainOptions = ['Quality Wise', 'Machine Wise', 'Multi Machine Wise'];
-    const options = [
-        {
-            label: 'Quality Wise',
-            value: 'Quality Wise',
+  const { mutateAsync: addNewProduction, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await addProductionRequest({
+        data,
+        params: {
+          company_id: companyId,
         },
-        {
-            label: 'Machine Wise',
-            value: 'Machine Wise',
-        },
-        {
-            label: 'Multi Machine Wise',
-            value: 'Multi Machine Wise',
-        },
-    ];
+      });
+      return res.data;
+    },
+    mutationKey: ["add", "production"],
+    onSuccess: (res) => {
+      //   queryClient.invalidateQueries(["beamSale", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
 
-    const columns = [
-        {
-            title: 'Taka No.',
-            dataIndex: 'taka_no',
-            key: 'taka_no',
-        },
-        {
-            title: 'Meter',
-            dataIndex: 'meter',
-            key: 'meter',
-        },
-        {
-            title: 'Weight',
-            dataIndex: 'weight',
-            key: 'weight',
-        },
-        {
-            title: 'Weight',
-            dataIndex: 'weight',
-            key: 'weight',
-        },
-        {
-            title: 'Machine No.',
-            dataIndex: 'machine_no',
-            key: 'machine_no',
-        },
-        {
-            title: 'Average',
-            dataIndex: 'average',
-            key: 'average',
-        },
-        {
-            title: 'Beam No.',
-            dataIndex: 'beam_no',
-            key: 'beam_no',
-        },
-        {
-            title: 'Prod.Mtr',
-            dataIndex: 'prod_mtr',
-            key: 'prod_mtr',
-        },
-        {
-            title: 'Pend.Mtr',
-            dataIndex: 'pend_mtr',
-            key: 'pend_mtr',
-        },
-        {
-            title: 'Pend %',
-            dataIndex: 'pend',
-            key: 'pend',
-        },
-        {
-            title: "icon",
-            dataIndex: 'icon',
-            key: 'icon',
-        },
+  const onSubmit = async (data) => {
+    console.log("onSubmit", data);
+    const array = Array.from({ length: activeField }, (_, i) => i + 1);
+    console.log(array);
 
-    ];
+    const newData = array.map((fieldNumber) => {
+      const payload = {
+        machine_name: data.machine_name,
+        quality_id: data.quality_id,
+        production_date: dayjs(data.date).format("YYYY-MM-DD"),
+        last_enter_taka_no: data.last_taka_no,
+        taka_no: +(+lastProductionTaka + fieldNumber),
+        meter: +data[`meter_${fieldNumber}`],
+        weight: +data[`weight_${fieldNumber}`],
+        machine_no: +data[`machine_no_${fieldNumber}`],
+        average: +data[`average_${fieldNumber}`],
+        beam_no: "BN" + data[`beam_no_${fieldNumber}`],
+        // beam_load_id: 5,
+        production_meter: +data[`production_meter_${fieldNumber}`],
+        pending_meter: +data[`pending_meter_${fieldNumber}`],
+        pending_percentage: +data[`pending_percentage_${fieldNumber}`],
+      };
 
-    const dataSource = [
+      if (data.production_filter === "Machine Wise") {
+        payload.grade = data.grade;
+        payload.pis = data.pis;
+      }
+      return payload;
+    });
+
+    console.log({ newData });
+    await addNewProduction(newData);
+  };
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    resetField,
+    setFocus,
+    setValue,
+    reset,
+  } = useForm({
+    defaultValues: {
+      production_filter: "Quality Wise",
+      date: dayjs(),
+      machine_name: null,
+      quality_id: null,
+      last_taka_no: "",
+      last_taka_no_date: dayjs(),
+      m_no: null,
+
+      grade: "A",
+      pis: "",
+    },
+    // resolver: addJobTakaSchemaResolver,
+  });
+  const { machine_name, production_filter, quality_id } = watch();
+
+  const { data: lastProductionTaka } = useQuery({
+    queryKey: ["last", "production", "taka", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getLastProductionTakaRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      setValue("last_taka_no", +res.data?.data);
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
         {
-            taka_no: "1",
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
         },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
+      },
+      enabled: Boolean(companyId),
+    });
 
-    ]
-
-    function renderTable() {
-        // if (isLoading) {
-        //   return (
-        //     <Spin tip="Loading" size="large">
-        //       <div className="p-14" />
-        //     </Spin>
-        //   );
-        // }
-
-        return (
-            <Table
-                dataSource={dataSource || []}
-                columns={columns}
-                rowKey={"id"}
-                scroll={{ y: 330 }}
-                pagination={{
-                    total: 0,
-                    showSizeChanger: true,
-                    //   onShowSizeChange: onShowSizeChange,
-                    //   onChange: onPageChange,
-                }}
-                summary={(tableData) => {
-                    let totalPendingTaka = 0;
-                    let totalDeliveredTaka = 0;
-                    let totalPendingMeter = 0;
-                    let totalDeliveredMeter = 0;
-
-
-                    return (
-                        <Table.Summary.Row>
-                            <Table.Summary.Cell index={0}>
-                                <b>Total</b>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}><b>0.00</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}><b>0</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                        </Table.Summary.Row>
-                    );
-                }}
-
-            />
-        );
+  const avgWeight = useMemo(() => {
+    if (
+      quality_id &&
+      dropDownQualityListRes &&
+      dropDownQualityListRes?.rows?.length
+    ) {
+      const quality = dropDownQualityListRes?.rows?.find(
+        ({ id }) => quality_id === id
+      );
+      return { weight_from: quality.weight_from, weight_to: quality.weight_to };
     }
+  }, [dropDownQualityListRes, quality_id]);
 
-    //OPTIONS
-    const handleChange = (value) => {
-        console.log(`selected ${value}`);
-    };
+  const { data: loadedMachineList, isLoading: isLoadingLoadedMachineNo } =
+    useQuery({
+      queryKey: [
+        "loaded",
+        "machine",
+        "list",
+        { company_id: companyId, machine_name, production_filter },
+      ],
+      queryFn: async () => {
+        if (machine_name && production_filter === "Machine Wise") {
+          const res = await getLoadedMachineListRequest({
+            params: { company_id: companyId, machine_name },
+          });
 
-    //DATE PICKER
-    const onChange = (date, dateString) => {
-        console.log(date, dateString);
-    };
-    return (
-        <div className="flex flex-col gap-2 p-4">
-            <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+          const noOfMachine = res.data?.data?.machineDetail?.no_of_machines;
+          return Array.from({ length: noOfMachine }, (_, index) => index + 1);
+        }
+      },
+      enabled: Boolean(companyId),
+      initialData: [],
+    });
 
-                <div className="flex items-center gap-5">
-                    <h3 className="m-0 text-primary">Add Production</h3>
-                    <Button onClick={""} icon={<PlusCircleOutlined />} />
-                </div>
-                <div>
-                    <Radio.Group options={plainOptions} onChange={onChange1} value={ProdFilter} />
-                    {ProdFilter == "Machine Wise" ?
-                        <>
-                            <Checkbox> Generate QR Code</Checkbox>
-                        </>
-                        :
-                        <></>
-                    }
-                </div>
+  const changeProductionFilter = (value) => {
+    if (value) {
+      resetField("machine_name");
+      resetField("quality_id");
 
-            </div>
+      const array = Array.from({ length: activeField }, (_, i) => i + 1);
+      array.forEach((fieldNumber) => {
+        setValue(`meter_${fieldNumber}`, "");
+        setValue(`weight_${fieldNumber}`, "");
+        setValue(`machine_no_${fieldNumber}`, "");
+        setValue(`beam_no_${fieldNumber}`, "");
+        setValue(`average_${fieldNumber}`, "");
 
-            <div>
-                <Form
-                    form={form}
-                    style={{ maxWidth: "100%" }}
-                // style={{
-                //     maxWidth: formLayout === 'inline' ? 'none' : 600,
-                // }}
+        setValue(`production_meter_${fieldNumber}`, "");
+        setValue(`pending_meter_${fieldNumber}`, "");
+        setValue(`pending_percentage_${fieldNumber}`, "");
+      });
+      setActiveField(1);
+    }
+  };
+
+  return (
+    <Form form={form} onSubmitCapture={handleSubmit(onSubmit)}>
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+          <div className="flex items-center gap-5">
+            <Button onClick={() => navigate(-1)}>
+              <ArrowLeftOutlined />
+            </Button>
+            <h3 className="m-0 text-primary">Add Production</h3>
+          </div>
+          <div>
+            <Controller
+              control={control}
+              name="production_filter"
+              render={({ field }) => (
+                <Radio.Group
+                  {...field}
+                  name="production_filter"
+                  options={plainOptions}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    changeProductionFilter(e.target.value);
+                  }}
+                />
+              )}
+            />
+          </div>
+
+          {production_filter == "Machine Wise" && (
+            <Controller
+              control={control}
+              name="generate_qr_code"
+              render={({ field }) => (
+                <Checkbox
+                  {...field}
+                  name="generate_qr_code"
+                  checked={field.value}
                 >
-
-                    <Row className='w-100' justify={"start"}>
-                        <Col span={8}>
-                            <Form.Item label="Machine" {...formItemLayout}>
-                                <Select
-                                    defaultValue="looms"
-                                    style={{
-                                        width: "100%",
-                                    }}
-                                    onChange={handleChange}
-                                    options={[
-                                        {
-                                            value: 'looms',
-                                            label: 'Looms',
-                                        },
-                                        {
-                                            value: 'jacquard',
-                                            label: 'Jacquard',
-                                        },
-
-                                    ]}
-                                />
-                            </Form.Item>
-                        </Col>
-
-                        {ProdFilter != "Multi Machine Wise" ?
-                            <Col span={8}>
-                                <Form.Item label="Quality" {...formItemLayout}>
-                                    <Select
-                                        defaultValue="Select Quality Name"
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                        onChange={handleChange}
-                                        options={[
-                                            {
-                                                value: 'wl',
-                                                label: 'WEIGHTLESS - (6.5 KG)',
-                                            },
-                                            {
-                                                value: '33p',
-                                                label: '33P PALLU PATTERN - (8 KG)',
-                                            },
-
-                                        ]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            : <></>}
-
-
-                        <Col span={8}>
-                            <Form.Item label="Date" {...formItemLayout}>
-                                <DatePicker onChange={onChange} className='w-100' style={{ width: "100%" }} />
-                            </Form.Item>
-                        </Col>
-
-
-                    </Row>
-
-
-                    <Row style={{ width: "100%" }} className='w-100' justify={"start"}>
-
-                        {ProdFilter == "Machine Wise" ?
-                            <Col span={8}>
-                                <Form.Item label="M. No" {...formItemLayout}>
-                                    <Select
-                                        defaultValue="1"
-                                        style={{
-                                            width: "100%",
-                                        }}
-                                        onChange={handleChange}
-                                        options={[
-                                            {
-                                                value: '1',
-                                                label: '1',
-                                            },
-                                            {
-                                                value: '2',
-                                                label: '2',
-                                            },
-
-                                        ]}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            :
-                            <>
-                            </>}
-                        <Col span={8}>
-                            <Form.Item label="Last Entered Taka No." {...takaLayout}>
-                                <Row >
-                                    <Col span={8}>
-                                        <Input />
-                                    </Col>
-                                    <Col span={10}>
-                                        <Input />
-                                    </Col>
-                                </Row>
-                            </Form.Item>
-                        </Col>
-
-                        <Col span={ProdFilter == "Machine Wise" ? 8 : 16}>
-                            <Flex justify='flex-end'>
-                                <Form.Item>
-                                    <Button type="primary">Back</Button>
-                                </Form.Item>
-                            </Flex>
-
-                        </Col>
-                    </Row>
-
-
-
-
-                </Form>
-            </div>
-
-            {renderTable()}
-
+                  Generate QR Code
+                </Checkbox>
+              )}
+            />
+          )}
         </div>
-    )
-}
+
+        <Row className="w-100" justify={"flex-start"} style={{ gap: "12px" }}>
+          <Col span={7}>
+            <Form.Item
+              label="Machine"
+              name="machine_name"
+              validateStatus={errors.machine_name ? "error" : ""}
+              help={errors.machine_name && errors.machine_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Machine Name"
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      resetField("quality_id");
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          {production_filter != "Multi Machine Wise" && (
+            <Col span={7}>
+              <Form.Item
+                label="Quality"
+                name="quality_id"
+                validateStatus={errors.quality_id ? "error" : ""}
+                help={errors.quality_id && errors.quality_id.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="quality_id"
+                  render={({ field }) => {
+                    return (
+                      <>
+                        <Select
+                          {...field}
+                          placeholder="Select Quality"
+                          loading={dropDownQualityLoading}
+                          options={
+                            dropDownQualityListRes &&
+                            dropDownQualityListRes?.rows?.map((item) => ({
+                              value: item.id,
+                              label: item.quality_name,
+                            }))
+                          }
+                        />
+                        {quality_id && (
+                          <Typography.Text style={{ color: "red" }}>
+                            Avg weight must be between {avgWeight?.weight_from}{" "}
+                            to {avgWeight?.weight_to}
+                          </Typography.Text>
+                        )}
+                      </>
+                    );
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          )}
+
+          <Col span={7}>
+            <Form.Item
+              label="Date"
+              name="date"
+              validateStatus={errors.date ? "error" : ""}
+              help={errors.date && errors.date.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="date"
+                render={({ field }) => (
+                  <DatePicker {...field} style={{ width: "100%" }} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
+          {production_filter == "Machine Wise" && (
+            <Col span={4}>
+              <Form.Item
+                label="M. No"
+                name="m_no"
+                validateStatus={errors.m_no ? "error" : ""}
+                help={errors.m_no && errors.m_no.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="m_no"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      name="m_no"
+                      style={{
+                        width: "100%",
+                      }}
+                      loading={isLoadingLoadedMachineNo}
+                      options={loadedMachineList.map((item) => {
+                        return { label: item, value: item };
+                      })}
+                    />
+                  )}
+                />
+              </Form.Item>
+            </Col>
+          )}
+
+          <Col span={8}>
+            <Form.Item
+              label="Last Entered Taka No."
+              // name="last_taka_no"
+              // validateStatus={errors.enter_weight ? "error" : ""}
+              // help={errors.enter_weight && errors.enter_weight.message}
+              // required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Row gutter={15}>
+                <Col span={8}>
+                  <Controller
+                    control={control}
+                    name="last_taka_no"
+                    render={({ field }) => <Input {...field} disabled />}
+                  />
+                </Col>
+                <Col span={10}>
+                  <Controller
+                    control={control}
+                    name="last_taka_no_date"
+                    render={({ field }) => (
+                      <DatePicker
+                        {...field}
+                        disabled
+                        style={{ width: "100%" }}
+                      />
+                    )}
+                  />
+                </Col>
+              </Row>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <AddProductionTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          activeField={activeField}
+          setActiveField={setActiveField}
+          setValue={setValue}
+          lastProductionTaka={lastProductionTaka}
+        />
+
+        {production_filter === "Machine Wise" && (
+          <Row style={{ gap: "12px" }}>
+            <Col span={3}>
+              <Form.Item
+                label="Pis"
+                name={`pis`}
+                validateStatus={errors.pis ? "error" : ""}
+                help={errors.pis && errors.pis.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+                style={{
+                  marginBottom: "0px",
+                  border: "0px solid !important",
+                }}
+              >
+                <Controller
+                  control={control}
+                  name={`pis`}
+                  render={({ field }) => <Input {...field} type="number" />}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                label="GRADE"
+                name={`grade`}
+                validateStatus={errors.grade ? "error" : ""}
+                help={errors.grade && errors.grade.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+                style={{
+                  marginBottom: "0px",
+                  border: "0px solid !important",
+                }}
+              >
+                <Controller
+                  control={control}
+                  name={`grade`}
+                  render={({ field }) => (
+                    <Radio.Group {...field} name="grade">
+                      <Radio value={"A"}>A</Radio>
+                      <Radio value={"B"}>B</Radio>
+                      <Radio value={"C"}>C</Radio>
+                      <Radio value={"D"}>D</Radio>
+                    </Radio.Group>
+                  )}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+        )}
+
+        <Flex gap={10} justify="flex-end">
+          <Button htmlType="button" onClick={() => reset()}>
+            Reset
+          </Button>
+          <Button type="primary" htmlType="submit" loading={isPending}>
+            Create
+          </Button>
+        </Flex>
+      </div>
+    </Form>
+  );
+};
 
 export default AddProduction;
