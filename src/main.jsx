@@ -285,14 +285,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/production",
-        element: (
-          <div>
-            <div>production</div>
-            <Outlet />
-          </div>
-        ),
         children: [
-          { index: true, element: <div>production</div> },
+          // { index: true, element: <AddProduction /> },
           {
             path: "add-new-production",
             element: <AddProduction />,
