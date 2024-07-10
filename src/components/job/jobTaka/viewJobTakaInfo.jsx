@@ -2,32 +2,72 @@ import { EyeOutlined } from "@ant-design/icons";
 import {
     Button,
     Col,
-    DatePicker,
     Flex,
-    Form,
-    Input,
     Modal,
-    Radio,
     Row,
-    Select,
     Typography,
-    message,
 } from "antd";
 import { useState } from "react";
-import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
-import { Controller, useForm } from "react-hook-form";
+import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { useQuery } from "@tanstack/react-query";
-import moment from "moment";
-import { ToWords } from "to-words";
+import { useRef, useContext, useEffect } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import ReactToPrint from "react-to-print";
 
 const { Text } = Typography;
 
 const ViewJobTakaInfo = ({ details }) => {
     const [isModelOpen, setIsModalOpen] = useState(false);
+    const componentRef = useRef() ;
+    const {companyListRes} = useContext(GlobalContext) ; 
+    const [companyInfo, setCompanyInfo] = useState({});
+    const TakaArray = Array(12).fill(0) ; 
+
+    const [totalTaka1, setTotalTaka1] = useState(0) ; 
+    const [totalTaka2, setTotalTaka2] = useState(0) ; 
+    const [totalMeter, setTotalMeter] = useState(0) ; 
+
+    const pageStyle = `
+        @media print {
+             .print-instructions {
+                display: none;
+            }
+            .printable-content {
+                padding: 20px; /* Add padding for print */
+                width: 100%;
+            }
+    `;
+
+
+    useEffect(() => {
+
+        let tempTotal1 = 0 ; 
+        let tempTotal2 = 0 ; 
+
+        TakaArray?.map((element, index) => {
+            tempTotal1 = Number(tempTotal1) + Number(details?.job_challan_details[index]?.meter || 0) ; 
+            tempTotal2 = Number(tempTotal2) + Number(details?.job_challan_details[index + 12]?.meter || 0)
+        })
+
+        let total = Number(tempTotal1) + Number(tempTotal2) ; 
+
+        setTotalMeter(total) ; 
+        setTotalTaka1(tempTotal1) ; 
+        setTotalTaka2(tempTotal2) ; 
+
+    }, [details]) ;
+
+    useEffect(() => {
+        companyListRes?.rows?.map((element) => {
+            if (element?.id == details?.company_id){
+                setCompanyInfo(element) ; 
+            }
+        })
+    },[details, companyListRes]) ; 
+    
     return (
         <>
-            <Button onClick={() => { setIsModalOpen(true) }}>
+            <Button type="primary" onClick={() => { setIsModalOpen(true) }}>
                 <EyeOutlined />
             </Button>
 
@@ -39,7 +79,21 @@ const ViewJobTakaInfo = ({ details }) => {
                     </Typography.Text>
                 }
                 open={isModelOpen}
-                footer={null}
+                footer={() => {
+                    return(
+                        <>
+                            <ReactToPrint
+                                trigger={() => <Flex>
+                                    <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
+                                        PRINT
+                                    </Button>
+                                </Flex>}
+                                content={() => componentRef.current}
+                                pageStyle={pageStyle}
+                            />
+                        </>
+                    )
+                }}
                 onCancel={() => { setIsModalOpen(false) }}
                 centered={true}
                 classNames={{
@@ -52,33 +106,41 @@ const ViewJobTakaInfo = ({ details }) => {
                     header: {
                         padding: "16px",
                         margin: 0,
+                        
                     },
                     body: {
                         padding: "16px 32px",
+                        maxHeight: "75vh", 
+                        overflowY: "auto"
                     },
+                    footer:{
+                        paddingBottom: 10, 
+                        paddingRight: 10, 
+                        backgroundColor: "#efefef"
+                    }
                 }}
                 width={"70vw"}
             >
-                <Flex className="flex-col border border-b-0 border-solid">
+                <Flex className="flex-col border border-b-0 border-solid" ref={componentRef}>
                     <Row className="border p-4 border-b ,0border-solid !m-0" style={{ borderTop: 0, borderLeft: 0, borderRight: 0, borderBottom: 0 }}>
                         <Col span={12}>
                             <Row>
                                 <Col span={24}>
                                     <Text>To,</Text>
-                                    <Text className="block font-bold">INSURANCE AND TAXES (TEXT_121_SUPPLIER)</Text>
-                                    <Text className="block">NEW SUPPLIER ADDRESS</Text>
+                                    <Text className="block font-bold">{details?.supplier?.supplier_company}({details?.supplier?.supplier_name})</Text>
+                                    <Text className="block">{details?.supplier?.user?.address}</Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Text>Challan</Text>
-                                    <Text className="block">23232323</Text>
+                                    <Text className="block">{details?.challan_no}</Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Text>GST</Text>
-                                    <Text className="block">24ABHPP6021C1Z4</Text>
+                                    <Text className="block">{details?.supplier?.user?.gst_no}</Text>
                                 </Col>
                             </Row>
                         </Col>
@@ -86,37 +148,67 @@ const ViewJobTakaInfo = ({ details }) => {
                             <Row>
                                 <Col span={24}>
                                     <Text>From,</Text>
-                                    <Text className="block font-bold">SONU TRADERS</Text>
-                                    <Text className="block">PLOT NO. 78, JAYVEER INDU. ESTATE, GUJARAT HOUSING BOARD ROAD, PANDESARA, SURAT, GUJARAT, 394221 SURAT, At: 1041 DIST-1041</Text>
+                                    <Text className="block font-bold">{companyInfo?.company_name}</Text>
+                                    <Text className="block">{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Text>Broker</Text>
-                                    <Text className="block font-bold">NIK BROKER</Text>
+                                    <Text className="block font-bold">{details?.broker?.first_name} {details?.broker?.last_name}</Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Text>GST</Text>
-                                    <Text className="block">24ABHPP6021C1Z4</Text>
+                                    <Text className="block">{companyInfo?.gst_no}</Text>
                                 </Col>
                             </Row>
                         </Col>
                     </Row>
                     <Row className="p-4 border-0 border-b border-solid !m-0" style={{borderTop: "1px dashed"}}>
                         <Col span={6}>Description of Goods:</Col>
-                        <Col span={6}>Description of Goods:</Col>
-                        <Col span={6}>Description of Goods:</Col>
-                        <Col span={6}>Description of Goods:</Col>
+                        <Col span={6}>{details?.yarn_stock_company?.yarn_company_name}</Col>
+                        <Col span={6}>Date:</Col>
+                        <Col span={6}>{dayjs(details?.created_at).format("DD-MM-YYYY")}</Col>
                     </Row>
-                    <Row className="p-4 border-0 border-b border-solid !m-0" style={{borderTop: "1px dashed"}}>
-                        <Col span={2}>Description of Goods:</Col>
-                        <Col span={5}>Description of Goods:</Col>
-                        <Col span={5}>Description of Goods:</Col>
-                        <Col span={2}>Description of Goods:</Col>
-                        <Col span={5}>Description of Goods:</Col>
-                        <Col span={5}>Description of Goods:</Col>
+                    <Row className="p-4 border-0 border-b border-solid !m-0" style={{borderBottom: 0}}>
+                        <Col span={2} style={{textAlign: "center"}}><strong>No</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>TAKA NO</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>Meter</strong></Col>
+                        <Col span={2} style={{textAlign: "center"}}><strong>No</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>TAKA NO</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>Meter</strong></Col>
+                    </Row>
+
+                    {TakaArray?.map((element, index) => {
+                        return(
+                            <Row className="p-3 border-0" style={{borderTop: 0}}>
+                                <Col span={2} style={{textAlign: "center"}}>{index+1}</Col>
+                                <Col span={5} style={{textAlign: "center"}}>{details?.job_challan_details[index]?.taka_no}</Col>
+                                <Col span={5} style={{textAlign: "center"}}>{details?.job_challan_details[index]?.meter}</Col>
+                                <Col span={2} style={{textAlign: "center"}}>{index + 13}</Col>
+                                <Col span={5} style={{textAlign: "center"}}>{details?.job_challan_details[index+12]?.taka_no}</Col>
+                                <Col span={5} style={{textAlign: "center"}}>{details?.job_challan_details[index+12]?.meter}</Col>
+                            </Row>
+
+                        )
+                    })}
+
+                    <Row className="p-3 border-0" style={{borderTop: 0}}>
+                        <Col span={2} style={{textAlign: "center"}}></Col>
+                        <Col span={5} style={{textAlign: "center"}}></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>{totalTaka1}</strong></Col>
+                        <Col span={2} style={{textAlign: "center"}}></Col>
+                        <Col span={5} style={{textAlign: "center"}}></Col>
+                        <Col span={5} style={{textAlign: "center"}}><strong>{totalTaka2}</strong></Col>
+                    </Row>
+                    
+                    <Row className="p-3 border-0" style={{borderTop: "1px dashed", borderBottom: "1px dashed"}}>
+                        <Col span={3} style={{textAlign: "center"}}><strong>Total Taka:</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}>{details?.job_challan_details?.length}</Col>
+                        <Col span={4} style={{textAlign: "center"}}><strong>Total Meter:</strong></Col>
+                        <Col span={5} style={{textAlign: "center"}}>{totalMeter}</Col>
                     </Row>
                 </Flex>
             </Modal>

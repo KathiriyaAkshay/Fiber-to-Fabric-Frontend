@@ -249,17 +249,6 @@ const AddYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
-  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-  //   queryKey: ["party", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getPartyListRequest({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list"],
     queryFn: async () => {
@@ -329,6 +318,19 @@ const AddYarnSent = () => {
   //     // }
   //   });
   // }, [yscdListRes?.yarnCompanyList]);
+
+  const {
+    data: lastChallanNumber,
+  } = useQuery({
+    queryKey: ["/sale/challan/yarn-sale/last-challan-no", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await GetJobYarnSentLastChallanRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   return (
     <div className="flex flex-col p-4">

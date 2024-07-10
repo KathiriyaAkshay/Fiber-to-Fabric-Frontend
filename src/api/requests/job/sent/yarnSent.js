@@ -14,6 +14,11 @@ export function addYarnSentRequest({ data, params }) {
     return api.post(`/job/sent/yarn/create`, data, { params });
 }
 
+export function GetJobYarnSentLastChallanRequest({params}){
+    return api.get(`/sale/challan/yarn-sale/last-challan-no`, {params}) ; 
+}
+
+
 export function getYarnSentByIdRequest({ id, params }) {
     return api.get(`/job/sent/yarn/get/${id}`, { params });
 }

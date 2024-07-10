@@ -113,6 +113,7 @@ import InhouseProduction from "./pages/production/InhouseProduction";
 import OpenProduction from "./pages/production/OpenProduction";
 import Payment from "./pages/accounts/Payment";
 import PurchaseEntryList from "./pages/purchase/purchaseEntry/PurchaseEntryList";
+import AddGeneralPurchaseEntry from "./pages/purchase/purchaseEntry/addPurchaseEntry";
 import BeamSentList from "./pages/job/sent/beamSent/beamSentList";
 import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
 import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
@@ -427,7 +428,10 @@ const router = createBrowserRouter([
           },
           {
             path: "general-purchase-entry",
-            element: <PurchaseEntryList />,
+            children: [
+              {index: true, element: <PurchaseEntryList/>}, 
+              {path: "add", element: <AddGeneralPurchaseEntry/>}
+            ],
           },
           {
             path: "receive",

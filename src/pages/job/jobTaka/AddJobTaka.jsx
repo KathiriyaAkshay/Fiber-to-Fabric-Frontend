@@ -213,9 +213,6 @@ const AddJobTaka = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      // return obj?.supplier_company?.map((item) => {
-      //   return { label: item.supplier_company, value: item.supplier_id };
-      // });
       return obj?.supplier_company;
     } else {
       return [];

@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Row, DatePicker, Input, Select, Flex, message } from "antd";
+import { Button, Col, Form, Row, DatePicker, Input, Select, Flex, message, Radio } from "antd";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
@@ -30,7 +30,6 @@ const jobWorkChallanResolver = yupResolver(
 
 function UpdateJobWorkChallan(){
     const navigation = useNavigate();
-    const queryClient = useQueryClient();
     const {id} = useParams() ; 
     const {
         control,
@@ -49,9 +48,9 @@ function UpdateJobWorkChallan(){
         },
     });
     const { companyId, companyListRes } = useContext(GlobalContext);
-
     const [denierOptions, setDenierOptions] = useState([]);
     const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
+    const [workType, setWorkType] = useState(true);
 
     const { data: jobWorkChallanDetails} = useQuery({
         queryFn: async () => {
@@ -79,6 +78,7 @@ function UpdateJobWorkChallan(){
                 kg: jobWorkChallanDetails?.kg, 
                 notes: jobWorkChallanDetails?.notes
             })
+            setWorkType(jobWorkChallanDetails?.is_gray) ; 
         }
     }, [jobWorkChallanDetails, reset])
 
@@ -203,6 +203,7 @@ function UpdateJobWorkChallan(){
         delete data?.supplier_id ; 
         delete data?.vehicle_id ; 
         delete data?.yarn_company_id ;
+        data["is_gray"] = workType ; 
         await updateJobWorkChallan(data) ; 
     };
 

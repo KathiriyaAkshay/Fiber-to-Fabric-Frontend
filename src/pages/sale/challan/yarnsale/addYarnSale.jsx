@@ -28,6 +28,7 @@ import {
 import { createSaleYarnChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
+import { GetJobYarnSentLastChallanRequest } from "../../../../api/requests/job/sent/yarnSent";
 
 const yarnSaleChallanResolver = yupResolver(
   yup.object().shape({
@@ -37,7 +38,6 @@ const yarnSaleChallanResolver = yupResolver(
     yarn_company_id: yup.string().required("Please select denier"),
     supplier_name: yup.string().required("Please, Select Party"),
     supplier_id: yup.string().required("Please, Select Party Company"),
-    challan_no: yup.string().required("Please, enter challan number"),
     vehicle_id: yup.string().required("Please, select vehicle user"),
     cartoon: yup.string().required("Please, enter cartoon"),
     kg: yup.string().required("Please, enter kg value"),
@@ -186,12 +186,47 @@ function AddYarnSaleChallan() {
     delete data?.order_date;
     delete data?.yarn_company_name;
     delete data?.order_type;
+    data["challan_no"] = challanNumber ; 
+
+    let remaining_stock = Number(currentStockInfo) - Number(data?.kg) ;
+    if (remaining_stock < 0){
+      remaining_stock = 0 ; 
+    }
+    data["pending_kg"] = remaining_stock ; 
+
     await createYarnSaleChallan(data);
   }
 
   const disabledDate = (current) => {
     return current && current > moment().endOf("day");
   };
+
+  const {
+    data: lastChallanNumber,
+  } = useQuery({
+    queryKey: ["/sale/challan/yarn-sale/last-challan-no", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await GetJobYarnSentLastChallanRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const [challanNumber, setChallanNumber] = useState(null) ; 
+  useEffect(() => {
+    if (lastChallanNumber){
+      let parts = lastChallanNumber.split("-") ; 
+      let prefix = parts[0];
+      let num = parseInt(parts[1], 10);
+      num +=  1 ; 
+  
+      setValue(`challan_no`, `${prefix}-${num}`) ; 
+      setChallanNumber(`${prefix}-${num}`) ; 
+    }
+
+  }, [lastChallanNumber]) ; 
 
   return (
     <div className="flex flex-col p-4">
@@ -329,6 +364,7 @@ function AddYarnSaleChallan() {
               required={true}
             >
               <Controller
+                disabled
                 control={control}
                 name="challan_no"
                 render={({ field }) => <Input {...field} />}

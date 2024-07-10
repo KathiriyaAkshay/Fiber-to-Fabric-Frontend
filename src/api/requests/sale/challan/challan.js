@@ -49,6 +49,10 @@ export function createSaleJobWorkChallanRequest({ data, params }) {
     });
 }
 
+export function getSaleJobWorkLastChallanRequest({params}) {
+    return api.get(`/sale/challan/job-work/last-challan-no`, {params}) ;
+}
+
 export function saleJobWorkChallanListRequest({ params }) {
     return api.get(`/sale/challan/job-work/list`, {
         params

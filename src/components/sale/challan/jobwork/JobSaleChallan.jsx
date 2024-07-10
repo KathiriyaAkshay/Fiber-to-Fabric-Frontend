@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -25,27 +25,6 @@ import {
   getSaleJobWorkChallanBillByIdRequest,
 } from "../../../../api/requests/sale/challan/challan";
 
-// const toWords = new ToWords({
-//   localeCode: "en-IN",
-//   converterOptions: {
-//     currency: true,
-//     ignoreDecimal: false,
-//     ignoreZeroCurrency: false,
-//     doNotAddOnly: false,
-//     currencyOptions: {
-//       // can be used to override defaults for the selected locale
-//       name: "Rupee",
-//       plural: "Rupees",
-//       symbol: "₹",
-//       fractionalUnit: {
-//         name: "Paisa",
-//         plural: "Paise",
-//         symbol: "",
-//       },
-//     },
-//   },
-// });
-
 const addSizeBeamReceive = yup.object().shape({
   E_way_bill_no: yup.string().required("Please enter invoice no."),
   bill_date: yup.string().required("Please enter bill date"),
@@ -71,8 +50,16 @@ const JobWorkSaleChallanModel = ({
   MODE,
 }) => {
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
-  //   const [isModelOpen, setIsModalOpen] = useState(false);
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  const [companyInfo, setCompanyInfo] = useState({});
+
+  useEffect(() => {
+    companyListRes?.rows?.map((element) => {
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
+      }
+    })
+  }, [details, companyListRes]);
 
   const disablePastDates = (current) => {
     return current && current < new Date().setHours(0, 0, 0, 0);
@@ -81,22 +68,6 @@ const JobWorkSaleChallanModel = ({
   const disableFutureDates = (current) => {
     return current && current > new Date().setHours(0, 0, 0, 0);
   };
-
-  //   const MODE = useMemo(() => {
-  //     if (details.bill_status || details.is_paid) {
-  //       if (details.bill_status.toLowerCase() === "pending") {
-  //         return "ADD";
-  //       } else if (
-  //         details.bill_status.toLowerCase() === "unpaid" ||
-  //         details.is_paid.toLowerCase() === "unpaid"
-  //       ) {
-  //         return "UPDATE";
-  //       } else if (details.bill_status.toLowerCase() === "confirmed") {
-  //         return "VIEW";
-  //       }
-  //     }
-  //     // return "UPDATE";
-  //   }, [details]);
 
   const { data: jobWorkBillDetail = null } = useQuery({
     queryKey: ["/sale/challan/job-work/bill/get", MODE, { id: details.id }],
@@ -127,8 +98,8 @@ const JobWorkSaleChallanModel = ({
       queryClient.invalidateQueries(["sale/challan/yarn-sale/list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        if (MODE == "UPDATE"){
-          message.success("Bill updated successfully") ; 
+        if (MODE == "UPDATE") {
+          message.success("Bill updated successfully");
         } else {
           message.success(successMessage);
         }
@@ -245,9 +216,9 @@ const JobWorkSaleChallanModel = ({
   useEffect(() => {
     const finalNetAmount = parseFloat(
       +currentValues.discount_amount +
-        +currentValues.SGST_amount +
-        +currentValues.CGST_amount +
-        +currentValues.IGST_amount
+      +currentValues.SGST_amount +
+      +currentValues.CGST_amount +
+      +currentValues.IGST_amount
     ).toFixed(2);
 
     const roundedNetAmount = Math.round(finalNetAmount);
@@ -297,13 +268,6 @@ const JobWorkSaleChallanModel = ({
 
   return (
     <>
-      {/* <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <FileTextOutlined />
-      </Button> */}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -338,15 +302,18 @@ const JobWorkSaleChallanModel = ({
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Flex className="flex-col border border-b-0 border-solid">
             <Row className="p-2 border-0 border-b border-solid">
+              <Col span={24} className="justify-center">
+                <p className="text-center">:: SHREE GANESHAY NAMAH ::</p>
+              </Col>
               <Col
                 span={24}
                 className="flex items-center justify-center border"
               >
                 <Typography.Text
                   className="font-semibold text-center"
-                  style={{ fontSize: 24 }}
+                  style={{ fontSize: 24, marginTop: -10 }}
                 >
-                  :: SHREE GANESHAY NAMAH ::
+                  {companyInfo?.company_name}
                 </Typography.Text>
               </Col>
             </Row>
@@ -362,14 +329,14 @@ const JobWorkSaleChallanModel = ({
             </Row>
 
             <Row className="p-2 border-0 border-b border-solid">
-              <Col span={8} className="flex items-center justify-center border">
+              <Col Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  GST IN: GST number information
+                  GST IN: {companyInfo?.gst_no}
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  PAN NO : ABHPP6021C
+                  PAN NO : {companyInfo?.pancard_no}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-center justify-center border">
@@ -387,7 +354,7 @@ const JobWorkSaleChallanModel = ({
                   required={true}
                   wrapperCol={{ sm: 24 }}
                   style={{ margin: 0 }}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -414,9 +381,9 @@ const JobWorkSaleChallanModel = ({
                   M/s.
                 </Typography.Text>
               </Col>
-              <Col span={8} className="flex items-right justify-center border">
-                <Typography.Text className="font-semibold text-center">
-                  SUPPLIER_2 ADDRESS OF SUPPLIER OF SUPPLIER NAME 123
+              <Col span={8} className="flex items-right  border">
+                <Typography.Text className="text-left">
+                  <strong>{details?.supplier?.supplier_name}</strong> <br></br>{details?.supplier?.user?.address}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
@@ -425,7 +392,7 @@ const JobWorkSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center text-left">
+                <Typography.Text className="font-semibold text-left">
                   {details.challan_no}
                 </Typography.Text>
               </Col>
@@ -499,34 +466,34 @@ const JobWorkSaleChallanModel = ({
                 span={8}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                DENNIER
+                <strong>DENNIER</strong>
               </Col>
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                HSN NO
+                <strong>HSN NO</strong>
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                Quantity
+                <strong>Quantity</strong>
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                Total KG
+                <strong>Total KG</strong>
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                RATE
+                <strong>Total KG</strong>
               </Col>
               <Col span={4} className="p-2 font-medium">
-                AMOUNT
+                <strong>AMOUNT</strong>
               </Col>
             </Row>
             <Row className="border-0 border-b !m-0">
@@ -644,7 +611,7 @@ const JobWorkSaleChallanModel = ({
                   validateStatus={errors.discount_value ? "error" : ""}
                   help={errors.discount_value && errors.discount_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -697,7 +664,7 @@ const JobWorkSaleChallanModel = ({
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -750,7 +717,7 @@ const JobWorkSaleChallanModel = ({
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -803,7 +770,7 @@ const JobWorkSaleChallanModel = ({
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -892,7 +859,7 @@ const JobWorkSaleChallanModel = ({
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                NET AMOUNT
+                <strong>NET AMOUNT</strong>
               </Col>
               <Col span={4} className="p-2 font-medium">
                 {currentValues?.net_amount}
@@ -900,7 +867,7 @@ const JobWorkSaleChallanModel = ({
             </Row>
             <Row className="border-0 border-b border-solid !m-0">
               <Col span={24} className="p-2 font-medium border-0 border-r ">
-                NET RATE: {currentValues.net_rate}Rs/Kg
+                <strong>NET RATE:</strong> {currentValues.net_rate}Rs/Kg
               </Col>
             </Row>
             <Row className="border-0 border-b !m-0 p-4">
@@ -926,7 +893,7 @@ const JobWorkSaleChallanModel = ({
                 <Text className="block mt-2"></Text>
               </Col>
               <Col span={8} className="p-2 text-right">
-                <Text strong>For, SONU TEXTILES</Text>
+                <Text strong>For, {companyInfo?.company_name}</Text>
               </Col>
             </Row>
             <Row
@@ -934,11 +901,11 @@ const JobWorkSaleChallanModel = ({
               style={{ paddingTop: 0 }}
             >
               <Col span={16} className="p-2">
-                <Text strong>Bank Details:</Text> MESHANA URBAN
+                <Text strong>Bank Details:</Text> {companyInfo?.bank_name}
                 <br />
-                <Text strong>A/C No:</Text> 0021101005190
+                <Text strong>A/C No:</Text> {companyInfo?.account_number}
                 <br />
-                <Text strong>IFSC Code:</Text> MSNU0000021
+                <Text strong>IFSC Code:</Text> {companyInfo?.ifsc_code}
                 <br />
                 <Text>IRN: --</Text>
                 <br />

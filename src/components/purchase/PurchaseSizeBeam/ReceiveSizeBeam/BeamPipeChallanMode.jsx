@@ -1,37 +1,50 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import {
     Button,
     Col,
-    DatePicker,
     Flex,
-    Form,
-    Input,
     Modal,
-    Radio,
     Row,
-    Select,
     Typography,
-    message,
 } from "antd";
-import { CloseOutlined, FileTextOutlined, EyeOutlined } from "@ant-design/icons";
+import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import moment from "moment";
-import { ToWords } from "to-words";
-
+import ReactToPrint from "react-to-print";
 
 const BeamPipeChallanModel = ({ details }) => {
-    console.log("Size beam challan information  ===================================");
+    console.log("Details information ========================");
     console.log(details);
 
     const [totalMeter, setTotalMeter] = useState(0) ; 
+    const componentRef = useRef() ; 
+    const {companyListRes} = useContext(GlobalContext) ; 
+    const [companyInfo, setCompanyInfo] = useState({});
+
+    useEffect(() => {
+        companyListRes?.rows?.map((element) => {
+            if (element?.id == details?.company_id){
+                setCompanyInfo(element) ; 
+            }
+        })
+    },[details, companyListRes]) ; 
+
+    const pageStyle = `
+        @media print {
+             .print-instructions {
+                display: none;
+            }
+            .printable-content {
+                padding: 20px; /* Add padding for print */
+                width: 100%;
+            }
+    `;
 
     useEffect(() => {
         let temp_total = 0 ;
-
         details?.size_beam_order_details?.map((element) => {
             temp_total = Number(temp_total) + Number(element?.meters)
         })
-
         setTotalMeter(temp_total) ; 
     }, [details]) ; 
 
@@ -49,7 +62,21 @@ const BeamPipeChallanModel = ({ details }) => {
                     </Typography.Text>
                 }
                 open={isModelOpen}
-                footer={null}
+                footer={() => {
+                    return(
+                        <>
+                            <ReactToPrint
+                                trigger={() => <Flex>
+                                    <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
+                                        PRINT
+                                    </Button>
+                                </Flex>}
+                                content={() => componentRef.current}
+                                pageStyle={pageStyle}
+                            />
+                        </>
+                    )
+                }}
                 onCancel={() => { setIsModalOpen(false) }}
                 centered={true}
                 classNames={{
@@ -66,10 +93,18 @@ const BeamPipeChallanModel = ({ details }) => {
                     },
                     body: {
                         padding: "10px 16px",
+                        maxHeight: "80vh", 
+                        overflowY: "auto"
                     },
+
+                    footer:{
+                        paddingBottom: 10, 
+                        paddingRight: 10, 
+                        backgroundColor: "#efefef"
+                    }
                 }}
             >
-                <Flex className="flex-col border border-solid">
+                <Flex className="flex-col border border-solid" ref={componentRef}>
                     <Row className="p-2 border-0 border-b border-solid">
                         <Col
                             span={24}
@@ -108,9 +143,9 @@ const BeamPipeChallanModel = ({ details }) => {
                             <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>
                                 <Typography.Text strong>From,</Typography.Text>
                                 <br />
-                                <Typography.Text>SONU TEXTILES</Typography.Text>
+                                <Typography.Text>{companyInfo?.company_name}</Typography.Text>
                                 <br />
-                                <Typography.Text>Plot No. 78, Jayveer Indu. Estate, Gujarat Housing Board Road, Pandesara,, Surat, Gujarat,394221 Pandesara</Typography.Text>
+                                <Typography.Text>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</Typography.Text>
                             </div>
                         </Col>
                     </Row>
@@ -118,41 +153,41 @@ const BeamPipeChallanModel = ({ details }) => {
                     <Row className=" p-0 border-0 border-b border-solid !m-0" style={{ borderTop: "1px solid" }}>
                         <Col
                             span={2}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>SRL</strong>
                         </Col>
                         <Col
                             span={4}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center" 
                         >
                             <strong>ENDS/TAAR</strong>
                         </Col>
                         <Col
                             span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>TPM</strong>
                         </Col>
                         <Col
                             span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>PANO</strong>
                         </Col>
                         <Col
                             span={5}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>GRADE</strong>
                         </Col>
                         <Col
                             span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>MTR</strong>
                         </Col>
-                        <Col span={4} className="p-2 font-medium">
+                        <Col span={4} className="p-2 font-medium text-center">
                             <strong>REMARKS</strong>
                         </Col>
                     </Row>
@@ -161,41 +196,41 @@ const BeamPipeChallanModel = ({ details }) => {
                         <Row className=" p-0 border-0 border-solid !m-0" >
                             <Col
                                 span={2}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {index + 1}
                             </Col>
                             <Col
                                 span={4}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {element?.ends_or_tars}
                             </Col>
                             <Col
                                 span={3}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {element?.tpm}
                             </Col>
                             <Col
                                 span={3}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {element?.pano}
                             </Col>
                             <Col
                                 span={5}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {element?.grade}
                             </Col>
                             <Col
                                 span={3}
-                                className="p-2 font-medium border-0 border-r border-solid"
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
                                 {element?.meters}
                             </Col>
-                            <Col span={4} className="p-2 font-medium">
+                            <Col span={4} className="p-2 font-medium text-center">
                                {element?.remark}
                             </Col>
                         </Row>
@@ -241,13 +276,13 @@ const BeamPipeChallanModel = ({ details }) => {
                     <Row className=" p-0 border-0 border-b border-solid !m-0">
                         <Col
                             span={2}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>Total</strong>
                         </Col>
                         <Col
                             span={4}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                         </Col>
                         <Col
@@ -267,7 +302,7 @@ const BeamPipeChallanModel = ({ details }) => {
                         </Col>
                         <Col
                             span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
+                            className="p-2 font-medium border-0 border-r border-solid text-center"
                         >
                             <strong>{totalMeter}</strong>
                         </Col>
@@ -280,7 +315,7 @@ const BeamPipeChallanModel = ({ details }) => {
                             <Typography.Text>Receiver Sign</Typography.Text>
                         </Col>
                         <Col span={12} style={{textAlign: "right" }}>
-                            <Typography.Text>For, SONU TEXTILES</Typography.Text>
+                            <Typography.Text>For, {companyInfo?.company_name}</Typography.Text>
                             <br /><br /><br /><br /><br /><br /><br /><br />
                             <Typography.Text>Checked by Authorised Signatory</Typography.Text>
                         </Col>
@@ -289,11 +324,6 @@ const BeamPipeChallanModel = ({ details }) => {
 
                 </Flex>
                 
-                <Flex>
-                    <Button type="primary" style={{marginLeft: "auto", marginTop: 10}}>
-                        PRINT CHALLAN
-                    </Button>
-                </Flex>
             </Modal>
         </>
     )

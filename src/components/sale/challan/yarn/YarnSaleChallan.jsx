@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -71,8 +71,19 @@ const YarnSaleChallanModel = ({
   MODE,
 }) => {
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
-  // const [isModelOpen, setIsModalOpen] = useState(false);
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  const [companyInfo, setCompanyInfo] = useState({});
+
+  useEffect(() => {
+    companyListRes?.rows?.map((element) => {
+        if (element?.id == details?.company_id){
+            setCompanyInfo(element) ; 
+            console.log("Company information");
+            console.log(element);
+        }
+    })
+  },[details, companyListRes]) ;
+
   const disablePastDates = (current) => {
     return current && current < new Date().setHours(0, 0, 0, 0);
   };
@@ -80,25 +91,6 @@ const YarnSaleChallanModel = ({
   const disableFutureDates = (current) => {
     return current && current > new Date().setHours(0, 0, 0, 0);
   };
-
-  // const details = { ...yarnSaleDetails };
-
-  // const MODE = useMemo(() => {
-  //   if (details.bill_status) {
-  //     if (details.bill_status.toLowerCase() === "pending") {
-  //       return "ADD";
-  //     }
-  //     if (
-  //       details.bill_status.toLowerCase() === "unpaid" ||
-  //       details.is_paid.toLowerCase() === "unpaid"
-  //     ) {
-  //       return "UPDATE";
-  //     }
-  //     if (details.bill_status.toLowerCase() === "confirmed") {
-  //       return "VIEW";
-  //     }
-  //   }
-  // }, [details.bill_status, details.is_paid]);
 
   const { data: yarnSalesBillDetail = null } = useQuery({
     queryKey: ["/sale/challan/yarn-sale/bill/get", MODE, { id: details.id }],
@@ -153,8 +145,8 @@ const YarnSaleChallanModel = ({
       SGST_amount: +data.SGST_amount,
       CGST_value: +data.CGST_value,
       CGST_amount: +data.CGST_amount,
-      IGST_value: +data.IGST_value, // Assuming no IGST for this example
-      IGST_amount: +data.IGST_amount, // Assuming no IGST for this example
+      IGST_value: +data.IGST_value,
+      IGST_amount: +data.IGST_amount,
       round_off_amount: +data.round_off,
       net_amount: +data.net_amount,
       net_rate: +data.net_rate,
@@ -244,9 +236,9 @@ const YarnSaleChallanModel = ({
   useEffect(() => {
     const finalNetAmount = parseFloat(
       +currentValues.discount_amount +
-        +currentValues.SGST_amount +
-        +currentValues.CGST_amount +
-        +currentValues.IGST_amount
+      +currentValues.SGST_amount +
+      +currentValues.CGST_amount +
+      +currentValues.IGST_amount
     ).toFixed(2);
     const roundedNetAmount = Math.round(finalNetAmount);
     const roundOffValue = (roundedNetAmount - finalNetAmount).toFixed(2);
@@ -295,16 +287,11 @@ const YarnSaleChallanModel = ({
 
   return (
     <>
-      {/* <Button
-        onClick={handleCloseModal}
-      >
-        <FileTextOutlined />
-      </Button> */}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Receive Size Beam Challan
+            Yarn sale challan
           </Typography.Text>
         }
         open={isModelOpen}
@@ -334,6 +321,9 @@ const YarnSaleChallanModel = ({
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Flex className="flex-col border border-b-0 border-solid">
             <Row className="p-2 border-0 border-b border-solid">
+              <Col span={24} className="justify-center">
+                <p className="text-center">:: SHREE GANESHAY NAMAH ::</p>
+              </Col>
               <Col
                 span={24}
                 className="flex items-center justify-center border"
@@ -342,7 +332,7 @@ const YarnSaleChallanModel = ({
                   className="font-semibold text-center"
                   style={{ fontSize: 24 }}
                 >
-                  :: SHREE GANESHAY NAMAH ::
+                  {companyInfo?.company_name}
                 </Typography.Text>
               </Col>
             </Row>
@@ -360,12 +350,12 @@ const YarnSaleChallanModel = ({
             <Row className="p-2 border-0 border-b border-solid">
               <Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  GST IN: GST number information
+                  GST IN: {companyInfo?.gst_no}
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  PAN NO : ABHPP6021C
+                  PAN NO : {companyInfo?.pancard_no}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-center justify-center border">
@@ -383,7 +373,7 @@ const YarnSaleChallanModel = ({
                   required={true}
                   wrapperCol={{ sm: 24 }}
                   style={{ margin: 0 }}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -411,8 +401,8 @@ const YarnSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-center border">
-                <Typography.Text className="font-semibold text-center">
-                  SUPPLIER_2 ADDRESS OF SUPPLIER OF SUPPLIER NAME 123
+                <Typography.Text className="text-left">
+                  <strong>{details?.supplier?.supplier_name}</strong> <br></br>{details?.supplier?.user?.address}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
@@ -434,11 +424,11 @@ const YarnSaleChallanModel = ({
               </Col>
               <Col span={8} className="flex items-right justify-left border">
                 <Typography.Text className="font-semibold text-center">
-                  24ABHPP6021C1Z4
+                  {details?.supplier?.user?.gst_no}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
-                <Typography.Text className="font-semibold text-center" style={{marginBottom: 0}}>
+                <Typography.Text className="font-semibold text-center" style={{ marginBottom: 0 }}>
                   CHALLAN NO.
                 </Typography.Text>
               </Col>
@@ -638,7 +628,7 @@ const YarnSaleChallanModel = ({
                   validateStatus={errors.discount_value ? "error" : ""}
                   help={errors.discount_value && errors.discount_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -691,7 +681,7 @@ const YarnSaleChallanModel = ({
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -744,7 +734,7 @@ const YarnSaleChallanModel = ({
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -797,7 +787,7 @@ const YarnSaleChallanModel = ({
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -920,7 +910,7 @@ const YarnSaleChallanModel = ({
                 <Text className="block mt-2"></Text>
               </Col>
               <Col span={8} className="p-2 text-right">
-                <Text strong>For, SONU TEXTILES</Text>
+                <Text strong>For, {companyInfo?.company_name}</Text>
               </Col>
             </Row>
             <Row
@@ -928,11 +918,11 @@ const YarnSaleChallanModel = ({
               style={{ paddingTop: 0 }}
             >
               <Col span={16} className="p-2">
-                <Text strong>Bank Details:</Text> MESHANA URBAN
+                <Text strong>Bank Details:</Text> {companyInfo?.bank_name}
                 <br />
-                <Text strong>A/C No:</Text> 0021101005190
+                <Text strong>A/C No:</Text> {companyInfo?.account_number}
                 <br />
-                <Text strong>IFSC Code:</Text> MSNU0000021
+                <Text strong>IFSC Code:</Text> {companyInfo?.ifsc_code}
                 <br />
                 <Text>IRN: --</Text>
                 <br />

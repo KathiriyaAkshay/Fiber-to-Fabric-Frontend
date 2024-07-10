@@ -17,7 +17,6 @@ import {
   CloseOutlined,
   EyeOutlined,
   FilePdfOutlined,
-  // FileTextOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { getJobTakaDetailListRequest } from "../../../api/requests/job/jobTaka";
@@ -33,8 +31,7 @@ import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
-// import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
+import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const JobTakaList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -159,10 +156,6 @@ const JobTakaList = () => {
     navigate("/job/job-taka/add");
   }
 
-  // function navigateToUpdate(id) {
-  //   navigate(`/job/job-taka/update/${id}`);
-  // }
-
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = jobTakaList?.rows?.map((user, index) => {
@@ -242,14 +235,6 @@ const JobTakaList = () => {
               title="Job Taka Details"
               details={details}
             />
-            {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteJobTaka details={details} /> */}
           </Space>
         );
       },

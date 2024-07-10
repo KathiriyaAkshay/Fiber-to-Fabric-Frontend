@@ -9,6 +9,7 @@ import {
   Select,
   Flex,
   message,
+  Radio
 } from "antd";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -25,10 +26,9 @@ import {
   getVehicleUserListRequest,
   getDropdownSupplierListRequest,
 } from "../../../../api/requests/users";
-// import { createSaleYarnChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation } from "@tanstack/react-query";
 import { useQueryClient } from "@tanstack/react-query";
-import { createSaleJobWorkChallanRequest } from "../../../../api/requests/sale/challan/challan";
+import { createSaleJobWorkChallanRequest, getSaleJobWorkLastChallanRequest } from "../../../../api/requests/sale/challan/challan";
 
 const jobWorkChallanResolver = yupResolver(
   yup.object().shape({
@@ -38,7 +38,7 @@ const jobWorkChallanResolver = yupResolver(
     yarn_company_id: yup.string().required("Please select denier"),
     supplier_name: yup.string().required("Please, Select Party"),
     supplier_id: yup.string().required("Please, Select Party Company"),
-    challan_no: yup.string().required("Please, enter challan number"),
+    // challan_no: yup.string().required("Please, enter challan number"),
     vehicle_id: yup.string().required("Please, select vehicle user"),
     quantity: yup.string().required("Please, enter quantity"),
     kg: yup.string().required("Please, enter kg value"),
@@ -67,7 +67,9 @@ function AddJobWorkSaleChallan() {
       order_date: dayjs(),
     },
   });
+
   const { companyId } = useContext(GlobalContext);
+  const [workType, setWorkType] = useState(true);
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
@@ -183,6 +185,36 @@ function AddJobWorkSaleChallan() {
     },
   });
 
+  const {
+    data: lastChallanNumber,
+    isLoading: isLoading
+  } = useQuery({
+    queryKey: ["/sale/challan/job-work/last-challan-no", { company_id: companyId, is_gray: workType }],
+    queryFn: async () => {
+      const res = await getSaleJobWorkLastChallanRequest({
+        params: { company_id: companyId, is_gray: workType },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId && workType) ,
+  });
+
+  const [challanNumber, setChallanNumber] = useState(0) ; 
+
+  useEffect(() => {
+    let tempChallanNumber = Number(lastChallanNumber) + 1;  
+    if (workType == true){
+      let tempChallan = `J-${tempChallanNumber}`
+      setChallanNumber(tempChallan) ; 
+      setValue("challan_no", tempChallan) ; 
+    } else {
+      let tempChallan = `C-J-${tempChallanNumber}` ; 
+      setChallanNumber(tempChallan) ; 
+      setValue("challan_no", tempChallan) ; 
+    }
+  }, [lastChallanNumber])
+
+
   async function onSubmit(data) {
     data.createdAt = dayjs(data.order_date).format("YYYY-MM-DD");
 
@@ -192,7 +224,9 @@ function AddJobWorkSaleChallan() {
     delete data?.yarn_company_name;
     delete data?.order_type;
     delete data?.cartoon;
-    delete data?.current_stock;
+    delete data?.current_stock; 
+    data["challan_no"] = challanNumber ; 
+    data["is_gray"] = workType ; 
 
     await createJobWorkChallan(data);
   }
@@ -212,6 +246,11 @@ function AddJobWorkSaleChallan() {
           <ArrowLeftOutlined />
         </Button>
         <h3 className="m-0 text-primary">Create Job Work Sale</h3>
+
+        <Radio.Group style={{marginLeft: "auto"}} onChange={(e) => { setWorkType(e?.target?.value) }} value={workType}>
+          <Radio value={true}>Grey</Radio>
+          <Radio value={false}>Cash</Radio>
+        </Radio.Group>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -300,36 +339,22 @@ function AddJobWorkSaleChallan() {
           </Col>
 
           {/* <Col span={6}>
-                        <Form.Item
-                            label="Company name"
-                            name="company_name"
-                            validateStatus={errors.company_name ? "error" : ""}
-                            help={errors.company_name && errors.company_name.message}
-                            wrapperCol={{ sm: 24 }}
-                            required={true}
-                        >
-                            <Controller
-                                control={control}
-                                name="company_name"
-                                render={({ field }) => (
-                                    <Select
-                                        {...field}
-                                        placeholder="Select Company name"
-                                        options={companyListRes?.rows?.map(
-                                            ({ company_name = "", id = "" }) => ({
-                                                label: company_name,
-                                                value: id,
-                                            })
-                                        )}
-                                    />
-                                )}
-                            />
-                        </Form.Item>
-                    </Col> */}
+            <Form.Item
+              label="Challan No"
+              wrapperCol={{ sm: 24 }}
+              required={true}
+            >
+              <Controller
+                control={control}
+                // value = {challanNumber}
+                render={({ field }) => <Input {...field} />}
+              />
+            </Form.Item>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
-              label="Challan No"
+              label="Challan number"
               name="challan_no"
               validateStatus={errors.challan_no ? "error" : ""}
               help={errors.challan_no && errors.challan_no.message}
@@ -337,7 +362,9 @@ function AddJobWorkSaleChallan() {
               required={true}
             >
               <Controller
+                disabled
                 control={control}
+                placeholder="Enter Challan number"
                 name="challan_no"
                 render={({ field }) => <Input {...field} />}
               />
@@ -474,7 +501,7 @@ function AddJobWorkSaleChallan() {
 
           <Col span={6}>
             <Form.Item
-              label="Quantity"
+              label="Taka/Cartoon"
               name="quantity"
               validateStatus={errors.quantity ? "error" : ""}
               help={errors.quantity && errors.quantity.message}
@@ -491,7 +518,7 @@ function AddJobWorkSaleChallan() {
 
           <Col span={6}>
             <Form.Item
-              label="KG"
+              label="Meter/KG"
               name="kg"
               validateStatus={errors.kg ? "error" : ""}
               help={errors.kg && errors.kg.message}
