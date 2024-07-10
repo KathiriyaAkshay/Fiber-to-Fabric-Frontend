@@ -26,7 +26,6 @@ import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import { addJobBeamReceiveRequest } from "../../../../api/requests/job/receive/beamReceive";

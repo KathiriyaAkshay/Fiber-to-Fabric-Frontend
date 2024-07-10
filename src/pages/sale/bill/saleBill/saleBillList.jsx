@@ -74,6 +74,7 @@ const SaleBillList = () => {
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
+  const debouncePayment = useDebounce(payment, 500) ; 
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -121,9 +122,10 @@ const SaleBillList = () => {
         company_id: companyId,
         page,
         pageSize,
-        from: debouncedFromDate,
-        to: debouncedToDate,
+        fromBill: debouncedFromDate,
+        toBill: debouncedToDate,
         quality_id: debouncedQuality,
+        is_paid: debouncePayment
       },
     ],
     queryFn: async () => {
@@ -132,9 +134,10 @@ const SaleBillList = () => {
           company_id: companyId,
           page,
           pageSize,
-          from: debouncedFromDate,
-          to: debouncedToDate,
+          fromBill: debouncedFromDate,
+          toBill: debouncedToDate,
           quality_id: debouncedQuality,
+          is_paid: debouncePayment
         },
       });
       return res.data?.data;
@@ -145,11 +148,6 @@ const SaleBillList = () => {
   function navigateToAdd() {
     navigate("/sales/bill/sales-bill-list/add");
   }
-
-  // function navigateToUpdate(id) {
-  //   navigate(`/sales/bill/sales-bill-list/update/${id}`);
-  // }
-  
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -224,12 +222,9 @@ const SaleBillList = () => {
     },
     {
       title: "Due Date",
-      // dataIndex: "total_meter",
-      // key: "total_meter",
       render: (text, record) => {
         let result = new Date(record?.createdAt) ; 
         result.setDate(result.getDate() + record?.due_days);
-        console.log(result);
         return(
           <div>{dayjs(result).format("DD-MM-YYYY")}</div>
         )
@@ -255,10 +250,6 @@ const SaleBillList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
             <Button
               onClick={() => {
                 setSaleBillChallanModel((prev) => {
@@ -277,12 +268,6 @@ const SaleBillList = () => {
             <DeleteSaleBill details={details} />
             <Button
               onClick={() => {
-                // let MODE;
-                // if (details.yarn_sale_bill.is_paid) {
-                //   MODE = "VIEW";
-                // } else {
-                //   MODE = "UPDATE";
-                // }
                 setSaleBillChallanModel((prev) => {
                   return {
                     ...prev,
@@ -562,8 +547,8 @@ const SaleBillList = () => {
                 placeholder="Select Payment"
                 value={payment}
                 options={[
-                  { label: "Un-Paid", value: "unpaid" },
-                  { label: "Received", value: "received" },
+                  { label: "Un-Paid", value: "0" },
+                  { label: "Received", value: "1" },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
