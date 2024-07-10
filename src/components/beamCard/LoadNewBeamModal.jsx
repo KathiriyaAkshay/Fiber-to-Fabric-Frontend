@@ -131,7 +131,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
 
       // Convert the array of digits to a single string or a number
       const result = digits ? digits.join("") : "";
-      return +result;
+      return +result || 0;
     }
   }, [loadedMachineList]);
 

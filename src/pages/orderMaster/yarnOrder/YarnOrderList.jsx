@@ -1,11 +1,24 @@
-import { Button, Flex, Space, Spin, Table, Tag, Typography, Select } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined, EditOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Flex,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+  Select,
+} from "antd";
+import {
+  FilePdfOutlined,
+  PlusCircleOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
+// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext, useState } from "react";
@@ -19,7 +32,7 @@ function YarnOrderList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
-  const [orderStatus, setOrderStatus] = useState(null) ; 
+  const [orderStatus, setOrderStatus] = useState(null);
 
   const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
@@ -31,10 +44,10 @@ function YarnOrderList() {
         page,
         pageSize,
         end: financialYearEnd,
-        status: debouncedOrderStatus,
-        yarn_company_name: debouncedYarnCompany,
-        yarn_company_id: debouncedDenier,
-        supplier_id: debouncedSupplier,
+        // status: debouncedOrderStatus,
+        // yarn_company_name: debouncedYarnCompany,
+        // yarn_company_id: debouncedDenier,
+        // supplier_id: debouncedSupplier,
       },
     ],
     queryFn: async () => {
@@ -45,10 +58,10 @@ function YarnOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
-          status: debouncedOrderStatus,
-          yarn_company_name: debouncedYarnCompany,
-          yarn_company_id: debouncedDenier,
-          supplier_id: debouncedSupplier,
+          // status: debouncedOrderStatus,
+          // yarn_company_name: debouncedYarnCompany,
+          // yarn_company_id: debouncedDenier,
+          // supplier_id: debouncedSupplier,
         },
       });
       return res.data?.data;
@@ -56,57 +69,57 @@ function YarnOrderList() {
     enabled: Boolean(companyId),
   });
 
-  const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getSupplierListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.supplierList;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
+  //   queryKey: ["supplier", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getSupplierListRequest({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data?.supplierList;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
-  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getYSCDropdownList({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
+  //   queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getYSCDropdownList({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
-  useEffect(() => {
-    // set options for denier selection on yarn stock company select
-    yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-      const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-      if (name === yarnCompanyName) {
-        const options = yarn_details?.map(
-          ({
-            yarn_company_id = 0,
-            filament = 0,
-            yarn_denier = 0,
-            luster_type = "",
-            yarn_color = "",
-            // yarn_count,
-            // current_stock,
-            // avg_daily_stock,
-            // pending_quantity,
-          }) => {
-            return {
-              label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: yarn_company_id,
-            };
-          }
-        );
-        if (options?.length) {
-          setDenierOptions(options);
-        }
-      }
-    });
-  }, [yarnCompanyName, yscdListRes?.yarnCompanyList]);
+  // useEffect(() => {
+  //   // set options for denier selection on yarn stock company select
+  //   yscdListRes?.yarnCompanyList?.forEach((ysc) => {
+  //     const { yarn_company_name: name = "", yarn_details = [] } = ysc;
+  //     if (name === yarnCompanyName) {
+  //       const options = yarn_details?.map(
+  //         ({
+  //           yarn_company_id = 0,
+  //           filament = 0,
+  //           yarn_denier = 0,
+  //           luster_type = "",
+  //           yarn_color = "",
+  //           // yarn_count,
+  //           // current_stock,
+  //           // avg_daily_stock,
+  //           // pending_quantity,
+  //         }) => {
+  //           return {
+  //             label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+  //             value: yarn_company_id,
+  //           };
+  //         }
+  //       );
+  //       if (options?.length) {
+  //         setDenierOptions(options);
+  //       }
+  //     }
+  //   });
+  // }, [yarnCompanyName, yscdListRes?.yarnCompanyList]);
 
   function navigateToAdd() {
     navigate("/order-master/my-yarn-orders/add");
@@ -189,7 +202,7 @@ function YarnOrderList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Order Date",
@@ -267,13 +280,16 @@ function YarnOrderList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => (
-        text == "PENDING"?<>
-          <Tag color="green">PENDING</Tag>
-        </>:<>
-          <Tag color="red">{text  }</Tag>
-        </>
-      )
+      render: (text) =>
+        text == "PENDING" ? (
+          <>
+            <Tag color="green">PENDING</Tag>
+          </>
+        ) : (
+          <>
+            <Tag color="red">{text}</Tag>
+          </>
+        ),
     },
     {
       title: "Action",
@@ -294,9 +310,9 @@ function YarnOrderList() {
           pending_cartoon,
           delivered_cartoon,
           approx_amount,
-          id
+          id,
         } = yarnOrder;
-        
+
         const {
           yarn_denier,
           filament,
@@ -311,7 +327,7 @@ function YarnOrderList() {
         return (
           <Space>
             <GridInformationModel
-              title = "Yarn Order Details"
+              title="Yarn Order Details"
               details={[
                 { label: "Yarn Company", value: yarn_company_name },
                 {
@@ -339,14 +355,13 @@ function YarnOrderList() {
             />
             <Button
               onClick={() => {
-                navigate(`update/${id}`)
+                navigateToUpdate(id);
               }}
             >
               <EditOutlined />
             </Button>
             <DeleteYarnOrderButton data={yarnOrder} />
             <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
-            
           </Space>
         );
       },
@@ -427,7 +442,7 @@ function YarnOrderList() {
           />
         </div>
 
-        <Flex style={{marginLeft:"auto"}} gap={10}>
+        <Flex style={{ marginLeft: "auto" }} gap={10}>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Order Status
@@ -437,9 +452,9 @@ function YarnOrderList() {
               loading={isLoading}
               options={[
                 {
-                  label: "Pending", 
-                  value: "PENDING"
-                }
+                  label: "Pending",
+                  value: "PENDING",
+                },
               ]}
               value={orderStatus}
               onChange={setOrderStatus}

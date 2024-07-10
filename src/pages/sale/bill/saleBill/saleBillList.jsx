@@ -71,6 +71,7 @@ const SaleBillList = () => {
   const [toBill, setToBill] = useState("");
   const [orderNo, setOrderNo] = useState("");
 
+  // company_id, is_paid,
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
@@ -118,6 +119,7 @@ const SaleBillList = () => {
     queryKey: [
       "saleBill",
       "list",
+
       {
         company_id: companyId,
         page,
@@ -223,7 +225,7 @@ const SaleBillList = () => {
     {
       title: "Due Date",
       render: (text, record) => {
-        let result = new Date(record?.createdAt) ; 
+        let result = new Date(record?.createdAt);
         result.setDate(result.getDate() + record?.due_days);
         return(
           <div>{dayjs(result).format("DD-MM-YYYY")}</div>
