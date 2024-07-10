@@ -37,6 +37,7 @@ import dayjs from "dayjs";
 import JobGrayBillComp from "../../../../components/sale/bill/jobGrayBillComp";
 import { getJobGraySaleBillListRequest } from "../../../../api/requests/sale/bill/jobGraySaleBill";
 import DeleteJobGrayBill from "../../../../components/sale/bill/DeleteJobGrayBill";
+import moment from "moment";
 
 const JobGrayList = () => {
   const { company, companyId, companyListRes } = useContext(GlobalContext);
@@ -76,6 +77,7 @@ const JobGrayList = () => {
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
+  const deboucePayment = useDebounce(payment, 500) ; 
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -126,6 +128,7 @@ const JobGrayList = () => {
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
+        is_paid: deboucePayment
       },
     ],
     queryFn: async () => {
@@ -137,6 +140,7 @@ const JobGrayList = () => {
           from: debouncedFromDate,
           to: debouncedToDate,
           quality_id: debouncedQuality,
+          is_paid: deboucePayment
         },
       });
       return res.data?.data;
@@ -224,8 +228,16 @@ const JobGrayList = () => {
     },
     {
       title: "Due Date",
-      // dataIndex: "total_meter",
-      // key: "total_meter",
+      dataIndex: "due_date", 
+      render: (text, record) => {
+        let initialDate = new Date(record?.createdAt);
+        let daysToAdd = record?.due_days; 
+        let newDate = new Date(initialDate);
+        newDate.setDate(initialDate.getDate() + daysToAdd);
+        return(
+          <div>{moment(newDate).format("DD-MM-YYYY")}</div>
+        )
+      }
     },
     {
       title: "Due Days",
@@ -548,8 +560,8 @@ const JobGrayList = () => {
                 placeholder="Select Payment"
                 value={payment}
                 options={[
-                  { label: "Un-Paid", value: "unpaid" },
-                  { label: "Received", value: "received" },
+                  { label: "Un-Paid", value: "0" },
+                  { label: "Received", value: "1" },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",

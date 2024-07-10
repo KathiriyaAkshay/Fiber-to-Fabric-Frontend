@@ -840,6 +840,7 @@ const FormRow = ({
                   let totalMeter = getValues(`rate_${fieldNumber}`) ; 
                   if (totalMeter !== "" && totalMeter !== undefined){
                     let rate = Number(totalMeter)*Number(e.target.value) ; 
+                    console.log("Rate information", rate);
                     setValue(`net_amount_${fieldNumber}`, rate) ; 
                   }
                 }}
@@ -900,7 +901,20 @@ const FormRow = ({
               control={control}
               name={`net_amount_${fieldNumber}`}
               render={({ field }) => (
-                <Input {...field} type="number" placeholder="0" />
+                <Input {...field} 
+                  type="number" 
+                  placeholder="0" 
+                  onChange={(e) => {
+                    setValue(`net_amount_${index}`, e.target.value) ; 
+
+                    let totalMeter = getValues(`total_meter_${fieldNumber}`) ; 
+
+                    if (totalMeter !== "" && totalMeter !== undefined){
+                      let rate = Number(e.target.value) / Number(totalMeter) ; 
+                      setValue(`rate_${index}`, rate) ; 
+                    }
+                  }}  
+                />
               )}
             />
           </Form.Item>

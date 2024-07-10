@@ -342,7 +342,6 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     useEffect(() => {
       companyListRes?.rows?.map((element) => {
         if (element?.id == details?.company_id){
-          console.log(element);
           setCompanyInfo(element) ; 
         }
       })
