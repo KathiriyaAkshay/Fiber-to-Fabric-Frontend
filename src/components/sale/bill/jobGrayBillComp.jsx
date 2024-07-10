@@ -9,6 +9,7 @@ import {
   Typography,
   message,
 } from "antd";
+import { useEffect, useRef, useState, useContext } from "react";
 const { Text, Title } = Typography;
 import * as yup from "yup";
 import { CloseOutlined } from "@ant-design/icons";
@@ -17,14 +18,34 @@ import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { useContext, useEffect } from "react";
 import { createSaleBillRequest } from "../../../api/requests/sale/bill/saleBill";
 import { getJobGraySaleBillByIdRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
+import { ToWords } from "to-words";
+import moment from "moment";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const addSaleBillSchema = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
-  // bill_date: yup.string().required("Please enter bill date"),
-  //   due_date: yup.string().required("Please enter due date"),
   freight_value: yup.string().required("Please enter freight value"),
   freight_amount: yup.string().required("Please enter freight amount"),
   discount_value: yup.string().required("Please enter is discount"),
@@ -45,16 +66,15 @@ const addSaleBillSchema = yup.object().shape({
   net_amount: yup.string().required("Please enter net amount"),
   round_off: yup.string().required("Please enter round off"),
 
-  // TDS_value: yup.string().required("Please enter TDS value"),
-  // after_TDS_amount: yup.string().required("Please enter after TDS amount"),
-
   rate: yup.string().required("Please enter rate"),
   amount: yup.string().required("Please enter amount"),
 });
 
 const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  const [companyInfo, setCompanyInfo] = useState({});
+  const componentRef = useRef() ; 
 
   const { data: jobGrayBillDetail = null } = useQuery({
     queryKey: ["/sale/job-gray-sale/bill/get", MODE, { id: details.id }],
@@ -114,8 +134,6 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         net_amount: +data.net_amount,
         due_days: jobGrayBillDetail.due_days,
         hsn_no: jobGrayBillDetail.hsn_no,
-        // bill_date: dayjs(data.bill_date).format("YYYY-MM-DD"),
-        //   due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
         discount_value: +data.discount_value,
         discount_amount: +data.discount_amount,
         SGST_value: +data.SGST_value,
@@ -124,8 +142,6 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         CGST_amount: +data.CGST_amount,
         IGST_value: +data.IGST_value,
         IGST_amount: +data.IGST_amount,
-        // TCS_value: +data.TCS_value,
-        // TCS_amount: +data.TCS_amount,
         round_off_amount: +data.round_off,
         amount: +data.amount,
       },
@@ -233,13 +249,6 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     setValue("TCS_amount", TCS_Amount);
   };
 
-  // const calculateAfterTDSAmount = (TDSValue) => {
-  //   const TDS_amount = (+getValues("discount_amount") * +TDSValue) / 100;
-  //   const afterTDS = +Math.abs(+getValues("net_amount") - TDS_amount).toFixed(
-  //     0
-  //   );
-  //   setValue("after_TDS_amount", afterTDS);
-  // };
 
   useEffect(() => {
     const finalNetAmount = parseFloat(
@@ -272,12 +281,13 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   ]);
 
   //  CALCULATION END------------------------------------------------
-
+  const [dueDate, setDueDate] = useState(null) ; 
   useEffect(() => {
     if (jobGrayBillDetail) {
       setValue("invoice_no", jobGrayBillDetail.invoice_no);
       setValue("rate", jobGrayBillDetail.rate);
       setValue("amount", jobGrayBillDetail.amount);
+      setValue("total_amount", jobGrayBillDetail.amount);
 
       setValue("net_amount", jobGrayBillDetail.net_amount);
       setValue("net_rate", jobGrayBillDetail.net_rate);
@@ -298,8 +308,41 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
       // setValue("TDS_value", saleBillDetail.TDS_value);
       // setValue("after_TDS_amount", saleBillDetail.after_TDS_amount);
+
+      // Calculate due date 
+      let initialDate = new Date(jobGrayBillDetail?.createdAt);
+      let daysToAdd = jobGrayBillDetail?.due_days; 
+      let newDate = new Date(initialDate);
+      newDate.setDate(initialDate.getDate() + daysToAdd);
+      setDueDate(moment(newDate).format("DD-MM-YYYY")) ; 
     }
   }, [jobGrayBillDetail, setValue]);
+
+  const pageStyle = `
+    @media print {
+      .print-instructions {
+        display: none;
+    }
+    .printable-content {
+      padding: 20px; /* Add padding for print */
+      width: 100%;
+    }
+  `;
+
+    useEffect(() => {
+      companyListRes?.rows?.map((element) => {
+        if (element?.id == details?.company_id){
+          setCompanyInfo(element) ; 
+        }
+      })
+    },[details, companyListRes]) ; 
+
+    const [averageAmount, setAverageAmount] = useState(0) ; 
+
+    useEffect(() => {
+      let tempAverage = Number(currentValues?.net_amount) / Number(details.total_taka) ; 
+      setAverageAmount(tempAverage) ; 
+    }, [currentValues?.net_amount]) ; 
 
   return (
     <>
@@ -307,7 +350,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Receive Size Beam Challan
+            Job Grey Sale bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -341,11 +384,17 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={24}
                 className="flex items-center justify-center border"
               >
+                  <div>:: SHREE GANESHAY NAMAH ::</div>
+              </Col>
+              <Col
+                span={24}
+                className="flex items-center justify-center border"
+                style={{marginTop: -20}}
+              >
                 <Typography.Text
                   className="font-semibold text-center"
-                  style={{ fontSize: 24 }}
                 >
-                  :: SHREE GANESHAY NAMAH ::
+                  <h3>{companyInfo?.company_name}</h3>
                 </Typography.Text>
               </Col>
             </Row>
@@ -366,14 +415,9 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="flex items-center justify-center border"
               >
                 <Typography.Text className="font-semibold text-center">
-                  PLOT NO. 78,, JAYVEER INDU. ESTATE,, GUJARAT HOUSING BOARD
-                  ROAD, PANDESARA,, SURAT, GUJARAT,394221, PANDESARA
+                  {`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}
                   <br />
-                  394221
-                  <br />
-                  DIST: Surat
-                  <br />
-                  MOBILE NO: 6353207671, PAYMENT: 6353207671
+                  MOBILE NO: {companyInfo?.company_contact}, PAYMENT: {companyInfo?.account_number}
                 </Typography.Text>
               </Col>
             </Row>
@@ -384,14 +428,10 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   M/s.
                 </Typography.Text>
                 <Typography.Text>
-                  BABAJI SILK FABRIC / H M SILK FABRIC
+                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
                 </Typography.Text>
                 <Typography.Text className="block">
-                  GALA NO 16, B PART, BHAWANI C. H. S. LTD, GARRAGE GALLI,
-                  DADAR,
-                </Typography.Text>
-                <Typography.Text className="block">
-                  Maharashtra, 400028
+                  {details?.party?.address}
                 </Typography.Text>
                 <Typography.Text
                   className="block mt-2 font-semibold"
@@ -399,7 +439,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 >
                   GST IN
                 </Typography.Text>
-                <Typography.Text>27ANJPD1966G1ZZ</Typography.Text>
+                <Typography.Text>{details?.party?.gst_no}</Typography.Text>
                 <Typography.Text className="block mt-2">
                   E-WAY BILL NO.
                 </Typography.Text>
@@ -876,7 +916,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={8}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                Avg Rate: 123
+                Avg Rate: {parseFloat(averageAmount).toFixed(2)}
               </Col>
               <Col
                 span={2}
@@ -907,14 +947,10 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   ♦ DELIVERY AT:
                 </Typography.Text>
                 <Typography.Text className="block font-semibold mt-1">
-                  BABAJI SILK FABRIC / H M SILK FABRIC
+                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
                 </Typography.Text>
                 <Typography.Text className="block mt-1">
-                  GALA NO 16, B PART, BHAWANI C. H. S. LTD, GARRAGE GALLI,
-                  DADAR,
-                </Typography.Text>
-                <Typography.Text className="block">
-                  Maharashtra, 400028
+                  {details?.party?.address}
                 </Typography.Text>
               </Col>
               <Col span={6} className="flex justify-end items-start"></Col>
@@ -932,7 +968,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Due date: 18/05/2023</div>
+                <div style={{ color: "gray" }}>Due date: {dueDate}</div>
               </Col>
               <Col
                 span={4}
@@ -947,11 +983,10 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
             <Row className="border-0 border-b border-solid !m-0 ">
               <Col
                 span={24}
-                className="pt-2 pb-2 pl-2 border-0 border-r border-solid"
+                className="pt-2 pb-2 pl-2 border-0"
               >
                 <Typography.Text className="font-semibold">
-                  Tax Amount(IN WORDS):INR Fifteen Thousand One Hundred and
-                  Twenty Nine only
+                  Tax Amount(IN WORDS): {toWords.convert(currentValues?.net_amount)}
                 </Typography.Text>
               </Col>
             </Row>
@@ -961,25 +996,25 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 <Title level={5} className="m-0">
                   ➤ TERMS OF SALES :-
                 </Title>
-                <Text className="block">
+                <Text className="block"  style={{color: "#000", fontWeight: 600}}>
                   1. Interest at 2% per month will be charged remaining unpaid
                   from the date bill.
                 </Text>
-                <Text className="block">
+                <Text className="block"  style={{color: "#000", fontWeight: 600}}>
                   2. Complaint if any regarding this invoice must be settled
                   within 24 hours.
                 </Text>
-                <Text className="block">
+                <Text className="block"  style={{color: "#000", fontWeight: 600}}>
                   3. Disputes shall be settled in SURAT court only.
                 </Text>
-                <Text className="block">
+                <Text className="block" style={{color: "#000", fontWeight: 600}}>
                   4. We are not responsible for processed goods & width.
                 </Text>
-                <Text className="block">5. Subject to SURAT Jurisdiction.</Text>
+                <Text className="block" style={{color: "#000", fontWeight: 600}}>5. Subject to SURAT Jurisdiction.</Text>
                 <Text className="block mt-2"></Text>
               </Col>
               <Col span={8} className="p-2 text-right">
-                <Text strong>For, SONU TEXTILES</Text>
+                <Text strong>For, {companyInfo?.company_name}</Text>
               </Col>
             </Row>
 
@@ -988,11 +1023,11 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               style={{ paddingTop: 0 }}
             >
               <Col span={16} className="p-2">
-                <Text strong>Bank Details:</Text> MESHANA URBAN
+                <Text strong>Bank Details:</Text> {companyInfo?.bank_name}
                 <br />
-                <Text strong>A/C No:</Text> 0021101005190
+                <Text strong>A/C No:</Text> {companyInfo?.account_number}
                 <br />
-                <Text strong>IFSC Code:</Text> MSNU0000021
+                <Text strong>IFSC Code:</Text> {companyInfo?.ifsc_code}
                 <br />
                 <Text>IRN: --</Text>
                 <br />
@@ -1037,7 +1072,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               </Col>
               <Col
                 span={6}
-                className="p-2 font-medium border-0 border-r border-solid"
+                className="p-2 font-medium border-0"
               >
                 {"PARTY'S BANK"}
               </Col>

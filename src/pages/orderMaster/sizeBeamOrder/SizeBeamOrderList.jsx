@@ -200,24 +200,7 @@ function SizeBeamOrderList() {
 
         return (
           <Space>
-            {/* <ViewDetailModal
-              title="Beam Pipe Challan"
-              details={[
-                {
-                  title: "Order Date",
-                  value: dayjs(order_date).format("DD-MM-YYYY"),
-                },
-                { title: "From", value: yarn_company_name },
-                { title: "To", value: company_name },
-                { title: "Total Pipe", value: total_pipe },
-                { title: "Total Meter", value: total_meters },
-                { title: "Pending Meter", value: pending_meters },
-                { title: "Order Status", value: status },
-                { title: "Print Challan", value: print_challan_status },
-              ]}
-            /> */}
             <BeamPipeChallanModel details={record} />
-
             {record?.status == "PENDING" && (
               <>
                 <Button

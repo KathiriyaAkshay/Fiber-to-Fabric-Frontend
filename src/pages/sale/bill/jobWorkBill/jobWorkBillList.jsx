@@ -6,9 +6,6 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-// import DeleteJobWorkChallan from "../../../../components/sale/challan/jobwork/deleteJobWorkChallan";
-// import { EditOutlined } from "@ant-design/icons";
-// import useDebounce from "../../../../hooks/useDebounce";
 import {
   //   getSaleJobWorkBillListRequest,
   saleJobWorkChallanListRequest,
@@ -18,14 +15,8 @@ import dayjs from "dayjs";
 import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
 
 const JobWorkBillList = () => {
-  //   const navigation = useNavigate();
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  //   const [party, setParty] = useState(null);
-  //   const debounceParty = useDebounce(party, 500);
-  //   const [vehicle, setVehicle] = useState(null);
-  //   const debouncedVehicle = useDebounce(vehicle, 500);
 
   const [jobWorkSaleChallanModel, setJobWorkSaleChallanModel] = useState({
     isModalOpen: false,
@@ -41,65 +32,6 @@ const JobWorkBillList = () => {
     }));
   };
 
-  //   const {
-  //     data: dropdownSupplierListRes,
-  //     isLoading: isLoadingDropdownSupplierList,
-  //   } = useQuery({
-  //     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
-  //     queryFn: async () => {
-  //       const res = await getDropdownSupplierListRequest({
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data?.data?.supplierList;
-  //     },
-  //     enabled: Boolean(companyId),
-  //   });
-
-  //   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
-  //     queryKey: [
-  //       "vehicle",
-  //       "list",
-  //       { company_id: companyId, page: 0, pageSize: 99999 },
-  //     ],
-  //     queryFn: async () => {
-  //       const res = await getVehicleUserListRequest({
-  //         params: { company_id: companyId, page: 0, pageSize: 99999 },
-  //       });
-  //       return res.data?.data;
-  //     },
-  //     enabled: Boolean(companyId),
-  //   });
-
-  //   const { data: saleJobWorkListData, isLoading: isLoadingSaleJobWorkBill } =
-  //     useQuery({
-  //       queryKey: [
-  //         "sale/challan/job-work/bill/list",
-  //         {
-  //           company_id: companyId,
-  //           page,
-  //           pageSize,
-  //           //   supplier_name: debounceParty,
-  //           end: financialYearEnd,
-  //           //   vehicle_id: debouncedVehicle,
-  //         },
-  //       ],
-  //       queryFn: async () => {
-  //         const res = await getSaleJobWorkBillListRequest({
-  //           companyId,
-  //           params: {
-  //             company_id: companyId,
-  //             page,
-  //             pageSize,
-  //             // supplier_name: debounceParty,
-  //             end: financialYearEnd,
-  //             // vehicle_id: debouncedVehicle,
-  //           },
-  //         });
-  //         return res.data?.data;
-  //       },
-  //       enabled: Boolean(companyId),
-  //     });
-
   const {
     data: saleJobWorkChallanListData,
     isLoading: isLoadingSaleJobWorkData,
@@ -111,6 +43,7 @@ const JobWorkBillList = () => {
         page,
         pageSize,
         end: financialYearEnd,
+        bill_status: "confirmed"
       },
     ],
     queryFn: async () => {
@@ -121,6 +54,7 @@ const JobWorkBillList = () => {
           page,
           pageSize,
           end: financialYearEnd,
+          bill_status: "confirmed"
         },
       });
       return res.data?.data;
@@ -273,66 +207,8 @@ const JobWorkBillList = () => {
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Job Work Sale Bill List</h3>
-            {/* <Button
-              onClick={() => {
-                navigation("/sales/challan/job-work/add");
-              }}
-              icon={<PlusCircleOutlined />}
-              type="text"
-            /> */}
           </div>
 
-          {/* <Flex align="center" gap={10}>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Party
-              </Typography.Text>
-              <Select
-                placeholder="Select Party"
-                value={party}
-                loading={isLoadingDropdownSupplierList}
-                options={dropdownSupplierListRes?.map((supervisor) => ({
-                  label: supervisor?.supplier_name,
-                  value: supervisor?.supplier_name,
-                }))}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={setParty}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Vehicle
-              </Typography.Text>
-              <Select
-                placeholder="Select Vehicle"
-                value={vehicle}
-                loading={isLoadingVehicleList}
-                options={vehicleListRes?.vehicleList?.rows?.map((vehicle) => ({
-                  label:
-                    vehicle.first_name +
-                    " " +
-                    vehicle.last_name +
-                    " " +
-                    `| ( ${vehicle?.username})`,
-                  value: vehicle.id,
-                }))}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={setVehicle}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex>
-          </Flex> */}
         </div>
 
         {renderTable()}

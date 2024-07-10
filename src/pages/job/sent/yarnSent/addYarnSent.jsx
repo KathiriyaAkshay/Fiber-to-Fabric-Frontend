@@ -28,7 +28,10 @@ import {
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
-import { addYarnSentRequest } from "../../../../api/requests/job/sent/yarnSent";
+import {
+  addYarnSentRequest,
+  getYarnSentLastChallanNoRequest,
+} from "../../../../api/requests/job/sent/yarnSent";
 import { disableBeforeDate } from "../../../../utils/date";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
@@ -50,7 +53,6 @@ const AddYarnSent = () => {
   const [fieldArray, setFieldArray] = useState([0]);
 
   const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
   const { companyId } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
@@ -130,6 +132,16 @@ const AddYarnSent = () => {
   const { supplier_name } = watch();
 
   // ------------------------------------------------------------------------------------------
+  useQuery({
+    queryKey: ["yarnSent", "last", "challan", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getYarnSentLastChallanNoRequest({
+        params: { company_id: companyId },
+      });
+      setValue("challan_no", +res.data?.data + 1);
+    },
+    enabled: Boolean(companyId),
+  });
 
   const addNewFieldRow = (indexValue) => {
     let isValid = true;
@@ -237,17 +249,6 @@ const AddYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
-  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-  //   queryKey: ["party", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getPartyListRequest({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list"],
     queryFn: async () => {
@@ -318,6 +319,19 @@ const AddYarnSent = () => {
   //   });
   // }, [yscdListRes?.yarnCompanyList]);
 
+  const {
+    data: lastChallanNumber,
+  } = useQuery({
+    queryKey: ["/sale/challan/yarn-sale/last-challan-no", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await GetJobYarnSentLastChallanRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -331,9 +345,10 @@ const AddYarnSent = () => {
           gutter={18}
           style={{
             padding: "12px",
+            justifyContent: "flex-end",
           }}
         >
-          <Col span={6}>
+          <Col span={4}>
             <Form.Item
               label="Sent Date"
               name="sent_date"
@@ -359,7 +374,7 @@ const AddYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={4}>
             <Form.Item
               label="Select Quality"
               name="quality_id"
@@ -390,7 +405,7 @@ const AddYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={4}>
             <Form.Item
               label="Supplier Name"
               name="supplier_name"
@@ -423,7 +438,7 @@ const AddYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={4}>
             <Form.Item
               label="Supplier Company"
               name="supplier_id"
@@ -452,15 +467,35 @@ const AddYarnSent = () => {
               />
             </Form.Item>
           </Col>
+
+          <Col span={4}>
+            <Form.Item
+              label="Challan No"
+              name="challan_no"
+              validateStatus={errors.challan_no ? "error" : ""}
+              help={errors.challan_no && errors.challan_no.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_no"
+                render={({ field }) => (
+                  <Input {...field} disabled placeholder="CH123456" />
+                )}
+              />
+            </Form.Item>
+          </Col>
         </Row>
 
         <Row
           gutter={18}
           style={{
             padding: "12px",
+            justifyContent: "flex-end",
           }}
         >
-          <Col span={6}>
+          <Col span={5}>
             <Form.Item
               label="Select vehicle"
               name="vehicle_id"
@@ -500,26 +535,7 @@ const AddYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
-            <Form.Item
-              label="Challan No"
-              name="challan_no"
-              validateStatus={errors.challan_no ? "error" : ""}
-              help={errors.challan_no && errors.challan_no.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="challan_no"
-                render={({ field }) => (
-                  <Input {...field} placeholder="CH123456" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
+          <Col span={5}>
             <Form.Item
               label="Delivery Charge"
               name="delivery_charge"
@@ -536,7 +552,7 @@ const AddYarnSent = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={5}>
             <Form.Item
               label="Power Cost"
               name="power_cost"

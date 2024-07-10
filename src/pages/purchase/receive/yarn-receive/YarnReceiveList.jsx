@@ -6,7 +6,9 @@ import {
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
+  Select
 } from "antd";
 import { EditOutlined, PlusCircleOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +36,10 @@ function YarnReceiveList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
+
+  const [billStatus, setBillStatus] = useState() ; 
+  const debouceBillStatus = useDebounce(billStatus, 500) ; 
+
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
@@ -51,6 +57,7 @@ function YarnReceiveList() {
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
           end: financialYearEnd,
+          is_bill_created: debouceBillStatus
         },
       ],
       queryFn: async () => {
@@ -64,7 +71,7 @@ function YarnReceiveList() {
             toDate: debouncedToDate,
             fromDate: debouncedFromDate,
             end: financialYearEnd,
-            // pending: true,
+            is_bill_created: debouceBillStatus
           },
         });
         return res.data?.data;
@@ -87,11 +94,14 @@ function YarnReceiveList() {
       key: "id",
       render: (text, record, index) => ((page * pageSize) + index) + 1
     },
-    // {
-    //   title: "Order No",
-    //   dataIndex: "order_no",
-    //   key: "order_no",
-    // },
+    {
+      title: "Order No",
+      dataIndex: "order_no",
+      key: "order_no",
+      render: (text, record) => (
+        <div>-</div>
+      )
+    },
     {
       title: "Challan Date",
       key: "challan_date",
@@ -104,16 +114,22 @@ function YarnReceiveList() {
       dataIndex: "challan_no",
       key: "challan_no",
     },
-    // {
-    //   title: "Supplier",
-    //   dataIndex: "supplier",
-    //   key: "supplier",
-    // },
-    // {
-    //   title: "Supplier Company",
-    //   dataIndex: "supplier_company",
-    //   key: "supplier_company",
-    // },
+    {
+      title: "Supplier",
+      dataIndex: "supplier",
+      key: "supplier",
+      render: (text, record) => (
+        <div>-</div>
+      )
+    },
+    {
+      title: "Supplier Company",
+      dataIndex: "supplier_company",
+      key: "supplier_company",
+      render: (text, record) => (
+        <div>-</div>
+      )
+    },
     {
       title: "Company",
       dataIndex: ["yarn_stock_company", "yarn_company_name"],
@@ -144,26 +160,33 @@ function YarnReceiveList() {
       dataIndex: "receive_cartoon_pallet",
       key: "receive_cartoon_pallet",
     },
-    // {
-    //   title: "Bill Status /Rate(Excl. Gst)",
-    //   dataIndex: "status",
-    //   key: "status",
-    // },
+    {
+      title: "Bill Status /Rate(Excl. Gst)",
+      dataIndex: "is_bill_created",
+      key: "is_bill_created",
+      render: (text, record) => (
+        text != true?<Tag color="red">Pending</Tag>:<Tag color="green">Received</Tag>
+      )
+    },
     {
       title: "Action",
       render: (yarnReceiveDetails) => {
         return (
           <Space>
-            <Button
-              onClick={() => {
-                navigateToUpdate(yarnReceiveDetails.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteYarnReceiveButton details={yarnReceiveDetails} />
-            <MultipleChallanCreateButton details={yarnReceiveDetails} />
-            <YarnReceiveChallanModal details={yarnReceiveDetails} />
+
+            {!yarnReceiveDetails?.is_bill_created?<>
+              <Button
+                onClick={() => {
+                  navigateToUpdate(yarnReceiveDetails.id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              <DeleteYarnReceiveButton details={yarnReceiveDetails} />
+              <MultipleChallanCreateButton details={yarnReceiveDetails} />
+              <YarnReceiveChallanModal details={yarnReceiveDetails} />
+            
+            </>:<></>}
           </Space>
         );
       },
@@ -250,6 +273,24 @@ function YarnReceiveList() {
             {selectedRows?.length > 0 && (
               <YarnReceiveChallanModal details={selectedRows} />
             )}
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Bill status
+            </Typography.Text>
+            <Select
+              placeholder="Bill status"
+              value={billStatus}
+              onChange={setBillStatus}
+              options={[
+                {label: "Pending", value: "false"}, 
+                {label: "Received", value: "true"}
+              ]}
+              style={{
+                width: "100%",
+              }}
+            />
           </Flex>
 
           <Flex align="center" gap={10}>

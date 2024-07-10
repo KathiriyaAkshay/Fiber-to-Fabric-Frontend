@@ -14,13 +14,10 @@ import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import {
-  //   getSaleYarnChallanBillListRequest,
   saleYarnChallanListRequest,
 } from "../../../../api/requests/sale/challan/challan";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-// import DeleteSaleYarnChallan from "../../../../components/sale/challan/yarn/DeleteYarnSaleChallan";
-// import { EditOutlined } from "@ant-design/icons";
 import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
@@ -31,7 +28,6 @@ import dayjs from "dayjs";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
 
 const YarnSalesBillList = () => {
-  //   const navigation = useNavigate();
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -53,6 +49,8 @@ const YarnSalesBillList = () => {
   const debounceParty = useDebounce(party, 500);
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
+  const [billStatus, setBillStatus] = useState(null) ; 
+  const debounceBillStatus = useDebounce(billStatus, 500) ; 
 
   const {
     data: dropdownSupplierListRes,
@@ -83,36 +81,6 @@ const YarnSalesBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  //   const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
-  //     useQuery({
-  //       queryKey: [
-  //         "sale/bill/yarn-sale/list",
-  //         {
-  //           company_id: companyId,
-  //           page,
-  //           pageSize,
-  //           supplier_name: debounceParty,
-  //           end: financialYearEnd,
-  //           vehicle_id: debouncedVehicle,
-  //         },
-  //       ],
-  //       queryFn: async () => {
-  //         const res = await getSaleYarnChallanBillListRequest({
-  //           companyId,
-  //           params: {
-  //             company_id: companyId,
-  //             page,
-  //             pageSize,
-  //             supplier_name: debounceParty,
-  //             end: financialYearEnd,
-  //             vehicle_id: debouncedVehicle,
-  //           },
-  //         });
-  //         return res.data?.data;
-  //       },
-  //       enabled: Boolean(companyId),
-  //     });
-
   const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
     useQuery({
       queryKey: [
@@ -124,6 +92,8 @@ const YarnSalesBillList = () => {
           supplier_name: debounceParty,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
+          bill_status: "confirmed", 
+          is_paid: debounceBillStatus
         },
       ],
       queryFn: async () => {
@@ -136,6 +106,8 @@ const YarnSalesBillList = () => {
             supplier_name: debounceParty,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
+            bill_status: "confirmed", 
+            is_paid: debounceBillStatus
           },
         });
         return res.data?.data;
@@ -151,7 +123,7 @@ const YarnSalesBillList = () => {
       render: (text, record, index) => page * pageSize + index + 1,
     },
     {
-      title: "Date",
+      title: "Bill date",
       dataIndex: "bill_date",
       key: "bill_date",
       render: (text) => moment(text).format("DD-MM-YYYY"),
@@ -199,9 +171,24 @@ const YarnSalesBillList = () => {
     },
     {
       title: "Due Days",
-      //   render: (record) => {
-      //     return `${record.yarn_sale.kg}`;
-      //   },
+      dataIndex: "due_date", 
+      render: (text, record) => {
+        const currentDate = new Date();
+        const targetDate = new Date(record?.yarn_sale_bill?.due_date);
+
+        if (currentDate > targetDate){
+          return(
+            <div>0</div>
+          )
+        } else {
+          const differenceInMilliseconds = currentDate - targetDate;
+          const millisecondsInADay = 24 * 60 * 60 * 1000;
+          const daysDifference = Math.floor(differenceInMilliseconds / millisecondsInADay);
+          return(
+            <div>{daysDifference}</div>
+          )
+        }
+      },
     },
     {
       title: "Bill Status",
@@ -215,15 +202,6 @@ const YarnSalesBillList = () => {
       render: (text, record) => (
         <Space>
           <PrintYarnSaleChallan details={record} />
-          {/* <Button
-            onClick={() => {
-              navigation(`/sales/challan/yarn-sale/update/${record?.id}`);
-            }}
-          >
-            <EditOutlined />
-          </Button>
-          <DeleteSaleYarnChallan details={record} /> */}
-          {/* <YarnSaleChallanModel yarnSaleDetails={record} /> */}
           <Button
             onClick={() => {
               let MODE;
@@ -290,6 +268,26 @@ const YarnSalesBillList = () => {
 
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Bill status
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select bill status"
+                value={billStatus}
+                options={[
+                  {label: "Paid", value: true},
+                  {label: "Un-paid", value: false}
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                onChange={setBillStatus}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
               <Typography.Text className="whitespace-nowrap">
                 Party
               </Typography.Text>

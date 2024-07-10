@@ -42,7 +42,8 @@ body {
 }
 
 .job-challan-details-table {
-  border: 1px solid #d3d3d3; border-collapse: collapse;
+  border: 1px solid #d3d3d3;
+  border-collapse: collapse;
   text-align: center;
 }
 
@@ -55,62 +56,90 @@ body {
   padding: 6px;
 }
 
-.job-challan-details-table td{
+.job-challan-details-table td {
   border: 0px;
   padding: 2px;
   border: 1px solid #d3d3d3;
 }
 
-.job-challan-taka-index-column{
+.job-challan-taka-index-column {
   background-color: rgb(25 74 109);
   color: #fff;
 }
 
-.job-challan-taka-plus-option{
+.job-challan-taka-plus-option {
   border: 0px solid;
   background-color: transparent !important;
 }
 
-.ant-table{
+/* .ant-table {
   font-size: 14px !important;
 
-  .ant-table-thead{
-    .ant-table-cell{
+  .ant-table-thead {
+    .ant-table-cell {
       padding-top: 12px !important;
       padding-bottom: 12px !important;
-    }  
+    }
   }
 
-  .ant-table-cell{
+  .ant-table-cell {
     padding: 9px !important;
   }
+} */
+.ant-table {
+  font-size: 14px !important;
+}
+.ant-table .ant-table-thead .ant-table-cell {
+  padding-top: 12px !important;
+  padding-bottom: 12px !important;
 }
 
-.ant-icon{
+.ant-table .ant-table-cell {
+  padding: 9px !important;
+}
+
+.ant-icon {
   font-size: 9px !important;
 }
 
 /* Grid information model  */
 
-.grid-information-model{
-  .ant-descriptions-item-label{
+/* .grid-information-model {
+  .ant-descriptions-item-label {
     max-width: 40% !important;
     padding: 8px !important;
     padding-left: 10px !important;
 
-    span{
+    span {
       font-weight: 600 !important;
       color: black !important;
     }
   }
 
-  .ant-descriptions-item-content{
+  .ant-descriptions-item-content {
     max-width: 70%;
     min-width: 70% !important;
     padding: 8px !important;
     padding-left: 12px !important;
   }
+} */
+
+.grid-information-model .ant-descriptions-item-label {
+  max-width: 40% !important;
+  padding: 8px !important;
+  padding-left: 10px !important;
 }
+.grid-information-model .ant-descriptions-item-label span {
+  font-weight: 600 !important;
+  color: black !important;
+}
+.grid-information-model .ant-descriptions-item-content {
+  max-width: 70%;
+  min-width: 70% !important;
+  padding: 8px !important;
+  padding-left: 12px !important;
+}
+
 .custom-table {
   width: 100%;
   border-collapse: collapse;
@@ -127,10 +156,66 @@ body {
 .custom-table thead tr th,
 td {
   padding: 6px;
-  text-align: center;
+  /* text-align: center; */
 }
 
 .custom-table tbody tr td {
   padding: 5px;
-  text-align: center;
+  /* text-align: center; */
+}
+
+.red-input-field{
+  color: red;
+}
+
+.ant-table-summary{
+  .ant-table-cell{
+    background-color: #efefef;
+    font-weight: 600;
+  }
+}
+
+.purchase-bill-description{
+  padding: 0 !important;
+  padding-bottom: 8px !important;
+
+  .ant-descriptions-item-label{
+    width: 50%;
+    background-color: #efefef;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    font-weight: 600;
+    color: black;
+  }
+
+
+  .ant-descriptions-item-content{
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 12px;
+  }
+}
+
+.highlight-text{
+  .ant-descriptions-item-content{
+    color: red;
+    font-weight: 600;
+  }
+}
+
+.finalamount-text{
+  .ant-descriptions-item-content{
+    color: green;
+    font-weight: 600;
+  }
+}
+
+/* Menu related css  */
+
+@media print {
+  .printable-content {
+      padding: 20px;  /* Add your desired padding */
+      margin: 20px;   /* Add your desired margin */
+  }
 }

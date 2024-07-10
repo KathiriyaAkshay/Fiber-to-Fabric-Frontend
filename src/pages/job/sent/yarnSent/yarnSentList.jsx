@@ -245,6 +245,16 @@ const YarnSentList = () => {
       },
     },
     {
+      title: "Cartoon",
+      dataIndex: "cartoon",
+      key: "cartoon",
+    },
+    {
+      title: "Kg",
+      dataIndex: "kg",
+      key: "kg",
+    },
+    {
       title: "Delivery Charge",
       dataIndex: "delivery_charge",
       key: "delivery_charge",

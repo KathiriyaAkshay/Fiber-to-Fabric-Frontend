@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
-import { createSizeBeamOrderRequest } from "../../../api/requests/orderMaster";
+import { createSizeBeamOrderRequest, getSizeBeamOrderNumberRequest } from "../../../api/requests/orderMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -90,6 +90,30 @@ function AddSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
 
+  const {
+    data: lastOrderNumber,
+    isLoading: isLoading,
+  } = useQuery({
+    queryKey: ["/order-master/size-beam-order/last-order-no", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getSizeBeamOrderNumberRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const [orderNumber, setOrderNumber] = useState(0) ; 
+
+  useEffect(() => {
+    if (lastOrderNumber !== undefined){
+      let tempOrderNumber = lastOrderNumber ; 
+      tempOrderNumber = Number(tempOrderNumber) + 1 ; 
+      setOrderNumber(tempOrderNumber) ; 
+    }
+  }, [lastOrderNumber])
+
   const { mutateAsync: createSizeBeamOrder } = useMutation({
     mutationFn: async (data) => {
       const res = await createSizeBeamOrderRequest({
@@ -122,6 +146,7 @@ function AddSizeBeamOrder() {
   async function onSubmit(data) {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
+    data["order_no"] = String(orderNumber) ; 
     await createSizeBeamOrder(data);
   }
 
@@ -266,6 +291,28 @@ function AddSizeBeamOrder() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={8}>
+            <Form.Item
+              label="Order Number"
+              name="order_number"
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                disabled
+                control={control}
+                name="order_number"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="Order Number"
+                    value={orderNumber}
                   />
                 )}
               />

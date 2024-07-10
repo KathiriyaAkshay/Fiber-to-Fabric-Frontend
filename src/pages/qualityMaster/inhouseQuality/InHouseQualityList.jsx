@@ -97,7 +97,7 @@ const InHouseQualityList = () => {
   } = useMutation({
     mutationFn: async ({ id, data }) => {
       const payload = {
-        quality_detail: {...data}
+        quality_detail: { ...data },
       };
       const res = await updateInHouseQualityRequest({
         id,
@@ -133,29 +133,60 @@ const InHouseQualityList = () => {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = inHouseQualityList?.rows?.map((detail, index) => {
-      const { quality_name, quality_group, vat_hsn_no, weight_from, weight_to, yarn_type, tpm_s, tpm_z, production_rate } = detail;
-      return [index+1, quality_name, quality_group, vat_hsn_no, "", weight_from, weight_to, yarn_type, "", tpm_s, tpm_z, production_rate, "", ""];
+      const {
+        quality_name,
+        quality_group,
+        vat_hsn_no,
+        weight_from,
+        weight_to,
+        yarn_type,
+        tpm_s,
+        tpm_z,
+        production_rate,
+      } = detail;
+      return [
+        index + 1,
+        quality_name,
+        quality_group,
+        vat_hsn_no,
+        "",
+        weight_from,
+        weight_to,
+        yarn_type,
+        "",
+        tpm_s,
+        tpm_z,
+        production_rate,
+        "",
+        "",
+      ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Name", "Group", "Vat HSN No.", "Ceth No.", "From", "To", "Yarn Type", "Wpm", "S", "Z", "Prod Rate", "Maker", "Speaker"]],
+      head: [
+        [
+          "ID",
+          "Name",
+          "Group",
+          "Vat HSN No.",
+          "Ceth No.",
+          "From",
+          "To",
+          "Yarn Type",
+          "Wpm",
+          "S",
+          "Z",
+          "Prod Rate",
+          "Maker",
+          "Speaker",
+        ],
+      ],
       leftContent,
       rightContent,
       title: "In House Quality",
     });
   }
-  /**
-   * Quality Name
-   * Quality Group
-   * From
-   * To
-   * Yarn Type
-   * Production Type
-   * Status
-   * Show to Party
-   * Action
-   * */
 
   const columns = [
     {
@@ -224,24 +255,19 @@ const InHouseQualityList = () => {
       render: (qualityDetails) => {
         const { show_to_party_broker, id } = qualityDetails;
         return (
-          <Checkbox 
-            defaultChecked={show_to_party_broker} 
+          <Checkbox
+            defaultChecked={show_to_party_broker}
             onChange={(e) => {
               updateInHouseQuality({
                 id: id,
                 data: { show_to_party_broker: e.target.checked },
               });
-            }} 
+            }}
           />
         );
       },
       key: "status",
     },
-    // {
-    //   title: "",
-    //   dataIndex: "mobile",
-    //   key: "mobile",
-    // },
     {
       title: "Action",
       render: (qualityDetails) => {
@@ -367,7 +393,7 @@ const InHouseQualityList = () => {
 
 export default InHouseQualityList;
 
-const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
+const ViewInHouseQualityDetailModal = ({ title = "-", details = {} }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -387,11 +413,20 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
       title: "Denier/Count",
       dataIndex: "yarn_stock_company",
       key: "yarn_stock_company",
+      render: (text) => {
+        const {
+          filament = 0,
+          yarn_denier = 0,
+          luster_type = "",
+          yarn_color = "",
+        } = text;
+        return `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`;
+      },
     },
     {
       title: "Luster",
-      dataIndex: "yarn_stock_company",
-      key: "yarn_stock_company",
+      dataIndex: ["yarn_stock_company", "luster_type"],
+      key: ["yarn_stock_company", "luster_type"],
     },
     {
       title: "Tar/Ends",
@@ -420,11 +455,20 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
       title: "Denier/Count",
       dataIndex: "yarn_stock_company",
       key: "yarn_stock_company",
+      render: (text) => {
+        const {
+          filament = 0,
+          yarn_denier = 0,
+          luster_type = "",
+          yarn_color = "",
+        } = text;
+        return `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`;
+      },
     },
     {
       title: "Luster",
-      dataIndex: "yarn_stock_company",
-      key: "yarn_stock_company",
+      taIndex: ["yarn_stock_company", "luster_type"],
+      key: ["yarn_stock_company", "luster_type"],
     },
     {
       title: "Pano",
@@ -461,7 +505,7 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
-          <Typography.Text className="text-xl font-medium text-white">
+          <Typography.Text className="text-xl font-bold text-white">
             {title}
           </Typography.Text>
         }
@@ -490,7 +534,7 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
           {/* {details?.map(({ title = "", value }) => {
             return (
               <Row gutter={12} className="flex-grow" key={title}>
-                <Col span={10} className="font-medium">
+                <Col span={10} className="font-bold">
                   {title}
                 </Col>
                 <Col span={14}>{value ?? "-"}</Col>
@@ -498,76 +542,76 @@ const ViewInHouseQualityDetailModal = ({ title = "-", details = [] }) => {
             );
           })} */}
           <Row gutter={12} className="flex-grow" key={title}>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Quality Name:
             </Col>
             <Col span={4}>{details.quality_name}</Col>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Quality Group:
             </Col>
             <Col span={4}>{details.quality_group}</Col>
 
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               VAT HSN NO:
             </Col>
             <Col span={3}>{details?.vat_hsn_no}</Col>
 
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Weight of 100 Mtr:
             </Col>
             <Col span={3}>-</Col>
           </Row>
           <br />
           <Row gutter={12} className="flex-grow" key={title}>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Production Rate:
             </Col>
             <Col span={2}>{details.production_rate}</Col>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Yarn Type:
             </Col>
             <Col span={1}>{details.yarn_type}</Col>
 
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Beam Spreader ( Pasaria Rate ):
             </Col>
-            <Col span={4}>-</Col>
+            <Col span={3}>-</Col>
 
-            <Col span={2} className="font-medium">
+            <Col span={2} className="font-bold">
               T.P.M.[s]:
             </Col>
-            <Col span={2}>-</Col>
+            <Col span={2}>{details.tpm_s}</Col>
 
-            <Col span={2} className="font-medium">
+            <Col span={2} className="font-bold">
               T.P.M.[z]:
             </Col>
-            <Col span={2}>-</Col>
+            <Col span={2}>{details.tpm_z}</Col>
           </Row>
           <br />
           <Row gutter={12} className="flex-grow" key={title}>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Advance Order Days:
             </Col>
             <Col span={2}>-</Col>
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Per day production:
             </Col>
-            <Col span={1}>-</Col>
+            <Col span={1}>{details.per_day_production}</Col>
 
-            <Col span={2.5} className="font-medium">
+            <Col span={2.5} className="font-bold">
               Beam Maker ( Warper Rate ):
             </Col>
             <Col span={3}>-</Col>
 
-            <Col span={1.5} className="font-medium">
+            <Col span={1.5} className="font-bold">
               W.P.M.:
             </Col>
             <Col span={2}>-</Col>
 
-            <Col span={2} className="font-medium">
+            <Col span={2} className="font-bold">
               Max Taka:
             </Col>
-            <Col span={2}>-</Col>
+            <Col span={1}>{details.max_taka}</Col>
           </Row>
         </Flex>
         <br />
