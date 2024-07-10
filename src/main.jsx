@@ -118,6 +118,8 @@ import AddBeamSent from "./pages/job/sent/beamSent/addBeamSent";
 import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 import ReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/ReceiveReworkTaka";
 import AddReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/AddReceiveReworkTaka";
+import ReworkChallan from "./pages/job/challan/reworkChallan/ReworkChallan";
+import AddReworkChallan from "./pages/job/challan/reworkChallan/AddReworkChallan";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -600,7 +602,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "rework-challan",
-                element: <div>rework-challan</div>,
+                children: [
+                  { index: true, element: <ReworkChallan /> },
+                  { path: "add", element: <AddReworkChallan /> },
+                ],
+                // element:<ReworkChallan/>,
               },
               {
                 path: "receive-rework-taka",

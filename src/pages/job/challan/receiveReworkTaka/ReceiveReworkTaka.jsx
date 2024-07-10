@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Select, DatePicker, Button, Input, Space, Flex, Typography, Divider } from 'antd';
 import { DeleteOutlined, EyeOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -11,6 +12,8 @@ const ReceiveReworkTaka = () => {
     const [status, setStatus] = useState('Stock');
     const [dateRange, setDateRange] = useState([null, null]);
     const [searchText, setSearchText] = useState('');
+    const navigate = useNavigate();
+
 
     const columns = [
         { title: 'No', dataIndex: 'no', key: 'no' },
@@ -50,12 +53,18 @@ const ReceiveReworkTaka = () => {
         }
     ];
 
+    const navigateClick=()=>{
+        navigate("/job/challan/receive-rework-taka/add");
+
+    }
+
     return (
         <div className="flex flex-col p-4">
             <div className="flex items-center justify-between gap-2">
                 <Space>
                 <h3 className="m-0 text-primary">Receive Rework Taka</h3>
                 <Button
+                    onClick={navigateClick}
                     icon={<PlusCircleOutlined />}
                     type="text"
                 />
