@@ -77,6 +77,15 @@ const AddSaleBill = () => {
   async function onSubmit(data) {
     console.log({ data });
     const newData = fieldArray.map((field) => {
+
+      let net_amount = data[`net_amount_${field}`] ; 
+      let sgst_amount = Number(net_amount)*Number(2.5) / 100 ; 
+      let cgst_amount = Number(net_amount)*Number(2.5) / 100 ; 
+      let final_amount = Number(net_amount) + Number(sgst_amount) + Number(cgst_amount) ; 
+      
+      let roundOff_amount = Math.round(final_amount) ; 
+      roundOff_amount = Number(roundOff_amount) - final_amount ; 
+
       return {
         order_id: null,
         party_id: +data.party_id,
@@ -87,19 +96,19 @@ const AddSaleBill = () => {
         total_taka: +data[`total_taka_${field}`],
         total_meter: +data[`total_meter_${field}`],
         rate: +data[`rate_${field}`],
-        net_amount: +data[`net_amount_${field}`],
+        net_amount: Math.round(final_amount),
         due_days: +data[`due_days_${field}`],
         hsn_no: `HSN_${field}`,
         discount_value: 0,
         discount_amount: 0,
-        SGST_value: 0,
-        SGST_amount: 0,
-        CGST_value: 0,
-        CGST_amount: 0,
+        SGST_value: 2.5,
+        SGST_amount: sgst_amount,
+        CGST_value: 2.5,
+        CGST_amount: cgst_amount,
         IGST_value: 0,
         IGST_amount: 0,
-        round_off_amount: 0,
-        amount: +data[`net_amount_${field}`],
+        round_off_amount: roundOff_amount,
+        amount: net_amount,
       };
     });
 
@@ -140,37 +149,6 @@ const AddSaleBill = () => {
     enabled: Boolean(companyId),
   });
 
-  // const {
-  //   data: dropdownSupplierListRes,
-  //   isLoading: isLoadingDropdownSupplierList,
-  // } = useQuery({
-  //   queryKey: ["dropdown/supplier/list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getDropdownSupplierListRequest({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data?.supplierList;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
-  // const dropDownSupplierCompanyOption = useMemo(() => {
-  //   if (
-  //     supplier_name &&
-  //     dropdownSupplierListRes &&
-  //     dropdownSupplierListRes.length
-  //   ) {
-  //     const obj = dropdownSupplierListRes.filter((item) => {
-  //       return item.supplier_name === supplier_name;
-  //     })[0];
-
-  //     return obj?.supplier_company?.map((item) => {
-  //       return { label: item.supplier_company, value: item.supplier_id };
-  //     });
-  //   } else {
-  //     return [];
-  //   }
-  // }, [supplier_name, dropdownSupplierListRes]);
 
   const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
     queryKey: [

@@ -23,6 +23,30 @@ import {
   getSaleBillByIdRequest,
 } from "../../../api/requests/sale/bill/saleBill";
 import ReactToPrint from "react-to-print";
+import { ToWords } from "to-words";
+import moment from "moment";
+
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const addSaleBillSchema = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
@@ -152,7 +176,6 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     defaultValues: {
       bill_date: dayjs(),
       invoice_no: "",
-      //   due_date: dayjs(),
       total_amount: 0,
 
       discount_amount: 0,
@@ -229,20 +252,19 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
       +getValues("SGST_amount") +
       +getValues("CGST_amount") +
       +getValues("IGST_amount");
-    // const TCS_Amount = +((+beforeTCS * +TCS_value) / 100).toFixed(2);
     const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
     setValue("TCS_amount", TCS_Amount);
   };
 
   useEffect(() => {
-    const finalNetAmount = parseFloat(
-      // +currentValues.discount_amount +
+    let finalNetAmount = parseFloat(
       +currentValues.total_amount +
         +currentValues.SGST_amount +
         +currentValues.CGST_amount +
         +currentValues.IGST_amount +
         +currentValues.TCS_amount
     ).toFixed(2);
+
     const roundedNetAmount = Math.round(finalNetAmount);
     const roundOffValue = (roundedNetAmount - finalNetAmount).toFixed(2);
 
@@ -266,6 +288,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
   //  CALCULATION END------------------------------------------------
 
+  const [dueDate, setDueDate] = useState(null) ; 
   useEffect(() => {
     if (saleBillDetail) {
       console.log("Sale bill details information");
@@ -273,6 +296,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
       setValue("invoice_no", saleBillDetail.invoice_no);
       setValue("rate", saleBillDetail.rate);
       setValue("amount", saleBillDetail.amount);
+      setValue("total_amount", saleBillDetail.amount);
 
       setValue("net_amount", saleBillDetail.net_amount);
       setValue("net_rate", saleBillDetail.net_rate);
@@ -282,17 +306,25 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
       setValue("discount_amount", saleBillDetail.discount_amount);
       setValue("discount_value", saleBillDetail.discount_value);
+
       setValue("IGST_amount", saleBillDetail.IGST_amount);
       setValue("IGST_value", saleBillDetail.IGST_value);
+      
       setValue("CGST_amount", saleBillDetail.CGST_amount);
       setValue("CGST_value", saleBillDetail.CGST_value);
+      
       setValue("SGST_amount", saleBillDetail.SGST_amount);
       setValue("SGST_value", saleBillDetail.SGST_value);
+      
       setValue("TCS_value", saleBillDetail.TCS_value || 0);
       setValue("TCS_amount", saleBillDetail.TCS_amount || 0);
 
-      // setValue("TDS_value", saleBillDetail.TDS_value);
-      // setValue("after_TDS_amount", saleBillDetail.after_TDS_amount);
+      // Calculate due date 
+      let initialDate = new Date(saleBillDetail?.createdAt);
+      let daysToAdd = saleBillDetail?.due_days; 
+      let newDate = new Date(initialDate);
+      newDate.setDate(initialDate.getDate() + daysToAdd);
+      setDueDate(moment(newDate).format("DD-MM-YYYY")) ; 
     }
   }, [saleBillDetail, setValue]);
 
@@ -936,7 +968,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={8}
                 className="pl-2 font-medium border-0 border-r border-solid"
               >
-                Avg Rate: {averageAmount}
+                Avg Rate: {parseFloat(averageAmount).toFixed(2)}
               </Col>
               <Col
                 span={2}
@@ -958,7 +990,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="p-0 font-medium border-0 border-r border-solid"
               ></Col>
               <Col span={4} className="p-0 font-medium" style={{textAlign: "center"}}>
-                {currentValues?.round_off}
+                {parseFloat(currentValues?.round_off).toFixed(2)}
               </Col>
             </Row>
 
@@ -989,7 +1021,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Due date: 18/05/2023</div>
+                <div style={{ color: "gray" }}>Due date: {dueDate}</div>
               </Col>
               <Col
                 span={4}
@@ -1007,8 +1039,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="pt-2 pb-2 pl-2 border-0 "
               >
                 <Typography.Text className="font-semibold">
-                  Tax Amount(IN WORDS):INR Fifteen Thousand One Hundred and
-                  Twenty Nine only
+                  Tax Amount(IN WORDS): {toWords.convert(currentValues?.net_amount)}
                 </Typography.Text>
               </Col>
             </Row>
@@ -1104,9 +1135,6 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
             <Col span={12} className="p-2 font-medium border-0 border-r ">
               {MODE === "UPDATE" ? (
                 <Flex gap={10} justify="flex-end" className="mt-3">
-                  <Button htmlType="button" onClick={handleCloseModal}>
-                    Close
-                  </Button>
                   <Button type="primary" htmlType="submit" loading={isPending}>
                     Update
                   </Button>
