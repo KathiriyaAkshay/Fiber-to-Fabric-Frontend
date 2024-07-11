@@ -32,8 +32,8 @@ const updateYarnReceiveSchemaResolver = yupResolver(
     challan_date: yup.string().required("Please select date"),
     yarn_company_name: yup.string().required("Please select yarn company"),
     yarn_stock_company_id: yup.string().required("Please select Denier"),
-    lot_no: yup.string().required("Please enter lot no"),
-    challan_no: yup.string().required("Please enter lot no"),
+    // lot_no: yup.string().required("Please enter lot no"),
+    // challan_no: yup.string().required("Please enter lot no"),
     receive_quantity: yup.string().required("Please enter recieve quantity"),
     receive_cartoon_pallet: yup
       .string()

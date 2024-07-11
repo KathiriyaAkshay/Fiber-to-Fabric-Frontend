@@ -1,13 +1,25 @@
-import { useState } from "react";
-import { Button, Col, Flex, Modal, Row, Typography, Card } from "antd";
-import { BarChartOutlined, BarcodeOutlined, CloseOutlined } from "@ant-design/icons";
+import { useRef, useState } from "react";
+import { Button, Flex, Modal, Typography } from "antd";
+import { BarcodeOutlined, CloseOutlined } from "@ant-design/icons";
+import ReactToPrint from "react-to-print";
 
 const BeamCardInformationModel = ({data}) => {
-    const [isModalOpen, setIsModalOpen] = useState(false) ; 
+    const [isModalOpen, setIsModalOpen] = useState(false) ;
+    const ComponentRef = useRef() ; 
+
+    const pageStyle = `
+        @media print {
+             .print-instructions {
+                display: none;
+            }
+            .printable-content {
+                width: 100%;
+            }
+    `;
     return(
         <>
-            <Button type="primary" onClick={() => {setIsModalOpen(true)}}>
-                <BarChartOutlined />
+            <Button  onClick={() => {setIsModalOpen(true)}}>
+                <BarcodeOutlined />
             </Button>
 
             <Modal
@@ -22,7 +34,21 @@ const BeamCardInformationModel = ({data}) => {
                 classNames={{
                     header: "text-center",
                 }}
-                footer = {null}
+                footer={() => {
+                    return(
+                        <>
+                            <ReactToPrint
+                                trigger={() => <Flex>
+                                    <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
+                                        PRINT
+                                    </Button>
+                                </Flex>}
+                                content={() => ComponentRef.current}
+                                pageStyle={pageStyle}
+                            />
+                        </>
+                    )
+                }}
                 width={"25%"}
                 onCancel={() => {setIsModalOpen(false)}}
                 styles={{
@@ -35,26 +61,38 @@ const BeamCardInformationModel = ({data}) => {
                     },
                     body: {
                         padding: "10px 16px",
-                }}}
+                        maxHeight: "80vh", 
+                        overflowY: "auto"
+                
+                    }, 
+                    footer:{
+                        paddingBottom: 10, 
+                        paddingRight: 10, 
+                        backgroundColor: "#efefef"
+                    }
+                }}
             >   
-                {data?.recieve_size_beam_details?.map((element, index) => {
-                    return(
-                        <Flex key={index} style={{ marginBottom: '20px' }}>
-                            <div >
-                                <img 
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?data=${element?.beam_no}&size=100x100`} 
-                                    alt={`QR code for ${element?.beam_no}`}
-                                    style={{ width: '100%', height: 112, width: 112 }}
-                                />
-                            </div>
-                            <div style={{marginLeft: 20}}>
-                                <p><strong>{element?.beam_no}</strong></p>
-                                <p>Taka: <strong>{element?.taka}</strong></p>
-                                <p>Meter: <strong>{element?.meters}</strong></p>
-                            </div>
-                        </Flex>
-                    )
-                })}
+                <div ref={ComponentRef}>
+
+                    {data?.recieve_size_beam_details?.map((element, index) => {
+                        return(
+                            <Flex key={index} style={{ marginBottom: '20px' }}>
+                                <div >
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?data=${element?.beam_no}&size=100x100`} 
+                                        alt={`QR code for ${element?.beam_no}`}
+                                        style={{ width: '100%', height: 112, width: 112 }}
+                                    />
+                                </div>
+                                <div style={{marginLeft: 20}}>
+                                    <p><strong>{element?.beam_no}</strong></p>
+                                    <p>Taka: <strong>{element?.taka}</strong></p>
+                                    <p>Meter: <strong>{element?.meters}</strong></p>
+                                </div>
+                            </Flex>
+                        )
+                    })}
+                </div>
             </Modal>
         </>
     )

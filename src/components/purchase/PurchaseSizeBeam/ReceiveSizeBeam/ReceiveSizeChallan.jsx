@@ -214,10 +214,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         requestData["inhouse_quality_id"] = details?.inhouse_quality?.id ; 
         requestData["total_taka"] = totalTaka ; 
         requestData["total_meter"] = totalMeter ; 
-        requestData["bill_number"] = "BILL-2024-001" ; 
         requestData["supplier_id"] = details?.supplier?.id ; 
-
-        console.log(requestData);
 
         await createSizeBeamBill(requestData) ; 
     }

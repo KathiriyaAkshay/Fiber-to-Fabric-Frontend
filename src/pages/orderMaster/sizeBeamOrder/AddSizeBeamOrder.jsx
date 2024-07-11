@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import SizeBeamOrderDetail from "../../../components/orderMaster/sizeBeamOrder/SizeBeamOrderDetail";
 import { initialOrderDetail } from "../../../constants/orderMaster";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
+import moment from "moment/moment";
 
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
@@ -221,6 +222,10 @@ function AddSizeBeamOrder() {
     });
   }, [dropdownSupplierListRes, supplier_name]);
 
+  const disableFutureDates = (current) => {
+    return current && current > moment().endOf('day');
+};
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -255,6 +260,7 @@ function AddSizeBeamOrder() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disableFutureDates}
                   />
                 )}
               />
