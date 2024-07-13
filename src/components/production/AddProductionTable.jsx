@@ -65,7 +65,6 @@ const AddProductionTable = ({
     const beamCard = beamCardList.rows.find(({ id }) => {
       return id === value;
     });
-    console.log({ beamCard });
     const obj =
       beamCard.non_pasarela_beam_detail ||
       beamCard.recieve_size_beam_detail ||

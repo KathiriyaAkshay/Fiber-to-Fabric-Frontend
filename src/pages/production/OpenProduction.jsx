@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Button,
   Checkbox,
@@ -9,521 +8,1027 @@ import {
   Form,
   Select,
   Input,
-  Space,
-  Table,
   DatePicker,
+  Typography,
+  message,
 } from "antd";
-import { EyeFilled, LineOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
+import { Controller, useForm } from "react-hook-form";
+import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { useContext, useEffect, useMemo, useState } from "react";
+import {
+  getPartyListRequest,
+  getVehicleUserListRequest,
+} from "../../api/requests/users";
+import {
+  addOpeningProductionRequest,
+  getLastOpeningProductionTakaRequest,
+} from "../../api/requests/production/openingProduction";
+import dayjs from "dayjs";
+import AddOpeningProductionTable from "../../components/production/AddOpeningProductionTable";
+import { useNavigate } from "react-router-dom";
+import { getMyOrderListRequest } from "../../api/requests/orderMaster";
+import { getCompanyMachineListRequest } from "../../api/requests/machine";
+
 const OpenProduction = () => {
-  const [checked, setChecked] = useState(true);
-  const onChange = (e) => {
-    console.log("checked = ", e.target.checked);
-    setChecked(e.target.checked);
-  };
-
   const [form] = Form.useForm();
-  const [ProdFilter, setProdFilter] = useState("Current");
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { companyId, company } = useContext(GlobalContext);
+  const [activeField, setActiveField] = useState(1);
 
-  const onChange1 = ({ target: { value } }) => {
-    setProdFilter(value);
+  const { mutateAsync: addNewOpeningProduction, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await addOpeningProductionRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["add", "opening", "production"],
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["production", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  const onSubmit = async (data) => {
+    const array = Array.from({ length: activeField }, (_, i) => i + 1);
+    if (data.is_create_challan) {
+      const payload = {
+        deliver_address: data.delivery_address,
+        order_id: data.order_id,
+        vehicle_id: data.vehicle_id,
+        challan_no: data.challan_no,
+        customer_gst: data.customer_gst_in,
+        machine_name: data.machine_name,
+        createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+        pending_meter: data.pending_meter,
+        pending_weight: data.pending_weight,
+        pending_taka: data.pending_taka,
+        total_meter: data.total_meter,
+        total_weight: data.total_weight,
+        total_taka: data.total_taka,
+        production_details: array.map((fieldNumber) => {
+          return {
+            taka_no: data.last_taka_no + fieldNumber,
+            meter: +data[`meter_${fieldNumber}`],
+            weight: +data[`weight_${fieldNumber}`],
+            machine_no: data[`machine_no_${fieldNumber}`],
+          };
+        }),
+      };
+      await addNewOpeningProduction(payload);
+    } else {
+      const payload = {
+        order_id: data.order_id,
+        machine_name: data.machine_name,
+        createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+        production_details: array.map((fieldNumber) => {
+          return {
+            taka_no: data.last_taka_no + fieldNumber,
+            meter: +data[`meter_${fieldNumber}`],
+            weight: +data[`weight_${fieldNumber}`],
+            machine_no: data[`machine_no_${fieldNumber}`],
+          };
+        }),
+      };
+      await addNewOpeningProduction(payload);
+    }
   };
 
-  const formItemLayout = {
-    labelWrap: true,
-    labelCol: { span: 8 },
-    wrapperCol: { span: 16 },
-  };
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+    setValue,
+    setFocus,
+    getValues,
+    trigger,
+  } = useForm({
+    defaultValues: {
+      is_create_challan: true,
+      year_type: "current",
+      challan_no: "",
+      challan_date: dayjs(),
+      gst_state: "",
+      gst_in: "",
+      customer_gst_state: "",
+      customer_gst_in: "",
+      delivery_address: "",
+      order_id: null,
+      broker_name: "",
+      broker_id: null,
+      vehicle_id: null,
+      party_id: null,
+      company: null,
 
-  const plainOptions = ["Current year", "Previous year"];
+      pending_meter: "",
+      pending_taka: "",
+      pending_weight: "",
 
-  //OPTIONS
-  const handleChange = (value) => {
-    console.log(`selected ${value}`);
-  };
-
-  const dataSource = [];
-
-  const columns = [
-    {
-      title: "No",
-      dataIndex: "no",
-      key: "no",
+      date: dayjs(),
+      // this fields are in both form
+      last_taka_no: "",
+      last_taka_no_date: dayjs(),
+      machine_name: null,
+      quality_id: null,
     },
-    {
-      title: "Taka No.",
-      dataIndex: "taka_no",
-      key: "taka_no",
-    },
-    {
-      title: "Meter",
-      dataIndex: "meter",
-      key: "meter",
-    },
-    {
-      title: "Weight",
-      dataIndex: "weight",
-      key: "weight",
-    },
-    {
-      title: "Machine No",
-      dataIndex: "machine_no",
-      key: "machine_no",
-    },
-    {
-      title: "Average",
-      dataIndex: "average",
-      key: "average",
-    },
-    {
-      title: <LineOutlined />,
-      dataIndex: "average",
-      key: "average",
-    },
-  ];
+    // resolver: addJobTakaSchemaResolver,
+  });
+  const {
+    is_create_challan,
+    last_taka_no,
+    order_id,
+    pending_meter,
+    pending_taka,
+    pending_weight,
+    broker_id,
+    machine_name,
+    party_id,
+  } = watch();
 
-  function renderTable() {
-    // if (isLoading) {
-    //   return (
-    //     <Spin tip="Loading" size="large">
-    //       <div className="p-14" />
-    //     </Spin>
-    //   );
-    // }
+  useQuery({
+    queryKey: [
+      "last",
+      "opening",
+      "production",
+      "taka",
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getLastOpeningProductionTakaRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      setValue("last_taka_no", res.data?.data ? +res.data?.data?.taka_no : 0);
+      setValue("last_taka_no_date", dayjs(res.data?.data?.createdAt));
+      // return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
-    return (
-      <Table
-        dataSource={dataSource || []}
-        columns={columns}
-        rowKey={"id"}
-        scroll={{ y: 330 }}
-        pagination={{
-          total: 0,
-          showSizeChanger: true,
-          //   onShowSizeChange: onShowSizeChange,
-          //   onChange: onPageChange,
-        }}
-        summary={(tableData) => {
-          console.log(tableData);
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId, broker_id }],
+    queryFn: async () => {
+      if (broker_id) {
+        const res = await getPartyListRequest({
+          params: { company_id: companyId, broker_id },
+        });
+        return res.data?.data;
+      }
+    },
+    enabled: Boolean(companyId),
+  });
 
-          return (
-            <>
-              <Table.Summary.Row>
-                <Table.Summary.Cell index={0}>
-                  <b>Total</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b></b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b></b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+  const partyCompanyOption = useMemo(() => {
+    if (party_id && partyUserListRes) {
+      const selectedParty = partyUserListRes?.partyList?.rows?.find(
+        ({ id }) => id === party_id
+      );
+      return [
+        {
+          label: selectedParty.party.company_name,
+          value: selectedParty.party.user_id,
+        },
+      ];
+    }
+  }, [partyUserListRes, party_id]);
 
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              </Table.Summary.Row>
-            </>
-          );
-        }}
-      />
-    );
-  }
+  const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
+    useQuery({
+      queryKey: [
+        "party",
+        "list",
+        { company_id: companyId, order_type: "taka(inhouse)" },
+      ],
+      queryFn: async () => {
+        const res = await getMyOrderListRequest({
+          params: { company_id: companyId, order_type: "taka(inhouse)" },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: allQualityListRes, isLoading: allQualityLoading } = useQuery({
+    queryKey: [
+      "allQualityListRes",
+      "list",
+      {
+        company_id: companyId,
+        // machine_name: machine_name,
+        page: 0,
+        pageSize: 99999,
+        is_active: 1,
+      },
+    ],
+    queryFn: async () => {
+      // if (machine_name) {
+      const res = await getInHouseQualityListRequest({
+        params: {
+          company_id: companyId,
+          // machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      });
+      return res.data?.data;
+      // } else {
+      //   return { row: [] };
+      // }
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+    queryKey: [
+      "vehicle",
+      "list",
+      { company_id: companyId, page: 0, pageSize: 99999 },
+    ],
+    queryFn: async () => {
+      const res = await getVehicleUserListRequest({
+        params: { company_id: companyId, page: 0, pageSize: 99999 },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  useEffect(() => {
+    if (order_id && grayOrderListRes) {
+      const order = grayOrderListRes.row.find(({ id }) => order_id === id);
+
+      setValue("quality_id", order.quality_id);
+      setValue(
+        "broker_name",
+        `${order.broker.first_name} ${order.broker.last_name}`
+      );
+      setValue("delivery_address", order.party.address);
+      setValue("broker_id", order.broker_id);
+      setValue("total_meter", order.total_meter);
+      setValue("total_taka", order.total_taka);
+      setValue("total_weight", order.weight);
+      setValue("machine_name", order.machine_name);
+
+      setValue("party_id", order.party.id);
+      setValue("company", order.party.id);
+      setValue("pending_meter", order.pending_meter);
+      setValue("pending_taka", order.pending_taka);
+      setValue("pending_weight", order.pending_weight);
+
+      trigger("quality_id");
+      trigger("broker_name");
+      trigger("delivery_address");
+      trigger("broker_id");
+      trigger("total_meter");
+      trigger("total_taka");
+      trigger("total_weight");
+      trigger("machine_name");
+      trigger("party_id");
+      trigger("company");
+      trigger("pending_meter");
+      trigger("pending_taka");
+      trigger("pending_weight");
+    }
+  }, [order_id, grayOrderListRes, setValue, trigger]);
+
+  useEffect(() => {
+    if (company) {
+      setValue("gst_in", company.gst_no);
+    }
+  }, [company, setValue]);
 
   return (
-    <div className="flex flex-col gap-2 p-4">
-      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-        <div className="flex items-center gap-5">
-          <h3 className="m-0 text-primary">Opening Production</h3>
-          <Button onClick={""} icon={<PlusCircleOutlined />} />
+    <Form
+      form={form}
+      layout="vertical"
+      style={{ marginTop: "1rem" }}
+      onFinish={handleSubmit(onSubmit)}
+    >
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+          <div className="flex items-center gap-5">
+            <h3 className="m-0 text-primary">Opening Production</h3>
+            <Button onClick={""} icon={<PlusCircleOutlined />} />
+          </div>
+          <div className="flex items-center gap-5">
+            <Controller
+              control={control}
+              name="is_create_challan"
+              render={({ field }) => (
+                <Checkbox
+                  {...field}
+                  checked={field.value}
+                  onChange={(e) => {
+                    reset();
+                    setTimeout(() => field.onChange(e.target.checked), 100);
+                  }}
+                >
+                  Create Challan
+                </Checkbox>
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="year_type"
+              render={({ field }) => (
+                <Radio.Group {...field}>
+                  <Flex align="center" gap={10}>
+                    <Radio value={"current"}>Current Year</Radio>
+                    <Radio value={"previous"}>Previous Year</Radio>
+                  </Flex>
+                </Radio.Group>
+              )}
+            />
+          </div>
         </div>
-        <div>
-          <Checkbox checked={checked} onChange={onChange}>
-            Challan
-          </Checkbox>
-          <Radio.Group
-            options={plainOptions}
-            onChange={onChange1}
-            value={ProdFilter}
-          />
-        </div>
-      </div>
 
-      <Form
-        form={form}
-        style={{ maxWidth: "100%" }}
-        labelWrap
-        // style={{
-        //     maxWidth: formLayout === 'inline' ? 'none' : 600,
-        // }}
-      >
-        {checked == true ? (
-          <Row style={{ width: "100%" }}>
-            <Col span={12}>
-              <Row>
-                <Col span={24}>
-                  <Form.Item
-                    label="Company"
-                    name="company"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your company!",
-                      },
-                    ]}
-                  >
-                    <Select
-                      defaultValue="looms"
-                      style={{
-                        width: "100%",
-                      }}
-                      onChange={handleChange}
-                      options={[
-                        {
-                          value: "looms",
-                          label: "Looms",
-                        },
-                        {
-                          value: "jacquard",
-                          label: "Jacquard",
-                        },
-                      ]}
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item
-                    label="GST State"
-                    name="gst_state"
-                    {...formItemLayout}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="GSTIN"
-                    name="gstin"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your GSTIN!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item
-                    label="Order No"
-                    name="order no."
-                    {...formItemLayout}
-                  >
-                    <Space.Compact
-                      style={{
-                        width: "100%",
-                      }}
-                    >
-                      <Input placeholder="Order No" />
-                      <Button type="primary" icon={<EyeFilled />}></Button>
-                    </Space.Compact>
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item label="Broker" name="broker" {...formItemLayout}>
-                    <Input placeholder="broker name" />
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item label="Party" name="party" {...formItemLayout}>
-                    <Space.Compact
-                      style={{
-                        width: "100%",
-                      }}
-                    >
-                      <Select
-                        defaultValue="Cisco1"
-                        style={{
-                          width: "100%",
-                        }}
-                        onChange={handleChange}
-                        options={[
-                          {
-                            value: "Cisco1",
-                            label: "Cisco1",
-                          },
-                          {
-                            value: "Cisco2",
-                            label: "Cisco2",
-                          },
-                        ]}
+        {is_create_challan == true ? (
+          <>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              // style={{ gap: "12px" }}
+              gutter={12}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="Challan No"
+                  name={`challan_no`}
+                  validateStatus={errors.challan_no ? "error" : ""}
+                  help={errors.challan_no && errors.challan_no.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={`challan_no`}
+                    rules={{ required: "Challan No is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="Challan no" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="Challan Date"
+                  name={`challan_date`}
+                  validateStatus={errors.challan_date ? "error" : ""}
+                  help={errors.challan_date && errors.challan_date.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={`challan_date`}
+                    rules={{ required: "Challan date is required" }}
+                    render={({ field }) => (
+                      <DatePicker
+                        {...field}
+                        style={{ width: "100%" }}
+                        placeholder="Challan no"
                       />
-                      <Button
-                        type="primary"
-                        icon={<PlusCircleOutlined />}
-                      ></Button>
-                    </Space.Compact>
-                  </Form.Item>
-                </Col>
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-                <Col span={12}>
-                  <Form.Item label="Company" name="comany" {...formItemLayout}>
-                    <Select
-                      defaultValue="Cisco1"
-                      style={{
-                        width: "100%",
-                      }}
-                      onChange={handleChange}
-                      options={[
-                        {
-                          value: "Cisco1",
-                          label: "Cisco1",
-                        },
-                        {
-                          value: "Cisco223",
-                          label: "Cisco2342",
-                        },
-                      ]}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="GST State"
-                    name="gst_state"
-                    {...formItemLayout}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="GSTIN"
-                    name="gstin"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your GSTIN!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              // style={{ gap: "12px" }}
+              gutter={12}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="GST State"
+                  name="gst_state"
+                  validateStatus={errors.gst_state ? "error" : ""}
+                  help={errors.gst_state && errors.gst_state.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={`gst_state`}
+                    rules={{ required: "GST State is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="GST State" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="GST IN"
+                  name="gst_in"
+                  validateStatus={errors.gst_in ? "error" : ""}
+                  help={errors.gst_in && errors.gst_in.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={"gst_in"}
+                    rules={{ required: "GST IN is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="GST in" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label="Delivery Address"
+                  name="delivery_address"
+                  validateStatus={errors.delivery_address ? "error" : ""}
+                  help={
+                    errors.delivery_address && errors.delivery_address.message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={"delivery_address"}
+                    rules={{ required: "Delivery address is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="Delivery address" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-                <Col span={12}>
-                  <Form.Item label="Last Entered Taka No." {...formItemLayout}>
-                    <Row>
-                      <Col span={8}>
-                        <Input />
-                      </Col>
-                      <Col span={16}>
-                        <Input />
-                      </Col>
-                    </Row>
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              // style={{ gap: "12px" }}
+              gutter={12}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="Order no"
+                  name="order_id"
+                  validateStatus={errors.order_id ? "error" : ""}
+                  help={errors.order_id && errors.order_id.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="order_id"
+                    rules={{ required: "Order is required." }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        loading={isLoadingGrayOrderList}
+                        placeholder="Select Order"
+                        options={grayOrderListRes?.row?.map((order) => ({
+                          label: order.order_no,
+                          value: order.id,
+                        }))}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="Broker"
+                  name="broker_name"
+                  validateStatus={errors.broker_name ? "error" : ""}
+                  help={errors.broker_name && errors.broker_name.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={"broker_name"}
+                    rules={{ required: "Broker is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="Broker name" disabled />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="Quality"
+                  name="quality_id"
+                  validateStatus={errors.quality_id ? "error" : ""}
+                  help={errors.quality_id && errors.quality_id.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="quality_id"
+                    rules={{ required: "Quality is required." }}
+                    render={({ field }) => {
+                      return (
+                        <Select
+                          {...field}
+                          placeholder="Select Quality"
+                          loading={allQualityLoading}
+                          options={
+                            allQualityListRes &&
+                            allQualityListRes?.rows?.map((item) => ({
+                              value: item.id,
+                              label: item.quality_name,
+                            }))
+                          }
+                          disabled
+                        />
+                      );
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="Vehicle"
+                  name="vehicle_id"
+                  validateStatus={errors.vehicle_id ? "error" : ""}
+                  help={errors.vehicle_id && errors.vehicle_id.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="vehicle_id"
+                    rules={{ required: "Vehicle is required." }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        loading={isLoadingVehicleList}
+                        placeholder="Select Vehicle"
+                        options={vehicleListRes?.vehicleList?.rows?.map(
+                          (vehicle) => ({
+                            label:
+                              vehicle.first_name +
+                              " " +
+                              vehicle.last_name +
+                              " " +
+                              `| ( ${vehicle?.username})`,
+                            value: vehicle.id,
+                          })
+                        )}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-            <Col span={12}>
-              <Row>
-                <Col span={12}>
-                  <Form.Item
-                    label="Challan No."
-                    name="challan_no"
-                    {...formItemLayout}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="Challan Date"
-                    name="challan_date"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your GSTIN!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={24}>
-                  <Form.Item
-                    label={<span>Delivery Address</span>}
-                    name="del_add"
-                    labelWrap
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your Delivery Address!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              // style={{ gap: "12px" }}
+              gutter={12}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="Party"
+                  name="party_id"
+                  validateStatus={errors.party_id ? "error" : ""}
+                  help={errors.party_id && errors.party_id.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="party_id"
+                    rules={{ required: "Party is required." }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select Party"
+                        disabled
+                        loading={isLoadingPartyList}
+                        options={partyUserListRes?.partyList?.rows?.map(
+                          (party) => ({
+                            label:
+                              party.first_name +
+                              " " +
+                              party.last_name +
+                              " " +
+                              `| ( ${party?.username})`,
+                            value: party.id,
+                          })
+                        )}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item
+                  label="Company"
+                  name="company"
+                  validateStatus={errors.company ? "error" : ""}
+                  help={errors.company && errors.company.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="company"
+                    rules={{ required: "Company is required." }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select Company"
+                        options={partyCompanyOption}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item
+                  label="Total Meter"
+                  name="total_meter"
+                  validateStatus={errors.total_meter ? "error" : ""}
+                  help={errors.total_meter && errors.total_meter.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    rules={{ required: "Total meter is required." }}
+                    name={"total_meter"}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="0" disabled />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item
+                  label="Total Weight"
+                  name="total_weight"
+                  validateStatus={errors.total_weight ? "error" : ""}
+                  help={errors.total_weight && errors.total_weight.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    rules={{ required: "Total weight is required." }}
+                    name={"total_weight"}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="0" disabled />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item
+                  label="Total Taka"
+                  name="total_taka"
+                  validateStatus={errors.total_taka ? "error" : ""}
+                  help={errors.total_taka && errors.total_taka.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={"total_taka"}
+                    rules={{ required: "Total taka is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="0" disabled />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
 
-                <Col span={12}>
-                  <Form.Item
-                    label="Qualtity"
-                    name="quality"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input quality!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item
-                    label="Vehicle"
-                    name="vehicle"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input vehicle!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    label="Total Meter."
-                    name="total_meter"
-                    {...formItemLayout}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    label="Total Weight"
-                    name="total_weight"
-                    {...formItemLayout}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    label="Total taka"
-                    name="total_taka"
-                    {...formItemLayout}
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please input your GSTIN!",
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              style={{ alignItems: "center" }}
+              gutter={12}
+            >
+              <Col span={6}>
+                <Form.Item
+                  label="GST State"
+                  name="customer_gst_state"
+                  validateStatus={errors.customer_gst_state ? "error" : ""}
+                  help={
+                    errors.customer_gst_state &&
+                    errors.customer_gst_state.message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={`customer_gst_state`}
+                    rules={{ required: "GST state is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="GST State" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4}>
+                <Form.Item
+                  label="GST IN"
+                  name="customer_gst_in"
+                  validateStatus={errors.customer_gst_in ? "error" : ""}
+                  help={
+                    errors.customer_gst_in && errors.customer_gst_in.message
+                  }
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name={"customer_gst_in"}
+                    rules={{ required: "GST In is required." }}
+                    render={({ field }) => (
+                      <Input {...field} placeholder="GST in" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={2} style={{ textAlign: "end" }}>
+                <Typography.Text style={{ color: "red" }}>
+                  Pending
+                </Typography.Text>
+              </Col>
+              <Col span={4} style={{ textAlign: "center" }}>
+                <Typography.Text style={{ color: "red" }}>
+                  {pending_meter || 0}
+                </Typography.Text>
+              </Col>
+              <Col span={4} style={{ textAlign: "center" }}>
+                <Typography.Text style={{ color: "red" }}>
+                  {pending_weight || 0}
+                </Typography.Text>
+              </Col>
+              <Col span={4} style={{ textAlign: "center" }}>
+                <Typography.Text style={{ color: "red" }}>
+                  {pending_taka || 0}
+                </Typography.Text>
+              </Col>
+            </Row>
+          </>
         ) : (
-          <Row className="w-100" justify={"start"}>
+          <Row
+            gutter={15}
+            style={{ justifyContent: "space-between", alignItems: "center" }}
+          >
             <Col span={8}>
-              <Form.Item label="Machine" {...formItemLayout}>
-                <Select
-                  defaultValue="looms"
-                  style={{
-                    width: "100%",
-                  }}
-                  options={[
-                    {
-                      value: "looms",
-                      label: "Looms",
-                    },
-                    {
-                      value: "jacquard",
-                      label: "Jacquard",
-                    },
-                  ]}
+              <Form.Item
+                label="Machine"
+                name="machine_name"
+                validateStatus={errors.machine_name ? "error" : ""}
+                help={errors.machine_name && errors.machine_name.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="machine_name"
+                  rules={{ required: "Machine name is required." }}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select Machine Name"
+                      loading={isLoadingMachineList}
+                      options={machineListRes?.rows?.map((machine) => ({
+                        label: machine?.machine_name,
+                        value: machine?.machine_name,
+                      }))}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
+                    />
+                  )}
                 />
               </Form.Item>
             </Col>
 
             <Col span={8}>
-              <Form.Item label="Quality" {...formItemLayout}>
-                <Select
-                  defaultValue="Select Quality Name"
-                  style={{
-                    width: "100%",
+              <Form.Item
+                label="Quality"
+                name="quality_id"
+                validateStatus={errors.quality_id ? "error" : ""}
+                help={errors.quality_id && errors.quality_id.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="quality_id"
+                  rules={{ required: "Quality is required." }}
+                  render={({ field }) => {
+                    return (
+                      <>
+                        <Select
+                          {...field}
+                          placeholder="Select Quality"
+                          loading={dropDownQualityLoading}
+                          options={
+                            dropDownQualityListRes &&
+                            dropDownQualityListRes?.rows?.map((item) => ({
+                              value: item.id,
+                              label: item.quality_name,
+                            }))
+                          }
+                        />
+                      </>
+                    );
                   }}
-                  options={[
-                    {
-                      value: "wl",
-                      label: "WEIGHTLESS - (6.5 KG)",
-                    },
-                    {
-                      value: "33p",
-                      label: "33P PALLU PATTERN - (8 KG)",
-                    },
-                  ]}
                 />
               </Form.Item>
             </Col>
 
             <Col span={8}>
-              <Form.Item label="Date" {...formItemLayout}>
-                <DatePicker className="w-100" style={{ width: "100%" }} />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item label="Last Entered Taka No." {...formItemLayout}>
-                <Row>
-                  <Col span={8}>
-                    <Input />
-                  </Col>
-                  <Col span={16}>
-                    <Input />
-                  </Col>
-                </Row>
+              <Form.Item
+                label="Date"
+                name="date"
+                validateStatus={errors.date ? "error" : ""}
+                help={errors.date && errors.date.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="date"
+                  rules={{ required: "Date is required." }}
+                  render={({ field }) => {
+                    return (
+                      <DatePicker
+                        {...field}
+                        className="w-100"
+                        style={{ width: "100%" }}
+                      />
+                    );
+                  }}
+                />
               </Form.Item>
             </Col>
           </Row>
         )}
 
-        <Flex justify="flex-end">
-          <Button type="primary">Submit</Button>
+        <Row
+          gutter={15}
+          style={{ justifyContent: "space-between", alignItems: "center" }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Last Entered Taka No."
+              name="last_taka_no"
+              validateStatus={errors.enter_weight ? "error" : ""}
+              help={errors.enter_weight && errors.enter_weight.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Flex align="center" gap={6}>
+                <Controller
+                  control={control}
+                  name="last_taka_no"
+                  render={({ field }) => (
+                    <Input {...field} style={{ width: "30%" }} disabled />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="last_taka_no_date"
+                  render={({ field }) => (
+                    <DatePicker
+                      {...field}
+                      disabled
+                      // style={{ width: "100%" }}
+                    />
+                  )}
+                />
+              </Flex>
+            </Form.Item>
+          </Col>
+          <Col span={4}>
+            <Flex justify="flex-end">
+              <Button type="primary">Submit</Button>
+            </Flex>
+          </Col>
+        </Row>
+
+        <AddOpeningProductionTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          activeField={activeField}
+          setActiveField={setActiveField}
+          setValue={setValue}
+          lastOpeningProductionTaka={last_taka_no}
+          getValues={getValues}
+        />
+
+        <Flex gap={10} justify="flex-end">
+          <Button htmlType="button" onClick={() => reset()}>
+            Reset
+          </Button>
+          <Button type="primary" htmlType="submit" loading={isPending}>
+            Create
+          </Button>
         </Flex>
-      </Form>
-
-      {renderTable()}
-
-      <Flex justify="flex-end">
-        <Button type="primary" danger>
-          Back
-        </Button>
-      </Flex>
-    </div>
+      </div>
+    </Form>
   );
 };
 
