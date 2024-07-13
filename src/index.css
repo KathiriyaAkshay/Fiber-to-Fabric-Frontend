@@ -102,6 +102,10 @@ body {
   font-size: 9px !important;
 }
 
+tbody tr td {
+  text-align: left;
+}
+
 /* Grid information model  */
 
 /* .grid-information-model {

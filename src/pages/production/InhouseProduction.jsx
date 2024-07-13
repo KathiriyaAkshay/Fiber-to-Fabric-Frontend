@@ -10,17 +10,24 @@ import {
   Space,
   Spin,
   Typography,
+  Tag,
+  Checkbox,
+  message,
 } from "antd";
 import {
+  DeleteOutlined,
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
   PrinterFilled,
 } from "@ant-design/icons";
-import { getProductionListRequest } from "../../api/requests/production/inhouseProduction";
+import {
+  deleteProductionRequest,
+  getProductionListRequest,
+} from "../../api/requests/production/inhouseProduction";
 import { usePagination } from "../../hooks/usePagination";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { ORDER_TYPE } from "../../constants/orderMaster";
 import ViewProductionDetailModal from "../../components/production/ViewProductionDetailModal";
@@ -30,8 +37,11 @@ import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const [selectedRecords, setSelectedRecords] = useState([]);
 
   const [state, setState] = useState("current");
   const [quality, setQuality] = useState(null);
@@ -51,6 +61,33 @@ const InhouseProduction = () => {
   const [challanNo, setChallanNo] = useState("");
   const [grade, setGrade] = useState(null);
   const [foldingUser, setFoldingUser] = useState(null);
+
+  const { mutateAsync: deleteProduction } = useMutation({
+    mutationFn: async ({ data }) => {
+      const res = await deleteProductionRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res?.data;
+    },
+    mutationKey: ["production", "delete"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      setSelectedRecords([]);
+      queryClient.invalidateQueries(["production", "list", companyId]);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -100,17 +137,57 @@ const InhouseProduction = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ productionList });
 
   function navigateToAdd() {
     navigate("/production/add-new-production");
   }
 
+  function navigateToUpdate(id) {
+    navigate(`/production/update-production/${id}`);
+  }
+
+  async function handleDelete() {
+    const data = {
+      ids: selectedRecords,
+    };
+    deleteProduction({ data });
+  }
+
   const columns = [
+    {
+      title: (
+        <Checkbox
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedRecords(productionList?.rows.map(({ id }) => id));
+            } else {
+              setSelectedRecords([]);
+            }
+          }}
+        />
+      ),
+      render: (record) => {
+        return (
+          <Checkbox
+            checked={selectedRecords.includes(record.id)}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setSelectedRecords((prev) => [...prev, record.id]);
+              } else {
+                setSelectedRecords((prev) =>
+                  prev.filter((id) => id !== record.id)
+                );
+              }
+            }}
+          />
+        );
+      },
+    },
     {
       title: "No",
       dataIndex: "no",
       key: "no",
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Taka No.",
@@ -143,9 +220,20 @@ const InhouseProduction = () => {
       key: "meter",
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (text) => {
+        if (text.toLowerCase() === "instock") {
+          return <Tag color="green">In-Stock</Tag>;
+        }
+      },
+    },
+    {
       title: "Quality",
-      dataIndex: "quality",
+      dataIndex: ["inhouse_quality"],
       key: "quality",
+      render: (text) => `${text.quality_name} (${text.quality_weight}KG)`,
     },
     {
       title: "Action",
@@ -158,7 +246,7 @@ const InhouseProduction = () => {
             />
             <Button
               onClick={() => {
-                // navigateToUpdate(details.id);
+                navigateToUpdate(details.id);
               }}
             >
               <EditOutlined />
@@ -191,53 +279,60 @@ const InhouseProduction = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        style={{ textAlign: "left" }}
         summary={(tableData) => {
-          console.log(tableData);
+          let totalMeter = 0;
+          let totalWeight = 0;
+          let totalAvg = 0;
+
+          tableData.forEach(({ meter, weight, average }) => {
+            totalMeter += +meter;
+            totalWeight += +weight;
+            totalAvg += +average;
+          });
 
           return (
             <>
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
+                <Table.Summary.Cell index={0} align="left">
                   <b>Total</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b></b>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalMeter.toFixed(2)}</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalWeight.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalAvg.toFixed(2)}</b>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
               </Table.Summary.Row>
+
               <Table.Summary.Row>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
+                <Table.Summary.Cell index={0} align="left">
                   <b>Grand Total</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b></b>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalMeter.toFixed(2)}</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalWeight.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
-                <Table.Summary.Cell index={0}>
-                  <b>0</b>
+                <Table.Summary.Cell index={0} align="left">
+                  <b>{totalAvg.toFixed(2)}</b>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -248,26 +343,6 @@ const InhouseProduction = () => {
       />
     );
   }
-
-  //   const [selectionType, setSelectionType] = useState("checkbox");
-  //   const rowSelection = {
-  //     onChange: (selectedRowKeys, selectedRows) => {
-  //       console.log(
-  //         `selectedRowKeys: ${selectedRowKeys}`,
-  //         "selectedRows: ",
-  //         selectedRows
-  //       );
-  //     },
-  //     getCheckboxProps: (record) => ({
-  //       disabled: record.name === "Disabled User",
-  //       // Column configuration not to be checked
-  //       name: record.name,
-  //     }),
-  //   };
-
-  //show QR modal
-
-  //show modal
 
   return (
     <div className="flex flex-col gap-2 p-4">
@@ -507,20 +582,20 @@ const InhouseProduction = () => {
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-            //   disabled={!jobTakaList?.rows?.length}
+            disabled={!productionList?.rows?.length}
             //   onClick={downloadPdf}
             className="flex-none"
           />
           <Button
             icon={<PrinterFilled />}
             type="primary"
-            //   disabled={!jobTakaList?.rows?.length}
+            disabled={!productionList?.rows?.length}
             //   onClick={downloadPdf}
             className="flex-none"
           />
           <Button
             type="primary"
-            //   disabled={!jobTakaList?.rows?.length}
+            disabled={!productionList?.rows?.length}
             //   onClick={downloadPdf}
             className="flex-none"
           >
@@ -528,6 +603,12 @@ const InhouseProduction = () => {
           </Button>
         </Flex>
       </div>
+
+      {selectedRecords.length ? (
+        <Button danger onClick={handleDelete} style={{ width: "50px" }}>
+          <DeleteOutlined />
+        </Button>
+      ) : null}
 
       {renderTable()}
     </div>
