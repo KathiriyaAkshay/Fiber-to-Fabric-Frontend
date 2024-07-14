@@ -1,9 +1,9 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Modal, Table } from "antd";
+import dayjs from "dayjs";
 import { useState } from "react";
 
 const ViewProductionDetailModal = ({ title, details }) => {
-  console.log("ViewProductionDetailModal: ", details);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -63,74 +63,73 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "1",
       label: "Quality Name",
-      children: "33P PALLU PATERN (SDFSDFSDFSDFSDFSD) - (8KG)",
+      children: `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
       span: 2,
     },
     {
       key: "2",
       label: "Order Type",
-      children: "Sale",
+      children: "-",
       span: 2,
     },
     {
       key: "3",
       label: "Production Company Name",
-      children: "SONU TEXTILES",
+      children: "-",
       span: 2,
     },
     {
       key: "4",
       label: "Beam status",
-      children: "Finished",
+      children: details.status,
       span: 2,
     },
-
     {
       key: "5",
       label: "Date",
-      children: "2019-04-24 18:00:00",
+      children: dayjs(details.production_date).format("DD/MM/YYYY"),
       span: 2,
     },
     {
       key: "6",
       label: "P Taka",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "7",
       label: "Return Sale Challan No",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "8",
       label: "Prod Taka",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "9",
       label: "Taka No",
-      children: "9",
+      children: details.taka_no,
       span: 2,
     },
     {
       key: "10",
       label: "Prod Mtr",
-      children: "23",
+      children: details.production_meter,
       span: 2,
     },
     {
       key: "11",
       label: "Meter",
-      children: "1023",
+      children: details.meter,
       span: 2,
     },
     {
       key: "12",
       label: "Pend mtr",
-      children: "--",
+      children: details.pending_meter,
       span: 2,
     },
     {
@@ -142,43 +141,43 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "14",
       label: "Purchase Challan No.",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "15",
       label: "Average",
-      children: "82.12",
+      children: details.average,
       span: 2,
     },
     {
       key: "16",
       label: "Supplier Name",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "17",
       label: "Old Meter",
-      children: "1023",
+      children: "-",
       span: 2,
     },
     {
       key: "18",
       label: "Purchase Company Name",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
       key: "19",
       label: "Old Weight",
-      children: "840.09",
+      children: "-",
       span: 2,
     },
     {
       key: "20",
       label: "Sale Challan Company Name",
-      children: "--",
+      children: "-",
       span: 2,
     },
     {
@@ -190,19 +189,19 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "22",
       label: "Challan No",
-      children: "1023",
+      children: "-",
       span: 2,
     },
     {
       key: "23",
       label: "Machine No",
-      children: "4",
+      children: details.machine_no,
       span: 2,
     },
     {
       key: "24",
       label: "Party",
-      children: "--",
+      children: "-",
       span: 2,
     },
   ];
@@ -217,7 +216,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        width="100%"
+        width="80%"
       >
         <Descriptions title={title} bordered items={items} size="small" />
 

@@ -4,18 +4,18 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../common/modal/DeleteConfirmationDialog";
 import { GlobalContext } from "../../contexts/GlobalContext";
-import { deleteProductionRequest } from "../../api/requests/production/inhouseProduction";
+import { deleteTakaCuttingRequest } from "../../api/requests/production/takaTpCutting";
 
-const DeleteProduction = ({ details }) => {
+const DeleteTakaTpCutting = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: deleteProduction } = useMutation({
+  const { mutateAsync: deleteTakaTpCutting } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteProductionRequest({
-        data: { ids: [id] },
+      const res = await deleteTakaCuttingRequest({
+        id,
         params: {
           company_id: companyId,
         },
@@ -39,7 +39,7 @@ const DeleteProduction = ({ details }) => {
   });
 
   async function handleDelete() {
-    deleteProduction({
+    deleteTakaTpCutting({
       id: details.id,
     });
     setIsOpenDeleteDialog(false);
@@ -63,7 +63,7 @@ const DeleteProduction = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete production?"
+        content="Are you sure you want to delete taka tp cutting?"
         confirmText="Delete"
         cancelText="Cancel"
       />
@@ -71,4 +71,4 @@ const DeleteProduction = ({ details }) => {
   );
 };
 
-export default DeleteProduction;
+export default DeleteTakaTpCutting;

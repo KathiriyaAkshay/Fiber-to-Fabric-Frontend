@@ -120,6 +120,9 @@ import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 import AddBeamSale from "./pages/sale/challan/beamSale/AddBeamSale";
 import UpdateBeamSale from "./pages/sale/challan/beamSale/UpdateBeamSale";
 import BeamSaleList from "./pages/sale/challan/beamSale/BeamSaleList";
+import TakaTpCutting from "./pages/production/TakaTpCutting";
+import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
+import UpdateProduction from "./pages/production/UpdateProduction";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -293,6 +296,10 @@ const router = createBrowserRouter([
             element: <AddProduction />,
           },
           {
+            path: "update-production/:id",
+            element: <UpdateProduction />,
+          },
+          {
             path: "inhouse-production",
             element: <InhouseProduction />,
           },
@@ -300,7 +307,13 @@ const router = createBrowserRouter([
             path: "opening-production",
             element: <OpenProduction />,
           },
-          { path: "taka-tp-cutting", element: <div>taka-tp-cutting</div> },
+          {
+            path: "taka-tp-cutting",
+            children: [
+              { index: true, element: <TakaTpCutting /> },
+              { path: "add", element: <AddTakaTpCutting /> },
+            ],
+          },
           {
             path: "monthly-production-report",
             element: <div>monthly-production-report</div>,
