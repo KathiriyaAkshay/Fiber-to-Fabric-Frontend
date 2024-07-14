@@ -10,6 +10,7 @@ import {
   Spin,
   Table,
   Typography,
+  Card
 } from "antd";
 import {
   CloseOutlined,
@@ -38,7 +39,7 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import { getBeamSentListRequest } from "../../../../api/requests/job/sent/beamSent";
 import dayjs from "dayjs";
 import DeleteBeamSent from "../../../../components/job/beamSent/DeleteBeamSent";
-
+const { Title, Text } = Typography;
 const BeamSentList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
@@ -293,6 +294,8 @@ const BeamSentList = () => {
     );
   }
 
+
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -452,6 +455,52 @@ const BeamSentViewDetailModal = ({
     adjustHeight.overflowY = "scroll";
   }
 
+  const dataSource = [
+    {
+      key: '1',
+      no: '1',
+      bno: 'PBN-67',
+      taar: '100',
+      pano: '100',
+      meter: '100',
+      weight: '17.33',
+    },
+  ];
+
+  const ModalColumns = [
+    {
+      title: 'No',
+      dataIndex: 'no',
+      key: 'no',
+    },
+    {
+      title: 'B no.',
+      dataIndex: 'bno',
+      key: 'bno',
+    },
+    {
+      title: 'taar/ends',
+      dataIndex: 'taar',
+      key: 'taar',
+    },
+    {
+      title: 'pano',
+      dataIndex: 'pano',
+      key: 'pano',
+    },
+    {
+      title: 'meter',
+      dataIndex: 'meter',
+      key: 'meter',
+    },
+    {
+      title: 'weight',
+      dataIndex: 'weight',
+      key: 'weight',
+    },
+  ];
+
+
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -471,7 +520,7 @@ const BeamSentViewDetailModal = ({
         classNames={{
           header: "text-center",
         }}
-        width={"60%"}
+        width={"65%"}
         styles={{
           content: {
             padding: 0,
@@ -486,222 +535,91 @@ const BeamSentViewDetailModal = ({
           },
         }}
       >
-        <Flex className="flex-col gap-1">
-          {/* {details?.map(({ title = "", value }) => {
+        <Card className="card-wrapper">
+          <Row  className="header-row">
+            <Col span={12} className="header-col">
+              <Card className="header-card">
+                <Title level={4} className="header-title">TO: TEXT_121_SUPPLIER</Title>
+                <Text strong>Address: TEXT_121_SUPPLIER</Text><br />
+                <Text>GST NO: 24ABHPP6021C1Z4</Text><br />
+                <Text>E-way Bill No.: --</Text>
+              </Card>
+            </Col>
+            <Col span={12} className="header-col">
+              <Card className="header-card">
+                <Title level={4} className="header-title">FROM: SONU TEXTILES</Title>
+                <Text strong>Address: PLOT NO. 78, JAYVEER INDU. ESTATE, GUJARAT HOUSING BOARD ROAD, PANDESARA, SURAT, Gujarat, 394221</Text><br />
+                <Text>GST NO: 24ABHPP6021C1Z4</Text><br />
+              </Card>
+            </Col>
+          </Row>
+          <div class="dotted-line"></div>
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            <Col span={12}>
+              <Flex gap={2} justify="center">
+                <Text strong>Description of Goods:</Text><br />
+                <Text>MAHESHWARI 10/20 (SDFSDFSDFSDFSDFSD) - (7.5KG)</Text><br />
+              </Flex>
+            </Col>
+            <Col span={6}>
+              <Flex gap={2} justify="center">
+                <Text strong>Date:</Text><br />
+                <Text>Date: 25-06-2024</Text><br />
+              </Flex>
+            </Col>
+            <Col span={6}>
+              <Flex gap={2} justify="center ">
+                <Text strong>Vehicle No:</Text><br />
+                <Text>GJ-12-er-1234</Text><br />
+              </Flex>
+            </Col>
+          </Row>
+          <div class="dotted-line"></div>
+          <Table
+            dataSource={dataSource}
+            columns={ModalColumns}
+            pagination={false}
+            className="data-table"
+            style={{ marginTop: 16 }}
+            bordered
+            summary={() => {
               return (
-                <Row
-                  gutter={12}
-                  className="flex-grow"
-                  style={{ marginTop: "0.40rem" }}
-                  key={title}
-                >
-                  <Col span={10} className="font-medium">
-                    {title}
-                  </Col>
-                  <Col span={14}>{value ?? "-"}</Col>
-                </Row>
+                <>
+                  <Table.Summary.Row className="font-semibold">
+                    <Table.Summary.Cell>Total</Table.Summary.Cell>
+                    <Table.Summary.Cell />
+                    <Table.Summary.Cell />
+                    <Table.Summary.Cell />
+                    <Table.Summary.Cell>
+                      <Typography.Text>0</Typography.Text>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      <Typography.Text>0</Typography.Text>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </>
               );
-            })} */}
-          <Row
-            gutter={12}
-            className="flex-grow"
-            style={{ marginTop: "0.40rem" }}
-            key={title}
-          >
+            }}
+          />
+          {/* <Row gutter={16} style={{ marginTop: 16 }}>
             <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Quality Name
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Beam Load By
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>Beam Type</Typography.Text>
-                </Col>
-              </Row>
+              <Text>Total Meter: 100</Text>
             </Col>
             <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Beam no.
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Beam create date
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>Beam Type</Typography.Text>
-                </Col>
-              </Row>
+              <Text>Total Weight: 14.60</Text>
+            </Col>
+          </Row> */}
+                    <div class="dotted-line"></div>
+
+          <Row gutter={16} style={{ marginTop: 16 }}>
+            <Col span={12}>
+              <Text>Receivers sign</Text>
+            </Col>
+            <Col span={12}>
+              <Text>Senders sign</Text>
             </Col>
           </Row>
-
-          <Divider />
-
-          <Row
-            gutter={12}
-            className="flex-grow"
-            style={{ marginTop: "0.40rem" }}
-            key={title}
-          >
-            <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Warper Employee Name (P)
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Warper Employee Name (S)
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Pasaria Employee Name
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-            </Col>
-            <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Non Pasarela Date (P)
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Non Pasarela Date (S)
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Pasarela Date
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Divider />
-
-          <Row
-            gutter={12}
-            className="flex-grow"
-            style={{ marginTop: "0.40rem" }}
-            key={title}
-          >
-            <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Taar
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Pano
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Peak
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-            </Col>
-            <Col span={12}>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Taka
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Meter
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-              <Row id="row">
-                <Col span={12}>
-                  <Typography.Text className="font-medium">
-                    Read
-                  </Typography.Text>
-                </Col>
-                <Col span={6}>
-                  <Typography.Text>value</Typography.Text>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-        </Flex>
+        </Card>
       </Modal>
     </>
   );

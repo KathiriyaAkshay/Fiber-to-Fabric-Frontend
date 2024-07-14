@@ -219,3 +219,55 @@ td {
       margin: 20px;   /* Add your desired margin */
   }
 }
+
+
+.header-row {
+  background-color: #fff;
+}
+
+.header-col {
+  padding: 2px;
+}
+
+.header-card {
+  background-color: #fff;
+  border: none;
+}
+
+.header-title {
+  color: #333;
+  background-color: #f0f0f0;
+  padding: 0.2rem;
+
+}
+
+.description-card {
+  background-color: #fff;
+  border: none !important;
+}
+
+
+.header-card .ant-card-body{
+  padding: 0 !important;
+}
+.data-table .ant-table-thead > tr > th {
+  color: black;
+  background-color: #f0f0f0;
+}
+
+.data-table .ant-table-tbody > tr > td {
+  background-color: #fff;
+}
+
+.data-table .ant-table-container table > thead > tr:first-child th {
+  background-color: #d9d9d9;
+}
+
+.dotted-line {
+  border-top: 2px dotted #5b5b5b;
+  margin: 4px 0;
+}
+
+.card-wrapper{
+  border:1px solid black;
+}
