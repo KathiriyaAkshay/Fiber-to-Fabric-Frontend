@@ -124,6 +124,9 @@ import ReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/ReceiveRewo
 import AddReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/AddReceiveReworkTaka";
 import ReworkChallan from "./pages/job/challan/reworkChallan/ReworkChallan";
 import AddReworkChallan from "./pages/job/challan/reworkChallan/AddReworkChallan";
+import TakaTpCutting from "./pages/production/TakaTpCutting";
+import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
+import UpdateProduction from "./pages/production/UpdateProduction";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -297,6 +300,10 @@ const router = createBrowserRouter([
             element: <AddProduction />,
           },
           {
+            path: "update-production/:id",
+            element: <UpdateProduction />,
+          },
+          {
             path: "inhouse-production",
             element: <InhouseProduction />,
           },
@@ -304,7 +311,13 @@ const router = createBrowserRouter([
             path: "opening-production",
             element: <OpenProduction />,
           },
-          { path: "taka-tp-cutting", element: <div>taka-tp-cutting</div> },
+          {
+            path: "taka-tp-cutting",
+            children: [
+              { index: true, element: <TakaTpCutting /> },
+              { path: "add", element: <AddTakaTpCutting /> },
+            ],
+          },
           {
             path: "monthly-production-report",
             element: <div>monthly-production-report</div>,
@@ -433,8 +446,8 @@ const router = createBrowserRouter([
           {
             path: "general-purchase-entry",
             children: [
-              {index: true, element: <PurchaseEntryList/>}, 
-              {path: "add", element: <AddGeneralPurchaseEntry/>}
+              { index: true, element: <PurchaseEntryList /> },
+              { path: "add", element: <AddGeneralPurchaseEntry /> },
             ],
           },
           {

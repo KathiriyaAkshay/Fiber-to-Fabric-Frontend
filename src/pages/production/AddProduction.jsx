@@ -14,7 +14,7 @@ import {
   Typography,
 } from "antd";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
@@ -26,17 +26,19 @@ import {
 } from "../../api/requests/production/inhouseProduction";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
-
-const plainOptions = ["Quality Wise", "Machine Wise", "Multi Machine Wise"];
+import {
+  getBeamCardListRequest,
+  getLoadedMachineListRequest,
+} from "../../api/requests/beamCard";
 
 const AddProduction = () => {
-  //   const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const { companyId } = useContext(GlobalContext);
 
   const [activeField, setActiveField] = useState(1);
+  const [weightPlaceholder, setWeightPlaceholder] = useState(null);
 
   const { mutateAsync: addNewProduction, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -50,12 +52,12 @@ const AddProduction = () => {
     },
     mutationKey: ["add", "production"],
     onSuccess: (res) => {
-      //   queryClient.invalidateQueries(["beamSale", "list", companyId]);
+      queryClient.invalidateQueries(["production", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
       }
-      navigate(-1);
+      navigate("/production/inhouse-production");
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
@@ -64,36 +66,37 @@ const AddProduction = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log("onSubmit", data);
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
-    console.log(array);
 
     const newData = array.map((fieldNumber) => {
       const payload = {
         machine_name: data.machine_name,
-        quality_id: data.quality_id,
         production_date: dayjs(data.date).format("YYYY-MM-DD"),
-        last_enter_taka_no: data.last_taka_no,
+        last_enter_taka_no: data.last_taka_no || 1,
         taka_no: +(+lastProductionTaka + fieldNumber),
         meter: +data[`meter_${fieldNumber}`],
         weight: +data[`weight_${fieldNumber}`],
         machine_no: +data[`machine_no_${fieldNumber}`],
+        beam_load_id: +data[`machine_no_${fieldNumber}`],
         average: +data[`average_${fieldNumber}`],
-        beam_no: "BN" + data[`beam_no_${fieldNumber}`],
-        // beam_load_id: 5,
+        beam_no: data[`beam_no_${fieldNumber}`],
         production_meter: +data[`production_meter_${fieldNumber}`],
         pending_meter: +data[`pending_meter_${fieldNumber}`],
         pending_percentage: +data[`pending_percentage_${fieldNumber}`],
       };
 
-      if (data.production_filter === "Machine Wise") {
+      if (data.production_filter !== "multi_quality_wise") {
+        payload.quality_id = data.quality_id;
+      } else {
+        payload.quality_id = data[`quality_${fieldNumber}`];
+      }
+      if (data.production_filter === "machine_wise") {
         payload.grade = data.grade;
         payload.pis = data.pis;
       }
       return payload;
     });
 
-    console.log({ newData });
     await addNewProduction(newData);
   };
 
@@ -104,11 +107,14 @@ const AddProduction = () => {
     watch,
     resetField,
     setFocus,
+    getValues,
     setValue,
     reset,
+    setError,
+    trigger,
   } = useForm({
     defaultValues: {
-      production_filter: "Quality Wise",
+      production_filter: "quality_wise",
       date: dayjs(),
       machine_name: null,
       quality_id: null,
@@ -121,7 +127,7 @@ const AddProduction = () => {
     },
     // resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, production_filter, quality_id } = watch();
+  const { machine_name, production_filter, quality_id, m_no } = watch();
 
   const { data: lastProductionTaka } = useQuery({
     queryKey: ["last", "production", "taka", { company_id: companyId }],
@@ -130,8 +136,63 @@ const AddProduction = () => {
         companyId,
         params: { company_id: companyId },
       });
-      setValue("last_taka_no", +res.data?.data);
+      setValue("last_taka_no", +res.data?.data?.taka_no);
+      setValue("last_taka_no_date", dayjs(res.data?.data?.createdAt));
       return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: beamCardList } = useQuery({
+    queryKey: [
+      "beamCard",
+      "list",
+      {
+        production_filter,
+        company_id: companyId,
+        machine_name: machine_name,
+        quality_id: quality_id,
+        machine_no: m_no,
+      },
+    ],
+    queryFn: async () => {
+      if (production_filter === "quality_wise" && machine_name && quality_id) {
+        const res = await getBeamCardListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 99999,
+            machine_name: machine_name,
+            quality_id: quality_id,
+            status: "running",
+          },
+        });
+        return res.data?.data;
+      } else if (production_filter === "machine_wise" && machine_name && m_no) {
+        const res = await getBeamCardListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 99999,
+            machine_name: machine_name,
+            machine_no: m_no,
+            status: "running",
+          },
+        });
+        return res.data?.data;
+      } else if (production_filter === "multi_quality_wise" && machine_name) {
+        const res = await getBeamCardListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 99999,
+            machine_name: machine_name,
+            // machine_no: m_no,
+            status: "running",
+          },
+        });
+        return res.data?.data;
+      }
     },
     enabled: Boolean(companyId),
   });
@@ -202,7 +263,7 @@ const AddProduction = () => {
         { company_id: companyId, machine_name, production_filter },
       ],
       queryFn: async () => {
-        if (machine_name && production_filter === "Machine Wise") {
+        if (machine_name && production_filter === "machine_wise") {
           const res = await getLoadedMachineListRequest({
             params: { company_id: companyId, machine_name },
           });
@@ -231,13 +292,40 @@ const AddProduction = () => {
         setValue(`production_meter_${fieldNumber}`, "");
         setValue(`pending_meter_${fieldNumber}`, "");
         setValue(`pending_percentage_${fieldNumber}`, "");
+
+        trigger(`weight_${fieldNumber}`);
       });
       setActiveField(1);
+      setWeightPlaceholder(null);
     }
   };
 
+  const handleQualityChange = () => {
+    const array = Array.from({ length: activeField }, (_, i) => i + 1);
+    array.forEach((fieldNumber) => {
+      setValue(`meter_${fieldNumber}`, "");
+      setValue(`weight_${fieldNumber}`, "");
+      setValue(`machine_no_${fieldNumber}`, "");
+      setValue(`beam_no_${fieldNumber}`, "");
+      setValue(`average_${fieldNumber}`, "");
+
+      setValue(`production_meter_${fieldNumber}`, "");
+      setValue(`pending_meter_${fieldNumber}`, "");
+      setValue(`pending_percentage_${fieldNumber}`, "");
+
+      trigger(`weight_${fieldNumber}`);
+    });
+    setActiveField(1);
+    setWeightPlaceholder(null);
+  };
+
   return (
-    <Form form={form} onSubmitCapture={handleSubmit(onSubmit)}>
+    <Form
+      form={form}
+      layout="vertical"
+      style={{ marginTop: "1rem" }}
+      onFinish={handleSubmit(onSubmit)}
+    >
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-5">
@@ -254,17 +342,21 @@ const AddProduction = () => {
                 <Radio.Group
                   {...field}
                   name="production_filter"
-                  options={plainOptions}
+                  // options={plainOptions}
                   onChange={(e) => {
                     field.onChange(e);
                     changeProductionFilter(e.target.value);
                   }}
-                />
+                >
+                  <Radio value={"quality_wise"}>Quality Wise</Radio>
+                  <Radio value={"machine_wise"}>Machine Wise</Radio>
+                  <Radio value={"multi_quality_wise"}>Multi Quality Wise</Radio>
+                </Radio.Group>
               )}
             />
           </div>
 
-          {production_filter == "Machine Wise" && (
+          {production_filter == "machine_wise" && (
             <Controller
               control={control}
               name="generate_qr_code"
@@ -319,7 +411,7 @@ const AddProduction = () => {
             </Form.Item>
           </Col>
 
-          {production_filter != "Multi Machine Wise" && (
+          {production_filter != "multi_quality_wise" && (
             <Col span={7}>
               <Form.Item
                 label="Quality"
@@ -346,6 +438,10 @@ const AddProduction = () => {
                               label: item.quality_name,
                             }))
                           }
+                          onChange={(value) => {
+                            field.onChange(value);
+                            handleQualityChange();
+                          }}
                         />
                         {quality_id && (
                           <Typography.Text style={{ color: "red" }}>
@@ -382,7 +478,7 @@ const AddProduction = () => {
         </Row>
 
         <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
-          {production_filter == "Machine Wise" && (
+          {production_filter == "machine_wise" && (
             <Col span={4}>
               <Form.Item
                 label="M. No"
@@ -454,11 +550,20 @@ const AddProduction = () => {
           setFocus={setFocus}
           activeField={activeField}
           setActiveField={setActiveField}
+          getValues={getValues}
           setValue={setValue}
+          setError={setError}
+          trigger={trigger}
           lastProductionTaka={lastProductionTaka}
+          beamCardList={beamCardList}
+          production_filter={production_filter}
+          avgWeight={avgWeight}
+          weightPlaceholder={weightPlaceholder}
+          setWeightPlaceholder={setWeightPlaceholder}
+          dropDownQualityListRes={dropDownQualityListRes}
         />
 
-        {production_filter === "Machine Wise" && (
+        {production_filter === "machine_wise" && (
           <Row style={{ gap: "12px" }}>
             <Col span={3}>
               <Form.Item
@@ -476,7 +581,14 @@ const AddProduction = () => {
                 <Controller
                   control={control}
                   name={`pis`}
-                  render={({ field }) => <Input {...field} type="number" />}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      type="number"
+                      placeholder="pis"
+                      onChange={(e) => field.onChange(+e.target.value)}
+                    />
+                  )}
                 />
               </Form.Item>
             </Col>
