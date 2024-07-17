@@ -3,14 +3,21 @@
 @tailwind utilities;
 
 :root {
+  /* Font settings */
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+
+  /* Font rendering settings */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Custom properties */
+  --menu-item-hover-color: rgb(41, 100, 143);
 }
+
 
 body {
   margin: 0;
@@ -209,6 +216,22 @@ td {
     color: green;
     font-weight: 600;
   }
+}
+
+input:read-only{
+  background-color: #efefef !important;
+}
+
+
+/* Menu item related css  */
+.ant-menu-submenu:hover{
+  background-color: var(--menu-item-hover-color) !important;
+  border-radius: 6px !important;
+}
+
+.ant-menu-item:hover{
+  background-color: var(--menu-item-hover-color) !important;
+  border-radius: 6px !important; 
 }
 
 /* Menu related css  */
