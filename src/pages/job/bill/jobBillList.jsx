@@ -79,7 +79,7 @@ const JobBillList = () => {
         order_no: debouncedOrderNo,
         is_paid: debouncedIsPaid,
         supplier_name: debouncedSupplier,
-        bill_status : "received"
+        bill_status: "received",
       },
     ],
     queryFn: async () => {
@@ -95,7 +95,7 @@ const JobBillList = () => {
           order_no: debouncedOrderNo,
           is_paid: debouncedIsPaid,
           supplier_name: debouncedSupplier,
-          bill_status : "received"
+          bill_status: "received",
         },
       });
       return res.data?.data;
@@ -103,30 +103,31 @@ const JobBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const {
     data: dropdownSupplierListRes,
@@ -219,13 +220,13 @@ const JobBillList = () => {
       title: "Due Date",
       dataIndex: ["job_taka_bill", "due_date"],
       // render: (text) => dayjs(text).format("DD-MM-YYYY"),
-      render: () => (<div>-</div>)
+      render: () => <div>-</div>,
     },
     {
       title: "Due Days",
       dataIndex: "amount",
       key: "amount",
-      render: () => (<div>-</div>)
+      render: () => <div>-</div>,
     },
     {
       title: "Bill Status",

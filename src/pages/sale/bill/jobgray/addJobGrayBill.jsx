@@ -76,14 +76,14 @@ const AddJobGrayBill = () => {
 
   async function onSubmit(data) {
     const newData = fieldArray.map((field) => {
+      let net_amount = data[`net_amount_${field}`];
+      let sgst_amount = (Number(net_amount) * Number(2.5)) / 100;
+      let cgst_amount = (Number(net_amount) * Number(2.5)) / 100;
+      let final_amount =
+        Number(net_amount) + Number(sgst_amount) + Number(cgst_amount);
 
-      let net_amount = data[`net_amount_${field}`] ; 
-      let sgst_amount = Number(net_amount)*Number(2.5) / 100 ; 
-      let cgst_amount = Number(net_amount)*Number(2.5) / 100 ; 
-      let final_amount = Number(net_amount) + Number(sgst_amount) + Number(cgst_amount) ; 
-      
-      let roundOff_amount = Math.round(final_amount) ; 
-      roundOff_amount = Number(roundOff_amount) - final_amount ; 
+      let roundOff_amount = Math.round(final_amount);
+      roundOff_amount = Number(roundOff_amount) - final_amount;
 
       return {
         order_id: null,
@@ -107,7 +107,7 @@ const AddJobGrayBill = () => {
         IGST_value: 0,
         IGST_amount: 0,
         round_off_amount: roundOff_amount,
-        amount: net_amount
+        amount: net_amount,
       };
     });
 
@@ -147,37 +147,37 @@ const AddJobGrayBill = () => {
     enabled: Boolean(companyId),
   });
 
-
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -629,7 +629,7 @@ const FormRow = ({
   fieldArray,
   setValue,
   companyId,
-  getValues
+  getValues,
 }) => {
   const [qualityList, setQualityList] = useState([]);
 
@@ -825,20 +825,22 @@ const FormRow = ({
             <Controller
               control={control}
               name={`total_meter_${fieldNumber}`}
-              render={({ field }) => <Input 
-              {...field} 
-              placeholder="0" 
-              onChange={(e) => {
-                  setValue(`total_meter_${fieldNumber}`, e.target.value) ; 
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="0"
+                  onChange={(e) => {
+                    setValue(`total_meter_${fieldNumber}`, e.target.value);
 
-                  let totalMeter = getValues(`rate_${fieldNumber}`) ; 
-                  if (totalMeter !== "" && totalMeter !== undefined){
-                    let rate = Number(totalMeter)*Number(e.target.value) ; 
-                    console.log("Rate information", rate);
-                    setValue(`net_amount_${fieldNumber}`, rate) ; 
-                  }
-                }}
-              />}
+                    let totalMeter = getValues(`rate_${fieldNumber}`);
+                    if (totalMeter !== "" && totalMeter !== undefined) {
+                      let rate = Number(totalMeter) * Number(e.target.value);
+                      console.log("Rate information", rate);
+                      setValue(`net_amount_${fieldNumber}`, rate);
+                    }
+                  }}
+                />
+              )}
             />
           </Form.Item>
         </Col>
@@ -859,19 +861,18 @@ const FormRow = ({
               control={control}
               name={`rate_${fieldNumber}`}
               render={({ field }) => (
-                <Input 
-                  {...field} 
-                  type="number" 
-                  placeholder="0" 
+                <Input
+                  {...field}
+                  type="number"
+                  placeholder="0"
                   onChange={(e) => {
-                    setValue(`rate_${fieldNumber}`, e.target.value) ; 
+                    setValue(`rate_${fieldNumber}`, e.target.value);
 
-                    let totalMeter = getValues(`total_meter_${fieldNumber}`) ; 
-                    if (totalMeter !== "" && totalMeter !== undefined){
-                      let rate = Number(totalMeter)*Number(e.target.value) ; 
-                      setValue(`net_amount_${fieldNumber}`, rate) ; 
+                    let totalMeter = getValues(`total_meter_${fieldNumber}`);
+                    if (totalMeter !== "" && totalMeter !== undefined) {
+                      let rate = Number(totalMeter) * Number(e.target.value);
+                      setValue(`net_amount_${fieldNumber}`, rate);
                     }
-                    
                   }}
                 />
               )}
@@ -895,19 +896,20 @@ const FormRow = ({
               control={control}
               name={`net_amount_${fieldNumber}`}
               render={({ field }) => (
-                <Input {...field} 
-                  type="number" 
-                  placeholder="0" 
+                <Input
+                  {...field}
+                  type="number"
+                  placeholder="0"
                   onChange={(e) => {
-                    setValue(`net_amount_${index}`, e.target.value) ; 
+                    setValue(`net_amount_${index}`, e.target.value);
 
-                    let totalMeter = getValues(`total_meter_${fieldNumber}`) ; 
+                    let totalMeter = getValues(`total_meter_${fieldNumber}`);
 
-                    if (totalMeter !== "" && totalMeter !== undefined){
-                      let rate = Number(e.target.value) / Number(totalMeter) ; 
-                      setValue(`rate_${index}`, rate) ; 
+                    if (totalMeter !== "" && totalMeter !== undefined) {
+                      let rate = Number(e.target.value) / Number(totalMeter);
+                      setValue(`rate_${index}`, rate);
                     }
-                  }}  
+                  }}
                 />
               )}
             />

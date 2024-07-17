@@ -146,36 +146,37 @@ const AddBeamCard = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: pasarelaBeamList, isLoading: isLoadingPasarelaBeam } = useQuery(
     {

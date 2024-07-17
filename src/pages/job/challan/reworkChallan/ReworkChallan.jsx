@@ -31,7 +31,8 @@ import {
   downloadUserPdf,
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
-import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
+import dayjs from "dayjs";
+import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
 
 const ReworkChallan = () => {
   const navigate = useNavigate();
@@ -79,36 +80,37 @@ const ReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: reworkChallanList, isLoading } = useQuery({
     queryKey: [
@@ -145,8 +147,6 @@ const ReworkChallan = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  console.log({ reworkChallanList });
 
   function navigateToAdd() {
     navigate("/job/challan/rework-challan/add");
@@ -185,38 +185,37 @@ const ReworkChallan = () => {
     },
     {
       title: "Challan Date",
-      dataIndex: "challanDate",
-      key: "challanDate",
-    },
-    {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
       title: "Supplier Name",
-      dataIndex: "supplierName",
-      key: "supplierName",
+      dataIndex: "supplier",
+      key: "supplier",
+      render: (supplier) => `${supplier.supplier_name}`,
     },
     {
       title: "Quality",
-      dataIndex: "quality",
-      key: "quality",
+      dataIndex: ["inhouse_quality"],
+      key: ["inhouse_quality"],
+      render: (quality) =>
+        `${quality.quality_name} (${quality.quality_weight})`,
     },
     {
       title: "Total Taka",
-      dataIndex: "totalTaka",
-      key: "totalTaka",
+      dataIndex: "total_taka",
+      key: "total_taka",
     },
     {
       title: "Total Meter",
-      dataIndex: "totalMeter",
-      key: "totalMeter",
+      dataIndex: "total_meter",
+      key: "total_meter",
     },
     {
       title: "Total Rec. Meter",
-      dataIndex: "totalRecMeter",
-      key: "totalRecMeter",
+      dataIndex: "taka_receive_meter",
+      key: "taka_receive_meter",
     },
     {
       title: "Wastage in KG.",
@@ -230,8 +229,8 @@ const ReworkChallan = () => {
     },
     {
       title: "Bill Status",
-      dataIndex: "billStatus",
-      key: "billStatus",
+      dataIndex: "bill_status",
+      key: "bill_status",
       render: (billStatus) => (
         <Tag color={billStatus === "Not-Received" ? "red" : "green"}>
           {billStatus}
@@ -240,11 +239,11 @@ const ReworkChallan = () => {
     },
     {
       title: "Payment Status",
-      dataIndex: "paymentStatus",
-      key: "paymentStatus",
+      dataIndex: "is_paid",
+      key: "is_paid",
       render: (paymentStatus) => (
-        <Tag color={paymentStatus === "Unpaid" ? "red" : "green"}>
-          {paymentStatus}
+        <Tag color={!paymentStatus ? "red" : "green"}>
+          {paymentStatus ? "Paid" : "Un-Paid"}
         </Tag>
       ),
     },
@@ -263,7 +262,7 @@ const ReworkChallan = () => {
             >
               <EditOutlined />
             </Button>
-            <DeleteJobTaka details={details} />
+            <DeleteReworkChallan details={details} />
           </Space>
         );
       },

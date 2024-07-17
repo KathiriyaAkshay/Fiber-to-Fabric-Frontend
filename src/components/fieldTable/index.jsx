@@ -24,7 +24,10 @@ const FieldTable = ({
 
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
-      setActiveField((prev) => prev - 1);
+      // setActiveField((prev) => prev - 1);
+      if (fieldNumber > 1) {
+        setActiveField((prev) => prev - 1);
+      }
       setValue(`taka_no_${fieldNumber}`, "");
       setValue(`meter_${fieldNumber}`, "");
       setValue(`weight_${fieldNumber}`, "");
