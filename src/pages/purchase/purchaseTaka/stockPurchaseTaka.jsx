@@ -93,7 +93,7 @@ const StockPurchaseTaka = () => {
         enabled: Boolean(companyId),
     });
 
-    const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
+    const { data: dropDownQualityListRes,isLoading:  dropDownQualityLoading } = useQuery({
         queryKey: [
             "dropDownQualityListRes",
             "list",

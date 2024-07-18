@@ -10,7 +10,6 @@ import {
   Input,
   Row,
   Select,
-  Typography,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -18,53 +17,51 @@ import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { GlobalContext } from "../../../contexts/GlobalContext";
-import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
-import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
-import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
-import { addJobTakaRequest } from "../../../api/requests/job/jobTaka";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import {
+  getDropdownSupplierListRequest,
+  getVehicleUserListRequest,
+} from "../../../../api/requests/users";
+import {
+  addReworkChallanRequest,
+  getReworkOptionsListRequest,
+} from "../../../../api/requests/job/challan/reworkChallan";
 import dayjs from "dayjs";
-import FieldTable from "../../../components/fieldTable";
 import moment from "moment/moment";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
     delivery_address: yup.string().required("Please enter delivery address."),
-    gst_state: yup.string().required("Please enter GST State."),
     gst_in_1: yup.string().required("Please enter GST In."),
     gst_in_2: yup.string().required("Please enter GST In."),
     challan_no: yup.string().required("Please enter challan no."),
-    gray_order_id: yup.string().required("Please select order."),
     supplier_id: yup.string().required("Please select supplier."),
-    broker_id: yup.string().required("Please select broker."),
     quality_id: yup.string().required("Please select quality."),
     total_meter: yup.string().required("Please enter total meter."),
-    total_weight: yup.string().required("Please enter total weight."),
+    taka_receive_meter: yup
+      .string()
+      .required("Please enter total receive meter."),
     total_taka: yup.string().required("Please enter total taka."),
   })
 );
 
-const AddJobTaka = () => {
+const AddReworkChallan = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  // const [fieldArray, setFieldArray] = useState([0]);
 
   const [activeField, setActiveField] = useState(1);
 
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [pendingMeter, setPendingMeter] = useState("");
-  const [pendingTaka, setPendingTaka] = useState("");
-
-  const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
   const { companyId, companyListRes } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
 
-  const { mutateAsync: AddJobTaka, isPending } = useMutation({
+  const { mutateAsync: AddReworkChallan, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await addJobTakaRequest({
+      const res = await addReworkChallanRequest({
         data,
         params: {
           company_id: companyId,
@@ -72,9 +69,9 @@ const AddJobTaka = () => {
       });
       return res.data;
     },
-    mutationKey: ["job", "taka", "add"],
+    mutationKey: ["rework", "challan", "add"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
+      queryClient.invalidateQueries(["rework", "challan", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -88,37 +85,32 @@ const AddJobTaka = () => {
   });
 
   async function onSubmit(data) {
-    console.log({ data });
-    const jobChallanDetailArr = Array.from(
-      { length: activeField },
-      (_, i) => i + 1
-    );
+    const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
     const newData = {
-      delivery_address: data.delivery_address,
-      gst_state: data.gst_state,
-      gst_in: data.gst_in_2,
-      challan_no: data.challan_no,
-      gray_order_id: +data.gray_order_id,
-      supplier_id: +data.supplier_id,
-      broker_id: +data.broker_id,
+      createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+      machine_name: data.machine_name,
       quality_id: +data.quality_id,
-      total_meter: +data.total_meter,
-      total_weight: +data.total_weight,
-      pending_meter: +pendingMeter,
-      pending_weight: 0,
-      pending_taka: +pendingTaka,
+      option: data.option,
+      challan_no: data.challan_no,
+      supplier_id: +data.supplier_id,
+      vehicle_id: +data.vehicle_id,
       total_taka: +data.total_taka,
-      is_grey: true,
-      job_challan_detail: jobChallanDetailArr.map((field) => {
+      total_meter: +data.total_meter,
+      taka_receive_meter: +data.taka_receive_meter,
+
+      details: detailArray.map((field, index) => {
         return {
-          taka_no: parseInt(data[`taka_no_${field}`]),
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
+          index: index + 1,
+          taka_no: +data[`taka_no_${field}`],
+          meter: +data[`meter_${field}`],
+          received_meter: +data[`received_meter_${field}`],
+          received_weight: +data[`received_weight_${field}`],
+          short: +data[`short_${field}`],
         };
       }),
     };
-    await AddJobTaka(newData);
+    await AddReworkChallan(newData);
   }
 
   const {
@@ -128,7 +120,9 @@ const AddJobTaka = () => {
     reset,
     watch,
     setValue,
+    getValues,
     setFocus,
+    resetField,
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -138,20 +132,45 @@ const AddJobTaka = () => {
       gst_in_1: "",
       gst_in_2: "",
       challan_no: "",
-      gray_order_id: null,
+
       supplier_name: null,
       supplier_id: null,
-      broker_id: null,
-      broker_name: "",
+
+      machine_name: null,
       quality_id: null,
-      total_meter: "",
-      total_weight: "",
+
       total_taka: "",
-      is_grey: true,
+      total_meter: "",
+      taka_receive_meter: "",
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
+  const { supplier_name, company_id, supplier_id, machine_name } = watch();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
+    useQuery({
+      queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
+      queryFn: async () => {
+        const res = await getReworkOptionsListRequest({
+          companyId,
+          params: { company_id: companyId },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -163,33 +182,40 @@ const AddJobTaka = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          machine_name: machine_name,
         },
       ],
       queryFn: async () => {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            page: 0,
-            pageSize: 9999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              page: 0,
+              pageSize: 9999,
+              is_active: 1,
+              machine_name: machine_name,
+            },
+          });
+          return res.data?.data;
+        }
       },
       enabled: Boolean(companyId),
     });
 
-  const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
-    useQuery({
-      queryKey: ["party", "list", { company_id: companyId, order_type: "job" }],
-      queryFn: async () => {
-        const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "job" },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
+  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+    queryKey: [
+      "vehicle",
+      "list",
+      { company_id: companyId, page: 0, pageSize: 99999 },
+    ],
+    queryFn: async () => {
+      const res = await getVehicleUserListRequest({
+        params: { company_id: companyId, page: 0, pageSize: 99999 },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const {
     data: dropdownSupplierListRes,
@@ -211,6 +237,9 @@ const AddJobTaka = () => {
       dropdownSupplierListRes &&
       dropdownSupplierListRes.length
     ) {
+      resetField("supplier_id");
+      resetField("delivery_address");
+      resetField("gst_in_2");
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
@@ -218,28 +247,28 @@ const AddJobTaka = () => {
     } else {
       return [];
     }
-  }, [supplier_name, dropdownSupplierListRes]);
+  }, [supplier_name, dropdownSupplierListRes, resetField]);
 
-  useEffect(() => {
-    if (grayOrderListRes && gray_order_id) {
-      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("broker_id", order.broker.id);
-      setValue("quality_id", order.inhouse_quality.id);
-      setValue("supplier_name", order.supplier_name);
-      setValue("pending_meter", order.pending_meter);
+  //   useEffect(() => {
+  //     if (grayOrderListRes && gray_order_id) {
+  //       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+  //       setSelectedOrder(order);
+  //       setValue("total_meter", order.total_meter);
+  //       setValue("total_taka", order.total_taka);
+  //       setValue("total_weight", order.weight);
+  //       setValue(
+  //         "broker_name",
+  //         `${order.broker.first_name} ${order.broker.last_name}`
+  //       );
+  //       setValue("broker_id", order.broker.id);
+  //       setValue("quality_id", order.inhouse_quality.id);
+  //       setValue("supplier_name", order.supplier_name);
+  //       setValue("pending_meter", order.pending_meter);
 
-      setPendingMeter(order.pending_meter);
-      setPendingTaka(order.pending_taka);
-    }
-  }, [gray_order_id, grayOrderListRes, setValue]);
+  //       setPendingMeter(order.pending_meter);
+  //       setPendingTaka(order.pending_taka);
+  //     }
+  //   }, [gray_order_id, grayOrderListRes, setValue]);
 
   useEffect(() => {
     if (company_id) {
@@ -271,7 +300,7 @@ const AddJobTaka = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Create Job Challan</h3>
+        <h3 className="m-0 text-primary">Create Rework Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -295,7 +324,6 @@ const AddJobTaka = () => {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    loading={isLoadingGrayOrderList}
                     placeholder="Select Company"
                     options={companyListRes?.rows?.map((company) => ({
                       label: company.company_name,
@@ -337,21 +365,66 @@ const AddJobTaka = () => {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item
-              label="Delivery Address"
-              name="delivery_address"
-              validateStatus={errors.delivery_address ? "error" : ""}
-              help={errors.delivery_address && errors.delivery_address.message}
+              label="Machine Name"
+              name="machine_name"
+              validateStatus={errors.machine_name ? "error" : ""}
+              help={errors.machine_name && errors.machine_name.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="delivery_address"
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    allowClear
+                    placeholder="Select Machine Name"
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Select Quality"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="quality_id"
                 render={({ field }) => {
                   return (
-                    <Input {...field} placeholder="Delivery Address" disabled />
+                    <Select
+                      {...field}
+                      placeholder="Select Quality"
+                      loading={dropDownQualityLoading}
+                      options={
+                        dropDownQualityListRes &&
+                        dropDownQualityListRes?.rows?.map((item) => ({
+                          value: item.id,
+                          label: item.quality_name,
+                        }))
+                      }
+                    />
                   );
                 }}
               />
@@ -368,18 +441,32 @@ const AddJobTaka = () => {
         >
           <Col span={6}>
             <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
+              label="Option"
+              name="option"
+              validateStatus={errors.option ? "error" : ""}
+              help={errors.option && errors.option.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="gst_state"
+                name="option"
                 render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
+                  <Select
+                    {...field}
+                    allowClear
+                    placeholder="Select option"
+                    loading={isLoadingReworkOptionList}
+                    options={reworkOptionsListRes?.map((option) => {
+                      return { label: option.option, value: option.option };
+                    })}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
                 )}
               />
             </Form.Item>
@@ -452,118 +539,6 @@ const AddJobTaka = () => {
         >
           <Col span={6}>
             <Form.Item
-              label="Order"
-              name="gray_order_id"
-              validateStatus={errors.gray_order_id ? "error" : ""}
-              help={errors.gray_order_id && errors.gray_order_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gray_order_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingGrayOrderList}
-                    placeholder="Select Order"
-                    options={grayOrderListRes?.row?.map((order) => ({
-                      label: order.order_no,
-                      value: order.id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Broker"
-              name="broker_name"
-              validateStatus={errors.broker_name ? "error" : ""}
-              help={errors.broker_name && errors.broker_name.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="broker_name"
-                render={({ field }) => (
-                  <Input {...field} placeholder="Broker Name" disabled />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item
-              label="Select Quality"
-              name="quality_id"
-              validateStatus={errors.quality_id ? "error" : ""}
-              help={errors.quality_id && errors.quality_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="quality_id"
-                render={({ field }) => {
-                  return (
-                    <Select
-                      {...field}
-                      placeholder="Select Quality"
-                      loading={dropDownQualityLoading}
-                      disabled
-                      options={
-                        dropDownQualityListRes &&
-                        dropDownQualityListRes?.rows?.map((item) => ({
-                          value: item.id,
-                          label: item.quality_name,
-                        }))
-                      }
-                    />
-                  );
-                }}
-              />
-            </Form.Item>
-          </Col>
-
-          {/* <Col span={6}>
-            <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-            marginTop: "-30px",
-          }}
-        >
-          <Col span={6}>
-            <Form.Item
               label="Select Supplier"
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
@@ -578,7 +553,6 @@ const AddJobTaka = () => {
                   <Select
                     {...field}
                     placeholder="Select Supplier"
-                    disabled={selectedOrder?.supplier_name ? true : false}
                     loading={isLoadingDropdownSupplierList}
                     options={dropdownSupplierListRes?.map((supervisor) => ({
                       label: supervisor?.supplier_name,
@@ -629,106 +603,77 @@ const AddJobTaka = () => {
             </Form.Item>
           </Col>
 
-          <Col span={3}>
+          <Col span={6}>
             <Form.Item
-              label="Total Meter"
-              name="total_meter"
-              validateStatus={errors.total_meter ? "error" : ""}
-              help={errors.total_meter && errors.total_meter.message}
+              label="Delivery Address"
+              name="delivery_address"
+              validateStatus={errors.delivery_address ? "error" : ""}
+              help={errors.delivery_address && errors.delivery_address.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="total_meter"
-                render={({ field }) => (
-                  <Input {...field} placeholder="0" disabled />
-                )}
+                name="delivery_address"
+                render={({ field }) => {
+                  return (
+                    <Input {...field} placeholder="Delivery Address" disabled />
+                  );
+                }}
               />
             </Form.Item>
           </Col>
 
-          <Col span={3}>
+          <Col span={6}>
             <Form.Item
-              label="Total Weight"
-              name="total_weight"
-              validateStatus={errors.total_weight ? "error" : ""}
-              help={errors.total_weight && errors.total_weight.message}
+              label="Vehicle"
+              name="vehicle_id"
+              validateStatus={errors.vehicle_id ? "error" : ""}
+              help={errors.vehicle_id && errors.vehicle_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="total_weight"
+                name="vehicle_id"
+                rules={{ required: "Vehicle is required." }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="0" disabled />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={3}>
-            <Form.Item
-              label="Total Taka"
-              name="total_taka"
-              validateStatus={errors.total_taka ? "error" : ""}
-              help={errors.total_taka && errors.total_taka.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="total_taka"
-                render={({ field }) => (
-                  <Input {...field} placeholder="0" disabled />
+                  <Select
+                    {...field}
+                    loading={isLoadingVehicleList}
+                    placeholder="Select Vehicle"
+                    options={vehicleListRes?.vehicleList?.rows?.map(
+                      (vehicle) => ({
+                        label:
+                          vehicle.first_name +
+                          " " +
+                          vehicle.last_name +
+                          " " +
+                          `| ( ${vehicle?.username})`,
+                        value: vehicle.id,
+                      })
+                    )}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
                 )}
               />
             </Form.Item>
           </Col>
         </Row>
 
-        {pendingMeter && pendingTaka ? (
-          <Row
-            gutter={18}
-            style={{
-              padding: "12px",
-              marginTop: "-30px",
-            }}
-          >
-            <Col span={6}></Col>
-            <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                Pending
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                {pendingMeter}
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                0
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                {pendingTaka}
-              </Typography>
-            </Col>
-          </Row>
-        ) : null}
-
         <Divider />
 
-        <FieldTable
+        <ReworkChallanFieldTable
           errors={errors}
           control={control}
           setFocus={setFocus}
           setValue={setValue}
+          getValues={getValues}
           activeField={activeField}
           setActiveField={setActiveField}
         />
@@ -746,4 +691,4 @@ const AddJobTaka = () => {
   );
 };
 
-export default AddJobTaka;
+export default AddReworkChallan;

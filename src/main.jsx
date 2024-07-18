@@ -120,9 +120,14 @@ import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 import AddBeamSale from "./pages/sale/challan/beamSale/AddBeamSale";
 import UpdateBeamSale from "./pages/sale/challan/beamSale/UpdateBeamSale";
 import BeamSaleList from "./pages/sale/challan/beamSale/BeamSaleList";
+import ReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/ReceiveReworkTaka";
+import AddReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/AddReceiveReworkTaka";
+import ReworkChallan from "./pages/job/challan/reworkChallan/ReworkChallan";
+import AddReworkChallan from "./pages/job/challan/reworkChallan/AddReworkChallan";
 import TakaTpCutting from "./pages/production/TakaTpCutting";
 import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
 import UpdateProduction from "./pages/production/UpdateProduction";
+import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkChallan";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -442,8 +447,8 @@ const router = createBrowserRouter([
           {
             path: "general-purchase-entry",
             children: [
-              {index: true, element: <PurchaseEntryList/>}, 
-              {path: "add", element: <AddGeneralPurchaseEntry/>}
+              { index: true, element: <PurchaseEntryList /> },
+              { path: "add", element: <AddGeneralPurchaseEntry /> },
             ],
           },
           {
@@ -616,11 +621,19 @@ const router = createBrowserRouter([
               },
               {
                 path: "rework-challan",
-                element: <div>rework-challan</div>,
+                children: [
+                  { index: true, element: <ReworkChallan /> },
+                  { path: "add", element: <AddReworkChallan /> },
+                  { path: "update/:id", element: <UpdateReworkChallan /> },
+                ],
+                // element:<ReworkChallan/>,
               },
               {
                 path: "receive-rework-taka",
-                element: <div>receive-rework-taka</div>,
+                children: [
+                  { index: true, element: <ReceiveReworkTaka /> },
+                  { path: "add", element: <AddReceiveReworkTaka /> },
+                ],
               },
             ],
           },

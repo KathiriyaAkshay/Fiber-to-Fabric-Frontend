@@ -60,7 +60,7 @@ const PurchaseTakaList = () => {
   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
     queryKey: [
       "dropDownQualityListRes",
       "list",

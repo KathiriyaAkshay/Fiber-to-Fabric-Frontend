@@ -189,7 +189,7 @@ const UpdateBeamReceive = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
     queryKey: [
       "dropDownQualityListRes",
       "list",
