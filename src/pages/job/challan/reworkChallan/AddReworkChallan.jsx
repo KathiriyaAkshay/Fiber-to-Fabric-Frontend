@@ -457,7 +457,7 @@ const AddReworkChallan = () => {
                     allowClear
                     placeholder="Select option"
                     loading={isLoadingReworkOptionList}
-                    options={reworkOptionsListRes.map((option) => {
+                    options={reworkOptionsListRes?.map((option) => {
                       return { label: option.option, value: option.option };
                     })}
                     style={{
