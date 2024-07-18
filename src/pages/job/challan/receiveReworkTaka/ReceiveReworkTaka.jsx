@@ -124,6 +124,7 @@ const ReceiveReworkTaka = () => {
     },
     enabled: Boolean(companyId),
   });
+  console.log({ receiveReworkTakaList });
 
   function navigateToAdd() {
     navigate("/job/challan/receive-rework-taka/add");

@@ -1,7 +1,11 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, Row } from "antd";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Controller } from "react-hook-form";
+import useDebounce from "../../../../hooks/useDebounce";
+import { getProductionByIdRequest } from "../../../../api/requests/production/inhouseProduction";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const numOfFields = Array.from({ length: 20 }, (_, i) => i + 1);
 const chunkSize = numOfFields.length / 2;
@@ -15,9 +19,15 @@ const ReworkChallanFieldTable = ({
   setValue,
   getValues,
 }) => {
+  const { companyId } = useContext(GlobalContext);
+
   const [totalTaka, setTotalTaka] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalReceiveMeter, setTotalReceiveMeter] = useState(0);
+
+  const [currentFieldNumber, setCurrentFieldNumber] = useState(null);
+  const [storeTakaNo, setStoreTakaNo] = useState();
+  const debounceTakaNo = useDebounce(storeTakaNo, 500);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 32) {
@@ -61,17 +71,39 @@ const ReworkChallanFieldTable = ({
     setValue("total_taka", totalTaka);
     setValue("taka_receive_meter", totalReceiveMeter);
   };
-  // const calculateTotalTaka = (value) => {
-  //   setTotalTaka((prevValue) => prevValue + +value);
-  // };
 
-  // const calculateTotalMeter = (value) => {
-  //   setTotalMeter((prevValue) => prevValue + +value);
-  // };
+  useQuery({
+    queryKey: [
+      "productionDetail",
+      "get",
+      { company_id: companyId, taka_no: debounceTakaNo },
+    ],
+    queryFn: async () => {
+      if (debounceTakaNo) {
+        const res = await getProductionByIdRequest({
+          id: 0,
+          params: { company_id: companyId, taka_no: debounceTakaNo },
+        });
+        console.log({ res });
+        if (res.data.success) {
+          setValue(`meter_${currentFieldNumber}`, res.data.data.meter);
+        } else {
+          setValue(`meter_${currentFieldNumber}`, "");
+        }
+        // return res.data?.data;
+      }
+    },
+    enabled: Boolean(companyId),
+  });
 
-  // const calculateTotalReceiveMeter = (value) => {
-  //   setTotalReceiveMeter((prevValue) => prevValue + +value);
-  // };
+  // useEffect(() => {
+  //   if (productionDetail) {
+  //     console.log({ productionDetail });
+  //     setValue(`meter_${currentFieldNumber}`, productionDetail.meter);
+  //   } else {
+  //     setValue(`meter_${currentFieldNumber}`, "");
+  //   }
+  // }, [currentFieldNumber, productionDetail, setValue]);
 
   return (
     <Row style={{ marginTop: "-20" }} gutter={18}>
@@ -134,6 +166,8 @@ const ReworkChallanFieldTable = ({
                             disabled={fieldNumber > activeField}
                             onChange={(e) => {
                               field.onChange(e);
+                              setStoreTakaNo(e.target.value);
+                              setCurrentFieldNumber(fieldNumber);
                               calculateTotal();
                             }}
                           />
@@ -167,7 +201,8 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            // disabled={fieldNumber > activeField}
+                            disabled
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();

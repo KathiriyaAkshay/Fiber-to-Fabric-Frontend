@@ -1,7 +1,11 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { Button, Col, Form, Input, Row } from "antd";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
+import useDebounce from "../../../../hooks/useDebounce";
+import { useQuery } from "@tanstack/react-query";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
 
 const numOfFields = Array.from({ length: 1 }, (_, i) => i + 1);
 
@@ -13,9 +17,15 @@ const ReceiveReworkTakaFieldTable = ({
   setActiveField,
   setValue,
   getValues,
+  quality_id,
 }) => {
+  const { companyId } = useContext(GlobalContext);
+
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalReceiveMeter, setTotalReceiveMeter] = useState(0);
+
+  const [storeTakaNo, setStoreTakaNo] = useState();
+  const debounceTakaNo = useDebounce(storeTakaNo, 500);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 32) {
@@ -55,6 +65,37 @@ const ReceiveReworkTakaFieldTable = ({
     setTotalMeter(totalMeter);
     setTotalReceiveMeter(totalReceiveMeter);
   };
+
+  const { data: reworkChallan } = useQuery({
+    queryKey: [
+      "rework",
+      "challan",
+      { company_id: companyId, taka_no: debounceTakaNo, quality_id },
+    ],
+    queryFn: async () => {
+      if (debounceTakaNo && quality_id) {
+        const res = await getReworkChallanByIdRequest({
+          id: 0,
+          params: {
+            company_id: companyId,
+            taka_no: debounceTakaNo,
+            quality_id,
+          },
+        });
+        return res.data?.data;
+      }
+    },
+    enabled: Boolean(companyId),
+  });
+
+  useEffect(() => {
+    if (reworkChallan) {
+      console.log({ reworkChallan });
+      setValue(`meter_${activeField}`, reworkChallan.total_meter);
+    } else {
+      setValue(`meter_${activeField}`, "");
+    }
+  }, [activeField, reworkChallan, setValue]);
 
   return (
     <Row style={{ marginTop: "-20" }} gutter={18}>
@@ -120,6 +161,7 @@ const ReceiveReworkTakaFieldTable = ({
                             disabled={fieldNumber > activeField}
                             onChange={(e) => {
                               field.onChange(e);
+                              setStoreTakaNo(e.target.value);
                               calculateTotal();
                             }}
                           />
@@ -153,7 +195,8 @@ const ReceiveReworkTakaFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            // disabled={fieldNumber > activeField}
+                            disabled
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();

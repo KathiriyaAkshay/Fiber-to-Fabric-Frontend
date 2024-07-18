@@ -97,27 +97,12 @@ const AddReceiveReworkTaka = () => {
     setFocus,
   } = useForm({
     defaultValues: {
-      // company_id: null,
-      // challan_date: dayjs(),
-      // delivery_address: "",
-      // gst_state: "",
-      // gst_in_1: "",
-      // gst_in_2: "",
-      // challan_no: "",
-
-      // supplier_name: null,
-      // supplier_id: null,
-
       machine_name: null,
       quality_id: null,
-
-      // total_taka: "",
-      // total_meter: "",
-      // taka_receive_meter: "",
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name } = watch();
+  const { machine_name, quality_id } = watch();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -253,6 +238,7 @@ const AddReceiveReworkTaka = () => {
           getValues={getValues}
           activeField={activeField}
           setActiveField={setActiveField}
+          quality_id={quality_id}
         />
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>

@@ -180,36 +180,31 @@ td {
 .purchase-bill-description {
   padding: 0 !important;
   padding-bottom: 8px !important;
-
-  .ant-descriptions-item-label {
-    width: 50%;
-    background-color: #efefef;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 8px;
-    font-weight: 600;
-    color: black;
-  }
-
-  .ant-descriptions-item-content {
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 12px;
-  }
+}
+.purchase-bill-description .ant-descriptions-item-label {
+  width: 50%;
+  background-color: #efefef;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  font-weight: 600;
+  color: black;
 }
 
-.highlight-text {
-  .ant-descriptions-item-content {
-    color: red;
-    font-weight: 600;
-  }
+.purchase-bill-description .ant-descriptions-item-content {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
 }
 
-.finalamount-text {
-  .ant-descriptions-item-content {
-    color: green;
-    font-weight: 600;
-  }
+.highlight-text .ant-descriptions-item-content {
+  color: red;
+  font-weight: 600;
+}
+
+.finalamount-text .ant-descriptions-item-content {
+  color: green;
+  font-weight: 600;
 }
 
 /* Menu related css  */
