@@ -12,3 +12,7 @@ export function deleteTakaCuttingRequest({ id, params }) {
 export function addTakaTpCuttingRequest({ data, params }) {
     return api.post(`/production/taka-cutting/create`, data, { params });
 }
+
+export function getTakaCuttingSrNoRequest({ params }) {
+    return api.get(`/production/taka-cutting/sr_no`, { params });
+}
