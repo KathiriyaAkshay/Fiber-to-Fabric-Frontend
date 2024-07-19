@@ -69,6 +69,10 @@ const AddProduction = () => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
 
     const newData = array.map((fieldNumber) => {
+      const beamCard = beamCardList.rows.find(({ machine_no }) => {
+        return machine_no === data[`machine_no_${fieldNumber}`];
+      });
+
       const payload = {
         machine_name: data.machine_name,
         production_date: dayjs(data.date).format("YYYY-MM-DD"),
@@ -76,8 +80,8 @@ const AddProduction = () => {
         taka_no: +(+lastProductionTaka + fieldNumber),
         meter: +data[`meter_${fieldNumber}`],
         weight: +data[`weight_${fieldNumber}`],
-        machine_no: +data[`machine_no_${fieldNumber}`],
-        beam_load_id: +data[`machine_no_${fieldNumber}`],
+        machine_no: data[`machine_no_${fieldNumber}`],
+        beam_load_id: beamCard.id,
         average: +data[`average_${fieldNumber}`],
         beam_no: data[`beam_no_${fieldNumber}`],
         production_meter: +data[`production_meter_${fieldNumber}`],
@@ -96,7 +100,6 @@ const AddProduction = () => {
       }
       return payload;
     });
-
     await addNewProduction(newData);
   };
 

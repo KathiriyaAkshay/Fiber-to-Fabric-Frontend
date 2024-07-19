@@ -21,6 +21,7 @@ const AddProductionTable = ({
   setWeightPlaceholder,
   dropDownQualityListRes,
 }) => {
+  console.log({ beamCardList });
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
@@ -62,8 +63,8 @@ const AddProductionTable = ({
   };
 
   const changeMachineNoHandler = (fieldNumber, value) => {
-    const beamCard = beamCardList.rows.find(({ id }) => {
-      return id === value;
+    const beamCard = beamCardList.rows.find(({ machine_no }) => {
+      return machine_no === value;
     });
     const obj =
       beamCard.non_pasarela_beam_detail ||
@@ -150,7 +151,7 @@ const AddProductionTable = ({
           <th>Prod.Mtr</th>
           <th>Pend.Mtr</th>
           <th>Pend %</th>
-          <th>
+          <th style={{ width: "50px" }}>
             <MinusCircleOutlined />
           </th>
         </thead>
@@ -235,9 +236,9 @@ const AddProductionTable = ({
                           disabled={fieldNumber !== activeField}
                           options={
                             beamCardList &&
-                            beamCardList?.rows?.map(({ id, machine_no }) => ({
+                            beamCardList?.rows?.map(({ machine_no }) => ({
                               label: machine_no,
-                              value: id,
+                              value: machine_no,
                             }))
                           }
                           onChange={(value) => {
@@ -513,7 +514,7 @@ const AddProductionTable = ({
                     />
                   </Form.Item>
                 </td>
-                <td>
+                <td style={{ textAlign: "center" }}>
                   <Button
                     className="job-challan-taka-plus-option"
                     icon={<MinusCircleOutlined />}
