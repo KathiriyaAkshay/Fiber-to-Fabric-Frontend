@@ -4,12 +4,12 @@ import { useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
-import { GlobalContext } from "../../../contexts/GlobalContext";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
 
 const { Text } = Typography;
 
-const ViewJobTakaInfo = ({ details }) => {
+const ViewReworkChallanInfo = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -38,10 +38,10 @@ const ViewJobTakaInfo = ({ details }) => {
     TakaArray?.map((element, index) => {
       tempTotal1 =
         Number(tempTotal1) +
-        Number(details?.job_challan_details[index]?.meter || 0);
+        Number(details?.job_rework_challan_details[index]?.meter || 0);
       tempTotal2 =
         Number(tempTotal2) +
-        Number(details?.job_challan_details[index + 12]?.meter || 0);
+        Number(details?.job_rework_challan_details[index + 12]?.meter || 0);
     });
 
     let total = Number(tempTotal1) + Number(tempTotal2);
@@ -203,34 +203,46 @@ const ViewJobTakaInfo = ({ details }) => {
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description of Goods:</Col>
-            <Col span={6}>{details?.yarn_stock_company?.yarn_company_name}</Col>
-            <Col span={6}>Date:</Col>
+            <Col span={6}>Description:</Col>
             <Col span={6}>
-              {dayjs(details?.created_at).format("DD-MM-YYYY")}
+              {"details?.yarn_stock_company?.yarn_company_name"}
             </Col>
+            <Col span={6}>Date:</Col>
+            <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
           </Row>
           <Row
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderBottom: 0 }}
           >
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={1} style={{ textAlign: "center" }}>
               <strong>No</strong>
             </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
+            <Col span={2} style={{ textAlign: "center" }}>
               <strong>TAKA NO</strong>
-            </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              <strong>Meter</strong>
             </Col>
             <Col span={2} style={{ textAlign: "center" }}>
+              <strong>Meter</strong>
+            </Col>
+            <Col span={3} style={{ textAlign: "center" }}>
+              <strong>Recv Meter</strong>
+            </Col>
+            <Col span={3} style={{ textAlign: "center" }}>
+              <strong>Recv Weight</strong>
+            </Col>
+            <Col span={1} style={{ textAlign: "center" }}>
               <strong>No</strong>
             </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
+            <Col span={2} style={{ textAlign: "center" }}>
               <strong>TAKA NO</strong>
             </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
+            <Col span={2} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
+            </Col>
+            <Col span={3} style={{ textAlign: "center" }}>
+              <strong>Recv Meter</strong>
+            </Col>
+            <Col span={3} style={{ textAlign: "center" }}>
+              <strong>Recv Weight</strong>
             </Col>
           </Row>
 
@@ -241,37 +253,57 @@ const ViewJobTakaInfo = ({ details }) => {
                 className="p-3 border-0"
                 style={{ borderTop: 0 }}
               >
-                <Col span={2} style={{ textAlign: "center" }}>
+                <Col span={1} style={{ textAlign: "center" }}>
                   {index + 1}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index]?.taka_no}
-                </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index]?.meter}
+                <Col span={2} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index]?.taka_no}
                 </Col>
                 <Col span={2} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index]?.meter}
+                </Col>
+                <Col span={3} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index]?.received_meter}
+                </Col>
+                <Col span={3} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index]?.received_weight}
+                </Col>
+                <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index + 12]?.taka_no}
+                <Col span={2} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index + 12]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index + 12]?.meter}
+                <Col span={2} style={{ textAlign: "center" }}>
+                  {details?.job_rework_challan_details[index + 12]?.meter}
+                </Col>
+                <Col span={3} style={{ textAlign: "center" }}>
+                  {
+                    details?.job_rework_challan_details[index + 12]
+                      ?.received_meter
+                  }
+                </Col>
+                <Col span={3} style={{ textAlign: "center" }}>
+                  {
+                    details?.job_rework_challan_details[index + 12]
+                      ?.received_weight
+                  }
                 </Col>
               </Row>
             );
           })}
 
           <Row className="p-3 border-0" style={{ borderTop: 0 }}>
+            <Col span={1} style={{ textAlign: "center" }}></Col>
             <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}>
+            <Col span={2} style={{ textAlign: "center" }}>
               <strong>{totalTaka1}</strong>
             </Col>
+            <Col span={3} style={{ textAlign: "center" }}></Col>
+            <Col span={3} style={{ textAlign: "center" }}></Col>
+            <Col span={1} style={{ textAlign: "center" }}></Col>
             <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}>
+            <Col span={2} style={{ textAlign: "center" }}>
               <strong>{totalTaka2}</strong>
             </Col>
           </Row>
@@ -284,7 +316,7 @@ const ViewJobTakaInfo = ({ details }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.job_challan_details?.length}
+              {details?.job_rework_challan_details?.length}
             </Col>
             <Col span={4} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>
@@ -299,4 +331,4 @@ const ViewJobTakaInfo = ({ details }) => {
   );
 };
 
-export default ViewJobTakaInfo;
+export default ViewReworkChallanInfo;

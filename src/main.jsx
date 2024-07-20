@@ -128,6 +128,7 @@ import TakaTpCutting from "./pages/production/TakaTpCutting";
 import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
 import UpdateProduction from "./pages/production/UpdateProduction";
 import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkChallan";
+import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -647,7 +648,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "rework-challan-bill",
-                element: <div>rework-challan-bill</div>,
+                element: <ReworkChallanBill />,
               },
             ],
           },

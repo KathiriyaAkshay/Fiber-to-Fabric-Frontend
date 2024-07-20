@@ -205,7 +205,7 @@ const AddTakaTpCutting = () => {
 
         <Row className="w-100" justify={"flex-start"} style={{ gap: "12px" }}>
           <Col span={8}>
-            <Card style={{ borderColor: "#194A6D" }}>
+            <Card style={{ borderColor: "#194A6D", height: "100%" }}>
               <Flex gap={12}>
                 <Typography.Text style={{ whiteSpace: "nowrap" }}>
                   Sr. Number :
@@ -310,7 +310,7 @@ const AddTakaTpCutting = () => {
           </Col>
 
           <Col span={9}>
-            <Card style={{ borderColor: "#194A6D" }}>
+            <Card style={{ borderColor: "#194A6D", height: "100%" }}>
               <Form.Item
                 label=""
                 name={`option`}
@@ -477,7 +477,13 @@ const AddTakaTpCutting = () => {
           </Col>
 
           <Col span={6}>
-            <Card style={{ borderColor: "#194A6D", maxWidth: "400px" }}>
+            <Card
+              style={{
+                borderColor: "#194A6D",
+                maxWidth: "400px",
+                height: "100%",
+              }}
+            >
               <Form.Item
                 label="Remark"
                 name="remark"

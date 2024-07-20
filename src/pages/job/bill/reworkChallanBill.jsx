@@ -3,55 +3,60 @@ import {
   Table,
   Select,
   DatePicker,
-  Button,
   Input,
   Flex,
   Typography,
-  Tag,
   Spin,
   Space,
+  Tag,
+  Button,
 } from "antd";
-import {
-  EditOutlined,
-  EyeOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { usePagination } from "../../../../hooks/usePagination";
+import { usePagination } from "../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
-import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import { getReworkChallanListRequest } from "../../../../api/requests/job/challan/reworkChallan";
-import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
-import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
-import useDebounce from "../../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
+import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
+import useDebounce from "../../../hooks/useDebounce";
 import dayjs from "dayjs";
-import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
+import { getReworkChallanListRequest } from "../../../api/requests/job/challan/reworkChallan";
+// import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
+import { EditOutlined, FileTextOutlined } from "@ant-design/icons";
+import ReworkChallanModal from "../../../components/job/challan/reworkChallan/ReworkChallanModal";
+import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
 
-const ReworkChallan = () => {
-  const navigate = useNavigate();
+const ReworkChallanBill = () => {
   const [quality, setQuality] = useState(null);
   const [supplier, setSupplier] = useState(null);
   const [machine, setMachine] = useState(null);
-  const [challanNo, setChallanNo] = useState("");
+  const [billNo, setBillNo] = useState("");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [payment, setPayment] = useState("un-paid");
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedMachine = useDebounce(machine, 500);
-  const debouncedChallanNo = useDebounce(challanNo, 500);
+  const debouncedBillNo = useDebounce(billNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
+  const debouncedPayment = useDebounce(payment, 500);
 
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+
+  const [reworkChallanModal, setReworkChallanModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+  });
+  const handleCloseModal = () => {
+    setReworkChallanModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
+  };
+
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const {
@@ -112,10 +117,11 @@ const ReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  const { data: reworkChallanList, isLoading } = useQuery({
+  const { data: reworkChallanBillData, isLoading } = useQuery({
     queryKey: [
       "rework",
       "challan",
+      "bill",
       "list",
       {
         company_id: companyId,
@@ -124,9 +130,10 @@ const ReworkChallan = () => {
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
-        challan_no: debouncedChallanNo,
+        bill_no: debouncedBillNo,
         machine_name: debouncedMachine,
         supplier_name: debouncedSupplier,
+        is_paid: debouncedPayment,
       },
     ],
     queryFn: async () => {
@@ -135,12 +142,14 @@ const ReworkChallan = () => {
           company_id: companyId,
           page,
           pageSize,
+          // bill_status: "confirmed",
           from: debouncedFromDate,
           to: debouncedToDate,
           quality_id: debouncedQuality,
-          challan_no: debouncedChallanNo,
+          bill_no: debouncedBillNo,
           machine_name: debouncedMachine,
           supplier_name: debouncedSupplier,
+          is_paid: debouncedPayment,
         },
       });
       return res.data?.data;
@@ -148,52 +157,34 @@ const ReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  function navigateToAdd() {
-    navigate("/job/challan/rework-challan/add");
-  }
-
-  function navigateToUpdate(id) {
-    navigate(`/job/challan/rework-challan/update/${id}`);
-  }
-
-  function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = reworkChallanList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
-    });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
-  }
-
   const columns = [
     {
       title: "No",
       dataIndex: "no",
       key: "no",
       render: (text, record, index) => index + 1,
+      sorter: {
+        compare: (a, b) => {
+          return a.id - b.id;
+        },
+      },
     },
     {
-      title: "Challan No",
-      dataIndex: "challan_no",
-      key: "challan_no",
-    },
-    {
-      title: "Challan Date",
+      title: "Bill Date",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
-      title: "Supplier Name",
-      dataIndex: "supplier",
-      key: "supplier",
-      render: (supplier) => `${supplier.supplier_name}`,
+      title: "Bill No",
+      dataIndex: "bill_no",
+      key: "bill_no",
+      sorter: (a, b) => a.bill_no - b.bill_no,
+    },
+    {
+      title: "To Company",
+      dataIndex: ["supplier", "supplier_company"],
+      key: "to_company",
     },
     {
       title: "Quality",
@@ -213,66 +204,81 @@ const ReworkChallan = () => {
       key: "total_meter",
     },
     {
-      title: "Total Rec. Meter",
-      dataIndex: "taka_receive_meter",
-      key: "taka_receive_meter",
+      title: "Rate",
+      dataIndex: ["job_rework_bill", "rate"],
+      key: "rate",
     },
     {
-      title: "Wastage in KG.",
-      dataIndex: "wastageInKg",
-      key: "wastageInKg",
+      title: "Amount",
+      dataIndex: ["job_rework_bill", "amount"],
+      key: "amount",
     },
     {
-      title: "Short(%)",
-      dataIndex: "shortPercentage",
-      key: "shortPercentage",
+      title: "Net Amount",
+      dataIndex: ["job_rework_bill", "net_amount"],
+      key: "net_amount",
     },
     {
-      title: "Bill Status",
-      dataIndex: "bill_status",
-      key: "bill_status",
-      render: (billStatus) => (
-        <Tag
-          color={
-            billStatus && billStatus.toString().toLowerCase() === "pending"
-              ? "red"
-              : "green"
-          }
-        >
-          {billStatus?.toString()?.toLowerCase() === "pending"
-            ? "Pending"
-            : billStatus?.toString()?.toLowerCase() === "confirmed"
-            ? "Confirmed"
-            : "-"}
-        </Tag>
-      ),
+      title: "Due Date",
+      dataIndex: ["job_rework_bill", "due_date"],
+      key: "due_date",
+      render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
-      title: "Payment Status",
-      dataIndex: "is_paid",
-      key: "is_paid",
-      render: (paymentStatus) => (
-        <Tag color={!paymentStatus ? "red" : "green"}>
-          {paymentStatus ? "Paid" : "Un-Paid"}
-        </Tag>
-      ),
+      title: "Due Days",
+      dataIndex: "due_days",
+      key: "due_days",
+    },
+    {
+      title: "Status",
+      render: (details) => {
+        return details.is_paid ? (
+          <Tag color="green">Paid</Tag>
+        ) : (
+          <Tag color="red">Un-Paid</Tag>
+        );
+      },
     },
     {
       title: "Action",
       render: (details) => {
         return (
           <Space>
-            <Button type="primary">
-              <EyeOutlined />
-            </Button>
+            <ViewReworkChallanInfo details={details} />
             <Button
               onClick={() => {
-                navigateToUpdate(details.id);
+                setReworkChallanModal((prev) => {
+                  return {
+                    ...prev,
+                    isModalOpen: true,
+                    details: details,
+                    mode: "UPDATE",
+                  };
+                });
               }}
             >
               <EditOutlined />
             </Button>
-            <DeleteReworkChallan details={details} />
+            <Button
+              onClick={() => {
+                let MODE;
+                if (details.bill_status === "confirmed") {
+                  MODE = "VIEW";
+                } else {
+                  MODE = "ADD";
+                }
+                setReworkChallanModal((prev) => {
+                  return {
+                    ...prev,
+                    isModalOpen: true,
+                    details: details,
+                    mode: MODE,
+                  };
+                });
+              }}
+            >
+              <FileTextOutlined />
+            </Button>
           </Space>
         );
       },
@@ -290,14 +296,35 @@ const ReworkChallan = () => {
 
     return (
       <Table
-        dataSource={reworkChallanList?.rows || []}
+        dataSource={reworkChallanBillData?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: reworkChallanList?.rows?.count || 0,
+          total: reworkChallanBillData?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          return (
+            <Table.Summary.Row>
+              <Table.Summary.Cell>Grand Total</Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+            </Table.Summary.Row>
+          );
         }}
       />
     );
@@ -308,12 +335,12 @@ const ReworkChallan = () => {
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Rework Challan List</h3>
-            <Button
+            <h3 className="m-0 text-primary">Rework challan bills</h3>
+            {/* <Button
               onClick={navigateToAdd}
               icon={<PlusCircleOutlined />}
               type="text"
-            />
+            /> */}
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
@@ -340,6 +367,7 @@ const ReworkChallan = () => {
                   allowClear
                 />
               </Flex>
+
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Machine
@@ -363,6 +391,7 @@ const ReworkChallan = () => {
                   allowClear
                 />
               </Flex>
+
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Quality
@@ -390,18 +419,6 @@ const ReworkChallan = () => {
                 />
               </Flex>
             </Flex>
-            <Button
-              icon={<FilePdfOutlined />}
-              type="primary"
-              disabled={!reworkChallanList?.rows?.length}
-              onClick={downloadPdf}
-              className="flex-none"
-            />
-          </Flex>
-        </div>
-
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
-          <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 From
@@ -425,14 +442,49 @@ const ReworkChallan = () => {
                 format={"DD-MM-YYYY"}
               />
             </Flex>
+            {/* <Button
+              icon={<FilePdfOutlined />}
+              type="primary"
+              disabled={!receiveReworkTakaList?.rows?.length}
+              onClick={downloadPdf}
+              className="flex-none"
+            /> */}
+          </Flex>
+        </div>
+
+        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
+          <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                Challan No
+                Payment
+              </Typography.Text>
+              <Select
+                placeholder="Select Machine"
+                options={[
+                  { label: "Un-Paid", value: 0 },
+                  { label: "Paid", value: 1 },
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                value={payment}
+                onChange={setPayment}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                allowClear
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Bill No
               </Typography.Text>
               <Input
-                placeholder="Challan NO"
-                value={challanNo}
-                onChange={(e) => setChallanNo(e.target.value)}
+                placeholder="Search"
+                value={billNo}
+                onChange={(e) => setBillNo(e.target.value)}
                 style={{ width: "200px" }}
               />
             </Flex>
@@ -440,8 +492,17 @@ const ReworkChallan = () => {
         </div>
         {renderTable()}
       </div>
+
+      {reworkChallanModal.isModalOpen && (
+        <ReworkChallanModal
+          details={{ ...reworkChallanModal.details, sent_meter: 6 }}
+          isModelOpen={reworkChallanModal.isModalOpen}
+          handleCloseModal={handleCloseModal}
+          MODE={reworkChallanModal.mode}
+        />
+      )}
     </>
   );
 };
 
-export default ReworkChallan;
+export default ReworkChallanBill;
