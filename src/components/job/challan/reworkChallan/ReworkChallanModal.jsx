@@ -18,13 +18,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ToWords } from "to-words";
-import { GlobalContext } from "../../../contexts/GlobalContext";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 const { Text } = Typography;
+import { addReworkChallanBillRequest } from "../../../../api/requests/job/bill/reworkChallanBill";
+import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
 import moment from "moment";
-import {
-  addJobTakaBillRequest,
-  getJobTakaBillByIdRequest,
-} from "../../../api/requests/job/bill/jobBill";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -47,10 +45,10 @@ const toWords = new ToWords({
   },
 });
 
-const addSizeBeamReceive = yup.object().shape({
+const validationSchema = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
   bill_date: yup.string().required("Please enter bill date"),
-  //   due_date: yup.string().required("Please enter due date"),
+  due_date: yup.string().required("Please enter due date"),
   freight_value: yup.string().required("Please enter freight value"),
   freight_amount: yup.string().required("Please enter freight amount"),
   discount_value: yup.string().required("Please enter is discount"),
@@ -71,14 +69,15 @@ const addSizeBeamReceive = yup.object().shape({
   net_amount: yup.string().required("Please enter net amount"),
   round_off: yup.string().required("Please enter round off"),
 
-  TDS_value: yup.string().required("Please enter TDS value"),
-  after_TDS_amount: yup.string().required("Please enter after TDS amount"),
+  // TDS_value: yup.string().required("Please enter TDS value"),
+  // after_TDS_amount: yup.string().required("Please enter after TDS amount"),
 
   rate: yup.string().required("Please enter rate"),
+  claim: yup.string().required("Please enter claim"),
   amount: yup.string().required("Please enter amount"),
 });
 
-const JobTakaChallanModal = ({
+const ReworkChallanModal = ({
   details = {},
   isModelOpen,
   handleCloseModal,
@@ -97,16 +96,16 @@ const JobTakaChallanModal = ({
     });
   }, [details, companyListRes]);
 
-  const { data: jobTakasBillDetail = null } = useQuery({
-    queryKey: ["/job/taka/bill/get", MODE, { id: details.id }],
+  const { data: reworkChallanBillDetail = null } = useQuery({
+    queryKey: ["/job/challan/rework/get", MODE, { id: details.id }],
     queryFn: async () => {
       if (MODE === "VIEW" || MODE === "UPDATE") {
-        const res = await getJobTakaBillByIdRequest({
-          //   id: details.id
+        const res = await getReworkChallanByIdRequest({
+          id: details.id,
           params: {
             company_id: companyId,
-            taka_challan_id: details.id,
-            bill_id: details.job_taka_bill.id,
+            // taka_challan_id: details.id,
+            // bill_id: details.job_taka_bill.id,
           },
         });
         return res?.data?.data;
@@ -115,9 +114,9 @@ const JobTakaChallanModal = ({
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: addJobTakaBill, isPending } = useMutation({
+  const { mutateAsync: addReworkChallanBill, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await addJobTakaBillRequest({
+      const res = await addReworkChallanBillRequest({
         data,
         params: {
           company_id: companyId,
@@ -125,9 +124,15 @@ const JobTakaChallanModal = ({
       });
       return res.data;
     },
-    mutationKey: ["job", "taka", "bill"],
+    mutationKey: ["add", "rework", "challan", "bill"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["job", "challan", "list", companyId]);
+      queryClient.invalidateQueries([
+        "rework",
+        "challan",
+        "bill",
+        "list",
+        companyId,
+      ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -142,11 +147,13 @@ const JobTakaChallanModal = ({
 
   const onSubmit = async (data) => {
     const newData = {
-      gray_order_id: details.gray_order_id,
-      taka_challan_id: details.id,
+      // gray_order_id: details.gray_order_id,
+      // taka_challan_id: details.id,
       invoice_no: data.invoice_no,
+      supplier_invoice_no: data.supplier_invoice_no,
+      job_rework_challan_id: details.id,
       bill_date: dayjs(data.bill_date).format("YYYY-MM-DD"),
-      //   due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
+      due_date: dayjs(data.due_date).format("YYYY-MM-DD"),
       discount_value: +data.discount_value,
       discount_amount: +data.discount_amount,
       SGST_value: +data.SGST_value,
@@ -162,11 +169,13 @@ const JobTakaChallanModal = ({
       //   net_rate: +data.net_rate,
       amount: +data.amount,
       rate: +data.rate,
+      claim: +data.claim,
 
-      TDS_value: +data.TDS_value,
-      after_TDS_amount: +data.after_TDS_amount,
+      // TDS_value: +data.TDS_value,
+      // after_TDS_amount: +data.after_TDS_amount,
+      createdAt: dayjs(),
     };
-    await addJobTakaBill(newData);
+    await addReworkChallanBill(newData);
   };
 
   const {
@@ -178,11 +187,12 @@ const JobTakaChallanModal = ({
     setValue,
     getValues,
   } = useForm({
-    resolver: yupResolver(addSizeBeamReceive),
+    resolver: yupResolver(validationSchema),
     defaultValues: {
       bill_date: dayjs(),
       invoice_no: "",
-      //   due_date: dayjs(),
+      supplier_invoice_no: "",
+      due_date: dayjs(),
 
       discount_amount: 0,
       discount_value: 0,
@@ -191,6 +201,7 @@ const JobTakaChallanModal = ({
       freight_amount: 0,
 
       rate: 0,
+      claim: 0,
       amount: 0,
 
       SGST_value: 0,
@@ -208,8 +219,8 @@ const JobTakaChallanModal = ({
       round_off: 0,
       net_amount: 0,
 
-      TDS_value: 0,
-      after_TDS_amount: 0,
+      // TDS_value: 0,
+      // after_TDS_amount: 0,
     },
   });
 
@@ -235,12 +246,17 @@ const JobTakaChallanModal = ({
     }
   }
 
-  function calculateAmount(rate, meter) {
-    setValue("amount", (+rate * meter).toFixed(2));
+  function calculateAmount(meter) {
+    const amount = (+getValues("rate") * meter).toFixed(2);
+    const claim = +getValues("claim") * 5;
+    setValue("amount", (amount - claim).toFixed(2));
+
     calculateDiscount(currentValues.discount_value);
   }
+
   function calculateRate(amount, meter) {
     setValue("rate", (+amount / meter).toFixed(2));
+    setValue("claim", 0);
     calculateDiscount(currentValues.discount_value);
   }
 
@@ -263,13 +279,13 @@ const JobTakaChallanModal = ({
     setValue("TCS_amount", TCS_Amount);
   };
 
-  const calculateAfterTDSAmount = (TDSValue) => {
-    const TDS_amount = (+getValues("discount_amount") * +TDSValue) / 100;
-    const afterTDS = +Math.abs(+getValues("net_amount") - TDS_amount).toFixed(
-      0
-    );
-    setValue("after_TDS_amount", afterTDS);
-  };
+  // const calculateAfterTDSAmount = (TDSValue) => {
+  //   const TDS_amount = (+getValues("discount_amount") * +TDSValue) / 100;
+  //   const afterTDS = +Math.abs(+getValues("net_amount") - TDS_amount).toFixed(
+  //     0
+  //   );
+  //   setValue("after_TDS_amount", afterTDS);
+  // };
 
   useEffect(() => {
     const finalNetAmount = parseFloat(
@@ -303,47 +319,84 @@ const JobTakaChallanModal = ({
   //  CALCULATION END------------------------------------------------
 
   useEffect(() => {
-    if (jobTakasBillDetail) {
-      setValue("invoice_no", jobTakasBillDetail.jobBill.invoice_no);
-      setValue("rate", jobTakasBillDetail.jobBill.rate);
-      setValue("amount", jobTakasBillDetail.jobBill.amount);
+    if (reworkChallanBillDetail && reworkChallanBillDetail.job_rework_bill) {
+      setValue(
+        "invoice_no",
+        reworkChallanBillDetail.job_rework_bill.invoice_no
+      );
+      setValue(
+        "supplier_invoice_no",
+        reworkChallanBillDetail.job_rework_bill.invoice_no
+      );
+      setValue("rate", reworkChallanBillDetail.job_rework_bill.rate);
+      setValue("claim", reworkChallanBillDetail.job_rework_bill.claim);
+      setValue("amount", reworkChallanBillDetail.job_rework_bill.amount);
 
-      setValue("net_amount", jobTakasBillDetail.jobBill.net_amount);
-      setValue("net_rate", jobTakasBillDetail.jobBill.net_rate);
-      setValue("round_off", jobTakasBillDetail.jobBill.round_off_amount);
-      setValue("bill_date", dayjs(jobTakasBillDetail.jobBill.bill_date));
-      setValue("due_date", dayjs(jobTakasBillDetail.jobBill.due_date));
+      setValue(
+        "net_amount",
+        reworkChallanBillDetail.job_rework_bill.net_amount
+      );
+      // setValue("net_rate", reworkChallanBillDetail.jobBill.net_rate);
+      setValue(
+        "round_off",
+        reworkChallanBillDetail.job_rework_bill.round_off_amount
+      );
+      setValue(
+        "bill_date",
+        dayjs(reworkChallanBillDetail.job_rework_bill.bill_date)
+      );
+      setValue(
+        "due_date",
+        dayjs(reworkChallanBillDetail.job_rework_bill.due_date)
+      );
 
-      setValue("discount_amount", jobTakasBillDetail.jobBill.discount_amount);
-      setValue("discount_value", jobTakasBillDetail.jobBill.discount_value);
-      setValue("IGST_amount", jobTakasBillDetail.jobBill.IGST_amount);
-      setValue("IGST_value", jobTakasBillDetail.jobBill.IGST_value);
-      setValue("CGST_amount", jobTakasBillDetail.jobBill.CGST_amount);
-      setValue("CGST_value", jobTakasBillDetail.jobBill.CGST_value);
-      setValue("SGST_amount", jobTakasBillDetail.jobBill.SGST_amount);
-      setValue("SGST_value", jobTakasBillDetail.jobBill.SGST_value);
-      setValue("TCS_value", jobTakasBillDetail.jobBill.TCS_value);
-      setValue("TCS_amount", jobTakasBillDetail.jobBill.TCS_amount);
-
-      setValue("TDS_value", jobTakasBillDetail.jobBill.TDS_value);
-      setValue("after_TDS_amount", jobTakasBillDetail.jobBill.after_TDS_amount);
+      setValue(
+        "discount_amount",
+        reworkChallanBillDetail.job_rework_bill.discount_amount
+      );
+      setValue(
+        "discount_value",
+        reworkChallanBillDetail.job_rework_bill.discount_value
+      );
+      setValue(
+        "IGST_amount",
+        reworkChallanBillDetail.job_rework_bill.IGST_amount
+      );
+      setValue(
+        "IGST_value",
+        reworkChallanBillDetail.job_rework_bill.IGST_value
+      );
+      setValue(
+        "CGST_amount",
+        reworkChallanBillDetail.job_rework_bill.CGST_amount
+      );
+      setValue(
+        "CGST_value",
+        reworkChallanBillDetail.job_rework_bill.CGST_value
+      );
+      setValue(
+        "SGST_amount",
+        reworkChallanBillDetail.job_rework_bill.SGST_amount
+      );
+      setValue(
+        "SGST_value",
+        reworkChallanBillDetail.job_rework_bill.SGST_value
+      );
+      setValue("TCS_value", reworkChallanBillDetail.job_rework_bill.TCS_value);
+      setValue(
+        "TCS_amount",
+        reworkChallanBillDetail.job_rework_bill.TCS_amount
+      );
     }
-  }, [jobTakasBillDetail, setValue]);
+  }, [reworkChallanBillDetail, setValue]);
 
   return (
     <>
-      {/* <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <FileTextOutlined />
-      </Button> */}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Received Job Bill
+            Receive Rework Bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -408,7 +461,34 @@ const JobTakaChallanModal = ({
                             {...field}
                             placeholder="Invoice No."
                             style={{ width: "150px" }}
-                            disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                            disabled={MODE === "VIEW"}
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={24} className="mt-2">
+                    <Text strong>Supplier Invoice No</Text>
+                    <Form.Item
+                      name="supplier_invoice_no"
+                      validateStatus={errors.supplier_invoice_no ? "error" : ""}
+                      help={
+                        errors.supplier_invoice_no &&
+                        errors.supplier_invoice_no.message
+                      }
+                      required={true}
+                      className="mb-0"
+                    >
+                      <Controller
+                        control={control}
+                        name="supplier_invoice_no"
+                        render={({ field }) => (
+                          <Input
+                            type="number"
+                            {...field}
+                            placeholder="Invoice No."
+                            style={{ width: "150px" }}
+                            disabled={MODE === "VIEW"}
                           />
                         )}
                       />
@@ -425,10 +505,19 @@ const JobTakaChallanModal = ({
                     <Text>{companyInfo?.company_name}</Text>
                   </Col>
                   <Col span={24} className="mt-1">
-                    <Text strong>Gst In</Text>
+                    <Text strong>Vehicle No</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>{companyInfo?.gst_no}</Text>
+                    <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text>
+                  </Col>
+                  <Col span={24} className="mt-1">
+                    <Text strong>Quality</Text>
+                  </Col>
+                  <Col span={24}>
+                    <Text>
+                      {details?.inhouse_quality?.quality_name} (
+                      {details?.inhouse_quality?.quality_weight}KG)
+                    </Text>
                   </Col>
                   <Col span={24} className="mt-2">
                     <Text strong>Bill Date</Text>
@@ -449,7 +538,7 @@ const JobTakaChallanModal = ({
                             defaultValue={moment("31-05-2024", "DD-MM-YYYY")}
                             format="DD-MM-YYYY"
                             // style={{ marginLeft: "10px" }}
-                            disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                            disabled={MODE === "VIEW"}
                           />
                         )}
                       />
@@ -464,31 +553,31 @@ const JobTakaChallanModal = ({
                 span={6}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <Text strong>QUALITY NAME</Text>
+                <Text strong>TOTAL TAKA</Text>
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <Text strong>CHALLAN NO</Text>
+                <Text strong>SENT METER</Text>
               </Col>
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <Text strong>TAKA</Text>
-              </Col>
-              <Col
-                span={4}
-                className="p-2 font-medium border-0 border-r border-solid"
-              >
-                <Text strong>METER</Text>
+                <Text strong>RECEIVED METER</Text>
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
                 <Text strong>RATE</Text>
+              </Col>
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                <Text strong>CLAIM</Text>
               </Col>
               <Col span={4} className="p-2 font-medium border-0 border-r">
                 <Text strong>AMOUNT</Text>
@@ -499,25 +588,19 @@ const JobTakaChallanModal = ({
                 span={6}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}
+                {`${details.total_taka}`}
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.challan_no}
+                {details.sent_meter}
               </Col>
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.total_taka}
-              </Col>
-              <Col
-                span={4}
-                className="p-2 font-medium border-0 border-r border-solid"
-              >
-                {details.total_meter}
+                {details.received_meter}
               </Col>
               <Col
                 span={4}
@@ -539,9 +622,41 @@ const JobTakaChallanModal = ({
                         placeholder="Rate"
                         type="number"
                         name="rate"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("rate", e.target.value);
-                          calculateAmount(e.target.value, details.total_meter);
+                          calculateAmount(details.sent_meter);
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col
+                span={4}
+                className="p-2 font-medium border-0 border-r border-solid"
+              >
+                <Form.Item
+                  name="claim"
+                  validateStatus={errors.claim ? "error" : ""}
+                  help={errors.claim && errors.claim.message}
+                  required={true}
+                  className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="claim"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        placeholder="Claim"
+                        type="number"
+                        name="claim"
+                        disabled={MODE === "VIEW"}
+                        onChange={(e) => {
+                          setValue("claim", e.target.value);
+                          // calculateAmount(e.target.value, details.sent_meter);
+                          calculateAmount(details.sent_meter);
                         }}
                       />
                     )}
@@ -568,7 +683,7 @@ const JobTakaChallanModal = ({
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("amount", e.target.value);
-                          calculateRate(e.target.value, details.total_meter);
+                          calculateRate(e.target.value, details.sent_meter);
                         }}
                       />
                     )}
@@ -615,6 +730,7 @@ const JobTakaChallanModal = ({
                         placeholder="Discount"
                         type="number"
                         name="discount_value"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("discount_value", e.target.value);
                           calculateDiscount(e.target.value);
@@ -667,6 +783,7 @@ const JobTakaChallanModal = ({
                         placeholder="SGST"
                         type="number"
                         name="SGST_value"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("SGST_value", e.target.value);
                           calculatePercent(e.target.value, "SGST_amount");
@@ -718,6 +835,7 @@ const JobTakaChallanModal = ({
                         {...field}
                         placeholder="SGST"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("CGST_value", e.target.value);
                           calculatePercent(e.target.value, "CGST_amount");
@@ -769,6 +887,7 @@ const JobTakaChallanModal = ({
                         {...field}
                         placeholder="IGST"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("IGST_value", e.target.value);
                           calculatePercent(e.target.value, "IGST_amount");
@@ -821,6 +940,7 @@ const JobTakaChallanModal = ({
                         name="TCS_value"
                         placeholder="TCS"
                         type="number"
+                        disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("TCS_value", e.target.value);
                           //   calculatePercent(e.target.value, "TCS_amount");
@@ -867,7 +987,31 @@ const JobTakaChallanModal = ({
                 span={16}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                NO DYEING GUARANTEE
+                <Flex align="center" gap={10}>
+                  <Typography>Due Date</Typography>
+                  <Form.Item
+                    name="due_date"
+                    validateStatus={errors.due_date ? "error" : ""}
+                    help={errors.due_date && errors.due_date.message}
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                    className="mb-0"
+                  >
+                    <Controller
+                      control={control}
+                      name="due_date"
+                      render={({ field }) => (
+                        <DatePicker
+                          {...field}
+                          defaultValue={moment("31-05-2024", "DD-MM-YYYY")}
+                          format="DD-MM-YYYY"
+                          // style={{ marginLeft: "10px" }}
+                          disabled={MODE === "VIEW"}
+                        />
+                      )}
+                    />
+                  </Form.Item>
+                </Flex>
               </Col>
               <Col
                 span={4}
@@ -892,7 +1036,7 @@ const JobTakaChallanModal = ({
           <Flex style={{ marginTop: 20 }} className="flex-col">
             <Row className="border-0 border-b ">
               <Col span={12} className="p-2 font-medium border-0 border-r ">
-                <Flex gap={10} justify="flex-start" className="mt-3">
+                {/* <Flex gap={10} justify="flex-start" className="mt-3">
                   <Typography>TDS (%)</Typography>
                   <Form.Item
                     name="TDS_value"
@@ -921,7 +1065,7 @@ const JobTakaChallanModal = ({
                   <Typography>
                     After TDS amount: {currentValues.after_TDS_amount}
                   </Typography>
-                </Flex>
+                </Flex> */}
               </Col>
               {/* <Col span={3} className="p-2 font-medium border-0 border-r ">
               </Col> */}
@@ -968,4 +1112,4 @@ const JobTakaChallanModal = ({
   );
 };
 
-export default JobTakaChallanModal;
+export default ReworkChallanModal;
