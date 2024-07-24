@@ -34,6 +34,7 @@ import { getPurchaseTakaListRequest } from "../../../../api/requests/purchase/pu
 import dayjs from "dayjs";
 import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
+import ViewPurchaseChallanInfo from "../../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
 const PurchaseChallanList = () => {
@@ -62,7 +63,7 @@ const PurchaseChallanList = () => {
   //   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const [puchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
+  const [purchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
     isModalOpen: false,
     details: null,
     mode: "",
@@ -270,6 +271,7 @@ const PurchaseChallanList = () => {
               title="Purchase Taka Details"
               details={details}
             /> */}
+            <ViewPurchaseChallanInfo details={details} />
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -536,12 +538,12 @@ const PurchaseChallanList = () => {
         </div>
         {renderTable()}
       </div>
-      {puchaseTakaChallanModal.isModalOpen && (
+      {purchaseTakaChallanModal.isModalOpen && (
         <PurchaseTakaChallanModal
-          details={puchaseTakaChallanModal.details}
-          isModelOpen={puchaseTakaChallanModal.isModalOpen}
+          details={purchaseTakaChallanModal.details}
+          isModelOpen={purchaseTakaChallanModal.isModalOpen}
           handleCloseModal={handleCloseModal}
-          MODE={puchaseTakaChallanModal.mode}
+          MODE={purchaseTakaChallanModal.mode}
         />
       )}
     </>

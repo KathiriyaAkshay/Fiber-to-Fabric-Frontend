@@ -129,6 +129,7 @@ import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
 import UpdateProduction from "./pages/production/UpdateProduction";
 import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkChallan";
 import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
+import PurchaseReturnList from "./pages/purchase/challan/purchaseReturn/PurchaseReturnList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -495,7 +496,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "purchased-return",
-                element: <div>purchased-return</div>,
+                element: <PurchaseReturnList />,
               },
               {
                 path: "sale-purchased-taka",
