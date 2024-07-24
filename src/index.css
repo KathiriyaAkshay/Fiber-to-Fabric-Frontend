@@ -89,6 +89,7 @@ body {
 .ant-table {
   font-size: 14px !important;
 }
+
 .ant-table .ant-table-thead .ant-table-cell {
   padding-top: 12px !important;
   padding-bottom: 12px !important;
@@ -133,10 +134,12 @@ tbody tr td {
   padding: 8px !important;
   padding-left: 10px !important;
 }
+
 .grid-information-model .ant-descriptions-item-label span {
   font-weight: 600 !important;
   color: black !important;
 }
+
 .grid-information-model .ant-descriptions-item-content {
   max-width: 70%;
   min-width: 70% !important;
@@ -168,22 +171,22 @@ td {
   /* text-align: center; */
 }
 
-.red-input-field{
+.red-input-field {
   color: red;
 }
 
-.ant-table-summary{
-  .ant-table-cell{
+.ant-table-summary {
+  .ant-table-cell {
     background-color: #efefef;
     font-weight: 600;
   }
 }
 
-.purchase-bill-description{
+.purchase-bill-description {
   padding: 0 !important;
   padding-bottom: 8px !important;
 
-  .ant-descriptions-item-label{
+  .ant-descriptions-item-label {
     width: 50%;
     background-color: #efefef;
     padding-top: 8px;
@@ -194,22 +197,22 @@ td {
   }
 
 
-  .ant-descriptions-item-content{
+  .ant-descriptions-item-content {
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 12px;
   }
 }
 
-.highlight-text{
-  .ant-descriptions-item-content{
+.highlight-text {
+  .ant-descriptions-item-content {
     color: red;
     font-weight: 600;
   }
 }
 
-.finalamount-text{
-  .ant-descriptions-item-content{
+.finalamount-text {
+  .ant-descriptions-item-content {
     color: green;
     font-weight: 600;
   }
@@ -219,7 +222,40 @@ td {
 
 @media print {
   .printable-content {
-      padding: 20px;  /* Add your desired padding */
-      margin: 20px;   /* Add your desired margin */
+    padding: 20px;
+    /* Add your desired padding */
+    margin: 20px;
+    /* Add your desired margin */
   }
+}
+
+.query-chart-wrapper {
+  -webkit-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);
+  -moz-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);
+  box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);
+  border-radius: 0.5rem;
+  display: flex;
+  justify-content: start;
+  padding-left: 1rem;
+  padding-top: 0.3rem;
+  align-items: center; 
+   background-color: #fff;
+
+}
+
+.chart-wrapper{
+  border: 1px solid rgb(208, 208, 208);
+  border-radius: 0.4rem;
+  margin-bottom: 0.4rem;
+  min-height: 14rem;
+  width:1005;
+  padding: 0.4rem;
+  background-color: #fff;
+}
+
+.dashboard-wrapper{
+  background-color: #fafafa;
+  height: 100%;
+  overflow-x:hidden;
+  min-height: 92vh;
 }
