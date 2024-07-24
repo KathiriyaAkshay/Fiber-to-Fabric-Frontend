@@ -84,9 +84,11 @@ const ReworkChallanFieldTable = ({
           id: 0,
           params: { company_id: companyId, taka_no: debounceTakaNo },
         });
-        console.log({ res });
         if (res.data.success) {
-          setValue(`meter_${currentFieldNumber}`, res.data.data.meter);
+          setValue(
+            `meter_${currentFieldNumber}`,
+            res.data.data !== null ? res.data.data.meter : 0
+          );
         } else {
           setValue(`meter_${currentFieldNumber}`, "");
         }
@@ -98,7 +100,6 @@ const ReworkChallanFieldTable = ({
 
   // useEffect(() => {
   //   if (productionDetail) {
-  //     console.log({ productionDetail });
   //     setValue(`meter_${currentFieldNumber}`, productionDetail.meter);
   //   } else {
   //     setValue(`meter_${currentFieldNumber}`, "");
@@ -244,7 +245,6 @@ const ReworkChallanFieldTable = ({
                               calculateTotal();
                             }}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }
@@ -286,7 +286,6 @@ const ReworkChallanFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }
@@ -328,7 +327,6 @@ const ReworkChallanFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }
@@ -484,7 +482,6 @@ const ReworkChallanFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }
@@ -526,7 +523,6 @@ const ReworkChallanFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }
@@ -568,7 +564,6 @@ const ReworkChallanFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             // onChange={(e) => {
-                            //   console.log("space bar click", e);
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
                             //   }

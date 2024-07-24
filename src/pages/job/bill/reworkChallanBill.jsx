@@ -142,7 +142,7 @@ const ReworkChallanBill = () => {
           company_id: companyId,
           page,
           pageSize,
-          // bill_status: "confirmed",
+          bill_status: "confirmed",
           from: debouncedFromDate,
           to: debouncedToDate,
           quality_id: debouncedQuality,

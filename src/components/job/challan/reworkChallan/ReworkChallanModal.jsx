@@ -594,13 +594,13 @@ const ReworkChallanModal = ({
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.sent_meter}
+                {details.total_meter}
               </Col>
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.received_meter}
+                {details.taka_receive_meter}
               </Col>
               <Col
                 span={4}
@@ -625,7 +625,7 @@ const ReworkChallanModal = ({
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("rate", e.target.value);
-                          calculateAmount(details.sent_meter);
+                          calculateAmount(details.total_meter);
                         }}
                       />
                     )}
@@ -655,8 +655,8 @@ const ReworkChallanModal = ({
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("claim", e.target.value);
-                          // calculateAmount(e.target.value, details.sent_meter);
-                          calculateAmount(details.sent_meter);
+                          // calculateAmount(e.target.value, details.total_meter);
+                          calculateAmount(details.total_meter);
                         }}
                       />
                     )}
@@ -683,7 +683,7 @@ const ReworkChallanModal = ({
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("amount", e.target.value);
-                          calculateRate(e.target.value, details.sent_meter);
+                          calculateRate(e.target.value, details.total_meter);
                         }}
                       />
                     )}

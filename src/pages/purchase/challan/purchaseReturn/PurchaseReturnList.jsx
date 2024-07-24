@@ -7,25 +7,16 @@ import {
   Input,
   Flex,
   Typography,
-  Tag,
   Spin,
   Space,
 } from "antd";
-import {
-  EditOutlined,
-  FilePdfOutlined,
-  FileTextOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
-import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useCurrentUser } from "../../../../api/hooks/auth";
-import { getReworkChallanListRequest } from "../../../../api/requests/job/challan/reworkChallan";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
-import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import useDebounce from "../../../../hooks/useDebounce";
 import {
   downloadUserPdf,
@@ -33,14 +24,14 @@ import {
 } from "../../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
-import ViewReworkChallanInfo from "../../../../components/job/challan/reworkChallan/ViewReworkChallan";
-import ReworkChallanModal from "../../../../components/job/challan/reworkChallan/ReworkChallanModal";
+import { getPruchaseReturnListRequest } from "../../../../api/requests/purchase/purchaseReturn";
+import ViewPurchaseReturnChallanInfo from "../../../../components/purchase/purchaseReturn/ViewPurchaseReturnChallan";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
-const ReworkChallan = () => {
+const PurchaseReturnList = () => {
   const navigate = useNavigate();
   const [quality, setQuality] = useState(null);
   const [supplier, setSupplier] = useState(null);
-  const [machine, setMachine] = useState(null);
   const [challanNo, setChallanNo] = useState("");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -48,26 +39,12 @@ const ReworkChallan = () => {
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const debouncedMachine = useDebounce(machine, 500);
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
 
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  const [reworkChallanModal, setReworkChallanModal] = useState({
-    isModalOpen: false,
-    details: null,
-    mode: "",
-  });
-  const handleCloseModal = () => {
-    setReworkChallanModal((prev) => ({
-      ...prev,
-      isModalOpen: false,
-      mode: "",
-    }));
-  };
 
   const {
     data: dropdownSupplierListRes,
@@ -83,18 +60,6 @@ const ReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: ["machine", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getCompanyMachineListRequest({
-        companyId,
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.machineList;
-    },
-    enabled: Boolean(companyId),
-  });
-
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -102,35 +67,29 @@ const ReworkChallan = () => {
         "list",
         {
           company_id: companyId,
-          machine_name: machine,
           page: 0,
           pageSize: 99999,
           is_active: 1,
         },
       ],
       queryFn: async () => {
-        if (machine) {
-          const res = await getInHouseQualityListRequest({
-            params: {
-              company_id: companyId,
-              machine_name: machine,
-              page: 0,
-              pageSize: 99999,
-              is_active: 1,
-            },
-          });
-          return res.data?.data;
-        } else {
-          return { row: [] };
-        }
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 99999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
 
-  const { data: reworkChallanList, isLoading } = useQuery({
+  const { data: purchaseReturnList, isLoading } = useQuery({
     queryKey: [
-      "rework",
-      "challan",
+      "purchase",
+      "return",
       "list",
       {
         company_id: companyId,
@@ -140,12 +99,11 @@ const ReworkChallan = () => {
         to: debouncedToDate,
         quality_id: debouncedQuality,
         challan_no: debouncedChallanNo,
-        machine_name: debouncedMachine,
         supplier_name: debouncedSupplier,
       },
     ],
     queryFn: async () => {
-      const res = await getReworkChallanListRequest({
+      const res = await getPruchaseReturnListRequest({
         params: {
           company_id: companyId,
           page,
@@ -154,7 +112,7 @@ const ReworkChallan = () => {
           to: debouncedToDate,
           quality_id: debouncedQuality,
           challan_no: debouncedChallanNo,
-          machine_name: debouncedMachine,
+
           supplier_name: debouncedSupplier,
         },
       });
@@ -163,17 +121,13 @@ const ReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  function navigateToAdd() {
-    navigate("/job/challan/rework-challan/add");
-  }
-
   function navigateToUpdate(id) {
     navigate(`/job/challan/rework-challan/update/${id}`);
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = reworkChallanList?.rows?.map((user, index) => {
+    const body = purchaseReturnList?.rows?.map((user, index) => {
       const { challan_no } = user;
       return [index + 1, challan_no];
     });
@@ -194,21 +148,15 @@ const ReworkChallan = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Challan No",
-      dataIndex: "challan_no",
-      key: "challan_no",
-    },
-    {
       title: "Challan Date",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
-      title: "Supplier Name",
-      dataIndex: "supplier",
-      key: "supplier",
-      render: (supplier) => `${supplier?.supplier_name}`,
+      title: "Challan No",
+      dataIndex: "challan_no",
+      key: "challan_no",
     },
     {
       title: "Quality",
@@ -218,66 +166,41 @@ const ReworkChallan = () => {
         `${quality?.quality_name} (${quality?.quality_weight})`,
     },
     {
+      title: "Order No",
+      dataIndex: "order_no",
+      key: "order_no",
+    },
+    {
+      title: "Supplier Name",
+      dataIndex: "supplier",
+      key: "supplier",
+      render: (supplier) => `${supplier?.supplier_name}`,
+    },
+    {
+      title: "To Company",
+      render: (details) =>
+        details?.purchase_taka_challan?.supplier?.supplier_company,
+    },
+    {
+      title: "Return Meter",
+      dataIndex: "return_meter",
+      key: "return_meter",
+    },
+    {
       title: "Total Taka",
-      dataIndex: "total_taka",
-      key: "total_taka",
+      render: (details) => details?.purchase_taka_challan?.total_taka,
     },
     {
-      title: "Total Meter",
-      dataIndex: "total_meter",
-      key: "total_meter",
-    },
-    {
-      title: "Total Rec. Meter",
-      dataIndex: "taka_receive_meter",
-      key: "taka_receive_meter",
-    },
-    {
-      title: "Wastage in KG.",
-      dataIndex: "wastageInKg",
-      key: "wastageInKg",
-    },
-    {
-      title: "Short(%)",
-      dataIndex: "shortPercentage",
-      key: "shortPercentage",
-    },
-    {
-      title: "Bill Status",
-      dataIndex: "bill_status",
-      key: "bill_status",
-      render: (billStatus) => (
-        <Tag
-          color={
-            billStatus && billStatus.toString().toLowerCase() === "pending"
-              ? "red"
-              : "green"
-          }
-        >
-          {billStatus?.toString()?.toLowerCase() === "pending"
-            ? "Pending"
-            : billStatus?.toString()?.toLowerCase() === "confirmed"
-            ? "Confirmed"
-            : "-"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Payment Status",
-      dataIndex: "is_paid",
-      key: "is_paid",
-      render: (paymentStatus) => (
-        <Tag color={!paymentStatus ? "red" : "green"}>
-          {paymentStatus ? "Paid" : "Un-Paid"}
-        </Tag>
-      ),
+      title: "Return Date",
+      dataIndex: "return_date",
+      key: "return_date",
     },
     {
       title: "Action",
       render: (details) => {
         return (
           <Space>
-            <ViewReworkChallanInfo details={details} />
+            <ViewPurchaseReturnChallanInfo details={details} />
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -286,26 +209,6 @@ const ReworkChallan = () => {
               <EditOutlined />
             </Button>
             <DeleteReworkChallan details={details} />
-            <Button
-              onClick={() => {
-                let MODE;
-                if (details.bill_status === "confirmed") {
-                  MODE = "VIEW";
-                } else {
-                  MODE = "ADD";
-                }
-                setReworkChallanModal((prev) => {
-                  return {
-                    ...prev,
-                    isModalOpen: true,
-                    details: details,
-                    mode: MODE,
-                  };
-                });
-              }}
-            >
-              <FileTextOutlined />
-            </Button>
           </Space>
         );
       },
@@ -323,11 +226,11 @@ const ReworkChallan = () => {
 
     return (
       <Table
-        dataSource={reworkChallanList?.rows || []}
+        dataSource={purchaseReturnList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: reworkChallanList?.rows?.count || 0,
+          total: purchaseReturnList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -341,12 +244,12 @@ const ReworkChallan = () => {
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Rework Challan List</h3>
-            <Button
+            <h3 className="m-0 text-primary">Purchased Return</h3>
+            {/* <Button
               onClick={navigateToAdd}
               icon={<PlusCircleOutlined />}
               type="text"
-            />
+            /> */}
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
@@ -366,29 +269,6 @@ const ReworkChallan = () => {
                   }}
                   value={supplier}
                   onChange={setSupplier}
-                  style={{
-                    textTransform: "capitalize",
-                  }}
-                  className="min-w-40"
-                  allowClear
-                />
-              </Flex>
-              <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  Machine
-                </Typography.Text>
-                <Select
-                  placeholder="Select Machine"
-                  loading={isLoadingMachineList}
-                  options={machineListRes?.rows?.map((machine) => ({
-                    label: machine?.machine_name,
-                    value: machine?.machine_name,
-                  }))}
-                  dropdownStyle={{
-                    textTransform: "capitalize",
-                  }}
-                  value={machine}
-                  onChange={setMachine}
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -422,11 +302,34 @@ const ReworkChallan = () => {
                   className="min-w-40"
                 />
               </Flex>
+              <Flex align="center" gap={10}>
+                <Typography.Text className="whitespace-nowrap">
+                  From
+                </Typography.Text>
+                <DatePicker
+                  value={fromDate}
+                  onChange={setFromDate}
+                  className="min-w-40"
+                  format={"DD-MM-YYYY"}
+                />
+              </Flex>
+
+              <Flex align="center" gap={10}>
+                <Typography.Text className="whitespace-nowrap">
+                  To
+                </Typography.Text>
+                <DatePicker
+                  value={toDate}
+                  onChange={setToDate}
+                  className="min-w-40"
+                  format={"DD-MM-YYYY"}
+                />
+              </Flex>
             </Flex>
             <Button
               icon={<FilePdfOutlined />}
               type="primary"
-              disabled={!reworkChallanList?.rows?.length}
+              disabled={!purchaseReturnList?.rows?.length}
               onClick={downloadPdf}
               className="flex-none"
             />
@@ -435,29 +338,6 @@ const ReworkChallan = () => {
 
         <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
           <Flex align="center" gap={10}>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                From
-              </Typography.Text>
-              <DatePicker
-                value={fromDate}
-                onChange={setFromDate}
-                className="min-w-40"
-                format={"DD-MM-YYYY"}
-              />
-            </Flex>
-
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                To
-              </Typography.Text>
-              <DatePicker
-                value={toDate}
-                onChange={setToDate}
-                className="min-w-40"
-                format={"DD-MM-YYYY"}
-              />
-            </Flex>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 Challan No
@@ -473,17 +353,8 @@ const ReworkChallan = () => {
         </div>
         {renderTable()}
       </div>
-
-      {reworkChallanModal.isModalOpen && (
-        <ReworkChallanModal
-          details={{ ...reworkChallanModal.details }}
-          isModelOpen={reworkChallanModal.isModalOpen}
-          handleCloseModal={handleCloseModal}
-          MODE={reworkChallanModal.mode}
-        />
-      )}
     </>
   );
 };
 
-export default ReworkChallan;
+export default PurchaseReturnList;

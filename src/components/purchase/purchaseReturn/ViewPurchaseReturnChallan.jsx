@@ -4,12 +4,12 @@ import { useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
-import { GlobalContext } from "../../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
-const ViewReworkChallanInfo = ({ details }) => {
+const ViewPurchaseReturnChallanInfo = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -38,10 +38,16 @@ const ViewReworkChallanInfo = ({ details }) => {
     TakaArray?.map((element, index) => {
       tempTotal1 =
         Number(tempTotal1) +
-        Number(details?.job_rework_challan_details[index]?.meter || 0);
+        Number(
+          details?.purchase_taka_challan?.purchase_challan_details[index]
+            ?.meter || 0
+        );
       tempTotal2 =
         Number(tempTotal2) +
-        Number(details?.job_rework_challan_details[index + 12]?.meter || 0);
+        Number(
+          details?.purchase_taka_challan?.purchase_challan_details[index + 12]
+            ?.meter || 0
+        );
     });
 
     let total = Number(tempTotal1) + Number(tempTotal2);
@@ -74,7 +80,7 @@ const ViewReworkChallanInfo = ({ details }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Challan
+            Purchase Return Challan
           </Typography.Text>
         }
         open={isModelOpen}
@@ -144,25 +150,27 @@ const ViewReworkChallanInfo = ({ details }) => {
                 <Col span={24}>
                   <Text>To,</Text>
                   <Text className="block font-bold">
-                    {details?.supplier?.supplier_company}(
-                    {details?.supplier?.supplier_name})
+                    {details?.purchase_taka_challan?.supplier?.supplier_company}
+                    ({details?.purchase_taka_challan?.supplier?.supplier_name})
                   </Text>
                   <Text className="block">
-                    {details?.supplier?.user?.address}
+                    {details?.purchase_taka_challan?.supplier?.user?.address}
                   </Text>
                 </Col>
               </Row>
               <Row>
                 <Col span={24}>
                   <Text>Challan</Text>
-                  <Text className="block">{details?.challan_no}</Text>
+                  <Text className="block">
+                    {details?.purchase_taka_challan?.challan_no}
+                  </Text>
                 </Col>
               </Row>
               <Row>
                 <Col span={24}>
                   <Text>GST</Text>
                   <Text className="block">
-                    {details?.supplier?.user?.gst_no}
+                    {details?.purchase_taka_challan?.supplier?.user?.gst_no}
                   </Text>
                 </Col>
               </Row>
@@ -187,7 +195,8 @@ const ViewReworkChallanInfo = ({ details }) => {
                 <Col span={24}>
                   <Text>Broker</Text>
                   <Text className="block font-bold">
-                    {details?.broker?.first_name} {details?.broker?.last_name}
+                    {details?.purchase_taka_challan?.broker?.first_name}{" "}
+                    {details?.purchase_taka_challan?.broker?.last_name}
                   </Text>
                 </Col>
               </Row>
@@ -205,8 +214,9 @@ const ViewReworkChallanInfo = ({ details }) => {
           >
             <Col span={6}>Description:</Col>
             <Col span={6}>
-              {details?.inhouse_quality?.quality_name} (
-              {details?.inhouse_quality?.quality_weight}KG)
+              {details?.purchase_taka_challan?.inhouse_quality?.quality_name} (
+              {details?.purchase_taka_challan?.inhouse_quality?.quality_weight}
+              KG)
             </Col>
             <Col span={6}>Date:</Col>
             <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
@@ -218,32 +228,20 @@ const ViewReworkChallanInfo = ({ details }) => {
             <Col span={1} style={{ textAlign: "center" }}>
               <strong>No</strong>
             </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>TAKA NO</strong>
             </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Weight</strong>
             </Col>
             <Col span={1} style={{ textAlign: "center" }}>
               <strong>No</strong>
             </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>TAKA NO</strong>
             </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Weight</strong>
             </Col>
           </Row>
 
@@ -257,37 +255,35 @@ const ViewReworkChallanInfo = ({ details }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 1}
                 </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.taka_no}
+                <Col span={5} style={{ textAlign: "center" }}>
+                  {
+                    details?.purchase_taka_challan?.purchase_challan_details[
+                      index
+                    ]?.taka_no
+                  }
                 </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.received_meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.received_weight}
+                <Col span={5} style={{ textAlign: "center" }}>
+                  {
+                    details?.purchase_taka_challan?.purchase_challan_details[
+                      index
+                    ]?.meter
+                  }
                 </Col>
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index + 12]?.taka_no}
-                </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index + 12]?.meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center" }}>
                   {
-                    details?.job_rework_challan_details[index + 12]
-                      ?.received_meter
+                    details?.purchase_taka_challan?.purchase_challan_details[
+                      index + 12
+                    ]?.taka_no
                   }
                 </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center" }}>
                   {
-                    details?.job_rework_challan_details[index + 12]
-                      ?.received_weight
+                    details?.purchase_taka_challan?.purchase_challan_details[
+                      index + 12
+                    ]?.meter
                   }
                 </Col>
               </Row>
@@ -296,15 +292,14 @@ const ViewReworkChallanInfo = ({ details }) => {
 
           <Row className="p-3 border-0" style={{ borderTop: 0 }}>
             <Col span={1} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}></Col>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>{totalTaka1}</strong>
             </Col>
-            <Col span={3} style={{ textAlign: "center" }}></Col>
-            <Col span={3} style={{ textAlign: "center" }}></Col>
+
             <Col span={1} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}></Col>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>{totalTaka2}</strong>
             </Col>
           </Row>
@@ -317,7 +312,7 @@ const ViewReworkChallanInfo = ({ details }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.job_rework_challan_details?.length}
+              {details?.purchase_taka_challan?.purchase_challan_details?.length}
             </Col>
             <Col span={4} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>
@@ -332,4 +327,4 @@ const ViewReworkChallanInfo = ({ details }) => {
   );
 };
 
-export default ViewReworkChallanInfo;
+export default ViewPurchaseReturnChallanInfo;
