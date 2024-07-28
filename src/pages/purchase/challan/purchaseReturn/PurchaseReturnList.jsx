@@ -10,7 +10,7 @@ import {
   Spin,
   Space,
 } from "antd";
-import { EditOutlined, FilePdfOutlined } from "@ant-design/icons";
+import { EditOutlined, FileOutlined, FilePdfOutlined, LockFilled } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +27,7 @@ import DeleteReworkChallan from "../../../../components/job/challan/reworkChalla
 import { getPruchaseReturnListRequest } from "../../../../api/requests/purchase/purchaseReturn";
 import ViewPurchaseReturnChallanInfo from "../../../../components/purchase/purchaseReturn/ViewPurchaseReturnChallan";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import DebitNote from "../../../../components/purchase/purchaseReturn/DebitNote";
 
 const PurchaseReturnList = () => {
   const navigate = useNavigate();
@@ -208,6 +209,7 @@ const PurchaseReturnList = () => {
             >
               <EditOutlined />
             </Button>
+            <DebitNote/>
             <DeleteReworkChallan details={details} />
           </Space>
         );
