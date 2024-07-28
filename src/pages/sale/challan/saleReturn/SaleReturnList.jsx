@@ -14,7 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
 import {
   downloadUserPdf,
   getPDFTitleContent,
@@ -26,31 +25,21 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getSaleChallanReturnListRequest } from "../../../../api/requests/sale/challan/challan";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import ViewSaleReturn from "../../../../components/sale/challan/saleReturn/ViewSaleReturn";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import SaleReturnBill from "../../../../components/sale/challan/saleReturn/SaleReturnBill";
 
 const SaleReturnList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
 
-  // const [state, setState] = useState("gray");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  // const [type, setType] = useState();
   const [quality, setQuality] = useState();
-  // const [billStatus, setBillStatus] = useState();
-  // const [fromChallan, setFromChallan] = useState();
-  // const [toChallan, setToChallan] = useState();
   const [saleReturnNo, setSaleReturnNo] = useState();
   const [party, setParty] = useState();
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
-  // const debouncedType = useDebounce(type, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  // const debouncedState = useDebounce(state, 500);
-  // const debouncedBillStatus = useDebounce(billStatus, 500);
-  // const debouncedFromChallan = useDebounce(fromChallan, 500);
-  // const debouncedToChallan = useDebounce(toChallan, 500);
   const debouncedSaleReturnNo = useDebounce(saleReturnNo, 500);
   const debouncedParty = useDebounce(party, 500);
 
@@ -106,12 +95,6 @@ const SaleReturnList = () => {
         quality_id: debouncedQuality,
         party_id: debouncedParty,
         sale_return_no: debouncedSaleReturnNo,
-        // is_gray: debouncedState === "gray" ? true : false,
-        // from_challan_no: debouncedFromChallan,
-        // to_challan_no: debouncedToChallan,
-        // sale_challan_type: debouncedType,
-        // order_no: debouncedOrderNo,
-        // bill_status: debouncedBillStatus,
       },
     ],
     queryFn: async () => {
@@ -124,12 +107,6 @@ const SaleReturnList = () => {
         quality_id: debouncedQuality,
         party_id: debouncedParty,
         sale_return_no: debouncedSaleReturnNo,
-        // is_gray: debouncedState === "gray" ? true : false,
-        // from_challan: debouncedFromChallan,
-        // to_challan: debouncedToChallan,
-        // sale_challan_type: debouncedType,
-        // order_no: debouncedOrderNo,
-        // bill_status: debouncedBillStatus,
       };
 
       if (debouncedFromDate) {
@@ -143,7 +120,6 @@ const SaleReturnList = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ saleChallanReturnList });
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -222,18 +198,7 @@ const SaleReturnList = () => {
         return (
           <Space>
             <ViewSaleReturn details={details} companyId={companyId} />
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
-            {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button> */}
-            {/* <DeleteSaleChallan details={details} /> */}
+            <SaleReturnBill details={details} />
           </Space>
         );
       },
