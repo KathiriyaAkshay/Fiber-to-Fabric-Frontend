@@ -14,7 +14,6 @@ const {Paragraph } = Typography;
 import ReactToPrint from "react-to-print";
 
 const PrintJobWorkChallan = ({ details }) => {
-    console.log(details);
     const [isModelOpen, setIsModalOpen] = useState(false);
     const {companyListRes} = useContext(GlobalContext) ; 
     const [companyInfo, setCompanyInfo] = useState({});

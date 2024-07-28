@@ -54,7 +54,7 @@ const GridInformationModel = ({ title = "", details = [] }) => {
               className="grid-information-model"
             >
               {details?.map((element, index) => {
-                if (index <= 14) {
+                if (index <= 10) {
                   return (
                     <Descriptions.Item key={index} label={element?.label}>
                       {element.value}
@@ -66,7 +66,7 @@ const GridInformationModel = ({ title = "", details = [] }) => {
             </Descriptions>
           </Col>
 
-          {details?.length > 15 && (
+          {details?.length > 10 && (
             <Col span={12}>
               <Descriptions
                 column={1}

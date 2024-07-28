@@ -22,6 +22,7 @@ import { getYarnReceiveListRequest } from "../../../../api/requests/purchase/yar
 import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yarnReceive/DeleteYarnReceiveButton";
 import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
 import MultipleChallanCreateButton from "../../../../components/purchase/receive/yarnReceive/createMultipleChallan";
+import moment from "moment";
 
 function YarnReceiveList() {
   const [search, setSearch] = useState("");
@@ -256,6 +257,10 @@ function YarnReceiveList() {
     );
   }
 
+  const disableFutureDates = (current) => {
+    return current && current > moment().endOf('day');
+};
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -305,6 +310,7 @@ function YarnReceiveList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 
@@ -318,6 +324,7 @@ function YarnReceiveList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 

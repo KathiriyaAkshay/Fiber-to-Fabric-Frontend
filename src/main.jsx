@@ -120,6 +120,7 @@ import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 import AddBeamSale from "./pages/sale/challan/beamSale/AddBeamSale";
 import UpdateBeamSale from "./pages/sale/challan/beamSale/UpdateBeamSale";
 import BeamSaleList from "./pages/sale/challan/beamSale/BeamSaleList";
+import SizeBeamBillList from "./pages/purchase/PurchaseSizeBeam/Bill/sizeBeamBillList";
 import ReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/ReceiveReworkTaka";
 import AddReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/AddReceiveReworkTaka";
 import ReworkChallan from "./pages/job/challan/reworkChallan/ReworkChallan";
@@ -474,7 +475,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "bills-of-size-beam",
-                element: <div>bills-of-size-beam</div>,
+                element: <SizeBeamBillList/>,
               },
               {
                 path: "receive-size-beam",
