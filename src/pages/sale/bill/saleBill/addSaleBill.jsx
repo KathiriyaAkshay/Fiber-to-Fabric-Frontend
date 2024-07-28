@@ -77,11 +77,11 @@ const AddSaleBill = () => {
   async function onSubmit(data) {
     console.log({ data });
     const newData = fieldArray.map((field) => {
-
       let net_amount = data[`net_amount_${field}`];
-      let sgst_amount = Number(net_amount) * Number(2.5) / 100;
-      let cgst_amount = Number(net_amount) * Number(2.5) / 100;
-      let final_amount = Number(net_amount) + Number(sgst_amount) + Number(cgst_amount);
+      let sgst_amount = (Number(net_amount) * Number(2.5)) / 100;
+      let cgst_amount = (Number(net_amount) * Number(2.5)) / 100;
+      let final_amount =
+        Number(net_amount) + Number(sgst_amount) + Number(cgst_amount);
 
       let roundOff_amount = Math.round(final_amount);
       roundOff_amount = Number(roundOff_amount) - final_amount;
@@ -149,37 +149,37 @@ const AddSaleBill = () => {
     enabled: Boolean(companyId),
   });
 
-
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -822,7 +822,7 @@ const FormRow = ({
           <Form.Item
             label="Total Meter"
             name={`total_meter_${fieldNumber}`}
-            validateStatus={errors[`total_meter_${fieldNumber}`] ? 'error' : ''}
+            validateStatus={errors[`total_meter_${fieldNumber}`] ? "error" : ""}
             help={
               errors[`total_meter_${fieldNumber}`] &&
               errors[`total_meter_${fieldNumber}`].message
@@ -876,7 +876,6 @@ const FormRow = ({
                   placeholder="0"
                   onChange={(e) => {
                     // setValue(`rate_${fieldNumber}`, e.target.value);
-
                     // let totalMeter = getValues(`total_meter_${fieldNumber}`);
                     // if (totalMeter !== "" && totalMeter !== undefined) {
                     //   let rate = Number(totalMeter) * Number(e.target.value);
@@ -905,7 +904,8 @@ const FormRow = ({
               control={control}
               name={`net_amount_${fieldNumber}`}
               render={({ field }) => (
-                <Input {...field}
+                <Input
+                  {...field}
                   type="number"
                   placeholder="0"
                   onChange={(e) => {

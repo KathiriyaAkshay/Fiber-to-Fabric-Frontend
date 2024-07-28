@@ -13,14 +13,14 @@ export function getProductionListRequest({ params }) {
     return api.get(`/production/list`, { params });
 }
 
-// export function updateGatePassRequest({ id, data, params }) {
-//     return api.patch(`/more/gate-pass/update/${id}`, data, { params });
-// }
+export function updateProductionRequest({ id, data, params }) {
+    return api.patch(`/production/update/${id}`, data, { params });
+}
 
-// export function getGatePassByIdRequest({ id, params }) {
-//     return api.get(`/more/gate-pass/get/${id}`, { params });
-// }
+export function getProductionByIdRequest({ id, params }) {
+    return api.get(`/production/get/${id}`, { params });
+}
 
-export function deleteProductionRequest({ id, params }) {
-    return api.delete(`/production/delete/${id}`, { params });
+export function deleteProductionRequest({ data, params }) {
+    return api.post(`/production/delete`, data, { params });
 }

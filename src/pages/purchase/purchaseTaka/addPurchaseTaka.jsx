@@ -150,7 +150,7 @@ const AddPurchaseTaka = () => {
   });
   const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
     queryKey: [
       "dropDownQualityListRes",
       "list",

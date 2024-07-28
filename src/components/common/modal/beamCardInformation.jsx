@@ -98,4 +98,4 @@ const BeamCardInformationModel = ({data}) => {
     )
 } 
 
-export default BeamCardInformationModel ; 
+export default BeamCardInformationModel;

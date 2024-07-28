@@ -84,19 +84,18 @@ const JobTakaChallanModal = ({
   handleCloseModal,
   MODE,
 }) => {
-  console.log(details);
   const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
-  const {companyListRes} = useContext(GlobalContext) ; 
+  const { companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
 
   useEffect(() => {
     companyListRes?.rows?.map((element) => {
-      if (element?.id == details?.company_id){
-        setCompanyInfo(element) ; 
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
       }
-    })
-  },[details, companyListRes]) ; 
+    });
+  }, [details, companyListRes]);
 
   const { data: jobTakasBillDetail = null } = useQuery({
     queryKey: ["/job/taka/bill/get", MODE, { id: details.id }],
@@ -380,7 +379,10 @@ const JobTakaChallanModal = ({
                     <Text strong>To,</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>{details?.supplier?.supplier_company}({details?.supplier?.supplier_name})</Text>
+                    <Text>
+                      {details?.supplier?.supplier_company}(
+                      {details?.supplier?.supplier_name})
+                    </Text>
                   </Col>
                   <Col span={24} className="mt-1">
                     <Text strong>Gst In</Text>

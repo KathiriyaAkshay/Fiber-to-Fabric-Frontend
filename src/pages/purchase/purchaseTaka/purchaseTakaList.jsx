@@ -60,30 +60,31 @@ const PurchaseTakaList = () => {
   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const {
     data: dropdownSupplierListRes,
@@ -186,7 +187,7 @@ const PurchaseTakaList = () => {
       title: "Quality Name",
       render: (details) => {
         console.log(details);
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return `${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`;
       },
     },
     {
@@ -473,7 +474,7 @@ const ViewPurchaseTakaDetailsModal = ({ title = "-", details = [] }) => {
   const jobTakaDetails = [
     {
       title: "Quality Name",
-      value: details.inhouse_quality.quality_name,
+      value: details?.inhouse_quality?.quality_name,
     },
     // { title: "Company Name", value: details.delivery_address },
     { title: "Date", value: dayjs(details.createdAt).format("DD-MM-YYYY") },
@@ -482,10 +483,10 @@ const ViewPurchaseTakaDetailsModal = ({ title = "-", details = [] }) => {
     { title: "Weight", value: details.weight },
 
     { title: "Return Sale Challan No", value: details.total_weight },
-    { title: "Sale Challan No", value: details.total_weight },
+    { title: "Sale Challan No", value: details?.total_weight },
     {
       title: "Order Type",
-      value: details.gray_order.order_type,
+      value: details?.gray_order?.order_type,
     },
     { title: "Average", value: details.total_weight },
     { title: "Purchase Challan No", value: details.total_weight },

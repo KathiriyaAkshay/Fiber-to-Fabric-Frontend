@@ -15,7 +15,7 @@ const DeleteProduction = ({ details }) => {
   const { mutateAsync: deleteProduction } = useMutation({
     mutationFn: async ({ id }) => {
       const res = await deleteProductionRequest({
-        id,
+        data: { ids: [id] },
         params: {
           company_id: companyId,
         },
