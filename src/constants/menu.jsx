@@ -520,18 +520,6 @@ export const menubarOptionsList = [
     ),
     children: [
       {
-        path: "taka",
-        key: "Purchase taka stock",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="purchase/taka"
-          >
-            Purchase taka stock
-          </Link>
-        ),
-      },
-      {
         path: "purchased-taka",
         key: "Purchased Taka",
         label: (

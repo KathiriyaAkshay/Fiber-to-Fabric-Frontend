@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Button, Modal, Table, Typography } from "antd";
+import { Button, Modal, Table, Tag, Typography } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import { getYarnOrderAdvanceListRequest } from "../../../api/requests/orderMaster";
 import { useQuery } from "@tanstack/react-query";
@@ -72,11 +72,19 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
       title: "Remaining Amount",
       dataIndex: "remaining_amount",
       key: "remaining_amount",
+      render: (text, record) => (
+        text == undefined?<div>-</div>:<div>-</div>  
+      )
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (text, record) => {
+        return(
+          text == "PENDING"?<Tag color="red">{text}</Tag>:<Tag color="green">{text}</Tag>
+        )
+      }
     },
   ];
 
@@ -121,7 +129,7 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
           dataSource={yarnOrderAdvanceListRes?.yarnOrderAdvances?.rows || []}
           columns={columns}
           rowKey="id"
-          style={{ overflow: "auto" }}
+          style={{ overflow: "auto", marginTop: 20 }}
           pagination={false}
           summary={() => {
             if (!yarnOrderAdvanceListRes) return;
@@ -139,6 +147,7 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
                   <Table.Summary.Cell>
                     <Typography.Text>{remaining_amount}</Typography.Text>
                   </Table.Summary.Cell>
+                  <Table.Summary.Cell />
                 </Table.Summary.Row>
               </>
             );

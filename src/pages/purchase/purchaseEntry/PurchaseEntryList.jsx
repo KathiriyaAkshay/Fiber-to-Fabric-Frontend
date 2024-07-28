@@ -47,11 +47,9 @@ const PurchaseEntryList = () => {
         wrapperCol: { span: 20 }
     };
 
-    const onChange1 = ({ target: { value } }) => {
-        setProdFilter(value);
+    const disableFutureDates = (current) => {
+        return current && current > moment().endOf('day');
     };
-
-    const plainOptions = ['Current Year', 'Previous Year'];
 
     const {
         data: generalPurchaseList,
@@ -271,34 +269,10 @@ const PurchaseEntryList = () => {
                         type="text"
                     />
                 </div>
-                <Flex align="center" gap={10}>
-                    <Radio.Group onChange={() => onChange1()} value={ProdFilter} options={plainOptions} />
-                </Flex>
 
             </div>
             <div>
                 <Row className='w-100' justify={"start"} gutter={24}>
-                    <Col span={4}>
-                        <Form.Item label="Purchase Company" {...formItemLayout}>
-                            <Select
-                                defaultValue="looms"
-                                style={{
-                                    width: "100%",
-                                }}
-                                options={[
-                                    {
-                                        value: 'Sonu Texttiles',
-                                        label: 'Sonu Texttiles',
-                                    },
-                                    {
-                                        value: 'Sonu Traders',
-                                        label: 'Sonu Traders',
-                                    },
-
-                                ]}
-                            />
-                        </Form.Item>
-                    </Col>
 
                     <Col span={4}>
                         <Form.Item label="Supplier" {...formItemLayout}>
@@ -349,6 +323,7 @@ const PurchaseEntryList = () => {
                             <DatePicker
                                 value={fromDate}
                                 onChange={setFromDate}
+                                disabledDate = {disableFutureDates}
                             />
                         </Form.Item>
                     </Col>
@@ -358,6 +333,7 @@ const PurchaseEntryList = () => {
                             <DatePicker
                                 value={toDate}
                                 onChange={setToDate}
+                                disabledDate = {disableFutureDates}
                             />
                         </Form.Item>
                     </Col>

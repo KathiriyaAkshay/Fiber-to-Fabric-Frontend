@@ -152,11 +152,8 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         total = total + Number(currentValues?.CGST_amount) ; 
 
         let roundOffAmount = Math.round(total) - total ; 
-        if (roundOffAmount < 0){
-            roundOffAmount = 0
-        }
         setValue("round_off", parseFloat(roundOffAmount).toFixed(2)) ; 
-        setValue("net_amount",  parseFloat(total).toFixed(2)) ; 
+        setValue("net_amount",  Math.round(total)) ; 
     }, [currentValues?.freight_amount, currentValues?.IGST_amount, currentValues?.SGST_amount, currentValues?.CGST_amount]) ; 
 
     useEffect(() => {
@@ -173,7 +170,8 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         setValue("SGST_amount", parseFloat(sgst_amount).toFixed(2)) ; 
         setValue("CGST_amount", parseFloat(cgst_amount).toFixed(2)) ; 
 
-    }, [currentValues?.IGST_value, currentValues?.SGST_value, currentValues?.CGST_value, setValue]) ; 
+    }, [currentValues?.IGST_value, currentValues?.SGST_value, currentValues?.CGST_value, currentValues?.freight_amount,  setValue]) ; 
+
 
     const disablePastDates = (current) => {
         return current && current < new Date().setHours(0, 0, 0, 0);
@@ -214,10 +212,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         requestData["inhouse_quality_id"] = details?.inhouse_quality?.id ; 
         requestData["total_taka"] = totalTaka ; 
         requestData["total_meter"] = totalMeter ; 
-        requestData["bill_number"] = "BILL-2024-001" ; 
         requestData["supplier_id"] = details?.supplier?.id ; 
-
-        console.log(requestData);
 
         await createSizeBeamBill(requestData) ; 
     }

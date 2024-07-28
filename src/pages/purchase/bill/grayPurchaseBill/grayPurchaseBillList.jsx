@@ -20,7 +20,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
 import {
   downloadUserPdf,
   getPDFTitleContent,
@@ -33,33 +32,28 @@ import { getPurchaseTakaListRequest } from "../../../../api/requests/purchase/pu
 import dayjs from "dayjs";
 import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import moment from "moment";
 
 const GrayPurchaseBillList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
-  //   const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  //   const [type, setType] = useState();
   const [quality, setQuality] = useState();
   const [payment, setPayment] = useState();
   const [orderNo, setOrderNo] = useState("");
   const [billNo, setBillNo] = useState("");
   const [supplier, setSupplier] = useState();
-  //   const [supplierCompany, setSupplierCompany] = useState();
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedPayment = useDebounce(payment, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  //   const debouncedState = useDebounce(state, 500);
   const debouncedOrderNo = useDebounce(orderNo, 500);
   const debouncedBillNo = useDebounce(billNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
-  //   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const [puchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
@@ -172,10 +166,6 @@ const GrayPurchaseBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  //   function navigateToAdd() {
-  //     navigate("/purchase/purchased-taka/add");
-  //   }
-
   function navigateToUpdate(id) {
     navigate(`/purchase/purchase-taka/update/${id}`);
   }
@@ -258,14 +248,17 @@ const GrayPurchaseBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["purchase_taka_bill", "due_date"],
-      render: (text) => {
-        return dayjs(text).format("DD-MM-YYYY");
-      },
+      render: (text, record) => (
+        <div>-</div>
+      )
     },
     {
       title: "Due Days",
       dataIndex: ["purchase_taka_bill", "due_days"],
       key: "due_days",
+      render: (text, record) => (
+        <div>-</div>
+      )
     },
     {
       title: "Bill Status",
@@ -294,17 +287,6 @@ const GrayPurchaseBillList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
             <DeletePurchaseTaka details={details} />
             <Button
               onClick={() => {
@@ -331,6 +313,10 @@ const GrayPurchaseBillList = () => {
       },
     },
   ];
+
+  const disableFutureDates = (current) => {
+    return current && current > moment().endOf('day');
+  };
 
   function renderTable() {
     if (isLoading) {
@@ -389,6 +375,8 @@ const GrayPurchaseBillList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
           );
@@ -400,27 +388,10 @@ const GrayPurchaseBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-        <Radio.Group
-          name="filter"
-          value={state}
-          onChange={(e) => setState(e.target.value)}
-        >
-          <Flex align="center" gap={10}>
-            <Radio value={"current"}> Current</Radio>
-            <Radio value={"previous"}> Previous </Radio>
-          </Flex>
-        </Radio.Group>
-      </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Gray Purchase Bills</h3>
-            {/* <Button
-              onClick={navigateToAdd}
-              icon={<PlusCircleOutlined />}
-              type="text"
-            /> */}
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
@@ -521,6 +492,7 @@ const GrayPurchaseBillList = () => {
                   onChange={setFromDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disableFutureDates}
                 />
               </Flex>
             </Flex>
@@ -534,6 +506,7 @@ const GrayPurchaseBillList = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disableFutureDates}
               />
             </Flex>
             <Button
