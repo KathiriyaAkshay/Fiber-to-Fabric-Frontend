@@ -1,11 +1,16 @@
+import { useContext, useRef, useState } from "react";
 import { CloseOutlined, FileOutlined } from "@ant-design/icons";
-import { Button, Modal, Table, Typography, Row, Col, Flex } from "antd";
-import React, { useRef, useState } from "react";
+import { Button, Modal, Typography, Flex } from "antd";
 import ReactToPrint from "react-to-print";
-import logo from "./../../../assets/png/debit_icon.png";
-const { Text } = Typography;
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import dayjs from "dayjs";
 
-const DebitNote = ({ details }) => {
+// const { Text } = Typography;
+
+const SaleReturnBill = ({ details }) => {
+  console.log({ details });
+  const { company } = useContext(GlobalContext);
+  console.log({ company });
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const pageStyle = `
@@ -19,27 +24,27 @@ const DebitNote = ({ details }) => {
         }
 `;
 
-  const columns = [
-    { title: "S. NO", dataIndex: "sno", key: "sno", align: "center" },
-    {
-      title: "TOTAL TAKA",
-      dataIndex: "totalTaka",
-      key: "totalTaka",
-      align: "center",
-    },
-    {
-      title: "TOTAL METER",
-      dataIndex: "totalMeter",
-      key: "totalMeter",
-      align: "center",
-    },
-    { title: "RATE", dataIndex: "rate", key: "rate", align: "center" },
-    { title: "AMOUNT", dataIndex: "amount", key: "amount", align: "center" },
-  ];
+  // const columns = [
+  //   { title: "S. NO", dataIndex: "sno", key: "sno", align: "center" },
+  //   {
+  //     title: "TOTAL TAKA",
+  //     dataIndex: "totalTaka",
+  //     key: "totalTaka",
+  //     align: "center",
+  //   },
+  //   {
+  //     title: "TOTAL METER",
+  //     dataIndex: "totalMeter",
+  //     key: "totalMeter",
+  //     align: "center",
+  //   },
+  //   { title: "RATE", dataIndex: "rate", key: "rate", align: "center" },
+  //   { title: "AMOUNT", dataIndex: "amount", key: "amount", align: "center" },
+  // ];
 
-  const data = [
-    { key: 1, sno: 1, totalTaka: 1, totalMeter: 5, rate: 12, amount: 60.0 },
-  ];
+  // const data = [
+  //   { key: 1, sno: 1, totalTaka: 1, totalMeter: 5, rate: 12, amount: 60.0 },
+  // ];
 
   return (
     <>
@@ -56,7 +61,7 @@ const DebitNote = ({ details }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Debit Note
+            Credit Note
           </Typography.Text>
         }
         open={isModelOpen}
@@ -111,73 +116,17 @@ const DebitNote = ({ details }) => {
         <div className="debitnote-wrapper" ref={componentRef}>
           {/* first component */}
           <div className="text-center relative border-b border-black">
-            <span className="align-left absolute left-1 h-full">
-              <img src={logo} height="100%" width="100%" />
-            </span>
             <span className="align-center">
-              <Typography.Title level={2}>Debit Note</Typography.Title>
+              <Typography.Title level={2}>Credit Note</Typography.Title>
             </span>
           </div>
-          {/* second div */}
-          {/* <Row className='debitnote-sec'>
-                        <Col span={12} className='h-full'>
 
-                            <Flex vertical className='border-top border-right h-full'>
-                                <div className='border-bottom'>
-                                    Company Name : XRZ
-                                </div>
-                                <div className='border-bottom'>
-                                    Party :  POWER_COmpany
-                                    232553
-                                </div>
-                            </Flex>
-                        </Col>
-                        <Col span={12}>
-                            <div>
-                                <div>
-                                    <div>Debit Note No. :-
-                                        DD-11
-                                    </div>
-                                    <div>
-                                        Dated :-
-                                        24-07-2024
-                                    </div>
-                                </div>
-                                <div>
-
-                                    <div>Buyer's Ref. :-
-                                        2422
-
-                                        Date :-
-                                        20-07-2024
-                                    </div>
-                                    <div>
-                                        Buyer's Order No. :-
-                                        32
-                                    </div>
-
-                                </div>
-                                <div>
-                                    DESCRIPTION OF GOODS :
-                                    33P PALLU PATERN (SDFSDFSDFSDFSDFSD) - (8KG)
-                                </div>
-                                <div>
-                                    <div>HSN :-
-                                        574</div>
-                                    <div>
-                                        PAN NO :-
-                                        ABHPP6021C
-                                    </div>
-
-                                </div>
-                            </div>
-                        </Col>
-                    </Row> */}
           <table className="w-full table-custom border border-collaps">
             <tbody>
               <tr>
                 <td className="border border-gray-400 p-2" colSpan={3}>
-                  <strong>Company Name :-</strong> SONU TEXTILES
+                  <strong>Company Name :-</strong>{" "}
+                  {company.company_name.split("_").join(" ")}
                 </td>
                 <td className="border border-gray-400 p-2">
                   <strong>Debit Note No. :-</strong> DD-11
@@ -197,19 +146,21 @@ const DebitNote = ({ details }) => {
                   23423
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Buyer's Ref. :-</strong> 2422
+                  <strong>{"Buyer's Ref. :-"}</strong> 2422
                   <br />
-                  <strong>Date :-</strong> 20-07-2024
+                  <strong>Date :-</strong>{" "}
+                  {dayjs(details.createdAt).format("DD-MM-YYYY")}
                 </td>
 
                 <td className="border border-gray-400 p-2">
-                  <strong>Buyer's Order No. :-</strong> 32
+                  <strong>{"Buyer's Order No. :-"}</strong> 32
                 </td>
               </tr>
               <tr>
                 <td className="border border-gray-400 p-2" colSpan="3">
-                  <strong>DESCRIPTION OF GOODS :-</strong> 33P PALLU PATTERN
-                  (8KG)
+                  <strong>DESCRIPTION OF GOODS :-</strong>{" "}
+                  {`${details.sale_challan.inhouse_quality.quality_name}`}
+                  {details.sale_challan.inhouse_quality.quality_weight}
                 </td>
               </tr>
               <tr>
@@ -257,13 +208,17 @@ const DebitNote = ({ details }) => {
                   5
                 </td>
               </tr>
-              <tr className="no-border">
-                <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1"></td>
-              </tr>
+              {Array.from({ length: 5 }).map((_, index) => {
+                return (
+                  <tr key={index} className="no-border">
+                    <td className="border border-gray-400 p-2" colSpan="1"></td>
+                    <td className="border border-gray-400 p-2" colSpan="1"></td>
+                    <td className="border border-gray-400 p-2" colSpan="1"></td>
+                    <td className="border border-gray-400 p-2" colSpan="1"></td>
+                    <td className="border border-gray-400 p-2" colSpan="1"></td>
+                  </tr>
+                );
+              })}
               <tr className="no-border text-gray-400">
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
@@ -350,4 +305,4 @@ const DebitNote = ({ details }) => {
   );
 };
 
-export default DebitNote;
+export default SaleReturnBill;
