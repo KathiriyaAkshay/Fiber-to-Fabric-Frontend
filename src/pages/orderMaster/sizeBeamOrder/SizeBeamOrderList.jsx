@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getSizeBeamOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext, useState } from "react";
@@ -209,6 +208,7 @@ function SizeBeamOrderList() {
             <BeamPipeChallanModel details={record} />
             {record?.status == "PENDING" && (
               <>
+
                 <Button
                   onClick={() => {
                     navigateToUpdate(id);
@@ -216,6 +216,7 @@ function SizeBeamOrderList() {
                 >
                   <EditOutlined />
                 </Button>
+                
                 <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
               </>
             )}
@@ -252,6 +253,7 @@ function SizeBeamOrderList() {
   }
 
   const disableFutureDates = (current) => {
+    // Check if the current date is after (or equal to) the end of the current day
     return current && current > moment().endOf('day');
   };
 
