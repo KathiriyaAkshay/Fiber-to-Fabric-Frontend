@@ -31,7 +31,7 @@ import moment from "moment";
 
 const updateCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
-    report_date: yup.string().required("Please enter date"),
+    // report_date: yup.string().required("Please enter date"),
     employee_id: yup.string().required("Please select employee"),
     // employee_name: yup.string().required("Please enter employee name"),
     machine_id: yup.string().required("Please select machine name"),
@@ -233,6 +233,7 @@ function UpdateCheckTakaReport() {
                 <Controller
                   control={control}
                   name="report_date"
+                  disabled
                   render={({ field }) => (
                     <DatePicker
                       {...field}
@@ -246,31 +247,6 @@ function UpdateCheckTakaReport() {
                 />
               </Form.Item>
             </Col>
-
-            {/* <Col span={8}>
-            <Form.Item
-              label="Assign Time"
-              name="assign_time"
-              validateStatus={errors.assign_time ? "error" : ""}
-              help={errors.assign_time && errors.assign_time.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="assign_time"
-                render={({ field }) => (
-                  <TimePicker
-                    {...field}
-                    style={{
-                      width: "100%",
-                    }}
-                    format="h:mm:ss A"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
 
             <Col span={8}>
               <Form.Item
