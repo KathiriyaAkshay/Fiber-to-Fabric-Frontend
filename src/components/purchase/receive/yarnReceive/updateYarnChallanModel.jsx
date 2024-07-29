@@ -154,6 +154,11 @@ const UpdateYarnChallanModel = ({ details }) => {
       discount_brokerage_value: details?.discount_brokerage_value,
       discount_brokerage_amount: details?.discount_brokerage_amount,
       TDS_amount: details?.TDS_amount,
+      SGST_value: details?.SGST_value, 
+      CGST_value: details?.CGST_value, 
+      IGST_value: details?.IGST_value, 
+      TCS_value: details?.TCS_value, 
+      new_amount: details?.net_amount
     },
   });
 
@@ -247,6 +252,8 @@ const UpdateYarnChallanModel = ({ details }) => {
       Number(CGST_amount) +
       Number(IGST_amount) +
       Number(TCS_amount);
+
+    console.log(net_amount);
     setValue("net_amount", parseFloat(net_amount).toFixed(2));
 
     const currentTDSAmount = TDS_amount;
@@ -1008,7 +1015,7 @@ const UpdateYarnChallanModel = ({ details }) => {
                 NET Amount
               </Col>
               <Col span={4} className="p-2 font-medium">
-                {details?.net_amount}
+                {net_amount}
               </Col>
             </Row>
 
@@ -1020,8 +1027,8 @@ const UpdateYarnChallanModel = ({ details }) => {
                 Rs.(IN WORDS):
               </Col>
               <Col span={20} className="p-2 font-semibold">
-                {Number(details?.net_amount)
-                  ? toWords.convert(details?.net_amount)
+                {Number(net_amount)
+                  ? toWords.convert(net_amount)
                   : ""}
               </Col>
             </Row>

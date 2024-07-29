@@ -23,6 +23,8 @@ import DeleteYarnReceiveButton from "../../../../components/purchase/receive/yar
 import YarnReceiveChallanModal from "../../../../components/purchase/receive/yarnReceive/YarnReceiveChallanModal";
 import MultipleChallanCreateButton from "../../../../components/purchase/receive/yarnReceive/createMultipleChallan";
 import moment from "moment";
+import YarnReturnModel from "../../../../components/purchase/receive/yarnReceive/yarnReturnModel";
+
 
 function YarnReceiveList() {
   const [search, setSearch] = useState("");
@@ -38,8 +40,8 @@ function YarnReceiveList() {
     500
   );
 
-  const [billStatus, setBillStatus] = useState() ; 
-  const debouceBillStatus = useDebounce(billStatus, 500) ; 
+  const [billStatus, setBillStatus] = useState();
+  const debouceBillStatus = useDebounce(billStatus, 500);
 
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
@@ -166,7 +168,7 @@ function YarnReceiveList() {
       dataIndex: "is_bill_created",
       key: "is_bill_created",
       render: (text, record) => (
-        text != true?<Tag color="red">Pending</Tag>:<Tag color="green">Received</Tag>
+        text != true ? <Tag color="red">Pending</Tag> : <Tag color="green">Received</Tag>
       )
     },
     {
@@ -175,7 +177,7 @@ function YarnReceiveList() {
         return (
           <Space>
 
-            {!yarnReceiveDetails?.is_bill_created?<>
+            {!yarnReceiveDetails?.is_bill_created ? <>
               <Button
                 onClick={() => {
                   navigateToUpdate(yarnReceiveDetails.id);
@@ -186,8 +188,13 @@ function YarnReceiveList() {
               <DeleteYarnReceiveButton details={yarnReceiveDetails} />
               <MultipleChallanCreateButton details={yarnReceiveDetails} />
               <YarnReceiveChallanModal details={yarnReceiveDetails} />
-            
-            </>:<></>}
+
+            </> : <>
+                <YarnReturnModel
+                  details={yarnReceiveDetails}
+                />
+            </>}
+
           </Space>
         );
       },
@@ -196,23 +203,23 @@ function YarnReceiveList() {
   ];
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [selectedRows, setSelectedRows] = useState([]) ; 
+  const [selectedRows, setSelectedRows] = useState([]);
   const [selecteChallanId, setSelectecdChallanId] = useState(null)
-  
+
   const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
 
-    let lastElement = newSelectedRows[newSelectedRows?.length - 1] ; 
-    let lastElement_yarn_stock_company_id = lastElement?.yarn_stock_company_id ; 
-   
-    if (selecteChallanId == null){
-      setSelectecdChallanId(lastElement_yarn_stock_company_id) ; 
-      setSelectedRowKeys(newSelectedRowKeys) ; 
-    
-    } else if (selecteChallanId == lastElement_yarn_stock_company_id){
-      setSelectedRowKeys(newSelectedRowKeys) ; 
-      
+    let lastElement = newSelectedRows[newSelectedRows?.length - 1];
+    let lastElement_yarn_stock_company_id = lastElement?.yarn_stock_company_id;
+
+    if (selecteChallanId == null) {
+      setSelectecdChallanId(lastElement_yarn_stock_company_id);
+      setSelectedRowKeys(newSelectedRowKeys);
+
+    } else if (selecteChallanId == lastElement_yarn_stock_company_id) {
+      setSelectedRowKeys(newSelectedRowKeys);
+
     } else {
-      setSelectecdChallanId(lastElement_yarn_stock_company_id) ; 
+      setSelectecdChallanId(lastElement_yarn_stock_company_id);
       setSelectedRowKeys([lastElement?.id])
     }
     setSelectedRows(newSelectedRows)
@@ -259,7 +266,7 @@ function YarnReceiveList() {
 
   const disableFutureDates = (current) => {
     return current && current > moment().endOf('day');
-};
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -273,7 +280,7 @@ function YarnReceiveList() {
           />
         </div>
         <Flex align="center" gap={10} wrap="wrap">
-          
+
           <Flex align="center" gap={20}>
             {selectedRows?.length > 0 && (
               <YarnReceiveChallanModal details={selectedRows} />
@@ -289,8 +296,8 @@ function YarnReceiveList() {
               value={billStatus}
               onChange={setBillStatus}
               options={[
-                {label: "Pending", value: "false"}, 
-                {label: "Received", value: "true"}
+                { label: "Pending", value: "0" },
+                { label: "Received", value: "1" }
               ]}
               style={{
                 width: "100%",
