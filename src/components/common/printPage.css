@@ -1,36 +1,55 @@
-table {
+.printable_table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 12px; /* Slightly reducing font-size for better fit */
+    page-break-inside: auto;
 }
 
-thead {
+.printable_table thead {
     background-color: #f2f2f2;
 }
 
-thead th {
-    padding:7px;
+.printable_table thead th {
+    padding: 5px; /* Slightly reducing padding */
     border: 1px solid #ddd;
     text-align: left;
 }
 
-/* tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-} */
+.printable_table tbody tr {
+    page-break-inside: avoid; /* Ensures that rows are not broken between pages */
+    page-break-after: auto;
+    text-align: left;
+}
 
-tbody tr:hover {
+.printable_table tbody tr:hover {
     background-color: #f1f1f1;
 }
 
-tbody td {
-    padding: 7px;
+.printable_table tbody td {
+    padding: 5px; /* Slightly reducing padding */
     border: 1px solid #ddd;
-    text-align: center;
+    text-align: left;
 }
 
-.page_title{
+.page_title {
     font-size: 17px;
     font-weight: 700;
     margin-top: 20px;
     margin-bottom: 20px;
+}
+
+@media print {
+    body {
+        -webkit-print-color-adjust: exact; /* Ensure colors are printed as specified */
+    }
+
+    .printable_table {
+        font-size: 10px; /* Further reduce font-size for print */
+    }
+
+    .page_title {
+        font-size: 15px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 }

@@ -258,25 +258,6 @@ const MyOrderList = () => {
         </>
       )
     },
-    // {
-    //   title: "Status",
-    //   render: (qualityDetails) => {
-    //     const { is_active, id } = qualityDetails;
-    //     return (
-    //       <Switch
-    //         loading={updatingTradingQuality && variables?.id === id}
-    //         defaultChecked={is_active}
-    //         onChange={(is_active) => {
-    //           updateTradingQuality({
-    //             id: id,
-    //             data: { is_active: is_active },
-    //           });
-    //         }}
-    //       />
-    //     );
-    //   },
-    //   key: "status",
-    // },
     {
       title: "Action",
       render: (details) => {

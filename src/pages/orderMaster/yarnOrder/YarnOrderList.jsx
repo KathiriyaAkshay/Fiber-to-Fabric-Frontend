@@ -95,7 +95,7 @@ function YarnOrderList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder) => {
       const {
         id,
@@ -119,6 +119,7 @@ function YarnOrderList() {
         yarn_Sub_type,
         yarn_company_name,
       } = yarn_stock_company;
+
       const { first_name: supplierName } = user;
       return [
         id,
@@ -137,29 +138,53 @@ function YarnOrderList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Order No.",
-          "Order Date",
-          "Party/Supplier Name",
-          "Yarn Company",
-          "Dennier",
-          "Lot no",
-          "Yarn Grade",
-          "Cartoon",
-          "Quantity",
-          "Rate",
-          "Approx Amount",
-          "Order Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Yarn Order List",
-    });
+    let tableTitle =  [
+      "ID",
+      "Order No.",
+      "Order Date",
+      "Party/Supplier Name",
+      "Yarn Company",
+      "Dennier",
+      "Lot no",
+      "Yarn Grade",
+      "Cartoon",
+      "Quantity",
+      "Rate",
+      "Approx Amount",
+      "Order Status",
+    ] ; 
+
+    // Set localstorage item information 
+    localStorage.setItem("print-array", JSON.stringify(body)) ; 
+    localStorage.setItem("print-title", "Yarn Order List")
+    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Order No.",
+    //       "Order Date",
+    //       "Party/Supplier Name",
+    //       "Yarn Company",
+    //       "Dennier",
+    //       "Lot no",
+    //       "Yarn Grade",
+    //       "Cartoon",
+    //       "Quantity",
+    //       "Rate",
+    //       "Approx Amount",
+    //       "Order Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Yarn Order List",
+    // });
+
+    
+    window.open("/print") ; 
   }
 
   const columns = [
