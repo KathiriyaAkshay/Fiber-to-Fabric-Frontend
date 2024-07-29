@@ -296,13 +296,15 @@ input:read-only{
   border-bottom: 0 !important;
 }
 
-.
-
-
 .table-custom th {
   padding-top: 12px;
   padding-bottom: 12px;
   text-align: left;
   background-color: #f2f2f2;
   color: black;
+}
+
+.view-information-table table thead tr th{
+  background-color: #eeeeee !important;
+  color: black !important;
 }

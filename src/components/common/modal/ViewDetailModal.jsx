@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Col, Flex, Modal, Row, Typography } from "antd";
+import { Button, Col, Flex, Modal, Row, Table, Typography } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 
 const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
@@ -53,7 +53,22 @@ const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
         }}
       >
         <Flex className="flex-col gap-1">
-          {details?.map(({ title = "", value }) => {
+          <Table
+            className="view-information-table"
+            columns={[
+              {
+                title: "Title", 
+                dataIndex: "title"
+              },
+              {
+                title: "Value", 
+                dataIndex: "value"
+              }
+            ]}
+            dataSource={details}
+            pagination = {false}
+          />
+          {/* {details?.map(({ title = "", value }, index) => {
             return (
               <Row
                 gutter={12}
@@ -67,7 +82,7 @@ const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
                 <Col span={14}>{value ?? "-"}</Col>
               </Row>
             );
-          })}
+          })} */}
         </Flex>
       </Modal>
     </>
