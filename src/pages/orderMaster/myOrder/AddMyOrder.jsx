@@ -54,16 +54,16 @@ const addYSCSchemaResolver = yupResolver(
     //   then: () => yup.string().required("Please select supplier."),
     //   otherwise: () => yup.string(),
     // }),
-    notes: yup.string().required("Please, Enter order notes"), 
-    party_notes: yup.string().required("Please, Enter party notes"), 
-    weight: yup.string().required("Please, Enter weight"), 
-    total_lot: yup.string().required("Please, Enter total lot"),  
-    total_taka: yup.string().required("Please, Enter total taka"), 
-    total_meter: yup.string().required("Please, Enter total meter"), 
-    rate: yup.string().required("Please, Enter rate"), 
-    total_amount: yup.string().required("Please, Enter total amount"), 
-    credit_days: yup.string().required("Please, Enter credit days"), 
-    pending_taka: yup.string().required("Please, Enter pending taka"), 
+    notes: yup.string().required("Please, Enter order notes"),
+    party_notes: yup.string().required("Please, Enter party notes"),
+    weight: yup.string().required("Please, Enter weight"),
+    total_lot: yup.string().required("Please, Enter total lot"),
+    total_taka: yup.string().required("Please, Enter total taka"),
+    total_meter: yup.string().required("Please, Enter total meter"),
+    rate: yup.string().required("Please, Enter rate"),
+    total_amount: yup.string().required("Please, Enter total amount"),
+    credit_days: yup.string().required("Please, Enter credit days"),
+    pending_taka: yup.string().required("Please, Enter pending taka"),
     pending_meter: yup.string().required("Please, Enter pending meter")
   })
 );
@@ -134,7 +134,7 @@ const AddMyOrder = () => {
       total_amount: parseFloat(data.total_amount),
       total_lot: parseFloat(data.total_lot),
       total_meter: parseFloat(data.total_meter),
-      amount: parseFloat(data.amount) || 0 ,
+      amount: parseFloat(data.amount) || 0,
       credit_days: parseFloat(data.credit_days),
       delivered_taka: parseFloat(data.delivered_taka) || 0,
       delivered_meter: parseFloat(data.delivered_meter) || 0,
@@ -286,22 +286,22 @@ const AddMyOrder = () => {
   };
 
   const CalculateRate = () => {
-    let rate = getValues("rate") ; 
-    let total_meter = getValues("total_meter") ; 
+    let rate = getValues("rate");
+    let total_meter = getValues("total_meter");
 
-    if (total_meter !== "" && total_meter !== undefined){
-      setValue("pending_meter", total_meter) ; 
-      if (rate !== "" && rate !== undefined){
-        let total_amount = Number(total_meter) * Number(rate) ; 
-        setValue("total_amount", total_amount) ; 
+    if (total_meter !== "" && total_meter !== undefined) {
+      setValue("pending_meter", total_meter);
+      if (rate !== "" && rate !== undefined) {
+        let total_amount = Number(total_meter) * Number(rate);
+        setValue("total_amount", total_amount);
       }
-    }; 
+    };
 
-    let total_taka = getValues("total_taka") ; 
-    if (total_taka !== undefined && total_taka !== ""){
-      setValue("pending_taka", total_taka) ; 
+    let total_taka = getValues("total_taka");
+    if (total_taka !== undefined && total_taka !== "") {
+      setValue("pending_taka", total_taka);
     }
-    
+
   }
 
   return (
@@ -572,23 +572,6 @@ const AddMyOrder = () => {
             </Form.Item>
           </Col>
 
-          {/* <Col span={2}>
-            <Form.Item
-              label="Order No"
-              name="order_no"
-              validateStatus={errors.order_no ? "error" : ""}
-              help={errors.order_no && errors.order_no.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="order_no"
-                render={({ field }) => <Input {...field} placeholder="12" />}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={5}>
             <Form.Item
               label="Notes"
@@ -657,7 +640,7 @@ const AddMyOrder = () => {
                       render={({ field }) => {
                         return (
                           <Radio.Group {...field} onChange={(e) => {
-                            setValue("order_count_in", e.target.value) ; 
+                            setValue("order_count_in", e.target.value);
                           }}>
                             <Radio value={"taka"}>Taka</Radio>
                             <Radio value={"meter"}>Meter</Radio>
@@ -703,24 +686,24 @@ const AddMyOrder = () => {
                       name="total_lot"
                       render={({ field }) => {
                         return (
-                          <Input 
-                            readOnly = {order_count_in != "lot"?true:false}
-                            type="number" 
-                            {...field} 
-                            placeholder="12" 
-                            onChange = {(e) => {
-                              setValue("total_lot", e.target.value) ; 
+                          <Input
+                            readOnly={order_count_in != "lot" ? true : false}
+                            type="number"
+                            {...field}
+                            placeholder="12"
+                            onChange={(e) => {
+                              setValue("total_lot", e.target.value);
 
-                              let total_lot = Number(e.target.value) ; 
+                              let total_lot = Number(e.target.value);
 
-                              let total_taka = total_lot * Number(12) ; 
-                              setValue("total_taka", total_taka) ; 
+                              let total_taka = total_lot * Number(12);
+                              setValue("total_taka", total_taka);
 
-                              let total_meter = Number(total_taka) * 110 ; 
-                              setValue("total_meter", total_meter) ; 
+                              let total_meter = Number(total_taka) * 110;
+                              setValue("total_meter", total_meter);
 
-                              CalculateRate() ; 
-                            }}  
+                              CalculateRate();
+                            }}
                           />
                         );
                       }}
@@ -742,21 +725,21 @@ const AddMyOrder = () => {
                       name="total_taka"
                       render={({ field }) => {
                         return (
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            readOnly = {order_count_in == "taka"?false:true }
-                            placeholder="12" 
-                            onChange = {(e) => {
-                              setValue("total_taka", e.target.value) ; 
+                          <Input
+                            type="number"
+                            {...field}
+                            readOnly={order_count_in == "taka" ? false : true}
+                            placeholder="12"
+                            onChange={(e) => {
+                              setValue("total_taka", e.target.value);
 
-                              let total_taka = Number(e.target.value) ; 
-                              let total_lot =  total_taka / 12 ;
-                              let total_meter = total_taka * Number(110) ;  
-                              setValue("total_lot", Math.round(total_lot)) ;
-                              setValue("total_meter", total_meter) ; 
+                              let total_taka = Number(e.target.value);
+                              let total_lot = total_taka / 12;
+                              let total_meter = total_taka * Number(110);
+                              setValue("total_lot", Math.round(total_lot));
+                              setValue("total_meter", total_meter);
 
-                              CalculateRate() ; 
+                              CalculateRate();
 
                             }}
                           />
@@ -779,21 +762,21 @@ const AddMyOrder = () => {
 
                       render={({ field }) => {
                         return (
-                          <Input 
-                            readOnly = {order_count_in != "meter"?true:false}  
-                            type="number" {...field} 
-                            placeholder="12" 
+                          <Input
+                            readOnly={order_count_in != "meter" ? true : false}
+                            type="number" {...field}
+                            placeholder="12"
                             onChange={(e) => {
-                              setValue("total_meter", e.target.value) ; 
-                              let total_meter = Number(e.target.value) ; 
-                              
-                              let total_taka = total_meter / 110 ; 
-                              setValue("total_taka", Math.round(total_taka)) ; 
+                              setValue("total_meter", e.target.value);
+                              let total_meter = Number(e.target.value);
 
-                              let total_lot = Number(total_taka) / 12 ;
-                              setValue("total_lot", Math.round(total_lot)) ; 
+                              let total_taka = total_meter / 110;
+                              setValue("total_taka", Math.round(total_taka));
 
-                              CalculateRate() ; 
+                              let total_lot = Number(total_taka) / 12;
+                              setValue("total_lot", Math.round(total_lot));
+
+                              CalculateRate();
                             }}
                           />
                         );
@@ -816,18 +799,18 @@ const AddMyOrder = () => {
                       name="rate"
                       render={({ field }) => {
                         return (
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            placeholder="12" 
+                          <Input
+                            type="number"
+                            {...field}
+                            placeholder="12"
                             onChange={(e) => {
-                              let rate = e.target.value ; 
-                              setValue("rate", e.target.value) ; 
-                              
-                              let total_meter = getValues("total_meter") ;
-                              if (total_meter !== "" && total_meter !== undefined){
-                                let total_amount = Number(total_meter) * Number(rate) ; 
-                                setValue("total_amount", total_amount) ; 
+                              let rate = e.target.value;
+                              setValue("rate", e.target.value);
+
+                              let total_meter = getValues("total_meter");
+                              if (total_meter !== "" && total_meter !== undefined) {
+                                let total_amount = Number(total_meter) * Number(rate);
+                                setValue("total_amount", total_amount);
                               }
                             }}
                           />
@@ -843,7 +826,7 @@ const AddMyOrder = () => {
                     validateStatus={errors.amount ? "error" : ""}
                     help={errors.amount && errors.amount.message}
                     wrapperCol={{ sm: 24 }}
-                  > 
+                  >
                     <Controller
                       control={control}
                       name="amount"
@@ -919,7 +902,7 @@ const AddMyOrder = () => {
                       name="delivered_taka"
                       render={({ field }) => {
                         return (
-                          <Input readOnly = {true} type="number" {...field} placeholder="12" />
+                          <Input readOnly={true} type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
