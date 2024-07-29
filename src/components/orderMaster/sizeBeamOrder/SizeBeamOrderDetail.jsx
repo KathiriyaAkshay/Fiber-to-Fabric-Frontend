@@ -124,6 +124,7 @@ function SizeBeamOrderDetail({ control, errors }) {
                       value: "C",
                     },
                   ]}
+                  
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -269,7 +270,6 @@ function SizeBeamOrderDetail({ control, errors }) {
           <Button
             htmlType="button"
             onClick={() => {
-              // append(Array.from({ length: noOfAdd }, () => initialOrderDetail));
               append(
                 Array.from({ length: noOfAdd }, () => ({
                   ...fields[fields.length - 1],

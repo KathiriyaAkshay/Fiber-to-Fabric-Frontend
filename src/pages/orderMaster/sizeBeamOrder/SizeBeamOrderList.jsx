@@ -20,8 +20,8 @@ function SizeBeamOrderList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(undefined);
+  const [toDate, setToDate] = useState(undefined);
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
 
@@ -30,7 +30,12 @@ function SizeBeamOrderList() {
       "order-master",
       "size-beam-order",
       "list",
-      { company_id: companyId, page, pageSize, end: financialYearEnd, fromDate: debouncedFromDate, toDate: debouncedToDate },
+    {   company_id: companyId, 
+        page, pageSize, 
+        end: financialYearEnd, 
+        fromDate: debouncedFromDate, 
+        toDate: debouncedToDate
+      },
     ],
     queryFn: async () => {
       const res = await getSizeBeamOrderListRequest({

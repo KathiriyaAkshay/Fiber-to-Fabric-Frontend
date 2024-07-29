@@ -105,13 +105,13 @@ function AddSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
 
-  const [orderNumber, setOrderNumber] = useState(0) ; 
+  const [orderNumber, setOrderNumber] = useState(0);
 
   useEffect(() => {
-    if (lastOrderNumber !== undefined){
-      let tempOrderNumber = lastOrderNumber ; 
-      tempOrderNumber = Number(tempOrderNumber) + 1 ; 
-      setOrderNumber(tempOrderNumber) ; 
+    if (lastOrderNumber !== undefined) {
+      let tempOrderNumber = lastOrderNumber;
+      tempOrderNumber = Number(tempOrderNumber) + 1;
+      setOrderNumber(tempOrderNumber);
     }
   }, [lastOrderNumber])
 
@@ -147,7 +147,7 @@ function AddSizeBeamOrder() {
   async function onSubmit(data) {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
-    data["order_no"] = String(orderNumber) ; 
+    data["order_no"] = String(orderNumber);
     await createSizeBeamOrder(data);
   }
 
@@ -224,7 +224,7 @@ function AddSizeBeamOrder() {
 
   const disableFutureDates = (current) => {
     return current && current > moment().endOf('day');
-};
+  };
 
   return (
     <div className="flex flex-col p-4">
