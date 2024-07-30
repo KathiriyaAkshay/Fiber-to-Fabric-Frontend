@@ -129,35 +129,6 @@ const BeamReceiveList = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ beamReceiveListData });
-
-  //   const {
-  //     mutateAsync: updateTradingQuality,
-  //     isPending: updatingTradingQuality,
-  //     variables,
-  //   } = useMutation({
-  //     mutationFn: async ({ id, data }) => {
-  //       const res = await updateTradingQualityRequest({
-  //         id,
-  //         data,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data;
-  //     },
-  //     mutationKey: ["trading", "Quantity", "update"],
-  //     onSuccess: (res) => {
-  //       const successMessage = res?.message;
-  //       if (successMessage) {
-  //         message.success(successMessage);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if (errorMessage && typeof errorMessage === "string") {
-  //         message.error(errorMessage);
-  //       }
-  //     },
-  //   });
 
   function navigateToAdd() {
     navigate("/job/receive/beam-receive/add");
@@ -170,23 +141,54 @@ const BeamReceiveList = () => {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamReceiveListData?.rows?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
+    const body = beamReceiveListData?.rows?.map((item, index) => {
+      const {
+        challan_no,
+        createdAt,
+        inhouse_quality,
+        supplier,
+        challan_beam_type,
+      } = item;
+      let totalTaka = 0;
+      let totalMeter = 0;
+      item.job_beam_receive_details.forEach(({ taka, meter }) => {
+        totalTaka += taka;
+        totalMeter += meter;
+      });
+
       return [
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
+        challan_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}Kg)`,
+        supplier.supplier.supplier_name,
+        supplier.supplier.supplier_company,
+        totalTaka,
+        totalMeter,
+        item.job_beam_receive_details.length,
+        challan_beam_type,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+      head: [
+        [
+          "ID",
+          "Challan Date",
+          "Challan No",
+          "Quality",
+          "Supplier Name",
+          "Supplier Company",
+          "Total Taka",
+          "Total Meter",
+          "No of Beam",
+          "Challan Beam Type",
+        ],
+      ],
       leftContent,
       rightContent,
-      title: "Trading Quality List",
+      title: "Beam Receive List",
     });
   }
 

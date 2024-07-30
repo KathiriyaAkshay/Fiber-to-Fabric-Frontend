@@ -56,7 +56,6 @@ const AddBeamReceive = () => {
 
   const navigate = useNavigate();
   const [fieldArray, setFieldArray] = useState([0]);
-  console.log({ fieldArray });
   const { companyId } = useContext(GlobalContext);
 
   function goBack() {
