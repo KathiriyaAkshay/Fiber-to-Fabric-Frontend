@@ -21,11 +21,11 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import FieldTable from "../../../components/fieldTable";
 import { addPurchaseTakaRequest } from "../../../api/requests/purchase/purchaseTaka";
+import { disabledFutureDate } from "../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -46,7 +46,6 @@ const addJobTakaSchemaResolver = yupResolver(
 
 const AddPurchaseTaka = () => {
   const queryClient = useQueryClient();
-  // const [fieldArray, setFieldArray] = useState([0]);
 
   const [activeField, setActiveField] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -328,6 +327,7 @@ const AddPurchaseTaka = () => {
                     {...field}
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />
@@ -530,24 +530,6 @@ const AddPurchaseTaka = () => {
             </Form.Item>
           </Col>
 
-          {/* <Col span={6}>
-            <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
         </Row>
 
         <Row
@@ -727,7 +709,7 @@ const AddPurchaseTaka = () => {
             Create
           </Button>
         </Flex>
-      </Form>
+      </Form> 
     </div>
   );
 };

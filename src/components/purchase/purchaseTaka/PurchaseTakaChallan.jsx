@@ -17,7 +17,6 @@ import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-// import { ToWords } from "to-words";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 const { Text } = Typography;
 import moment from "moment";
@@ -25,27 +24,28 @@ import {
   addPurchaseTakaBillRequest,
   getPurchaseTakaBillByIdRequest,
 } from "../../../api/requests/purchase/bill";
+import { ToWords } from "to-words";
 
-// const toWords = new ToWords({
-//   localeCode: "en-IN",
-//   converterOptions: {
-//     currency: true,
-//     ignoreDecimal: false,
-//     ignoreZeroCurrency: false,
-//     doNotAddOnly: false,
-//     currencyOptions: {
-//       // can be used to override defaults for the selected locale
-//       name: "Rupee",
-//       plural: "Rupees",
-//       symbol: "₹",
-//       fractionalUnit: {
-//         name: "Paisa",
-//         plural: "Paise",
-//         symbol: "",
-//       },
-//     },
-//   },
-// });
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const addSizeBeamReceive = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
@@ -84,6 +84,8 @@ const PurchaseTakaChallanModal = ({
   handleCloseModal,
   MODE,
 }) => {
+  console.log("Details information ");
+  console.log(details);
   const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
 
@@ -346,6 +348,10 @@ const PurchaseTakaChallanModal = ({
         "after_TDS_amount",
         purchaseTakasBillDetail.purchaseBill.after_TDS_amount
       );
+    } else {
+      setValue("SGST_value", "2.5");
+      setValue("CGST_value", "2.5");
+
     }
   }, [purchaseTakasBillDetail, setValue]);
 
@@ -362,7 +368,7 @@ const PurchaseTakaChallanModal = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Received Job Bill
+            Received Purchase Bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -398,7 +404,7 @@ const PurchaseTakaChallanModal = ({
                     <Text strong>To,</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>POWER(SONU TEXTILES)</Text>
+                    <Text>{details?.supplier?.supplier_name}({details?.supplier?.supplier_company})</Text>
                   </Col>
                   <Col span={24} className="mt-1">
                     <Text strong>Gst In</Text>
@@ -463,6 +469,7 @@ const PurchaseTakaChallanModal = ({
                             {...field}
                             defaultValue={moment("31-05-2024", "DD-MM-YYYY")}
                             format="DD-MM-YYYY"
+                            readOnly
                             // style={{ marginLeft: "10px" }}
                             disabled={MODE === "VIEW" || MODE === "UPDATE"}
                           />
@@ -902,7 +909,7 @@ const PurchaseTakaChallanModal = ({
             </Row>
             <Row className="border-0 border-b border-solid">
               <Col span={24} className="p-2 font-medium border-0 border-r">
-                RS. (IN WORDS)
+                RS. (IN WORDS) {currentValues?.net_amount !== ""?toWords.convert(currentValues?.net_amount):""}
               </Col>
             </Row>
           </Flex>
