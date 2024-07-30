@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import { CloseOutlined, FileOutlined } from "@ant-design/icons";
+import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Button, Modal, Typography, Flex } from "antd";
 import ReactToPrint from "react-to-print";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -8,9 +8,7 @@ import dayjs from "dayjs";
 // const { Text } = Typography;
 
 const SaleReturnBill = ({ details }) => {
-  console.log({ details });
   const { company } = useContext(GlobalContext);
-  console.log({ company });
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const pageStyle = `
@@ -54,7 +52,7 @@ const SaleReturnBill = ({ details }) => {
           setIsModalOpen(true);
         }}
       >
-        <FileOutlined />
+        <FileTextOutlined />
       </Button>
 
       <Modal
@@ -141,7 +139,10 @@ const SaleReturnBill = ({ details }) => {
                   rowSpan={3}
                   colSpan={3}
                 >
-                  <strong>Party :-</strong> POWER_COMPANY
+                  <strong>Party :-</strong>
+                  {details?.sale_challan?.party?.party?.company_name}(
+                  {`${details?.sale_challan?.party?.first_name}${details?.sale_challan?.party?.last_name}`}
+                  ){details?.sale_challan?.party?.address}
                   <br />
                   23423
                 </td>

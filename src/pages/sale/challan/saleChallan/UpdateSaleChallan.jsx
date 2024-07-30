@@ -122,6 +122,7 @@ const UpdateSaleChallan = () => {
     );
 
     const newData = {
+      party_id: selectedOrder.party_id,
       customer_gst_state: data.gst_state_2,
       is_gray: data.is_gray === "true" ? true : false,
       challan_type: data.challan_type,
@@ -349,7 +350,6 @@ const UpdateSaleChallan = () => {
 
   useEffect(() => {
     if (saleChallanDetail) {
-      console.log({ saleChallanDetail });
       const {
         challan_type,
         company_id,

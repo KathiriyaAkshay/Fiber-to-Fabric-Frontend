@@ -3,7 +3,12 @@ import {
   DeleteOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   Button,
   Checkbox,
@@ -31,6 +36,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
   getJobBeamReceiveByIdRequest,
+  getLastJobBeamReceiveNoRequest,
   updateJobBeamReceiveRequest,
 } from "../../../../api/requests/job/receive/beamReceive";
 
@@ -71,7 +77,6 @@ const UpdateBeamReceive = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ beamReceiveDetails });
 
   const { mutateAsync: updateBeamReceive, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -142,8 +147,30 @@ const UpdateBeamReceive = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, supplier_name } = watch();
+  const { machine_name, supplier_name, challan_beam_type } = watch();
   // ------------------------------------------------------------------------------------------
+
+  const { data: lastBeamNo } = useQuery({
+    queryKey: [
+      "last",
+      "beamNo",
+      { company_id: companyId, beam_type: challan_beam_type },
+    ],
+    queryFn: async () => {
+      if (challan_beam_type) {
+        const res = await getLastJobBeamReceiveNoRequest({
+          companyId,
+          params: { company_id: companyId, beam_type: challan_beam_type },
+        });
+        const regex = /-(\d+)/;
+        const match = res?.data?.data.match(regex);
+        const number = match ? parseInt(match[1], 10) : null;
+        return number;
+      }
+    },
+    placeholderData: keepPreviousData,
+    enabled: Boolean(companyId),
+  });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -189,36 +216,37 @@ const UpdateBeamReceive = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const addNewFieldRow = (indexValue) => {
     let isValid = true;
@@ -288,7 +316,6 @@ const UpdateBeamReceive = () => {
 
   useEffect(() => {
     if (beamReceiveDetails) {
-      console.log(beamReceiveDetails);
       const {
         machine_name,
         quality_id,
@@ -625,7 +652,11 @@ const UpdateBeamReceive = () => {
                   render={({ field }) => <Input {...field} placeholder="12" />}
                 /> */}
                   <Typography.Text style={{ fontWeight: "bold" }}>
-                    123
+                    {lastBeamNo
+                      ? challan_beam_type === "non pasarela (secondary)"
+                        ? "SJBN-" + (lastBeamNo + (index + 1))
+                        : "JBN-" + (lastBeamNo + (index + 1))
+                      : 0}
                   </Typography.Text>
                 </Form.Item>
               </Col>

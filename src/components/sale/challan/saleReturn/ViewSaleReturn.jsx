@@ -145,11 +145,12 @@ const ViewSaleReturn = ({ details }) => {
                 <Col span={24}>
                   <Text className="font-bold">M/S.</Text>
                   <Text className="block">
-                    {details?.sale_challan?.supplier?.supplier_company}(
-                    {details?.sale_challan?.supplier?.supplier_name})
+                    {details?.sale_challan?.party?.party?.company_name}(
+                    {`${details?.sale_challan?.party?.first_name}${details?.sale_challan?.party?.last_name}`}
+                    )
                   </Text>
                   <Text className="block">
-                    {details?.sale_challan?.supplier?.user?.address}
+                    {details?.sale_challan?.party?.address}
                   </Text>
                 </Col>
               </Row>
