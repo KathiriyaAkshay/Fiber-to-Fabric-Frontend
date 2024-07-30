@@ -234,6 +234,9 @@ const GrayPurchaseBillList = () => {
       title: "Rate",
       dataIndex: ["purchase_taka_bill", "rate"],
       key: "rate",
+      render: (text, record) => (
+        text == null?<div>-</div>:<div>{text}</div>
+      )
     },
     {
       title: "Amount",
@@ -344,12 +347,12 @@ const GrayPurchaseBillList = () => {
           let totalAmount = 0;
           let totalNetAmount = 0;
 
-          pageData.forEach(({ total_meter, purchase_taka_bill }) => {
-            totalGrandMeter += +total_meter;
-            totalRate += +purchase_taka_bill.rate;
-            totalAmount += +purchase_taka_bill.amount;
-            totalNetAmount += +purchase_taka_bill.net_amount;
-          });
+          // pageData.forEach(({ total_meter, purchase_taka_bill }) => {
+          //   totalGrandMeter += +total_meter;
+          //   totalRate += +purchase_taka_bill.rate || 0;
+          //   totalAmount += +purchase_taka_bill.amount;
+          //   totalNetAmount += +purchase_taka_bill.net_amount;
+          // });
           return (
             <>
               <Table.Summary.Row className="font-semibold">

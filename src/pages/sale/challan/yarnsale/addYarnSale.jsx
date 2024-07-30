@@ -220,6 +220,7 @@ function AddYarnSaleChallan() {
       let parts = lastChallanNumber.split("-") ; 
       let prefix = parts[0];
       let num = parseInt(parts[1], 10);
+      console.log("Number information", num);
       num +=  1 ; 
   
       setValue(`challan_no`, `${prefix}-${num}`) ; 
