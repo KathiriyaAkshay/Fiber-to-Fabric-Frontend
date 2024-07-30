@@ -14,6 +14,7 @@ import {
 import {
   EditOutlined,
   FilePdfOutlined,
+  FileTextOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -35,6 +36,7 @@ import { getSaleChallanListRequest } from "../../../../api/requests/sale/challan
 import { getPartyListRequest } from "../../../../api/requests/users";
 import DeleteSaleChallan from "../../../../components/sale/challan/saleChallan/DeleteSaleChallan";
 import ViewSaleChallan from "../../../../components/sale/challan/saleChallan/ViewSaleChallan";
+import SaleChallanBill from "../../../../components/sale/challan/saleChallan/SaleChallanBill";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
 const SaleChallanList = () => {
@@ -65,6 +67,19 @@ const SaleChallanList = () => {
   const debouncedParty = useDebounce(party, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const [saleChallanModal, setSaleChallanModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+  });
+  const handleCloseModal = () => {
+    setSaleChallanModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
+  };
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -181,39 +196,86 @@ const SaleChallanList = () => {
       dataIndex: "id",
       key: "id",
       render: (text, record, index) => index + 1,
+      sorter: {
+        compare: (a, b) => {
+          return a?.id - b?.id;
+        },
+      },
     },
     {
       title: "Challan Date",
       dataIndex: "createdAt",
       key: "createdAt",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      sorter: {
+        compare: (a, b) => {
+          return a?.createdAt - b?.createdAt;
+        },
+      },
     },
     {
       title: "Order No",
       dataIndex: ["gray_order", "order_no"],
       key: "order_no",
+      sorter: {
+        compare: (a, b) => {
+          return a?.gray_order?.order_no - b?.gray_order?.order_no;
+        },
+      },
     },
     {
       title: "Challan/Bill",
       dataIndex: "challan_no",
       key: "challan_no",
+      sorter: {
+        compare: (a, b) => {
+          return a?.challan_no - b?.challan_no;
+        },
+      },
+    },
+    {
+      title: "Party Name",
+      dataIndex: "party",
+      key: "party",
+      render: (text) => `${text?.first_name} ${text?.last_name}`,
+      sorter: {
+        compare: (a, b) => {
+          return a?.party?.first_name - b?.party?.first_name;
+        },
+      },
     },
     {
       title: "Quality Name",
       render: (details) => {
         return `${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`;
       },
+      sorter: {
+        compare: (a, b) => {
+          return (
+            a?.inhouse_quality?.quality_name - b?.inhouse_quality?.quality_name
+          );
+        },
+      },
     },
-
     {
-      title: "Taka No",
-      dataIndex: "taka_no",
-      key: "taka_no",
+      title: "Total Taka",
+      dataIndex: "total_taka",
+      key: "total_taka",
+      sorter: {
+        compare: (a, b) => {
+          return a?.total_taka - b?.total_taka;
+        },
+      },
     },
     {
       title: "Total Meter",
-      dataIndex: ["gray_order", "total_meter"],
+      dataIndex: "total_meter",
       key: "total_meter",
+      sorter: {
+        compare: (a, b) => {
+          return a?.total_meter - b?.total_meter;
+        },
+      },
     },
     {
       title: "Challan Type",
@@ -233,6 +295,11 @@ const SaleChallanList = () => {
           return <Tag color="green">Received</Tag>;
         }
       },
+      sorter: {
+        compare: (a, b) => {
+          return a?.bill_status - b?.bill_status;
+        },
+      },
     },
     {
       title: "Payment Status",
@@ -242,6 +309,11 @@ const SaleChallanList = () => {
         ) : (
           <Tag color="red">Unpaid</Tag>
         );
+      },
+      sorter: {
+        compare: (a, b) => {
+          return a?.is_paid - b?.is_paid;
+        },
       },
     },
     {
@@ -262,6 +334,26 @@ const SaleChallanList = () => {
             </Button>
             <DeleteSaleChallan details={details} />
             <ViewSaleChallan details={details} companyId={companyId} />
+            <Button
+              onClick={() => {
+                let MODE;
+                if (details.payment_status === "paid") {
+                  MODE = "VIEW";
+                } else if (details.payment_status === "not_paid") {
+                  MODE = "ADD";
+                }
+                setSaleChallanModal((prev) => {
+                  return {
+                    ...prev,
+                    isModalOpen: true,
+                    details: details,
+                    mode: MODE,
+                  };
+                });
+              }}
+            >
+              <FileTextOutlined />
+            </Button>
           </Space>
         );
       },
@@ -287,6 +379,36 @@ const SaleChallanList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalTaka = 0;
+          let totalMeter = 0;
+          pageData.forEach((row) => {
+            totalTaka += +row.total_taka || 0;
+            totalMeter += +row.total_meter || 0;
+          });
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalTaka}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
@@ -481,6 +603,15 @@ const SaleChallanList = () => {
         </Flex>
       </div>
       {renderTable()}
+
+      {saleChallanModal.isModalOpen && (
+        <SaleChallanBill
+          details={saleChallanModal.details}
+          isModelOpen={saleChallanModal.isModalOpen}
+          handleCloseModal={handleCloseModal}
+          MODE={saleChallanModal.mode}
+        />
+      )}
     </div>
   );
 };

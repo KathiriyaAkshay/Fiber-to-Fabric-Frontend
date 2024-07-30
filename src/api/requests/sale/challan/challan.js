@@ -120,6 +120,12 @@ export function createSaleChallanTakaDetailRequest({ data, params }) {
     });
 }
 
+export function createSaleChallanBillRequest({ data, params }) {
+    return api.post(`/sale/bill/create`, data, {
+        params,
+    });
+}
+
 // ----------------------------------------------------------------
 
 // sale -> challan -> sale challan return

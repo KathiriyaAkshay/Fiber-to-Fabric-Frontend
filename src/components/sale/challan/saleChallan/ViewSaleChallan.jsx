@@ -227,12 +227,11 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={24}>
                   <Text className="font-bold">M/S.</Text>
                   <Text className="block">
-                    {details?.supplier?.supplier_company}(
-                    {details?.supplier?.supplier_name})
+                    {details?.party?.party?.company_name}(
+                    {`${details?.party?.first_name}${details?.party?.last_name}`}
+                    )
                   </Text>
-                  <Text className="block">
-                    {details?.supplier?.user?.address}
-                  </Text>
+                  <Text className="block">{details?.party?.address}</Text>
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>

@@ -142,6 +142,11 @@ const SaleReturnList = () => {
       dataIndex: "id",
       key: "id",
       render: (text, record, index) => index + 1,
+      sorter: {
+        compare: (a, b) => {
+          return a.id - b.id;
+        },
+      },
     },
     {
       title: "Due Date",
@@ -153,48 +158,84 @@ const SaleReturnList = () => {
       title: "Challan/Bill",
       dataIndex: ["sale_challan", "challan_no"],
       key: "challan_no",
+      sorter: {
+        compare: (a, b) => {
+          return a.sale_challan.challan_no - b.sale_challan.challan_no;
+        },
+      },
     },
     {
       title: "Quality Name",
       render: (details) => {
         return `${details?.sale_challan?.inhouse_quality?.quality_name} (${details?.sale_challan?.inhouse_quality?.quality_weight}KG)`;
       },
-    },
-    {
-      title: "Firm Name",
-      dataIndex: ["party", "firm_name"],
-      key: "firm_name",
+      sorter: {
+        compare: (a, b) => {
+          return (
+            a?.sale_challan?.inhouse_quality?.quality_name -
+            b?.sale_challan?.inhouse_quality?.quality_name
+          );
+        },
+      },
     },
     {
       title: "Party Name",
-      // dataIndex: ["party", "firm_name"],
-      // key: "firm_name",
+      dataIndex: ["sale_challan", "party"],
+      key: "party_name",
+      render: (text) => `${text?.first_name} ${text?.last_name}`,
+      sorter: {
+        compare: (a, b) => {
+          return (
+            a?.sale_challan?.party?.first_name -
+            b?.sale_challan?.party?.first_name
+          );
+        },
+      },
     },
     {
       title: "Total Sale",
       dataIndex: ["sale_challan", "total_sale"],
       key: "total_sale",
+      sorter: {
+        compare: (a, b) => {
+          return a?.sale_challan?.total_sale - b?.sale_challan?.total_sale;
+        },
+      },
     },
     {
       title: "Return Meter",
-      dataIndex: ["sale_challan", "return_meter"],
-      key: "return_meter",
+      render: (details) => {
+        let totalMeter = 0;
+        details.sale_challan.sale_challan_details.forEach(({ meter }) => {
+          totalMeter += +meter;
+        });
+        return totalMeter;
+      },
     },
     {
       title: "Total Taka",
       dataIndex: ["sale_challan", "total_taka"],
       key: "total_taka",
+      sorter: {
+        compare: (a, b) => {
+          return a?.sale_challan?.total_taka - b?.sale_challan?.total_taka;
+        },
+      },
     },
     {
       title: "Return Date",
       dataIndex: "return_date",
       key: "return_date",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      sorter: {
+        compare: (a, b) => {
+          return a?.return_date - b?.return_date;
+        },
+      },
     },
     {
       title: "Action",
       render: (details) => {
-        console.log(details);
         return (
           <Space>
             <ViewSaleReturn details={details} companyId={companyId} />
@@ -224,6 +265,43 @@ const SaleReturnList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalSale = 0;
+          let totalTaka = 0;
+          let totalReturnMeter = 0;
+          pageData.forEach((row) => {
+            let tt = 0;
+            row.sale_challan.sale_challan_details.forEach(({ meter }) => {
+              tt += +meter;
+            });
+
+            totalTaka += +row.sale_challan.total_taka || 0;
+            totalReturnMeter += +tt || 0;
+          });
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalSale}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalReturnMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalTaka}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
