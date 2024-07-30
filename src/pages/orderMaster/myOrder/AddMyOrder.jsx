@@ -44,25 +44,33 @@ const addYSCSchemaResolver = yupResolver(
     quality_id: yup.string().required("Please select quality."),
     order_type: yup.string().required("Please select order type."),
     broker_id: yup.string().required("Please select broker."),
-    // party_id: yup.string().required("Please select party."),
     // party_id: yup.string().when("order_type", {
     //   is: (val) => val === "taka(inhouse)",
     //   then: () => yup.string().required("Please select party."),
     //   otherwise: () => yup.string(),
     // }),
-    // supplier_name: yup.string().required("Please select supplier."),
     // supplier_name: yup.string().when("order_type", {
     //   is: (val) => val === "job" || val === "purchase/trading",
     //   then: () => yup.string().required("Please select supplier."),
     //   otherwise: () => yup.string(),
     // }),
+    notes: yup.string().required("Please, Enter order notes"), 
+    party_notes: yup.string().required("Please, Enter party notes"), 
+    weight: yup.string().required("Please, Enter weight"), 
+    total_lot: yup.string().required("Please, Enter total lot"),  
+    total_taka: yup.string().required("Please, Enter total taka"), 
+    total_meter: yup.string().required("Please, Enter total meter"), 
+    rate: yup.string().required("Please, Enter rate"), 
+    total_amount: yup.string().required("Please, Enter total amount"), 
+    credit_days: yup.string().required("Please, Enter credit days"), 
+    pending_taka: yup.string().required("Please, Enter pending taka"), 
+    pending_meter: yup.string().required("Please, Enter pending meter")
   })
 );
 
 const AddMyOrder = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  // const { data: user } = useCurrentUser();
   const { companyId } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
@@ -81,10 +89,7 @@ const AddMyOrder = () => {
     mutationKey: ["my-order", "add"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["myOrder", "list", companyId]);
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
-      }
+      message.success("Gray order created successfully");
       navigate(-1);
     },
     onError: (error) => {
@@ -94,7 +99,6 @@ const AddMyOrder = () => {
   });
 
   async function onSubmit(data) {
-    console.log(data.order_type, data.party_id, data.supplier_name);
     if (data.order_type === "taka(inhouse)") {
       if (!data.party_id) {
         setError("party_id", {
@@ -120,7 +124,6 @@ const AddMyOrder = () => {
       party_id: parseInt(data.party_id),
       supplier_name: data.supplier_name,
       quality_id: parseInt(data.quality_id),
-
       order_date: dayjs(data.order_date).format("YYYY-MM-DD"),
       notes: data.notes,
       party_notes: data.party_notes,
@@ -131,14 +134,13 @@ const AddMyOrder = () => {
       total_amount: parseFloat(data.total_amount),
       total_lot: parseFloat(data.total_lot),
       total_meter: parseFloat(data.total_meter),
-      amount: parseFloat(data.amount),
+      amount: parseFloat(data.amount) || 0 ,
       credit_days: parseFloat(data.credit_days),
-      delivered_taka: parseFloat(data.delivered_taka),
-      delivered_meter: parseFloat(data.delivered_meter),
+      delivered_taka: parseFloat(data.delivered_taka) || 0,
+      delivered_meter: parseFloat(data.delivered_meter) || 0,
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
-    console.log({ newData });
     await addMyOrder(newData);
   }
 
@@ -150,6 +152,7 @@ const AddMyOrder = () => {
     watch,
     setValue,
     setError,
+    getValues
   } = useForm({
     defaultValues: {
       machine_name: null,
@@ -162,7 +165,7 @@ const AddMyOrder = () => {
       order_date: dayjs(),
       notes: "",
       party_notes: "",
-      order_count_in: "meter",
+      order_count_in: "taka",
       weight: "",
       total_taka: "",
       rate: "",
@@ -179,7 +182,7 @@ const AddMyOrder = () => {
     },
     resolver: addYSCSchemaResolver,
   });
-  const { machine_name, credit_days, order_type } = watch();
+  const { machine_name, credit_days, order_type, order_count_in } = watch();
 
   useEffect(() => {
     if (credit_days) {
@@ -281,6 +284,25 @@ const AddMyOrder = () => {
   const goToAddQuality = () => {
     navigate("/quality-master/inhouse-quality/add");
   };
+
+  const CalculateRate = () => {
+    let rate = getValues("rate") ; 
+    let total_meter = getValues("total_meter") ; 
+
+    if (total_meter !== "" && total_meter !== undefined){
+      setValue("pending_meter", total_meter) ; 
+      if (rate !== "" && rate !== undefined){
+        let total_amount = Number(total_meter) * Number(rate) ; 
+        setValue("total_amount", total_amount) ; 
+      }
+    }; 
+
+    let total_taka = getValues("total_taka") ; 
+    if (total_taka !== undefined && total_taka !== ""){
+      setValue("pending_taka", total_taka) ; 
+    }
+    
+  }
 
   return (
     <div className="flex flex-col p-4">
@@ -634,7 +656,9 @@ const AddMyOrder = () => {
                       name="order_count_in"
                       render={({ field }) => {
                         return (
-                          <Radio.Group {...field}>
+                          <Radio.Group {...field} onChange={(e) => {
+                            setValue("order_count_in", e.target.value) ; 
+                          }}>
                             <Radio value={"taka"}>Taka</Radio>
                             <Radio value={"meter"}>Meter</Radio>
                             <Radio value={"lot"}>Lot</Radio>
@@ -679,7 +703,25 @@ const AddMyOrder = () => {
                       name="total_lot"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            readOnly = {order_count_in != "lot"?true:false}
+                            type="number" 
+                            {...field} 
+                            placeholder="12" 
+                            onChange = {(e) => {
+                              setValue("total_lot", e.target.value) ; 
+
+                              let total_lot = Number(e.target.value) ; 
+
+                              let total_taka = total_lot * Number(12) ; 
+                              setValue("total_taka", total_taka) ; 
+
+                              let total_meter = Number(total_taka) * 110 ; 
+                              setValue("total_meter", total_meter) ; 
+
+                              CalculateRate() ; 
+                            }}  
+                          />
                         );
                       }}
                     />
@@ -700,7 +742,24 @@ const AddMyOrder = () => {
                       name="total_taka"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            readOnly = {order_count_in == "taka"?false:true }
+                            placeholder="12" 
+                            onChange = {(e) => {
+                              setValue("total_taka", e.target.value) ; 
+
+                              let total_taka = Number(e.target.value) ; 
+                              let total_lot =  total_taka / 12 ;
+                              let total_meter = total_taka * Number(110) ;  
+                              setValue("total_lot", Math.round(total_lot)) ;
+                              setValue("total_meter", total_meter) ; 
+
+                              CalculateRate() ; 
+
+                            }}
+                          />
                         );
                       }}
                     />
@@ -717,9 +776,26 @@ const AddMyOrder = () => {
                     <Controller
                       control={control}
                       name="total_meter"
+
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            readOnly = {order_count_in != "meter"?true:false}  
+                            type="number" {...field} 
+                            placeholder="12" 
+                            onChange={(e) => {
+                              setValue("total_meter", e.target.value) ; 
+                              let total_meter = Number(e.target.value) ; 
+                              
+                              let total_taka = total_meter / 110 ; 
+                              setValue("total_taka", Math.round(total_taka)) ; 
+
+                              let total_lot = Number(total_taka) / 12 ;
+                              setValue("total_lot", Math.round(total_lot)) ; 
+
+                              CalculateRate() ; 
+                            }}
+                          />
                         );
                       }}
                     />
@@ -740,7 +816,21 @@ const AddMyOrder = () => {
                       name="rate"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            placeholder="12" 
+                            onChange={(e) => {
+                              let rate = e.target.value ; 
+                              setValue("rate", e.target.value) ; 
+                              
+                              let total_meter = getValues("total_meter") ;
+                              if (total_meter !== "" && total_meter !== undefined){
+                                let total_amount = Number(total_meter) * Number(rate) ; 
+                                setValue("total_amount", total_amount) ; 
+                              }
+                            }}
+                          />
                         );
                       }}
                     />
@@ -753,10 +843,11 @@ const AddMyOrder = () => {
                     validateStatus={errors.amount ? "error" : ""}
                     help={errors.amount && errors.amount.message}
                     wrapperCol={{ sm: 24 }}
-                  >
+                  > 
                     <Controller
                       control={control}
                       name="amount"
+                      disabled
                       render={({ field }) => {
                         return (
                           <Input type="number" {...field} placeholder="12" />
@@ -780,7 +871,7 @@ const AddMyOrder = () => {
                       name="total_amount"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input readOnly type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
@@ -828,7 +919,7 @@ const AddMyOrder = () => {
                       name="delivered_taka"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input readOnly = {true} type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
@@ -849,7 +940,7 @@ const AddMyOrder = () => {
                       name="delivered_meter"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input readOnly type="number" {...field} placeholder="12" />
                         );
                       }}
                     />

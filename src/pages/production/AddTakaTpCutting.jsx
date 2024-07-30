@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import {
   Button,
   Radio,
@@ -22,7 +22,10 @@ import dayjs from "dayjs";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { addTakaTpCuttingRequest } from "../../api/requests/production/takaTpCutting";
+import {
+  addTakaTpCuttingRequest,
+  getTakaCuttingSrNoRequest,
+} from "../../api/requests/production/takaTpCutting";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { ORDER_TYPE } from "../../constants/orderMaster";
@@ -75,8 +78,6 @@ const AddTakaTpCutting = () => {
   });
 
   const onSubmit = async (data) => {
-    console.log("onSubmit", data);
-
     const payload = {
       machine_name: data.machine,
       quality_id: +data.quality_id,
@@ -101,6 +102,7 @@ const AddTakaTpCutting = () => {
     watch,
     resetField,
     reset,
+    setValue,
   } = useForm({
     defaultValues: {
       sr_no_1: "",
@@ -121,7 +123,8 @@ const AddTakaTpCutting = () => {
     },
     resolver: addTakaTpCuttingResolver,
   });
-  const { machine_name } = watch();
+  const { machine_name, sr_no_1, sr_no_2 } = watch();
+  console.log({ sr_no_1, sr_no_2 });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -131,6 +134,17 @@ const AddTakaTpCutting = () => {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: SrNoData } = useQuery({
+    queryKey: ["takaCutting", "SrNo", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getTakaCuttingSrNoRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
@@ -167,6 +181,11 @@ const AddTakaTpCutting = () => {
       enabled: Boolean(companyId),
     });
 
+  useEffect(() => {
+    setValue("sr_no_1", "TCP");
+    setValue("sr_no_2", SrNoData ? SrNoData + 1 : 1);
+  }, [SrNoData, setValue]);
+
   return (
     <Form
       form={form}
@@ -186,7 +205,7 @@ const AddTakaTpCutting = () => {
 
         <Row className="w-100" justify={"flex-start"} style={{ gap: "12px" }}>
           <Col span={8}>
-            <Card style={{ borderColor: "#194A6D" }}>
+            <Card style={{ borderColor: "#194A6D", height: "100%" }}>
               <Flex gap={12}>
                 <Typography.Text style={{ whiteSpace: "nowrap" }}>
                   Sr. Number :
@@ -201,7 +220,9 @@ const AddTakaTpCutting = () => {
                   <Controller
                     control={control}
                     name="sr_no_1"
-                    render={({ field }) => <Input name="sr_no_1" {...field} />}
+                    render={({ field }) => (
+                      <Input name="sr_no_1" {...field} disabled />
+                    )}
                   />
                 </Form.Item>
                 <Form.Item
@@ -214,7 +235,9 @@ const AddTakaTpCutting = () => {
                   <Controller
                     control={control}
                     name="sr_no_2"
-                    render={({ field }) => <Input name="sr_no_2" {...field} />}
+                    render={({ field }) => (
+                      <Input name="sr_no_2" {...field} disabled />
+                    )}
                   />
                 </Form.Item>
               </Flex>
@@ -287,7 +310,7 @@ const AddTakaTpCutting = () => {
           </Col>
 
           <Col span={9}>
-            <Card style={{ borderColor: "#194A6D" }}>
+            <Card style={{ borderColor: "#194A6D", height: "100%" }}>
               <Form.Item
                 label=""
                 name={`option`}
@@ -454,7 +477,13 @@ const AddTakaTpCutting = () => {
           </Col>
 
           <Col span={6}>
-            <Card style={{ borderColor: "#194A6D", maxWidth: "400px" }}>
+            <Card
+              style={{
+                borderColor: "#194A6D",
+                maxWidth: "400px",
+                height: "100%",
+              }}
+            >
               <Form.Item
                 label="Remark"
                 name="remark"

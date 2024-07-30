@@ -8,13 +8,11 @@ import {
     Input,
     Row,
     Select,
-    TimePicker,
     message,
     Checkbox,
     Table,
     Radio,
     Descriptions,
-    Typography,
     Divider
 } from "antd";
 import { useState } from "react";
@@ -31,6 +29,7 @@ import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockRepor
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { PlusOutlined } from "@ant-design/icons";
 import { createGeneralPurchaseEntryRequest } from "../../../api/requests/purchase/purchaseSizeBeam";
+import moment from "moment";
 
 const AddGeneralPurchaseEntry = () => {
     const { companyId } = useContext(GlobalContext);
@@ -812,6 +811,10 @@ const AddGeneralPurchaseEntry = () => {
         }
     }, [is_millgine_bill]); 
 
+    const disableFutureDates = (current) => {
+        return current && current > moment().endOf('day');
+    };
+
     return (
         <div className="flex flex-col p-4">
             <div className="flex items-center gap-5">
@@ -977,12 +980,14 @@ const AddGeneralPurchaseEntry = () => {
                                 render={({ field }) => (
                                     <Select
                                         {...field}
-                                        placeholder="Select Sub Head Typey"
+                                        placeholder="Select Sub Head Type"
                                         allowClear
                                         options={head == "expenses" ? [
                                             { label: "Direct", value: "direct" },
                                             { label: "Indirect", value: "indirect" }
-                                        ] : []}
+                                        ] : [
+                                            { label: "Others", value: "other" }
+                                        ]}
                                         style={{
                                             textTransform: "capitalize",
                                         }}
@@ -1014,6 +1019,7 @@ const AddGeneralPurchaseEntry = () => {
                                             width: "100%",
                                         }}
                                         format="DD/MM/YYYY"
+                                        disabledDate={disableFutureDates}
                                     />
                                 )}
                             />

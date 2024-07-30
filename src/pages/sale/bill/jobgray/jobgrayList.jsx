@@ -77,7 +77,7 @@ const JobGrayList = () => {
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const deboucePayment = useDebounce(payment, 500) ; 
+  const deboucePayment = useDebounce(payment, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -92,30 +92,31 @@ const JobGrayList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: JobGrayBillList, isLoading } = useQuery({
     queryKey: [
@@ -128,7 +129,7 @@ const JobGrayList = () => {
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
-        is_paid: deboucePayment
+        is_paid: deboucePayment,
       },
     ],
     queryFn: async () => {
@@ -140,7 +141,7 @@ const JobGrayList = () => {
           from: debouncedFromDate,
           to: debouncedToDate,
           quality_id: debouncedQuality,
-          is_paid: deboucePayment
+          is_paid: deboucePayment,
         },
       });
       return res.data?.data;
@@ -228,16 +229,14 @@ const JobGrayList = () => {
     },
     {
       title: "Due Date",
-      dataIndex: "due_date", 
+      dataIndex: "due_date",
       render: (text, record) => {
         let initialDate = new Date(record?.createdAt);
-        let daysToAdd = record?.due_days; 
+        let daysToAdd = record?.due_days;
         let newDate = new Date(initialDate);
         newDate.setDate(initialDate.getDate() + daysToAdd);
-        return(
-          <div>{moment(newDate).format("DD-MM-YYYY")}</div>
-        )
-      }
+        return <div>{moment(newDate).format("DD-MM-YYYY")}</div>;
+      },
     },
     {
       title: "Due Days",

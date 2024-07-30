@@ -18,7 +18,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getYarnOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext, useState } from "react";
@@ -26,13 +25,30 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import YarnOrderAdvanceModal from "../../../components/orderMaster/yarnOrder/YarnOrderAdvanceModal";
 import DeleteYarnOrderButton from "../../../components/orderMaster/yarnOrder/DeleteYarnOrder";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
+import useDebounce from "../../../hooks/useDebounce";
+import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 
 function YarnOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+
   const [orderStatus, setOrderStatus] = useState(null);
+  const debouncedOrderStatus = useDebounce(orderStatus, 500) ; 
+  const [yarnCompanyName, setYarnCompanyName] = useState(null) ; 
+  const debouceYarnCompanyName = useDebounce(yarnCompanyName, 500) ; 
+
+  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
+    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getYSCDropdownList({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: yarnOrderListRes, isLoading } = useQuery({
     queryKey: [
@@ -44,8 +60,8 @@ function YarnOrderList() {
         page,
         pageSize,
         end: financialYearEnd,
-        // status: debouncedOrderStatus,
-        // yarn_company_name: debouncedYarnCompany,
+        order_status: debouncedOrderStatus,
+        yarn_company_name: debouceYarnCompanyName,
         // yarn_company_id: debouncedDenier,
         // supplier_id: debouncedSupplier,
       },
@@ -58,8 +74,8 @@ function YarnOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
-          // status: debouncedOrderStatus,
-          // yarn_company_name: debouncedYarnCompany,
+          order_status: debouncedOrderStatus,
+          yarn_company_name: debouceYarnCompanyName,
           // yarn_company_id: debouncedDenier,
           // supplier_id: debouncedSupplier,
         },
@@ -69,57 +85,6 @@ function YarnOrderList() {
     enabled: Boolean(companyId),
   });
 
-  // const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
-  //   queryKey: ["supplier", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getSupplierListRequest({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data?.supplierList;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
-  // const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
-  //   queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getYSCDropdownList({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
-  // useEffect(() => {
-  //   // set options for denier selection on yarn stock company select
-  //   yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-  //     const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-  //     if (name === yarnCompanyName) {
-  //       const options = yarn_details?.map(
-  //         ({
-  //           yarn_company_id = 0,
-  //           filament = 0,
-  //           yarn_denier = 0,
-  //           luster_type = "",
-  //           yarn_color = "",
-  //           // yarn_count,
-  //           // current_stock,
-  //           // avg_daily_stock,
-  //           // pending_quantity,
-  //         }) => {
-  //           return {
-  //             label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-  //             value: yarn_company_id,
-  //           };
-  //         }
-  //       );
-  //       if (options?.length) {
-  //         setDenierOptions(options);
-  //       }
-  //     }
-  //   });
-  // }, [yarnCompanyName, yscdListRes?.yarnCompanyList]);
 
   function navigateToAdd() {
     navigate("/order-master/my-yarn-orders/add");
@@ -422,6 +387,8 @@ function YarnOrderList() {
                 <Table.Summary.Cell>
                   <Typography.Text>{total_approxAmount}</Typography.Text>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
           );
@@ -442,11 +409,14 @@ function YarnOrderList() {
           />
         </div>
 
-        <Flex style={{ marginLeft: "auto" }} gap={10}>
+        <Flex style={{ marginLeft: "auto" }} gap={15}>
+
           <Flex align="center" gap={10}>
+            
             <Typography.Text className="whitespace-nowrap">
               Order Status
             </Typography.Text>
+            
             <Select
               placeholder="Select order status"
               loading={isLoading}
@@ -454,6 +424,14 @@ function YarnOrderList() {
                 {
                   label: "Pending",
                   value: "PENDING",
+                },
+                {
+                  label: "Cancelled",
+                  value: "CANCELLED",
+                },
+                {
+                  label: "Finished",
+                  value: "FINISHED",
                 },
               ]}
               value={orderStatus}
@@ -467,14 +445,49 @@ function YarnOrderList() {
               className="min-w-40"
               allowClear={true}
             />
+
           </Flex>
+          
+          <Flex align="center" gap={10}>
+            
+            <Typography.Text className="whitespace-nowrap">
+              Yarn company
+            </Typography.Text>
+            
+            <Select
+              placeholder="Select Yarn company"
+              loading={isLoading}
+              options={yscdListRes?.yarnCompanyList?.map(
+                  ({ yarn_company_name = "" }) => {
+                    return {
+                      label: yarn_company_name,
+                      value: yarn_company_name,
+                    };
+                  }
+                )}
+              value={yarnCompanyName}
+              onChange={setYarnCompanyName}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear={true}
+            />
+
+          </Flex>
+       
         </Flex>
+
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
           disabled={!yarnOrderListRes?.yarnOrderList?.rows?.length}
           onClick={downloadPdf}
         />
+
       </div>
       {renderTable()}
     </div>

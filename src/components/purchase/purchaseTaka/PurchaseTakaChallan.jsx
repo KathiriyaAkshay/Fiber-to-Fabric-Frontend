@@ -207,7 +207,6 @@ const PurchaseTakaChallanModal = ({
   });
 
   const currentValues = watch();
-  console.log({ after_TDS_amount: currentValues.after_TDS_amount });
 
   //   const disablePastDates = (current) => {
   //     return current && current < new Date().setHours(0, 0, 0, 0);

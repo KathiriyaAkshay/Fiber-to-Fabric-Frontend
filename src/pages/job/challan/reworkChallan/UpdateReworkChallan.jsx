@@ -1,0 +1,770 @@
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Button,
+  Col,
+  DatePicker,
+  Divider,
+  Flex,
+  Form,
+  Input,
+  Row,
+  Select,
+  message,
+} from "antd";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import {
+  getDropdownSupplierListRequest,
+  getVehicleUserListRequest,
+} from "../../../../api/requests/users";
+import {
+  getReworkChallanByIdRequest,
+  getReworkOptionsListRequest,
+  updateReworkChallanRequest,
+} from "../../../../api/requests/job/challan/reworkChallan";
+import dayjs from "dayjs";
+import moment from "moment/moment";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
+
+const addJobTakaSchemaResolver = yupResolver(
+  yup.object().shape({
+    delivery_address: yup.string().required("Please enter delivery address."),
+    gst_in_1: yup.string().required("Please enter GST In."),
+    gst_in_2: yup.string().required("Please enter GST In."),
+    challan_no: yup.string().required("Please enter challan no."),
+    supplier_id: yup.string().required("Please select supplier."),
+    quality_id: yup.string().required("Please select quality."),
+    total_meter: yup.string().required("Please enter total meter."),
+    taka_receive_meter: yup
+      .string()
+      .required("Please enter total receive meter."),
+    total_taka: yup.string().required("Please enter total taka."),
+  })
+);
+
+const UpdateReworkChallan = () => {
+  const params = useParams();
+  const { id } = params;
+
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [activeField, setActiveField] = useState(1);
+
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  function goBack() {
+    navigate(-1);
+  }
+
+  const { data: reworkChallanDetails } = useQuery({
+    queryKey: ["reworkChallanDetails", "get", id, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getReworkChallanByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { mutateAsync: UpdateReworkChallan, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await updateReworkChallanRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["rework", "challan", "update"],
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["rework", "challan", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  async function onSubmit(data) {
+    console.log({ data });
+    const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
+
+    const newData = {
+      createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+      machine_name: data.machine_name,
+      quality_id: +data.quality_id,
+      option: data.option,
+      challan_no: data.challan_no,
+      supplier_id: +data.supplier_id,
+      vehicle_id: +data.vehicle_id,
+      total_taka: +data.total_taka,
+      total_meter: +data.total_meter,
+      taka_receive_meter: +data.taka_receive_meter,
+
+      details: detailArray.map((field, index) => {
+        return {
+          index: index + 1,
+          taka_no: +data[`taka_no_${field}`],
+          meter: +data[`meter_${field}`],
+          received_meter: +data[`received_meter_${field}`],
+          received_weight: +data[`received_weight_${field}`],
+          short: +data[`short_${field}`],
+        };
+      }),
+    };
+    console.log({ newData });
+    await UpdateReworkChallan(newData);
+  }
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    setValue,
+    getValues,
+    setFocus,
+    reset,
+  } = useForm({
+    defaultValues: {
+      company_id: null,
+      challan_date: dayjs(),
+      delivery_address: "",
+      // gst_state: "",
+      gst_in_1: "",
+      gst_in_2: "",
+      challan_no: "",
+
+      supplier_name: null,
+      supplier_id: null,
+
+      machine_name: null,
+      quality_id: null,
+
+      total_taka: "",
+      total_meter: "",
+      taka_receive_meter: "",
+    },
+    resolver: addJobTakaSchemaResolver,
+  });
+  const { supplier_name, company_id, supplier_id, machine_name } = watch();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
+    useQuery({
+      queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
+      queryFn: async () => {
+        const res = await getReworkOptionsListRequest({
+          companyId,
+          params: { company_id: companyId },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+          machine_name: machine_name,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              page: 0,
+              pageSize: 9999,
+              is_active: 1,
+              machine_name: machine_name,
+            },
+          });
+          return res.data?.data;
+        }
+      },
+      enabled: Boolean(companyId),
+    });
+
+  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
+    queryKey: [
+      "vehicle",
+      "list",
+      { company_id: companyId, page: 0, pageSize: 99999 },
+    ],
+    queryFn: async () => {
+      const res = await getVehicleUserListRequest({
+        params: { company_id: companyId, page: 0, pageSize: 99999 },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      supplier_name &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.find((item) => {
+        return item.supplier_name === supplier_name;
+      });
+      return obj?.supplier_company;
+    } else {
+      return [];
+    }
+  }, [supplier_name, dropdownSupplierListRes]);
+
+  //   useEffect(() => {
+  //     if (grayOrderListRes && gray_order_id) {
+  //       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+  //       setSelectedOrder(order);
+  //       setValue("total_meter", order.total_meter);
+  //       setValue("total_taka", order.total_taka);
+  //       setValue("total_weight", order.weight);
+  //       setValue(
+  //         "broker_name",
+  //         `${order.broker.first_name} ${order.broker.last_name}`
+  //       );
+  //       setValue("broker_id", order.broker.id);
+  //       setValue("quality_id", order.inhouse_quality.id);
+  //       setValue("supplier_name", order.supplier_name);
+  //       setValue("pending_meter", order.pending_meter);
+
+  //       setPendingMeter(order.pending_meter);
+  //       setPendingTaka(order.pending_taka);
+  //     }
+  //   }, [gray_order_id, grayOrderListRes, setValue]);
+
+  useEffect(() => {
+    if (company_id) {
+      const selectedCompany = companyListRes?.rows?.find(
+        ({ id }) => id === company_id
+      );
+      setValue("gst_in_1", selectedCompany.gst_no);
+    }
+  }, [companyListRes, company_id, setValue]);
+
+  useEffect(() => {
+    if (supplier_id) {
+      const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
+        (item) => item.supplier_id === supplier_id
+      );
+      setValue("delivery_address", selectedSupplierCompany?.users?.address);
+      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
+    }
+  }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
+
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf("day");
+  }
+
+  useEffect(() => {
+    if (reworkChallanDetails) {
+      console.log({ reworkChallanDetails });
+      const {
+        company_id,
+        challan_no,
+        option,
+        quality_id,
+        machine_name,
+        supplier_id,
+        total_meter,
+        total_taka,
+        taka_receive_meter,
+        supplier,
+        createdAt,
+        vehicle_id,
+        job_rework_challan_details,
+      } = reworkChallanDetails;
+
+      const selectedCompany = companyListRes?.rows?.find(
+        ({ id }) => id === company_id
+      );
+
+      setActiveField(job_rework_challan_details.length + 1);
+      let jobReworkChallanDetails = {};
+      job_rework_challan_details.forEach((item, index) => {
+        jobReworkChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
+        jobReworkChallanDetails[`meter_${index + 1}`] = item.meter;
+        jobReworkChallanDetails[`received_meter_${index + 1}`] =
+          item.received_meter;
+        jobReworkChallanDetails[`received_weight_${index + 1}`] =
+          item.received_weight;
+        jobReworkChallanDetails[`short_${index + 1}`] = item.short;
+      });
+
+      reset({
+        company_id,
+        challan_date: dayjs(createdAt),
+        delivery_address: supplier.user.delivery_address,
+        gst_in_1: selectedCompany.gst_no,
+        gst_in_2: supplier.user.gst_no,
+        challan_no,
+        option,
+        vehicle_id,
+
+        supplier_name: supplier?.supplier_name,
+        supplier_id: supplier_id,
+
+        machine_name,
+        quality_id,
+
+        total_taka,
+        total_meter,
+        taka_receive_meter,
+        ...jobReworkChallanDetails,
+      });
+      // setPendingMeter(gray_order.pending_meter);
+      // setPendingTaka(gray_order.pending_taka);
+    }
+  }, [reworkChallanDetails, reset, company_id, companyListRes?.rows]);
+
+  return (
+    <div className="flex flex-col p-4">
+      <div className="flex items-center gap-5">
+        <Button onClick={goBack}>
+          <ArrowLeftOutlined />
+        </Button>
+        <h3 className="m-0 text-primary">Edit Rework Challan</h3>
+      </div>
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Company"
+              name="company_id"
+              validateStatus={errors.company_id ? "error" : ""}
+              help={errors.company_id && errors.company_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="company_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    options={companyListRes?.rows?.map((company) => ({
+                      label: company.company_name,
+                      value: company.id,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Challan Date"
+              name="challan_date"
+              validateStatus={errors.challan_date ? "error" : ""}
+              help={errors.challan_date && errors.challan_date.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_date"
+                render={({ field }) => (
+                  <DatePicker
+                    disabledDate={disabledFutureDate}
+                    {...field}
+                    style={{ width: "100%" }}
+                    format={"DD-MM-YYYY"}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Machine Name"
+              name="machine_name"
+              validateStatus={errors.machine_name ? "error" : ""}
+              help={errors.machine_name && errors.machine_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    allowClear
+                    placeholder="Select Machine Name"
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Select Quality"
+              name="quality_id"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="quality_id"
+                render={({ field }) => {
+                  return (
+                    <Select
+                      {...field}
+                      placeholder="Select Quality"
+                      loading={dropDownQualityLoading}
+                      options={
+                        dropDownQualityListRes &&
+                        dropDownQualityListRes?.rows?.map((item) => ({
+                          value: item.id,
+                          label: item.quality_name,
+                        }))
+                      }
+                    />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Option"
+              name="option"
+              validateStatus={errors.option ? "error" : ""}
+              help={errors.option && errors.option.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="option"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    allowClear
+                    placeholder="Select option"
+                    loading={isLoadingReworkOptionList}
+                    options={
+                      reworkOptionsListRes &&
+                      reworkOptionsListRes?.map((option) => {
+                        return { label: option.option, value: option.option };
+                      })
+                    }
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Gst In"
+              name="gst_in_1"
+              validateStatus={errors.gst_in_1 ? "error" : ""}
+              help={errors.gst_in_1 && errors.gst_in_1.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_in_1"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST In" disabled />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Challan No"
+              name="challan_no"
+              validateStatus={errors.challan_no ? "error" : ""}
+              help={errors.challan_no && errors.challan_no.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="challan_no"
+                render={({ field }) => (
+                  <Input {...field} placeholder="CH123456" />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Gst In"
+              name="gst_in_2"
+              validateStatus={errors.gst_in_2 ? "error" : ""}
+              help={errors.gst_in_2 && errors.gst_in_2.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="gst_in_2"
+                render={({ field }) => (
+                  <Input {...field} placeholder="GST In" disabled />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
+          <Col span={6}>
+            <Form.Item
+              label="Select Supplier"
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Supplier"
+                    loading={isLoadingDropdownSupplierList}
+                    options={dropdownSupplierListRes?.map((supervisor) => ({
+                      label: supervisor?.supplier_name,
+                      value: supervisor?.supplier_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Company"
+              name="supplier_id"
+              validateStatus={errors.supplier_id ? "error" : ""}
+              help={errors.supplier_id && errors.supplier_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="supplier_id"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Company"
+                    options={dropDownSupplierCompanyOption.map(
+                      ({ supplier_id, supplier_company }) => {
+                        return { label: supplier_company, value: supplier_id };
+                      }
+                    )}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Delivery Address"
+              name="delivery_address"
+              validateStatus={errors.delivery_address ? "error" : ""}
+              help={errors.delivery_address && errors.delivery_address.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="delivery_address"
+                render={({ field }) => {
+                  return (
+                    <Input {...field} placeholder="Delivery Address" disabled />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item
+              label="Vehicle"
+              name="vehicle_id"
+              validateStatus={errors.vehicle_id ? "error" : ""}
+              help={errors.vehicle_id && errors.vehicle_id.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+              <Controller
+                control={control}
+                name="vehicle_id"
+                rules={{ required: "Vehicle is required." }}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    loading={isLoadingVehicleList}
+                    placeholder="Select Vehicle"
+                    options={vehicleListRes?.vehicleList?.rows?.map(
+                      (vehicle) => ({
+                        label:
+                          vehicle.first_name +
+                          " " +
+                          vehicle.last_name +
+                          " " +
+                          `| ( ${vehicle?.username})`,
+                        value: vehicle.id,
+                      })
+                    )}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Divider />
+
+        <ReworkChallanFieldTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          setValue={setValue}
+          getValues={getValues}
+          activeField={activeField}
+          setActiveField={setActiveField}
+        />
+
+        <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
+          <Button type="primary" htmlType="submit" loading={isPending}>
+            Update
+          </Button>
+        </Flex>
+      </Form>
+    </div>
+  );
+};
+
+export default UpdateReworkChallan;

@@ -120,9 +120,21 @@ import UpdateBeamSent from "./pages/job/sent/beamSent/updateBeamSent";
 import AddBeamSale from "./pages/sale/challan/beamSale/AddBeamSale";
 import UpdateBeamSale from "./pages/sale/challan/beamSale/UpdateBeamSale";
 import BeamSaleList from "./pages/sale/challan/beamSale/BeamSaleList";
+import SizeBeamBillList from "./pages/purchase/PurchaseSizeBeam/Bill/sizeBeamBillList";
+import ReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/ReceiveReworkTaka";
+import AddReceiveReworkTaka from "./pages/job/challan/receiveReworkTaka/AddReceiveReworkTaka";
+import ReworkChallan from "./pages/job/challan/reworkChallan/ReworkChallan";
+import AddReworkChallan from "./pages/job/challan/reworkChallan/AddReworkChallan";
 import TakaTpCutting from "./pages/production/TakaTpCutting";
 import AddTakaTpCutting from "./pages/production/AddTakaTpCutting";
 import UpdateProduction from "./pages/production/UpdateProduction";
+import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkChallan";
+import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
+import PurchaseReturnList from "./pages/purchase/challan/purchaseReturn/PurchaseReturnList";
+import SaleChallanList from "./pages/sale/challan/saleChallan/SaleChallanList";
+import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
+import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
+import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -382,11 +394,15 @@ const router = createBrowserRouter([
               },
               {
                 path: "sale-challan",
-                element: <div>sale-challan</div>,
+                children: [
+                  { index: true, element: <SaleChallanList /> },
+                  { path: "add", element: <AddSaleChallan /> },
+                  { path: "update/:id", element: <UpdateSaleChallan /> },
+                ],
               },
               {
                 path: "sales-return",
-                element: <div>sales-return</div>,
+                element: <SaleReturnList />,
               },
             ],
           },
@@ -442,8 +458,8 @@ const router = createBrowserRouter([
           {
             path: "general-purchase-entry",
             children: [
-              {index: true, element: <PurchaseEntryList/>}, 
-              {path: "add", element: <AddGeneralPurchaseEntry/>}
+              { index: true, element: <PurchaseEntryList /> },
+              { path: "add", element: <AddGeneralPurchaseEntry /> },
             ],
           },
           {
@@ -467,7 +483,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "bills-of-size-beam",
-                element: <div>bills-of-size-beam</div>,
+                element: <SizeBeamBillList/>,
               },
               {
                 path: "receive-size-beam",
@@ -489,7 +505,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "purchased-return",
-                element: <div>purchased-return</div>,
+                element: <PurchaseReturnList />,
               },
               {
                 path: "sale-purchased-taka",
@@ -616,11 +632,19 @@ const router = createBrowserRouter([
               },
               {
                 path: "rework-challan",
-                element: <div>rework-challan</div>,
+                children: [
+                  { index: true, element: <ReworkChallan /> },
+                  { path: "add", element: <AddReworkChallan /> },
+                  { path: "update/:id", element: <UpdateReworkChallan /> },
+                ],
+                // element:<ReworkChallan/>,
               },
               {
                 path: "receive-rework-taka",
-                element: <div>receive-rework-taka</div>,
+                children: [
+                  { index: true, element: <ReceiveReworkTaka /> },
+                  { path: "add", element: <AddReceiveReworkTaka /> },
+                ],
               },
             ],
           },
@@ -634,7 +658,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "rework-challan-bill",
-                element: <div>rework-challan-bill</div>,
+                element: <ReworkChallanBill />,
               },
             ],
           },

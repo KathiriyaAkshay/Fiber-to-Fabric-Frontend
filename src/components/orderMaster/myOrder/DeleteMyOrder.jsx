@@ -18,6 +18,7 @@ const DeleteMyOrder = ({ details }) => {
         id,
         params: {
           company_id: companyId,
+          is_finished: true
         },
       });
       return res?.data;

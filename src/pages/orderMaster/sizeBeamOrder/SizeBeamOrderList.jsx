@@ -13,6 +13,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import DeleteSizeBeamOrderButton from "../../../components/orderMaster/sizeBeamOrder/DeleteSizeBeamOrderButton";
 import useDebounce from "../../../hooks/useDebounce";
 import BeamPipeChallanModel from "../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/BeamPipeChallanMode";
+import moment from "moment";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
@@ -245,6 +246,10 @@ function SizeBeamOrderList() {
     );
   }
 
+  const disableFutureDates = (current) => {
+    return current && current > moment().endOf('day');
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -265,6 +270,7 @@ function SizeBeamOrderList() {
               value={fromDate}
               onChange={setFromDate}
               className="min-w-40"
+              disabledDate={disableFutureDates}
               format={"DD-MM-YYYY"}
             />
           </Flex>
@@ -278,6 +284,7 @@ function SizeBeamOrderList() {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disableFutureDates}
             />
           </Flex>
         </Flex>

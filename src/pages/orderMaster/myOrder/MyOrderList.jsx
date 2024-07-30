@@ -10,16 +10,12 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-// import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import useDebounce from "../../../hooks/useDebounce";
-// import { updateTradingQualityRequest } from "../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import dayjs from "dayjs";
 import {
   getBrokerListRequest,
@@ -31,14 +27,12 @@ import { ORDER_STATUS, ORDER_TYPE } from "../../../constants/orderMaster";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const MyOrderList = () => {
-  // const [search, setSearch] = useState();
   const [machine, setMachine] = useState();
   const [status, setStatus] = useState("pending");
   const [orderType, setOrderType] = useState("taka(inhouse)");
   const [broker, setBroker] = useState();
   const [quality, setQuality] = useState();
   const [party, setParty] = useState();
-  // const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedStatus = useDebounce(status, 500);
   const debouncedOrderType = useDebounce(orderType, 500);
@@ -149,34 +143,6 @@ const MyOrderList = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  // const {
-  //   mutateAsync: updateTradingQuality,
-  //   isPending: updatingTradingQuality,
-  //   variables,
-  // } = useMutation({
-  //   mutationFn: async ({ id, data }) => {
-  //     const res = await updateTradingQualityRequest({
-  //       id,
-  //       data,
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data;
-  //   },
-  //   mutationKey: ["trading", "Quantity", "update"],
-  //   onSuccess: (res) => {
-  //     const successMessage = res?.message;
-  //     if (successMessage) {
-  //       message.success(successMessage);
-  //     }
-  //   },
-  //   onError: (error) => {
-  //     const errorMessage = error?.response?.data?.message;
-  //     if (errorMessage && typeof errorMessage === "string") {
-  //       message.error(errorMessage);
-  //     }
-  //   },
-  // });
 
   function navigateToAdd() {
     navigate("/order-master/my-orders/add");
@@ -362,8 +328,6 @@ const MyOrderList = () => {
                 { label: "Delivered Taka", value: details.delivered_taka },
                 { label: "Delivered Meter", value: details.delivered_meter },
                 { label: "Pending Meter", value: details.pending_meter },
-                { label: "Pending Taka", value: details.pending_taka },
-                { label: "Return Taka", value: "" },
                 { label: "Return Meter", value: "" },
                 { label: "Checker Name", value: "" },
                 { label: "Checker Mobile No.", value: "" },
@@ -566,6 +530,7 @@ const MyOrderList = () => {
             style={{
               textTransform: "capitalize",
             }}
+            allowClear
             className="min-w-40"
           />
         </Flex>
@@ -574,6 +539,7 @@ const MyOrderList = () => {
           <Select
             placeholder="Select Party"
             value={party}
+            allowClear
             loading={isLoadingPartyList}
             options={partyUserListRes?.partyList?.rows?.map((party) => ({
               label:
@@ -592,7 +558,6 @@ const MyOrderList = () => {
               textTransform: "capitalize",
             }}
             className="min-w-40"
-            allowClear
           />
         </Flex>
         <Flex align="center" gap={10}>

@@ -168,8 +168,6 @@ const UpdateJobTaka = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const { supplier_name } = watch();
-  const currentValue = watch();
-  console.log({ errors, currentValue });
 
   useEffect(() => {
     if (jobTakaDetails) {
@@ -230,30 +228,31 @@ const UpdateJobTaka = () => {
     }
   }, [jobTakaDetails, reset]);
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
   //   queryKey: ["broker", "list", { company_id: companyId }],
@@ -312,7 +311,7 @@ const UpdateJobTaka = () => {
 
   function disabledFutureDate(current) {
     // Disable dates after today
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   }
 
   return (
@@ -414,7 +413,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -498,7 +497,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -611,7 +610,7 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px"
+            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -746,7 +745,7 @@ const UpdateJobTaka = () => {
             gutter={18}
             style={{
               padding: "12px",
-              marginTop: "-30px"
+              marginTop: "-30px",
             }}
           >
             <Col span={6}></Col>

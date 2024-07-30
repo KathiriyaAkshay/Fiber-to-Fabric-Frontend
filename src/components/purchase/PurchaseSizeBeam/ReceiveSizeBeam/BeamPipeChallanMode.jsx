@@ -13,9 +13,6 @@ import moment from "moment";
 import ReactToPrint from "react-to-print";
 
 const BeamPipeChallanModel = ({ details }) => {
-    console.log("Details information ========================");
-    console.log(details);
-
     const [totalMeter, setTotalMeter] = useState(0) ; 
     const componentRef = useRef() ; 
     const {companyListRes} = useContext(GlobalContext) ; 

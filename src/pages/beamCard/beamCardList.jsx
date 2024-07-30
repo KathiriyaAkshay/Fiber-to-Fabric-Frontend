@@ -77,36 +77,37 @@ const BeamCardList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: debouncedMachine,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: debouncedMachine,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (debouncedMachine) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: debouncedMachine,
+              page: 0,
+              pageSize: 9999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (debouncedMachine) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: debouncedMachine,
-            page: 0,
-            pageSize: 9999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: beamCardList, isLoading } = useQuery({
     queryKey: [

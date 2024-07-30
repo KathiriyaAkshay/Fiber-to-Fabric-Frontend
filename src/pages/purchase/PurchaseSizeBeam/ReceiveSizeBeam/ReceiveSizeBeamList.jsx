@@ -24,6 +24,7 @@ import BeamCardInformationModel from "../../../../components/common/modal/beamCa
 import GridInformationModel from "../../../../components/common/modal/gridInformationModel";
 import moment from "moment";
 
+
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
@@ -210,6 +211,10 @@ function ReceiveSizeBeamList() {
     },
   ];
 
+  const disableFutureDates = (current) => {
+    return current && current > moment().endOf('day');
+  };
+
   function renderTable() {
     if (isLoadingReceiveSizeBeamList) {
       return (
@@ -261,6 +266,7 @@ function ReceiveSizeBeamList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 
@@ -274,6 +280,7 @@ function ReceiveSizeBeamList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 
