@@ -16,12 +16,11 @@ import { CloseOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { GlobalContext } from "../../../contexts/GlobalContext";
-import { createSaleBillRequest } from "../../../api/requests/sale/bill/saleBill";
-import { getJobGraySaleBillByIdRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { ToWords } from "to-words";
-import moment from "moment";
+import { createSaleChallanBillRequest } from "../../../../api/requests/sale/challan/challan";
+import ReactToPrint from "react-to-print";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -45,9 +44,9 @@ const toWords = new ToWords({
 });
 
 const addSaleBillSchema = yup.object().shape({
-  invoice_no: yup.string().required("Please enter invoice no."),
-  freight_value: yup.string().required("Please enter freight value"),
-  freight_amount: yup.string().required("Please enter freight amount"),
+  // invoice_no: yup.string().required("Please enter invoice no."),
+  // freight_value: yup.string().required("Please enter freight value"),
+  // freight_amount: yup.string().required("Please enter freight amount"),
   discount_value: yup.string().required("Please enter is discount"),
   discount_amount: yup.string().required("Please enter is discount"),
 
@@ -70,31 +69,15 @@ const addSaleBillSchema = yup.object().shape({
   amount: yup.string().required("Please enter amount"),
 });
 
-const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
+const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
   const componentRef = useRef();
 
-  const { data: jobGrayBillDetail = null } = useQuery({
-    queryKey: ["/sale/job-gray-sale/bill/get", MODE, { id: details.id }],
-    queryFn: async () => {
-      if (MODE === "VIEW" || MODE === "UPDATE") {
-        const res = await getJobGraySaleBillByIdRequest({
-          id: details.id,
-          params: {
-            company_id: companyId,
-          },
-        });
-        return res?.data?.data.jobGraySaleBill;
-      }
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { mutateAsync: addJobGrayBill, isPending } = useMutation({
+  const { mutateAsync: addSaleChallanBill, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await createSaleBillRequest({
+      const res = await createSaleChallanBillRequest({
         data,
         params: {
           company_id: companyId,
@@ -103,9 +86,9 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
       });
       return res.data;
     },
-    mutationKey: ["jobGray", "bill", "add"],
+    mutationKey: ["saleChallan", "bill", "add"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["jobGrayBill", "list", companyId]);
+      queryClient.invalidateQueries(["saleChallan", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -121,19 +104,22 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const onSubmit = async (data) => {
     const newData = [
       {
+        e_way_bill_no: data.e_way_bill_no,
+        sale_challan_id: details.id,
         order_id: null,
-        party_id: jobGrayBillDetail.party.id,
-        broker_id: jobGrayBillDetail.broker.id,
-        invoice_no: data.invoice_no,
-        machine_name: jobGrayBillDetail.machine_name,
-        quality_id: jobGrayBillDetail.quality_id,
-        total_taka: jobGrayBillDetail.total_taka,
-        total_meter: jobGrayBillDetail.total_meter,
+        party_id: details.party.id,
+        broker_id: details.broker.id,
+        invoice_no: details.challan_no,
+        machine_name: details.gray_order.machine_name,
+        quality_id: details.quality_id,
+        total_taka: details.total_taka,
+        total_meter: details.total_meter,
 
         rate: +data.rate,
+        amount: +data.amount,
         net_amount: +data.net_amount,
-        due_days: jobGrayBillDetail.due_days,
-        hsn_no: jobGrayBillDetail.hsn_no,
+        due_days: details.gray_order.credit_days,
+        hsn_no: details.inhouse_quality.vat_hsn_no,
         discount_value: +data.discount_value,
         discount_amount: +data.discount_amount,
         SGST_value: +data.SGST_value,
@@ -143,10 +129,9 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         IGST_value: +data.IGST_value,
         IGST_amount: +data.IGST_amount,
         round_off_amount: +data.round_off,
-        amount: +data.amount,
       },
     ];
-    await addJobGrayBill(newData);
+    await addSaleChallanBill(newData);
   };
 
   const {
@@ -157,11 +142,11 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     setValue,
     getValues,
   } = useForm({
-    // resolver: yupResolver(addSizeBeamReceive),
     defaultValues: {
+      e_way_bill_no: "",
       bill_date: dayjs(),
       invoice_no: "",
-      //   due_date: dayjs(),
+      due_date: dayjs(),
       total_amount: 0,
 
       discount_amount: 0,
@@ -280,42 +265,25 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   ]);
 
   //  CALCULATION END------------------------------------------------
-  const [dueDate, setDueDate] = useState(null);
+
   useEffect(() => {
-    if (jobGrayBillDetail) {
-      setValue("invoice_no", jobGrayBillDetail.invoice_no);
-      setValue("rate", jobGrayBillDetail.rate);
-      setValue("amount", jobGrayBillDetail.amount);
-      setValue("total_amount", jobGrayBillDetail.amount);
+    if (details) {
+      setValue("rate", details.gray_order.rate);
+      calculateAmount(details.gray_order.rate, details.total_meter);
+      setValue("discount_value", details.gray_order.discount);
+      calculateDiscount(details.gray_order.discount);
 
-      setValue("net_amount", jobGrayBillDetail.net_amount);
-      setValue("net_rate", jobGrayBillDetail.net_rate);
-      setValue("round_off", jobGrayBillDetail.round_off_amount);
-      setValue("bill_date", dayjs(jobGrayBillDetail.bill_date));
-      setValue("due_date", dayjs(jobGrayBillDetail.due_date));
-
-      setValue("discount_amount", jobGrayBillDetail.discount_amount);
-      setValue("discount_value", jobGrayBillDetail.discount_value);
-      setValue("IGST_amount", jobGrayBillDetail.IGST_amount);
-      setValue("IGST_value", jobGrayBillDetail.IGST_value);
-      setValue("CGST_amount", jobGrayBillDetail.CGST_amount);
-      setValue("CGST_value", jobGrayBillDetail.CGST_value);
-      setValue("SGST_amount", jobGrayBillDetail.SGST_amount);
-      setValue("SGST_value", jobGrayBillDetail.SGST_value);
-      setValue("TCS_value", jobGrayBillDetail.TCS_value || 0);
-      setValue("TCS_amount", jobGrayBillDetail.TCS_amount || 0);
-
-      // setValue("TDS_value", saleBillDetail.TDS_value);
-      // setValue("after_TDS_amount", saleBillDetail.after_TDS_amount);
-
-      // Calculate due date
-      let initialDate = new Date(jobGrayBillDetail?.createdAt);
-      let daysToAdd = jobGrayBillDetail?.due_days;
-      let newDate = new Date(initialDate);
-      newDate.setDate(initialDate.getDate() + daysToAdd);
-      setDueDate(moment(newDate).format("DD-MM-YYYY"));
+      const calculateDueDate = dayjs(details.gray_order.createdAt).add(
+        details.gray_order.credit_days,
+        "days"
+      );
+      setValue(
+        "due_date",
+        dayjs(calculateDueDate).format("DD-MM-YYYY").toString()
+      );
     }
-  }, [jobGrayBillDetail, setValue]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [details, setValue]);
 
   const pageStyle = `
     @media print {
@@ -350,11 +318,11 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Grey Sale bill
+            Sale Challan
           </Typography.Text>
         }
         open={isModelOpen}
-        footer={null}
+        // footer={null}
         onCancel={handleCloseModal}
         className={{
           header: "text-center",
@@ -375,9 +343,32 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
             padding: "16px 32px",
           },
         }}
+        // footer={null}
+        footer={() => {
+          return (
+            <>
+              <ReactToPrint
+                trigger={() => (
+                  <Flex>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft: "auto", marginTop: 15 }}
+                      onClick={handleSubmit(onSubmit)}
+                      loading={isPending}
+                    >
+                      PRINT
+                    </Button>
+                  </Flex>
+                )}
+                content={() => componentRef.current}
+                pageStyle={pageStyle}
+              />
+            </>
+          );
+        }}
         width={"70vw"}
       >
-        <Form onFinish={handleSubmit(onSubmit)}>
+        <Form>
           <Flex className="flex-col border border-b-0 border-solid">
             <Row className="p-2 border-0 border-b border-solid">
               <Col
@@ -448,6 +439,25 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 <Typography.Text className="block mt-2">
                   E-WAY BILL NO.
                 </Typography.Text>
+                <Form.Item
+                  name="e_way_bill_no"
+                  validateStatus={errors.e_way_bill_no ? "error" : ""}
+                  help={errors.e_way_bill_no && errors.e_way_bill_no.message}
+                  required={true}
+                >
+                  <Controller
+                    control={control}
+                    name="e_way_bill_no"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        name="e_way_bill_no"
+                        disabled={MODE === "VIEW"}
+                        style={{ width: "50%" }}
+                      />
+                    )}
+                  />
+                </Form.Item>
               </Col>
               <Col span={12} className="pl-4">
                 <Row>
@@ -455,13 +465,14 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                     <Typography.Text className="block font-semibold">
                       INVOICE NO.
                     </Typography.Text>
-                    <Typography.Text>
-                      {jobGrayBillDetail?.invoice_no}
-                    </Typography.Text>
+                    <Typography.Text>{details?.challan_no}</Typography.Text>
                   </Col>
                   <Col span={12}>
                     <Typography.Text className="block font-semibold">
                       ORDER NO.
+                    </Typography.Text>
+                    <Typography.Text>
+                      {details?.gray_order?.order_no}
                     </Typography.Text>
                   </Col>
                 </Row>
@@ -484,8 +495,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {jobGrayBillDetail?.broker?.first_name}{" "}
-                      {jobGrayBillDetail?.broker?.last_name}
+                      {details?.broker?.first_name} {details?.broker?.last_name}
                     </Typography.Text>
                   </Col>
                 </Row>
@@ -551,7 +561,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {jobGrayBillDetail?.total_meter}
+                {details?.total_meter}
               </Col>
               <Col
                 span={4}
@@ -576,10 +586,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("rate", e.target.value);
-                          calculateAmount(
-                            e.target.value,
-                            jobGrayBillDetail.total_meter
-                          );
+                          calculateAmount(e.target.value, details.total_meter);
                         }}
                       />
                     )}
@@ -605,10 +612,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                         disabled={MODE === "VIEW"}
                         onChange={(e) => {
                           setValue("amount", e.target.value);
-                          calculateRate(
-                            e.target.value,
-                            jobGrayBillDetail.total_meter
-                          );
+                          calculateRate(e.target.value, details.total_meter);
                         }}
                       />
                     )}
@@ -973,7 +977,9 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Due date: {dueDate}</div>
+                <div style={{ color: "gray" }}>
+                  Due date: {currentValues?.due_date}
+                </div>
               </Col>
               <Col
                 span={4}
@@ -1095,30 +1101,10 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               </Col>
             </Row>
           </Flex>
-          <Row justify={"end"}>
-            <Col span={12} className="p-2 font-medium border-0 border-r ">
-              {MODE === "UPDATE" ? (
-                <Flex gap={10} justify="flex-end" className="mt-3">
-                  <Button htmlType="button" onClick={handleCloseModal}>
-                    Close
-                  </Button>
-                  <Button type="primary" htmlType="submit" loading={isPending}>
-                    Update
-                  </Button>
-                </Flex>
-              ) : (
-                <Flex gap={10} justify="flex-end" className="mt-3">
-                  <Button htmlType="button" onClick={handleCloseModal}>
-                    Close
-                  </Button>
-                </Flex>
-              )}
-            </Col>
-          </Row>
         </Form>
       </Modal>
     </>
   );
 };
 
-export default JobGrayBillComp;
+export default SaleChallanBill;

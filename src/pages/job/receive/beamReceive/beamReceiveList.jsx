@@ -24,6 +24,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { getJobBeamReceiveListRequest } from "../../../../api/requests/job/receive/beamReceive";
 import dayjs from "dayjs";
+import { getPartyListRequest } from "../../../../api/requests/users";
 
 const BeamReceiveList = () => {
   const navigate = useNavigate();
@@ -34,11 +35,13 @@ const BeamReceiveList = () => {
   const [machine, setMachine] = useState();
   const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
   const [quality, setQuality] = useState(null);
+  const [party, setParty] = useState(null);
 
   //   const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedBeamTypeDropDown = useDebounce(beamTypeDropDown, 500);
   const debouncedQuality = useDebounce(quality, 500);
+  const debouncedParty = useDebounce(party, 500);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -48,6 +51,17 @@ const BeamReceiveList = () => {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getPartyListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
@@ -93,11 +107,10 @@ const BeamReceiveList = () => {
         company_id: companyId,
         page,
         pageSize,
-        // search: debouncedSearch,
         machine_name: debouncedMachine,
         beam_type: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
-        // status: debouncedStatus,
+        party_id: debouncedParty,
       },
     ],
     queryFn: async () => {
@@ -106,45 +119,16 @@ const BeamReceiveList = () => {
           company_id: companyId,
           page,
           pageSize,
-          //   search: debouncedSearch,
           machine_name: debouncedMachine,
           beam_type: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
-          // status: debouncedStatus,
+          party_id: debouncedParty,
         },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
-
-  //   const {
-  //     mutateAsync: updateTradingQuality,
-  //     isPending: updatingTradingQuality,
-  //     variables,
-  //   } = useMutation({
-  //     mutationFn: async ({ id, data }) => {
-  //       const res = await updateTradingQualityRequest({
-  //         id,
-  //         data,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data;
-  //     },
-  //     mutationKey: ["trading", "Quantity", "update"],
-  //     onSuccess: (res) => {
-  //       const successMessage = res?.message;
-  //       if (successMessage) {
-  //         message.success(successMessage);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if (errorMessage && typeof errorMessage === "string") {
-  //         message.error(errorMessage);
-  //       }
-  //     },
-  //   });
 
   function navigateToAdd() {
     navigate("/job/receive/beam-receive/add");
@@ -157,23 +141,54 @@ const BeamReceiveList = () => {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamReceiveListData?.rows?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
+    const body = beamReceiveListData?.rows?.map((item, index) => {
+      const {
+        challan_no,
+        createdAt,
+        inhouse_quality,
+        supplier,
+        challan_beam_type,
+      } = item;
+      let totalTaka = 0;
+      let totalMeter = 0;
+      item.job_beam_receive_details.forEach(({ taka, meter }) => {
+        totalTaka += taka;
+        totalMeter += meter;
+      });
+
       return [
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
+        challan_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}Kg)`,
+        supplier.supplier.supplier_name,
+        supplier.supplier.supplier_company,
+        totalTaka,
+        totalMeter,
+        item.job_beam_receive_details.length,
+        challan_beam_type,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+      head: [
+        [
+          "ID",
+          "Challan Date",
+          "Challan No",
+          "Quality",
+          "Supplier Name",
+          "Supplier Company",
+          "Total Taka",
+          "Total Meter",
+          "No of Beam",
+          "Challan Beam Type",
+        ],
+      ],
       leftContent,
       rightContent,
-      title: "Trading Quality List",
+      title: "Beam Receive List",
     });
   }
 
@@ -232,8 +247,9 @@ const BeamReceiveList = () => {
     },
     {
       title: "No of Beam",
-      // dataIndex: "pending_meter",
-      // key: "pending_meter",
+      render: (details) => {
+        return details?.job_beam_receive_details?.length;
+      },
     },
     {
       title: "Challan Beam Type",
@@ -384,6 +400,34 @@ const BeamReceiveList = () => {
                 textTransform: "capitalize",
               }}
               onChange={setQuality}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Party
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select Party"
+              value={party}
+              loading={isLoadingPartyList}
+              options={partyUserListRes?.partyList?.rows?.map((party) => ({
+                label:
+                  party.first_name +
+                  " " +
+                  party.last_name +
+                  " " +
+                  `| ( ${party?.username})`,
+                value: party.id,
+              }))}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setParty}
               style={{
                 textTransform: "capitalize",
               }}

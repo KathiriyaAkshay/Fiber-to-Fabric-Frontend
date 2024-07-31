@@ -96,6 +96,10 @@ export function getSaleChallanListRequest({ params }) {
     });
 }
 
+export function getSaleChallanByIdRequest({ id, params }) {
+    return api.get(`/sale/challan/get/${id}`, { params });
+}
+
 export function createSaleChallanRequest({ data, params }) {
     return api.post(`/sale/challan/create`, data, {
         params,
@@ -108,4 +112,36 @@ export function updateSaleChallanRequest({ id, data, params }) {
 
 export function deleteSaleChallanRequest({ id, params }) {
     return api.delete(`/sale/challan/delete/${id}`, { params });
+}
+
+export function createSaleChallanTakaDetailRequest({ data, params }) {
+    return api.post(`/sale/challan/taka-detail`, data, {
+        params,
+    });
+}
+
+export function createSaleChallanBillRequest({ data, params }) {
+    return api.post(`/sale/bill/create`, data, {
+        params,
+    });
+}
+
+// ----------------------------------------------------------------
+
+// sale -> challan -> sale challan return
+
+export function getSaleChallanReturnListRequest({ params }) {
+    return api.get(`/sale/challan/return/list`, {
+        params,
+    });
+}
+
+export function getSaleChallanReturnByIdRequest({ id, params }) {
+    return api.get(`/sale/challan/return/get/${id}`, { params });
+}
+
+export function createSaleChallanReturnRequest({ data, params }) {
+    return api.post(`/sale/challan/return/create`, data, {
+        params,
+    });
 }

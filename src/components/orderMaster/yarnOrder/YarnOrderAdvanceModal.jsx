@@ -41,10 +41,11 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
   };
 
   const columns = [
-    { title: "ID",
-      dataIndex: "id", 
+    {
+      title: "ID",
+      dataIndex: "id",
       key: "id",
-      render: (text, record, index) => (index + 1)
+      render: (text, record, index) => index + 1,
     },
     {
       title: "Date",
@@ -77,11 +78,13 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => {
-        return(
-          text == "PENDING"?<Tag color="red">{text}</Tag>:<Tag color="green">{text}</Tag>
-        )
-      }
+      render: (text) => {
+        return text == "PENDING" ? (
+          <Tag color="red">{text}</Tag>
+        ) : (
+          <Tag color="green">{text}</Tag>
+        );
+      },
     },
   ];
 
@@ -117,8 +120,11 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
         }}
       >
         <YarnOrderAdvanceForm yarnOrder={yarnOrder} />
-        
-        <Typography.Text className="text-xl font-medium text-primary" style={{marginBottom: 10}}>
+
+        <Typography.Text
+          className="text-xl font-medium text-primary"
+          style={{ marginBottom: 10 }}
+        >
           {`Advance List (Order: ${yarnOrder.order_no})`}
         </Typography.Text>
 

@@ -186,7 +186,6 @@ const PurchaseTakaList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        console.log(details);
         return `${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`;
       },
     },
@@ -235,7 +234,6 @@ const PurchaseTakaList = () => {
     {
       title: "Action",
       render: (details) => {
-        console.log({ details });
         return (
           <Space>
             <ViewPurchaseTakaDetailsModal

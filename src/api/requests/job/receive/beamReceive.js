@@ -16,3 +16,7 @@ export function addJobBeamReceiveRequest({ data, params }) {
 export function getJobBeamReceiveByIdRequest({ id, params }) {
     return api.get(`/job/receive/beam/get/${id}`, { params });
 }
+
+export function getLastJobBeamReceiveNoRequest({ params }) {
+    return api.get(`/job//receive/beam/last-beam-no`, { params });
+}

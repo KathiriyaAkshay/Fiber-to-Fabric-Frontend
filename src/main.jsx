@@ -132,6 +132,10 @@ import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkC
 import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
 import PurchaseReturnList from "./pages/purchase/challan/purchaseReturn/PurchaseReturnList";
 import PrintPage from "./components/common/printPage";
+import SaleChallanList from "./pages/sale/challan/saleChallan/SaleChallanList";
+import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
+import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
+import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -392,11 +396,15 @@ const router = createBrowserRouter([
               },
               {
                 path: "sale-challan",
-                element: <div>sale-challan</div>,
+                children: [
+                  { index: true, element: <SaleChallanList /> },
+                  { path: "add", element: <AddSaleChallan /> },
+                  { path: "update/:id", element: <UpdateSaleChallan /> },
+                ],
               },
               {
                 path: "sales-return",
-                element: <div>sales-return</div>,
+                element: <SaleReturnList />,
               },
             ],
           },
