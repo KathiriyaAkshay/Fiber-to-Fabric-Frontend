@@ -30,9 +30,9 @@ import {
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import {
   addYarnSentRequest,
+  GetJobYarnSentLastChallanRequest,
   getYarnSentLastChallanNoRequest,
 } from "../../../../api/requests/job/sent/yarnSent";
-import { disableBeforeDate } from "../../../../utils/date";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../../utils/date";
@@ -210,30 +210,31 @@ const AddYarnSent = () => {
     setFieldArray(newFields);
   };
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
@@ -320,10 +321,11 @@ const AddYarnSent = () => {
   //   });
   // }, [yscdListRes?.yarnCompanyList]);
 
-  const {
-    data: lastChallanNumber,
-  } = useQuery({
-    queryKey: ["/sale/challan/yarn-sale/last-challan-no", { company_id: companyId }],
+  const { data: lastChallanNumber } = useQuery({
+    queryKey: [
+      "/sale/challan/yarn-sale/last-challan-no",
+      { company_id: companyId },
+    ],
     queryFn: async () => {
       const res = await GetJobYarnSentLastChallanRequest({
         params: { company_id: companyId },
@@ -625,7 +627,6 @@ const RenderDynamicFields = ({
   clearErrors,
 }) => {
   const [denierOptions, setDenierOptions] = useState([]);
-
   const createDenierOption = (companyName) => {
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
       ({ yarn_company_name }) => companyName === yarn_company_name
@@ -822,7 +823,7 @@ const RenderDynamicFields = ({
                       setValue(
                         `remaining_stock_${field}`,
                         parseInt(getValues(`current_stock_${field}`)) -
-                        parseInt(e.target.value)
+                          parseInt(e.target.value)
                       );
                     }
                   }}

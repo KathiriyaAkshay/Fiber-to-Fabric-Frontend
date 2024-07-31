@@ -13,6 +13,7 @@ import {
   Input,
   Row,
   Select,
+  Spin,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -337,7 +338,6 @@ const UpdateYarnSent = () => {
 
   useEffect(() => {
     if (yarnSentDetails) {
-      console.log({ yarnSentDetails });
       const {
         sent_date,
         challan_no,
@@ -351,7 +351,7 @@ const UpdateYarnSent = () => {
         job_yarn_sent_details,
       } = yarnSentDetails;
       setFieldArray(() => {
-        return job_yarn_sent_details.map((item, index) => index);
+        return job_yarn_sent_details.map((_, index) => index);
       });
       let jobYarnSentDetails = {};
       job_yarn_sent_details.forEach((item, index) => {
@@ -661,7 +661,6 @@ const UpdateYarnSent = () => {
         <Divider />
 
         {/* {fieldArray.map((field, index) => {
-          console.log({ field });
           return (
             <Row
               gutter={18}
@@ -821,43 +820,71 @@ const UpdateYarnSent = () => {
             </Row>
           );
         })} */}
-        {fieldArray.map((field, index) => {
-          // const yarnDetailObj = yarnSentDetails?.job_yarn_sent_details[index];
+        {yarnSentDetails ? (
+          fieldArray.map((field, index) => {
+            const companyName =
+              yarnSentDetails?.job_yarn_sent_details[index]?.yarn_stock_company
+                ?.yarn_company_name;
 
-          // const {
-          //   yarn_company_id = 0,
-          //   filament = 0,
-          //   yarn_denier = 0,
-          //   luster_type = "",
-          //   yarn_color = "",
-          // } = yarnDetailObj?.yarn_stock_company;
+            const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
+              ({ yarn_company_name }) => companyName === yarn_company_name
+            );
 
-          // const editDenierOption = [
-          //   {
-          //     label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-          //     value: yarn_company_id,
-          //   },
-          // ];
-          return (
-            <RenderDynamicFields
-              key={index}
-              field={field}
-              index={index}
-              errors={errors}
-              yscdListRes={yscdListRes}
-              isLoadingYSCDList={isLoadingYSCDList}
-              control={control}
-              fieldArray={fieldArray}
-              addNewFieldRow={addNewFieldRow}
-              deleteFieldRow={deleteFieldRow}
-              setValue={setValue}
-              setError={setError}
-              getValues={getValues}
-              clearErrors={clearErrors}
-              // editDenierOption={editDenierOption}
-            />
-          );
-        })}
+            const editDenierOption = selectedYarnCompany?.yarn_details.map(
+              ({
+                yarn_company_id = 0,
+                filament = 0,
+                yarn_denier = 0,
+                luster_type = "",
+                yarn_color = "",
+              }) => {
+                return {
+                  label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+                  value: yarn_company_id,
+                };
+              }
+            );
+
+            // const {
+            //   yarn_company_id = 0,
+            //   filament = 0,
+            //   yarn_denier = 0,
+            //   luster_type = "",
+            //   yarn_color = "",
+            // } = yarnDetailObj?.yarn_stock_company;
+
+            // const editDenierOption = [
+            //   {
+            //     label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+            //     value: yarn_company_id,
+            //   },
+            // ];
+
+            return (
+              <RenderDynamicFields
+                key={index}
+                field={field}
+                index={index}
+                errors={errors}
+                yscdListRes={yscdListRes}
+                isLoadingYSCDList={isLoadingYSCDList}
+                control={control}
+                fieldArray={fieldArray}
+                addNewFieldRow={addNewFieldRow}
+                deleteFieldRow={deleteFieldRow}
+                setValue={setValue}
+                setError={setError}
+                getValues={getValues}
+                clearErrors={clearErrors}
+                editDenierOption={editDenierOption}
+              />
+            );
+          })
+        ) : (
+          <center>
+            <Spin />
+          </center>
+        )}
 
         <Flex gap={10} justify="flex-end">
           <Button type="primary" htmlType="submit" loading={isPending}>
@@ -885,9 +912,9 @@ const RenderDynamicFields = ({
   getValues,
   setError,
   clearErrors,
-  // editDenierOption,
+  editDenierOption,
 }) => {
-  const [denierOptions, setDenierOptions] = useState([]);
+  const [denierOptions, setDenierOptions] = useState(editDenierOption || []);
 
   const createDenierOption = (companyName) => {
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
