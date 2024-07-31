@@ -11,6 +11,7 @@ import {
   Spin,
   Table,
   Typography,
+  Card
 } from "antd";
 import {
   CloseOutlined,
@@ -23,7 +24,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import dayjs from "dayjs";
@@ -39,6 +40,9 @@ import {
 } from "../../../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../../../api/hooks/auth";
 import DeleteYarnSent from "../../../../components/job/yarnSent/DeleteYarnSent";
+const { Title, Text } = Typography;
+import ReactToPrint from "react-to-print";
+import moment from "moment";
 
 const YarnSentList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -47,7 +51,6 @@ const YarnSentList = () => {
 
   const [search, setSearch] = useState("");
   const [quality, setQuality] = useState();
-  // const [party, setParty] = useState();
   const [supplier, setSupplier] = useState();
   const [supplierCompany, setSupplierCompany] = useState();
 
@@ -248,11 +251,30 @@ const YarnSentList = () => {
       title: "Cartoon",
       dataIndex: "cartoon",
       key: "cartoon",
+      render: (text, record) => {
+        let total_cartoon = 0;
+        record?.job_yarn_sent_details?.map((element) => {
+          total_cartoon = total_cartoon + Number(element?.cartoon);
+        })
+
+        return (
+          <div>{total_cartoon}</div>
+        )
+      }
     },
     {
       title: "Kg",
       dataIndex: "kg",
       key: "kg",
+      render: (text, record) => {
+        let total_kg = 0;
+        record?.job_yarn_sent_details?.map((element) => {
+          total_kg = total_kg + Number(element?.kg);
+        })
+        return (
+          <div>{total_kg}</div>
+        )
+      }
     },
     {
       title: "Delivery Charge",
@@ -348,35 +370,9 @@ const YarnSentList = () => {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear
             />
           </Flex>
-          {/* <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Party
-            </Typography.Text>
-            <Select
-              placeholder="Select Party"
-              value={party}
-              loading={isLoadingPartyList}
-              options={partyUserListRes?.partyList?.rows?.map((party) => ({
-                label:
-                  party.first_name +
-                  " " +
-                  party.last_name +
-                  " " +
-                  `| ( ${party?.username})`,
-                value: party.id,
-              }))}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              onChange={setParty}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex> */}
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Supplier
@@ -397,6 +393,7 @@ const YarnSentList = () => {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear
             />
           </Flex>
           <Flex align="center" gap={10}>
@@ -415,6 +412,7 @@ const YarnSentList = () => {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear
             />
           </Flex>
 
@@ -427,33 +425,6 @@ const YarnSentList = () => {
             }}
           />
 
-          {/* <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Vehicle
-            </Typography.Text>
-            <Select
-              placeholder="Select vehicle"
-              loading={isLoadingVehicleList}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              value={vehicle}
-              onChange={setVehicle}
-              options={vehicleListRes?.vehicleList?.rows?.map((vehicle) => ({
-                label:
-                  vehicle.first_name +
-                  " " +
-                  vehicle.last_name +
-                  " " +
-                  `| ( ${vehicle?.username})`,
-                value: vehicle.id,
-              }))}
-            />
-          </Flex> */}
 
           <Button
             icon={<FilePdfOutlined />}
@@ -471,7 +442,12 @@ const YarnSentList = () => {
 
 export default YarnSentList;
 
-const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
+const ViewYarnSentDetailsModal = ({ title = "-",
+  isScroll = false,
+  details = [] }) => {
+
+  const { company, companyId } = useContext(GlobalContext);
+  console.log(details);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -481,17 +457,65 @@ const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
     setIsModalOpen(false);
   };
 
-  const yarnSentDetail = [
-    { title: "Challan No", value: details.challan_no },
+  const adjustHeight = {};
+  if (isScroll) {
+    adjustHeight.height = "calc(100vh - 150px)";
+    adjustHeight.overflowY = "scroll";
+  }
+
+  const [dataSource, setDataSource] = useState([]);
+
+  const ModalColumns = [
     {
-      title: "Sent Date",
-      value: dayjs(details.sent_date).format("DD-MM-YYYY"),
+      title: 'No',
+      dataIndex: 'no',
+      key: 'no',
     },
-    { title: "Delivery Charge", value: details.delivery_charge },
-    { title: "Power Cost", value: details.power_cost },
+    {
+      title: 'Company name',
+      dataIndex: 'company_name',
+      key: 'company_name',
+    },
+    {
+      title: 'Denier',
+      dataIndex: 'dennier',
+      key: 'dennier',
+    },
+    {
+      title: 'KG',
+      dataIndex: 'kg',
+      key: 'kg',
+    },
+    {
+      title: 'Cartoon',
+      dataIndex: 'cartoon',
+      key: 'cartoon',
+    },
+    {
+      title: 'Remark',
+      dataIndex: 'remark',
+      key: 'remark',
+    },
   ];
 
-  const { job_yarn_sent_details } = details;
+  useEffect(() => {
+    let temp = [];
+
+    details?.job_yarn_sent_details?.map((element, index) => {
+      temp.push({
+        no: index + 1,
+        company_name: element?.yarn_stock_company?.yarn_company_name,
+        dennier: `${element?.yarn_stock_company?.yarn_type}-${element?.yarn_stock_company?.yarn_Sub_type}-${element?.yarn_stock_company?.yarn_color}`,
+        kg: element?.kg,
+        cartoon: element?.cartoon,
+        remark: ""
+      });
+    })
+    setDataSource(temp);
+  }, [details]);
+
+  const componentRef = useRef();
+  
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -505,13 +529,27 @@ const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
           </Typography.Text>
         }
         open={isModalOpen}
-        footer={null}
+        footer={() => {
+          return (
+            <>
+              <ReactToPrint
+                trigger={() => <Flex>
+                  <Button type="primary" style={{ marginLeft: "auto", marginTop: 15 }}>
+                    PRINT
+                  </Button>
+                </Flex>
+                }
+                content={() => componentRef.current}
+              />
+            </>
+          )
+        }}
         onCancel={handleCancel}
         centered={true}
-        className="view-in-house-quality-model"
         classNames={{
           header: "text-center",
         }}
+        width={"65%"}
         styles={{
           content: {
             padding: 0,
@@ -522,53 +560,221 @@ const ViewYarnSentDetailsModal = ({ title = "-", details = [] }) => {
           },
           body: {
             padding: "10px 16px",
+            ...adjustHeight,
           },
+          footer: {
+            paddingBottom: 10,
+            paddingRight: 10,
+            backgroundColor: "#efefef"
+          }
         }}
       >
-        <Flex className="flex-col gap-1">
-          {yarnSentDetail?.map(({ title = "", value }) => {
-            return (
-              <Row gutter={12} className="flex-grow" key={title}>
-                <Col span={10} className="font-medium">
-                  {title}
-                </Col>
-                <Col span={14}>{value ?? "-"}</Col>
-              </Row>
-            );
-          })}
+        <div ref={componentRef} style={{ padding: "25px" }}>
 
-          {job_yarn_sent_details.map((item, index) => {
-            return (
-              <>
-                <Divider />
-                <Row
-                  gutter={12}
-                  className="flex-grow"
-                  key={index + "_job_challan_details"}
-                >
-                  <Col span={4} className="font-medium">
-                    Denier
-                  </Col>
-                  <Col span={4}>
-                    {`${item.yarn_stock_company.yarn_denier}D/${item.yarn_stock_company.filament}F (${item.yarn_stock_company.luster_type} - ${item.yarn_stock_company.yarn_color})`}
-                  </Col>
-                  <Col span={2} className="font-medium">
-                    Cartoon:
-                  </Col>
-                  <Col span={2}>{item.cartoon}</Col>
-                  <Col span={2} className="font-medium">
-                    KG:
-                  </Col>
-                  <Col span={2}>{item.kg}</Col>
-                  <Col span={2} className="font-medium">
-                    Remaining Stock:
-                  </Col>
-                  <Col span={2}>{item.remaining_stock}</Col>
-                </Row>
-              </>
-            );
-          })}
-        </Flex>
+          <Card className="card-wrapper" >
+
+            <Row className="header-row">
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title card-text">TO: {details?.supplier?.supplier_company}</Title>
+                  <div className="header-card-text">
+                    <Text strong>Address: {details?.supplier?.user?.address}</Text><br />
+                    <Text >GST NO: {details?.supplier?.user?.gst_no}</Text><br />
+                  </div>
+                </Card>
+              </Col>
+              <Col span={2}></Col>
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title">FROM: {company?.company_name}</Title>
+                  <div className="header-card-text">
+                    <Text strong>Address: {company.address_line_1}, {company.address_line_2}, {company.city}, {company.state}, {company.pincode}, {company.country}</Text><br />
+                    <Text >GST NO: {company?.gst_no}</Text><br />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <div class="dotted-line"></div>
+            <Row gutter={16} style={{ marginTop: 8, paddingLeft: 12, paddingRight: 12, marginBottom: 8 }}>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>E Bill Number:</Text><br />
+                  <Text>-</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Challan No:</Text><br />
+                  <Text>{details?.challan_no}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Vehicle No:</Text><br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center ">
+                  <Text strong>Date:</Text><br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                </Flex>
+              </Col>
+            </Row>
+            <div class="dotted-line"></div>
+            <Table
+              dataSource={dataSource}
+              columns={ModalColumns}
+              pagination={false}
+              className="data-table"
+              style={{ marginTop: 16 }}
+              bordered
+              summary={() => {
+                let totalCartoon = 0;
+                let totalKG = 0;
+                dataSource?.map((element) => {
+                  totalCartoon = totalCartoon + Number(element?.cartoon);
+                  totalKG = totalKG + Number(element?.kg);
+
+                })
+                return (
+                  <>
+                    <Table.Summary.Row className="font-semibold">
+                      <Table.Summary.Cell>Total</Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell>
+                        <Typography.Text>{totalKG}</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Typography.Text>{totalCartoon}</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                    </Table.Summary.Row>
+                  </>
+                );
+              }}
+            />
+            <div class="dotted-line"></div>
+            <Row gutter={16} style={{ marginTop: 16, paddingLeft: 12, paddingRight: 12, marginBottom: 40 }}>
+              <Col span={12}>
+                <Text ><strong>Receivers sign</strong></Text>
+              </Col>
+              <Col span={12}>
+                <Text strong>
+                  <strong>
+                    Senders sign
+                  </strong>
+                </Text>
+              </Col>
+            </Row>
+          </Card>
+
+          <div class="red-dotted-line"></div>
+
+          <Card className="card-wrapper" >
+
+            <Row className="header-row">
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title card-text">TO: {details?.supplier?.supplier_company}</Title>
+                  <div className="header-card-text">
+                    <Text strong>Address: {details?.supplier?.user?.address}</Text><br />
+                    <Text >GST NO: {details?.supplier?.user?.gst_no}</Text><br />
+                  </div>
+                </Card>
+              </Col>
+              <Col span={2}></Col>
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title">FROM: {company?.company_name}</Title>
+                  <div className="header-card-text">
+                    <Text strong>Address: {company.address_line_1}, {company.address_line_2}, {company.city}, {company.state}, {company.pincode}, {company.country}</Text><br />
+                    <Text >GST NO: {company?.gst_no}</Text><br />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+
+            <div class="dotted-line"></div>
+            <Row gutter={16} style={{ marginTop: 8, paddingLeft: 12, paddingRight: 12, marginBottom: 8 }}>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>E Bill Number:</Text><br />
+                  <Text>-</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Challan No:</Text><br />
+                  <Text>{details?.challan_no}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Vehicle No:</Text><br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center ">
+                  <Text strong>Date:</Text><br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                </Flex>
+              </Col>
+            </Row>
+            <div class="dotted-line"></div>
+            <Table
+              dataSource={dataSource}
+              columns={ModalColumns}
+              pagination={false}
+              className="data-table"
+              style={{ marginTop: 16 }}
+              bordered
+              summary={() => {
+                let totalCartoon = 0;
+                let totalKG = 0;
+                dataSource?.map((element) => {
+                  totalCartoon = totalCartoon + Number(element?.cartoon);
+                  totalKG = totalKG + Number(element?.kg);
+
+                })
+                return (
+                  <>
+                    <Table.Summary.Row className="font-semibold">
+                      <Table.Summary.Cell>Total</Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell>
+                        <Typography.Text>{totalKG}</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Typography.Text>{totalCartoon}</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                    </Table.Summary.Row>
+                  </>
+                );
+              }}
+            />
+            <div class="dotted-line"></div>
+            <Row gutter={16} style={{ marginTop: 16, paddingLeft: 12, paddingRight: 12, marginBottom: 40 }}>
+              <Col span={12}>
+                <Text ><strong>Receivers sign</strong></Text>
+              </Col>
+              <Col span={12}>
+                <Text strong>
+                  <strong>
+                    Senders sign
+                  </strong>
+                </Text>
+              </Col>
+            </Row>
+          </Card>
+
+        </div>
+
       </Modal>
     </>
   );

@@ -35,6 +35,7 @@ import {
 import { disableBeforeDate } from "../../../../utils/date";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -365,7 +366,7 @@ const AddYarnSent = () => {
                     <DatePicker
                       {...field}
                       style={{ width: "100%" }}
-                      disabledDate={disableBeforeDate}
+                      disabledDate={disabledFutureDate}
                       format={"DD-MM-YYYY"}
                     />
                   );
@@ -407,7 +408,7 @@ const AddYarnSent = () => {
 
           <Col span={4}>
             <Form.Item
-              label="Supplier Name"
+              label="Party Name"
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
@@ -440,7 +441,7 @@ const AddYarnSent = () => {
 
           <Col span={4}>
             <Form.Item
-              label="Supplier Company"
+              label="Party Company"
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
@@ -821,7 +822,7 @@ const RenderDynamicFields = ({
                       setValue(
                         `remaining_stock_${field}`,
                         parseInt(getValues(`current_stock_${field}`)) -
-                          parseInt(e.target.value)
+                        parseInt(e.target.value)
                       );
                     }
                   }}
