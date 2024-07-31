@@ -37,6 +37,7 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import DeleteSaleChallan from "../../../../components/sale/challan/saleChallan/DeleteSaleChallan";
 import ViewSaleChallan from "../../../../components/sale/challan/saleChallan/ViewSaleChallan";
 import SaleChallanBill from "../../../../components/sale/challan/saleChallan/SaleChallanBill";
+import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewChallan";
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
 const SaleChallanList = () => {
@@ -332,6 +333,7 @@ const SaleChallanList = () => {
             >
               <EditOutlined />
             </Button>
+            <ViewChallan details={details}/>
             <DeleteSaleChallan details={details} />
             <ViewSaleChallan details={details} companyId={companyId} />
             <Button

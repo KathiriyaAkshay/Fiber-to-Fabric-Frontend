@@ -359,3 +359,8 @@ color: black;
 .card-wrapper{
   border:1px solid black;
 }
+
+
+.wrapper-view-challan td, .wrapper-view-challan tr{
+  border: 1px solid black;
+}
