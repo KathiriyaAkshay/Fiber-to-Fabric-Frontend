@@ -337,7 +337,6 @@ const UpdateYarnSent = () => {
 
   useEffect(() => {
     if (yarnSentDetails) {
-      console.log({ yarnSentDetails });
       const {
         sent_date,
         challan_no,
@@ -351,7 +350,7 @@ const UpdateYarnSent = () => {
         job_yarn_sent_details,
       } = yarnSentDetails;
       setFieldArray(() => {
-        return job_yarn_sent_details.map((item, index) => index);
+        return job_yarn_sent_details.map((_, index) => index);
       });
       let jobYarnSentDetails = {};
       job_yarn_sent_details.forEach((item, index) => {
@@ -661,7 +660,6 @@ const UpdateYarnSent = () => {
         <Divider />
 
         {/* {fieldArray.map((field, index) => {
-          console.log({ field });
           return (
             <Row
               gutter={18}
@@ -822,7 +820,28 @@ const UpdateYarnSent = () => {
           );
         })} */}
         {fieldArray.map((field, index) => {
-          // const yarnDetailObj = yarnSentDetails?.job_yarn_sent_details[index];
+          const companyName =
+            yarnSentDetails?.job_yarn_sent_details[index]?.yarn_stock_company
+              ?.yarn_company_name;
+
+          const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
+            ({ yarn_company_name }) => companyName === yarn_company_name
+          );
+
+          const editDenierOption = selectedYarnCompany.yarn_details.map(
+            ({
+              yarn_company_id = 0,
+              filament = 0,
+              yarn_denier = 0,
+              luster_type = "",
+              yarn_color = "",
+            }) => {
+              return {
+                label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+                value: yarn_company_id,
+              };
+            }
+          );
 
           // const {
           //   yarn_company_id = 0,
@@ -838,6 +857,7 @@ const UpdateYarnSent = () => {
           //     value: yarn_company_id,
           //   },
           // ];
+
           return (
             <RenderDynamicFields
               key={index}
@@ -854,7 +874,7 @@ const UpdateYarnSent = () => {
               setError={setError}
               getValues={getValues}
               clearErrors={clearErrors}
-              // editDenierOption={editDenierOption}
+              editDenierOption={editDenierOption}
             />
           );
         })}
@@ -885,9 +905,9 @@ const RenderDynamicFields = ({
   getValues,
   setError,
   clearErrors,
-  // editDenierOption,
+  editDenierOption,
 }) => {
-  const [denierOptions, setDenierOptions] = useState([]);
+  const [denierOptions, setDenierOptions] = useState(editDenierOption || []);
 
   const createDenierOption = (companyName) => {
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
