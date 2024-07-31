@@ -171,93 +171,62 @@ const ViewChallan = ({ details, companyId }) => {
               <tr>
                 <td colSpan={1} className="p-4 w-1/4">
                   <Row justify={"space-between"} className="w-full bg-gray-200">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
+                    <Col className="p-1">No</Col>
+                    <Col className="p-1">Taka No</Col>
+                    <Col className="p-1">Meter</Col>
                   </Row>
                   {Array(10).fill(1).map((el, i) =>
                       <Row justify={"space-between"} className="w-full">
-                      <Col>{i+1}</Col>
-                      <Col>{1+i*2}</Col>
-                      <Col>{0}</Col>
+                      <Col className="p-1">{i+1}</Col>
+                      <Col className="p-1">{1+i*2}</Col>
+                      <Col className="p-1">{0}</Col>
                     </Row>
                   )}
                 </td>
                 <td colSpan={1} className="p-4 w-1/4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
+                  <Row justify={"space-between"} className="w-full bg-gray-200">
+                    <Col className="p-1">No</Col>
+                    <Col className="p-1">Taka No</Col>
+                    <Col className="p-1">Meter</Col>
                   </Row>
                   {Array(10).fill(1).map((el, i) =>
                       <Row justify={"space-between"} className="w-full">
-                      <Col>{i+12}</Col>
-                      <Col>{1+i*2}</Col>
-                      <Col>{0}</Col>
+                      <Col className="p-1">{i+1}</Col>
+                      <Col className="p-1">{1+i*2}</Col>
+                      <Col className="p-1">{0}</Col>
                     </Row>
                   )}
                 </td>
                 <td colSpan={1} className="p-4 w-1/4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col sp>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
+                  <Row justify={"space-between"} className="w-full bg-gray-200">
+                    <Col className="p-1">No</Col>
+                    <Col className="p-1">Taka No</Col>
+                    <Col className="p-1">Meter</Col>
                   </Row>
                   {Array(10).fill(1).map((el, i) =>
                       <Row justify={"space-between"} className="w-full">
-                      <Col>{i+24}</Col>
-                      <Col>{1+i*2}</Col>
-                      <Col>{0}</Col>
+                      <Col className="p-1">{i+1}</Col>
+                      <Col className="p-1">{1+i*2}</Col>
+                      <Col className="p-1">{0}</Col>
                     </Row>
                   )}
                 </td>
-                <td colSpan={1} className="p-4 w-1/4 p-">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
+                <td colSpan={1} className="p-4 w-1/4">
+                  <Row justify={"space-between"} className="w-full bg-gray-200">
+                    <Col className="p-1">No</Col>
+                    <Col className="p-1">Taka No</Col>
+                    <Col className="p-1">Meter</Col>
                   </Row>
                   {Array(10).fill(1).map((el, i) =>
                       <Row justify={"space-between"} className="w-full">
-                      <Col>{i+36}</Col>
-                      <Col>{1+i*2}</Col>
-                      <Col>{0}</Col>
+                      <Col className="p-1">{i+1}</Col>
+                      <Col className="p-1">{1+i*2}</Col>
+                      <Col className="p-1">{0}</Col>
                     </Row>
                   )}
                 </td>
               </tr>
-              <tr>
-                <td colSpan={1} className="p-4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
-                  </Row>
 
-
-                </td>
-                <td colSpan={1} className="p-4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
-                  </Row>
-                </td>
-                <td colSpan={1} className="p-4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col sp>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
-                  </Row>
-                </td>
-                <td colSpan={1} className="p-4">
-                  <Row justify={"space-between"} className="w-full">
-                    <Col>No</Col>
-                    <Col>Taka No</Col>
-                    <Col>Meter</Col>
-                  </Row>
-                </td>
-              </tr>
 
               <tr>
                 <td colSpan={4}>
@@ -269,7 +238,7 @@ const ViewChallan = ({ details, companyId }) => {
               </tr>
               <tr>
                 <td colSpan={4}>
-                  <Row className="w-full p-1">
+                  <Row className="w-ful p-1">
                     <Col span={12} className="text-left">
                       <strong> TERMS OF SALES:</strong>
                       <ol>
