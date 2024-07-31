@@ -6,6 +6,12 @@ export function createYarnReceiveRequest({ data, params }) {
   });
 }
 
+export function createYarnReturnRequest ({data, params}) {
+  return api.post(`/yarn-stock/yarn-receive-challan/return/create`, data, {
+    params
+  })
+}
+
 export function getYarnReceiveByIdRequest({ id, params }) {
   return api.get(`/yarn-stock/yarn-receive-challan/get/${id}`, { params });
 }

@@ -24,28 +24,68 @@ import YarnReceiveChallanModal from "../../../../components/purchase/receive/yar
 import MultipleChallanCreateButton from "../../../../components/purchase/receive/yarnReceive/createMultipleChallan";
 import moment from "moment";
 import YarnReturnModel from "../../../../components/purchase/receive/yarnReceive/yarnReturnModel";
-
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { useMemo } from "react";
+import { currentMonthStartDateEndDate } from "../../../../utils/date";
 
 function YarnReceiveList() {
+
+  const [startDate, endDate] = currentMonthStartDateEndDate() ; 
+
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const [toDate, setToDate] = useState();
+  const [toDate, setToDate] = useState(dayjs(endDate));
   const debouncedToDate = useDebounce(
     toDate && dayjs(toDate).format("YYYY-MM-DD"),
     500
   );
-  const [fromDate, setFromDate] = useState();
+  const [fromDate, setFromDate] = useState(dayjs(startDate));
   const debouncedFromDate = useDebounce(
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-
-  const [billStatus, setBillStatus] = useState();
+  const [billStatus, setBillStatus] = useState("0");
   const debouceBillStatus = useDebounce(billStatus, 500);
+  const [supplier_name, set_supplier_name] = useState() ; 
+  const debounceSupplierName = useDebounce(supplier_name, 500) ;  
+  const [supplier_id, set_supplier_id] = useState() ; 
+  const debouceSupplierId = useDebounce(supplier_id, 500) ; 
 
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const dropDownSupplierCompanyOption = useMemo(() => {
+    if (
+      supplier_name &&
+      dropdownSupplierListRes &&
+      dropdownSupplierListRes.length
+    ) {
+      const obj = dropdownSupplierListRes.filter((item) => {
+        return item.supplier_name === supplier_name;
+      })[0];
+
+      return obj?.supplier_company?.map((item) => {
+        return { label: item.supplier_company, value: item.supplier_id };
+      });
+    } else {
+      return [];
+    }
+  }, [supplier_name, dropdownSupplierListRes]);
 
 
   const { data: yarnReceiveListRes, isLoading: isLoadingYarnReceiveList } =
@@ -60,7 +100,9 @@ function YarnReceiveList() {
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
           end: financialYearEnd,
-          is_bill_created: debouceBillStatus
+          is_bill_created: debouceBillStatus,
+          supplier_name: debounceSupplierName, 
+          supplier_id: debouceSupplierId
         },
       ],
       queryFn: async () => {
@@ -74,7 +116,9 @@ function YarnReceiveList() {
             toDate: debouncedToDate,
             fromDate: debouncedFromDate,
             end: financialYearEnd,
-            is_bill_created: debouceBillStatus
+            is_bill_created: debouceBillStatus, 
+            supplier_name: debounceSupplierName, 
+            supplier_id: debouceSupplierId
           },
         });
         return res.data?.data;
@@ -102,7 +146,9 @@ function YarnReceiveList() {
       dataIndex: "order_no",
       key: "order_no",
       render: (text, record) => (
-        <div>-</div>
+        <div>
+          {record?.yarn_order?.id || "-"}
+        </div>
       )
     },
     {
@@ -168,7 +214,10 @@ function YarnReceiveList() {
       dataIndex: "is_bill_created",
       key: "is_bill_created",
       render: (text, record) => (
-        text != true ? <Tag color="red">Pending</Tag> : <Tag color="green">Received</Tag>
+        text != true ? <Tag color="red">Pending</Tag> :
+        <div>
+          <Tag color="green">Received</Tag><span style={{fontSize: "13px"}}>{`${record?.yarn_order?.rate} Rs`}</span>
+        </div>
       )
     },
     {
@@ -185,14 +234,19 @@ function YarnReceiveList() {
               >
                 <EditOutlined />
               </Button>
+
               <DeleteYarnReceiveButton details={yarnReceiveDetails} />
+              
               <MultipleChallanCreateButton details={yarnReceiveDetails} />
+              
               <YarnReceiveChallanModal details={yarnReceiveDetails} />
 
             </> : <>
+              {!yarnReceiveDetails?.has_yarn_sale_return && (
                 <YarnReturnModel
                   details={yarnReceiveDetails}
                 />
+              )}
             </>}
 
           </Space>
@@ -247,7 +301,7 @@ function YarnReceiveList() {
 
     return (
       <Table
-        rowSelection={rowSelection}
+        rowSelection={billStatus == "1"?null:rowSelection}
         dataSource={yarnReceiveListRes?.row || []}
         columns={columns}
         rowKey={"id"}
@@ -260,6 +314,34 @@ function YarnReceiveList() {
         style={{
           overflow: "auto",
         }}
+        summary={() => {
+          if (!yarnReceiveListRes?.row?.length) return ; 
+          const {
+            sumOfReciveQuantity, 
+            sumOfCartoonPallet
+          } = yarnReceiveListRes ; 
+
+          return(
+            <>
+              <Table.Summary.Row cla  ssName="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell>{sumOfReciveQuantity}</Table.Summary.Cell>
+                <Table.Summary.Cell>{sumOfCartoonPallet}</Table.Summary.Cell>
+                <Table.Summary.Cell/>
+                <Table.Summary.Cell/>
+
+              </Table.Summary.Row>
+            </>
+          )
+        }}
       />
     );
   }
@@ -270,7 +352,9 @@ function YarnReceiveList() {
 
   return (
     <div className="flex flex-col p-4">
+      
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        
         <div className="flex items-center gap-2">
           <h3 className="m-0 text-primary">Yarn Receive Challan List</h3>
           <Button
@@ -279,7 +363,8 @@ function YarnReceiveList() {
             type="text"
           />
         </div>
-        <Flex align="center" gap={10} wrap="wrap">
+
+        <Flex align="flex-end" justify="right" gap={10} wrap="wrap">
 
           <Flex align="center" gap={20}>
             {selectedRows?.length > 0 && (
@@ -335,6 +420,45 @@ function YarnReceiveList() {
             />
           </Flex>
 
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">Supplier Name</Typography.Text>
+            <Select
+              loading={isLoadingDropdownSupplierList}
+              placeholder="Select Supplier"
+              options={dropdownSupplierListRes?.map((supervisor) => ({
+                label: supervisor?.supplier_name,
+                value: supervisor?.supplier_name,
+              }))}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              value={supplier_name}
+              onChange={set_supplier_name}
+              allowClear
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">Supplier Company</Typography.Text>
+            <Select
+              loading={isLoadingDropdownSupplierList}
+              placeholder="Select Supplier Company"
+              options={dropDownSupplierCompanyOption}
+              style={{
+                textTransform: "capitalize",
+              }}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              allowClear
+              value={supplier_id}
+              onChange={set_supplier_id}
+            />
+          </Flex>
+
           <Input
             placeholder="Search"
             value={search}
@@ -343,6 +467,8 @@ function YarnReceiveList() {
               width: "200px",
             }}
           />
+          
+
         </Flex>
       </div>
       {renderTable()}

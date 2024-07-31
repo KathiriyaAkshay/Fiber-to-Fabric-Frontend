@@ -45,7 +45,6 @@ const toWords = new ToWords({
 
 const ViewYarnReceiveChallan = ({ details }) => {
     const [isModelOpen, setIsModalOpen] = useState(false);
-    const { companyId } = useContext(GlobalContext);
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalCartoon, setTotalCartoon] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
@@ -207,7 +206,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             span={4}
                             className="p-2 font-medium border-0 border-r border-solid"
                         >
-                            {details?.yarn_bill_details?.map(item => item.yarn_receive_challan.challan_no).join(',')}
+                            {/* {details?.yarn_bill_details?.map(item => item.yarn_receive_challan.challan_no).join(',')} */}
                         </Col>
                         <Col
                             span={2}

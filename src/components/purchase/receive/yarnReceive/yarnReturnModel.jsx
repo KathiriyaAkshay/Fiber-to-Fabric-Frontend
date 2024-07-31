@@ -1,19 +1,31 @@
 import React, { useState, useEffect, useContext } from "react";
-import { Button, Input, Form, Row, Col, Modal, Typography, DatePicker } from "antd";
+import { Button, Input, Form, Row, Col, Modal, Typography, DatePicker, Flex, message } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { UndoOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { CloseOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import moment from "moment";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup" ; 
+import { useMutation } from "@tanstack/react-query";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import { createYarnReturnRequest } from "../../../../api/requests/purchase/yarnReceive";
+
+const yarnReturnResolverSchema = yupResolver(
+    yup.object().shape({
+        return_quantity: yup.string().required("Required return quantity"), 
+        return_cartoon: yup.string().required("Required return cartoon"), 
+        createdAt: yup.string().required("Required return date")
+    })
+);
 
 const YarnReturnModel = ({ details }) => {
-    console.log("Details information ======================");
-    console.log(details);
 
     const { companyId } = useContext(GlobalContext);
     const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false) ; 
 
     const {
         control,
@@ -26,6 +38,7 @@ const YarnReturnModel = ({ details }) => {
         clearErrors,
         watch,
     } = useForm({
+        resolver: yarnReturnResolverSchema,
         defaultValues: {
         },
     });
@@ -34,16 +47,56 @@ const YarnReturnModel = ({ details }) => {
         setValue("challan_date", moment(details?.challan_date).format("YYYY-MM-DD")); 
         setValue("challan_no", details?.challan_no); 
         setValue("yarn_company", details?.yarn_stock_company?.yarn_company_name) ; 
-        setValue("yarn_dennier", `${details?.yarn_stock_company?.yarn_denier} (${details?.yarn_stock_company?.yarn_Sub_type} ${details?.yarn_stock_company?.luster_type}  ${details?.yarn_stock_company?.yarn_color})`)
+        setValue("yarn_dennier", `${details?.yarn_stock_company?.yarn_denier} (${details?.yarn_stock_company?.yarn_Sub_type} ${details?.yarn_stock_company?.luster_type}  ${details?.yarn_stock_company?.yarn_color})`); 
+        setValue("total_quantity", details?.receive_quantity) ; 
+        setValue("total_cartoon", details?.receive_cartoon_pallet) ; 
     }, [details, setValue])
 
-    const HandleSubmit = async () => {
-
-    }
-
+    
     function disabledFutureDate(current) {
         // Disable dates after today
         return current && current > moment().endOf("day");
+    }
+
+    const { mutateAsync: createReturnYarn, isPending } = useMutation({
+        mutationFn: async (data) => {
+            setLoading(true) ; 
+            const res = await createYarnReturnRequest({
+                data,
+                params: {
+                company_id: companyId,
+                },
+            });
+            return res.data;
+        },
+        mutationKey: ["yarn-receive", "return", "create"],
+        onSuccess: (res) => {
+            setIsModalOpen(false) ;
+            setLoading(false) ; 
+            queryClient.invalidateQueries([
+                "yarn-stock/yarn-receive-challan/list",
+                { company_id: companyId },
+            ]);
+            const successMessage = res?.message;
+                if (successMessage) {
+                    message.success(successMessage);
+            }
+        },
+        onError: (error) => {
+            setLoading(false) ; 
+            mutationOnErrorHandler({ error, message });
+        },
+      });
+
+    const HandleSubmit = async (data) => {
+        let requestPayload = {
+            "yarn_challan_id": details?.id, 
+            "return_quantity": data?.return_quantity,
+            "return_cartoon": data?.return_cartoon,
+            "createdAt": data?.createdAt
+        };
+        await createReturnYarn(requestPayload) ;  
+        
     }
 
     return (
@@ -208,13 +261,18 @@ const YarnReturnModel = ({ details }) => {
                     <Row gutter={24}>
                         <Col span={6}>
                             <Form.Item label="Return Quantity"
-                                name="return_quantity" >
+                                required
+                                name="return_quantity" 
+                                validateStatus={errors.return_quantity ? "error" : ""}
+                                help={errors.return_quantity && errors.return_quantity.message}
+                                >
                                 <Controller
                                     control={control}
                                     name={`return_quantity`}
                                     render={({ field }) => (
                                         <Input
                                             {...field}
+                                            type="number"
                                         />
                                     )}
                                 />
@@ -222,23 +280,33 @@ const YarnReturnModel = ({ details }) => {
                         </Col>
                         <Col span={6}>
                             <Form.Item label="Return Cartoon"
-                                name="return_cartoon" >
+                                required
+                                name="return_cartoon" 
+                                validateStatus={errors.return_cartoon ? "error" : ""}
+                                help={errors.return_cartoon && errors.return_cartoon.message}
+                                >
                                 <Controller
                                     control={control}
                                     name={`return_cartoon`}
                                     render={({ field }) => (
                                         <Input
                                             {...field}
+                                            type="number"
                                         />
                                     )}
                                 />
                             </Form.Item>
                         </Col>
                         <Col span={6}>
-                            <Form.Item label="Return Date" name="return_date">
+                            <Form.Item 
+                                label="Return Date" 
+                                name="createdAt"
+                                validateStatus={errors.createdAt ? "error" : ""}
+                                help={errors.createdAt && errors.createdAt.message}
+                            >
                                 <Controller
                                     control={control}
-                                    name={`return_date`}
+                                    name={`createdAt`}
                                     render={({ field }) => (
                                         <DatePicker
                                             format="YYYY-MM-DD"
@@ -250,6 +318,12 @@ const YarnReturnModel = ({ details }) => {
                             </Form.Item>
                         </Col>
                     </Row>
+
+                    <Flex gap={10} justify="flex-end">
+                        <Button type="primary" htmlType="submit" loading = {loading} >
+                            Create
+                        </Button>
+                    </Flex>
                 </Form>
             </Modal>
         </>

@@ -359,3 +359,8 @@ color: black;
 .card-wrapper{
   border:1px solid black;
 }
+
+.ant-table-summary .ant-table-cell{
+  background-color: #f4f7f7 !important;
+}
+

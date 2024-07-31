@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Button, DatePicker, Flex, Typography, Select, Table, Spin, Space } from "antd";
+import React, { useState } from "react";
+import { Button, DatePicker, Typography, Select, Table, Spin, Space, Flex } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
@@ -14,22 +14,25 @@ import DeleteYarnBillButton from "../../../../components/purchase/receive/yarnRe
 import useDebounce from "../../../../hooks/useDebounce";
 import dayjs from "dayjs";
 import UpdateYarnChallanModel from "../../../../components/purchase/receive/yarnReceive/updateYarnChallanModel";
+import { currentMonthStartDateEndDate } from "../../../../utils/date";
+import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 
 const YarnBillList = () => {
+    const navigatte = useNavigate();
+    const [startDate, endDate] = currentMonthStartDateEndDate() ; 
     const { company, companyId } = useContext(GlobalContext);
     const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
     const { data: user } = useCurrentUser();
-    const navigatte = useNavigate();
 
     const [supplier, setSupplier] = useState();
     const debounceSupplier = useDebounce(supplier, 500);
 
-    const [toDate, setToDate] = useState();
+    const [toDate, setToDate] = useState(dayjs(endDate));
     const debouncedToDate = useDebounce(
         toDate && dayjs(toDate).format("YYYY-MM-DD"),
         500
     );
-    const [fromDate, setFromDate] = useState();
+    const [fromDate, setFromDate] = useState(dayjs(startDate));
     const debouncedFromDate = useDebounce(
         fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
         500
@@ -61,7 +64,8 @@ const YarnBillList = () => {
                 pageSize,
                 supplier_company: debounceSupplier,
                 bill_from: debouncedFromDate,
-                bill_to: debouncedToDate
+                bill_to: debouncedToDate, 
+                is_paid: debounceStatus
             }
         ],
         queryFn: async () => {
@@ -72,13 +76,20 @@ const YarnBillList = () => {
                     pageSize,
                     supplier_company: debounceSupplier,
                     bill_from: debouncedFromDate,
-                    bill_to: debouncedToDate
+                    bill_to: debouncedToDate, 
+                    is_paid: debounceStatus
                 }
             })
             return res?.data?.data;
         },
         enabled: Boolean(companyId)
     })
+
+    const CalculateRateGst = (rate, net_amount, quantity) => {
+        let rate_include_gst = Number(rate) + Number(Number(net_amount) / Number(quantity)) ; 
+        rate_include_gst = Number(rate_include_gst).toFixed(2) ; 
+        return rate_include_gst ; 
+    }
 
     const columns = [
         {
@@ -111,9 +122,9 @@ const YarnBillList = () => {
         },
         {
             title: "Yarn dennier",
-            dataIndex: ["yarn_stock_company"], 
+            dataIndex: ["yarn_stock_company"],
             render: (text, record) => {
-                return(
+                return (
                     <div>
                         {`${text?.yarn_count}C/${text?.filament}F(${text?.yarn_type}(${text?.yarn_Sub_type})-${text?.luster_type}-${text?.yarn_color})`}
                     </div>
@@ -134,11 +145,17 @@ const YarnBillList = () => {
             }
         },
         {
-            title: "Quantity Rate",
+            title: "Rate incl. gst",
             dataIndex: "yarn_bill_details",
             render: (text, record) => {
+                let total_quantity = 0;
+                record?.yarn_bill_details?.map((element) => {
+                    total_quantity = total_quantity + Number(element?.quantity_amount)
+                })
                 return (
-                    <div>{text[0]?.quantity_rate}</div>
+                    <div>
+                        {CalculateRateGst(record?.yarn_order?.rate, record?.net_amount, total_quantity)}
+                    </div>
                 )
             }
         },
@@ -156,11 +173,11 @@ const YarnBillList = () => {
         },
         {
             title: "Total Amount",
-            dataIndex: "net_amount"
+            dataIndex: "freight_amount"
         },
         {
             title: "Amt incl. gst.",
-            dataIndex: "after_TDS_amount"
+            dataIndex: "net_amount"
         },
         {
             title: "Due Date",
@@ -171,21 +188,21 @@ const YarnBillList = () => {
         },
         {
             title: "Due Days",
-            dataIndex: "", 
+            dataIndex: "",
             render: (text, record) => {
-                let due_date = record?.due_date ; 
-                due_date = new Date(due_date) ; 
+                let due_date = record?.due_date;
+                due_date = new Date(due_date);
 
                 let today = new Date();
 
                 let timeDifference = due_date.getTime() - today.getTime();
-                let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24)); 
-                
-                if (daysDifference < 0 ){
-                    daysDifference = 0 ; 
+                let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+                if (daysDifference < 0) {
+                    daysDifference = 0;
                 }
-                
-                return(
+
+                return (
                     <div>{daysDifference}</div>
                 )
             }
@@ -195,14 +212,86 @@ const YarnBillList = () => {
             render: (record) => {
                 return (
                     <Space>
-                        <ViewYarnReceiveChallan details={record} />
-                        <DeleteYarnBillButton details={record} />
-                        <UpdateYarnChallanModel details={record} />
+                        <ViewYarnReceiveChallan details={record}/>
+                        {/* // <DeleteYarnBillButton details={record} />
+                        // <UpdateYarnChallanModel details={record} /> */}
                     </Space>
                 )
             }
         }
     ]
+
+    const PDFDownload = () => {
+        const {
+            totalQuantity,
+            total_amount, 
+            total_quality_rate, 
+            amount_include_gst
+        } = yarnBillData ; 
+    
+        const tableTitle = [
+            "No", 
+            "Bill Date", 
+            "Bill No", 
+            "Supplier Name", 
+            "Supplier Company", 
+            "Yarn Company", 
+            "Dennier", 
+            "Quantity-KG", 
+            "Net Amount", 
+            "Amount", 
+            "Due Date"
+        ] ; 
+
+        const temp = [] ; 
+
+        yarnBillData?.row?.map((element, index) => {
+            let total_quantity = 0 ; 
+            element?.yarn_bill_details?.map((data) => {
+                total_quantity = total_quantity + Number(data?.quantity_amount)
+            }) ; 
+            
+            temp.push([
+                index + 1, 
+                moment(element?.bill_date).format("DD-MM-YYYY"), 
+                element?.invoice_no, 
+                element?.supplier?.supplier?.supplier_name,
+                element?.supplier?.supplier?.supplier_company,
+                element?.yarn_stock_company?.yarn_company_name, 
+                `${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F(${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type})-${element?.yarn_stock_company?.luster_type}-${element?.yarn_stock_company?.yarn_color})`,
+                total_quantity,
+                element?.freight_amount, 
+                element?.net_amount, 
+                moment(element?.due_date).format("DD-MM-YYYY")
+            ])
+        }); 
+
+        let total = [
+            "", 
+            "",
+            "", 
+            "",
+            "",
+            "",
+            "", 
+            totalQuantity, 
+            "100", 
+            "100", 
+            "" 
+        ]
+
+
+        localStorage.setItem("print-title", "Yarn Bill List") ; 
+        localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+        localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+        localStorage.setItem("total-count", "1") ; 
+        localStorage.setItem("total-data", JSON.stringify(total)) ; 
+
+        window.open("/print") ; 
+
+    }
+
+
 
     function renderTable() {
         if (isLoading) {
@@ -225,6 +314,14 @@ const YarnBillList = () => {
                     onChange: onPageChange,
                 }}
                 summary={(pageData) => {
+                    if (!yarnBillData?.row?.length) return ; 
+                    const {
+                        totalQuantity,
+                        total_amount, 
+                        total_quality_rate, 
+                        amount_include_gst
+                    } = yarnBillData ; 
+
                     return (
                         <Table.Summary.Row className="font-semibold">
                             <Table.Summary.Cell>Total</Table.Summary.Cell>
@@ -235,19 +332,19 @@ const YarnBillList = () => {
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
                             <Table.Summary.Cell>
-                                <Typography.Text>100</Typography.Text>
+                                <Typography.Text>{totalQuantity}</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell>
-                                <Typography.Text>100</Typography.Text>
+                                <Typography.Text></Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
                             <Table.Summary.Cell>
-                                <Typography.Text>100</Typography.Text>
+                                <Typography.Text>{total_amount}</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell>
-                                <Typography.Text>100</Typography.Text>
+                                <Typography.Text>{amount_include_gst}</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
@@ -265,6 +362,16 @@ const YarnBillList = () => {
                 <div className="flex items-center justify-between gap-5 mx-3 mb-3">
                     <div className="flex items-center gap-2">
                         <h3 className="m-0 text-primary">Yarn Bill List </h3>
+
+                        <Flex style={{marginLeft: "10px"}} gap={"10px"}>
+                            <Button type="primary" icon= {<PlusCircleFilled/>}>
+                                Advance Bill payment
+                            </Button>
+                            <Button type="primary">
+                                SUMMARY
+                            </Button>
+                        </Flex>
+                    
                     </div>
                     <Flex align="center" gap={10}>
                         <Flex align="center" gap={10}>
@@ -275,8 +382,8 @@ const YarnBillList = () => {
                                 <Select
                                     placeholder="Payment status"
                                     options={[
-                                        { label: "paid", value: "paid" },
-                                        { label: "Unpaid", value: "unpaid" }
+                                        { label: "paid", value: "true" },
+                                        { label: "Unpaid", value: "false" }
                                     ]}
                                     dropdownStyle={{
                                         textTransform: "capitalize",
@@ -342,6 +449,13 @@ const YarnBillList = () => {
                                     onChange={setToDate}
                                 />
                             </Flex>
+
+                            <Button
+                                icon = {<FilePdfOutlined/>}
+                                type="primary"
+                                disabled = {!yarnBillData?.row?.length}
+                                onClick={PDFDownload}
+                            />
                         </Flex>
                     </Flex>
 

@@ -4,44 +4,66 @@ import { useState, useEffect } from "react";
 import { PrinterOutlined } from "@ant-design/icons";
 import "./printPage.css"; 
 import ReactToPrint from "react-to-print";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { useContext } from "react";
 
 const PrintPage = () => {
     const ComponentRef = useRef() ; 
     const pageStyle = `
         @media print {
-            body {
-                margin: 0 !important;
-                padding: 0 !important;
-                box-shadow: none !important;
+            html, body {
+                height: auto;
             }
-            .print-instructions {
-                display: none;
+
+            .print-container {
+                display: block;
+                position: relative;
+                top: 0;
+                margin: 0;
             }
-            .printable-content {
-                width: 100%;
-                margin-top: 0;
-                padding-top: 0;
+
+            table {
+                width: 100%; /* Ensure your table uses full width */
             }
-        }` ; 
+        }` ;    
     const [orderData, setOrderData] = useState([]) ; 
     const [orderTitle, setOrderTitle] = useState(null) ; 
     const [tableHead, setTableHead] = useState(null) ; 
-    
+    const [totalVisible, setTotalVisible] = useState(false) ; 
+    const [totalCount, setTotalCount] = useState(null) ; 
+
+    const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+
     useEffect(() => {
         let page_title = localStorage.getItem("print-title") ; 
         setOrderTitle(page_title) ; 
 
         let page_data = JSON.parse(localStorage.getItem("print-array")) ; 
-        setOrderData(page_data) ; 
+        setOrderData([...page_data]) ; 
 
         let page_head = JSON.parse(localStorage.getItem("print-head")) ; 
-        setTableHead(page_head) ; ``
+        setTableHead(page_head) ; 
+
+        let total_visible = localStorage.getItem("total-count") ; 
+        console.log("Total visible information");
+        console.log(total_visible);
+        if (total_visible == "1"){
+            console.log("Run this");
+            setTotalVisible(true) ; 
+        }   else {
+            setTotalVisible(false) ; 
+        }
+
+        let total_data = JSON.parse(localStorage.getItem("total-data")) ; 
+        console.log(total_data);
+        setTotalCount(total_data) ; 
 
     }, []); 
 
     return (
-        <div style={{ padding: 10 }}>
-            <div style={{ marginLeft: "auto", width: "100%" }}>
+        <div className="printable-page">
+            
+            <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
                 <ReactToPrint
                     trigger={() => 
                         <Button style={{ marginLeft: "auto" }} type="primary" icon={<PrinterOutlined />}>
@@ -53,32 +75,54 @@ const PrintPage = () => {
                 />
             </div>
 
-            <div style={{marginTop: 10, paddingLeft: 1, paddingRight: 1}} ref={ComponentRef}>
+            <div 
+                className="printable-main-div" 
+                ref={ComponentRef}>
 
                 <div className="page_title">
                     {orderTitle}
                 </div>
 
-                <table className="printable_table">
-                    <thead>
-                        <tr>
-                            {tableHead?.map((element) => (
-                                <th>{element}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orderData.map((order, index) => (
-                            <tr key={index}>
-                                {order?.map((element) => (
-                                    <td>{element}</td>
+                <div class="company-info">
+                    <div>Company Name: <strong>{company?.company_name}</strong></div>
+                    <div class="company-contact">Company Contact: <strong>{company?.company_contact}</strong></div>
+                    <div class="gst-number">GST No.: <strong>{company?.gst_no}</strong></div>
+                </div>
+
+                <div className="printable-table-div">
+
+                    <table className="printable_table">
+                        <thead>
+                            <tr>
+                                {tableHead?.map((element) => (
+                                    <th>{element}</th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {orderData.map((order, index) => (
+                                <tr key={index}>
+                                    {order?.map((element, elementIndex) => (
+                                        <td key={elementIndex}>{element}</td>
+                                    ))}
+                                </tr>
+                            ))}
+
+                            <tr>
+                                {totalVisible && (
+                                    totalCount?.map((element, index) => (
+                                        <td className="total-information-td">{element}</td>
+                                    ))
+                                )}
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
 
             </div>
+
         </div>
     )
 }
