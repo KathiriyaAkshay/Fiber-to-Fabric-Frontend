@@ -239,70 +239,118 @@ input:read-only{
   }
 }
 
-
 .debitnote-wrapper{
-    /* padding: 0.3rem; */
-    border: 1px solid black !important;
-  
+  /* padding: 0.3rem; */
+  border: 1px solid black !important;
+
 }
 
 
 .border-right{
-  border-right: 1px solid black;
+border-right: 1px solid black;
 }
 
 .border-left{
-  border-left: 1px solid black;
+border-left: 1px solid black;
 }
 
 .border-top{
-  border-top: 1px solid black;
+border-top: 1px solid black;
 }
 
 .border-bottom{
-  border-bottom: 1px solid black;
+border-bottom: 1px solid black;
 }
 
 .debitnote-sec{
-  min-height: 10rem;
+min-height: 10rem;
 }
 
 .table-custom {
-  border-collapse: collapse;
-  border-radius: 0.3rem;
-  width: 100%;
+border-collapse: collapse;
+border-radius: 0.3rem;
+width: 100%;
 }
 
 .table-custom td, .table-custom th {
-  border: 1px solid #000000;
-  padding: 8px;
+border: 1px solid #000000;
+padding: 8px;
 }
 
 .table-custom td:first-child{
-  border-left: 0;
+border-left: 0;
 }
 
 .table-custom td:last-child{
-  border-right: 0;
+border-right: 0;
 }
 .table-custom tr:last-child{
- td{
-  border-bottom: 0;
- }
+td{
+border-bottom: 0;
+}
 }
 
 .no-border td{
-  border-top:0 !important;
-  border-bottom: 0 !important;
+border-top:0 !important;
+border-bottom: 0 !important;
 }
 
-.
-
-
 .table-custom th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #f2f2f2;
+padding-top: 12px;
+padding-bottom: 12px;
+text-align: left;
+background-color: #f2f2f2;
+color: black;
+}
+
+
+.header-row {
+  background-color: #fff;
+}
+
+.header-col {
+  padding: 2px;
+}
+
+.header-card {
+  background-color: #fff;
+  border: none;
+}
+
+.header-title {
+  color: #333;
+  background-color: #f0f0f0;
+  padding: 0.2rem;
+
+}
+
+.description-card {
+  background-color: #fff;
+  border: none !important;
+}
+
+
+.header-card .ant-card-body{
+  padding: 0 !important;
+}
+.data-table .ant-table-thead > tr > th {
   color: black;
+  background-color: #f0f0f0;
+}
+
+.data-table .ant-table-tbody > tr > td {
+  background-color: #fff;
+}
+
+.data-table .ant-table-container table > thead > tr:first-child th {
+  background-color: #d9d9d9;
+}
+
+.dotted-line {
+  border-top: 2px dotted #5b5b5b;
+  margin: 4px 0;
+}
+
+.card-wrapper{
+  border:1px solid black;
 }
