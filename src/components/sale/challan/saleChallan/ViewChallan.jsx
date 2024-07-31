@@ -76,12 +76,18 @@ const ViewChallan = ({ details, companyId }) => {
             <>
               <ReactToPrint
                 trigger={() => (
-                  <Flex>
+                  <Flex align="center" justify="end">
                     <Button
                       type="primary"
-                      style={{ marginLeft: "auto", marginTop: 15 }}
+                      style={{  marginTop: 15 }}
                     >
                       PRINT
+                    </Button>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft:5, marginTop: 15 }}
+                    >
+                      PRINT MICRO CHALLAN
                     </Button>
                   </Flex>
                 )}
