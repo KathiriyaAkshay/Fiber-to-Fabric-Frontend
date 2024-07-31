@@ -32,7 +32,7 @@ import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { getPurchaseTakaDetailListRequest } from "../../../api/requests/purchase/purchaseTaka";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import { disabledFutureDate } from "../../../utils/date";
 
 const PurchaseTakaList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -361,6 +361,7 @@ const PurchaseTakaList = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -373,6 +374,7 @@ const PurchaseTakaList = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
           </Flex>

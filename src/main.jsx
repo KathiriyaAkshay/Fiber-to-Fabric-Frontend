@@ -131,6 +131,7 @@ import UpdateProduction from "./pages/production/UpdateProduction";
 import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkChallan";
 import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
 import PurchaseReturnList from "./pages/purchase/challan/purchaseReturn/PurchaseReturnList";
+import PrintPage from "./components/common/printPage";
 import SaleChallanList from "./pages/sale/challan/saleChallan/SaleChallanList";
 import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
 import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
@@ -184,6 +185,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
+      { path: "/print", element: <PrintPage /> },
       {
         path: "/quality-master",
         children: [

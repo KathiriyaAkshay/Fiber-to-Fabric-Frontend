@@ -25,45 +25,45 @@ import { ToWords } from "to-words";
 const toWords = new ToWords({
     localeCode: "en-IN",
     converterOptions: {
-      currency: true,
-      ignoreDecimal: false,
-      ignoreZeroCurrency: false,
-      doNotAddOnly: false,
-      currencyOptions: {
-        // can be used to override defaults for the selected locale
-        name: "Rupee",
-        plural: "Rupees",
-        symbol: "₹",
-        fractionalUnit: {
-          name: "Paisa",
-          plural: "Paise",
-          symbol: "",
+        currency: true,
+        ignoreDecimal: false,
+        ignoreZeroCurrency: false,
+        doNotAddOnly: false,
+        currencyOptions: {
+            // can be used to override defaults for the selected locale
+            name: "Rupee",
+            plural: "Rupees",
+            symbol: "₹",
+            fractionalUnit: {
+                name: "Paisa",
+                plural: "Paise",
+                symbol: "",
+            },
         },
-      },
     },
 });
 
 const ViewYarnReceiveChallan = ({ details }) => {
     const [isModelOpen, setIsModalOpen] = useState(false);
-    const {companyId} = useContext(GlobalContext) ;
+    const { companyId } = useContext(GlobalContext);
     const [totalQuantity, setTotalQuantity] = useState(0);
-    const [totalCartoon, setTotalCartoon] = useState(0) ; 
-    const [totalAmount, setTotalAmount] = useState(0) ; 
+    const [totalCartoon, setTotalCartoon] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
 
     useEffect(() => {
-        let tempQuantity = 0 ;
-        let tempCartoon = 0 ; 
-        let tempTotalAmount = 0 ; 
- 
+        let tempQuantity = 0;
+        let tempCartoon = 0;
+        let tempTotalAmount = 0;
+
         details?.yarn_bill_details?.map((element) => {
-            tempQuantity = tempQuantity + Number(element?.yarn_receive_challan?.receive_quantity); 
-            tempCartoon = tempCartoon + Number(element?.yarn_receive_challan?.receive_cartoon_pallet) ; 
-            tempTotalAmount = tempTotalAmount + Number(element?.quantity_amount) ; 
+            tempQuantity = tempQuantity + Number(element?.yarn_receive_challan?.receive_quantity);
+            tempCartoon = tempCartoon + Number(element?.yarn_receive_challan?.receive_cartoon_pallet);
+            tempTotalAmount = tempTotalAmount + Number(element?.quantity_amount);
         })
-        setTotalCartoon(tempCartoon) ; 
-        setTotalQuantity(tempQuantity) ; 
-        setTotalAmount(tempTotalAmount.toFixed(2)) ; 
-    }, [details]) ; 
+        setTotalCartoon(tempCartoon);
+        setTotalQuantity(tempQuantity);
+        setTotalAmount(tempTotalAmount.toFixed(2));
+    }, [details]);
 
     return (
         <>
@@ -111,7 +111,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                         </Col>
                     </Row>
 
-                    <Row className="border p-4 border-b border-solid !m-0" style={{borderTop: 0, borderLeft: 0, borderRight: 0}}>
+                    <Row className="border p-4 border-b border-solid !m-0" style={{ borderTop: 0, borderLeft: 0, borderRight: 0 }}>
                         <Col span={12} >
                             <Row>
                                 <Col span={24}>
@@ -195,7 +195,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             AMOUNT
                         </Col>
                     </Row>
-                    
+
                     <Row className="border-0 !m-0">
                         <Col
                             span={5}
@@ -238,11 +238,39 @@ const ViewYarnReceiveChallan = ({ details }) => {
                         </Col>
                     </Row>
 
-                    <Row className="border-0 !m-0">
-                    </Row>
-                    <Row className="border-0 !m-0">
-                    </Row>
-                    <Row className="border-0 !m-0">
+                    <Row className="border-0 !m-0" style={{height: "100px"}}>
+                        <Col
+                            span={5}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col
+                            span={4}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col
+                            span={2}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col
+                            span={2}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col
+                            span={4}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col
+                            span={3}
+                            className="p-2 font-medium border-0 border-r border-solid"
+                        >
+                        </Col>
+                        <Col span={4} className="p-2 font-medium">
+                        </Col>
                     </Row>
 
                     <Row>
@@ -282,7 +310,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             {details?.freight_amount}
                         </Col>
                     </Row>
-                    
+
                     <Row>
                         <Col
                             span={5}
@@ -308,7 +336,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             span={4}
                             className="p-2 font-medium border-0 border-r border-solid"
                         >
-                            {details?.is_discount ?"Discount(%)":"Brokrage(%)"}
+                            {details?.is_discount ? "Discount(%)" : "Brokrage(%)"}
                         </Col>
                         <Col
                             span={3}
@@ -320,7 +348,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             {details?.discount_brokerage_amount}
                         </Col>
                     </Row>
-                    
+
                     <Row>
                         <Col
                             span={5}
@@ -358,7 +386,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             {details?.SGST_amount}
                         </Col>
                     </Row>
-                    
+
                     <Row>
                         <Col
                             span={5}
@@ -396,7 +424,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             {details?.CGST_amount}
                         </Col>
                     </Row>
-                    
+
                     <Row>
                         <Col
                             span={5}
@@ -472,7 +500,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             {details?.TCS_amount}
                         </Col>
                     </Row>
-                    
+
                     <Row >
                         <Col
                             span={5}
@@ -504,20 +532,20 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             span={3}
                             className="p-2 font-medium border-0 border-r border-solid"
                         >
-                            
+
                         </Col>
                         <Col span={4} className="p-2 font-medium">
                             {details?.round_off_amount}
                         </Col>
                     </Row>
 
-                    <Row className="border border-b border-solid !m-0" style={{borderLeft: 0, borderRight: 0}}>
+                    <Row className="border border-b border-solid !m-0" style={{ borderLeft: 0, borderRight: 0 }}>
                         <Col span={6} className="p-2 font-semibold">
                             NO DYEING GUARANTEE
                         </Col>
-                        
+
                         <Col span={11} className="p-2 font-semibold border-0 border-r border-solid">
-                            <div style={{textAlign: "right"}}>
+                            <div style={{ textAlign: "right" }}>
                                 <strong>Due Date</strong>: {moment(details?.due_date).format("DD-MM-YYYY")}
                             </div>
                         </Col>
@@ -532,15 +560,15 @@ const ViewYarnReceiveChallan = ({ details }) => {
                         </Col>
                     </Row>
 
-                    <Row className="border border-b border-solid !m-0" style={{borderLeft: 0, borderRight: 0, borderTop: 0}}>
+                    <Row className="border border-b border-solid !m-0" style={{ borderLeft: 0, borderRight: 0, borderTop: 0 }}>
                         <Col span={4} className="p-2 font-semibold">
                             Rs.(IN WORDS):
                         </Col>
                         <Col span={20} className="p-2 font-semibold">
-                            {Number(details?.net_amount)?toWords.convert(details?.net_amount):""}
+                            {Number(details?.net_amount) ? toWords.convert(details?.net_amount) : ""}
                         </Col>
                     </Row>
-                    <Row className="border border-b border-solid !m-0" style={{borderLeft: 0, borderRight: 0, borderTop: 0}}>
+                    <Row className="border border-b border-solid !m-0" style={{ borderLeft: 0, borderRight: 0, borderTop: 0 }}>
                         <Col span={4} className="p-2 font-semibold">
                             <strong>TDS : </strong>{details?.TDS_amount}
                         </Col>

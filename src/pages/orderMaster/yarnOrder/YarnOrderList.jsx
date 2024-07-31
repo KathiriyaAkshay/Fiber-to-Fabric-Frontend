@@ -27,6 +27,7 @@ import DeleteYarnOrderButton from "../../../components/orderMaster/yarnOrder/Del
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 import useDebounce from "../../../hooks/useDebounce";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
+import { getSupplierListRequest } from "../../../api/requests/users";
 
 function YarnOrderList() {
   const navigate = useNavigate();
@@ -38,6 +39,19 @@ function YarnOrderList() {
   const debouncedOrderStatus = useDebounce(orderStatus, 500) ; 
   const [yarnCompanyName, setYarnCompanyName] = useState(null) ; 
   const debouceYarnCompanyName = useDebounce(yarnCompanyName, 500) ; 
+  const [supplier, setSupplier] = useState(null) ; 
+  const debounceSupplier = useDebounce(supplier, 500) ; 
+
+  const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
+    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
@@ -95,7 +109,7 @@ function YarnOrderList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder) => {
       const {
         id,
@@ -119,6 +133,7 @@ function YarnOrderList() {
         yarn_Sub_type,
         yarn_company_name,
       } = yarn_stock_company;
+
       const { first_name: supplierName } = user;
       return [
         id,
@@ -137,29 +152,53 @@ function YarnOrderList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Order No.",
-          "Order Date",
-          "Party/Supplier Name",
-          "Yarn Company",
-          "Dennier",
-          "Lot no",
-          "Yarn Grade",
-          "Cartoon",
-          "Quantity",
-          "Rate",
-          "Approx Amount",
-          "Order Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Yarn Order List",
-    });
+    let tableTitle =  [
+      "ID",
+      "Order No.",
+      "Order Date",
+      "Party/Supplier Name",
+      "Yarn Company",
+      "Dennier",
+      "Lot no",
+      "Yarn Grade",
+      "Cartoon",
+      "Quantity",
+      "Rate",
+      "Approx Amount",
+      "Order Status",
+    ] ; 
+
+    // Set localstorage item information 
+    localStorage.setItem("print-array", JSON.stringify(body)) ; 
+    localStorage.setItem("print-title", "Yarn Order List")
+    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Order No.",
+    //       "Order Date",
+    //       "Party/Supplier Name",
+    //       "Yarn Company",
+    //       "Dennier",
+    //       "Lot no",
+    //       "Yarn Grade",
+    //       "Cartoon",
+    //       "Quantity",
+    //       "Rate",
+    //       "Approx Amount",
+    //       "Order Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Yarn Order List",
+    // });
+
+    
+    window.open("/print") ; 
   }
 
   const columns = [
@@ -276,6 +315,7 @@ function YarnOrderList() {
           delivered_cartoon,
           approx_amount,
           id,
+          has_advance_payment_count
         } = yarnOrder;
 
         const {
@@ -325,7 +365,10 @@ function YarnOrderList() {
             >
               <EditOutlined />
             </Button>
-            <DeleteYarnOrderButton data={yarnOrder} />
+
+            {!has_advance_payment_count && (
+              <DeleteYarnOrderButton data={yarnOrder} />
+            )}
             <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
           </Space>
         );

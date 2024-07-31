@@ -46,7 +46,7 @@ function CompanyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => ((page * pageSize) + index) + 1,
     },
     {
       title: "Company Name",
@@ -168,6 +168,11 @@ function CompanyList() {
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Company List</h3>
         <Button onClick={navigateToAddCompany} icon={<PlusCircleOutlined />} />
+        <div style={{marginLeft: "auto"}}>
+          <Button type="primary" onClick={navigateToAddCompany}>
+            Opening Balance
+          </Button>
+        </div>
       </div>
       <Table
         dataSource={companyListRes?.rows || []}

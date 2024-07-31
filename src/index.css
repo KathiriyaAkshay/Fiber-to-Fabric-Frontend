@@ -335,6 +335,11 @@ color: black;
 }
 .data-table .ant-table-thead > tr > th {
   color: black;
+}
+
+.view-information-table table thead tr th{
+  background-color: #eeeeee !important;
+  color: black !important;
   background-color: #f0f0f0;
 }
 

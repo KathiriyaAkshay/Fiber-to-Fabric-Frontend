@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { getSizeBeamOrderListRequest } from "../../../api/requests/orderMaster";
 import { useContext, useState } from "react";
@@ -20,8 +19,8 @@ function SizeBeamOrderList() {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(undefined);
+  const [toDate, setToDate] = useState(undefined);
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
 
@@ -30,7 +29,12 @@ function SizeBeamOrderList() {
       "order-master",
       "size-beam-order",
       "list",
-      { company_id: companyId, page, pageSize, end: financialYearEnd, fromDate: debouncedFromDate, toDate: debouncedToDate },
+    {   company_id: companyId, 
+        page, pageSize, 
+        end: financialYearEnd, 
+        fromDate: debouncedFromDate, 
+        toDate: debouncedToDate
+      },
     ],
     queryFn: async () => {
       const res = await getSizeBeamOrderListRequest({
@@ -204,6 +208,7 @@ function SizeBeamOrderList() {
             <BeamPipeChallanModel details={record} />
             {record?.status == "PENDING" && (
               <>
+
                 <Button
                   onClick={() => {
                     navigateToUpdate(id);
@@ -211,6 +216,7 @@ function SizeBeamOrderList() {
                 >
                   <EditOutlined />
                 </Button>
+                
                 <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
               </>
             )}
@@ -247,6 +253,7 @@ function SizeBeamOrderList() {
   }
 
   const disableFutureDates = (current) => {
+    // Check if the current date is after (or equal to) the end of the current day
     return current && current > moment().endOf('day');
   };
 

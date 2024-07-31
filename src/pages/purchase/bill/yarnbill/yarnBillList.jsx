@@ -35,8 +35,8 @@ const YarnBillList = () => {
         500
     );
 
-    const [status, setStatus] = useState() ;
-    const debounceStatus = useDebounce(status, 600); 
+    const [status, setStatus] = useState();
+    const debounceStatus = useDebounce(status, 600);
 
     const {
         data: dropdownSupplierListRes,
@@ -59,7 +59,7 @@ const YarnBillList = () => {
                 company_id: companyId,
                 page,
                 pageSize,
-                supplier_company: debounceSupplier, 
+                supplier_company: debounceSupplier,
                 bill_from: debouncedFromDate,
                 bill_to: debouncedToDate
             }
@@ -70,7 +70,7 @@ const YarnBillList = () => {
                     company_id: companyId,
                     page,
                     pageSize,
-                    supplier_company: debounceSupplier, 
+                    supplier_company: debounceSupplier,
                     bill_from: debouncedFromDate,
                     bill_to: debouncedToDate
                 }
@@ -107,11 +107,18 @@ const YarnBillList = () => {
         },
         {
             title: "Yarn Company",
-            dataIndex: [""]
+            dataIndex: ["yarn_stock_company", "yarn_company_name"]
         },
         {
             title: "Yarn dennier",
-            dataIndex: [""]
+            dataIndex: ["yarn_stock_company"], 
+            render: (text, record) => {
+                return(
+                    <div>
+                        {`${text?.yarn_count}C/${text?.filament}F(${text?.yarn_type}(${text?.yarn_Sub_type})-${text?.luster_type}-${text?.yarn_color})`}
+                    </div>
+                )
+            }
         },
         {
             title: "Quantity KG",
@@ -164,7 +171,24 @@ const YarnBillList = () => {
         },
         {
             title: "Due Days",
-            dataIndex: ""
+            dataIndex: "", 
+            render: (text, record) => {
+                let due_date = record?.due_date ; 
+                due_date = new Date(due_date) ; 
+
+                let today = new Date();
+
+                let timeDifference = due_date.getTime() - today.getTime();
+                let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24)); 
+                
+                if (daysDifference < 0 ){
+                    daysDifference = 0 ; 
+                }
+                
+                return(
+                    <div>{daysDifference}</div>
+                )
+            }
         },
         {
             title: "Action",
@@ -225,6 +249,9 @@ const YarnBillList = () => {
                             <Table.Summary.Cell>
                                 <Typography.Text>100</Typography.Text>
                             </Table.Summary.Cell>
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
+                            <Table.Summary.Cell />
                         </Table.Summary.Row>
                     )
                 }}
@@ -248,8 +275,8 @@ const YarnBillList = () => {
                                 <Select
                                     placeholder="Payment status"
                                     options={[
-                                        {label:"paid", value: "paid"},
-                                        {label: "Unpaid", value: "unpaid"}
+                                        { label: "paid", value: "paid" },
+                                        { label: "Unpaid", value: "unpaid" }
                                     ]}
                                     dropdownStyle={{
                                         textTransform: "capitalize",

@@ -20,6 +20,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getDenierwiseWastageReportListRequest } from "../../../../api/requests/reports/denierwiseWastageReport";
 import DeleteDenierwiseWastageReportButton from "../../../../components/tasks/denierwiseWastageReport/DeleteDenierwiseWastageReportButton";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import moment from "moment";
 
 function DenierwiseWastageReportList() {
   const [search, setSearch] = useState("");
@@ -192,6 +193,12 @@ function DenierwiseWastageReportList() {
     );
   }
 
+  
+  const disableFutureDates = (current) => {
+    // Check if the current date is after (or equal to) the end of the current day
+    return current && current > moment().endOf('day');
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -217,6 +224,7 @@ function DenierwiseWastageReportList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 
@@ -230,6 +238,7 @@ function DenierwiseWastageReportList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 

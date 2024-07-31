@@ -1,6 +1,4 @@
 import jsPDF from "jspdf";
-// eslint-disable-next-line no-unused-vars
-import autoPDF from "jspdf-autotable";
 import dayjs from "dayjs";
 
 export function downloadUserPdf({
@@ -11,33 +9,45 @@ export function downloadUserPdf({
   body = [],
 }) {
   // Create a jsPDF instance
-  const pdf = new jsPDF();
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: [300, 297], // width: 300mm, height: 297mm
+  });
 
   // Set font size and style for the title
-  pdf.setFontSize(16);
-  pdf.setFont("bold");
+  pdf.setFontSize(8);
+  pdf.setFont("helvetica");
 
   // Center align the title
   const titleWidth =
-    (pdf.getStringUnitWidth(title) * pdf.internal.getFontSize()) /
-    pdf.internal.scaleFactor;
+  (pdf.getStringUnitWidth(title) * pdf.internal.getFontSize()) / pdf.internal.scaleFactor;
   const titleX = (pdf.internal.pageSize.width - titleWidth) / 2;
-  pdf.text(titleX, 16, title);
+  pdf.text(titleX, 15, title);
 
   // Set font size and style for the left content
-  pdf.setFontSize(12);
-  pdf.setFont("normal");
+  pdf.setFontSize(8);
+  pdf.setFont("helvetica");
 
-  pdf.text(10, 26, leftContent);
-  pdf.text(195, 26, rightContent, {
-    align: "right",
+  // Parse the left content
+  const leftContentLines = leftContent.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+
+  pdf.setTextColor(0, 0, 255); // Set text color to blue
+  pdf.setFont("helvetica", "bold"); // Set font to bold
+  
+  let yPosition = 8; // Initial Y position
+  leftContentLines.forEach(line => {
+    pdf.text(line, 8, yPosition);
+    yPosition += 7; // Move to the next line
   });
+
+  pdf.text(rightContent, 290, 8, { align: "right" }); 
 
   pdf.autoTable({
     head: head,
     body: body,
     margin: {
-      top: 50,
+      top: 35,
     },
   });
 

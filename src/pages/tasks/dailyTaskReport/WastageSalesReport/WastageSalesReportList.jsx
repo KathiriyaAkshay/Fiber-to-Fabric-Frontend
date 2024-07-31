@@ -159,6 +159,12 @@ function WastageSalesReportList() {
     },
   ];
 
+  
+  const disableFutureDates = (current) => {
+    // Check if the current date is after (or equal to) the end of the current day
+    return current && current > moment().endOf('day');
+  };
+
   function renderTable() {
     if (isLoadingReportList) {
       return (
@@ -242,12 +248,13 @@ function WastageSalesReportList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker
+            <DatePicker 
               allowClear={true}
               style={{
                 width: "200px",
@@ -255,6 +262,7 @@ function WastageSalesReportList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disableFutureDates}
             />
           </Flex>
 

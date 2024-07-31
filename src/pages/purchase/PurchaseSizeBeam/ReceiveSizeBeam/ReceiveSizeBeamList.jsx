@@ -188,16 +188,23 @@ function ReceiveSizeBeamList() {
                 {label: "Beam Type", value: details?.beam_type} 
               ]}
             />
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteSizeBeamOrderButton
-              details={details}
-            />
+
+            {details?.bill_status == "pending" && (
+              <>
+              
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                <DeleteSizeBeamOrderButton
+                  details={details}
+                />
+              </>
+
+            )}
             <SizeBeamChallanModal
               details={details}
             />

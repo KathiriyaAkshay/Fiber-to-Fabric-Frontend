@@ -35,7 +35,7 @@ import dayjs from "dayjs";
 import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import ViewPurchaseChallanInfo from "../../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+
 
 const PurchaseChallanList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -115,24 +115,6 @@ const PurchaseChallanList = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  //   const dropDownSupplierCompanyOption = useMemo(() => {
-  //     if (
-  //       debouncedSupplier &&
-  //       dropdownSupplierListRes &&
-  //       dropdownSupplierListRes.length
-  //     ) {
-  //       const obj = dropdownSupplierListRes.filter((item) => {
-  //         return item.supplier_name === debouncedSupplier;
-  //       })[0];
-
-  //       return obj?.supplier_company?.map((item) => {
-  //         return { label: item.supplier_company, value: item.supplier_id };
-  //       });
-  //     } else {
-  //       return [];
-  //     }
-  //   }, [debouncedSupplier, dropdownSupplierListRes]);
 
   const { data: purchaseChallanList, isLoading } = useQuery({
     queryKey: [
@@ -363,18 +345,6 @@ const PurchaseChallanList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-        <Radio.Group
-          name="filter"
-          value={state}
-          onChange={(e) => setState(e.target.value)}
-        >
-          <Flex align="center" gap={10}>
-            <Radio value={"current"}> Current</Radio>
-            <Radio value={"previous"}> Previous </Radio>
-          </Flex>
-        </Radio.Group>
-      </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">

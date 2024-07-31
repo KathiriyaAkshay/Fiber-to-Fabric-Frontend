@@ -29,7 +29,7 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
       });
       return res.data?.data;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(companyId && isModalOpen),
   });
 
   const showModal = () => {
@@ -71,9 +71,8 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
     },
     {
       title: "Remaining Amount",
-      dataIndex: "remaining_amount",
-      key: "remaining_amount",
-      render: (text) => (text == undefined ? <div>-</div> : <div>-</div>),
+      dataIndex: "advance_amount",
+      key: "advance_amount",
     },
     {
       title: "Status",

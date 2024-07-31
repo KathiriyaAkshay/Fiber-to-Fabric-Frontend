@@ -79,7 +79,7 @@ const BeamPipeChallanModel = ({ details }) => {
                 classNames={{
                     header: "text-center",
                 }}
-                width={"60%"}
+                width={"65%"}
                 styles={{
                     content: {
                         padding: 0,
@@ -118,9 +118,9 @@ const BeamPipeChallanModel = ({ details }) => {
                             <div className="pl-4 pt-4">
                                 <Typography.Text strong>To,</Typography.Text>
                                 <br />
-                                <Typography.Text>YARN_SUPPLIER_3</Typography.Text>
+                                <Typography.Text>{details?.supplier?.supplier_name}</Typography.Text>
                                 <br />
-                                <Typography.Text>SUPPLIER ADDRESS</Typography.Text>
+                                <Typography.Text>{details?.supplier?.user?.address}</Typography.Text>
                             </div>
 
                             <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>

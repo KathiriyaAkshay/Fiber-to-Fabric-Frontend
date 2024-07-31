@@ -78,10 +78,6 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
             >
               <EditOutlined />
             </Button>
-            {/* <DeleteCompanyBank
-              companyBankDetails={companyBankDetails}
-              company={company}
-            /> */}
             <Switch
               loading={updatingCompanyBank && variables?.id === id}
               defaultChecked={is_active}
@@ -100,7 +96,11 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
   ];
 
   return (
-    <Table style={{marginTop: "1rem"}} dataSource={bankList?.rows || []} columns={columns} rowKey={"id"} className="mt-3" />
+    <Table 
+      style={{width: "80%",marginRight: "auto", marginTop: "2rem"}} 
+      dataSource={bankList?.rows || []} 
+      columns={columns} 
+      rowKey={"id"}/>
   );
 }
 
