@@ -18,26 +18,27 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { createSaleChallanReturnRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import ReactToPrint from "react-to-print";
 
 const { Text } = Typography;
 
 const ViewChallan = ({ details, companyId }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
-  const componentRef = useRef();
+  const ComponentRef = useRef();
 
   var rows = [], i = 0, len = 12;
   while (++i <= len) rows.push(i);
 
-  // const pageStyle = `
-  //       @media print {
-  //            .print-instructions {
-  //               display: none;
-  //           }
-  //           .printable-content {
-  //               padding: 20px; /* Add padding for print */
-  //               width: 100%;
-  //           }
-  //   `;
+  const pageStyle = `
+        @media print {
+             .print-instructions {
+                display: none;
+            }
+            .printable-content {
+                padding: 20px; /* Add padding for print */
+                width: 100%;
+            }
+    `;
 
 
 
@@ -73,7 +74,7 @@ const ViewChallan = ({ details, companyId }) => {
         footer={() => {
           return (
             <>
-              {/* <ReactToPrint
+              <ReactToPrint
                 trigger={() => (
                   <Flex>
                     <Button
@@ -84,9 +85,9 @@ const ViewChallan = ({ details, companyId }) => {
                     </Button>
                   </Flex>
                 )}
-                content={() => componentRef.current}
+                content={() => ComponentRef.current}
                 pageStyle={pageStyle}
-              /> */}
+              />
             </>
           );
         }}
@@ -111,6 +112,7 @@ const ViewChallan = ({ details, companyId }) => {
             maxHeight: "75vh",
             overflowY: "auto",
           },
+          
           footer: {
             paddingBottom: 10,
             paddingRight: 10,
@@ -119,7 +121,7 @@ const ViewChallan = ({ details, companyId }) => {
         }}
         width={"70vw"}
       >
-        <div class="bg-white shadow-md rounded p-6">
+        <div class="bg-white shadow-md rounded p-6" ref={ComponentRef}>
           <table class="w-full border-collapse">
             <thead>
               <tr>
