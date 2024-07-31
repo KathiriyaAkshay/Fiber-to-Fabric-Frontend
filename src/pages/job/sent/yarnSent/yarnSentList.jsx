@@ -181,26 +181,96 @@ const YarnSentList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = YarnSentList?.row?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
-      return [
+    const tableTitle = [
+      "No", 
+      "Date", 
+      "Challan No", 
+      "Party Name", 
+      "Company Name", 
+      "Cartoon", 
+      "Kg"
+    ]; 
+
+    let temp = [] ; 
+    let total_cartoon = 0 ; 
+    let total_kg = 0 ; 
+
+    jobYarnSentList?.rows?.map((element, index) => {
+      let normalStr = element.company.company_name.replace(/_/g, " ");
+      normalStr = normalStr
+      .split(" ")
+      .map((word) => {
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+      })
+      .join(" ");
+
+      let temp_cartoon = 0;
+      let temp_kg = 0 ; 
+      element?.job_yarn_sent_details?.map((data) => {
+        total_cartoon = total_cartoon + Number(data?.cartoon);
+        temp_cartoon = temp_cartoon + Number(data?.cartoon);
+
+        total_kg = total_kg + Number(data?.kg) ; 
+        temp_kg = temp_kg + Number(data?.kg) ; 
+      })
+
+
+      temp.push([
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
-      ];
-    });
+        moment(element?.sent_date).format("DD-MM-YYYY"), 
+        element?.challan_no, 
+        element?.supplier?.supplier_name, 
+        normalStr, 
+        temp_cartoon, 
+        temp_kg
+      ]); 
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-      leftContent,
-      rightContent,
-      title: "Trading Quality List",
-    });
+    })
+    ; 
+
+    console.log("Temp information");
+    console.log(temp);
+    
+    let total = [
+      "", 
+      "", 
+      "", 
+      "", 
+      "", 
+      total_cartoon, 
+      total_kg
+    ]
+
+    localStorage.setItem("print-title", "Yarn sent List") ; 
+    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+    localStorage.setItem("total-count", "1") ; 
+    localStorage.setItem("total-data", JSON.stringify(total)) ; 
+
+    window.open("/print") ; 
+
+
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+
+    // const body = YarnSentList?.row?.map((user, index) => {
+    //   const { quality_name, quality_group, production_type, is_active } = user;
+    //   return [
+    //     index + 1,
+    //     quality_name,
+    //     quality_group,
+    //     production_type,
+    //     is_active ? "Active" : "Inactive",
+    //   ];
+    // });
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Trading Quality List",
+    // });
   }
 
   const columns = [
@@ -222,7 +292,7 @@ const YarnSentList = () => {
       key: "challan_no",
     },
     {
-      title: "Supplier Name",
+      title: "Party Name",
       render: (detail) => {
         return `${detail?.supplier?.supplier_name ?? ""}`;
       },
@@ -515,7 +585,7 @@ const ViewYarnSentDetailsModal = ({ title = "-",
   }, [details]);
 
   const componentRef = useRef();
-  
+
   return (
     <>
       <Button type="primary" onClick={showModal}>

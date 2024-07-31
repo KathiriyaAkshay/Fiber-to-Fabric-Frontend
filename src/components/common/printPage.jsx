@@ -10,22 +10,23 @@ import { useContext } from "react";
 const PrintPage = () => {
     const ComponentRef = useRef() ; 
     const pageStyle = `
-        @media print {
-            html, body {
-                height: auto;
-            }
+          @media print {
+        * {
+            box-sizing: border-box; /* Include box-sizing for better layout control */
+        }
 
-            .print-container {
-                display: block;
-                position: relative;
-                top: 0;
-                margin: 0;
-            }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: auto;
+        }
 
-            table {
-                width: 100%; /* Ensure your table uses full width */
-            }
-        }` ;    
+        table {
+            width: 100%;
+            table-layout: fixed; /* This will help the table to take full width */
+        }
+    }` ;    
     const [orderData, setOrderData] = useState([]) ; 
     const [orderTitle, setOrderTitle] = useState(null) ; 
     const [tableHead, setTableHead] = useState(null) ; 
@@ -45,8 +46,6 @@ const PrintPage = () => {
         setTableHead(page_head) ; 
 
         let total_visible = localStorage.getItem("total-count") ; 
-        console.log("Total visible information");
-        console.log(total_visible);
         if (total_visible == "1"){
             console.log("Run this");
             setTotalVisible(true) ; 
