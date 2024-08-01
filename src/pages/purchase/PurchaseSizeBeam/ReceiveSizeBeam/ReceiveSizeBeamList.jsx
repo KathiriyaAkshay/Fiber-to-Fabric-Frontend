@@ -23,7 +23,7 @@ import SizeBeamChallanModal from "../../../../components/purchase/PurchaseSizeBe
 import BeamCardInformationModel from "../../../../components/common/modal/beamCardInformation";
 import GridInformationModel from "../../../../components/common/modal/gridInformationModel";
 import moment from "moment";
-
+import { FilePdfOutlined } from "@ant-design/icons";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -301,6 +301,12 @@ function ReceiveSizeBeamList() {
             style={{
               width: "200px",
             }}
+          />
+
+          <Button
+            icon = {<FilePdfOutlined/>}
+            type="primary"
+            
           />
         </Flex>
       </div>
