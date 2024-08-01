@@ -10,17 +10,21 @@ import {
   Row,
   Select,
   Typography,
+  message
 } from "antd";
 import { CloseOutlined, EditOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { createYarnReceiveBillRequest } from "../../../../api/requests/purchase/yarnReceive";
 import moment from "moment";
 import { ToWords } from "to-words";
+import { useMutation } from "@tanstack/react-query";
+import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 
 const addYarnReceiveSchema = yup.object().shape({
   // order_id: yup.string().required("Please select order no."),
@@ -80,8 +84,7 @@ const toWords = new ToWords({
 });
 
 const UpdateYarnChallanModel = ({ details }) => {
-  //   const queryClient = useQueryClient();
-
+  const queryClient = useQueryClient() ; 
   const { companyId } = useContext(GlobalContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [supplierName, setSupplierName] = useState("");
@@ -89,6 +92,7 @@ const UpdateYarnChallanModel = ({ details }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalCartoon, setTotalCartoon] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [loading, setLoading] = useState(false) ; 
 
   // Get Supplier dropdown information 
   const {
@@ -99,15 +103,16 @@ const UpdateYarnChallanModel = ({ details }) => {
       "dropdown/supplier/list",
       {
         company_id: companyId,
-        supplier_name: supplierName,
-        supplier_type: "yarn",
+        supplier_name: details?.supplier?.supplier?.supplier_name,
+        // supplier_type: "yarn",
       },
     ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: {
           company_id: companyId,
-          supplier_type: "yarn",
+          // supplier_type: "yarn",
+          supplier_name: details?.supplier?.supplier?.supplier_name
         },
       });
       return res.data?.data?.supplierList;
@@ -161,7 +166,8 @@ const UpdateYarnChallanModel = ({ details }) => {
       TCS_value: details?.TCS_value,
       net_amount: details?.net_amount,
       SGST_amount: details?.SGST_amount,
-
+      IGST_amount: details?.IGST_amount, 
+      CGST_amount: details?.CGST_amount
     },
   });
 
@@ -223,32 +229,13 @@ const UpdateYarnChallanModel = ({ details }) => {
       } else {
         const discount_brokrage_amount =
           Number(total_amount) +
-          Number(freight_amount) -
+          Number(temp_freight_amount) -
           Number(discount_brokerage_value) * Number(totalQuantity);
         setValue(
           "discount_brokerage_amount",
           discount_brokrage_amount.toFixed(2)
         );
       }
-
-      if (SGST_value !== "" && SGST_value !== undefined) {
-        const SGST_amount =
-          (Number(discount_brokerage_amount) * Number(SGST_value)) / 100;
-        setValue("SGST_amount", parseFloat(SGST_amount).toFixed(2));
-      }
-
-      if (CGST_value !== "" && CGST_value !== undefined) {
-        const CGST_amount =
-          (Number(discount_brokerage_amount) * Number(CGST_value)) / 100;
-        setValue("CGST_amount", parseFloat(CGST_amount).toFixed(2));
-      }
-
-      if (IGST_value !== "" && IGST_amount !== undefined) {
-        const IGST_amount =
-          (Number(discount_brokerage_amount) * Number(IGST_value)) / 100;
-        setValue("IGST_amount", parseFloat(IGST_amount).toFixed(2));
-      }
-
       
     }
   }, [
@@ -262,6 +249,35 @@ const UpdateYarnChallanModel = ({ details }) => {
     isModalOpen
   ]);
   
+  useEffect(() => {
+
+    if (SGST_value !== "" && SGST_value !== undefined) {
+      const SGST_amount =
+        (Number(discount_brokerage_amount) * Number(SGST_value)) / 100;
+      setValue("SGST_amount", parseFloat(SGST_amount).toFixed(2));
+    }
+
+    if (CGST_value !== "" && CGST_value !== undefined) {
+      const CGST_amount =
+        (Number(discount_brokerage_amount) * Number(CGST_value)) / 100;
+      setValue("CGST_amount", parseFloat(CGST_amount).toFixed(2));
+    }
+
+    if (IGST_value !== "" && IGST_amount !== undefined) {
+      const IGST_amount =
+        (Number(discount_brokerage_amount) * Number(IGST_value)) / 100;
+      setValue("IGST_amount", parseFloat(IGST_amount).toFixed(2));
+    }
+
+  }, [
+    discount_brokerage_amount, 
+    SGST_value, 
+    CGST_value, 
+    IGST_value, 
+    details, 
+    setValue
+  ])
+
   useEffect(() => {
 
     if (TCS_value !== "" && TCS_value !== undefined) {
@@ -280,8 +296,6 @@ const UpdateYarnChallanModel = ({ details }) => {
     Number(CGST_amount) +
     Number(IGST_amount) +
     Number(TCS_amount);
-
-    console.log("Net amount information", net_amount);
 
     let roundOffAmount = Math.round(net_amount) - Number(net_amount) ; 
     setValue("round_off_amount", roundOffAmount.toFixed(2)) ; 
@@ -309,8 +323,84 @@ const UpdateYarnChallanModel = ({ details }) => {
     return current && current > new Date().setHours(0, 0, 0, 0);
   };
 
-  const onSubmit = async (values) => {
-    console.log(values);
+  const { mutateAsync: createYarnReceive } = useMutation({
+    mutationFn: async (data) => {
+      setLoading(true) ; 
+      const res = await createYarnReceiveBillRequest({
+        data,
+        params: { company_id: companyId, bill_id: details?.id },
+      });
+      return res.data;
+    },
+    mutationKey: ["yarn-stock/yarn-receive-challan/create"],
+    onSuccess: (res) => {
+      setLoading(false) ; 
+      queryClient.invalidateQueries([
+        "yarn-stock/yarn-receive-challan/list",
+        { company_id: companyId },
+      ]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Yarn bill updated successfully");
+        setIsModalOpen(false) ; 
+      }
+    },
+    onError: (error) => {
+      setLoading(false) ; 
+      mutationOnErrorHandler({ error, message });
+    },
+  });
+
+
+  const onSubmit = async (data) => {
+    delete data.yarn_company_name;
+    delete data.company_id;
+
+    console.log(details);
+
+    // Total quantity 
+    let totalQuantity = 0;
+    let multiple_challans = [] ; 
+    if (details) {
+      details?.yarn_bill_details?.length > 0 && details?.yarn_bill_details.map((element, index) => {
+        totalQuantity = totalQuantity + Number(element?.yarn_receive_challan?.receive_quantity);
+        console.log(element);
+        multiple_challans.push({
+          "yarn_challan_id": element?.yarn_challan_id, 
+          "quantity_rate": data?.quantity_rate, 
+          "quantity_amount": data?.quantity_amount
+        })
+      })
+    }
+
+    let requestData = {
+      "order_id": details?.order_id,
+      "receive_quantity": totalQuantity,
+      "supplier_company_id": data?.supplier_company_id,
+      "invoice_no": data?.invoice_no,
+      "bill_date": dayjs(data?.bill_date).format("YYYY-MM-DD"),
+      "due_date": dayjs(data?.due_date).format("YYYY-MM-DD"),
+      "freight_value": data?.freight_value,
+      "freight_amount": data?.freight_amount,
+      "is_discount": data?.is_discount,
+      "discount_brokerage_value": data?.discount_brokerage_value,
+      "discount_brokerage_amount": data?.discount_brokerage_amount,
+      "SGST_value": data?.SGST_value,
+      "SGST_amount": data?.SGST_amount,
+      "CGST_value": data?.CGST_value,
+      "CGST_amount": data?.CGST_amount,
+      "TCS_value": data?.TCS_value,
+      "TCS_amount": data?.TCS_amount,
+      "IGST_value": data?.IGST_value,
+      "IGST_amount": data?.IGST_amount,
+      "round_off_amount": data?.round_off_amount,
+      "net_amount": data?.net_amount,
+      "TDS_amount": data?.TDS_amount,
+      "after_TDS_amount": data?.after_TDS_amount,
+      "multiple_challans": multiple_challans, 
+    }; 
+
+    await createYarnReceive(requestData) ; 
   };
 
   return (
@@ -1112,6 +1202,7 @@ const UpdateYarnChallanModel = ({ details }) => {
               style={{ marginLeft: "auto" }}
               type="primary"
               htmlType="submit"
+              loading = {loading}
             >
               Update
             </Button>

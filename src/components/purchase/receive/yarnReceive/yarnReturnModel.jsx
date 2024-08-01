@@ -49,7 +49,9 @@ const YarnReturnModel = ({ details }) => {
         setValue("yarn_company", details?.yarn_stock_company?.yarn_company_name) ; 
         setValue("yarn_dennier", `${details?.yarn_stock_company?.yarn_denier} (${details?.yarn_stock_company?.yarn_Sub_type} ${details?.yarn_stock_company?.luster_type}  ${details?.yarn_stock_company?.yarn_color})`); 
         setValue("total_quantity", details?.receive_quantity) ; 
-        setValue("total_cartoon", details?.receive_cartoon_pallet) ; 
+        setValue("total_cartoon", details?.receive_cartoon_pallet) ;
+        setValue("supplier_name", details?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_name) 
+        setValue("supplier_company", details?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_company);  
     }, [details, setValue]) ; 
 
     const {total_quantity, return_quantity} = watch() ; 

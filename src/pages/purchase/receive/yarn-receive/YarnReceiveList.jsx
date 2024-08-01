@@ -169,7 +169,9 @@ function YarnReceiveList() {
       dataIndex: "supplier",
       key: "supplier",
       render: (text, record) => (
-        <div>-</div>
+        <div>
+          {record?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_name || "-"}
+        </div>
       )
     },
     {
@@ -177,7 +179,9 @@ function YarnReceiveList() {
       dataIndex: "supplier_company",
       key: "supplier_company",
       render: (text, record) => (
-        <div>-</div>
+        <div>
+          {record?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_company || "-"}
+        </div>
       )
     },
     {

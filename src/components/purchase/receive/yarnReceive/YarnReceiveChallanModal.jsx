@@ -340,7 +340,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       setValue("discount_brokerage_amount", discountAmount);
 
     } else {
-      const discount_brokrage_amount = Number(quantity_amount) + Number(freight_amount) -
+      const discount_brokrage_amount = Number(quantity_amount) + Number(temp_freight_amount) -
         (Number(discount_brokerage_value) * Number(totalQuantity));
       setValue("discount_brokerage_amount", discount_brokrage_amount.toFixed(2));
     }

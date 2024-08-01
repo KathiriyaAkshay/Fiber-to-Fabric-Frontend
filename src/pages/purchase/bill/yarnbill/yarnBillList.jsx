@@ -60,7 +60,7 @@ const YarnBillList = () => {
                 company_id: companyId,
                 page,
                 pageSize,
-                supplier_company: debounceSupplier,
+                supplier_name: debounceSupplier,
                 bill_from: debouncedFromDate,
                 bill_to: debouncedToDate, 
                 is_paid: debounceStatus
@@ -72,7 +72,7 @@ const YarnBillList = () => {
                     company_id: companyId,
                     page,
                     pageSize,
-                    supplier_company: debounceSupplier,
+                    supplier_name: debounceSupplier,
                     bill_from: debouncedFromDate,
                     bill_to: debouncedToDate, 
                     is_paid: debounceStatus
@@ -309,7 +309,6 @@ const YarnBillList = () => {
                     total_weight = total_weight + Number(data?.yarn_receive_challan?.receive_quantity)
                 }); 
 
-                console.log("Total weight", total_weight);
 
                 temp_company.push(supplier_company) ; 
                 temp_data[supplier_company] = {
@@ -474,8 +473,8 @@ const YarnBillList = () => {
                                 <Select
                                     placeholder="Payment status"
                                     options={[
-                                        { label: "paid", value: "true" },
-                                        { label: "Unpaid", value: "false" }
+                                        { label: "paid", value: "1" },
+                                        { label: "Unpaid", value: "0" }
                                     ]}
                                     dropdownStyle={{
                                         textTransform: "capitalize",

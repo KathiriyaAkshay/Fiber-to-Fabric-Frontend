@@ -49,9 +49,6 @@ const ViewYarnReceiveChallan = ({ details }) => {
     const [totalCartoon, setTotalCartoon] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
     const {company} = useContext(GlobalContext) ;   
-    
-    console.log("Details information ========================");
-    console.log(details);
 
     useEffect(() => {
         let tempQuantity = 0;

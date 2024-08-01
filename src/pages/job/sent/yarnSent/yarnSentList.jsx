@@ -151,6 +151,7 @@ const YarnSentList = () => {
         supplier_id: debouncedSupplierCompany,
         quality_id: debouncedQuality,
         search: debouncedSearch,
+        supplier_name: debouncedSupplier
         // party_id: debouncedParty,
       },
     ],
@@ -163,6 +164,7 @@ const YarnSentList = () => {
           supplier_id: debouncedSupplierCompany,
           quality_id: debouncedQuality,
           search: debouncedSearch,
+          supplier_name: debouncedSupplier
           // party_id: debouncedParty,
         },
       });
