@@ -245,6 +245,9 @@ function ReceiveSizeBeamList() {
         style={{
           overflow: "auto",
         }}
+        summary={() => {
+          
+        }}
       />
     );
   }
