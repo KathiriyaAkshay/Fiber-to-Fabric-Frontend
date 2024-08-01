@@ -38,6 +38,8 @@ const AddGeneralPurchaseEntry = () => {
 
     const [isAddCashBillChecked, setAddCashBillChecked] = useState(false);
     const [isAddOpeningCurrentBillsChecked, setAddOpeningCurrentBillsChecked] = useState(true); // Assuming it is checked by default (as per your image)
+    const [isUpdateStockChecked, setIsUpdateStockChecked] = useState(false) ; 
+
     const [is_millgine_bill, set_is_millgine_bill] = useState(false);
     const [supplierName, setSupplierName] = useState("");
     const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
@@ -48,6 +50,7 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddOpeningCurrentBillsChecked(false);
+            setIsUpdateStockChecked(false) ; 
         }
     };
 
@@ -56,8 +59,18 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddCashBillChecked(false);
+            setIsUpdateStockChecked(false) ; 
         }
     };
+
+    const handleUpdateStockChange = (e) => {
+        setIsUpdateStockChecked(e.target.checked) ; 
+
+        if (e.target.checked){
+            setAddCashBillChecked(false) ; 
+            setAddOpeningCurrentBillsChecked(false) ; 
+        }
+    }
 
     const AddValidationSchema = yup.object().shape({
         supplier_name: yup.string().required("Please, Select supplier"),
@@ -836,6 +849,13 @@ const AddGeneralPurchaseEntry = () => {
                         Add opening & current bills
                     </Checkbox>
 
+                    <Checkbox
+                        checked={isUpdateStockChecked}
+                        onChange={handleUpdateStockChange}
+                    >
+                        Update Stock
+                    </Checkbox>
+
                 </Flex>
 
             </div>
@@ -1439,11 +1459,12 @@ const AddGeneralPurchaseEntry = () => {
                     </Row>
                 )}
 
-
-
                 <Divider style={{ marginTop: 0 }} />
 
+                {}
+
                 <Flex gap={20} >
+
                     <div style={{ width: "70%" }}>
                         <Table
                             columns={columns}
@@ -1600,6 +1621,7 @@ const AddGeneralPurchaseEntry = () => {
                         </Row>
                     </div>
                 </Flex>
+
             </Form>
         </div>
     )
