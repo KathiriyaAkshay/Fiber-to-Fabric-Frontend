@@ -325,7 +325,7 @@ function YarnReceiveList() {
             <>
               <Table.Summary.Row cla  ssName="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
-                <Table.Summary.Cell/>
+                {billStatus == "0" && <Table.Summary.Cell/> }
                 <Table.Summary.Cell/>
                 <Table.Summary.Cell/>
                 <Table.Summary.Cell/>

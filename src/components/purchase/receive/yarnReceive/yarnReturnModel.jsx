@@ -50,7 +50,15 @@ const YarnReturnModel = ({ details }) => {
         setValue("yarn_dennier", `${details?.yarn_stock_company?.yarn_denier} (${details?.yarn_stock_company?.yarn_Sub_type} ${details?.yarn_stock_company?.luster_type}  ${details?.yarn_stock_company?.yarn_color})`); 
         setValue("total_quantity", details?.receive_quantity) ; 
         setValue("total_cartoon", details?.receive_cartoon_pallet) ; 
-    }, [details, setValue])
+    }, [details, setValue]) ; 
+
+    const {total_quantity, return_quantity} = watch() ; 
+
+    useEffect(() => {
+        if (total_quantity < return_quantity){
+            message.error("Return quantity should be less than total quantity") ;
+        }
+    }, [total_quantity, return_quantity])
 
     
     function disabledFutureDate(current) {
@@ -320,9 +328,11 @@ const YarnReturnModel = ({ details }) => {
                     </Row>
 
                     <Flex gap={10} justify="flex-end">
-                        <Button type="primary" htmlType="submit" loading = {loading} >
-                            Create
-                        </Button>
+                        {total_quantity >= return_quantity && (
+                            <Button type="primary" htmlType="submit" loading = {loading} >
+                                Create
+                            </Button>
+                        )}
                     </Flex>
                 </Form>
             </Modal>

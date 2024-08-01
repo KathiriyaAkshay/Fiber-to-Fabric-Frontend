@@ -325,6 +325,7 @@ const YarnBillList = () => {
                     return (
                         <Table.Summary.Row className="font-semibold">
                             <Table.Summary.Cell>Total</Table.Summary.Cell>
+                            
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
