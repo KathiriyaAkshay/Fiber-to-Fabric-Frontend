@@ -11,20 +11,26 @@ const PrintPage = () => {
     const ComponentRef = useRef() ; 
     const pageStyle = `
           @media print {
-        * {
-            box-sizing: border-box; /* Include box-sizing for better layout control */
-        }
+            * {
+                box-sizing: border-box; /* Include box-sizing for better layout control */
+            }
 
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: auto;
-        }
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: auto;
+            }
 
-        table {
-            width: 100%;
-            table-layout: fixed; /* This will help the table to take full width */
+            .print-wrapper {
+                margin: 0;
+                padding: 0;
+            }
+
+            table {
+                width: 100%;
+                table-layout: fixed; /* This will help the table to take full width */
+            }
         }
     }` ;    
     const [orderData, setOrderData] = useState([]) ; 

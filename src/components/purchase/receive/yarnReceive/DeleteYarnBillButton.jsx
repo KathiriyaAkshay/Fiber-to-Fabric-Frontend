@@ -25,7 +25,7 @@ const DeleteYarnBillButton = ({ details }) => {
         onSuccess: (res) => {
           const successMessage = res?.message;
           if (successMessage) {
-            message.success(successMessage);
+            message.success("Yarn bill deleted successfully");
           }
           queryClient.invalidateQueries([
             "yarn/bill/list",

@@ -18,11 +18,9 @@ import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 
 const YarnBillList = () => {
-    const navigatte = useNavigate();
     const [startDate, endDate] = currentMonthStartDateEndDate() ; 
     const { company, companyId } = useContext(GlobalContext);
     const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-    const { data: user } = useCurrentUser();
 
     const [supplier, setSupplier] = useState();
     const debounceSupplier = useDebounce(supplier, 500);
@@ -137,7 +135,7 @@ const YarnBillList = () => {
             render: (text, record) => {
                 let total_quantity = 0;
                 text?.map((element) => {
-                    total_quantity = total_quantity + Number(element?.quantity_amount)
+                    total_quantity = total_quantity + Number(element?.yarn_receive_challan?.receive_quantity)
                 })
                 return (
                     <div>{total_quantity}</div>
@@ -173,7 +171,7 @@ const YarnBillList = () => {
         },
         {
             title: "Total Amount",
-            dataIndex: "freight_amount"
+            dataIndex: "discount_brokerage_amount"
         },
         {
             title: "Amt incl. gst.",
@@ -213,8 +211,8 @@ const YarnBillList = () => {
                 return (
                     <Space>
                         <ViewYarnReceiveChallan details={record}/>
-                        {/* // <DeleteYarnBillButton details={record} />
-                        // <UpdateYarnChallanModel details={record} /> */}
+                        <DeleteYarnBillButton details={record} />
+                        <UpdateYarnChallanModel details={record} />
                     </Space>
                 )
             }
@@ -222,13 +220,6 @@ const YarnBillList = () => {
     ]
 
     const PDFDownload = () => {
-        const {
-            totalQuantity,
-            total_amount, 
-            total_quality_rate, 
-            amount_include_gst
-        } = yarnBillData ; 
-    
         const tableTitle = [
             "No", 
             "Bill Date", 
@@ -274,9 +265,9 @@ const YarnBillList = () => {
             "",
             "",
             "", 
-            totalQuantity, 
-            "100", 
-            "100", 
+            yarnBillData?.totalQuantity, 
+            yarnBillData?.amount_include_gst, 
+            yarnBillData?.total_amount, 
             "" 
         ]
 
@@ -289,6 +280,106 @@ const YarnBillList = () => {
 
         window.open("/print") ; 
 
+    }
+
+    const [summaryLoading, setSummaryLoading] = useState(false) ; 
+    const SummaryGeneration = async () => {
+        setSummaryLoading(true) ; 
+        const res = await getYarnBillListRequest({
+            params: {
+                company_id: companyId,
+                page,
+                pageSize: 9999,
+                bill_from: dayjs(startDate).format("YYYY-MM-DD"),
+                bill_to: dayjs(toDate).format('YYYY-MM-DD'), 
+            }
+        });
+        
+        let temp_company = [] ; 
+        let temp_data = {} ; 
+
+        res?.data?.data?.row?.map((element) => {
+            let supplier_company = element?.supplier?.supplier?.supplier_company ; 
+            
+            if (temp_company.includes(supplier_company)){
+
+            }   else {
+                let total_weight = 0 ; 
+                element?.yarn_bill_details?.map((data) => {
+                    total_weight = total_weight + Number(data?.yarn_receive_challan?.receive_quantity)
+                }); 
+
+                console.log("Total weight", total_weight);
+
+                temp_company.push(supplier_company) ; 
+                temp_data[supplier_company] = {
+                    "weight": total_weight , 
+                    "amount": element?.discount_brokerage_amount, 
+                    "cgst": element?.CGST_amount, 
+                    "sgst": element?.SGST_amount, 
+                    "igst": element?.IGST_amount, 
+                    "net_amount": element?.net_amount
+                }
+            }
+        }); 
+
+        setSummaryLoading(false) ; 
+
+        let title = [
+            "PARTY", 
+            "WEIGHT", 
+            "AMT", 
+            "CGST", 
+            "SGST", 
+            "IGST", 
+            "NET_AMT"
+        ] ; 
+
+        localStorage.setItem("print-title", "Purchase Bill Report") ;
+        localStorage.setItem("print-head", JSON.stringify(title)) ;  
+
+        let temp = [] ; 
+        let total_weight = 0 ; 
+        let total_sgst = 0 ; 
+        let total_csgt = 0 ; 
+        let total_igst = 0 ; 
+        let total_net_amount = 0 ; 
+        let total_amount = 0 ; 
+
+        Object.entries(temp_data).forEach(([key, value]) => {
+            total_weight = total_weight + Number(value["weight"]) ; 
+            total_amount = total_amount + Number(value["amount"]) ; 
+            total_csgt = total_csgt + Number(value["cgst"]) ; 
+            total_sgst = total_sgst + Number(value["sgst"]) ; 
+            total_igst = total_igst + Number(value["igst"]) ; 
+            total_net_amount = total_net_amount + Number(value["net_amount"]) ; 
+            temp.push([
+                key, 
+                value["weight"], 
+                value["amount"], 
+                value["cgst"], 
+                value["sgst"], 
+                value["igst"], 
+                value["net_amount"]
+            ]); 
+        });
+
+        localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+        localStorage.setItem("total-count", "1") ; 
+
+        let total = [
+            "", 
+            total_weight, 
+            total_amount, 
+            total_csgt, 
+            total_sgst, 
+            total_igst, 
+            total_net_amount
+        ]
+
+        localStorage.setItem("total-data", JSON.stringify(total)) ;
+        
+        window.open("/print") ; 
     }
 
 
@@ -342,10 +433,10 @@ const YarnBillList = () => {
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
                             <Table.Summary.Cell>
-                                <Typography.Text>{total_amount}</Typography.Text>
+                                <Typography.Text>{amount_include_gst}</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell>
-                                <Typography.Text>{amount_include_gst}</Typography.Text>
+                                <Typography.Text>{total_amount}</Typography.Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell />
                             <Table.Summary.Cell />
@@ -368,7 +459,7 @@ const YarnBillList = () => {
                             <Button type="primary" icon= {<PlusCircleFilled/>}>
                                 Advance Bill payment
                             </Button>
-                            <Button type="primary">
+                            <Button onClick={SummaryGeneration} type="primary" loading = {summaryLoading}>
                                 SUMMARY
                             </Button>
                         </Flex>

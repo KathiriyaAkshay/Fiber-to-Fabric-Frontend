@@ -48,6 +48,10 @@ const ViewYarnReceiveChallan = ({ details }) => {
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalCartoon, setTotalCartoon] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
+    const {company} = useContext(GlobalContext) ;   
+    
+    console.log("Details information ========================");
+    console.log(details);
 
     useEffect(() => {
         let tempQuantity = 0;
@@ -135,13 +139,13 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             <Row>
                                 <Col span={24}>
                                     <Typography.Text>From,</Typography.Text>
-                                    <Typography.Text className="block font-bold">SONU TEXTILES</Typography.Text>
+                                    <Typography.Text className="block font-bold">{company?.company_name}</Typography.Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Typography.Text>Gst In</Typography.Text>
-                                    <Typography.Text className="block">24ABHPP6021C1Z4</Typography.Text>
+                                    <Typography.Text className="block">{company?.gst_no}</Typography.Text>
                                 </Col>
                             </Row>
                             <Row>
@@ -206,7 +210,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             span={4}
                             className="p-2 font-medium border-0 border-r border-solid"
                         >
-                            {/* {details?.yarn_bill_details?.map(item => item.yarn_receive_challan.challan_no).join(',')} */}
+                            {details?.yarn_bill_details?.map(item => item.yarn_receive_challan.challan_no).join(',')}
                         </Col>
                         <Col
                             span={2}

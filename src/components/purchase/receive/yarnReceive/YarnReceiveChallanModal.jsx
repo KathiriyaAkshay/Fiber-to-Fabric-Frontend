@@ -246,7 +246,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       "TCS_amount": data?.TCS_amount,
       "IGST_value": data?.IGST_value,
       "IGST_amount": data?.IGST_amount,
-      "round_off_amount": 0,
+      "round_off_amount": data?.round_off_amount,
       "net_amount": data?.net_amount,
       "TDS_amount": data?.TDS_amount,
       "after_TDS_amount": data?.after_TDS_amount,
@@ -293,7 +293,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
         details?.map((element, index) => {
           const quantity_amount = Number(rate) * Number(element?.receive_quantity);
           setValue(`quantity_amount_${index}`, quantity_amount);
-          freight_amount = Number(freight_amount) + (Number(rate) * Number(element?.receive_quantity));
+          freight_amount = Number(freight_amount) + (Number(freight_value) * Number(element?.receive_quantity));
         })
         setValue("freight_amount", parseFloat(freight_amount).toFixed(2));
 
@@ -330,7 +330,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
     // Calculate freight amount 
 
-    let temp_freight_amount = Number(quantity_amount) * Number(freight_value) / 100 ; 
+    let temp_freight_amount = Number(totalQuantity) * Number(freight_value); 
     setValue("freight_amount", temp_freight_amount) ; 
 
     if (is_discount) {
