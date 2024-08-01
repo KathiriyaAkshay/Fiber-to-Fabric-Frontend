@@ -10,7 +10,7 @@ import { useContext } from "react";
 const PrintPage = () => {
     const ComponentRef = useRef() ; 
     const pageStyle = `
-          @media print {
+         @media print {
             * {
                 box-sizing: border-box; /* Include box-sizing for better layout control */
             }
@@ -31,7 +31,12 @@ const PrintPage = () => {
                 width: 100%;
                 table-layout: fixed; /* This will help the table to take full width */
             }
-        }
+
+            td, th {
+                overflow: hidden;
+                text-overflow: ellipsis; /* To add ellipsis (...) for overflow text */
+                word-wrap: break-word; /* To wrap long words */
+            }
     }` ;    
     const [orderData, setOrderData] = useState([]) ; 
     const [orderTitle, setOrderTitle] = useState(null) ; 

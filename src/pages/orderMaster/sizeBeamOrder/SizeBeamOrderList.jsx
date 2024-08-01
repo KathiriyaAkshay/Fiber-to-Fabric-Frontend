@@ -21,8 +21,8 @@ function SizeBeamOrderList() {
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
   const [fromDate, setFromDate] = useState(undefined);
   const [toDate, setToDate] = useState(undefined);
-  const debouncedFromDate = useDebounce(fromDate, 500);
-  const debouncedToDate = useDebounce(toDate, 500);
+  const debouncedFromDate = useDebounce(dayjs(fromDate).format("YYYY-MM-DD"), 500);
+  const debouncedToDate = useDebounce(dayjs(toDate).format("YYYY-MM-DD"), 500);
 
   const { data: sizeBeamOrderListRes, isLoading } = useQuery({
     queryKey: [
@@ -44,7 +44,7 @@ function SizeBeamOrderList() {
           pageSize,
           end: financialYearEnd,
           pending: true,
-          FromDate: debouncedFromDate,
+          fromDate: debouncedFromDate,
           toDate: debouncedToDate
         },
       });
@@ -62,55 +62,95 @@ function SizeBeamOrderList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = sizeBeamOrderListRes?.SizeBeamOrderList?.map(
-      (sizeBeamOrder) => {
-        const {
-          id,
-          order_date,
-          total_pipe,
-          total_meters,
-          pending_meters,
-          status,
-          print_challan_status,
-          company = {},
-          yarn_stock_company = {},
-        } = sizeBeamOrder;
-        const { company_name = "" } = company;
-        const { yarn_company_name = "" } = yarn_stock_company;
-        return [
-          id,
-          dayjs(order_date).format("DD-MM-YYYY"),
-          yarn_company_name,
-          company_name,
-          total_pipe,
-          total_meters,
-          pending_meters,
-          status,
-          print_challan_status,
-        ];
-      }
-    );
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const body = sizeBeamOrderListRes?.SizeBeamOrderList?.map(
+    //   (sizeBeamOrder) => {
+    //     const {
+    //       id,
+    //       order_date,
+    //       total_pipe,
+    //       total_meters,
+    //       pending_meters,
+    //       status,
+    //       print_challan_status,
+    //       company = {},
+    //       yarn_stock_company = {},
+    //     } = sizeBeamOrder;
+    //     const { company_name = "" } = company;
+    //     const { yarn_company_name = "" } = yarn_stock_company;
+    //     return [
+    //       id,
+    //       dayjs(order_date).format("DD-MM-YYYY"),
+    //       yarn_company_name,
+    //       company_name,
+    //       total_pipe,
+    //       total_meters,
+    //       pending_meters,
+    //       status,
+    //       print_challan_status,
+    //     ];
+    //   }
+    // );
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "From",
-          "To",
-          "Total Pipe",
-          "Total Meter",
-          "Pending Meter",
-          "Order Status",
-          "Print Challan",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Send Beam Pipe Order List",
-    });
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Date",
+    //       "From",
+    //       "To",
+    //       "Total Pipe",
+    //       "Total Meter",
+    //       "Pending Meter",
+    //       "Order Status",
+    //       "Print Challan",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Send Beam Pipe Order List",
+    // });
+
+    let title = [
+      "ID",
+      "Order No", 
+      "Date",
+      "From",
+      "To",
+      "Total Pipe",
+      "Total Meter",
+      "Order Status",
+      "Print Challan",
+    ]; 
+
+    let temp = [] ; 
+
+    sizeBeamOrderListRes?.SizeBeamOrderList?.map((element, index) => {
+      let temp_meter = 0 ; 
+      element?.size_beam_order_details?.map((data) => {
+        temp_meter = temp_meter + Number(data?.meters) ; 
+      })
+      temp.push([
+        index + 1, 
+        element?.id,
+        moment(element?.order_date).format("DD-MM-YYYY"),
+        element?.company?.company_name, 
+        element?.yarn_stock_company?.yarn_company_name, 
+        element?.size_beam_order_details?.length, 
+        temp_meter, 
+        element?.status, 
+        element?.print_challan_status
+      ])
+    })
+
+    localStorage.setItem("print-title", "Send Beam Pipe Order List") ;
+    localStorage.setItem("print-head", JSON.stringify(title)) ; 
+    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+    localStorage.setItem("total-count", "0") ; 
+
+    window.open("/print") ; 
+
   }
 
   const columns = [
@@ -151,11 +191,25 @@ function SizeBeamOrderList() {
       title: "Total Pipe",
       dataIndex: "total_pipe",
       key: "total_pipe",
+      render: (text, record) => {
+        return(
+          <div>{record?.size_beam_order_details?.length}</div>
+        )
+      }
     },
     {
       title: "Total Meter",
       dataIndex: "total_meters",
       key: "total_meters",
+      render: (text, record) => {
+        let total_meter = 0 ; 
+        record?.size_beam_order_details?.map((element) => {
+          total_meter = total_meter + Number(element?.meters) ; 
+        })
+        return(
+          <div>{total_meter}</div>
+        )
+      }
     },
     {
       title: "Pending Meter",
@@ -179,7 +233,7 @@ function SizeBeamOrderList() {
       dataIndex: "print_challan_status",
       key: "print_challan_status",
       render: (text, record) => (
-        text == "FINISHED" ? <>
+        text == "PRINTED" ? <>
           <Tag color="green">{text}</Tag>
         </> : <>
           <Tag color="red">{text}</Tag>
@@ -193,29 +247,39 @@ function SizeBeamOrderList() {
           id,
           order_date,
           total_pipe,
-          total_meters,
-          pending_meters,
+          pending_meter,
           status,
           print_challan_status,
           company = {},
           yarn_stock_company = {},
         } = sizeBeamOrder;
+
+        let total_meter = 0 ; 
+        record?.size_beam_order_details?.map((element) => {
+          total_meter = total_meter + Number(element?.meters) ; 
+        }) 
+
         const { company_name = "" } = company;
         const { yarn_company_name = "" } = yarn_stock_company;
 
         return (
           <Space>
+            
             <BeamPipeChallanModel details={record} />
+
             {record?.status == "PENDING" && (
               <>
 
-                <Button
-                  onClick={() => {
-                    navigateToUpdate(id);
-                  }}
-                >
-                  <EditOutlined />
-                </Button>
+
+                {total_meter == pending_meter && (
+                  <Button
+                    onClick={() => {
+                      navigateToUpdate(id);
+                    }}
+                  >
+                    <EditOutlined />
+                  </Button>
+                )}
                 
                 <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
               </>
@@ -253,7 +317,6 @@ function SizeBeamOrderList() {
   }
 
   const disableFutureDates = (current) => {
-    // Check if the current date is after (or equal to) the end of the current day
     return current && current > moment().endOf('day');
   };
 
