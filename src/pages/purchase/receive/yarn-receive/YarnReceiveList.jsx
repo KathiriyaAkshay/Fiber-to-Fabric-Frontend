@@ -239,7 +239,7 @@ function YarnReceiveList() {
               
               <MultipleChallanCreateButton details={yarnReceiveDetails} />
               
-              <YarnReceiveChallanModal details={yarnReceiveDetails} />
+              <YarnReceiveChallanModal details={[yarnReceiveDetails]} />
 
             </> : <>
               {!yarnReceiveDetails?.has_yarn_sale_return && (

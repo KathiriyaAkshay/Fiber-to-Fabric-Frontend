@@ -26,6 +26,7 @@ import { useCompanyList } from "../../../../api/hooks/company";
 import { getYarnOrderListRequest } from "../../../../api/requests/orderMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import { disabledFutureDate, disabledPastDate } from "../../../../utils/date";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -85,6 +86,7 @@ const addYarnReceiveSchema = yup.object().shape({
 });
 
 const YarnReceiveChallanModal = ({ details = [] }) => {
+
   const {
     id: yarn_challan_id = 0,
     yarn_stock_company = {},
@@ -93,13 +95,6 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
   } = details;
 
   const {
-    yarn_count = 0,
-    filament = 0,
-    yarn_type = "",
-    yarn_Sub_type = "",
-    luster_type = "",
-    yarn_color = "",
-    hsn_no = "",
     yarn_company_name = "",
   } = yarn_stock_company;
 
@@ -130,14 +125,14 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       {
         company_id: companyId,
         supplier_name: supplierName,
-        supplier_type: "yarn",
+        // supplier_type: "yarn",
       },
     ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: {
           company_id: companyId,
-          supplier_type: "yarn",
+          // supplier_type: "yarn",
         },
       });
       return res.data?.data?.supplierList;
@@ -156,8 +151,10 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
   // Create challan bill handler start ======================================================
 
+  const [loading, setLoading] = useState(false) ; 
   const { mutateAsync: createYarnReceive } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true) ; 
       const res = await createYarnReceiveBillRequest({
         data,
         params: { company_id: companyId },
@@ -166,6 +163,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     },
     mutationKey: ["yarn-stock/yarn-receive-challan/create"],
     onSuccess: (res) => {
+      setLoading(false) ; 
       queryClient.invalidateQueries([
         "yarn-stock/yarn-receive-challan/list",
         { company_id: companyId },
@@ -177,6 +175,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       handleCancel();
     },
     onError: (error) => {
+      setLoading(false) ; 
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -200,6 +199,11 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       receive_quantity: receive_quantity,
       yarn_challan_id: yarn_challan_id,
       yarn_stock_company_id: yarn_stock_company_id,
+      CGST_value: 6,
+      IGST_value: 6, 
+      SGST_value: 6, 
+      TCS_value: 6, 
+      round_off_amount: 0
     },
   });
 
@@ -258,19 +262,21 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     discount_brokerage_amount = 0,
     quantity_amount = 0,
     freight_amount = 0,
+    freight_value, 
     discount_brokerage_value = 0,
     is_discount = false,
     CGST_amount = 0,
-    CGST_value = 0,
+    CGST_value = 6,
     IGST_amount = 0,
-    IGST_value = 0,
+    IGST_value = 6,
     SGST_amount = 0,
-    SGST_value = 0,
-    TCS_value = 0,
+    SGST_value = 6,
+    TCS_value = 6,
     TCS_amount = 0,
     net_amount = 0,
     after_TDS_amount = 0,
-    quantity_rate
+    quantity_rate, 
+    round_off_amount = 0 
   } = watch();
 
   // Set amount information product quantity wise =======================================================
@@ -300,15 +306,18 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
   // Set Freight amount information =======================================================
 
+  const [discountValue, setDiscountValue] = useState(0) ; 
   useEffect(() => {
 
     // Total quantity 
     let totalQuantity = 0;
     if (details) {
-      details?.length > 0 && details?.map((element) => {
+      details?.length > 0 && details?.map((element, index) => {
         totalQuantity = totalQuantity + Number(element?.receive_quantity);
+        let temp_quantity_amount = 0 ; 
+        temp_quantity_amount = Number(element?.receive_quantity)*Number(quantity_rate) ; 
+        setValue(`quantity_amount_${index}`, temp_quantity_amount) ; 
       })
-      setValue("freight_value", parseFloat(freight_amount / totalQuantity).toFixed(2));
     }
 
     // Total amount 
@@ -319,8 +328,15 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       }
     })
 
+    // Calculate freight amount 
+
+    let temp_freight_amount = Number(quantity_amount) * Number(freight_value) / 100 ; 
+    setValue("freight_amount", temp_freight_amount) ; 
+
     if (is_discount) {
-      const discountAmount = Number(quantity_amount) * Number(discount_brokerage_value) / 100;
+      let discountAmount = Number(quantity_amount) * Number(discount_brokerage_value) / 100;
+      setDiscountValue(discountAmount) ; 
+      discountAmount = (Number(quantity_amount) - Number(discountAmount)) + Number(temp_freight_amount) ; 
       setValue("discount_brokerage_amount", discountAmount);
 
     } else {
@@ -334,6 +350,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     freight_amount,
     is_discount,
     quantity_rate,
+    freight_value,
     setValue,
   ]);
 
@@ -363,14 +380,18 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
   // Net amount handler ==================================================================================
 
+
   useEffect(() => {
-    const net_amount =
+    let net_amount =
       Number(discount_brokerage_amount) +
       Number(SGST_amount) +
       Number(CGST_amount) +
       Number(IGST_amount) +
       Number(TCS_amount);
-    setValue("net_amount", parseFloat(net_amount).toFixed(2));
+    let roundOffAmount = Math.round(net_amount) - Number(net_amount) ; 
+    setValue("round_off_amount", roundOffAmount.toFixed(2)) ; 
+      
+    setValue("net_amount", Math.round(net_amount).toFixed(2));
   }, [
     CGST_amount,
     IGST_amount,
@@ -590,6 +611,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                           width: "100%",
                         }}
                         format="DD-MM-YYYY"
+                        disabledDate={disabledFutureDate}
                       />
                     )}
                   />
@@ -615,6 +637,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                           width: "100%",
                         }}
                         format="DD-MM-YYYY"
+                        disabledDate={disabledPastDate}
                       />
                     )}
                   />
@@ -734,26 +757,34 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                       control={control}
                       name={`quantity_amount_${index}`}
                       render={({ field }) => (
-                        <Input
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            const currentQAmount = e.target.value;
-                            if (currentQAmount && receive_quantity) {
-                              // set rate on amount change
-                              const quantity_rate =
-                                Number(currentQAmount) / Number(receive_quantity);
-                              setValue(
-                                "quantity_rate",
-                                parseFloat(quantity_rate).toFixed(2)
-                              );
-                            }
-                          }}
-                          placeholder="0"
-                          type="number"
-                          min={0}
-                          step={0.01}
-                        />
+                        <>
+                          <Input
+                            {...field}
+                            
+                            onChange={(e) => {
+                              field.onChange(e);
+                              const currentQAmount = e.target.value;
+                              if (currentQAmount && receive_quantity) {
+                                // set rate on amount change
+                                const quantity_rate =
+                                  Number(currentQAmount) / Number(receive_quantity);
+                                setValue(
+                                  "quantity_rate",
+                                  parseFloat(quantity_rate).toFixed(2)
+                                );
+                              }
+                            }}
+                            placeholder="0"
+                            type="number"
+                            min={0}
+                            step={0.01}
+                          />
+                          {is_discount && (
+                            <div 
+                              style={{color: "green",textAlign: "center", marginTop: 4}}
+                            >Dis - {discountValue}</div>
+                          )}
+                        </>
                       )}
                     />
                   </Form.Item>
@@ -907,6 +938,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   />
                 </Form.Item>
               </Col>
+
               <Col span={4} className="p-2">
                 <div className="flex items-center justify-center p-1 mb-6">
                   {discount_brokerage_amount}
@@ -1265,7 +1297,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
               </Col>
             </Row>
 
-            {/* <Row className="border-0 border-b border-solid !m-0">
+            <Row className="border-0 border-b border-solid !m-0">
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={2} className="p-2 border-0 border-r border-solid" />
@@ -1282,7 +1314,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   {round_off_amount}
                 </div>
               </Col>
-            </Row> */}
+            </Row>
 
             <Row className="border-0 border-b border-solid !m-0">
               <Col
@@ -1368,7 +1400,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
             <Button htmlType="button" onClick={() => reset()}>
               Reset
             </Button>
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading = {loading}>
               Receive Bill
             </Button>
           </Flex>
