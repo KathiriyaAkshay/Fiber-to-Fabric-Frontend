@@ -1,7 +1,6 @@
 import {
   Button,
   Col,
-  Divider,
   Flex,
   Input,
   Modal,
@@ -11,7 +10,7 @@ import {
   Spin,
   Table,
   Typography,
-  Card
+  Card,
 } from "antd";
 import {
   CloseOutlined,
@@ -325,12 +324,10 @@ const YarnSentList = () => {
         let total_cartoon = 0;
         record?.job_yarn_sent_details?.map((element) => {
           total_cartoon = total_cartoon + Number(element?.cartoon);
-        })
+        });
 
-        return (
-          <div>{total_cartoon}</div>
-        )
-      }
+        return <div>{total_cartoon}</div>;
+      },
     },
     {
       title: "Kg",
@@ -340,11 +337,9 @@ const YarnSentList = () => {
         let total_kg = 0;
         record?.job_yarn_sent_details?.map((element) => {
           total_kg = total_kg + Number(element?.kg);
-        })
-        return (
-          <div>{total_kg}</div>
-        )
-      }
+        });
+        return <div>{total_kg}</div>;
+      },
     },
     {
       title: "Delivery Charge",
@@ -364,6 +359,7 @@ const YarnSentList = () => {
             <ViewYarnSentDetailsModal
               title="Yarn Sent Details"
               details={details}
+              company={company}
             />
             <Button
               onClick={() => {
@@ -495,7 +491,6 @@ const YarnSentList = () => {
             }}
           />
 
-
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
@@ -512,12 +507,13 @@ const YarnSentList = () => {
 
 export default YarnSentList;
 
-const ViewYarnSentDetailsModal = ({ title = "-",
+const ViewYarnSentDetailsModal = ({
+  title = "-",
   isScroll = false,
-  details = [] }) => {
-
-  const { company, companyId } = useContext(GlobalContext);
-  console.log(details);
+  details = [],
+  company,
+}) => {
+  // const { company, companyId } = useContext(GlobalContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -537,34 +533,34 @@ const ViewYarnSentDetailsModal = ({ title = "-",
 
   const ModalColumns = [
     {
-      title: 'No',
-      dataIndex: 'no',
-      key: 'no',
+      title: "No",
+      dataIndex: "no",
+      key: "no",
     },
     {
-      title: 'Company name',
-      dataIndex: 'company_name',
-      key: 'company_name',
+      title: "Company name",
+      dataIndex: "company_name",
+      key: "company_name",
     },
     {
-      title: 'Denier',
-      dataIndex: 'dennier',
-      key: 'dennier',
+      title: "Denier",
+      dataIndex: "dennier",
+      key: "dennier",
     },
     {
-      title: 'KG',
-      dataIndex: 'kg',
-      key: 'kg',
+      title: "KG",
+      dataIndex: "kg",
+      key: "kg",
     },
     {
-      title: 'Cartoon',
-      dataIndex: 'cartoon',
-      key: 'cartoon',
+      title: "Cartoon",
+      dataIndex: "cartoon",
+      key: "cartoon",
     },
     {
-      title: 'Remark',
-      dataIndex: 'remark',
-      key: 'remark',
+      title: "Remark",
+      dataIndex: "remark",
+      key: "remark",
     },
   ];
 
@@ -578,9 +574,9 @@ const ViewYarnSentDetailsModal = ({ title = "-",
         dennier: `${element?.yarn_stock_company?.yarn_type}-${element?.yarn_stock_company?.yarn_Sub_type}-${element?.yarn_stock_company?.yarn_color}`,
         kg: element?.kg,
         cartoon: element?.cartoon,
-        remark: ""
+        remark: "",
       });
-    })
+    });
     setDataSource(temp);
   }, [details]);
 
@@ -603,16 +599,20 @@ const ViewYarnSentDetailsModal = ({ title = "-",
           return (
             <>
               <ReactToPrint
-                trigger={() => <Flex>
-                  <Button type="primary" style={{ marginLeft: "auto", marginTop: 15 }}>
-                    PRINT
-                  </Button>
-                </Flex>
-                }
+                trigger={() => (
+                  <Flex>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft: "auto", marginTop: 15 }}
+                    >
+                      PRINT
+                    </Button>
+                  </Flex>
+                )}
                 content={() => componentRef.current}
               />
             </>
-          )
+          );
         }}
         onCancel={handleCancel}
         centered={true}
@@ -635,64 +635,92 @@ const ViewYarnSentDetailsModal = ({ title = "-",
           footer: {
             paddingBottom: 10,
             paddingRight: 10,
-            backgroundColor: "#efefef"
-          }
+            backgroundColor: "#efefef",
+          },
         }}
       >
         <div ref={componentRef} style={{ padding: "25px" }}>
-
-          <Card className="card-wrapper" >
-
+          <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
                 <Card className="header-card">
-                  <Title level={4} className="header-title card-text">TO: {details?.supplier?.supplier_company}</Title>
+                  <Title level={4} className="header-title card-text">
+                    TO: {details?.supplier?.supplier_company}
+                  </Title>
                   <div className="header-card-text">
-                    <Text strong>Address: {details?.supplier?.user?.address}</Text><br />
-                    <Text >GST NO: {details?.supplier?.user?.gst_no}</Text><br />
+                    <Text strong>
+                      Address: {details?.supplier?.user?.address}
+                    </Text>
+                    <br />
+                    <Text>GST NO: {details?.supplier?.user?.gst_no}</Text>
+                    <br />
                   </div>
                 </Card>
               </Col>
               <Col span={2}></Col>
               <Col span={11} className="header-col">
                 <Card className="header-card">
-                  <Title level={4} className="header-title">FROM: {company?.company_name}</Title>
+                  <Title level={4} className="header-title">
+                    FROM: {company?.company_name}
+                  </Title>
                   <div className="header-card-text">
-                    <Text strong>Address: {company.address_line_1}, {company.address_line_2}, {company.city}, {company.state}, {company.pincode}, {company.country}</Text><br />
-                    <Text >GST NO: {company?.gst_no}</Text><br />
+                    <Text strong>
+                      Address: {company.address_line_1},{" "}
+                      {company.address_line_2}, {company.city}, {company.state},{" "}
+                      {company.pincode}, {company.country}
+                    </Text>
+                    <br />
+                    <Text>GST NO: {company?.gst_no}</Text>
+                    <br />
                   </div>
                 </Card>
               </Col>
             </Row>
 
-            <div class="dotted-line"></div>
-            <Row gutter={16} style={{ marginTop: 8, paddingLeft: 12, paddingRight: 12, marginBottom: 8 }}>
+            <div className="dotted-line"></div>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 8,
+                paddingLeft: 12,
+                paddingRight: 12,
+                marginBottom: 8,
+              }}
+            >
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>E Bill Number:</Text><br />
-                  <Text>-</Text><br />
+                  <Text strong>E Bill Number:</Text>
+                  <br />
+                  <Text>-</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Challan No:</Text><br />
-                  <Text>{details?.challan_no}</Text><br />
+                  <Text strong>Challan No:</Text>
+                  <br />
+                  <Text>{details?.challan_no}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Vehicle No:</Text><br />
-                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text><br />
+                  <Text strong>Vehicle No:</Text>
+                  <br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center ">
-                  <Text strong>Date:</Text><br />
-                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                  <Text strong>Date:</Text>
+                  <br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text>
+                  <br />
                 </Flex>
               </Col>
             </Row>
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
             <Table
               dataSource={dataSource}
               columns={ModalColumns}
@@ -706,8 +734,7 @@ const ViewYarnSentDetailsModal = ({ title = "-",
                 dataSource?.map((element) => {
                   totalCartoon = totalCartoon + Number(element?.cartoon);
                   totalKG = totalKG + Number(element?.kg);
-
-                })
+                });
                 return (
                   <>
                     <Table.Summary.Row className="font-semibold">
@@ -726,75 +753,112 @@ const ViewYarnSentDetailsModal = ({ title = "-",
                 );
               }}
             />
-            <div class="dotted-line"></div>
-            <Row gutter={16} style={{ marginTop: 16, paddingLeft: 12, paddingRight: 12, marginBottom: 40 }}>
+            <div className="dotted-line"></div>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 16,
+                paddingLeft: 12,
+                paddingRight: 12,
+                marginBottom: 40,
+              }}
+            >
               <Col span={12}>
-                <Text ><strong>Receivers sign</strong></Text>
+                <Text>
+                  <strong>Receivers sign</strong>
+                </Text>
               </Col>
               <Col span={12}>
                 <Text strong>
-                  <strong>
-                    Senders sign
-                  </strong>
+                  <strong>Senders sign</strong>
                 </Text>
               </Col>
             </Row>
           </Card>
 
-          <div class="red-dotted-line"></div>
+          <div className="red-dotted-line"></div>
 
-          <Card className="card-wrapper" >
-
+          <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
                 <Card className="header-card">
-                  <Title level={4} className="header-title card-text">TO: {details?.supplier?.supplier_company}</Title>
+                  <Title level={4} className="header-title card-text">
+                    TO: {details?.supplier?.supplier_company}
+                  </Title>
                   <div className="header-card-text">
-                    <Text strong>Address: {details?.supplier?.user?.address}</Text><br />
-                    <Text >GST NO: {details?.supplier?.user?.gst_no}</Text><br />
+                    <Text strong>
+                      Address: {details?.supplier?.user?.address}
+                    </Text>
+                    <br />
+                    <Text>GST NO: {details?.supplier?.user?.gst_no}</Text>
+                    <br />
                   </div>
                 </Card>
               </Col>
               <Col span={2}></Col>
               <Col span={11} className="header-col">
                 <Card className="header-card">
-                  <Title level={4} className="header-title">FROM: {company?.company_name}</Title>
+                  <Title level={4} className="header-title">
+                    FROM: {company?.company_name}
+                  </Title>
                   <div className="header-card-text">
-                    <Text strong>Address: {company.address_line_1}, {company.address_line_2}, {company.city}, {company.state}, {company.pincode}, {company.country}</Text><br />
-                    <Text >GST NO: {company?.gst_no}</Text><br />
+                    <Text strong>
+                      Address: {company.address_line_1},{" "}
+                      {company.address_line_2}, {company.city}, {company.state},{" "}
+                      {company.pincode}, {company.country}
+                    </Text>
+                    <br />
+                    <Text>GST NO: {company?.gst_no}</Text>
+                    <br />
                   </div>
                 </Card>
               </Col>
             </Row>
 
-            <div class="dotted-line"></div>
-            <Row gutter={16} style={{ marginTop: 8, paddingLeft: 12, paddingRight: 12, marginBottom: 8 }}>
+            <div className="dotted-line"></div>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 8,
+                paddingLeft: 12,
+                paddingRight: 12,
+                marginBottom: 8,
+              }}
+            >
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>E Bill Number:</Text><br />
-                  <Text>-</Text><br />
+                  <Text strong>E Bill Number:</Text>
+                  <br />
+                  <Text>-</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Challan No:</Text><br />
-                  <Text>{details?.challan_no}</Text><br />
+                  <Text strong>Challan No:</Text>
+                  <br />
+                  <Text>{details?.challan_no}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Vehicle No:</Text><br />
-                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text><br />
+                  <Text strong>Vehicle No:</Text>
+                  <br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center ">
-                  <Text strong>Date:</Text><br />
-                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                  <Text strong>Date:</Text>
+                  <br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text>
+                  <br />
                 </Flex>
               </Col>
             </Row>
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
             <Table
               dataSource={dataSource}
               columns={ModalColumns}
@@ -808,8 +872,7 @@ const ViewYarnSentDetailsModal = ({ title = "-",
                 dataSource?.map((element) => {
                   totalCartoon = totalCartoon + Number(element?.cartoon);
                   totalKG = totalKG + Number(element?.kg);
-
-                })
+                });
                 return (
                   <>
                     <Table.Summary.Row className="font-semibold">
@@ -828,23 +891,29 @@ const ViewYarnSentDetailsModal = ({ title = "-",
                 );
               }}
             />
-            <div class="dotted-line"></div>
-            <Row gutter={16} style={{ marginTop: 16, paddingLeft: 12, paddingRight: 12, marginBottom: 40 }}>
+            <div className="dotted-line"></div>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 16,
+                paddingLeft: 12,
+                paddingRight: 12,
+                marginBottom: 40,
+              }}
+            >
               <Col span={12}>
-                <Text ><strong>Receivers sign</strong></Text>
+                <Text>
+                  <strong>Receivers sign</strong>
+                </Text>
               </Col>
               <Col span={12}>
                 <Text strong>
-                  <strong>
-                    Senders sign
-                  </strong>
+                  <strong>Senders sign</strong>
                 </Text>
               </Col>
             </Row>
           </Card>
-
         </div>
-
       </Modal>
     </>
   );
