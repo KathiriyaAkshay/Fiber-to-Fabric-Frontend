@@ -3,6 +3,7 @@ import {
   DatePicker,
   Flex,
   Input,
+  Select,
   Space,
   Spin,
   Table,
@@ -24,10 +25,15 @@ import BeamCardInformationModel from "../../../../components/common/modal/beamCa
 import GridInformationModel from "../../../../components/common/modal/gridInformationModel";
 import moment from "moment";
 import { FilePdfOutlined } from "@ant-design/icons";
+import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
+import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
+
   const [toDate, setToDate] = useState();
   const debouncedToDate = useDebounce(
     toDate && dayjs(toDate).format("YYYY-MM-DD"),
@@ -38,9 +44,67 @@ function ReceiveSizeBeamList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
+
+  const [beamType, setBeamType] = useState(null);
+  const debounceBeamType = useDebounce(beamType, 500);
+
+  const [status, setStatus] = useState(null);
+  const debouceStatus = useDebounce(status, 500);
+
+  const [machine, setMachine] = useState(null);
+  const debouncedMachine = useDebounce(machine, 500);
+
+  const [quality, setQuality] = useState(null);  
+  const deboucedQuality = useDebounce(quality, 500) ; 
+
+  const [isBeamInformationModel, setIsBeamInformationModel] = useState(false) ; 
+  const [beamInforamtion, setBeamInformation] = useState(null) ;  
+
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: ["machine", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "inhouse-quality",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: debouncedMachine,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (debouncedMachine) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: debouncedMachine,
+              page: 0,
+              pageSize: 9999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        }
+      },
+      enabled: Boolean(companyId),
+    });
 
   const {
     data: receiveSizeBeamListRes,
@@ -56,6 +120,9 @@ function ReceiveSizeBeamList() {
         toDate: debouncedToDate,
         fromDate: debouncedFromDate,
         end: financialYearEnd,
+        beam_type: debounceBeamType,
+        status: debouceStatus, 
+        quality_id : deboucedQuality
       },
     ],
     queryFn: async () => {
@@ -69,7 +136,9 @@ function ReceiveSizeBeamList() {
           toDate: debouncedToDate,
           fromDate: debouncedFromDate,
           end: financialYearEnd,
-          // pending: true,
+          beam_type: debounceBeamType,
+          status: debouceStatus, 
+          quality_id : deboucedQuality
         },
       });
       return res.data?.data;
@@ -162,36 +231,36 @@ function ReceiveSizeBeamList() {
     {
       title: "Action",
       render: (details) => {
-        let totalTaka = 0 ; 
-        let totalMeter = 0 ; 
+        let totalTaka = 0;
+        let totalMeter = 0;
 
         details?.recieve_size_beam_details?.map((element) => {
-          totalTaka = Number(totalTaka) + Number(element?.taka) ; 
-          totalMeter = Number(totalMeter) + Number(element?.meters) ; 
+          totalTaka = Number(totalTaka) + Number(element?.taka);
+          totalMeter = Number(totalMeter) + Number(element?.meters);
         })
 
         return (
           <Space>
             <GridInformationModel
-              title =  "Receive size beam details"
+              title="Receive size beam details"
               details={[
-                {label: "Challan No", value: details?.challan_no}, 
-                {label: "Challan Date	", value: moment(details?.createdAt).format("DD-MM-YYYY")}, 
-                {label: "Quality Name	", value: `${details?.inhouse_quality?.quality_name} - ${details?.inhouse_quality?.quality_weight}`}, 
-                {label: "Supplier Name", value: details?.supplier?.supplier?.supplier_name}, 
-                {label: "Supplier Address	", value: details?.supplier?.address}, 
-                {label: "Supplier GST	", value: details?.gst_no}, 
-                {label: "Supplier Company", value: details?.supplier?.supplier?.supplier_company}, 
-                {label: "Total Meter", value: totalMeter}, 
-                {label: "Total Taka", value: totalTaka}, 
-                {label: "Total Beam", value: details?.recieve_size_beam_details?.length},
-                {label: "Beam Type", value: details?.beam_type} 
+                { label: "Challan No", value: details?.challan_no },
+                { label: "Challan Date	", value: moment(details?.createdAt).format("DD-MM-YYYY") },
+                { label: "Quality Name	", value: `${details?.inhouse_quality?.quality_name} - ${details?.inhouse_quality?.quality_weight}` },
+                { label: "Supplier Name", value: details?.supplier?.supplier?.supplier_name },
+                { label: "Supplier Address	", value: details?.supplier?.address },
+                { label: "Supplier GST	", value: details?.supplier?.gst_no },
+                { label: "Supplier Company", value: details?.supplier?.supplier?.supplier_company },
+                { label: "Total Meter", value: totalMeter },
+                { label: "Total Taka", value: totalTaka },
+                { label: "Total Beam", value: details?.recieve_size_beam_details?.length },
+                { label: "Beam Type", value: details?.beam_type }
               ]}
             />
 
             {details?.bill_status == "pending" && (
               <>
-              
+
                 <Button
                   onClick={() => {
                     navigateToUpdate(details.id);
@@ -246,7 +315,29 @@ function ReceiveSizeBeamList() {
           overflow: "auto",
         }}
         summary={() => {
-          
+          if (receiveSizeBeamListRes?.rows?.length == 0 ) return ; 
+          console.log("Receive size beam list ");
+          console.log(receiveSizeBeamListRes);
+
+          const totalTaka = receiveSizeBeamListRes?.totalTaka ; 
+
+          return(
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}>
+                <b>Total</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalMeter}</Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalTaka}</Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalBeam}</Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+            </Table.Summary.Row>
+          )
         }}
       />
     );
@@ -264,6 +355,57 @@ function ReceiveSizeBeamList() {
           />
         </div>
         <Flex align="center" gap={10} wrap="wrap">
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Machine
+            </Typography.Text>
+            <Select
+              placeholder="Select Machine"
+              loading={isLoadingMachineList}
+              value={machine}
+              options={machineListRes?.rows?.map((machine) => ({
+                label: machine?.machine_name,
+                value: machine?.machine_name,
+              }))}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setMachine}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              allowClear
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Quality
+            </Typography.Text>
+            <Select
+              placeholder="Select Quality"
+              value={quality}
+              loading={isLoadingInHouseQualityList}
+              options={inHouseQualityList?.rows?.map(
+                ({ id = 0, quality_name = "" }) => ({
+                  label: quality_name,
+                  value: id,
+                })
+              )}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setQuality}
+              style={{
+                textTransform: "capitalize",
+              }}
+              allowClear
+              className="min-w-40"
+            />
+          </Flex>
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               From
@@ -294,6 +436,41 @@ function ReceiveSizeBeamList() {
             />
           </Flex>
 
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Beam Type
+            </Typography.Text>
+            <Select
+              placeholder="Beam Type"
+              options={BEAM_TYPE_OPTION_LIST}
+              allowClear
+              value={beamType}
+              onChange={setBeamType}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Status
+            </Typography.Text>
+            <Select
+              placeholder="Status"
+              options={[
+                {
+                  label: "Pending",
+                  value: "pending"
+                },
+                {
+                  label: "Completed",
+                  value: "completed"
+                }
+              ]}
+              allowClear
+              value={status}
+              onChange={setStatus}
+            />
+          </Flex>
+
           <Input
             placeholder="Search"
             value={search}
@@ -304,13 +481,20 @@ function ReceiveSizeBeamList() {
           />
 
           <Button
-            icon = {<FilePdfOutlined/>}
+            icon={<FilePdfOutlined />}
             type="primary"
-            
+
           />
         </Flex>
       </div>
       {renderTable()}
+
+      {isBeamInformationModel && (
+        <BeamInformationModel
+          details={beamInforamtion}
+          setBeamModel={setIsBeamInformationModel}
+        />
+      )}
     </div>
   );
 }

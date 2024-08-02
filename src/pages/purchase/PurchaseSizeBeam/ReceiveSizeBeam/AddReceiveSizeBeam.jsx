@@ -63,6 +63,7 @@ function AddReceiveSizeBeam() {
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false) ; 
 
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
@@ -113,8 +114,9 @@ function AddReceiveSizeBeam() {
       enabled: Boolean(companyId),
     });
 
-  const { mutateAsync: createReceiveSizeBeam } = useMutation({
+  const { mutateAsync: createReceiveSizeBeam, isLoading } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true) ; 
       const res = await createReceiveSizeBeamRequest({
         data,
         params: { company_id: companyId },
@@ -123,6 +125,7 @@ function AddReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
+      setLoading(false) ; 
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -134,6 +137,7 @@ function AddReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
+      setLoading(false) ; 
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -142,7 +146,14 @@ function AddReceiveSizeBeam() {
     // delete not allowed properties here
     delete data?.supplier_name;
     delete data?.supplier_company;
-    await createReceiveSizeBeam(data);
+
+    let requestData = data ; 
+    let beamData = requestData?.beam_details?.map((element) => {
+      return {...element, size_beam_order_detail_id : data?.size_beam_order_id}
+    }); 
+    requestData["beam_details"] = beamData ; 
+
+    await createReceiveSizeBeam(requestData);
   }
 
   const {
@@ -176,8 +187,8 @@ function AddReceiveSizeBeam() {
           setValue("supplier_name", supplier_name);
           setValue("supplier_company", supplier_company);
           setValue("total_meter", total_meters);
-          // Naa tme koi value pass Kari do..like total meter j send kari do payload ma
           setValue("remaining_meter", total_meters);
+          setPendingMeter(total_meters - 0) ; 
           setValue(
             "beam_details",
             (size_beam_order_details || [])?.map(
@@ -470,14 +481,19 @@ function AddReceiveSizeBeam() {
         </Row>
 
         {size_beam_order_id && (
-          <ReceiveSizeBeamDetail control={control} errors={errors} />
+          <ReceiveSizeBeamDetail 
+            control={control} 
+            errors={errors}  
+            setPendingMeter = {setPendingMeter}
+            setValue = {setValue}
+          />
         )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {loading}>
             Create
           </Button>
         </Flex>

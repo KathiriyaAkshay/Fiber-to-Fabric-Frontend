@@ -10,10 +10,6 @@ function UpdateSizeBeamDetail({ control, errors }) {
         name: "beam_details",
     });
 
-    useEffect(() => {
-        console.log("Fields information");
-        console.log(fields);
-    }, [fields])
 
     const columns = [
         {
@@ -42,10 +38,9 @@ function UpdateSizeBeamDetail({ control, errors }) {
                         className="mb-0"
                     >
                         <Controller
-                            disabled
                             control={control}
                             name={`beam_details.${index}.supplier_beam_no`}
-                            render={({ field }) => <Input {...field} placeholder="10" />}
+                            render={({ field }) => <Input readOnly {...field} placeholder="10" />}
                         />
                     </Form.Item>
                 );
@@ -155,12 +150,12 @@ function UpdateSizeBeamDetail({ control, errors }) {
                         className="mb-0"
                     >
                         <Controller
-                            disabled
                             control={control}
                             name={`beam_details.${index}.taka`}
                             render={({ field }) => (
                                 <Input
                                     {...field}
+                                    readOnly
                                     type="number"
                                     min={0}
                                     step={0.01}
@@ -190,11 +185,10 @@ function UpdateSizeBeamDetail({ control, errors }) {
                         className="mb-0"
                     >
                         <Controller
-                            disabled
                             control={control}
                             name={`beam_details.${index}.meters`}
                             render={({ field }) => (
-                                <Input {...field} type="number" min={0} step={0.01} />
+                                <Input {...field} readOnly type="number" min={0} step={0.01} />
                             )}
                         />
                     </Form.Item>
@@ -221,11 +215,11 @@ function UpdateSizeBeamDetail({ control, errors }) {
                         className="mb-0"
                     >
                         <Controller
-                            disabled
                             control={control}
                             name={`beam_details.${index}.net_weight`}
                             render={({ field }) => (
                                 <Input
+                                    readOnly
                                     {...field}
                                     type="number"
                                     min={0}

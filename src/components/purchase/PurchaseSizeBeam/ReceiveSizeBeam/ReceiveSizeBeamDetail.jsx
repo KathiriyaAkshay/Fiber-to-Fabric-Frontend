@@ -3,12 +3,20 @@ import { Button, Flex, Form, Input, Space, Table, message } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
 
-function ReceiveSizeBeamDetail({ control, errors }) {
-  const [noOfAdd, setNoOfAdd] = useState(1);
+function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue }) {
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "beam_details",
   });
+  const [totalInitalTotalBeam, setInitalTotalBeam] = useState(fields?.length) ; 
+
+
+  useEffect(() => {
+    if (fields?.length > totalInitalTotalBeam){
+      setInitalTotalBeam(fields?.length) ; 
+    }
+  }, [fields]) ; 
 
   const columns = [
     {
@@ -186,7 +194,16 @@ function ReceiveSizeBeamDetail({ control, errors }) {
               control={control}
               name={`beam_details.${index}.meters`}
               render={({ field }) => (
-                <Input {...field} type="number" min={0} step={0.01} />
+                <Input 
+                  {...field} 
+                  type="number" 
+                  min={0} 
+                  step={0.01} 
+                  onChange={(e) => {
+                    setValue(`beam_details.${index}.meters`, e.target.value) ; 
+                    console.log("Run this function");
+                  }}
+                />
               )}
             />
           </Form.Item>
@@ -249,11 +266,16 @@ function ReceiveSizeBeamDetail({ control, errors }) {
             >
               <DeleteOutlined />
             </Button>
-            <Button onClick={() => {
-              console.log(fields);
+            {/* <Button onClick={() => {
+              if (fields?.length < totalInitalTotalBeam){
+                append({})
+              } else {
+                message.warning(`You only have ${fields?.length} size beam in this order`) ; 
+              }
+
             }}>
               <PlusCircleFilled/>
-            </Button>
+            </Button> */}
           </Space>
         );
       },

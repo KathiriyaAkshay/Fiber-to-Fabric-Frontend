@@ -111,8 +111,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
     const [totalTaka, setTotalTaka] = useState(0) ; 
     const [totalMeter, setTotalMeter] = useState(0) ;
     const [totalKG, setTotalKG] = useState(0) ; 
-    const [rate, setRate] = useState(0) ; 
-    const [totalAmount, setTotalAmount] = useState(0) ;     
+    const [loading, setLoading] = useState(false) ; 
     const currentValues = watch() ; 
 
     useEffect(() => {
@@ -139,7 +138,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         setValue("discount_amount", Number(discount_value).toFixed(2))
 
         let freight = currentValues?.freight_value; 
-        let freight_amount = Number(discount_value) + Number(freight) ; 
+        let freight_amount = Number(discount_value) + (Number(freight)*Number(totalKG)) ; 
         setValue("freight_amount", Number(freight_amount).toFixed(2)) ; 
 
     }, [currentValues?.rate, currentValues?.discount_value, currentValues?.amount, currentValues?.freight_value, setValue])
@@ -183,22 +182,24 @@ const SizeBeamChallanModal = ({ details = {} }) => {
 
     const { mutateAsync: createSizeBeamBill } = useMutation({
         mutationFn: async (data) => {
-          const res = await createReceiveSizeBeamBillRequest({
-            data,
-            params: { company_id: companyId },
-          });
-          return res.data;
+            setLoading(true) ; 
+            const res = await createReceiveSizeBeamBillRequest({
+                data,
+                params: { company_id: companyId },
+            });
+            return res.data;
         },
         mutationKey: ["yarn-stock/yarn-receive-challan/create"],
         onSuccess: (res) => {
             const successMessage = res?.message;
+            setLoading(false) ; 
             if (successMessage) {
                 message.success(successMessage);
             }
-            // handleCancel();
         },
         onError: (error) => {
-          mutationOnErrorHandler({ error, message });
+            setLoading(false) ; 
+            mutationOnErrorHandler({ error, message });
         },
     });
 
@@ -213,7 +214,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         requestData["total_taka"] = totalTaka ; 
         requestData["total_meter"] = totalMeter ; 
         requestData["supplier_id"] = details?.supplier?.id ; 
-
+        requestData["bill_number"] = values?.invoice_number
         await createSizeBeamBill(requestData) ; 
     }
     
@@ -418,22 +419,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 </Form.Item>
                             </Col>
                             <Col span={4} className="p-2 font-medium" >
-                                {/* <Form.Item
-                                    // label="Invoice No."
-                                    name="amount"
-                                    validateStatus={errors.amount ? "error" : ""}
-                                    help={errors.amount && errors.amount.message}
-                                    required={true}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="amount"
-                                        render={({ field }) => (
-                                            <Input {...field} placeholder="Amount" type="number" />
-                                        )}
-                                    />
-                                </Form.Item> */}
                                 {currentValues?.amount}
                             </Col>
                         </Row>
@@ -545,9 +530,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                                 onChange={(e) => {
                                                     setValue("SGST_value", e.target.value) ; 
                                                     let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
                                                 }}
                                             />
                                         )}
@@ -557,32 +539,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.SGST_amount}
-                                {/* <Form.Item
-                                    // label="Invoice No."
-                                    name="SGST_amount"
-                                    validateStatus={errors.SGST_amount ? "error" : ""}
-                                    help={errors.SGST_amount && errors.SGST_amount.message}
-                                    required={true}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="SGST_amount"
-                                        render={({ field }) => (
-                                            <Input {...field}
-                                                placeholder="SGST amount" 
-                                                type="number" 
-                                                onChange={(e) => {
-                                                    setValue("SGST_amount", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item> */}
                             </Col>
                         </Row>
 
@@ -615,9 +571,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                                 onChange={(e) => {
                                                     setValue("CGST_value", e.target.value) ; 
                                                     let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
                                                 }}
                                             />
                                         )}
@@ -626,32 +579,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             </Col>
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.CGST_amount}
-                                {/* <Form.Item
-                                    // label="Invoice No."
-                                    name="CGST_amount"
-                                    validateStatus={errors.CGST_amount ? "error" : ""}
-                                    help={errors.CGST_amount && errors.CGST_amount.message}
-                                    required={true}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="CGST_amount"
-                                        render={({ field }) => (
-                                            <Input {...field}
-                                                placeholder="CGST amount" 
-                                                type="number" 
-                                                onChange={(e) => {
-                                                    setValue("CGST_amount", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item> */}
                             </Col>
                         </Row>
                         
@@ -684,9 +611,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                                 onChange={(e) => {
                                                     setValue("IGST_value", e.target.value) ; 
                                                     let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
                                                 }}
                                             />
                                         )}
@@ -695,32 +619,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             </Col>
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.IGST_amount}
-                                {/* <Form.Item
-                                    // label="Invoice No."
-                                    name="IGST_amount"
-                                    validateStatus={errors.IGST_amount ? "error" : ""}
-                                    help={errors.IGST_amount && errors.IGST_amount.message}
-                                    required={true}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="IGST_amount"
-                                        render={({ field }) => (
-                                            <Input {...field}
-                                                placeholder="IGST_amount" 
-                                                type="number" 
-                                                onChange={(e) => {
-                                                    setValue("IGST_amount", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item> */}
                             </Col>
                         </Row>
                         
@@ -738,32 +636,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             </Col>
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.round_off}
-                                {/* <Form.Item
-                                    // label="Invoice No."
-                                    name="IGST_amount"
-                                    validateStatus={errors.IGST_amount ? "error" : ""}
-                                    help={errors.IGST_amount && errors.IGST_amount.message}
-                                    required={true}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="IGST_amount"
-                                        render={({ field }) => (
-                                            <Input {...field}
-                                                placeholder="IGST_amount" 
-                                                type="number" 
-                                                onChange={(e) => {
-                                                    setValue("IGST_amount", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
-                                                    // console.log(tempDiscount); 
-                                                    // console.log(parseFloat(currentValues?.amount - tempDiscount).toFixed(2));
-                                                    // setValue("discount_amount", parseFloat(currentValues?.amount - tempDiscount).toFixed(2))
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item> */}
                             </Col>
                         </Row>
                         
@@ -795,31 +667,6 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                     />
                                 </Form.Item>
                             </Col>
-                            {/* <Col span={15} className="p-2 border-0 border-r border-solid">
-                                <Form.Item
-                                    // label="BILL Date"
-                                    name="bill_date"
-                                    validateStatus={errors.bill_date ? "error" : ""}
-                                    help={errors.bill_date && errors.bill_date.message}
-                                    required={true}
-                                    wrapperCol={{ sm: 24 }}
-                                // className="mb-0"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="bill_date"
-                                        render={({ field }) => (
-                                            <DatePicker
-                                                {...field}
-                                                style={{
-                                                    width: "100%",
-                                                }}
-                                                format="DD-MM-YYYY"
-                                            />
-                                        )}
-                                    />
-                                </Form.Item>
-                            </Col> */}
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                                 <strong>NET Amount</strong>
                             </Col>
@@ -843,7 +690,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                         <Button htmlType="button" onClick={() => reset()}>
                             Reset
                         </Button>
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" loading = {loading}>
                             Receive Bill
                         </Button>
                     </Flex>
