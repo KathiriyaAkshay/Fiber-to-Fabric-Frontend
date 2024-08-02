@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { useContext, useEffect, useState } from "react";
 import {
+  getLastBeamNumberRequest,
   getSizeBeamOrderByIdRequest,
   updateSizeBeamOrderRequest,
 } from "../../../api/requests/orderMaster";
@@ -25,6 +26,7 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import { disabledFutureDate } from "../../../utils/date";
 
 const updateSizeBeamOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -125,6 +127,26 @@ function UpdateSizeBeamOrder() {
     },
     enabled: Boolean(companyId),
   });
+
+  const {data: lastSizeBeamOrder} = useQuery({
+    queryKey: [
+      "order-master/receive-size-beam/last-beam-no",
+      id,
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getLastBeamNumberRequest({
+        id,
+        params: 
+        { 
+          company_id: companyId, 
+          beam_type: "pasarela(primary)"
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  }) ; 
 
   const {
     data: dropdownSupplierListRes,
@@ -263,6 +285,7 @@ function UpdateSizeBeamOrder() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />

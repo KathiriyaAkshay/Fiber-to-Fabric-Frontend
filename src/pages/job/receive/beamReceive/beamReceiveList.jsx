@@ -13,8 +13,6 @@ import {
   downloadUserPdf,
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
-// import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -25,6 +23,7 @@ import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal
 import { getJobBeamReceiveListRequest } from "../../../../api/requests/job/receive/beamReceive";
 import dayjs from "dayjs";
 import { getPartyListRequest } from "../../../../api/requests/users";
+import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
 
 const BeamReceiveList = () => {
   const navigate = useNavigate();
@@ -42,6 +41,9 @@ const BeamReceiveList = () => {
   const debouncedBeamTypeDropDown = useDebounce(beamTypeDropDown, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedParty = useDebounce(party, 500);
+
+  const [isBeamInformationModel, setIsBeamInformationModel] = useState(false) ; 
+  const [beamInformation, setBeamInformation] = useState(null) ; 
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -247,8 +249,13 @@ const BeamReceiveList = () => {
     },
     {
       title: "No of Beam",
-      render: (details) => {
-        return details?.job_beam_receive_details?.length;
+      render: (details, record) => {
+        return(
+          <div onClick={() => {
+            setIsBeamInformationModel(true) ;
+            setBeamInformation(record)  ;
+          }}>{details?.job_beam_receive_details?.length}</div>
+        )
       },
     },
     {
@@ -480,6 +487,13 @@ const BeamReceiveList = () => {
         </Flex>
       </div>
       {renderTable()}
+
+      {isBeamInformationModel && (
+        <BeamInformationModel
+          details={beamInformation}
+          setBeamModel = {setIsBeamInformationModel}
+        />
+      )}
     </div>
   );
 };

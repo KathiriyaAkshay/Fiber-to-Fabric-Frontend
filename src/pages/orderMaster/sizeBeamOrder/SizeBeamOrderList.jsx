@@ -13,14 +13,15 @@ import DeleteSizeBeamOrderButton from "../../../components/orderMaster/sizeBeamO
 import useDebounce from "../../../hooks/useDebounce";
 import BeamPipeChallanModel from "../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/BeamPipeChallanMode";
 import moment from "moment";
+import { currentMonthStartDateEndDate } from "../../../utils/date";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
+  const [monthStartDate, monthEndDate] = currentMonthStartDateEndDate() ; 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
-  const [fromDate, setFromDate] = useState(undefined);
-  const [toDate, setToDate] = useState(undefined);
+  const [fromDate, setFromDate] = useState(dayjs(monthStartDate));
+  const [toDate, setToDate] = useState(dayjs(monthEndDate));
   const debouncedFromDate = useDebounce(dayjs(fromDate).format("YYYY-MM-DD"), 500);
   const debouncedToDate = useDebounce(dayjs(toDate).format("YYYY-MM-DD"), 500);
 
