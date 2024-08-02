@@ -6,17 +6,23 @@ import {
     Modal,
     Row,
     Typography,
+    message
 } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import moment from "moment";
 import ReactToPrint from "react-to-print";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateSizeBeamOrderRequest } from "../../../../api/requests/orderMaster";
 
 const BeamPipeChallanModel = ({ details }) => {
-    const [totalMeter, setTotalMeter] = useState(0) ; 
     const componentRef = useRef() ; 
-    const {companyListRes} = useContext(GlobalContext) ; 
+    const [totalMeter, setTotalMeter] = useState(0) ; 
+    const {companyListRes, companyId} = useContext(GlobalContext) ; 
     const [companyInfo, setCompanyInfo] = useState({});
+    const [isModelOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false) ; 
+    const queryClient = useQueryClient() ; 
 
     useEffect(() => {
         companyListRes?.rows?.map((element) => {
@@ -25,6 +31,44 @@ const BeamPipeChallanModel = ({ details }) => {
             }
         })
     },[details, companyListRes]) ; 
+
+    const { mutateAsync: updateSizeBeamOrder } = useMutation({
+        mutationFn: async (data) => {
+          setLoading(true) ; 
+          const res = await updateSizeBeamOrderRequest({
+            id: details?.id,
+            data,
+            params: { company_id: companyId },
+          });
+          return res.data;
+        },
+        mutationKey: ["order-master/size-beam-order/update", details?.id],
+        onSuccess: (res) => {
+            setLoading(false) ; 
+            queryClient.invalidateQueries([
+                "order-master",
+                "size-beam-order",
+                "list",
+                { company_id: companyId },
+            ]);
+        },
+        onError: (error) => {
+          setLoading(false) ; 
+          const errorMessage = error?.response?.data?.message;
+          if (errorMessage && typeof errorMessage === "string") {
+            message.error(errorMessage);
+          }
+        },
+    });
+
+
+    const printChallan = async () => {
+        if (details?.print_challan_status != "PRINTED"){
+            await updateSizeBeamOrder({
+                "print_challan_status": "PRINTED"
+            })
+        }
+    }
 
     const pageStyle = `
         @media print {
@@ -45,7 +89,6 @@ const BeamPipeChallanModel = ({ details }) => {
         setTotalMeter(temp_total) ; 
     }, [details]) ; 
 
-    const [isModelOpen, setIsModalOpen] = useState(false);
     return (
         <>
             <Button type="primary" onClick={() => { setIsModalOpen(true) }}>
@@ -64,7 +107,11 @@ const BeamPipeChallanModel = ({ details }) => {
                         <>
                             <ReactToPrint
                                 trigger={() => <Flex>
-                                    <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
+                                    <Button type="primary" 
+                                        style={{marginLeft: "auto", marginTop: 15}}
+                                        loading = {loading}
+                                        onClick={() => {printChallan()}}
+                                    >
                                         PRINT
                                     </Button>
                                 </Flex>}

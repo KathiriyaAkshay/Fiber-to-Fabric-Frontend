@@ -27,6 +27,7 @@ import YarnReturnModel from "../../../../components/purchase/receive/yarnReceive
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { useMemo } from "react";
 import { currentMonthStartDateEndDate } from "../../../../utils/date";
+import { FilePdfOutlined } from "@ant-design/icons";
 
 function YarnReceiveList() {
 
@@ -168,7 +169,9 @@ function YarnReceiveList() {
       dataIndex: "supplier",
       key: "supplier",
       render: (text, record) => (
-        <div>-</div>
+        <div>
+          {record?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_name || "-"}
+        </div>
       )
     },
     {
@@ -176,7 +179,9 @@ function YarnReceiveList() {
       dataIndex: "supplier_company",
       key: "supplier_company",
       render: (text, record) => (
-        <div>-</div>
+        <div>
+          {record?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_company || "-"}
+        </div>
       )
     },
     {
@@ -239,7 +244,7 @@ function YarnReceiveList() {
               
               <MultipleChallanCreateButton details={yarnReceiveDetails} />
               
-              <YarnReceiveChallanModal details={yarnReceiveDetails} />
+              <YarnReceiveChallanModal details={[yarnReceiveDetails]} />
 
             </> : <>
               {!yarnReceiveDetails?.has_yarn_sale_return && (
@@ -325,7 +330,7 @@ function YarnReceiveList() {
             <>
               <Table.Summary.Row cla  ssName="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
-                <Table.Summary.Cell/>
+                {billStatus == "0" && <Table.Summary.Cell/> }
                 <Table.Summary.Cell/>
                 <Table.Summary.Cell/>
                 <Table.Summary.Cell/>

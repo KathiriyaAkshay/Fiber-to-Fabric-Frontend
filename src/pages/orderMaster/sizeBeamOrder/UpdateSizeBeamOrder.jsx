@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { useContext, useEffect, useState } from "react";
 import {
+  getLastBeamNumberRequest,
   getSizeBeamOrderByIdRequest,
   updateSizeBeamOrderRequest,
 } from "../../../api/requests/orderMaster";
@@ -25,6 +26,7 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import { disabledFutureDate } from "../../../utils/date";
 
 const updateSizeBeamOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -65,6 +67,7 @@ function UpdateSizeBeamOrder() {
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
+  const [loading, setLoading] = useState(false) ; 
 
   function goBack() {
     navigate(-1);
@@ -72,6 +75,7 @@ function UpdateSizeBeamOrder() {
 
   const { mutateAsync: updateSizeBeamOrder } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true) ; 
       const res = await updateSizeBeamOrderRequest({
         id,
         data,
@@ -81,6 +85,7 @@ function UpdateSizeBeamOrder() {
     },
     mutationKey: ["order-master/size-beam-order/update", id],
     onSuccess: (res) => {
+      setLoading(false) ; 
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -88,6 +93,7 @@ function UpdateSizeBeamOrder() {
       navigate(-1);
     },
     onError: (error) => {
+      setLoading(false) ; 
       const errorMessage = error?.response?.data?.message;
       if (errorMessage && typeof errorMessage === "string") {
         message.error(errorMessage);
@@ -121,6 +127,26 @@ function UpdateSizeBeamOrder() {
     },
     enabled: Boolean(companyId),
   });
+
+  const {data: lastSizeBeamOrder} = useQuery({
+    queryKey: [
+      "order-master/receive-size-beam/last-beam-no",
+      id,
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getLastBeamNumberRequest({
+        id,
+        params: 
+        { 
+          company_id: companyId, 
+          beam_type: "pasarela(primary)"
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  }) ; 
 
   const {
     data: dropdownSupplierListRes,
@@ -259,6 +285,7 @@ function UpdateSizeBeamOrder() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />
@@ -542,7 +569,7 @@ function UpdateSizeBeamOrder() {
         <SizeBeamOrderDetail control={control} errors={errors} />
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {loading}>
             Update
           </Button>
         </Flex>

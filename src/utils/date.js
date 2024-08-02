@@ -13,6 +13,10 @@ export function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
 }
 
+export function disabledPastDate(current){
+    return current <= moment().endOf("day") ; 
+}
+
 export function currentMonthStartDateEndDate() {
     const currentDate = new Date();
 

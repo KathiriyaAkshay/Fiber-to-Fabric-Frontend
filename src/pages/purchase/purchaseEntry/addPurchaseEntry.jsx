@@ -37,7 +37,9 @@ const AddGeneralPurchaseEntry = () => {
     const navigate = useNavigate();
 
     const [isAddCashBillChecked, setAddCashBillChecked] = useState(false);
-    const [isAddOpeningCurrentBillsChecked, setAddOpeningCurrentBillsChecked] = useState(true); // Assuming it is checked by default (as per your image)
+    const [isAddOpeningCurrentBillsChecked, setAddOpeningCurrentBillsChecked] = useState(false); // Assuming it is checked by default (as per your image)
+    const [isUpdateStockChecked, setIsUpdateStockChecked] = useState(false) ; 
+
     const [is_millgine_bill, set_is_millgine_bill] = useState(false);
     const [supplierName, setSupplierName] = useState("");
     const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
@@ -48,6 +50,7 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddOpeningCurrentBillsChecked(false);
+            setIsUpdateStockChecked(false) ; 
         }
     };
 
@@ -56,8 +59,18 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddCashBillChecked(false);
+            setIsUpdateStockChecked(false) ; 
         }
     };
+
+    const handleUpdateStockChange = (e) => {
+        setIsUpdateStockChecked(e.target.checked) ; 
+
+        if (e.target.checked){
+            setAddCashBillChecked(false) ; 
+            setAddOpeningCurrentBillsChecked(false) ; 
+        }
+    }
 
     const AddValidationSchema = yup.object().shape({
         supplier_name: yup.string().required("Please, Select supplier"),
@@ -823,6 +836,7 @@ const AddGeneralPurchaseEntry = () => {
 
                 <Flex style={{ marginLeft: "auto" }} gap={10}>
                     <Checkbox
+                        disabled = {is_millgine_bill?true:false}
                         checked={isAddCashBillChecked}
                         onChange={handleAddCashBillChange}
                     >
@@ -830,10 +844,19 @@ const AddGeneralPurchaseEntry = () => {
                     </Checkbox>
 
                     <Checkbox
+                        disabled = {is_millgine_bill?true:false}
                         checked={isAddOpeningCurrentBillsChecked}
                         onChange={handleAddOpeningCurrentBillsChange}
                     >
                         Add opening & current bills
+                    </Checkbox>
+
+                    <Checkbox
+                        disabled = {is_millgine_bill?true:false}
+                        checked={isUpdateStockChecked}
+                        onChange={handleUpdateStockChange}
+                    >
+                        Update Stock
                     </Checkbox>
 
                 </Flex>
@@ -1074,19 +1097,23 @@ const AddGeneralPurchaseEntry = () => {
                         </Form.Item>
                     </Col>
 
-                    <Checkbox
-                        style={{ marginBottom: 20 }}
-                        checked={is_millgine_bill}
-                        onChange={(e) => { set_is_millgine_bill(e.target.checked) }}
-                    >
-                        Add Millgine Bill with Material details
-                    </Checkbox>
+                    {isAddCashBillChecked == false && isAddOpeningCurrentBillsChecked == false && isUpdateStockChecked == false && (
+
+                        <Checkbox
+                            style={{ marginBottom: 20 }}
+                            checked={is_millgine_bill}
+                            onChange={(e) => { set_is_millgine_bill(e.target.checked) }}
+                        >
+                            Add Millgine Bill with Material details
+                        </Checkbox>
+                    )}
+
 
                 </Row>
 
                 <Divider style={{ marginTop: 0 }} />
 
-                {millgineOrderArray?.length && is_millgine_bill ?
+                {( isAddCashBillChecked ||  (millgineOrderArray?.length && is_millgine_bill)) ?
                     millgineOrderArray?.map((field, index) => {
                         return (
                             <>
@@ -1439,168 +1466,173 @@ const AddGeneralPurchaseEntry = () => {
                     </Row>
                 )}
 
-
-
                 <Divider style={{ marginTop: 0 }} />
 
-                <Flex gap={20} >
-                    <div style={{ width: "70%" }}>
-                        <Table
-                            columns={columns}
-                            dataSource={initialData}
-                            pagination={false}
-                            summary={() => (
-                                <Table.Summary.Row>
-                                    <Table.Summary.Cell>Total</Table.Summary.Cell>
-                                    <Table.Summary.Cell index={1}>
-                                        {totalAmount.toFixed(2)}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={2}>
-                                        {totalDiscount.toFixed(2)}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={3}>
-                                        {totalSGST.toFixed(2)}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={4}>
-                                        {totalCGST.toFixed(2)}
-                                    </Table.Summary.Cell>
-                                    <Table.Summary.Cell index={5}>
-                                        {totalGST.toFixed(2)}
-                                    </Table.Summary.Cell>
-                                </Table.Summary.Row>
-                            )}
-                        />
-                    </div>
+                {(isAddOpeningCurrentBillsChecked || (isAddCashBillChecked == false && isAddOpeningCurrentBillsChecked == false && isUpdateStockChecked == false)) && (
 
-                    <div style={{ width: "30%", marginLeft: 10 }}>
-                        <Col span={24}>
+                    <Flex gap={20} >
 
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description" label="Sub total">{totalAmount}</Descriptions.Item>
-                            </Descriptions>
+                        <div style={{ width: "70%" }}>
+                            <Table
+                                columns={columns}
+                                dataSource={initialData}
+                                pagination={false}
+                                summary={() => (
+                                    <Table.Summary.Row>
+                                        <Table.Summary.Cell>Total</Table.Summary.Cell>
+                                        <Table.Summary.Cell index={1}>
+                                            {totalAmount.toFixed(2)}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={2}>
+                                            {totalDiscount.toFixed(2)}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={3}>
+                                            {totalSGST.toFixed(2)}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={4}>
+                                            {totalCGST.toFixed(2)}
+                                        </Table.Summary.Cell>
+                                        <Table.Summary.Cell index={5}>
+                                            {totalGST.toFixed(2)}
+                                        </Table.Summary.Cell>
+                                    </Table.Summary.Row>
+                                )}
+                            />
+                        </div>
 
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description highlight-text" label="Discount">{totalDiscount}</Descriptions.Item>
-                            </Descriptions>
-
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description" label="SGST Payable (% )">{totalSGST}</Descriptions.Item>
-                            </Descriptions>
-
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description" label="CGST Payable (% )">{totalSGST}</Descriptions.Item>
-                            </Descriptions>
-
-                        </Col>
-
-                        <Divider style={{ marginTop: 10 }} />
-
-
-                        <Row gutter={18}>
-                            
+                        <div style={{ width: "30%", marginLeft: 10 }}>
                             <Col span={24}>
 
-                                <Form.Item 
-                                    label="TDS %" 
-                                    name="tds_percent"
-                                    validateStatus = {errors?.tds_percent?"error":""}
-                                    help = {errors?.tds_percent && errors?.tds_percent?.message}
-                                    required = {true}
-                                    wrapperCol={{sm: 24}}
-                                >
-                                    <Controller
-                                        control={control}
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description" label="Sub total">{totalAmount}</Descriptions.Item>
+                                </Descriptions>
+
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description highlight-text" label="Discount">{totalDiscount}</Descriptions.Item>
+                                </Descriptions>
+
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description" label="SGST Payable (% )">{totalSGST}</Descriptions.Item>
+                                </Descriptions>
+
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description" label="CGST Payable (% )">{totalSGST}</Descriptions.Item>
+                                </Descriptions>
+
+                            </Col>
+
+                            <Divider style={{ marginTop: 10 }} />
+
+
+                            <Row gutter={18}>
+                                
+                                <Col span={24}>
+
+                                    <Form.Item 
+                                        label="TDS %" 
                                         name="tds_percent"
-                                        render={({ field }) => (
-                                            <Input {...field}
-                                                placeholder="0.00"
-                                                onChange={(e) => {
+                                        validateStatus = {errors?.tds_percent?"error":""}
+                                        help = {errors?.tds_percent && errors?.tds_percent?.message}
+                                        required = {true}
+                                        wrapperCol={{sm: 24}}
+                                    >
+                                        <Controller
+                                            control={control}
+                                            name="tds_percent"
+                                            render={({ field }) => (
+                                                <Input {...field}
+                                                    placeholder="0.00"
+                                                    onChange={(e) => {
 
-                                                    let tds_amount = e.target.value;
-                                                    let final_amount = finalAmount;
+                                                        let tds_amount = e.target.value;
+                                                        let final_amount = finalAmount;
 
-                                                    let after_tds_amount = Number(final_amount) * Number(tds_amount) / 100;
-                                                    after_tds_amount = final_amount - after_tds_amount;
-                                                    setAfterTDSAmount(after_tds_amount);
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item>
+                                                        let after_tds_amount = Number(final_amount) * Number(tds_amount) / 100;
+                                                        after_tds_amount = final_amount - after_tds_amount;
+                                                        setAfterTDSAmount(after_tds_amount);
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                    </Form.Item>
+                                
+                                </Col>
+                            
+                            </Row>
+
+                            <Col span={24}>
+
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description" label="Round Off">
+                                        {roundOff}
+                                    </Descriptions.Item>
+                                </Descriptions>
+                            
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description finalamount-text" label="Grand total">{finalAmount}</Descriptions.Item>
+                                </Descriptions>
+                            
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description" label="After TDS amount">{afterTDSAmount}</Descriptions.Item>
+                                </Descriptions>
+                            
+                                <Descriptions>
+                                    <Descriptions.Item className="purchase-bill-description highlight-text" label="Discount">{totalSGST}</Descriptions.Item>
+                                </Descriptions>
                             
                             </Col>
-                        
-                        </Row>
 
-                        <Col span={24}>
+                            <Row>
+                                <Col span={24}>
+                                    <Form.Item label="Final Amount" name="final_amount">
+                                        <Controller
+                                            control={control}
+                                            name="final_amount"
+                                            render={({ field }) => (
+                                                <Input
+                                                    {...field}
+                                                    onChange={(e) => {
+                                                        setValue("final_amount", e.target.value);
 
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description" label="Round Off">
-                                    {roundOff}
-                                </Descriptions.Item>
-                            </Descriptions>
-                        
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description finalamount-text" label="Grand total">{finalAmount}</Descriptions.Item>
-                            </Descriptions>
-                        
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description" label="After TDS amount">{afterTDSAmount}</Descriptions.Item>
-                            </Descriptions>
-                        
-                            <Descriptions>
-                                <Descriptions.Item className="purchase-bill-description highlight-text" label="Discount">{totalSGST}</Descriptions.Item>
-                            </Descriptions>
-                        
-                        </Col>
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={24}>
+                                    <Form.Item 
+                                        label="Do you want to create Entry in Passbook Statement?"
+                                        name = "create_passbook_entry"
+                                    >
+                                        <Controller
+                                            control={control}
+                                            name="create_passbook_entry"
+                                            render={({ field }) => (
+                                                <Radio.Group {...field} defaultValue={"yes"}>
+                                                    <Radio value="yes">Yes</Radio>
+                                                    <Radio value="no">No</Radio>
+                                                </Radio.Group>
+                                            )}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={24} style={{ textAlign: 'left' }}>
+                                    <Button type="primary" htmlType="submit">
+                                        Submit
+                                    </Button>
+                                    {/* <Button type="danger" style={{ marginLeft: '10px' }} onClick={resetForm}>
+                Reset
+                </Button> */}
+                                </Col>
+                            </Row>
+                        </div>
+                    </Flex>
+                )}
 
-                        <Row>
-                            <Col span={24}>
-                                <Form.Item label="Final Amount" name="final_amount">
-                                    <Controller
-                                        control={control}
-                                        name="final_amount"
-                                        render={({ field }) => (
-                                            <Input
-                                                {...field}
-                                                onChange={(e) => {
-                                                    setValue("final_amount", e.target.value);
 
-                                                }}
-                                            />
-                                        )}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={24}>
-                                <Form.Item 
-                                    label="Do you want to create Entry in Passbook Statement?"
-                                    name = "create_passbook_entry"
-                                >
-                                    <Controller
-                                        control={control}
-                                        name="create_passbook_entry"
-                                        render={({ field }) => (
-                                            <Radio.Group {...field} defaultValue={"yes"}>
-                                                <Radio value="yes">Yes</Radio>
-                                                <Radio value="no">No</Radio>
-                                            </Radio.Group>
-                                        )}
-                                    />
-                                </Form.Item>
-                            </Col>
-                            <Col span={24} style={{ textAlign: 'left' }}>
-                                <Button type="primary" htmlType="submit">
-                                    Submit
-                                </Button>
-                                {/* <Button type="danger" style={{ marginLeft: '10px' }} onClick={resetForm}>
-              Reset
-            </Button> */}
-                            </Col>
-                        </Row>
-                    </div>
-                </Flex>
             </Form>
+
         </div>
     )
 }

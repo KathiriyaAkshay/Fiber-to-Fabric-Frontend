@@ -31,57 +31,60 @@ import moment from "moment/moment";
 import { getReceiveSizeBeamOrderRequest } from "../../../../api/requests/purchase/yarnReceive";
 import UpdateSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateSizeBeamDetails";
 
-  const addReceiveSizeBeamSchemaResolver = yupResolver(
-    yup.object().shape({
-      // size_beam_order_id: yup.string().required("Please select order"),
-      // quality_id: yup.string().required("Please select Quality"),
-      supplier_id: yup.string().required("Please select supplier"),
-      challan_no: yup.string().required("Please enter challan number"),
-      // beam_type: yup.string().required("Please select Beam type"),
-      receive_date: yup.string().required("Please select Date"),
-      // total_meter:yup.string().required("Please enter Total meter"),
-      // remaining_meter: yup.string().required("Please enter remaining meter"),
-      // machine_name: yup.string().required("Please enter machine name"),
-      beam_details: yup.array().of(
-        yup.object().shape({
-          ends_or_tars: yup.string().required("Please enter ends of tars"),
-          tpm: yup.string().required("Please enter tpm"),
-          // grade: yup.string().optional(),
-          meters: yup.string().notRequired(), 
-          pano: yup.string().required("Please enter pano"),
-          // remark: yup.string().optional(),
-          // beam_no: yup.string().optional(),
-          // taka: yup.string().optional(),
-          // net_weight: yup.string().optional(),
-          // supplier_beam_no: yup.string().optional()
-        })
-      ),
-    })
-  );
+const addReceiveSizeBeamSchemaResolver = yupResolver(
+  yup.object().shape({
+    // size_beam_order_id: yup.string().required("Please select order"),
+    // quality_id: yup.string().required("Please select Quality"),
+    // supplier_id: yup.string().required("Please select supplier"),
+    // challan_no: yup.string().required("Please enter challan number"),
+    // beam_type: yup.string().required("Please select Beam type"),
+    receive_date: yup.string().required("Please select Date"),
+    // total_meter:yup.string().required("Please enter Total meter"),
+    // remaining_meter: yup.string().required("Please enter remaining meter"),
+    // machine_name: yup.string().required("Please enter machine name"),
+    beam_details: yup.array().of(
+      yup.object().shape({
+        ends_or_tars: yup.string().required("Please enter ends of tars"),
+        tpm: yup.string().required("Please enter tpm"),
+        // grade: yup.string().optional(),
+        meters: yup.string().notRequired(),
+        pano: yup.string().required("Please enter pano"),
+        // remark: yup.string().optional(),
+        // beam_no: yup.string().optional(),
+        // taka: yup.string().optional(),
+        // net_weight: yup.string().optional(),
+        // supplier_beam_no: yup.string().optional()
+      })
+    ),
+  })
+);
 
 function UpdateReceiveSizeBeam() {
-  const navigate = useNavigate();
   const params = useParams();
   const { id } = params;
+
+  const navigate = useNavigate();
   const { companyId } = useContext(GlobalContext);
+  const [loading, setLoading] = useState(false) ; 
+  const [remaingMeter, setRemaingMeter] = useState(0) ; 
   const queryClient = useQueryClient();
 
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
-    useQuery({
-      queryKey: [
-        "order-master",
-        "size-beam-order",
-        "list",
-        { company_id: companyId },
-      ],
-      queryFn: async () => {
-        const res = await getSizeBeamOrderListRequest({
-          params: { company_id: companyId, status: "PENDING" },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
+  useQuery({
+    queryKey: [
+      "order-master",
+      "size-beam-order",
+      "list",
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getSizeBeamOrderListRequest({
+        params: { company_id: companyId, status: "PENDING" },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
@@ -96,23 +99,23 @@ function UpdateReceiveSizeBeam() {
   });
 
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
-    useQuery({
-      queryKey: [
-        "quality-master/inhouse-quality/list",
-        {
+  useQuery({
+    queryKey: [
+      "quality-master/inhouse-quality/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getInHouseQualityListRequest({
+        params: {
           company_id: companyId,
         },
-      ],
-      queryFn: async () => {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-          },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: receiveSizeBeamDetails } = useQuery({
     queryKey: ["order-master/recive-size-beam/get", id],
@@ -128,8 +131,9 @@ function UpdateReceiveSizeBeam() {
 
   const { mutateAsync: updateReceiveSizeBeam } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true) ; 
       const res = await updateReceiveSizeBeamRequest({
-        id, 
+        id,
         data,
         params: { company_id: companyId },
       });
@@ -137,6 +141,7 @@ function UpdateReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
+      setLoading(false) ; 
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -148,6 +153,7 @@ function UpdateReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
+      setLoading(false) ; 
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -155,9 +161,25 @@ function UpdateReceiveSizeBeam() {
   async function onSubmit(data) {
     delete data?.supplier_name;
     delete data?.supplier_company;
-    console.log("Run submission functionality");
-    console.log(data);
-    await updateReceiveSizeBeam(data);
+
+    let beamData = data?.beam_details?.map((element) => {
+      return {...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id}
+    })
+
+    let requestData = {
+      "size_beam_order_id": receiveSizeBeamDetails?.size_beam_order_id,
+      "quality_id": receiveSizeBeamDetails?.quality_id,
+      "supplier_id": receiveSizeBeamDetails?.supplier_id,
+      "challan_no": receiveSizeBeamDetails?.challan_no,
+      "beam_type": receiveSizeBeamDetails?.beam_type,
+      "receive_date": data?.receive_date,
+      "total_meter": 1000,
+      "remaining_meter": 500,
+      "machine_name": receiveSizeBeamDetails?.machine_name,
+      "beam_details": beamData
+    } ; 
+
+    await updateReceiveSizeBeam(requestData); 
 
   }
 
@@ -192,7 +214,6 @@ function UpdateReceiveSizeBeam() {
           setValue("supplier_name", supplier_name);
           setValue("supplier_company", supplier_company);
           setValue("total_meter", total_meters);
-          setTotalMeter(total_meters);
           setValue("remaining_meter", total_meters);
         }
       }
@@ -201,29 +222,37 @@ function UpdateReceiveSizeBeam() {
 
   useEffect(() => {
     if (receiveSizeBeamDetails) {
-      let temp = [] ; 
+      let temp = [];
+
       receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
         let value = {
-          ends_or_tars: element?.ends_or_tars, 
-          grade: element?.grade, 
-          meters: element?.meters, 
-          pano: element?.pano, 
-          remark: element?.remark, 
-          beam_no: element?.beam_no, 
-          taka: element?.taka, 
-          net_weight: element?.net_weight, 
-          tpm: element?.tpm
-        } ; 
-        temp.push(value)  ; 
-      })
+          ends_or_tars: element?.ends_or_tars,
+          grade: element?.grade,
+          meters: element?.meters,
+          pano: element?.pano,
+          remark: element?.remark || "",
+          beam_no: element?.beam_no,
+          taka: element?.taka,
+          net_weight: element?.net_weight,
+          tpm: element?.tpm, 
+          supplier_beam_no: element?.supplier_beam_no
+        };
+        temp.push(value);
+      }) ; 
+
       reset({
         size_beam_order_id: receiveSizeBeamDetails?.size_beam_order?.order_no,
         quality_id: receiveSizeBeamDetails?.inhouse_quality?.id,
         machine_name: receiveSizeBeamDetails?.machine_name,
         challan_no: receiveSizeBeamDetails?.challan_no,
         beam_type: receiveSizeBeamDetails?.beam_type,
-        beam_details: temp
-      })
+        beam_details: temp, 
+        supplier_name: receiveSizeBeamDetails?.supplier?.supplier?.supplier_name, 
+        supplier_company: receiveSizeBeamDetails?.supplier?.supplier?.supplier_company
+      }) ; 
+
+      setRemaingMeter(receiveSizeBeamDetails?.remaining_meter) ; 
+
     }
   }, [receiveSizeBeamDetails, reset])
 
@@ -232,9 +261,6 @@ function UpdateReceiveSizeBeam() {
       return true;
     }
   }
-
-  const [pendingMeter, setPendingMeter] = useState(0);
-  const [totalMeter, setTotalMeter] = useState(0);
 
   return (
     <div className="flex flex-col p-4">
@@ -246,10 +272,10 @@ function UpdateReceiveSizeBeam() {
 
         <Flex className="mt-3" gap={20}>
           <Flex>
-            <div className="font-weight-bold">Total meter: {totalMeter}</div>
+            <div className="font-weight-bold">Total meter: {receiveSizeBeamDetails?.total_meter}</div>
           </Flex>
           <Flex>
-            <div>Pending meter: {pendingMeter}</div>
+            <div>Pending meter: {remaingMeter}</div>
           </Flex>
         </Flex>
 
@@ -344,6 +370,7 @@ function UpdateReceiveSizeBeam() {
                     {...field}
                     placeholder="Select Machine Name"
                     allowClear
+                    disabled
                     loading={isLoadingMachineList}
                     options={machineListRes?.rows?.map((machine) => ({
                       label: machine?.machine_name,
@@ -497,7 +524,7 @@ function UpdateReceiveSizeBeam() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {loading}>
             Update
           </Button>
         </Flex>

@@ -69,6 +69,10 @@ export function getSizeBeamOrderByIdRequest({ id, params }) {
   return api.get(`/order-master/size-beam-order/get/${id}`, { params });
 }
 
+export function getLastBeamNumberRequest({params}){
+  return api.get(`/order-master/recive-size-beam/last-beam-no`, {params}) ; 
+}
+
 export function getSizeBeamOrderListRequest({ params }) {
   return api.get(`/order-master/size-beam-order/list`, { params });
 }
