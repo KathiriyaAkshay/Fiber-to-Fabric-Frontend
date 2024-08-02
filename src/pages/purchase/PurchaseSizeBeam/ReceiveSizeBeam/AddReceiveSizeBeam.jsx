@@ -28,6 +28,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
+import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -60,10 +61,13 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
 );
 
 function AddReceiveSizeBeam() {
+  const navigate = useNavigate();
+
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false) ; 
+  const [loading, setLoading] = useState(false);
+  const [pendingMeter, setPendingMeter] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
 
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
@@ -116,7 +120,7 @@ function AddReceiveSizeBeam() {
 
   const { mutateAsync: createReceiveSizeBeam, isLoading } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true) ; 
+      setLoading(true);
       const res = await createReceiveSizeBeamRequest({
         data,
         params: { company_id: companyId },
@@ -125,7 +129,7 @@ function AddReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
-      setLoading(false) ; 
+      setLoading(false);
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -137,7 +141,7 @@ function AddReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
-      setLoading(false) ; 
+      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -147,11 +151,20 @@ function AddReceiveSizeBeam() {
     delete data?.supplier_name;
     delete data?.supplier_company;
 
-    let requestData = data ; 
+    let requestData = data;
     let beamData = requestData?.beam_details?.map((element) => {
-      return {...element, size_beam_order_detail_id : data?.size_beam_order_id}
-    }); 
-    requestData["beam_details"] = beamData ; 
+      return { ...element, 
+        size_beam_order_detail_id: data?.size_beam_order_id, 
+        id: undefined, 
+        deletedAt: undefined, 
+        order_no: undefined, 
+        size_beam_order_id: undefined,  
+        is_received: undefined, 
+        createdAt: undefined, 
+        updatedAt: undefined
+      }
+    });
+    requestData["beam_details"] = beamData;
 
     await createReceiveSizeBeam(requestData);
   }
@@ -163,6 +176,7 @@ function AddReceiveSizeBeam() {
     reset,
     watch,
     setValue,
+    getValues
   } = useForm({
     resolver: addReceiveSizeBeamSchemaResolver,
     defaultValues: {
@@ -170,65 +184,87 @@ function AddReceiveSizeBeam() {
     },
   });
 
-  const { size_beam_order_id } = watch();
+  const { size_beam_order_id, beam_type } = watch();
+
+  // Set default value ======================================================
+  const pasarela_primary_beam = "PBN" ; 
+  const non_pasarela_primary_beam = "PBN"; 
+  const secondary_beam = "SPBN" ; 
+
+  const { data: lastBeamNo } = useQuery({
+    queryKey: [
+      "last",
+      "beamNo",
+      { company_id: companyId, beam_type: beam_type },
+    ],
+    queryFn: async () => {
+      const res = await getLastBeamNumberRequest({
+        companyId,
+        params: { company_id: companyId, beam_type: beam_type },
+      });
+      return res?.data?.data; 
+    },
+    enabled: Boolean(companyId && beam_type),
+  });
 
   useEffect(() => {
-    sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
-      ({
-        id = 0,
-        supplier,
-        supplier_id = 0,
-        size_beam_order_details,
-        total_meters = 0,
-      }) => {
-        if (id == size_beam_order_id) {
-          const { supplier_name = "", supplier_company = "" } = supplier || {};
-          setValue("supplier_id", supplier_id);
-          setValue("supplier_name", supplier_name);
-          setValue("supplier_company", supplier_company);
-          setValue("total_meter", total_meters);
-          setValue("remaining_meter", total_meters);
-          setPendingMeter(total_meters - 0) ; 
-          setValue(
-            "beam_details",
-            (size_beam_order_details || [])?.map(
-              ({
-                beam_no,
-                ends_or_tars,
-                tpm,
-                pano,
-                taka,
-                meters,
-                net_weight,
-                grade,
-              }) => {
-                return {
-                  beam_no,
-                  ends_or_tars,
-                  tpm,
-                  pano,
-                  taka,
-                  meters,
-                  net_weight,
-                  grade,
-                };
-              }
-            )
-          );
+    if (beam_type !== undefined){
+
+      let beam = lastBeamNo ;
+      let beamType = null ; 
+      let lastNumber = 1; 
+
+      if (beam == null){
+        if (beam_type == "pasarela(primary)"){
+          beamType = pasarela_primary_beam ; 
+        } else if (beam_type == "non pasarela (primary)"){
+          beamType = non_pasarela_primary_beam ; 
+        } else {
+          beamType = secondary_beam ; 
         }
-      }
-    );
-  }, [setValue, sizeBeamOrderListRes?.SizeBeamOrderList, size_beam_order_id]);
+      } else {
+        let beam_part = String(beam).split("-") ; 
+        beamType = beam_part[0] ; 
+        lastNumber = parseInt(beam_part[1]) + 1; 
+      }; 
+      sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
+        ({
+          id = 0,
+          supplier,
+          supplier_id = 0,
+          size_beam_order_details,
+          total_meters = 0,
+        }) => {
+          if (id == size_beam_order_id) {
+            const { supplier_name = "", supplier_company = "" } = supplier || {};
+            setValue("supplier_id", supplier_id);
+            setValue("supplier_name", supplier_name);
+            setValue("supplier_company", supplier_company);
+            setValue("total_meter", total_meters);
+            setValue("remaining_meter", total_meters);
+            setPendingMeter(total_meters - 0);
+            let beamDetails = [] ; 
+            beamDetails = size_beam_order_details?.map((element, index) => {
+              return {...element, "beam_no": `${beamType}-${Number(lastNumber) + index}`};
+            }); 
+            setValue("beam_details", beamDetails) ; 
+          }
+        }
+      );
+    }
+  }, [setValue, 
+    sizeBeamOrderListRes?.SizeBeamOrderList, 
+    size_beam_order_id, 
+    lastBeamNo, 
+    beam_type
+  ]);
 
   function disabledDate(current) {
-    // Disable future dates
     if (current && current > moment().endOf('day')) {
       return true;
     }
   }
 
-  const [pendingMeter, setPendingMeter] = useState(0);
-  const [totalMeter, setTotalMeter] = useState(0);
 
   return (
     <div className="flex flex-col p-4">
@@ -480,12 +516,15 @@ function AddReceiveSizeBeam() {
           </Col>
         </Row>
 
-        {size_beam_order_id && (
-          <ReceiveSizeBeamDetail 
-            control={control} 
-            errors={errors}  
-            setPendingMeter = {setPendingMeter}
-            setValue = {setValue}
+        {size_beam_order_id && beam_type !== undefined && (
+          <ReceiveSizeBeamDetail
+            control={control}
+            errors={errors}
+            setPendingMeter={setPendingMeter}
+            setValue={setValue}
+            pendingMeter = {pendingMeter}
+            totalMeter={totalMeter}
+            getValues = {getValues}
           />
         )}
 
@@ -493,7 +532,7 @@ function AddReceiveSizeBeam() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading = {loading}>
+          <Button type="primary" htmlType="submit" loading={loading}>
             Create
           </Button>
         </Flex>

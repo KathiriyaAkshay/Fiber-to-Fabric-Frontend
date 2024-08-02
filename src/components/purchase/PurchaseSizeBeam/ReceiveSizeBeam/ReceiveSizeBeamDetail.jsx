@@ -1,21 +1,32 @@
-import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Space, Table, message } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import { Button, Form, Input, Space, Table, message } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
+import { useContext } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
-function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue }) {
+function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue, pendingMeter, totalMeter, getValues }) {
+  const { companyId } = useContext(GlobalContext);
+  const [totalInitalTotalBeam, setInitalTotalBeam] = useState(0) ; 
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "beam_details",
   });
-  const [totalInitalTotalBeam, setInitalTotalBeam] = useState(fields?.length) ; 
-
 
   useEffect(() => {
     if (fields?.length > totalInitalTotalBeam){
       setInitalTotalBeam(fields?.length) ; 
-    }
+    }; 
+
+    let tempTotalMeter = 0 ; 
+    fields?.map((element) => {
+      tempTotalMeter = tempTotalMeter + Number(element?.meters) ;
+    })
+    setPendingMeter(Number(totalMeter) - Number(tempTotalMeter)) ; 
+    
   }, [fields]) ; 
 
   const columns = [
@@ -201,7 +212,14 @@ function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue }) {
                   step={0.01} 
                   onChange={(e) => {
                     setValue(`beam_details.${index}.meters`, e.target.value) ; 
-                    console.log("Run this function");
+                    let tempTotalMeter = 0 ;
+                    fields?.map((element, i) => {
+                      let tempValue = getValues(`beam_details.${i}.meters`); 
+                      if (tempValue != "" && tempValue != undefined){
+                        tempTotalMeter = tempTotalMeter + Number(tempValue) ; 
+                      }
+                    })
+                    setPendingMeter(Number(totalMeter) - Number(tempTotalMeter)) ; 
                   }}
                 />
               )}
