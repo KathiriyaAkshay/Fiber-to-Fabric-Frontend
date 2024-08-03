@@ -58,14 +58,12 @@ const PrintPage = () => {
 
         let total_visible = localStorage.getItem("total-count") ; 
         if (total_visible == "1"){
-            console.log("Run this");
             setTotalVisible(true) ; 
         }   else {
             setTotalVisible(false) ; 
         }
 
         let total_data = JSON.parse(localStorage.getItem("total-data")) ; 
-        console.log(total_data);
         setTotalCount(total_data) ; 
 
     }, []); 

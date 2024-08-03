@@ -260,9 +260,6 @@ function SizeBeamOrderList() {
           total_meter = total_meter + Number(element?.meters) ; 
         }) 
 
-        const { company_name = "" } = company;
-        const { yarn_company_name = "" } = yarn_stock_company;
-
         return (
           <Space>
             
@@ -270,7 +267,6 @@ function SizeBeamOrderList() {
 
             {record?.status == "PENDING" && (
               <>
-
 
                 {total_meter == pending_meter && (
                   <Button

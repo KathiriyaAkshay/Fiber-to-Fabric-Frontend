@@ -245,11 +245,14 @@ function ReceiveSizeBeamList() {
       render: (details) => {
         let totalTaka = 0;
         let totalMeter = 0;
+        let beam_info_list = [] ; 
 
         details?.recieve_size_beam_details?.map((element) => {
           totalTaka = Number(totalTaka) + Number(element?.taka);
           totalMeter = Number(totalMeter) + Number(element?.meters);
-        })
+          beam_info_list.push(element) ; 
+        }); 
+
 
         return (
           <Space>
@@ -293,7 +296,7 @@ function ReceiveSizeBeamList() {
             />
             
             <BeamCardInformationModel
-              data={details}
+              data={beam_info_list}
             />
           </Space>
         );

@@ -391,3 +391,9 @@ color: black;
   background-color: #f4f7f7 !important;
 }
 
+.number-of-beam-div:hover{
+  cursor: pointer;
+  color: rgb(25 74 109);
+  width: fit-content;
+  font-weight: 700;
+}

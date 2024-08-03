@@ -74,7 +74,7 @@ const BeamCardInformationModel = ({data}) => {
             >   
                 <div ref={ComponentRef}>
 
-                    {data?.recieve_size_beam_details?.map((element, index) => {
+                    {data?.map((element, index) => {
                         return(
                             <Flex key={index} style={{ marginBottom: '20px' }}>
                                 <div >
