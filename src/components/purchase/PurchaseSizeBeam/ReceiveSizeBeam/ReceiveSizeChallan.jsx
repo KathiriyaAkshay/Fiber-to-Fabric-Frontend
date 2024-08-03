@@ -64,7 +64,7 @@ const addSizeBeamReceive = yup.object().shape({
     net_amount: yup.string().required("Please enter net amount"),
 });
 
-const SizeBeamChallanModal = ({ details = {}, mode }) => {
+const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
     const {
         control,
         handleSubmit,
@@ -241,7 +241,7 @@ const SizeBeamChallanModal = ({ details = {}, mode }) => {
                 closeIcon={<CloseOutlined className="text-white" />}
                 title={
                     <Typography.Text className="text-xl font-medium text-white">
-                        Receive Size Beam Challan
+                        {isBill == undefined?"Receive Size Beam Challan":"Bill of Size Beam"}
                     </Typography.Text>
                 }
                 open={isModelOpen}

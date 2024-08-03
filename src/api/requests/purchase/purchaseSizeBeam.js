@@ -40,6 +40,12 @@ export function getReceiveSizeBeamBillListRequest({ params }) {
   });
 }
 
+export function deleteReceiveSizeBeamBillRequest({id, params}){
+  return api.delete(`/order-master//recive-size-beam/bill/delete/${id}`, {
+    params
+  })
+}
+
 
 export function createGeneralPurchaseEntryRequest({ data, params }) {
   return api.post(`/purchase/general/entry/create`, data, {

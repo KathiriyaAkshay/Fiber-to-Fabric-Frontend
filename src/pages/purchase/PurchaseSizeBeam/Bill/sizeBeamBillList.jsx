@@ -8,6 +8,7 @@ import {
   Table,
   Tag,
   Typography,
+  Select
 } from "antd";
 import moment from "moment";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -18,26 +19,81 @@ import dayjs from "dayjs";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { getReceiveSizeBeamBillListRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import SizeBeamChallanModal from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
+import DeleteSizeBeamBillButton from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/DeleteSizeBeamBillButton";
+import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
+import { getSupplierListRequest } from "../../../../api/requests/users";
 
 function SizeBeamBillList() {
+
   const { companyId, financialYearEnd } = useContext(GlobalContext);
-  const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const [billNumber, setBillNumber] = useState(null);
+  const deboucedBillNumber = useDebounce(billNumber, 500);
+
+  const [billStatus, setBillStatus] = useState(null) ; 
+  const deboucedBillStatus = useDebounce(billStatus, 500) ; 
+
+  const [quality, setQuality] = useState(null) ; 
+  const deboucedQuality = useDebounce(quality, 500) ; 
+
+  const [supplier, setSupplier] = useState(null) ; 
+  const debouncedSupplier = useDebounce(supplier, 500) ; 
+
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "inhouse-quality",
+        "list",
+        {
+          company_id: companyId,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+  });
+
+  const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
+    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
 
   const {
     data: receiveSizeBeamBill,
     isLoading: isLoadingReceiveSizeBeam,
   } = useQuery({
     queryKey: [
-      "order-master/recive-size-beam/list",
+      "recive-size-beam/bill/list",
       {
         company_id: companyId,
         page,
         pageSize,
-        // search: debouncedSearch,
-        // toDate: debouncedToDate,
-        // fromDate: debouncedFromDate,
         end: financialYearEnd,
+        bill_number: deboucedBillNumber, 
+        status: deboucedBillStatus, 
+        quality_id: deboucedQuality, 
+        supplier_name: debouncedSupplier
       },
     ],
     queryFn: async () => {
@@ -47,11 +103,11 @@ function SizeBeamBillList() {
           company_id: companyId,
           page,
           pageSize,
-          //   search: debouncedSearch,
-          //   toDate: debouncedToDate,
-          //   fromDate: debouncedFromDate,
           end: financialYearEnd,
-          // pending: true,
+          bill_number: deboucedBillNumber, 
+          status: deboucedBillStatus, 
+          quality_id: deboucedQuality, 
+          supplier_name: debouncedSupplier
         },
       });
       return res.data?.data;
@@ -68,22 +124,22 @@ function SizeBeamBillList() {
     },
     {
       title: "Bill date",
-      dataIndex: "bill_date", 
+      dataIndex: "bill_date",
       render: (text, record) => {
-        return(
+        return (
           <div>{moment(text).format("DD-MM-YYYY")}</div>
         )
       }
     },
     {
       title: "Bill No",
-      dataIndex: "challan_no"
+      dataIndex: "bill_number"
     },
     {
       title: "Supplier Name",
-      dataIndex: "supplier_name", 
+      dataIndex: "supplier_name",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {record?.supplier?.supplier_name || "-"}
           </div>
@@ -92,9 +148,9 @@ function SizeBeamBillList() {
     },
     {
       title: "Company Name",
-      dataIndex: "company_name", 
+      dataIndex: "company_name",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {record?.supplier?.supplier_company || "-"}
           </div>
@@ -103,47 +159,47 @@ function SizeBeamBillList() {
     },
     {
       title: "Quality",
-      dataIndex: "quality_name", 
+      dataIndex: "quality_name",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {record?.inhouse_quality?.quality_name}
           </div>
         )
       }
-    }, 
+    },
     {
-      title: "Total Taka", 
+      title: "Total Taka",
       dataIndex: "total_taka"
-    }, 
+    },
     {
-      title: "Total Meter", 
+      title: "Total Meter",
       dataIndex: "total_meter"
-    }, 
+    },
     {
-      title: "Rate", 
+      title: "Rate",
       dataIndex: "rate"
-    }, 
+    },
     {
-      title : "Amount",
+      title: "Amount",
       dataIndex: "freight_amount"
-    }, 
+    },
     {
-      title: "Net Amount", 
+      title: "Net Amount",
       dataIndex: "net_amount"
-    }, 
+    },
     {
-      title: "Due Date", 
-      dataIndex: "due_date", 
+      title: "Due Date",
+      dataIndex: "due_date",
       render: (text, record) => {
-        return(
+        return (
           <div>{moment(text).format("DD-MM-YYYY")}</div>
         )
       }
     },
     {
-      title: "Due Days", 
-      dataIndex: "", 
+      title: "Due Days",
+      dataIndex: "",
       render: (text, record) => {
         let due_date = record?.due_date;
         due_date = new Date(due_date);
@@ -154,38 +210,55 @@ function SizeBeamBillList() {
         let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
 
         if (daysDifference < 0) {
-            daysDifference = 0;
+          daysDifference = 0;
         }
 
-        return(
+        return (
           <div>{daysDifference}</div>
         )
       }
-    }, 
+    },
     {
       title: "Status",
-      dataIndex: "status", 
+      dataIndex: "status",
       render: (text, record) => {
-        return(
-          text == "unpaid"?<Tag color="red">{text}</Tag>:<Tag color="green">{text}</Tag>
+        return (
+          text == "unpaid" ? <Tag color="red">{text}</Tag> : <Tag color="green">{text}</Tag>
         )
       }
-    }, 
+    },
     {
-      title: "Action"
+      title: "Action",
+      render: (text, record) => {
+        return (
+          <Space>
+            <SizeBeamChallanModal
+              details={{ "receive_size_beam_bill": record }}
+              mode={"VIEW"}
+              isBill={true}
+            />
+
+            {record?.status == "unpaid" && (
+              <DeleteSizeBeamBillButton
+                details={record}
+              />
+            )}
+          </Space>
+        )
+      }
     }
-  ]; 
+  ];
 
   function renderTable() {
-    if (isLoadingReceiveSizeBeam){
-      return(
-        <Spin tip = "Loading" size="large">
+    if (isLoadingReceiveSizeBeam) {
+      return (
+        <Spin tip="Loading" size="large">
           <div className="p-14"></div>
         </Spin>
       )
     }
 
-    return(
+    return (
       <Table
         dataSource={receiveSizeBeamBill?.rows || []}
         columns={columns}
@@ -200,7 +273,9 @@ function SizeBeamBillList() {
           overflow: "auto",
         }}
         summary={() => {
-          return(
+          if (receiveSizeBeamBill?.rows?.length == 0) return ; 
+
+          return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>
                 <b>Total</b>
@@ -210,15 +285,21 @@ function SizeBeamBillList() {
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamBill?.total_taka || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamBill?.total_meter || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamBill?.total_amount || 0}
+              </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell> 
             </Table.Summary.Row>
           )
         }}
@@ -231,6 +312,98 @@ function SizeBeamBillList() {
         <div className="flex items-center gap-2">
           <h3 className="m-0 text-primary">Bills of size beam List </h3>
         </div>
+        <Flex align="center" gap={10} wrap="wrap">
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Bill Number
+            </Typography.Text>
+            <Input
+              placeholder="Search"
+              value={billNumber}
+              onChange={(e) => setBillNumber(e.target.value)}
+              style={{
+                width: "200px",
+              }}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Status
+            </Typography.Text>
+            <Select
+              placeholder="Select Bill Status"
+              value={billStatus}
+              options={[
+                {
+                  label: "Paid", 
+                  value: "paid"
+                }, 
+                {
+                  label: "Un-Paid", 
+                  value: "unpaid"
+                }
+              ]}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setBillStatus}
+              style={{
+                textTransform: "capitalize",
+              }}
+              allowClear
+              className="min-w-40"
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+
+            <Typography.Text className="whitespace-nowrap">
+              Select Supplier
+            </Typography.Text>
+
+            <Select
+              placeholder="Select supplier"
+              loading={isLoadingSupplierList}
+              options={supplierListRes?.rows?.map((supervisor) => ({
+                label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
+                value: supervisor?.first_name,
+              }))}
+              allowClear
+              value={supplier}
+              onChange={setSupplier}
+            />
+
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Quality
+            </Typography.Text>
+            <Select
+              placeholder="Select Quality"
+              value={quality}
+              loading={isLoadingInHouseQualityList}
+              options={inHouseQualityList?.rows?.map(
+                ({ id = 0, quality_name = "" }) => ({
+                  label: quality_name,
+                  value: id,
+                })
+              )}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              onChange={setQuality}
+              style={{
+                textTransform: "capitalize",
+              }}
+              allowClear
+              className="min-w-40"
+            />
+          </Flex>
+        
+        </Flex>
       </div>
 
       {renderTable()}
