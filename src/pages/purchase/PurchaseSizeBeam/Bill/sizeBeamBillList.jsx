@@ -84,7 +84,9 @@ function SizeBeamBillList() {
       dataIndex: "supplier_name", 
       render: (text, record) => {
         return(
-          <div>-</div>
+          <div>
+            {record?.supplier?.supplier_name || "-"}
+          </div>
         )
       }
     },
@@ -93,7 +95,9 @@ function SizeBeamBillList() {
       dataIndex: "company_name", 
       render: (text, record) => {
         return(
-          <div>-</div>
+          <div>
+            {record?.supplier?.supplier_company || "-"}
+          </div>
         )
       }
     },
@@ -102,7 +106,9 @@ function SizeBeamBillList() {
       dataIndex: "quality_name", 
       render: (text, record) => {
         return(
-          <div>-</div>
+          <div>
+            {record?.inhouse_quality?.quality_name}
+          </div>
         )
       }
     }, 
@@ -183,6 +189,39 @@ function SizeBeamBillList() {
       <Table
         dataSource={receiveSizeBeamBill?.rows || []}
         columns={columns}
+        rowKey={"id"}
+        pagination={{
+          total: receiveSizeBeamBill?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
+        style={{
+          overflow: "auto",
+        }}
+        summary={() => {
+          return(
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}>
+                <b>Total</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell> 
+            </Table.Summary.Row>
+          )
+        }}
       />
     )
   }

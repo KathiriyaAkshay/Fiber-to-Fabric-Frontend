@@ -233,7 +233,7 @@ function ReceiveSizeBeamList() {
       title: "Bill status",
       dataIndex: "bill_status",
       render: (text, record) => (
-        record == "pending" ? <>
+        text == "pending" ? <>
           <Tag color="red">Pending</Tag>
         </> : <>
           <Tag color="green">{text}</Tag>
@@ -286,9 +286,12 @@ function ReceiveSizeBeamList() {
               </>
 
             )}
+
             <SizeBeamChallanModal
               details={details}
+              mode={details?.bill_status == "pending"?"CREATE":"VIEW"}
             />
+            
             <BeamCardInformationModel
               data={details}
             />
@@ -328,11 +331,7 @@ function ReceiveSizeBeamList() {
         }}
         summary={() => {
           if (receiveSizeBeamListRes?.rows?.length == 0 ) return ; 
-          console.log("Receive size beam list ");
-          console.log(receiveSizeBeamListRes);
-
           const totalTaka = receiveSizeBeamListRes?.totalTaka ; 
-
           return(
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>

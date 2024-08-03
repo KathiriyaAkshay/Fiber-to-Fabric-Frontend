@@ -61,18 +61,10 @@ const addSizeBeamReceive = yup.object().shape({
     CGST_amount: yup.string().required("Please enter CGST amount"),
     IGST_value: yup.string().required("Please enter IGST value"),
     IGST_amount: yup.string().required("Please enter IGST amount"),
-    // TCS_value: yup.string().required("Please enter TCS value"),
-    // TCS_amount: yup.string().required("Please enter TCS amount"),
-    // round_off_amount: yup.string().required("Please enter round off amount"),
     net_amount: yup.string().required("Please enter net amount"),
-    // TDS_amount: yup.string().required("Please enter TDS amount"),
-    // after_TDS_amount: yup.string().required("Please enter after TDS amount"),
-    // quantity_rate: yup.string().required("Please enter quantity rate"),
-    // quantity_amount: yup.string().required("Please enter quantity amount"),
 });
 
-const SizeBeamChallanModal = ({ details = {} }) => {
-
+const SizeBeamChallanModal = ({ details = {}, mode }) => {
     const {
         control,
         handleSubmit,
@@ -85,91 +77,88 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         defaultValues: {
             bill_date: dayjs(),
             due_date: dayjs(),
-            discount_amount: 0, 
+            discount_amount: 0,
             discount_value: 0,
-            freight_value: 0  , 
-            freight_amount: 0  , 
-            rate: 0, 
-            amount: 0, 
-            net_amount: 0, 
-            IGST_value: 0, 
-            SGST_value: 0, 
-            CGST_value: 0, 
-            SGST_amount: 0 ,
-            CGST_amount: 0, 
-            IGST_amount: 0, 
-            round_off: 0 
-            //   receive_quantity: receive_quantity,
-            //   yarn_challan_id: yarn_challan_id,
-            //   yarn_stock_company_id: yarn_stock_company_id,
+            freight_value: 0,
+            freight_amount: 0,
+            rate: 0,
+            amount: 0,
+            net_amount: 0,
+            IGST_value: 0,
+            SGST_value: 0,
+            CGST_value: 0,
+            SGST_amount: 0,
+            CGST_amount: 0,
+            IGST_amount: 0,
+            round_off: 0
         },
     });
-    const {companyId} = useContext(GlobalContext) ; 
+    const { companyId } = useContext(GlobalContext);
     const [isModelOpen, setIsModalOpen] = useState(false);
     const { data: companyListRes, isLoading: isLoadingCompanyList } =
         useCompanyList();
-    const [totalTaka, setTotalTaka] = useState(0) ; 
-    const [totalMeter, setTotalMeter] = useState(0) ;
-    const [totalKG, setTotalKG] = useState(0) ; 
-    const [loading, setLoading] = useState(false) ; 
-    const currentValues = watch() ; 
+    const [totalTaka, setTotalTaka] = useState(0);
+    const [totalMeter, setTotalMeter] = useState(0);
+    const [totalKG, setTotalKG] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const currentValues = watch();
 
     useEffect(() => {
         let tempTotalTaka = 0;
-        let tempNetWeight = 0 ; 
+        let tempNetWeight = 0;
         details?.recieve_size_beam_details?.map((element) => {
             tempTotalTaka = tempTotalTaka + element?.taka;
-            tempNetWeight = tempNetWeight + element?.net_weight ; 
+            tempNetWeight = tempNetWeight + element?.net_weight;
         })
-        setTotalTaka(tempTotalTaka) ; 
-        setTotalMeter(details?.total_meter) ; 
-        setTotalKG(tempNetWeight) ; 
-    }, []) ; 
+        setTotalTaka(tempTotalTaka);
+        setTotalMeter(details?.total_meter);
+        setTotalKG(tempNetWeight);
+    }, []);
 
     useEffect(() => {
 
-        let rate = currentValues?.rate ; 
-        let amount = Number(rate)*Number(totalKG) ; 
-        setValue("amount", parseFloat(amount).toFixed(2)) ; 
+        let rate = currentValues?.rate;
+        let amount = Number(rate) * Number(totalKG);
+        setValue("amount", parseFloat(amount).toFixed(2));
 
-        let discount = currentValues?.discount_value ;
-        let discount_value = (Number(currentValues?.amount)*(Number(discount))) / 100 ; 
-        discount_value = amount - discount_value ;
+        let discount = currentValues?.discount_value;
+        let discount_value = (Number(currentValues?.amount) * (Number(discount))) / 100;
+        discount_value = amount - discount_value;
         setValue("discount_amount", Number(discount_value).toFixed(2))
 
-        let freight = currentValues?.freight_value; 
-        let freight_amount = Number(discount_value) + (Number(freight)*Number(totalKG)) ; 
-        setValue("freight_amount", Number(freight_amount).toFixed(2)) ; 
+        let freight = currentValues?.freight_value;
+        let freight_amount = Number(discount_value) + (Number(freight) * Number(totalKG));
+        setValue("freight_amount", Number(freight_amount).toFixed(2));
 
     }, [currentValues?.rate, currentValues?.discount_value, currentValues?.amount, currentValues?.freight_value, setValue])
 
     useEffect(() => {
-        let total = 0 ; 
-        total = total + Number(currentValues?.freight_amount) ; 
-        total = total + Number(currentValues?.IGST_amount) ; 
-        total = total + Number(currentValues?.SGST_amount) ; 
-        total = total + Number(currentValues?.CGST_amount) ; 
+        let total = 0;
+        total = total + Number(currentValues?.freight_amount);
+        total = total + Number(currentValues?.IGST_amount);
+        total = total + Number(currentValues?.SGST_amount);
+        total = total + Number(currentValues?.CGST_amount);
 
-        let roundOffAmount = Math.round(total) - total ; 
-        setValue("round_off", parseFloat(roundOffAmount).toFixed(2)) ; 
-        setValue("net_amount",  Math.round(total)) ; 
-    }, [currentValues?.freight_amount, currentValues?.IGST_amount, currentValues?.SGST_amount, currentValues?.CGST_amount]) ; 
+        let roundOffAmount = Math.round(total) - total;
+        setValue("round_off", parseFloat(roundOffAmount).toFixed(2));
+        setValue("net_amount", Math.round(total));
+    }, [currentValues?.freight_amount, currentValues?.IGST_amount, currentValues?.SGST_amount, currentValues?.CGST_amount]);
 
     useEffect(() => {
 
-        let igst = currentValues?.IGST_value ; 
-        let sgst = currentValues?.SGST_value ;
-        let cgst = currentValues?.CGST_value ;  
+        let igst = currentValues?.IGST_value;
+        let sgst = currentValues?.SGST_value;
+        let cgst = currentValues?.CGST_value;
 
-        let igst_amount = (Number(currentValues?.freight_amount)*Number(igst)) / 100 ; 
-        let sgst_amount = (Number(currentValues?.freight_amount)*Number(sgst)) / 100 ; 
-        let cgst_amount = (Number(currentValues?.freight_amount)*Number(cgst)) / 100 ; 
+        let igst_amount = (Number(currentValues?.freight_amount) * Number(igst)) / 100;
+        let sgst_amount = (Number(currentValues?.freight_amount) * Number(sgst)) / 100;
+        let cgst_amount = (Number(currentValues?.freight_amount) * Number(cgst)) / 100;
 
-        setValue("IGST_amount", parseFloat(igst_amount).toFixed(2)) ; 
-        setValue("SGST_amount", parseFloat(sgst_amount).toFixed(2)) ; 
-        setValue("CGST_amount", parseFloat(cgst_amount).toFixed(2)) ; 
+        setValue("IGST_amount", parseFloat(igst_amount).toFixed(2));
+        setValue("SGST_amount", parseFloat(sgst_amount).toFixed(2));
+        setValue("CGST_amount", parseFloat(cgst_amount).toFixed(2));
 
-    }, [currentValues?.IGST_value, currentValues?.SGST_value, currentValues?.CGST_value, currentValues?.freight_amount,  setValue]) ; 
+    }, [currentValues?.IGST_value, currentValues?.SGST_value, currentValues?.CGST_value, currentValues?.freight_amount, setValue]);
 
 
     const disablePastDates = (current) => {
@@ -180,9 +169,11 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         return current && current > new Date().setHours(0, 0, 0, 0);
     }
 
+    // Create Beam bill handler ===============================================================================
+
     const { mutateAsync: createSizeBeamBill } = useMutation({
         mutationFn: async (data) => {
-            setLoading(true) ; 
+            setLoading(true);
             const res = await createReceiveSizeBeamBillRequest({
                 data,
                 params: { company_id: companyId },
@@ -192,32 +183,55 @@ const SizeBeamChallanModal = ({ details = {} }) => {
         mutationKey: ["yarn-stock/yarn-receive-challan/create"],
         onSuccess: (res) => {
             const successMessage = res?.message;
-            setLoading(false) ; 
+            setLoading(false);
             if (successMessage) {
                 message.success(successMessage);
             }
         },
         onError: (error) => {
-            setLoading(false) ; 
+            setLoading(false);
             mutationOnErrorHandler({ error, message });
         },
     });
 
     const onSubmit = async (values) => {
-        let requestData = values ; 
+        let requestData = values;
         requestData["bill_date"] = moment(values?.bill_date).format("YYYY-MM-DD")
         requestData["due_date"] = moment(values?.bill_date).format("YYYY-MM-DD")
         requestData["SGST_amount"] = parseFloat(values?.SGST_amount).toFixed(2)
-        requestData["receive_size_beam_id"] = details?.id ;
-        requestData["total_kg"]= totalKG ; 
-        requestData["inhouse_quality_id"] = details?.inhouse_quality?.id ; 
-        requestData["total_taka"] = totalTaka ; 
-        requestData["total_meter"] = totalMeter ; 
-        requestData["supplier_id"] = details?.supplier?.id ; 
+        requestData["receive_size_beam_id"] = details?.id;
+        requestData["total_kg"] = totalKG;
+        requestData["inhouse_quality_id"] = details?.inhouse_quality?.id;
+        requestData["total_taka"] = totalTaka;
+        requestData["total_meter"] = totalMeter;
+        requestData["supplier_id"] = details?.supplier?.id;
         requestData["bill_number"] = values?.invoice_number
-        await createSizeBeamBill(requestData) ; 
+        await createSizeBeamBill(requestData);
     }
-    
+
+    // Set default value ===============================================================================================
+
+    useEffect(() => {
+        if (mode == "VIEW" && isModelOpen) {
+            const { receive_size_beam_bill } = details;
+
+            setValue("bill_date", dayjs(receive_size_beam_bill?.bill_date))
+            setValue("due_date", dayjs(receive_size_beam_bill?.due_date)) ; 
+            setValue("rate", receive_size_beam_bill?.rate) ; 
+            setValue("discount_value", receive_size_beam_bill?.discount_value ) ; 
+            setValue("freight_value", receive_size_beam_bill?.freight_value) ; 
+            setValue("SGST_value", receive_size_beam_bill?.SGST_value); 
+            setValue("CGST_value", receive_size_beam_bill?.CGST_value) ; 
+            setValue("IGST_value", receive_size_beam_bill?.IGST_value) ; 
+            setValue("invoice_number", receive_size_beam_bill?.invoice_number) ; 
+        }
+    }, [
+        details,
+        setValue,
+        mode,
+        isModelOpen
+    ])
+
     return (
         <>
             <Button onClick={() => { setIsModalOpen(true) }}>
@@ -267,7 +281,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             </Col>
                         </Row>
 
- 
+
 
                         <Row
                             className="px-2 pt-4 border-0 border-b border-solid !m-0"
@@ -305,7 +319,11 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                                 control={control}
                                                 name="invoice_number"
                                                 render={({ field }) => (
-                                                    <Input {...field} placeholder="Invoice No." />
+                                                    <Input 
+                                                        readOnly = {mode == "VIEW"?true:false}
+                                                        {...field} 
+                                                        placeholder="Invoice No." 
+                                                    />
                                                 )}
                                             />
                                         </Form.Item>
@@ -330,6 +348,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                                 name="bill_date"
                                                 render={({ field }) => (
                                                     <DatePicker
+                                                        disabled = {mode == "VIEW"?true:false}
                                                         {...field}
                                                         disabledDate={disableFutureDates}
                                                         style={{
@@ -380,7 +399,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 AMOUNT
                             </Col>
                         </Row>
-                    
+
                         <Row >
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                                 {details?.challan_no}
@@ -408,10 +427,11 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="rate"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="Rate" 
-                                                type="number" 
+                                                readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="Rate"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("rate", e.target.value) ; 
+                                                    setValue("rate", e.target.value);
                                                 }}
                                             />
                                         )}
@@ -447,10 +467,11 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="discount_value"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="Discount" 
-                                                type="number" 
+                                            readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="Discount"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("discount_value", e.target.value) ; 
+                                                    setValue("discount_value", e.target.value);
                                                 }}
                                             />
                                         )}
@@ -486,10 +507,11 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="freight_value"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="Freight" 
-                                                type="number" 
+                                            readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="Freight"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("freight_value", e.target.value) ; 
+                                                    setValue("freight_value", e.target.value);
                                                 }}
                                             />
                                         )}
@@ -525,18 +547,19 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="SGST_value"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="SGST" 
-                                                type="number" 
+                                            readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="SGST"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("SGST_value", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    setValue("SGST_value", e.target.value);
+                                                    let tempDiscount = parseFloat((currentValues?.amount * e.target.value) / 100);
                                                 }}
                                             />
                                         )}
                                     />
                                 </Form.Item>
                             </Col>
-                            
+
                             <Col span={4} className="p-2 font-medium" >
                                 {currentValues?.SGST_amount}
                             </Col>
@@ -566,11 +589,12 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="CGST_value"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="SGST" 
-                                                type="number" 
+                                            readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="SGST"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("CGST_value", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    setValue("CGST_value", e.target.value);
+                                                    let tempDiscount = parseFloat((currentValues?.amount * e.target.value) / 100);
                                                 }}
                                             />
                                         )}
@@ -581,7 +605,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 {currentValues?.CGST_amount}
                             </Col>
                         </Row>
-                        
+
                         <Row  >
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                             </Col>
@@ -606,11 +630,12 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="IGST_value"
                                         render={({ field }) => (
                                             <Input {...field}
-                                                placeholder="SGST" 
-                                                type="number" 
+                                            readOnly = {mode == "VIEW"?true:false}
+                                                placeholder="SGST"
+                                                type="number"
                                                 onChange={(e) => {
-                                                    setValue("IGST_value", e.target.value) ; 
-                                                    let tempDiscount = parseFloat((currentValues?.amount*e.target.value)/ 100) ; 
+                                                    setValue("IGST_value", e.target.value);
+                                                    let tempDiscount = parseFloat((currentValues?.amount * e.target.value) / 100);
                                                 }}
                                             />
                                         )}
@@ -621,8 +646,8 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 {currentValues?.IGST_amount}
                             </Col>
                         </Row>
-                        
-                        <Row  className="border-0 border-b border-solid !m-0">
+
+                        <Row className="border-0 border-b border-solid !m-0">
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                             </Col>
                             <Col span={4} className="p-2 border-0 border-r border-solid ">
@@ -630,7 +655,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                             </Col>
                             <Col span={3} className="p-2 border-0 border-r border-solid">
-                                Round off 
+                                Round off
                             </Col>
                             <Col span={4} className="p-2 border-0 border-r border-solid">
                             </Col>
@@ -638,8 +663,8 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                 {currentValues?.round_off}
                             </Col>
                         </Row>
-                        
-                        <Row  className="border-0 border-b border-solid !m-0">
+
+                        <Row className="border-0 border-b border-solid !m-0">
                             <Col span={4} className="p-2 border-0 border-r border-solid"></Col>
                             <Col span={4} className="p-2 border-0 border-r border-solid"></Col>
                             <Col span={7} className="p-2 border-0 border-r border-solid">
@@ -656,6 +681,7 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                                         name="due_date"
                                         render={({ field }) => (
                                             <DatePicker
+                                                disabled = {mode == "VIEW"?true:false}
                                                 {...field}
                                                 style={{
                                                     width: "100%",
@@ -675,24 +701,30 @@ const SizeBeamChallanModal = ({ details = {} }) => {
                             </Col>
                         </Row>
 
-                        <Row  className="border-0 border-b border-solid !m-0">
+                        <Row className="border-0 border-b border-solid !m-0">
                             <Col span={4} className="p-2 font-semibold">
                                 Rs.(IN WORDS):
                             </Col>
                             <Col span={20} className="p-2 font-semibold">
-                                {Number(currentValues?.net_amount)?toWords.convert(currentValues?.net_amount):""}
+                                {Number(currentValues?.net_amount) ? toWords.convert(currentValues?.net_amount) : ""}
                             </Col>
                         </Row>
 
                     </Flex>
 
                     <Flex gap={10} justify="flex-end" className="mt-3">
-                        <Button htmlType="button" onClick={() => reset()}>
-                            Reset
-                        </Button>
-                        <Button type="primary" htmlType="submit" loading = {loading}>
-                            Receive Bill
-                        </Button>
+
+                        {mode != "VIEW" && (
+                            <>
+                                <Button htmlType="button" onClick={() => reset()}>
+                                    Reset
+                                </Button>
+                            
+                                <Button type="primary" htmlType="submit" loading={loading}>
+                                    Receive Bill
+                                </Button>
+                            </>
+                        )}
                     </Flex>
                 </Form>
             </Modal>
