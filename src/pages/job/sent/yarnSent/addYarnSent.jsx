@@ -164,13 +164,13 @@ const AddYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`current_stock_${index}`)) {
-          setError(`current_stock_${index}`, {
-            type: "manual",
-            message: "Please enter current stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`current_stock_${index}`)) {
+        //   setError(`current_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter current stock.",
+        //   });
+        //   isValid = false;
+        // }
         if (!getValues(`cartoon_${index}`)) {
           setError(`cartoon_${index}`, {
             type: "manual",
@@ -185,13 +185,13 @@ const AddYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`remaining_stock_${index}`)) {
-          setError(`remaining_stock_${index}`, {
-            type: "manual",
-            message: "Please enter remaining stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`remaining_stock_${index}`)) {
+        //   setError(`remaining_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter remaining stock.",
+        //   });
+        //   isValid = false;
+        // }
       }
     });
 
@@ -627,7 +627,14 @@ const RenderDynamicFields = ({
   clearErrors,
 }) => {
   const [denierOptions, setDenierOptions] = useState([]);
+
   const createDenierOption = (companyName) => {
+    setValue(`yarn_stock_company_id_${field}`, null);
+    setValue(`current_stock_${field}`, "");
+    setValue(`cartoon_${field}`, "");
+    setValue(`kg_${field}`, "");
+    setValue(`remaining_stock_${field}`, "");
+
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
       ({ yarn_company_name }) => companyName === yarn_company_name
     );
@@ -650,7 +657,6 @@ const RenderDynamicFields = ({
       );
     } else {
       setDenierOptions([]);
-      setValue(`yarn_stock_company_id_${field}`, null);
     }
   };
 
@@ -697,7 +703,10 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onChange={createDenierOption}
+                onChange={(value) => {
+                  field.onChange(value);
+                  createDenierOption(value);
+                }}
               />
             )}
           />
@@ -733,15 +742,27 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onSelect={(selectedValue) => {
+                onChange={(selectedValue) => {
+                  fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => yarn_company_id === selectedValue
                     );
-                    // setCurrentStockValue(obj.current_stock);
-                    setValue(`current_stock_${field}`, obj.current_stock);
+                    setValue(
+                      `current_stock_${field}`,
+                      obj ? obj.current_stock : 0
+                    );
                   });
                 }}
+                // onSelect={(selectedValue) => {
+                //   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+                //     const obj = yarn_details.find(
+                //       ({ yarn_company_id }) => yarn_company_id === selectedValue
+                //     );
+                //     // setCurrentStockValue(obj.current_stock);
+                //     setValue(`current_stock_${field}`, obj.current_stock);
+                //   });
+                // }}
               />
             )}
           />

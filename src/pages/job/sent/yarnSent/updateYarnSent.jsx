@@ -169,13 +169,13 @@ const UpdateYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`current_stock_${index}`)) {
-          setError(`current_stock_${index}`, {
-            type: "manual",
-            message: "Please enter current stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`current_stock_${index}`)) {
+        //   setError(`current_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter current stock.",
+        //   });
+        //   isValid = false;
+        // }
         if (!getValues(`cartoon_${index}`)) {
           setError(`cartoon_${index}`, {
             type: "manual",
@@ -190,13 +190,13 @@ const UpdateYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`remaining_stock_${index}`)) {
-          setError(`remaining_stock_${index}`, {
-            type: "manual",
-            message: "Please enter remaining stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`remaining_stock_${index}`)) {
+        //   setError(`remaining_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter remaining stock.",
+        //   });
+        //   isValid = false;
+        // }
       }
     });
 
@@ -364,6 +364,7 @@ const UpdateYarnSent = () => {
         jobYarnSentDetails[`kg_${index}`] = item.kg;
         jobYarnSentDetails[`remaining_stock_${index}`] = item.remaining_stock;
       });
+
       reset({
         sent_date: dayjs(sent_date),
         challan_no,
@@ -917,14 +918,21 @@ const RenderDynamicFields = ({
   const [denierOptions, setDenierOptions] = useState(editDenierOption || []);
 
   const createDenierOption = (companyName) => {
+    setValue(`yarn_stock_company_id_${field}`, null);
+    setValue(`current_stock_${field}`, "");
+    setValue(`cartoon_${field}`, "");
+    setValue(`kg_${field}`, "");
+    setValue(`remaining_stock_${field}`, "");
+
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
       ({ yarn_company_name }) => companyName === yarn_company_name
     );
+
     if (selectedYarnCompany) {
       setDenierOptions(
         selectedYarnCompany.yarn_details.map(
           ({
-            id = 0,
+            yarn_company_id = 0,
             filament = 0,
             yarn_denier = 0,
             luster_type = "",
@@ -932,14 +940,13 @@ const RenderDynamicFields = ({
           }) => {
             return {
               label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: id,
+              value: yarn_company_id,
             };
           }
         )
       );
     } else {
       setDenierOptions([]);
-      setValue(`yarn_stock_company_id_${field}`, null);
     }
   };
 
@@ -986,7 +993,10 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onChange={createDenierOption}
+                onChange={(value) => {
+                  field.onChange(value);
+                  createDenierOption(value);
+                }}
               />
             )}
           />
@@ -1022,15 +1032,27 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onSelect={(selectedValue) => {
+                onChange={(selectedValue) => {
+                  fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => yarn_company_id === selectedValue
                     );
-                    // setCurrentStockValue(obj.current_stock);
-                    setValue(`current_stock_${field}`, obj.current_stock);
+                    setValue(
+                      `current_stock_${field}`,
+                      obj ? obj.current_stock : 0
+                    );
                   });
                 }}
+                // onSelect={(selectedValue) => {
+                //   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+                //     const obj = yarn_details.find(
+                //       ({ yarn_company_id }) => yarn_company_id === selectedValue
+                //     );
+                //     // setCurrentStockValue(obj.current_stock);
+                //     setValue(`current_stock_${field}`, obj.current_stock);
+                //   });
+                // }}
               />
             )}
           />
