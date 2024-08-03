@@ -175,6 +175,11 @@ td {
   /* text-align: center; */
 }
 
+.custom-table thead tr th,
+.custom-table tbody tr td {
+  border: 1px solid #d3d3d3; /* Change #3498db to your desired color */
+}
+
 .red-input-field {
   color: red;
 }
@@ -396,4 +401,11 @@ color: black;
   color: rgb(25 74 109);
   width: fit-content;
   font-weight: 700;
+}
+
+.load-machine-table-div{
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-top: 15px;
+  border-top: 1px solid #efefef;
 }
