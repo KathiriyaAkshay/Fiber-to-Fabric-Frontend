@@ -302,7 +302,7 @@ const YarnSalesBillList = () => {
       let worksheet = XLSX.utils.aoa_to_sheet(data);
       let workbook = XLSX.utils.book_new(); 
       
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Yarn Sales");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Yarn-Sales");
       
       // Export to Excel file
       const dateString = moment().format("YYYY-MMD-D_HH:mm:ss");

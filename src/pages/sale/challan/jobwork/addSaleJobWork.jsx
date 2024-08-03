@@ -69,10 +69,12 @@ function AddJobWorkSaleChallan() {
   });
 
   const { companyId } = useContext(GlobalContext);
-  const [workType, setWorkType] = useState(true);
+  const [workType, setWorkType] = useState("1");
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
+
+  // Get dropdown vehicle list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -88,6 +90,7 @@ function AddJobWorkSaleChallan() {
     enabled: Boolean(companyId),
   });
 
+  // Get yarn company dropdown list 
   const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
     queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -129,6 +132,7 @@ function AddJobWorkSaleChallan() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
+  // Get dropdown supplier list information
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -162,7 +166,8 @@ function AddJobWorkSaleChallan() {
     });
   }, [dropdownSupplierListRes, supplier_name]);
 
-  const { mutateAsync: createJobWorkChallan } = useMutation({
+  // Create job work challan handler ===================================================================
+  const { mutateAsync: createJobWorkChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleJobWorkChallanRequest({
         data,
@@ -202,9 +207,12 @@ function AddJobWorkSaleChallan() {
   const [challanNumber, setChallanNumber] = useState(0) ; 
 
   useEffect(() => {
-    let tempChallanNumber = Number(lastChallanNumber) + 1;  
+    
+    let tempChallanNumberSplit =  String(lastChallanNumber).split("-");  
+    let tempChallanNumber = Number(tempChallanNumberSplit[tempChallanNumberSplit?.length-1]) || 0 ; 
+
     if (workType == true){
-      let tempChallan = `J-${tempChallanNumber}`
+      let tempChallan = `J-${tempChallanNumber + 1}`
       setChallanNumber(tempChallan) ; 
       setValue("challan_no", tempChallan) ; 
     } else {
@@ -226,7 +234,7 @@ function AddJobWorkSaleChallan() {
     delete data?.cartoon;
     delete data?.current_stock; 
     data["challan_no"] = challanNumber ; 
-    data["is_gray"] = workType ; 
+    data["is_gray"] = workType == "1"?true:false; 
 
     await createJobWorkChallan(data);
   }
@@ -247,9 +255,10 @@ function AddJobWorkSaleChallan() {
         </Button>
         <h3 className="m-0 text-primary">Create Job Work Sale</h3>
 
-        <Radio.Group style={{marginLeft: "auto"}} onChange={(e) => { setWorkType(e?.target?.value) }} value={workType}>
-          <Radio value={true}>Grey</Radio>
-          <Radio value={false}>Cash</Radio>
+        <Radio.Group style={{marginLeft: "auto"}} 
+          onChange={(e) => { setWorkType(e?.target?.value) }} value={workType}>
+          <Radio value={"1"}>Grey</Radio>
+          <Radio value={"0"}>Cash</Radio>
         </Radio.Group>
       </div>
 
@@ -337,21 +346,6 @@ function AddJobWorkSaleChallan() {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={6}>
-            <Form.Item
-              label="Challan No"
-              wrapperCol={{ sm: 24 }}
-              required={true}
-            >
-              <Controller
-                control={control}
-                // value = {challanNumber}
-                render={({ field }) => <Input {...field} />}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={6}>
             <Form.Item
               label="Challan number"
@@ -556,7 +550,7 @@ function AddJobWorkSaleChallan() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

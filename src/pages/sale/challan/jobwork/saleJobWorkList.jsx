@@ -36,10 +36,10 @@ function JobWorkChallanList() {
   const debounceParty = useDebounce(party, 500);
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
-  const [billStatus, setBillStatus] = useState(null) ; 
-  const debounceBillStatus = useDebounce(billStatus, 500) ; 
+  const [billStatus, setBillStatus] = useState(null);
+  const debounceBillStatus = useDebounce(billStatus, 500);
   const [billType, setBillType] = useState(null);
-  const debounceBillType = useDebounce(billType, 500) ; 
+  const debounceBillType = useDebounce(billType, 500);
 
   const [jobWorkSaleChallanModel, setJobWorkSaleChallanModel] = useState({
     isModalOpen: false,
@@ -91,7 +91,7 @@ function JobWorkChallanList() {
           supplier_name: debounceParty,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
-          bill_status: debounceBillStatus, 
+          bill_status: debounceBillStatus,
           is_gray: debounceBillType
         },
       ],
@@ -105,7 +105,7 @@ function JobWorkChallanList() {
             supplier_name: debounceParty,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
-            bill_status: debounceBillStatus, 
+            bill_status: debounceBillStatus,
             is_gray: debounceBillType
           },
         });
@@ -260,8 +260,8 @@ function JobWorkChallanList() {
                 placeholder="Select bill status"
                 value={billStatus}
                 options={[
-                  {label: "Pending", value: "pending"},
-                  {label: "Confirmed", value: "confirmed"}
+                  { label: "Pending", value: "pending" },
+                  { label: "Confirmed", value: "confirmed" }
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -280,8 +280,8 @@ function JobWorkChallanList() {
                 placeholder="Select bill status"
                 value={billType}
                 options={[
-                  {label: "Gery", value: 1},
-                  {label: "Cash", value: 0}
+                  { label: "Gery", value: 1 },
+                  { label: "Cash", value: 0 }
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -311,6 +311,7 @@ function JobWorkChallanList() {
                   textTransform: "capitalize",
                 }}
                 className="min-w-40"
+                allowClear
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -338,6 +339,7 @@ function JobWorkChallanList() {
                   textTransform: "capitalize",
                 }}
                 className="min-w-40"
+                allowClear
               />
             </Flex>
           </Flex>
