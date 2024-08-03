@@ -160,7 +160,7 @@ function AddYarnSaleChallan() {
     });
   }, [dropdownSupplierListRes, supplier_name]);
 
-  const { mutateAsync: createYarnSaleChallan } = useMutation({
+  const { mutateAsync: createYarnSaleChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleYarnChallanRequest({
         data,
@@ -326,34 +326,6 @@ function AddYarnSaleChallan() {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={6}>
-                        <Form.Item
-                            label="Company name"
-                            name="company_name"
-                            validateStatus={errors.company_name ? "error" : ""}
-                            help={errors.company_name && errors.company_name.message}
-                            wrapperCol={{ sm: 24 }}
-                            required={true}
-                        >
-                            <Controller
-                                control={control}
-                                name="company_name"
-                                render={({ field }) => (
-                                    <Select
-                                        {...field}
-                                        placeholder="Select Company name"
-                                        options={companyListRes?.rows?.map(
-                                            ({ company_name = "", id = "" }) => ({
-                                                label: company_name,
-                                                value: id,
-                                            })
-                                        )}
-                                    />
-                                )}
-                            />
-                        </Form.Item>
-                    </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -588,7 +560,7 @@ function AddYarnSaleChallan() {
           </Button>
 
           {createOption && (
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading = {isPending}>
               Create
             </Button>
           )}

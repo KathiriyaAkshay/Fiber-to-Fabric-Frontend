@@ -25,26 +25,6 @@ import {
   getSaleYarnChallanBillByIdRequest,
 } from "../../../../api/requests/sale/challan/challan";
 
-// const toWords = new ToWords({
-//   localeCode: "en-IN",
-//   converterOptions: {
-//     currency: true,
-//     ignoreDecimal: false,
-//     ignoreZeroCurrency: false,
-//     doNotAddOnly: false,
-//     currencyOptions: {
-//       // can be used to override defaults for the selected locale
-//       name: "Rupee",
-//       plural: "Rupees",
-//       symbol: "₹",
-//       fractionalUnit: {
-//         name: "Paisa",
-//         plural: "Paise",
-//         symbol: "",
-//       },
-//     },
-//   },
-// });
 
 const addSizeBeamReceive = yup.object().shape({
   E_way_bill_no: yup.string().required("Please enter invoice no."),
@@ -76,13 +56,11 @@ const YarnSaleChallanModel = ({
 
   useEffect(() => {
     companyListRes?.rows?.map((element) => {
-        if (element?.id == details?.company_id){
-            setCompanyInfo(element) ; 
-            console.log("Company information");
-            console.log(element);
-        }
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
+      }
     })
-  },[details, companyListRes]) ;
+  }, [details, companyListRes]);
 
   const disablePastDates = (current) => {
     return current && current < new Date().setHours(0, 0, 0, 0);
@@ -105,6 +83,8 @@ const YarnSaleChallanModel = ({
     },
     enabled: Boolean(companyId),
   });
+
+  // Create yarn sale challan 
 
   const { mutateAsync: generateYarnSale, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -186,10 +166,10 @@ const YarnSaleChallanModel = ({
       IGST_value: 0,
 
       SGST_amount: 0,
-      SGST_value: 0,
+      SGST_value: 6,
 
       CGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 6,
 
       round_off: 0,
     },

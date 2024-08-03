@@ -27,6 +27,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
 import YarnSaleCreditNote from "../../../../components/sale/challan/yarn/yarnSaleCreditNote";
+import ReturnYarnSale from "../../../../components/sale/challan/yarn/returnYarnSale";
 
 function YarnSaleChallanList() {
   const navigation = useNavigate();
@@ -48,10 +49,11 @@ function YarnSaleChallanList() {
 
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
-  
-  const [billStatus, setBillStatus] = useState(null) ; 
-  const debounceBillStatus = useDebounce(billStatus, 500) ; 
 
+  const [billStatus, setBillStatus] = useState(null);
+  const debounceBillStatus = useDebounce(billStatus, 500);
+
+  // Supplier dropdown list 
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -66,6 +68,7 @@ function YarnSaleChallanList() {
     enabled: Boolean(companyId),
   });
 
+  // Vehicle dropdown list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -111,7 +114,7 @@ function YarnSaleChallanList() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   const columns = [
     {
@@ -167,6 +170,7 @@ function YarnSaleChallanList() {
       dataIndex: "actions",
       render: (text, record) => (
         <Space>
+
           <PrintYarnSaleChallan details={record} />
 
           {record?.bill_status == "pending" && (
@@ -183,9 +187,11 @@ function YarnSaleChallanList() {
           )}
 
           {record?.bill_status != "pending" && (
-            <YarnSaleCreditNote details={record} />
+            <>
+              <YarnSaleCreditNote details={record} />
+            </>
           )}
-          
+
           <Button
             onClick={() => {
               let MODE;
@@ -208,8 +214,14 @@ function YarnSaleChallanList() {
               });
             }}
           >
-            <FileTextOutlined />
+            <FileTextOutlined style={{color: record?.bill_status?.toLowerCase() == "confirmed"?"green":"black"}} />
           </Button>
+            
+          {record?.bill_status != "pending" && (
+            <ReturnYarnSale
+              details={record}
+            />
+          )}
         </Space>
       ),
     },
@@ -264,8 +276,8 @@ function YarnSaleChallanList() {
                 placeholder="Select bill status"
                 value={billStatus}
                 options={[
-                  {label: "Pending", value: "pending"},
-                  {label: "Confirmed", value: "confirmed"}
+                  { label: "Pending", value: "pending" },
+                  { label: "Confirmed", value: "confirmed" }
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -294,6 +306,7 @@ function YarnSaleChallanList() {
                 style={{
                   textTransform: "capitalize",
                 }}
+                allowClear
                 className="min-w-40"
               />
             </Flex>
@@ -321,6 +334,7 @@ function YarnSaleChallanList() {
                 style={{
                   textTransform: "capitalize",
                 }}
+                allowClear
                 className="min-w-40"
               />
             </Flex>
