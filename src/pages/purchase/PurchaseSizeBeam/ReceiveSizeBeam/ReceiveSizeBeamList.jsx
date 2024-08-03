@@ -190,7 +190,19 @@ function ReceiveSizeBeamList() {
     },
     {
       title: "Total meter",
-      dataIndex: "total_meter"
+      dataIndex: "recieve_size_beam_details", 
+      render: (text, record) => {
+        let total_meter = 0 ; 
+        text.map((element) => {
+          total_meter = total_meter + Number(element?.meters) ; 
+        }); 
+
+        return(
+          <div>
+            {total_meter || "-"}
+          </div>
+        )
+      }
     },
     {
       title: "Total taka",
@@ -343,6 +355,55 @@ function ReceiveSizeBeamList() {
     );
   }
 
+  // Download PDF Functionality 
+  const DownloadPDF = () => { 
+
+    let tableTitle = [
+      "No", 
+      "Challan Date", 
+      "Challan No", 
+      "Quality Name", 
+      "Supplier Name", 
+      "Supplier Company", 
+      "Total Taka", 
+      "Total Meter", 
+      "No. Of Beam"
+    ]; 
+
+    let temp = [] ; 
+
+    receiveSizeBeamListRes?.rows?.map((element, index) => {
+      let temp_total_taka = 0 ; 
+      let temp_total_meter = 0 ; 
+
+      element?.recieve_size_beam_details?.map((data) => {
+        temp_total_taka = temp_total_taka + Number(data?.taka) ; 
+        temp_total_meter = temp_total_meter + Number(data?.meters) ;
+      }); 
+
+      temp.push([
+        index + 1, 
+        moment(element?.challan_date).format("DD-MM-YYYY"), 
+        element?.challan_no, 
+        element?.inhouse_quality?.quality_name, 
+        element?.supplier?.supplier?.supplier_name, 
+        element?.supplier?.supplier?.supplier_company, 
+        temp_total_taka, 
+        temp_total_meter,
+        element?.recieve_size_beam_details?.length
+      ])
+    }); 
+
+
+    localStorage.setItem("print-title", "Receive Size Beam List") ; 
+    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+    localStorage.setItem("total-count", "0") ; 
+    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+
+    window.open("/print") ; 
+  }
+
+  
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -483,7 +544,7 @@ function ReceiveSizeBeamList() {
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-
+            onClick={DownloadPDF}
           />
         </Flex>
       </div>
