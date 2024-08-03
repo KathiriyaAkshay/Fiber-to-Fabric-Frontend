@@ -31,6 +31,9 @@ const BeamInformationModel = ({ details, setBeamModel }) => {
             title: 'TAAR/ENDS',
             dataIndex: 'tars',
             key: 'taarEnds',
+            render: (text, record) => (
+                record?.tars == undefined ?record?.ends_or_tars:record?.tars
+            )
         },
         {
             title: 'Pano',

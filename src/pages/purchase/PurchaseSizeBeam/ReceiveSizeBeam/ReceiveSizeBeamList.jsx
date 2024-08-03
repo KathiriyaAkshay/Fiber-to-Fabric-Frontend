@@ -54,11 +54,11 @@ function ReceiveSizeBeamList() {
   const [machine, setMachine] = useState(null);
   const debouncedMachine = useDebounce(machine, 500);
 
-  const [quality, setQuality] = useState(null);  
-  const deboucedQuality = useDebounce(quality, 500) ; 
+  const [quality, setQuality] = useState(null);
+  const deboucedQuality = useDebounce(quality, 500);
 
-  const [isBeamInformationModel, setIsBeamInformationModel] = useState(false) ; 
-  const [beamInforamtion, setBeamInformation] = useState(null) ;  
+  const [isBeamInformationModel, setIsBeamInformationModel] = useState(false);
+  const [beamInforamtion, setBeamInformation] = useState(null);
 
   const { companyId, financialYearEnd } = useContext(GlobalContext);
   const navigate = useNavigate();
@@ -121,8 +121,8 @@ function ReceiveSizeBeamList() {
         fromDate: debouncedFromDate,
         end: financialYearEnd,
         beam_type: debounceBeamType,
-        status: debouceStatus, 
-        quality_id : deboucedQuality
+        status: debouceStatus,
+        quality_id: deboucedQuality
       },
     ],
     queryFn: async () => {
@@ -137,8 +137,8 @@ function ReceiveSizeBeamList() {
           fromDate: debouncedFromDate,
           end: financialYearEnd,
           beam_type: debounceBeamType,
-          status: debouceStatus, 
-          quality_id : deboucedQuality
+          status: debouceStatus,
+          quality_id: deboucedQuality
         },
       });
       return res.data?.data;
@@ -190,14 +190,14 @@ function ReceiveSizeBeamList() {
     },
     {
       title: "Total meter",
-      dataIndex: "recieve_size_beam_details", 
+      dataIndex: "recieve_size_beam_details",
       render: (text, record) => {
-        let total_meter = 0 ; 
+        let total_meter = 0;
         text.map((element) => {
-          total_meter = total_meter + Number(element?.meters) ; 
-        }); 
+          total_meter = total_meter + Number(element?.meters);
+        });
 
-        return(
+        return (
           <div>
             {total_meter || "-"}
           </div>
@@ -213,16 +213,36 @@ function ReceiveSizeBeamList() {
           total_taka = total_taka + element?.taka;
         })
         return (
-          `${total_taka}`
+          <div>
+            {total_taka}
+          </div>
         )
       }
     },
     {
       title: "No Of Beam",
       dataIndex: "recieve_size_beam_details",
-      render: (text, record) => (
-        `${text?.length}`
-      )
+      render: (text, record) => {
+
+        let tempBeamInfo = {
+          "challan_no": record?.challan_no,
+          "createdAt": record?.challan_date,
+          "supplier": record?.supplier,
+          "inhouse_quality": record?.inhouse_quality,
+          "job_beam_receive_details": record?.recieve_size_beam_details
+        }
+        return (
+          <div
+            className="number-of-beam-div"
+            onClick={() => {
+              setIsBeamInformationModel(true);
+              setBeamInformation(tempBeamInfo);
+            }}
+          >
+            {text?.length}
+          </div>
+        )
+      }
     },
     {
       title: "Beam Type",
@@ -245,13 +265,13 @@ function ReceiveSizeBeamList() {
       render: (details) => {
         let totalTaka = 0;
         let totalMeter = 0;
-        let beam_info_list = [] ; 
+        let beam_info_list = [];
 
         details?.recieve_size_beam_details?.map((element) => {
           totalTaka = Number(totalTaka) + Number(element?.taka);
           totalMeter = Number(totalMeter) + Number(element?.meters);
-          beam_info_list.push(element) ; 
-        }); 
+          beam_info_list.push(element);
+        });
 
 
         return (
@@ -292,9 +312,9 @@ function ReceiveSizeBeamList() {
 
             <SizeBeamChallanModal
               details={details}
-              mode={details?.bill_status == "pending"?"CREATE":"VIEW"}
+              mode={details?.bill_status == "pending" ? "CREATE" : "VIEW"}
             />
-            
+
             <BeamCardInformationModel
               data={beam_info_list}
             />
@@ -333,9 +353,9 @@ function ReceiveSizeBeamList() {
           overflow: "auto",
         }}
         summary={() => {
-          if (receiveSizeBeamListRes?.rows?.length == 0 ) return ; 
-          const totalTaka = receiveSizeBeamListRes?.totalTaka ; 
-          return(
+          if (receiveSizeBeamListRes?.rows?.length == 0) return;
+          const totalTaka = receiveSizeBeamListRes?.totalTaka;
+          return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>
                 <b>Total</b>
@@ -358,54 +378,54 @@ function ReceiveSizeBeamList() {
   }
 
   // Download PDF Functionality 
-  const DownloadPDF = () => { 
+  const DownloadPDF = () => {
 
     let tableTitle = [
-      "No", 
-      "Challan Date", 
-      "Challan No", 
-      "Quality Name", 
-      "Supplier Name", 
-      "Supplier Company", 
-      "Total Taka", 
-      "Total Meter", 
+      "No",
+      "Challan Date",
+      "Challan No",
+      "Quality Name",
+      "Supplier Name",
+      "Supplier Company",
+      "Total Taka",
+      "Total Meter",
       "No. Of Beam"
-    ]; 
+    ];
 
-    let temp = [] ; 
+    let temp = [];
 
     receiveSizeBeamListRes?.rows?.map((element, index) => {
-      let temp_total_taka = 0 ; 
-      let temp_total_meter = 0 ; 
+      let temp_total_taka = 0;
+      let temp_total_meter = 0;
 
       element?.recieve_size_beam_details?.map((data) => {
-        temp_total_taka = temp_total_taka + Number(data?.taka) ; 
-        temp_total_meter = temp_total_meter + Number(data?.meters) ;
-      }); 
+        temp_total_taka = temp_total_taka + Number(data?.taka);
+        temp_total_meter = temp_total_meter + Number(data?.meters);
+      });
 
       temp.push([
-        index + 1, 
-        moment(element?.challan_date).format("DD-MM-YYYY"), 
-        element?.challan_no, 
-        element?.inhouse_quality?.quality_name, 
-        element?.supplier?.supplier?.supplier_name, 
-        element?.supplier?.supplier?.supplier_company, 
-        temp_total_taka, 
+        index + 1,
+        moment(element?.challan_date).format("DD-MM-YYYY"),
+        element?.challan_no,
+        element?.inhouse_quality?.quality_name,
+        element?.supplier?.supplier?.supplier_name,
+        element?.supplier?.supplier?.supplier_company,
+        temp_total_taka,
         temp_total_meter,
         element?.recieve_size_beam_details?.length
       ])
-    }); 
+    });
 
 
-    localStorage.setItem("print-title", "Receive Size Beam List") ; 
-    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
-    localStorage.setItem("total-count", "0") ; 
-    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
+    localStorage.setItem("print-title", "Receive Size Beam List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+    localStorage.setItem("print-array", JSON.stringify(temp));
 
-    window.open("/print") ; 
+    window.open("/print");
   }
 
-  
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
