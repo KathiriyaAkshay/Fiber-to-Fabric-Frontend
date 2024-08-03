@@ -6,16 +6,11 @@ import { useForm } from "react-hook-form";
 // import { initialOrderDetail } from "../../../constants/orderMaster";
 
 function SizeBeamOrderDetail({ control, errors }) {
+
   const [noOfAdd, setNoOfAdd] = useState(1);
   const { fields, append, remove } = useFieldArray({
     control,
     name: "order_details",
-  });
-
-  const { controller, register, handleSubmit, setValue } = useForm({
-    defaultValues: {
-      order_details: [{ item: '' }] // setting the default value for the array
-    }
   });
 
   const columns = [
@@ -124,7 +119,7 @@ function SizeBeamOrderDetail({ control, errors }) {
                       value: "C",
                     },
                   ]}
-                  
+
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -236,7 +231,7 @@ function SizeBeamOrderDetail({ control, errors }) {
             danger
             key={text?.id}
             onClick={() => {
-              if (fields.length == 1){
+              if (fields.length == 1) {
                 message.warning("At least required one beam in order")
               } else {
                 remove(index)

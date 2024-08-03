@@ -33,10 +33,8 @@ const updateSizeBeamOrderSchemaResolver = yupResolver(
     order_date: yup.string().required("Please select order date"),
     machine_type: yup.string().required("Please select machine type"),
     supplier_name: yup.string(),
-    // .required("Please select supplier"),
     supplier_id: yup.string().required("Please select supplier company"),
     yarn_company_name: yup.string(),
-    // .required("Please select yarn stock company"),
     yarn_stock_company_id: yup
       .string()
       .required("Please select yarn stock company ID"),
@@ -67,7 +65,7 @@ function UpdateSizeBeamOrder() {
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
-  const [loading, setLoading] = useState(false) ; 
+  const [loading, setLoading] = useState(false);
 
   function goBack() {
     navigate(-1);
@@ -75,7 +73,7 @@ function UpdateSizeBeamOrder() {
 
   const { mutateAsync: updateSizeBeamOrder } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true) ; 
+      setLoading(true);
       const res = await updateSizeBeamOrderRequest({
         id,
         data,
@@ -85,7 +83,7 @@ function UpdateSizeBeamOrder() {
     },
     mutationKey: ["order-master/size-beam-order/update", id],
     onSuccess: (res) => {
-      setLoading(false) ; 
+      setLoading(false);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -93,7 +91,7 @@ function UpdateSizeBeamOrder() {
       navigate(-1);
     },
     onError: (error) => {
-      setLoading(false) ; 
+      setLoading(false);
       const errorMessage = error?.response?.data?.message;
       if (errorMessage && typeof errorMessage === "string") {
         message.error(errorMessage);
@@ -127,26 +125,6 @@ function UpdateSizeBeamOrder() {
     },
     enabled: Boolean(companyId),
   });
-
-  const {data: lastSizeBeamOrder} = useQuery({
-    queryKey: [
-      "order-master/receive-size-beam/last-beam-no",
-      id,
-      { company_id: companyId },
-    ],
-    queryFn: async () => {
-      const res = await getLastBeamNumberRequest({
-        id,
-        params: 
-        { 
-          company_id: companyId, 
-          beam_type: "pasarela(primary)"
-        },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  }) ; 
 
   const {
     data: dropdownSupplierListRes,
@@ -216,7 +194,7 @@ function UpdateSizeBeamOrder() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
-  const [orderNumber, setOrderNumber] = useState(0) ; 
+  const [orderNumber, setOrderNumber] = useState(0);
 
   useEffect(() => {
     if (sizeBeamOrderDetails) {
@@ -224,10 +202,10 @@ function UpdateSizeBeamOrder() {
         ...sizeBeamOrderDetails,
         order_date: dayjs(sizeBeamOrderDetails?.order_date),
         order_details: sizeBeamOrderDetails?.size_beam_order_details,
-        supplier_name: sizeBeamOrderDetails?.supplier?.supplier_name, 
+        supplier_name: sizeBeamOrderDetails?.supplier?.supplier_name,
         yarn_company_name: sizeBeamOrderDetails?.yarn_stock_company?.yarn_company_name
       });
-      setOrderNumber(sizeBeamOrderDetails?.order_no) ; 
+      setOrderNumber(sizeBeamOrderDetails?.order_no);
     }
   }, [sizeBeamOrderDetails, reset]);
 
@@ -569,7 +547,7 @@ function UpdateSizeBeamOrder() {
         <SizeBeamOrderDetail control={control} errors={errors} />
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit" loading = {loading}>
+          <Button type="primary" htmlType="submit" loading={loading}>
             Update
           </Button>
         </Flex>
