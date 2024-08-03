@@ -229,9 +229,6 @@ const YarnSentList = () => {
 
     })
     ; 
-
-    console.log("Temp information");
-    console.log(temp);
     
     let total = [
       "", 

@@ -114,7 +114,7 @@ function YarnSaleChallanList() {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   const columns = [
     {
@@ -214,10 +214,10 @@ function YarnSaleChallanList() {
               });
             }}
           >
-            <FileTextOutlined style={{color: record?.bill_status?.toLowerCase() == "confirmed"?"green":"black"}} />
+            <FileTextOutlined style={{ color: record?.bill_status?.toLowerCase() == "confirmed" ? "green" : "black" }} />
           </Button>
-            
-          {record?.bill_status != "pending" && (
+
+          {record?.bill_status != "pending" && record?.is_return == false && (
             <ReturnYarnSale
               details={record}
             />

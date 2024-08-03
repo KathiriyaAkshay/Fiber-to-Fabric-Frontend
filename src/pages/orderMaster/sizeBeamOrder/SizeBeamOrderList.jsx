@@ -17,7 +17,7 @@ import { currentMonthStartDateEndDate } from "../../../utils/date";
 
 function SizeBeamOrderList() {
   const navigate = useNavigate();
-  const [monthStartDate, monthEndDate] = currentMonthStartDateEndDate() ; 
+  const [monthStartDate, monthEndDate] = currentMonthStartDateEndDate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
   const [fromDate, setFromDate] = useState(dayjs(monthStartDate));
@@ -30,10 +30,11 @@ function SizeBeamOrderList() {
       "order-master",
       "size-beam-order",
       "list",
-    {   company_id: companyId, 
-        page, pageSize, 
-        end: financialYearEnd, 
-        fromDate: debouncedFromDate, 
+      {
+        company_id: companyId,
+        page, pageSize,
+        end: financialYearEnd,
+        fromDate: debouncedFromDate,
         toDate: debouncedToDate
       },
     ],
@@ -115,7 +116,7 @@ function SizeBeamOrderList() {
 
     let title = [
       "ID",
-      "Order No", 
+      "Order No",
       "Date",
       "From",
       "To",
@@ -123,34 +124,34 @@ function SizeBeamOrderList() {
       "Total Meter",
       "Order Status",
       "Print Challan",
-    ]; 
+    ];
 
-    let temp = [] ; 
+    let temp = [];
 
     sizeBeamOrderListRes?.SizeBeamOrderList?.map((element, index) => {
-      let temp_meter = 0 ; 
+      let temp_meter = 0;
       element?.size_beam_order_details?.map((data) => {
-        temp_meter = temp_meter + Number(data?.meters) ; 
+        temp_meter = temp_meter + Number(data?.meters);
       })
       temp.push([
-        index + 1, 
+        index + 1,
         element?.id,
         moment(element?.order_date).format("DD-MM-YYYY"),
-        element?.company?.company_name, 
-        element?.yarn_stock_company?.yarn_company_name, 
-        element?.size_beam_order_details?.length, 
-        temp_meter, 
-        element?.status, 
+        element?.company?.company_name,
+        element?.yarn_stock_company?.yarn_company_name,
+        element?.size_beam_order_details?.length,
+        temp_meter,
+        element?.status,
         element?.print_challan_status
       ])
     })
 
-    localStorage.setItem("print-title", "Send Beam Pipe Order List") ;
-    localStorage.setItem("print-head", JSON.stringify(title)) ; 
-    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
-    localStorage.setItem("total-count", "0") ; 
+    localStorage.setItem("print-title", "Send Beam Pipe Order List");
+    localStorage.setItem("print-head", JSON.stringify(title));
+    localStorage.setItem("print-array", JSON.stringify(temp));
+    localStorage.setItem("total-count", "0");
 
-    window.open("/print") ; 
+    window.open("/print");
 
   }
 
@@ -193,7 +194,7 @@ function SizeBeamOrderList() {
       dataIndex: "total_pipe",
       key: "total_pipe",
       render: (text, record) => {
-        return(
+        return (
           <div>{record?.size_beam_order_details?.length}</div>
         )
       }
@@ -203,11 +204,11 @@ function SizeBeamOrderList() {
       dataIndex: "total_meters",
       key: "total_meters",
       render: (text, record) => {
-        let total_meter = 0 ; 
+        let total_meter = 0;
         record?.size_beam_order_details?.map((element) => {
-          total_meter = total_meter + Number(element?.meters) ; 
+          total_meter = total_meter + Number(element?.meters);
         })
-        return(
+        return (
           <div>{total_meter}</div>
         )
       }
@@ -255,14 +256,14 @@ function SizeBeamOrderList() {
           yarn_stock_company = {},
         } = sizeBeamOrder;
 
-        let total_meter = 0 ; 
+        let total_meter = 0;
         record?.size_beam_order_details?.map((element) => {
-          total_meter = total_meter + Number(element?.meters) ; 
-        }) 
+          total_meter = total_meter + Number(element?.meters);
+        })
 
         return (
           <Space>
-            
+
             <BeamPipeChallanModel details={record} />
 
             {record?.status == "PENDING" && (
@@ -277,7 +278,7 @@ function SizeBeamOrderList() {
                     <EditOutlined />
                   </Button>
                 )}
-                
+
                 <DeleteSizeBeamOrderButton data={sizeBeamOrder} />
               </>
             )}

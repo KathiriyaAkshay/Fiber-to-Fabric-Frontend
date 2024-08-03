@@ -92,6 +92,7 @@ const YarnSaleChallanModel = ({
         data,
         params: {
           company_id: companyId,
+          bill_id: MODE == "UPDATE"?details?.yarn_sale_bill?.id : undefined
         },
       });
       return res.data;
