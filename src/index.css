@@ -16,6 +16,9 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
+  --table-border-color: #777777 ;
+  --scrollbar-background-color: #f1f1f1 ; 
+  --scrollbar-hover-background-color: #bdbdbd ; 
 }
 
 
@@ -49,12 +52,12 @@ body {
 }
 
 .job-challan-table-div{
-  height: 49vh;
+  max-height: 49vh;
   overflow-y: auto;
 }
 
 .job-challan-details-table {
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--table-border-color);
   border-collapse: collapse;
   text-align: center;
 }
@@ -83,6 +86,35 @@ body {
   border: 0px solid;
   background-color: transparent !important;
 }
+
+.job-challan-table-total{
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: #FFFFFF;
+}
+
+.job-challan-details-table input:focus{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input:hover{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input[type="number"]::-webkit-outer-spin-button,
+.job-challan-details-table input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 /* .ant-table {
   font-size: 14px !important;
@@ -413,4 +445,23 @@ color: black;
   overflow-y: auto;
   padding-top: 15px;
   border-top: 1px solid #efefef;
+}
+
+/* Custom scrollbar css  */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover-background-color);
 }

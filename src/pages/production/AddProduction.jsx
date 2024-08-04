@@ -129,7 +129,6 @@ const AddProduction = () => {
       last_taka_no: "",
       last_taka_no_date: dayjs(),
       m_no: null,
-
       grade: "A",
       pis: "",
     },
@@ -337,15 +336,18 @@ const AddProduction = () => {
       style={{ marginTop: "1rem" }}
       onFinish={handleSubmit(onSubmit)}
     >
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 p-4 pt-2">
+
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+
           <div className="flex items-center gap-5">
             <Button onClick={() => navigate(-1)}>
               <ArrowLeftOutlined />
             </Button>
             <h3 className="m-0 text-primary">Add Production</h3>
           </div>
-          <div>
+
+          <div style={{ marginLeft: "auto" }}>
             <Controller
               control={control}
               name="production_filter"
@@ -551,27 +553,30 @@ const AddProduction = () => {
           </Col>
         </Row>
 
-        <AddProductionTable
-          errors={errors}
-          control={control}
-          setFocus={setFocus}
-          activeField={activeField}
-          setActiveField={setActiveField}
-          getValues={getValues}
-          setValue={setValue}
-          setError={setError}
-          trigger={trigger}
-          lastProductionTaka={lastProductionTaka}
-          beamCardList={beamCardList}
-          production_filter={production_filter}
-          avgWeight={avgWeight}
-          weightPlaceholder={weightPlaceholder}
-          setWeightPlaceholder={setWeightPlaceholder}
-          dropDownQualityListRes={dropDownQualityListRes}
-        />
+        {machine_name !== undefined && machine_name !== null && (
+          <AddProductionTable
+            errors={errors}
+            control={control}
+            setFocus={setFocus}
+            activeField={activeField}
+            setActiveField={setActiveField}
+            getValues={getValues}
+            setValue={setValue}
+            setError={setError}
+            trigger={trigger}
+            lastProductionTaka={lastProductionTaka}
+            beamCardList={beamCardList}
+            production_filter={production_filter}
+            avgWeight={avgWeight}
+            weightPlaceholder={weightPlaceholder}
+            setWeightPlaceholder={setWeightPlaceholder}
+            dropDownQualityListRes={dropDownQualityListRes}
+          />
+        )}
 
         {production_filter === "machine_wise" && (
-          <Row style={{ gap: "12px" }}>
+          
+          <Row style={{ gap: "12px", marginTop: "20px" }}>
             <Col span={3}>
               <Form.Item
                 label="Pis"
@@ -627,13 +632,14 @@ const AddProduction = () => {
               </Form.Item>
             </Col>
           </Row>
+
         )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button type="primary" htmlType="button" onClick={handleSubmit(onSubmit)} loading={isPending}>
             Create
           </Button>
         </Flex>
