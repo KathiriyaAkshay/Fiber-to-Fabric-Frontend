@@ -37,6 +37,7 @@ import {
 } from "../../../../api/requests/reports/beamStockReport";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -466,6 +467,7 @@ const AddBeamStockReport = () => {
             value={dateValue}
             onChange={setDateValue}
             format={"DD-MM-YYYY"}
+            disabledDate={disabledFutureDate}
           />
           <TimePicker
             value={timeValue}
