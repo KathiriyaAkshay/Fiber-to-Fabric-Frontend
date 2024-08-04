@@ -21,7 +21,6 @@ const AddProductionTable = ({
   setWeightPlaceholder,
   dropDownQualityListRes,
 }) => {
-  console.log({ beamCardList });
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
@@ -30,7 +29,7 @@ const AddProductionTable = ({
     if (production_filter === "machine_wise") {
       return Array.from({ length: 1 }, (_, i) => i + 1);
     } else {
-      return Array.from({ length: 5 }, (_, i) => i + 1);
+      return Array.from({ length: 15 }, (_, i) => i + 1);
     }
   }, [production_filter]);
 
@@ -134,7 +133,7 @@ const AddProductionTable = ({
   };
 
   return (
-    <div>
+    <div className="job-challan-table-div">
       <table
         style={{ width: "100%" }}
         className="job-challan-details-table"
@@ -155,7 +154,7 @@ const AddProductionTable = ({
             <MinusCircleOutlined />
           </th>
         </thead>
-        <tbody>
+        <tbody style={{height: "20vh"}}>
           {numOfFields.map((fieldNumber) => {
             return (
               <tr key={fieldNumber}>
@@ -296,10 +295,6 @@ const AddProductionTable = ({
                     validateStatus={
                       errors[`weight_${fieldNumber}`] ? "error" : ""
                     }
-                    // help={
-                    //   errors[`weight_${fieldNumber}`] &&
-                    //   errors[`weight_${fieldNumber}`].message
-                    // }
                     required={true}
                     wrapperCol={{ sm: 24 }}
                     style={{ marginBottom: "0px" }}
@@ -371,6 +366,7 @@ const AddProductionTable = ({
                     />
                   </Form.Item>
                 </td>
+
                 <td width={150}>
                   <Form.Item
                     name={`beam_no_${fieldNumber}`}
@@ -406,6 +402,7 @@ const AddProductionTable = ({
                     />
                   </Form.Item>
                 </td>
+
                 <td width={150}>
                   <Form.Item
                     name={`production_meter_${fieldNumber}`}
@@ -441,6 +438,7 @@ const AddProductionTable = ({
                     />
                   </Form.Item>
                 </td>
+
                 <td width={150}>
                   <Form.Item
                     name={`pending_meter_${fieldNumber}`}

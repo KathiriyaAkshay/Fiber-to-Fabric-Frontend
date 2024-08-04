@@ -48,6 +48,11 @@ body {
   cursor: pointer !important;
 }
 
+.job-challan-table-div{
+  height: 49vh;
+  overflow-y: auto;
+}
+
 .job-challan-details-table {
   border: 1px solid #d3d3d3;
   border-collapse: collapse;
