@@ -28,7 +28,7 @@ import {
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
@@ -39,7 +39,11 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import { getBeamSentListRequest } from "../../../../api/requests/job/sent/beamSent";
 import dayjs from "dayjs";
 import DeleteBeamSent from "../../../../components/job/beamSent/DeleteBeamSent";
+import moment from "moment";
+import ReactToPrint from "react-to-print";
 const { Title, Text } = Typography;
+
+
 const BeamSentList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
@@ -248,10 +252,13 @@ const BeamSentList = () => {
         console.log({ details });
         return (
           <Space>
+
             <BeamSentViewDetailModal
               title="Beam Sent Details"
               details={details}
+              company={company}
             />
+
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -259,10 +266,13 @@ const BeamSentList = () => {
             >
               <EditOutlined />
             </Button>
+
             <DeleteBeamSent details={details} />
+
             <Button>
               <TruckOutlined />
             </Button>
+
           </Space>
         );
       },
@@ -289,6 +299,24 @@ const BeamSentList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          if (beamSentListData?.rows?.length == 0) return;
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          )
         }}
       />
     );
@@ -438,8 +466,12 @@ const BeamSentViewDetailModal = ({
   title = "-",
   isScroll = false,
   details = [],
+  company
 }) => {
-  console.log("BeamSentViewDetailModal", details);
+  console.log("Details information");
+  console.log(details);
+  
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -500,6 +532,7 @@ const BeamSentViewDetailModal = ({
     },
   ];
 
+  const componentRef = useRef() ; 
 
   return (
     <>
@@ -514,7 +547,25 @@ const BeamSentViewDetailModal = ({
           </Typography.Text>
         }
         open={isModalOpen}
-        footer={null}
+        footer={() => {
+          return(
+            <>
+              <ReactToPrint
+                trigger={() => (
+                  <Flex>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft: "auto", marginTop: 15 }}
+                    >
+                      PRINT
+                    </Button>
+                  </Flex>
+                )}
+                content={() => componentRef.current}
+              />
+            </>
+          )
+        }}
         onCancel={handleCancel}
         centered={true}
         classNames={{
@@ -533,93 +584,242 @@ const BeamSentViewDetailModal = ({
             padding: "10px 16px",
             ...adjustHeight,
           },
+          footer: {
+            paddingBottom: 10,
+            paddingRight: 10,
+            backgroundColor: "#efefef",
+          }
         }}
-      >
-        <Card className="card-wrapper">
-          <Row  className="header-row">
-            <Col span={12} className="header-col">
-              <Card className="header-card">
-                <Title level={4} className="header-title">TO: TEXT_121_SUPPLIER</Title>
-                <Text strong>Address: TEXT_121_SUPPLIER</Text><br />
-                <Text>GST NO: 24ABHPP6021C1Z4</Text><br />
-                <Text>E-way Bill No.: --</Text>
-              </Card>
-            </Col>
-            <Col span={12} className="header-col">
-              <Card className="header-card">
-                <Title level={4} className="header-title">FROM: SONU TEXTILES</Title>
-                <Text strong>Address: PLOT NO. 78, JAYVEER INDU. ESTATE, GUJARAT HOUSING BOARD ROAD, PANDESARA, SURAT, Gujarat, 394221</Text><br />
-                <Text>GST NO: 24ABHPP6021C1Z4</Text><br />
-              </Card>
-            </Col>
-          </Row>
-          <div class="dotted-line"></div>
-          <Row gutter={16} style={{ marginTop: 16 }}>
-            <Col span={12}>
-              <Flex gap={2} justify="center">
-                <Text strong>Description of Goods:</Text><br />
-                <Text>MAHESHWARI 10/20 (SDFSDFSDFSDFSDFSD) - (7.5KG)</Text><br />
-              </Flex>
-            </Col>
-            <Col span={6}>
-              <Flex gap={2} justify="center">
-                <Text strong>Date:</Text><br />
-                <Text>Date: 25-06-2024</Text><br />
-              </Flex>
-            </Col>
-            <Col span={6}>
-              <Flex gap={2} justify="center ">
-                <Text strong>Vehicle No:</Text><br />
-                <Text>GJ-12-er-1234</Text><br />
-              </Flex>
-            </Col>
-          </Row>
-          <div class="dotted-line"></div>
-          <Table
-            dataSource={dataSource}
-            columns={ModalColumns}
-            pagination={false}
-            className="data-table"
-            style={{ marginTop: 16 }}
-            bordered
-            summary={() => {
-              return (
-                <>
-                  <Table.Summary.Row className="font-semibold">
-                    <Table.Summary.Cell>Total</Table.Summary.Cell>
-                    <Table.Summary.Cell />
-                    <Table.Summary.Cell />
-                    <Table.Summary.Cell />
-                    <Table.Summary.Cell>
-                      <Typography.Text>0</Typography.Text>
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      <Typography.Text>0</Typography.Text>
-                    </Table.Summary.Cell>
-                  </Table.Summary.Row>
-                </>
-              );
-            }}
-          />
-          {/* <Row gutter={16} style={{ marginTop: 16 }}>
-            <Col span={12}>
-              <Text>Total Meter: 100</Text>
-            </Col>
-            <Col span={12}>
-              <Text>Total Weight: 14.60</Text>
-            </Col>
-          </Row> */}
-                    <div class="dotted-line"></div>
+      > 
+        <div ref={componentRef}>
 
-          <Row gutter={16} style={{ marginTop: 16 }}>
-            <Col span={12}>
-              <Text>Receivers sign</Text>
-            </Col>
-            <Col span={12}>
-              <Text>Senders sign</Text>
-            </Col>
-          </Row>
-        </Card>
+          <Card className="card-wrapper">
+            <Row className="header-row">
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title card-text">
+                    TO: {details?.supplier?.supplier_company}
+                  </Title>
+                  <div className="header-card-text">
+                    <Text strong>
+                      Address: {details?.supplier?.user?.address}
+                    </Text>
+                    <br />
+                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {details?.supplier?.user?.gst_no}</Text>
+                    <br/>
+                    <Text><span style={{fontWeight: 600}}>E-way bill No</span> : --- </Text>
+                    <br />
+                  </div>
+                </Card>
+              </Col>
+              <Col span={2}/>
+
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title">
+                    FROM: {company?.company_name}
+                  </Title>
+                  <div className="header-card-text">
+                    <Text strong>
+                      Address: {company.address_line_1},{" "}
+                      {company.address_line_2}, {company.city}, {company.state},{" "}
+                      {company.pincode}, {company.country}
+                    </Text>
+                    <br />
+                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {company?.gst_no}</Text>
+                    <br />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+            <div class="dotted-line"></div>
+
+            <Row gutter={16} style={{ 
+              marginTop: 10, 
+              paddingLeft: 10, 
+              paddingRight: 10,  
+              marginBottom: 10
+            }}>
+              <Col span={12}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Description of Goods:</Text><br />
+                  <Text>{details?.inhouse_quality?.quality_name}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Date:</Text><br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center ">
+                  <Text strong>Vehicle No:</Text><br />
+                  <Text>{details?.vehicle?.vehicle?.vehicle_no || "-"}</Text><br />
+                </Flex>
+              </Col>
+            </Row>
+            
+            <div class="dotted-line"></div>
+
+            <Table
+              dataSource={dataSource}
+              columns={ModalColumns}
+              pagination={false}
+              className="data-table"
+              style={{ marginTop: 16 }}
+              bordered
+              summary={() => {
+                return (
+                  <>
+                    <Table.Summary.Row className="font-semibold">
+                      <Table.Summary.Cell>Total</Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell>
+                        <Typography.Text>0</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Typography.Text>0</Typography.Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                );
+              }}
+            />
+            <div class="dotted-line"></div>
+
+            <Row gutter={16} style={{ 
+                marginTop: 16, 
+                marginBottom: 40,               
+                paddingLeft: 10, 
+                paddingRight: 10   
+              }}>
+              <Col span={12}>
+                <Text>Receivers sign</Text>
+              </Col>
+              <Col span={12}>
+                <Text>Senders sign</Text>
+              </Col>
+            </Row>
+          </Card>
+            
+          <div className="red-dotted-line"></div>
+
+          <Card className="card-wrapper">
+            <Row className="header-row">
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title card-text">
+                    TO: {details?.supplier?.supplier_company}
+                  </Title>
+                  <div className="header-card-text">
+                    <Text strong>
+                      Address: {details?.supplier?.user?.address}
+                    </Text>
+                    <br />
+                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {details?.supplier?.user?.gst_no}</Text>
+                    <br/>
+                    <Text><span style={{fontWeight: 600}}>E-way bill No</span> : --- </Text>
+                    <br />
+                  </div>
+                </Card>
+              </Col>
+              <Col span={2}/>
+
+              <Col span={11} className="header-col">
+                <Card className="header-card">
+                  <Title level={4} className="header-title">
+                    FROM: {company?.company_name}
+                  </Title>
+                  <div className="header-card-text">
+                    <Text strong>
+                      Address: {company.address_line_1},{" "}
+                      {company.address_line_2}, {company.city}, {company.state},{" "}
+                      {company.pincode}, {company.country}
+                    </Text>
+                    <br />
+                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {company?.gst_no}</Text>
+                    <br />
+                  </div>
+                </Card>
+              </Col>
+            </Row>
+            <div class="dotted-line"></div>
+
+            <Row gutter={16} style={{ 
+              marginTop: 10, 
+              paddingLeft: 10, 
+              paddingRight: 10,  
+              marginBottom: 10
+            }}>
+              <Col span={12}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Description of Goods:</Text><br />
+                  <Text>{details?.inhouse_quality?.quality_name}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center">
+                  <Text strong>Date:</Text><br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                </Flex>
+              </Col>
+              <Col span={6}>
+                <Flex gap={2} justify="center ">
+                  <Text strong>Vehicle No:</Text><br />
+                  <Text>{details?.vehicle?.vehicle?.vehicle_no || "-"}</Text><br />
+                </Flex>
+              </Col>
+            </Row>
+            
+            <div class="dotted-line"></div>
+
+            <Table
+              dataSource={dataSource}
+              columns={ModalColumns}
+              pagination={false}
+              className="data-table"
+              style={{ marginTop: 16 }}
+              bordered
+              summary={() => {
+                return (
+                  <>
+                    <Table.Summary.Row className="font-semibold">
+                      <Table.Summary.Cell>Total</Table.Summary.Cell>
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell />
+                      <Table.Summary.Cell>
+                        <Typography.Text>0</Typography.Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        <Typography.Text>0</Typography.Text>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                );
+              }}
+            />
+            <div class="dotted-line"></div>
+
+            <Row gutter={16} style={{ 
+                marginTop: 16, 
+                marginBottom: 40,               
+                paddingLeft: 10, 
+                paddingRight: 10   
+              }}>
+              <Col span={12}>
+                <Text>Receivers sign</Text>
+              </Col>
+              <Col span={12}>
+                <Text>Senders sign</Text>
+              </Col>
+            </Row>
+          </Card>
+
+        </div>
       </Modal>
     </>
   );

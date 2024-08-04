@@ -69,6 +69,23 @@ function AddReceiveSizeBeam() {
   const [pendingMeter, setPendingMeter] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+    getValues
+  } = useForm({
+    resolver: addReceiveSizeBeamSchemaResolver,
+    defaultValues: {
+      receive_date: dayjs(),
+    },
+  });
+
+  const { size_beam_order_id, beam_type, machine_name } = watch();
+
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
       queryKey: [
@@ -79,11 +96,15 @@ function AddReceiveSizeBeam() {
       ],
       queryFn: async () => {
         const res = await getSizeBeamOrderListRequest({
-          params: { company_id: companyId, status: "PENDING" },
+          params: { 
+            company_id: companyId, 
+            status: "PENDING", 
+            machine_name: machine_name
+          },
         });
         return res.data?.data;
       },
-      enabled: Boolean(companyId),
+      enabled: Boolean(companyId && machine_name),
     });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -91,7 +112,9 @@ function AddReceiveSizeBeam() {
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { 
+          company_id: companyId 
+        },
       });
       return res.data?.data?.machineList;
     },
@@ -168,23 +191,6 @@ function AddReceiveSizeBeam() {
 
     await createReceiveSizeBeam(requestData);
   }
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    setValue,
-    getValues
-  } = useForm({
-    resolver: addReceiveSizeBeamSchemaResolver,
-    defaultValues: {
-      receive_date: dayjs(),
-    },
-  });
-
-  const { size_beam_order_id, beam_type } = watch();
 
   // Set default value ======================================================
   const pasarela_primary_beam = "PBN" ; 
@@ -289,6 +295,40 @@ function AddReceiveSizeBeam() {
             padding: "12px",
           }}
         >
+          
+          <Col span={4}>
+            <Form.Item
+              label="Machine name"
+              name="machine_name"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={4}>
             <Form.Item
               label="Order No."
@@ -349,39 +389,6 @@ function AddReceiveSizeBeam() {
                         value: id,
                       })
                     )}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={4}>
-            <Form.Item
-              label="Machine name"
-              name="machine_name"
-              validateStatus={errors.quality_id ? "error" : ""}
-              help={errors.quality_id && errors.quality_id.message}
-              required={true}
-            >
-              <Controller
-                control={control}
-                name="machine_name"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Machine Name"
-                    allowClear
-                    loading={isLoadingMachineList}
-                    options={machineListRes?.rows?.map((machine) => ({
-                      label: machine?.machine_name,
-                      value: machine?.machine_name,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
                   />
                 )}
               />
