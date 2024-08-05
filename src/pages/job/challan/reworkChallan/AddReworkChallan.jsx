@@ -249,26 +249,6 @@ const AddReworkChallan = () => {
     }
   }, [supplier_name, dropdownSupplierListRes, resetField]);
 
-  //   useEffect(() => {
-  //     if (grayOrderListRes && gray_order_id) {
-  //       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-  //       setSelectedOrder(order);
-  //       setValue("total_meter", order.total_meter);
-  //       setValue("total_taka", order.total_taka);
-  //       setValue("total_weight", order.weight);
-  //       setValue(
-  //         "broker_name",
-  //         `${order.broker.first_name} ${order.broker.last_name}`
-  //       );
-  //       setValue("broker_id", order.broker.id);
-  //       setValue("quality_id", order.inhouse_quality.id);
-  //       setValue("supplier_name", order.supplier_name);
-  //       setValue("pending_meter", order.pending_meter);
-
-  //       setPendingMeter(order.pending_meter);
-  //       setPendingTaka(order.pending_taka);
-  //     }
-  //   }, [gray_order_id, grayOrderListRes, setValue]);
 
   useEffect(() => {
     if (company_id) {
@@ -682,7 +662,7 @@ const AddReworkChallan = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
             Create
           </Button>
         </Flex>

@@ -1,13 +1,13 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Col, Flex, Form, Input, Row } from "antd";
+import { Button, Col, Flex, Form, Input, message, Row } from "antd";
 import { useContext, useState } from "react";
 import { Controller } from "react-hook-form";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getProductionByIdRequest } from "../../../../api/requests/production/inhouseProduction";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 
-const numOfFields = Array.from({ length: 20 }, (_, i) => i + 1);
+const numOfFields = Array.from({ length: 30 }, (_, i) => i + 1);
 const chunkSize = numOfFields.length / 2;
 
 const ReworkChallanFieldTable = ({
@@ -30,11 +30,18 @@ const ReworkChallanFieldTable = ({
   const debounceTakaNo = useDebounce(storeTakaNo, 500);
 
   const activeNextField = (event, fieldNumber) => {
-    if (event.keyCode === 32) {
-      setActiveField((prev) => prev + 1);
-      setTimeout(() => {
-        setFocus(`taka_no_${fieldNumber + 1}`);
-      }, 0);
+    if (event.keyCode === 13) {
+
+      let taka_number = getValues(`taka_no_${fieldNumber}`) ; 
+      
+      if (taka_number == undefined || taka_number == ""){
+        message.warning("Please, Enter taka number") ; 
+      } else {
+        setActiveField((prev) => prev + 1);
+        setTimeout(() => {
+          setFocus(`taka_no_${fieldNumber + 1}`);
+        }, 0);
+      }
     }
   };
 
@@ -98,16 +105,9 @@ const ReworkChallanFieldTable = ({
     enabled: Boolean(companyId),
   });
 
-  // useEffect(() => {
-  //   if (productionDetail) {
-  //     setValue(`meter_${currentFieldNumber}`, productionDetail.meter);
-  //   } else {
-  //     setValue(`meter_${currentFieldNumber}`, "");
-  //   }
-  // }, [currentFieldNumber, productionDetail, setValue]);
-
   return (
-    <Row style={{ marginTop: "-20" }} gutter={18}>
+    <Row style={{ marginTop: "-30px" }} gutter={18}>
+
       <Col span={12}>
         <table
           className="job-challan-details-table"
@@ -171,6 +171,9 @@ const ReworkChallanFieldTable = ({
                               setCurrentFieldNumber(fieldNumber);
                               calculateTotal();
                             }}
+                            onKeyDown={(event) =>
+                              activeNextField(event, fieldNumber)
+                            } 
                           />
                         )}
                       />
@@ -240,19 +243,11 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
+                            readOnly
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();
                             }}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
                           />
                         )}
                       />
@@ -285,15 +280,9 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
+                            onKeyDown={(event) =>
+                              activeNextField(event, fieldNumber)
+                            }
                           />
                         )}
                       />
@@ -326,15 +315,7 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
+                            readOnly
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }
@@ -354,13 +335,6 @@ const ReworkChallanFieldTable = ({
                 </tr>
               );
             })}
-            <tr>
-              <td>GT</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
           </tbody>
         </table>
       </Col>
@@ -481,15 +455,15 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
+                          // onChange={(e) => {
+                          //   if (e.key === " ") {
+                          //     e.stopPropagation();
+                          //   }
+                          //   setValue(
+                          //     `weight_${fieldNumber}`,
+                          //     e.target.value
+                          //   );
+                          // }}
                           />
                         )}
                       />
@@ -522,15 +496,15 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
+                          // onChange={(e) => {
+                          //   if (e.key === " ") {
+                          //     e.stopPropagation();
+                          //   }
+                          //   setValue(
+                          //     `weight_${fieldNumber}`,
+                          //     e.target.value
+                          //   );
+                          // }}
                           />
                         )}
                       />
@@ -590,14 +564,8 @@ const ReworkChallanFieldTable = ({
                 </tr>
               );
             })}
-            <tr>
-              <td>GT</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
           </tbody>
+
         </table>
       </Col>
 
@@ -618,6 +586,7 @@ const ReworkChallanFieldTable = ({
           </Form.Item>
         </Flex>
       </Col>
+
     </Row>
   );
 };

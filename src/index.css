@@ -16,7 +16,7 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
-  --table-border-color: #777777 ;
+  --table-border-color: #ababab ;
   --scrollbar-background-color: #f1f1f1 ; 
   --scrollbar-hover-background-color: #bdbdbd ; 
 }
@@ -56,6 +56,10 @@ body {
   overflow-y: auto;
 }
 
+.receive-rework-taka-table thead th{
+  background-color: #000000 !important;
+}
+
 .job-challan-details-table {
   border: 1px solid var(--table-border-color);
   border-collapse: collapse;
@@ -80,6 +84,8 @@ body {
 .job-challan-taka-index-column {
   background-color: rgb(25 74 109);
   color: #fff;
+  padding-left: 7px !important;
+  padding-right: 7px !important;
 }
 
 .job-challan-taka-plus-option {

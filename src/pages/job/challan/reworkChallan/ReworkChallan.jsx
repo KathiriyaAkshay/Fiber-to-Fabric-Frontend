@@ -35,6 +35,7 @@ import dayjs from "dayjs";
 import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
 import ViewReworkChallanInfo from "../../../../components/job/challan/reworkChallan/ViewReworkChallan";
 import ReworkChallanModal from "../../../../components/job/challan/reworkChallan/ReworkChallanModal";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const ReworkChallan = () => {
   const navigate = useNavigate();
@@ -236,11 +237,33 @@ const ReworkChallan = () => {
       title: "Wastage in KG.",
       dataIndex: "wastageInKg",
       key: "wastageInKg",
+      render: (text, record) => {
+        let received_meter = Number(record?.taka_receive_meter) ; 
+        let total_meter = Number(record?.total_meter) ; 
+        
+        let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ; 
+        return(
+          <div>
+            {wastage_kg.toFixed(2)}
+          </div>
+        )
+      }
     },
     {
       title: "Short(%)",
       dataIndex: "shortPercentage",
       key: "shortPercentage",
+      render: (text, record) => {
+        let received_meter = Number(record?.taka_receive_meter) ; 
+        let total_meter = Number(record?.total_meter) ; 
+        let shoratge_precentage = (total_meter - received_meter)*100 / total_meter ; 
+        return(
+          <div>
+            {shoratge_precentage.toFixed(2)}
+          </div>
+        ) 
+
+      }
     },
     {
       title: "Bill Status",
@@ -257,8 +280,8 @@ const ReworkChallan = () => {
           {billStatus?.toString()?.toLowerCase() === "pending"
             ? "Pending"
             : billStatus?.toString()?.toLowerCase() === "confirmed"
-            ? "Confirmed"
-            : "-"}
+              ? "Confirmed"
+              : "-"}
         </Tag>
       ),
     },
@@ -331,6 +354,28 @@ const ReworkChallan = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          if (reworkChallanList?.rows?.length == 0) return ; 
+          return(
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+              </Table.Summary.Row>
+            </>
+          )
         }}
       />
     );
@@ -444,6 +489,7 @@ const ReworkChallan = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -456,6 +502,7 @@ const ReworkChallan = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
