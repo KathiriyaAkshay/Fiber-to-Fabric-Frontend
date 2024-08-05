@@ -42,6 +42,16 @@ import FinishBeamCardModal from "../../components/beamCard/FinishBeamCardModal";
 import LoadNewBeamModal from "../../components/beamCard/LoadNewBeamModal";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
 
+const getTakaDetailsObject = (details) => {
+  if (details) {
+    let object =
+      details.non_pasarela_beam_detail ||
+      details.recieve_size_beam_detail ||
+      details.job_beam_receive_detail;
+    return { ...object, meter: object.meters || object.meter };
+  }
+};
+
 const BeamCardList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
@@ -117,9 +127,10 @@ const BeamCardList = () => {
         company_id: companyId,
         page,
         pageSize,
-        search: debouncedSearch,
+        beam_no: debouncedSearch.beamNo,
+        machine_no: debouncedSearch.machNo,
         machine_name: debouncedMachine,
-        beam_type: debouncedBeamTypeDropDown,
+        status: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
         // status: debouncedStatus,
       },
@@ -130,9 +141,10 @@ const BeamCardList = () => {
           company_id: companyId,
           page,
           pageSize,
-          search: debouncedSearch,
+          beam_no: debouncedSearch.beamNo,
+          machine_no: debouncedSearch.machNo,
           machine_name: debouncedMachine,
-          beam_type: debouncedBeamTypeDropDown,
+          status: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
           // status: debouncedStatus,
         },
@@ -210,8 +222,10 @@ const BeamCardList = () => {
     },
     {
       title: "Beam No",
-      dataIndex: ["non_pasarela_beam_detail", "beam_no"],
-      key: "beam_no",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item.beam_no;
+      },
     },
     {
       title: "Quality",
@@ -219,24 +233,27 @@ const BeamCardList = () => {
         `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
     },
     {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-    },
-    {
       title: "Taka",
-      dataIndex: ["non_pasarela_beam_detail", "taka"],
-      key: "taka",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item.taka;
+      },
     },
     {
       title: "Meter",
-      dataIndex: ["non_pasarela_beam_detail", "meters"],
-      key: "meter",
+      render: (details) => {
+        const obj =
+          details.non_pasarela_beam_detail ||
+          details.recieve_size_beam_detail ||
+          details.job_beam_receive_detail;
+        return obj.meters || obj.meter;
+      },
     },
     {
       title: "Pending Meter",
       dataIndex: "pending_meter",
       key: "pending_meter",
+      render: (text) => text || 0,
     },
     {
       title: "Shortage %",
@@ -246,18 +263,22 @@ const BeamCardList = () => {
     },
     {
       title: "pano",
-      dataIndex: ["non_pasarela_beam_detail", "pano"],
-      key: "pano",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item.pano;
+      },
     },
     {
       title: "Mach.No",
       dataIndex: "machine_no",
       key: "machine_no",
+      render: (text) => text || "-",
     },
     {
       title: "Day Duration",
       dataIndex: "day_duration",
       key: "day_duration",
+      render: (text) => text || "-",
     },
     {
       title: "Date",
@@ -274,7 +295,6 @@ const BeamCardList = () => {
     {
       title: "Action",
       render: (details) => {
-        console.log({ details });
         return (
           <Space>
             <BeamCardViewDetailModal title="Beam Details" details={details} />
@@ -315,6 +335,68 @@ const BeamCardList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalMeter = 0;
+          let totalPendingMeter = 0;
+          pageData.forEach((details) => {
+            const item = getTakaDetailsObject(details);
+
+            totalPendingMeter += +details.pending_meter;
+            totalMeter += +item.meter;
+          });
+
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalPendingMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>
+                  Grand <br />
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {/* {jobChallanList?.total_taka} */}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {/* {jobChallanList?.total_meter} */}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
@@ -510,6 +592,8 @@ const BeamCardViewDetailModal = ({
     adjustHeight.overflowY = "scroll";
   }
 
+  const item = getTakaDetailsObject(details);
+
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -596,9 +680,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.beam_no}
-                  </Typography.Text>
+                  <Typography.Text>{item.beam_no}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -706,9 +788,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.end_of_tars}
-                  </Typography.Text>
+                  <Typography.Text>{item.end_of_tars}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -718,9 +798,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.pano}
-                  </Typography.Text>
+                  <Typography.Text>{item.pano}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -742,9 +820,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.taka}
-                  </Typography.Text>
+                  <Typography.Text>{item.taka}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -754,9 +830,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.meters}
-                  </Typography.Text>
+                  <Typography.Text>{item.meter}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
