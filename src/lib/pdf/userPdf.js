@@ -1,4 +1,5 @@
 import jsPDF from "jspdf";
+import "jspdf-autotable";
 import dayjs from "dayjs";
 
 export function downloadUserPdf({
@@ -21,7 +22,7 @@ export function downloadUserPdf({
 
   // Center align the title
   const titleWidth =
-  (pdf.getStringUnitWidth(title) * pdf.internal.getFontSize()) / pdf.internal.scaleFactor;
+    (pdf.getStringUnitWidth(title) * pdf.internal.getFontSize()) / pdf.internal.scaleFactor;
   const titleX = (pdf.internal.pageSize.width - titleWidth) / 2;
   pdf.text(titleX, 15, title);
 
@@ -34,14 +35,14 @@ export function downloadUserPdf({
 
   pdf.setTextColor(0, 0, 255); // Set text color to blue
   pdf.setFont("helvetica", "bold"); // Set font to bold
-  
+
   let yPosition = 8; // Initial Y position
   leftContentLines.forEach(line => {
     pdf.text(line, 8, yPosition);
     yPosition += 7; // Move to the next line
   });
 
-  pdf.text(rightContent, 290, 8, { align: "right" }); 
+  pdf.text(rightContent, 290, 8, { align: "right" });
 
   pdf.autoTable({
     head: head,
@@ -53,6 +54,14 @@ export function downloadUserPdf({
 
   // Save the PDF
   pdf.save(title + " " + dayjs().format("DD-MM-YYYY HH-mm-ss") + ".pdf");
+
+  // Open the saved PDF in a new tab
+  const pdfBlob = pdf.output("blob");
+  const url = URL.createObjectURL(pdfBlob);
+  window.open(url, "_blank");
+
+  // Clean up the URL object after opening
+  URL.revokeObjectURL(url);
 }
 
 export function getPDFTitleContent({ user, company }) {

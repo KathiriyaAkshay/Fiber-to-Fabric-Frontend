@@ -1,24 +1,32 @@
-import { ArrowLeftOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  CloseOutlined,
+  EyeOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Card,
   Col,
   DatePicker,
+  Descriptions,
   Divider,
   Flex,
   Form,
   Input,
+  Modal,
   Radio,
   Row,
   Select,
+  Typography,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
@@ -64,7 +72,7 @@ const addYSCSchemaResolver = yupResolver(
     total_amount: yup.string().required("Please, Enter total amount"),
     credit_days: yup.string().required("Please, Enter credit days"),
     pending_taka: yup.string().required("Please, Enter pending taka"),
-    pending_meter: yup.string().required("Please, Enter pending meter")
+    pending_meter: yup.string().required("Please, Enter pending meter"),
   })
 );
 
@@ -76,7 +84,7 @@ const AddMyOrder = () => {
     navigate(-1);
   }
 
-  const { mutateAsync: addMyOrder } = useMutation({
+  const { mutateAsync: addMyOrder, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createMyOrderRequest({
         data,
@@ -87,7 +95,7 @@ const AddMyOrder = () => {
       return res.data;
     },
     mutationKey: ["my-order", "add"],
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(["myOrder", "list", companyId]);
       message.success("Gray order created successfully");
       navigate(-1);
@@ -152,7 +160,7 @@ const AddMyOrder = () => {
     watch,
     setValue,
     setError,
-    getValues
+    getValues,
   } = useForm({
     defaultValues: {
       machine_name: null,
@@ -182,7 +190,14 @@ const AddMyOrder = () => {
     },
     resolver: addYSCSchemaResolver,
   });
-  const { machine_name, credit_days, order_type, order_count_in } = watch();
+  const {
+    machine_name,
+    credit_days,
+    order_type,
+    order_count_in,
+    party_id,
+    quality_id,
+  } = watch();
 
   useEffect(() => {
     if (credit_days) {
@@ -194,36 +209,57 @@ const AddMyOrder = () => {
 
   // ------------------------------------------------------------------------------------------
 
-  const { data: dropDownQualityListRes, dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: machine_name,
-        page: 0,
-        pageSize: 99999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: machine_name,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: machine_name,
+              page: 0,
+              pageSize: 99999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (machine_name) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: machine_name,
-            page: 0,
-            pageSize: 99999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
+
+  const selectedQualityDetail = useMemo(() => {
+    if (quality_id && dropDownQualityListRes) {
+      const quality = dropDownQualityListRes.rows.find(
+        ({ id }) => id === quality_id
+      );
+      console.log({ quality });
+
+      return [
+        {
+          label: "Inhouse Stock",
+          value: "",
+        },
+        { label: "Purchase/Job Stock", value: "" },
+        { label: "Next Production Meter", value: "" },
+        { label: "Total", value: "" },
+        { label: "(-) Total Scheduled Delivery", value: "" },
+      ];
+    }
+  }, [dropDownQualityListRes, quality_id]);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -258,6 +294,23 @@ const AddMyOrder = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  const selectedPartyDetails = useMemo(() => {
+    if (party_id && partyUserListRes) {
+      const party = partyUserListRes.partyList.rows.find(
+        ({ id }) => id === party_id
+      );
+      return [
+        {
+          label: "Party Name",
+          value: `${party.first_name} ${party.last_name}`,
+        },
+        { label: "GST No", value: party.gst_no },
+        { label: "Billing Address", value: party.address },
+        { label: "Delivery Address", value: party.party.delivery_address },
+      ];
+    }
+  }, [partyUserListRes, party_id]);
 
   const {
     data: dropdownSupplierListRes,
@@ -295,14 +348,13 @@ const AddMyOrder = () => {
         let total_amount = Number(total_meter) * Number(rate);
         setValue("total_amount", total_amount);
       }
-    };
+    }
 
     let total_taka = getValues("total_taka");
     if (total_taka !== undefined && total_taka !== "") {
       setValue("pending_taka", total_taka);
     }
-
-  }
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -461,6 +513,13 @@ const AddMyOrder = () => {
                   }}
                 />
               </Form.Item>
+              {party_id && (
+                <PartyDetailModel
+                  key={"view_party_details"}
+                  title="Party Details"
+                  details={selectedPartyDetails || {}}
+                />
+              )}
               <Button
                 icon={<PlusCircleOutlined />}
                 onClick={goToAddParty}
@@ -541,6 +600,12 @@ const AddMyOrder = () => {
                 }}
               />
             </Form.Item>
+            {quality_id && (
+              <QualityDetailModel
+                key={"quality_detail_modal"}
+                details={selectedQualityDetail}
+              />
+            )}
             <Button
               icon={<PlusCircleOutlined />}
               onClick={goToAddQuality}
@@ -639,9 +704,12 @@ const AddMyOrder = () => {
                       name="order_count_in"
                       render={({ field }) => {
                         return (
-                          <Radio.Group {...field} onChange={(e) => {
-                            setValue("order_count_in", e.target.value);
-                          }}>
+                          <Radio.Group
+                            {...field}
+                            onChange={(e) => {
+                              setValue("order_count_in", e.target.value);
+                            }}
+                          >
                             <Radio value={"taka"}>Taka</Radio>
                             <Radio value={"meter"}>Meter</Radio>
                             <Radio value={"lot"}>Lot</Radio>
@@ -740,7 +808,6 @@ const AddMyOrder = () => {
                               setValue("total_meter", total_meter);
 
                               CalculateRate();
-
                             }}
                           />
                         );
@@ -759,12 +826,12 @@ const AddMyOrder = () => {
                     <Controller
                       control={control}
                       name="total_meter"
-
                       render={({ field }) => {
                         return (
                           <Input
                             readOnly={order_count_in != "meter" ? true : false}
-                            type="number" {...field}
+                            type="number"
+                            {...field}
                             placeholder="12"
                             onChange={(e) => {
                               setValue("total_meter", e.target.value);
@@ -808,8 +875,12 @@ const AddMyOrder = () => {
                               setValue("rate", e.target.value);
 
                               let total_meter = getValues("total_meter");
-                              if (total_meter !== "" && total_meter !== undefined) {
-                                let total_amount = Number(total_meter) * Number(rate);
+                              if (
+                                total_meter !== "" &&
+                                total_meter !== undefined
+                              ) {
+                                let total_amount =
+                                  Number(total_meter) * Number(rate);
                                 setValue("total_amount", total_amount);
                               }
                             }}
@@ -854,7 +925,12 @@ const AddMyOrder = () => {
                       name="total_amount"
                       render={({ field }) => {
                         return (
-                          <Input readOnly type="number" {...field} placeholder="12" />
+                          <Input
+                            readOnly
+                            type="number"
+                            {...field}
+                            placeholder="12"
+                          />
                         );
                       }}
                     />
@@ -902,7 +978,12 @@ const AddMyOrder = () => {
                       name="delivered_taka"
                       render={({ field }) => {
                         return (
-                          <Input readOnly={true} type="number" {...field} placeholder="12" />
+                          <Input
+                            readOnly={true}
+                            type="number"
+                            {...field}
+                            placeholder="12"
+                          />
                         );
                       }}
                     />
@@ -923,7 +1004,12 @@ const AddMyOrder = () => {
                       name="delivered_meter"
                       render={({ field }) => {
                         return (
-                          <Input readOnly type="number" {...field} placeholder="12" />
+                          <Input
+                            readOnly
+                            type="number"
+                            {...field}
+                            placeholder="12"
+                          />
                         );
                       }}
                     />
@@ -999,7 +1085,7 @@ const AddMyOrder = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
@@ -1009,3 +1095,133 @@ const AddMyOrder = () => {
 };
 
 export default AddMyOrder;
+
+const QualityDetailModel = ({ details = [] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        icon={<EyeOutlined />}
+        onClick={() => setIsModalOpen(true)}
+        className="mb-6"
+        type="primary"
+      />
+      <Modal
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={null}
+        open={isModalOpen}
+        footer={null}
+        onCancel={() => {
+          setIsModalOpen(false);
+        }}
+        centered={true}
+        classNames={{
+          header: "text-center",
+        }}
+        width={"60%"}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
+      >
+        <Row gutter={16} style={{ marginTop: 20, marginBottom: 20 }}>
+          <Col span={24}>
+            <Descriptions
+              column={1}
+              bordered
+              className="grid-information-model"
+            >
+              {details && details.length
+                ? details?.map((element, index) => {
+                    return (
+                      <Descriptions.Item key={index} label={element?.label}>
+                        {element?.value}
+                      </Descriptions.Item>
+                    );
+                  })
+                : null}
+            </Descriptions>
+          </Col>
+        </Row>
+      </Modal>
+    </>
+  );
+};
+
+const PartyDetailModel = ({ details = [] }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        icon={<EyeOutlined />}
+        onClick={() => setIsModalOpen(true)}
+        className="mb-6"
+        type="primary"
+      />
+      <Modal
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={
+          <Typography.Text className="text-xl font-medium text-white">
+            Party Detail
+          </Typography.Text>
+        }
+        open={isModalOpen}
+        footer={() => {
+          <Button type="primary" onClick={() => setIsModalOpen(false)}>
+            OK
+          </Button>;
+        }}
+        onCancel={() => {
+          setIsModalOpen(false);
+        }}
+        centered={true}
+        classNames={{
+          header: "text-center",
+        }}
+        width={"60%"}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+          },
+        }}
+      >
+        <Row gutter={16} style={{ marginTop: 20, marginBottom: 20 }}>
+          <Col span={24}>
+            <Descriptions
+              column={1}
+              bordered
+              className="grid-information-model"
+            >
+              {details && details.length
+                ? details?.map((element, index) => {
+                    return (
+                      <Descriptions.Item key={index} label={element?.label}>
+                        {element?.value}
+                      </Descriptions.Item>
+                    );
+                  })
+                : null}
+            </Descriptions>
+          </Col>
+        </Row>
+      </Modal>
+    </>
+  );
+};

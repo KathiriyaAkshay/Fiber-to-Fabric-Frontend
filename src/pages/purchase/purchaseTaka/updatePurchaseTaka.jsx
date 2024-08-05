@@ -21,16 +21,15 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
-import {
-  getJobTakaByIdRequest,
-  updateJobTakaRequest,
-} from "../../../api/requests/job/jobTaka";
-import FieldTable from "../../../components/fieldTable";
 import dayjs from "dayjs";
-import moment from "moment";
-import { checkUniqueTakaNoRequest } from "../../../api/requests/purchase/purchaseTaka";
+import FieldTable from "../../../components/fieldTable";
+import {
+  checkUniqueTakaNoRequest,
+  getPurchaseTakaByIdRequest,
+  updatePurchaseTakaRequest,
+} from "../../../api/requests/purchase/purchaseTaka";
+import { disabledFutureDate } from "../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -49,14 +48,10 @@ const addJobTakaSchemaResolver = yupResolver(
   })
 );
 
-const UpdateJobTaka = () => {
+const UpdatePurchaseTaka = () => {
+  const queryClient = useQueryClient();
   const params = useParams();
   const { id } = params;
-
-  const queryClient = useQueryClient();
-  const [activeField, setActiveField] = useState(1);
-  // const [fieldArray, setFieldArray] = useState([0]);
-  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
@@ -64,6 +59,8 @@ const UpdateJobTaka = () => {
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
 
+  const [activeField, setActiveField] = useState(0);
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
   const [pendingWeight, setPendingWeight] = useState("");
@@ -75,10 +72,10 @@ const UpdateJobTaka = () => {
     navigate(-1);
   }
 
-  const { data: jobTakaDetails } = useQuery({
-    queryKey: ["yarnSentDetail", "get", id, { company_id: companyId }],
+  const { data: purchaseDetails } = useQuery({
+    queryKey: ["purchaseDetail", "get", id, { company_id: companyId }],
     queryFn: async () => {
-      const res = await getJobTakaByIdRequest({
+      const res = await getPurchaseTakaByIdRequest({
         id,
         params: { company_id: companyId },
       });
@@ -87,9 +84,9 @@ const UpdateJobTaka = () => {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: updateJobTaka, isPending } = useMutation({
+  const { mutateAsync: updatePurchaseTaka, isPending } = useMutation({
     mutationFn: async (data) => {
-      const res = await updateJobTakaRequest({
+      const res = await updatePurchaseTakaRequest({
         id,
         data,
         params: {
@@ -98,9 +95,9 @@ const UpdateJobTaka = () => {
       });
       return res.data;
     },
-    mutationKey: ["job", "taka", "update"],
+    mutationKey: ["purchase", "taka", "update"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["jobTaka", "list", companyId]);
+      queryClient.invalidateQueries(["purchaseTaka", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -114,19 +111,19 @@ const UpdateJobTaka = () => {
   });
 
   async function onSubmit(data) {
-    const jobChallanDetailArr = Array.from(
+    const purchaseChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
     );
 
-    const job_challan_detail = [];
-    jobChallanDetailArr.forEach((field) => {
+    const purchase_challan_detail = [];
+    purchaseChallanDetailArr.forEach((field) => {
       if (
         !isNaN(data[`taka_no_${field}`]) &&
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
-        job_challan_detail.push({
+        purchase_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
           weight: parseInt(data[`weight_${field}`]),
@@ -137,35 +134,35 @@ const UpdateJobTaka = () => {
     const newData = {
       delivery_address: data.delivery_address,
       gst_state: data.gst_state,
-      gst_in: data.gst_in,
+      gst_in: data.gst_in_2,
       challan_no: data.challan_no,
-      gray_order_id: parseInt(data.gray_order_id),
-      supplier_id: parseInt(data.supplier_id),
-      broker_id: parseInt(data.broker_id),
-      quality_id: parseInt(data.quality_id),
-      total_meter: parseInt(data.total_meter),
-      total_weight: parseInt(data.total_weight),
-      pending_meter: parseInt(data.pending_meter),
-      pending_weight: parseInt(data.pending_weight),
-      pending_taka: parseInt(data.pending_taka),
-      total_taka: parseInt(data.total_taka),
+      gray_order_id: +data.gray_order_id,
+      supplier_id: +data.supplier_id,
+      broker_id: +data.broker_id,
+      quality_id: +data.quality_id,
+      total_meter: +totalMeter,
+      total_weight: +totalWeight,
+      total_taka: +totalTaka,
+      pending_meter: +pendingMeter,
+      pending_weight: +pendingWeight,
+      pending_taka: +pendingTaka,
       is_grey: true,
-      job_challan_detail: job_challan_detail,
+      purchase_challan_detail: purchase_challan_detail,
     };
-    await updateJobTaka(newData);
+    await updatePurchaseTaka(newData);
   }
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
     setValue,
     setFocus,
     reset,
-    watch,
+    setError,
     clearErrors,
     getValues,
-    setError,
   } = useForm({
     defaultValues: {
       // company_id: null,
@@ -188,7 +185,6 @@ const UpdateJobTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  // const { supplier_name } = watch();
   const { supplier_name, gray_order_id, supplier_id } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -217,23 +213,16 @@ const UpdateJobTaka = () => {
       enabled: Boolean(companyId),
     });
 
-  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-  //   queryKey: ["broker", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getBrokerListRequest({
-  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: ["party", "list", { company_id: companyId }],
+      queryKey: [
+        "party",
+        "list",
+        { company_id: companyId, order_type: "purchase/trading" },
+      ],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "job" },
+          params: { company_id: companyId, order_type: "purchase/trading" },
         });
         return res.data?.data;
       },
@@ -247,7 +236,7 @@ const UpdateJobTaka = () => {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, type: "purchase/trading" },
       });
       return res.data?.data?.supplierList;
     },
@@ -271,11 +260,6 @@ const UpdateJobTaka = () => {
       return [];
     }
   }, [supplier_name, dropdownSupplierListRes]);
-
-  function disabledFutureDate(current) {
-    // Disable dates after today
-    return current && current > moment().endOf("day");
-  }
 
   const checkUniqueTakaHandler = async (takaNo, fieldNumber) => {
     try {
@@ -308,11 +292,10 @@ const UpdateJobTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      if (order) {
-        setPendingMeter(+order.pending_meter - +totalMeter);
-        setPendingTaka(+order.pending_taka - +totalTaka);
-        setPendingWeight(+order.pending_weight - +totalWeight);
-      }
+
+      setPendingMeter(+order.pending_meter - +totalMeter);
+      setPendingTaka(+order.pending_taka - +totalTaka);
+      setPendingWeight(+order.pending_weight - +totalWeight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -320,21 +303,21 @@ const UpdateJobTaka = () => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
       setSelectedOrder(order);
-      setValue("total_meter", order?.total_meter);
-      setValue("total_taka", order?.total_taka);
-      setValue("total_weight", order?.weight);
+      setValue("total_meter", order.total_meter);
+      setValue("total_taka", order.total_taka);
+      setValue("total_weight", order.weight);
       setValue(
         "broker_name",
-        `${order?.broker?.first_name} ${order?.broker?.last_name}`
+        `${order.broker.first_name} ${order.broker.last_name}`
       );
-      setValue("broker_id", order?.broker.id);
-      setValue("quality_id", order?.inhouse_quality.id);
-      // setValue("supplier_name", order?.supplier_name);
-      setValue("pending_meter", order?.pending_meter);
+      setValue("broker_id", order.broker.id);
+      setValue("quality_id", order.inhouse_quality.id);
+      setValue("supplier_name", order.supplier_name);
+      setValue("pending_meter", order.pending_meter);
 
-      setPendingMeter(order?.pending_meter || 0);
-      setPendingTaka(order?.pending_taka || 0);
-      setPendingWeight(order?.pending_weight || 0);
+      setPendingMeter(order.pending_meter || 0);
+      setPendingTaka(order.pending_taka || 0);
+      setPendingWeight(order.pending_weight || 0);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -343,7 +326,6 @@ const UpdateJobTaka = () => {
       const selectedCompany = companyListRes?.rows?.find(
         ({ id }) => id === companyId
       );
-
       setValue("gst_in_1", selectedCompany.gst_no);
     }
   }, [companyListRes, companyId, setValue]);
@@ -359,45 +341,43 @@ const UpdateJobTaka = () => {
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
   useEffect(() => {
-    if (jobTakaDetails) {
+    if (purchaseDetails) {
       const {
-        // company_id,
         challan_no,
         delivery_address,
         gst_in,
         gst_state,
         quality_id,
         supplier_id,
-        gray_order_id,
         total_meter,
         total_taka,
         total_weight,
-        is_grey,
-        job_challan_details,
         supplier,
-        createdAt,
         broker_id,
         broker,
-      } = jobTakaDetails;
+        gray_order_id,
+        createdAt,
+        purchase_challan_details,
+      } = purchaseDetails;
 
-      setActiveField(job_challan_details.length + 1);
-      let jobChallanDetails = {};
-      job_challan_details.forEach((item, index) => {
-        jobChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
-        jobChallanDetails[`meter_${index + 1}`] = item.meter;
-        jobChallanDetails[`weight_${index + 1}`] = item.weight;
+      setActiveField(purchase_challan_details.length + 1);
+      let purchaseChallanDetails = {};
+      purchase_challan_details.forEach((item, index) => {
+        purchaseChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
+        purchaseChallanDetails[`meter_${index + 1}`] = item.meter;
+        purchaseChallanDetails[`weight_${index + 1}`] = item.weight;
 
-        setTotalTaka(job_challan_details.length);
+        setTotalTaka(purchase_challan_details.length);
         setTotalMeter((prev) => prev + +item.meter);
         setTotalWeight((prev) => prev + +item.weight);
       });
       reset({
-        // company_id,
+        //   company_id,
         challan_no,
         delivery_address,
         gst_in_1: gst_in,
-        gst_in_2: gst_in,
-        gst_state,
+        // gst_in_2: gst_in,
+        gst_state: gst_state,
         quality_id,
         broker_id: broker_id,
         broker_name: `${broker.first_name} ${broker.last_name}`,
@@ -406,16 +386,12 @@ const UpdateJobTaka = () => {
         total_meter,
         total_taka,
         total_weight,
-        // pending_meter: gray_order.pending_meter,
-        // pending_taka: gray_order.pending_taka,
-        // pending_weight: gray_order.pending_weight,
-        is_grey,
         supplier_name: supplier.supplier_name,
         challan_date: dayjs(createdAt),
-        ...jobChallanDetails,
+        ...purchaseChallanDetails,
       });
     }
-  }, [jobTakaDetails, reset]);
+  }, [purchaseDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -423,7 +399,7 @@ const UpdateJobTaka = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Update Job Taka</h3>
+        <h3 className="m-0 text-primary">Edit Purchase Challan</h3>
       </div>
       <Form layout="vertical">
         <Row
@@ -459,7 +435,6 @@ const UpdateJobTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                    disabled
                   />
                 )}
               />
@@ -480,10 +455,10 @@ const UpdateJobTaka = () => {
                 name="challan_date"
                 render={({ field }) => (
                   <DatePicker
-                    disabledDate={disabledFutureDate}
                     {...field}
                     style={{ width: "100%" }}
                     format={"DD-MM-YYYY"}
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />
@@ -516,7 +491,6 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -600,7 +574,6 @@ const UpdateJobTaka = () => {
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -630,7 +603,6 @@ const UpdateJobTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                    disabled
                   />
                 )}
               />
@@ -688,32 +660,12 @@ const UpdateJobTaka = () => {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={6}>
-            <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
         </Row>
 
         <Row
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-30px",
           }}
         >
           <Col span={6}>
@@ -766,7 +718,6 @@ const UpdateJobTaka = () => {
                   <Select
                     {...field}
                     placeholder="Select Company"
-                    disabled={true}
                     options={dropDownSupplierCompanyOption.map(
                       ({ supplier_id, supplier_company }) => {
                         return { label: supplier_company, value: supplier_id };
@@ -847,7 +798,6 @@ const UpdateJobTaka = () => {
             gutter={18}
             style={{
               padding: "12px",
-              marginTop: "-30px",
             }}
           >
             <Col span={6}></Col>
@@ -856,15 +806,15 @@ const UpdateJobTaka = () => {
               <Typography style={{ color: "red" }}>Pending</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "start" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "start" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
             </Col>
 
-            <Col span={3} style={{ textAlign: "start" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
             </Col>
           </Row>
@@ -879,6 +829,7 @@ const UpdateJobTaka = () => {
           setValue={setValue}
           activeField={activeField}
           setActiveField={setActiveField}
+          checkUniqueTaka={true}
           checkUniqueTakaHandler={checkUniqueTakaHandler}
           isTakaExist={isTakaExist}
           setTotalMeter={setTotalMeter}
@@ -910,8 +861,9 @@ const UpdateJobTaka = () => {
           <Button
             type="primary"
             htmlType="button"
-            loading={isPending}
             onClick={handleSubmit(onSubmit)}
+            loading={isPending}
+            disabled={isTakaExist}
           >
             Update
           </Button>
@@ -921,4 +873,4 @@ const UpdateJobTaka = () => {
   );
 };
 
-export default UpdateJobTaka;
+export default UpdatePurchaseTaka;
