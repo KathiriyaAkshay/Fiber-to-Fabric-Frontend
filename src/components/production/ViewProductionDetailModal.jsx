@@ -1,7 +1,8 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Modal, Table } from "antd";
+import { Button, Descriptions, Modal, Table, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { CloseOutlined } from "@ant-design/icons";
 
 const ViewProductionDetailModal = ({ title, details }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +15,12 @@ const ViewProductionDetailModal = ({ title, details }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   };
+
+  const adjustHeight = {};
+  if (true) {
+    adjustHeight.height = "calc(100vh - 150px)";
+    adjustHeight.overflowY = "scroll";
+  }
 
   const columnsModal = [
     {
@@ -47,6 +54,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
       dataIndex: "beam_no",
     },
   ];
+
   const data = [
     {
       key: "1",
@@ -212,21 +220,48 @@ const ViewProductionDetailModal = ({ title, details }) => {
         <EyeOutlined />
       </Button>
       <Modal
-        title=""
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={
+          <Typography.Text className="text-xl font-medium text-white">
+            {title}
+          </Typography.Text>
+        }
         open={isModalOpen}
-        onOk={handleOk}
+        footer={null}
         onCancel={handleCancel}
-        width="80%"
+        centered={true}
+        classNames={{
+          header: "text-center",
+        }}
+        width={"80%"}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "10px 16px",
+            ...adjustHeight,
+          },
+        }}
       >
-        <Descriptions title={title} bordered items={items} size="small" />
+        <Descriptions className="production-item-descriptions" bordered items={items} size="small" />
 
         <div
           className="text-center"
-          style={{ fontWeight: 600, fontSize: "1.1rem" }}
+          style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "1.2rem" }}
         >
           Employee Avg. Report
         </div>
-        <Table columns={columnsModal} dataSource={data} />
+
+        <Table 
+          style={{marginTop: "20px"}}
+          columns={columnsModal} 
+          dataSource={data} 
+        />
       </Modal>
     </>
   );

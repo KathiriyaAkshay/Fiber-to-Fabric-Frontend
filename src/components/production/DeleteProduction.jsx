@@ -63,7 +63,7 @@ const DeleteProduction = ({ details }) => {
         onCancel={() => setIsOpenDeleteDialog(false)}
         onConfirm={handleDelete}
         title="Delete Confirmation"
-        content="Are you sure you want to delete production?"
+        content="Are you sure you want to this production taka ?"
         confirmText="Delete"
         cancelText="Cancel"
       />

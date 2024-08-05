@@ -447,6 +447,11 @@ color: black;
   border-top: 1px solid #efefef;
 }
 
+.production-item-descriptions .ant-descriptions-item-label span{
+  font-weight: 600 ;
+  color: #000000;
+}
+
 /* Custom scrollbar css  */
 
 ::-webkit-scrollbar {
