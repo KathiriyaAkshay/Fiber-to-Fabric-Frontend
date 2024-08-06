@@ -95,8 +95,8 @@ const MyOrderList = () => {
           return res.data?.data;
         }
       },
-      enabled: Boolean(companyId),
-    });
+    enabled: Boolean(companyId),
+  });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
