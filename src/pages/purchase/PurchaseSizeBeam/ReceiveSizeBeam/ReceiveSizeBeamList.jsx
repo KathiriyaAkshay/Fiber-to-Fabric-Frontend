@@ -24,7 +24,6 @@ import BeamCardInformationModel from "../../../../components/common/modal/beamCa
 import GridInformationModel from "../../../../components/common/modal/gridInformationModel";
 import moment from "moment";
 
-
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
@@ -90,7 +89,7 @@ function ReceiveSizeBeamList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Challan Date",
@@ -108,40 +107,34 @@ function ReceiveSizeBeamList() {
       title: "Quantity KG",
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
-      render: (text, record) => (
-        `${record?.inhouse_quality?.quality_name} - ${record?.inhouse_quality?.quality_weight}KG`
-      )
+      render: (text, record) =>
+        `${record?.inhouse_quality?.quality_name} - ${record?.inhouse_quality?.quality_weight}KG`,
     },
     {
       title: "Supplier",
       dataIndex: "supplier",
-      render: (text, record) => (
-        `${record?.supplier?.first_name} ${record?.supplier?.last_name}`
-      )
-    },
-    {
-      title: "Total meter",
-      dataIndex: "total_meter"
+      render: (text, record) =>
+        `${record?.supplier?.first_name} ${record?.supplier?.last_name}`,
     },
     {
       title: "Total taka",
       dataIndex: "recieve_size_beam_details",
-      render: (text, record) => {
+      render: (text) => {
         let total_taka = 0;
         text.map((element) => {
           total_taka = total_taka + element?.taka;
-        })
-        return (
-          `${total_taka}`
-        )
-      }
+        });
+        return `${total_taka}`;
+      },
+    },
+    {
+      title: "Total meter",
+      dataIndex: "total_meter",
     },
     {
       title: "No Of Beam",
       dataIndex: "recieve_size_beam_details",
-      render: (text, record) => (
-        `${text?.length}`
-      )
+      render: (text) => `${text?.length}`,
     },
     {
       title: "Beam Type",
@@ -151,47 +144,67 @@ function ReceiveSizeBeamList() {
     {
       title: "Bill status",
       dataIndex: "bill_status",
-      render: (text, record) => (
-        record == "pending" ? <>
-          <Tag color="red">Pending</Tag>
-        </> : <>
-          <Tag color="green">{text}</Tag>
-        </>
-      )
+      render: (text, record) =>
+        record == "pending" ? (
+          <>
+            <Tag color="red">Pending</Tag>
+          </>
+        ) : (
+          <>
+            <Tag color="green">{text}</Tag>
+          </>
+        ),
     },
     {
       title: "Action",
       render: (details) => {
-        let totalTaka = 0 ; 
-        let totalMeter = 0 ; 
+        let totalTaka = 0;
+        let totalMeter = 0;
 
         details?.recieve_size_beam_details?.map((element) => {
-          totalTaka = Number(totalTaka) + Number(element?.taka) ; 
-          totalMeter = Number(totalMeter) + Number(element?.meters) ; 
-        })
+          totalTaka = Number(totalTaka) + Number(element?.taka);
+          totalMeter = Number(totalMeter) + Number(element?.meters);
+        });
 
         return (
           <Space>
             <GridInformationModel
-              title =  "Receive size beam details"
+              title="Receive size beam details"
               details={[
-                {label: "Challan No", value: details?.challan_no}, 
-                {label: "Challan Date	", value: moment(details?.createdAt).format("DD-MM-YYYY")}, 
-                {label: "Quality Name	", value: `${details?.inhouse_quality?.quality_name} - ${details?.inhouse_quality?.quality_weight}`}, 
-                {label: "Supplier Name", value: details?.supplier?.supplier?.supplier_name}, 
-                {label: "Supplier Address	", value: details?.supplier?.address}, 
-                {label: "Supplier GST	", value: details?.gst_no}, 
-                {label: "Supplier Company", value: details?.supplier?.supplier?.supplier_company}, 
-                {label: "Total Meter", value: totalMeter}, 
-                {label: "Total Taka", value: totalTaka}, 
-                {label: "Total Beam", value: details?.recieve_size_beam_details?.length},
-                {label: "Beam Type", value: details?.beam_type} 
+                { label: "Challan No", value: details?.challan_no },
+                {
+                  label: "Challan Date	",
+                  value: moment(details?.createdAt).format("DD-MM-YYYY"),
+                },
+                {
+                  label: "Quality Name	",
+                  value: `${details?.inhouse_quality?.quality_name} - ${details?.inhouse_quality?.quality_weight}`,
+                },
+                {
+                  label: "Supplier Name",
+                  value: details?.supplier?.supplier?.supplier_name,
+                },
+                {
+                  label: "Supplier Address	",
+                  value: details?.supplier?.address,
+                },
+                { label: "Supplier GST	", value: details?.gst_no },
+                {
+                  label: "Supplier Company",
+                  value: details?.supplier?.supplier?.supplier_company,
+                },
+                { label: "Total Meter", value: totalMeter },
+                { label: "Total Taka", value: totalTaka },
+                {
+                  label: "Total Beam",
+                  value: details?.recieve_size_beam_details?.length,
+                },
+                { label: "Beam Type", value: details?.beam_type },
               ]}
             />
 
             {details?.bill_status == "pending" && (
               <>
-              
                 <Button
                   onClick={() => {
                     navigateToUpdate(details.id);
@@ -199,18 +212,11 @@ function ReceiveSizeBeamList() {
                 >
                   <EditOutlined />
                 </Button>
-                <DeleteSizeBeamOrderButton
-                  details={details}
-                />
+                <DeleteSizeBeamOrderButton details={details} />
               </>
-
             )}
-            <SizeBeamChallanModal
-              details={details}
-            />
-            <BeamCardInformationModel
-              data={details}
-            />
+            <SizeBeamChallanModal details={details} />
+            <BeamCardInformationModel data={details} />
           </Space>
         );
       },
@@ -219,7 +225,7 @@ function ReceiveSizeBeamList() {
   ];
 
   const disableFutureDates = (current) => {
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   function renderTable() {
@@ -244,6 +250,37 @@ function ReceiveSizeBeamList() {
         }}
         style={{
           overflow: "auto",
+        }}
+        summary={() => {
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {receiveSizeBeamListRes?.totalTaka}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {receiveSizeBeamListRes?.totalMeter}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {receiveSizeBeamListRes?.totalBeam}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );

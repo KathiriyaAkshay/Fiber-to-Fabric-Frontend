@@ -99,21 +99,20 @@ const UpdateBeamCard = () => {
 
   async function onSubmit(data) {
     const newData = {
-      loaded_beam_id: +data.beam_no,
-      machine_name: data.machine_name,
-      beam_type: data.beam_type,
-      machine_no: data.machine_no,
+      // loaded_beam_id: +data.beam_no,
+      // machine_name: data.machine_name,
+      // beam_type: data.beam_type,
+      // machine_no: data.machine_no,
       quality_id: +data.quality_id,
-      pbn_id: data.pbn_id,
-      jbn_id: data.jbn_id,
-      non_pasarela_beam_id: +data.non_pasarela_beam_id,
-      load_date: dayjs(data.date).format("YYYY-MM-DD"),
+      // pbn_id: data.pbn_id,
+      // jbn_id: data.jbn_id,
+      // non_pasarela_beam_id: data.non_pasarela_beam_id,
+      // load_date: dayjs(data.date).format("YYYY-MM-DD"),
       remark: data.remark,
-      pending_meter: +data.meter,
+      // pending_meter: +data.meter,
       peak: +data.peak,
       read: +data.read,
     };
-    console.log({ newData });
     await updateNewBeam(newData);
   }
 

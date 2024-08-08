@@ -90,7 +90,7 @@ const AddBeamCard = () => {
       quality_id: +data.quality_id,
       pbn_id: data.pbn_id,
       jbn_id: data.jbn_id,
-      non_pasarela_beam_id: +data.non_pasarela_beam_id,
+      non_pasarela_beam_id: data.non_pasarela_beam_id,
       load_date: dayjs(data.date).format("YYYY-MM-DD"),
       remark: data.remark,
       pending_meter: +data.meter,
@@ -292,7 +292,7 @@ const AddBeamCard = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            paddingTop: "12px",
           }}
         >
           <Col span={12}>
@@ -402,9 +402,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          style={{
-            padding: "12px",
-          }}
+          // style={{
+          //   padding: "12px",
+          // }}
         >
           <Col span={12}>
             <Form.Item
@@ -473,9 +473,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          style={{
-            padding: "12px",
-          }}
+          // style={{
+          //   padding: "12px",
+          // }}
         >
           <Col span={12}>
             <Form.Item
@@ -535,9 +535,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          style={{
-            padding: "12px",
-          }}
+          // style={{
+          //   padding: "12px",
+          // }}
         >
           <Col span={6}>
             <Form.Item
@@ -618,9 +618,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          style={{
-            padding: "12px",
-          }}
+          // style={{
+          //   padding: "12px",
+          // }}
         >
           <Col span={6}>
             <Form.Item

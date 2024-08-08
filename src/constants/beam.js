@@ -6,5 +6,5 @@ export const BEAM_TYPE = [
     { label: "Non-Pasarela", value: "non-pasarela" },
     { label: "Bhidan Of Month", value: "bhidan_of_beam" },
     { label: "Sent", value: "sent" },
-    { label: "Advance Beam", value: "advance_beam" },
+    { label: "Advance Beam", value: "primary(advance)" },
 ]

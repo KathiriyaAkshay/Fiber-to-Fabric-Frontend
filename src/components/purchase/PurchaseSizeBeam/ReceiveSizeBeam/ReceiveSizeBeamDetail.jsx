@@ -1,14 +1,42 @@
 import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Space, Table, message } from "antd";
+import { Button, Form, Input, Space, Table, message } from "antd";
 import { Controller, useFieldArray } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-function ReceiveSizeBeamDetail({ control, errors }) {
-  const [noOfAdd, setNoOfAdd] = useState(1);
+function ReceiveSizeBeamDetail({
+  control,
+  errors,
+  sizeBeamOrderListRes,
+  size_beam_order_id,
+}) {
+  // const [noOfAdd, setNoOfAdd] = useState(1);
+  const [deletedRecords, setDeletedRecords] = useState([]);
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: "beam_details",
   });
+
+  const addNewRowHandler = () => {
+    const selectedOrder = sizeBeamOrderListRes?.SizeBeamOrderList.find(
+      ({ id }) => id == size_beam_order_id
+    );
+    if (fields.length === selectedOrder.size_beam_order_details.length) {
+      message.error("Your Order is Finished.");
+    } else {
+      append(deletedRecords[0]);
+      setDeletedRecords((prev) => prev.filter((_, index) => index !== 0));
+    }
+  };
+
+  const removeRowHandler = (index) => {
+    if (fields?.length == 1) {
+      message.warning("At least required one beam in receive size beam");
+    } else {
+      remove(index);
+      setDeletedRecords((prev) => [...prev, fields[index]]);
+    }
+  };
 
   const columns = [
     {
@@ -17,6 +45,36 @@ function ReceiveSizeBeamDetail({ control, errors }) {
       dataIndex: "beam_no",
       className: "align-top",
       width: 100,
+      render: (text, record, index) => {
+        return (
+          <>
+            {text}
+            <Form.Item
+              key={text?.id}
+              name={`beam_details.${index}.size_beam_order_detail_id`}
+              validateStatus={
+                errors.beam_details?.[index]?.size_beam_order_detail_id
+                  ? "error"
+                  : ""
+              }
+              help={
+                errors.beam_details?.[index]?.size_beam_order_detail_id &&
+                errors.beam_details?.[index]?.size_beam_order_detail_id.message
+              }
+              required={true}
+              className="mb-0"
+            >
+              <Controller
+                control={control}
+                name={`beam_details.${index}.size_beam_order_detail_id`}
+                render={({ field }) => (
+                  <Input {...field} type="hidden" placeholder="10" />
+                )}
+              />
+            </Form.Item>
+          </>
+        );
+      },
     },
     {
       title: "Supplier Beam No*",
@@ -239,21 +297,15 @@ function ReceiveSizeBeamDetail({ control, errors }) {
             <Button
               danger
               key={text?.id}
-              onClick={() => {
-                if (fields?.length == 1){
-                  message.warning("At least required one beam in receive size beam") ; 
-                } else{
-                  remove(index);
-                }
-              }}
+              onClick={() => removeRowHandler(index)}
             >
               <DeleteOutlined />
             </Button>
-            <Button onClick={() => {
-              console.log(fields);
-            }}>
-              <PlusCircleFilled/>
-            </Button>
+            {index === fields.length - 1 && (
+              <Button type="primary" onClick={addNewRowHandler}>
+                <PlusCircleFilled />
+              </Button>
+            )}
           </Space>
         );
       },
@@ -266,9 +318,7 @@ function ReceiveSizeBeamDetail({ control, errors }) {
       dataSource={fields}
       columns={columns}
       pagination={false}
-      footer={() => (
-        <></>
-      )}
+      footer={null}
       rowKey={"id"}
     />
   );

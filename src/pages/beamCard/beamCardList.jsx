@@ -48,7 +48,103 @@ const getTakaDetailsObject = (details) => {
       details.non_pasarela_beam_detail ||
       details.recieve_size_beam_detail ||
       details.job_beam_receive_detail;
-    return { ...object, meter: object.meters || object.meter };
+
+    return object === null || object === undefined
+      ? null
+      : { ...object, meter: object?.meters || object?.meter };
+  }
+};
+
+const getActions = (details) => {
+  switch (details.status) {
+    case "running":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "finish":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: !details.is_completed,
+      };
+
+    case "cut":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "pasarela":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: Boolean(details.non_pasarela_beam_id),
+        isArrow: false,
+      };
+
+    case "non-pasarela":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: false,
+        isBarCode: true,
+        isDelete: Boolean(details.non_pasarela_beam_id),
+        isArrow: false,
+      };
+
+    case "bhidan_of_beam":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "sent":
+      return {
+        isView: true,
+        isEdit: false,
+        isPlus: false,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "primary(advance)":
+      return {
+        isView: true,
+        isEdit: false,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: true,
+        isArrow: false,
+      };
+
+    default:
+      return {
+        isView: false,
+        isEdit: false,
+        isPlus: false,
+        isBarCode: false,
+        isDelete: false,
+      };
   }
 };
 
@@ -67,7 +163,7 @@ const BeamCardList = () => {
 
   const [machine, setMachine] = useState();
   const [beamType, setBeamType] = useState("primary");
-  const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
+  const [beamTypeDropDown, setBeamTypeDropDow] = useState("running");
   const [quality, setQuality] = useState(null);
 
   const debouncedSearch = useDebounce(search, 500);
@@ -224,7 +320,7 @@ const BeamCardList = () => {
       title: "Beam No",
       render: (details) => {
         const item = getTakaDetailsObject(details);
-        return item.beam_no;
+        return item?.beam_no || "-";
       },
     },
     {
@@ -236,7 +332,7 @@ const BeamCardList = () => {
       title: "Taka",
       render: (details) => {
         const item = getTakaDetailsObject(details);
-        return item.taka;
+        return item?.taka || "-";
       },
     },
     {
@@ -246,7 +342,7 @@ const BeamCardList = () => {
           details.non_pasarela_beam_detail ||
           details.recieve_size_beam_detail ||
           details.job_beam_receive_detail;
-        return obj.meters || obj.meter;
+        return obj?.meters || obj?.meter || "-";
       },
     },
     {
@@ -265,7 +361,7 @@ const BeamCardList = () => {
       title: "pano",
       render: (details) => {
         const item = getTakaDetailsObject(details);
-        return item.pano;
+        return item?.pano || "-";
       },
     },
     {
@@ -295,17 +391,29 @@ const BeamCardList = () => {
     {
       title: "Action",
       render: (details) => {
+        const isView = true;
+        const isEdit = true;
+        const isPlus = true;
+        const isBarCode = true;
+
+        console.log({ details });
         return (
           <Space>
             <BeamCardViewDetailModal title="Beam Details" details={details} />
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <FinishBeamCardModal />
+            {isEdit && (
+              <Button
+                onClick={() => {
+                  navigateToUpdate(details.id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+            )}
+            <FinishBeamCardModal
+              details={details}
+              companyId={companyId}
+              beamTypeDropDown={details.status}
+            />
             <Button>
               <AppstoreOutlined />
             </Button>
@@ -342,8 +450,8 @@ const BeamCardList = () => {
           pageData.forEach((details) => {
             const item = getTakaDetailsObject(details);
 
-            totalPendingMeter += +details.pending_meter;
-            totalMeter += +item.meter;
+            totalPendingMeter += +details.pending_meter || 0;
+            totalMeter += item ? +item.meter : 0;
           });
 
           return (
@@ -472,7 +580,6 @@ const BeamCardList = () => {
               Beam Type
             </Typography.Text>
             <Select
-              allowClear
               placeholder="Select Beam Type"
               value={beamTypeDropDown}
               options={BEAM_TYPE}
@@ -680,7 +787,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item.beam_no}</Typography.Text>
+                  <Typography.Text>{item?.beam_no}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -788,7 +895,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item.end_of_tars}</Typography.Text>
+                  <Typography.Text>{item?.end_of_tars}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -798,7 +905,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item.pano}</Typography.Text>
+                  <Typography.Text>{item?.pano}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -820,7 +927,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item.taka}</Typography.Text>
+                  <Typography.Text>{item?.taka}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -830,7 +937,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item.meter}</Typography.Text>
+                  <Typography.Text>{item?.meter}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
