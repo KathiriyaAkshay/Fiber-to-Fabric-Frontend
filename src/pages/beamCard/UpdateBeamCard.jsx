@@ -16,7 +16,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
@@ -49,6 +49,8 @@ const addJobTakaSchemaResolver = yupResolver(
 
 const UpdateBeamCard = () => {
   const queryClient = useQueryClient();
+  const [isDisable, setIsDisable] = useState(false);
+
   const params = useParams();
   const { id } = params;
 
@@ -258,7 +260,6 @@ const UpdateBeamCard = () => {
   //     const selectedBeamNo = pasarelaBeamList.rows.find(
   //       ({ id }) => id === beam_no
   //     );
-  //     console.log({ selectedBeamNo });
   //     setValue("non_pasarela_beam_id", selectedBeamNo.non_pasarela_beam_id);
   //     setValue("pbn_id", selectedBeamNo.pbn_id);
   //     setValue("jbn_id", selectedBeamNo.jbn_id);
@@ -299,7 +300,6 @@ const UpdateBeamCard = () => {
 
   useEffect(() => {
     if (beamCardDetails) {
-      console.log({ beamCardDetails });
       const {
         id,
         remark,
@@ -315,17 +315,19 @@ const UpdateBeamCard = () => {
         job_beam_receive_detail,
         recieve_size_beam_detail,
 
-        non_pasarela_beam_id,
         pbn_id,
         jbn_id,
+
+        non_pasarela_beam_id,
+        status,
       } = beamCardDetails.loadedBeam;
+
+      setIsDisable(status !== "pasarela" && status !== "non-pasarela");
 
       const obj =
         non_pasarela_beam_detail ||
         job_beam_receive_detail ||
         recieve_size_beam_detail;
-
-      console.log({ tar: obj.ends_or_tars });
 
       reset({
         beam_type,
@@ -341,10 +343,10 @@ const UpdateBeamCard = () => {
         quality_id,
         date: dayjs(createdAt),
 
-        taka: obj.taka,
-        meter: obj.meters,
-        pano: obj.pano,
-        tar: obj.ends_or_tars,
+        taka: obj?.taka || 0,
+        meter: obj?.meter || obj?.meters || 0,
+        pano: obj?.pano || 0,
+        tar: obj?.ends_or_tars || 0,
 
         non_pasarela_beam_id,
         pbn_id,
@@ -554,7 +556,7 @@ const UpdateBeamCard = () => {
                 control={control}
                 name="taka"
                 render={({ field }) => (
-                  <Input {...field} disabled placeholder="12" />
+                  <Input {...field} disabled={isDisable} placeholder="12" />
                 )}
               />
             </Form.Item>
@@ -573,7 +575,7 @@ const UpdateBeamCard = () => {
                 control={control}
                 name="meter"
                 render={({ field }) => (
-                  <Input {...field} disabled placeholder="12" />
+                  <Input {...field} disabled={isDisable} placeholder="12" />
                 )}
               />
             </Form.Item>
@@ -637,7 +639,7 @@ const UpdateBeamCard = () => {
                 control={control}
                 name="pano"
                 render={({ field }) => (
-                  <Input {...field} disabled placeholder="12" />
+                  <Input {...field} disabled={isDisable} placeholder="12" />
                 )}
               />
             </Form.Item>
@@ -656,7 +658,7 @@ const UpdateBeamCard = () => {
                 control={control}
                 name="tar"
                 render={({ field }) => (
-                  <Input {...field} disabled placeholder="12" />
+                  <Input {...field} disabled={isDisable} placeholder="12" />
                 )}
               />
             </Form.Item>

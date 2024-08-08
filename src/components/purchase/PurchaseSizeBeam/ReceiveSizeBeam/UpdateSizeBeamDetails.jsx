@@ -5,13 +5,10 @@ import { Controller, useFieldArray } from "react-hook-form";
 function UpdateSizeBeamDetail({
   control,
   errors,
-  // sizeBeamOrderListRes,
   orderData,
-  // size_beam_order_id,
   deletedRecords,
   setDeletedRecords,
 }) {
-  // const [noOfAdd, setNoOfAdd] = useState(1);
   const { fields, append, remove } = useFieldArray({
     control,
     name: "beam_details",
@@ -19,8 +16,6 @@ function UpdateSizeBeamDetail({
 
   const addNewRowHandler = () => {
     const selectedOrder = orderData;
-    // console.log({ selectedOrder });
-
     if (fields.length === selectedOrder.size_beam_order_details.length) {
       message.error("Your Order is Finished.");
     } else {
@@ -42,8 +37,6 @@ function UpdateSizeBeamDetail({
             }
           }
         );
-        console.log("else", fields, remainingOrder);
-
         append(remainingOrder[0]);
       }
     }
@@ -167,7 +160,13 @@ function UpdateSizeBeamDetail({
               control={control}
               name={`beam_details.${index}.ends_or_tars`}
               render={({ field }) => (
-                <Input {...field} type="number" min={0} step={0.01} />
+                <Input
+                  {...field}
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  readOnly={fields[index].is_running}
+                />
               )}
             />
           </Form.Item>
@@ -195,7 +194,13 @@ function UpdateSizeBeamDetail({
               control={control}
               name={`beam_details.${index}.tpm`}
               render={({ field }) => (
-                <Input {...field} type="number" min={0} step={0.01} />
+                <Input
+                  {...field}
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  readOnly={fields[index].is_running}
+                />
               )}
             />
           </Form.Item>
@@ -223,7 +228,13 @@ function UpdateSizeBeamDetail({
               control={control}
               name={`beam_details.${index}.pano`}
               render={({ field }) => (
-                <Input {...field} type="number" min={0} step={0.01} />
+                <Input
+                  {...field}
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  readOnly={fields[index].is_running}
+                />
               )}
             />
           </Form.Item>
@@ -337,13 +348,17 @@ function UpdateSizeBeamDetail({
       render: (text, record, index) => {
         return (
           <Space>
-            <Button
-              danger
-              key={text?.id}
-              onClick={() => removeRowHandler(index)}
-            >
-              <DeleteOutlined />
-            </Button>
+            {fields[index].is_running ? (
+              <>
+                <Button
+                  danger
+                  key={text?.id}
+                  onClick={() => removeRowHandler(index)}
+                >
+                  <DeleteOutlined />
+                </Button>
+              </>
+            ) : null}
             {index === fields.length - 1 && (
               <Button type="primary" onClick={addNewRowHandler}>
                 <PlusCircleFilled />

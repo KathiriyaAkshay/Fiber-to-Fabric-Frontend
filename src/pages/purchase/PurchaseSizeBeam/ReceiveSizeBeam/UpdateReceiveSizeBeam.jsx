@@ -185,6 +185,7 @@ function UpdateReceiveSizeBeam() {
     if (receiveSizeBeamDetails && Object.keys(receiveSizeBeamDetails).length) {
       const beam_details =
         receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
+          console.log({ element });
           return {
             _id: element?.id,
             size_beam_order_detail_id: element.size_beam_order_detail_id,
@@ -198,6 +199,7 @@ function UpdateReceiveSizeBeam() {
             taka: element?.taka,
             net_weight: element?.net_weight,
             tpm: element?.tpm,
+            is_running: element?.is_running,
           };
         });
 

@@ -19,12 +19,10 @@ import {
 } from "../../api/requests/beamCard";
 
 const FinishBeamCardModal = ({ details = {}, companyId, beamTypeDropDown }) => {
-  console.log("FinishBeamCardModal", beamTypeDropDown);
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [finishValue, setFinishValue] = useState("bhidan(finish)");
-  console.log({ finishValue });
 
   const showModal = () => {
     setIsModalOpen(true);

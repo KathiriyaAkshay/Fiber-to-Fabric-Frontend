@@ -23,6 +23,7 @@ import {
   FilePdfOutlined,
   PlusCircleOutlined,
   PrinterOutlined,
+  SwapOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -41,6 +42,8 @@ import dayjs from "dayjs";
 import FinishBeamCardModal from "../../components/beamCard/FinishBeamCardModal";
 import LoadNewBeamModal from "../../components/beamCard/LoadNewBeamModal";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
+import DeleteBeamCard from "../../components/beamCard/DeleteBeamCard";
+import MoveBhidanModal from "../../components/beamCard/moveBhidanModal";
 
 const getTakaDetailsObject = (details) => {
   if (details) {
@@ -56,6 +59,8 @@ const getTakaDetailsObject = (details) => {
 };
 
 const getActions = (details) => {
+  const obj = getTakaDetailsObject(details);
+
   switch (details.status) {
     case "running":
       return {
@@ -67,7 +72,7 @@ const getActions = (details) => {
         isArrow: false,
       };
 
-    case "finish":
+    case "finished":
       return {
         isView: true,
         isEdit: true,
@@ -84,7 +89,7 @@ const getActions = (details) => {
         isPlus: true,
         isBarCode: true,
         isDelete: false,
-        isArrow: false,
+        isArrow: obj.beam_no === null ? false : !obj.beam_no.includes("NBN"),
       };
 
     case "pasarela":
@@ -153,6 +158,9 @@ const BeamCardList = () => {
   const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
+
+  const [isOpenMoveBhidan, setIsOpenMoveBhidan] = useState(false);
+  const [row, setRow] = useState(null);
 
   const [search, setSearch] = useState({
     beamNo: "",
@@ -250,40 +258,12 @@ const BeamCardList = () => {
     enabled: Boolean(companyId),
   });
 
-  //   const {
-  //     mutateAsync: updateTradingQuality,
-  //     isPending: updatingTradingQuality,
-  //     variables,
-  //   } = useMutation({
-  //     mutationFn: async ({ id, data }) => {
-  //       const res = await updateTradingQualityRequest({
-  //         id,
-  //         data,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data;
-  //     },
-  //     mutationKey: ["trading", "Quantity", "update"],
-  //     onSuccess: (res) => {
-  //       const successMessage = res?.message;
-  //       if (successMessage) {
-  //         message.success(successMessage);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if (errorMessage && typeof errorMessage === "string") {
-  //         message.error(errorMessage);
-  //       }
-  //     },
-  //   });
-
   function navigateToAdd() {
     navigate("/beam-card/add");
   }
 
-  function navigateToUpdate(id) {
-    navigate(`/beam-card/update/${id}`);
+  function navigateToUpdate(id, non_pasarela_beam_id) {
+    navigate(`/beam-card/update/${id}`, { state: { non_pasarela_beam_id } });
   }
 
   function downloadPdf() {
@@ -391,32 +371,48 @@ const BeamCardList = () => {
     {
       title: "Action",
       render: (details) => {
-        const isView = true;
-        const isEdit = true;
-        const isPlus = true;
-        const isBarCode = true;
+        const { isView, isEdit, isDelete, isPlus, isArrow, isBarCode } =
+          getActions(details);
 
-        console.log({ details });
         return (
           <Space>
-            <BeamCardViewDetailModal title="Beam Details" details={details} />
+            {isView && (
+              <BeamCardViewDetailModal title="Beam Details" details={details} />
+            )}
             {isEdit && (
               <Button
                 onClick={() => {
-                  navigateToUpdate(details.id);
+                  navigateToUpdate(details.id, details.non_pasarela_beam_id);
                 }}
               >
                 <EditOutlined />
               </Button>
             )}
-            <FinishBeamCardModal
-              details={details}
-              companyId={companyId}
-              beamTypeDropDown={details.status}
-            />
-            <Button>
-              <AppstoreOutlined />
-            </Button>
+            {isPlus && (
+              <FinishBeamCardModal
+                details={details}
+                companyId={companyId}
+                beamTypeDropDown={details.status}
+              />
+            )}
+            {isBarCode && (
+              <Button>
+                <AppstoreOutlined details={details} />
+              </Button>
+            )}
+            {isArrow && (
+              <Button
+                onClick={() => {
+                  setRow(details);
+                  setIsOpenMoveBhidan(true);
+                }}
+              >
+                <SwapOutlined />
+              </Button>
+            )}
+            {isDelete && (
+              <DeleteBeamCard key={"delete_beam_card"} details={details} />
+            )}
           </Space>
         );
       },
@@ -474,7 +470,7 @@ const BeamCardList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell />
+                {/* <Table.Summary.Cell /> */}
               </Table.Summary.Row>
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>
@@ -485,16 +481,13 @@ const BeamCardList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>
-                    {/* {jobChallanList?.total_taka} */}
-                  </Typography.Text>
+                  <Typography.Text>{beamCardList?.total_meter}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>
-                    {/* {jobChallanList?.total_meter} */}
+                    {beamCardList?.pending_meter}
                   </Typography.Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -671,6 +664,15 @@ const BeamCardList = () => {
         <LoadNewBeamModal
           isModalOpen={isLoadBeamModalOpen}
           setIsModalOpen={setIsLoadBeamModalOpen}
+        />
+      )}
+
+      {isOpenMoveBhidan && (
+        <MoveBhidanModal
+          open={isOpenMoveBhidan}
+          handleClose={() => setIsOpenMoveBhidan(false)}
+          companyId={companyId}
+          row={row}
         />
       )}
     </div>

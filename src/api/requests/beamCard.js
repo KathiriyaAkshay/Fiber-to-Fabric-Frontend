@@ -59,3 +59,7 @@ export function getBeamCardListRequest({ params }) {
 export function createNBNBeamRequest({ data, params }) {
     return api.post("/beam/nbn/load/create", data, { params });
 }
+
+export function deleteBeamCardRequest({ id, params }) {
+    return api.delete(`/beam/delete/${id}`, { params });
+}
