@@ -64,6 +64,9 @@ function AddReceiveSizeBeam() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
+  const [pendingMeter, setPendingMeter] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
+
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
       queryKey: [
@@ -93,7 +96,6 @@ function AddReceiveSizeBeam() {
     enabled: Boolean(companyId),
   });
 
-
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
       queryKey: [
@@ -113,7 +115,7 @@ function AddReceiveSizeBeam() {
       enabled: Boolean(companyId),
     });
 
-  const { mutateAsync: createReceiveSizeBeam } = useMutation({
+  const { mutateAsync: createReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createReceiveSizeBeamRequest({
         data,
@@ -182,6 +184,7 @@ function AddReceiveSizeBeam() {
             "beam_details",
             (size_beam_order_details || [])?.map(
               ({
+                id,
                 beam_no,
                 ends_or_tars,
                 tpm,
@@ -192,6 +195,7 @@ function AddReceiveSizeBeam() {
                 grade,
               }) => {
                 return {
+                  size_beam_order_detail_id: id,
                   beam_no,
                   ends_or_tars,
                   tpm,
@@ -211,13 +215,10 @@ function AddReceiveSizeBeam() {
 
   function disabledDate(current) {
     // Disable future dates
-    if (current && current > moment().endOf('day')) {
+    if (current && current > moment().endOf("day")) {
       return true;
     }
   }
-
-  const [pendingMeter, setPendingMeter] = useState(0);
-  const [totalMeter, setTotalMeter] = useState(0);
 
   return (
     <div className="flex flex-col p-4">
@@ -226,7 +227,6 @@ function AddReceiveSizeBeam() {
         <h3 className="m-0 text-primary">Add Receive size beam</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-
         <Flex className="mt-3" gap={20}>
           <Flex>
             <div className="font-weight-bold">Total meter: {totalMeter}</div>
@@ -266,12 +266,14 @@ function AddReceiveSizeBeam() {
                         return {
                           label: order_no,
                           value: id,
-                          total_meter: total_meters
+                          total_meter: total_meters,
                         };
                       }
                     )}
                     onSelect={(value, option) => {
-                      setTotalMeter(option?.total_meter == null ? 0 : option?.total_meter)
+                      setTotalMeter(
+                        option?.total_meter == null ? 0 : option?.total_meter
+                      );
                     }}
                   />
                 )}
@@ -388,7 +390,11 @@ function AddReceiveSizeBeam() {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input type="number" {...field} disabled={!size_beam_order_id} />
+                  <Input
+                    type="number"
+                    {...field}
+                    disabled={!size_beam_order_id}
+                  />
                 )}
               />
             </Form.Item>
@@ -470,14 +476,19 @@ function AddReceiveSizeBeam() {
         </Row>
 
         {size_beam_order_id && (
-          <ReceiveSizeBeamDetail control={control} errors={errors} />
+          <ReceiveSizeBeamDetail
+            control={control}
+            errors={errors}
+            sizeBeamOrderListRes={sizeBeamOrderListRes}
+            size_beam_order_id={size_beam_order_id}
+          />
         )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>

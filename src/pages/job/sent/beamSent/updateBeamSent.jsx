@@ -807,6 +807,7 @@ const UpdateBeamSent = () => {
         {beamTypeList && (
           <table
             border={1}
+            className="custom-table"
             style={{
               width: "100%",
               borderCollapse: "collapse",
@@ -844,7 +845,7 @@ const UpdateBeamSent = () => {
                   ) => {
                     return (
                       <tr key={index}>
-                        <td width={50}>
+                        <td width={50} style={{ textAlign: "center" }}>
                           <Checkbox
                             checked={beamLoadIds?.includes(beam_load_id)}
                             onChange={(e) =>
@@ -857,11 +858,13 @@ const UpdateBeamSent = () => {
                             }
                           />
                         </td>
-                        <td width={150}>{beam_no}</td>
-                        <td>{ends_or_tars}</td>
-                        <td>{pano}</td>
-                        <td>{taka}</td>
-                        <td>{meters}</td>
+                        <td width={150} style={{ textAlign: "center" }}>
+                          {beam_no}
+                        </td>
+                        <td style={{ textAlign: "center" }}>{ends_or_tars}</td>
+                        <td style={{ textAlign: "center" }}>{pano}</td>
+                        <td style={{ textAlign: "center" }}>{taka}</td>
+                        <td style={{ textAlign: "center" }}>{meters}</td>
                       </tr>
                     );
                   }

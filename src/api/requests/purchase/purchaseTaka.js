@@ -24,6 +24,16 @@ export function deletePurchaseTakaRequest({ id, params }) {
     return api.delete(`/purchase/taka/delete/${id}`, { params });
 }
 
+export const checkUniqueTakaNoRequest = ({ params }) => {
+    return api.get(`/purchase/check-unique-taka-no`, { params });
+}
+
+export function addPurchaseReturnChallanRequest({ data, params }) {
+    return api.post(`/purchase/taka/retrun/create`, data, { params });
+}
+
+// **************************************************************************************
+
 export function getYarnBillListRequest({ params }) {
     return api.get(`/yarn-stock/yarn-receive-challan/bill/list`, { params });
 }

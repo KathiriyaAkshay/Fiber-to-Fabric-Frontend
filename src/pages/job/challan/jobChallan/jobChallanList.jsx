@@ -179,16 +179,51 @@ const JobChallanList = () => {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = jobChallanList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    const body = jobChallanList?.rows?.map((item, index) => {
+      const {
+        challan_no,
+        gray_order,
+        createdAt,
+        supplier,
+        inhouse_quality,
+        total_meter,
+        total_taka,
+        bill_status,
+      } = item;
+      return [
+        index + 1,
+        "", // bill no
+        challan_no,
+        gray_order.order_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        supplier.supplier_name,
+        supplier.user.gst_no,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        total_taka,
+        total_meter,
+        bill_status === "received" ? "Received" : "Not Received",
+      ];
     });
     downloadUserPdf({
       body,
-      head: [["ID", "Challan NO"]],
+      head: [
+        [
+          "ID",
+          "Bill No",
+          "Challan NO",
+          "Order No",
+          "Challan Date",
+          "Supplier Name",
+          "Supplier Company GST",
+          "Quality",
+          "Total Taka",
+          "Total Meter",
+          "Bill Status",
+        ],
+      ],
       leftContent,
       rightContent,
-      title: "Job Taka List",
+      title: "Job Challan Lis",
     });
   }
 
@@ -332,6 +367,66 @@ const JobChallanList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalMeter = 0;
+          let totalTaka = 0;
+          pageData.forEach(({ total_meter, total_taka }) => {
+            totalMeter += +total_meter;
+            totalTaka += +total_taka;
+          });
+
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalTaka}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>
+                  Grand <br />
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {jobChallanList?.total_taka}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {jobChallanList?.total_meter}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
