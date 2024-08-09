@@ -16,6 +16,9 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
+  --table-border-color: #ababab ;
+  --scrollbar-background-color: #f1f1f1 ; 
+  --scrollbar-hover-background-color: #bdbdbd ; 
 }
 
 body {
@@ -47,8 +50,17 @@ body {
   cursor: pointer !important;
 }
 
+.job-challan-table-div{
+  max-height: 49vh;
+  overflow-y: auto;
+}
+
+.receive-rework-taka-table thead th{
+  background-color: #000000 !important;
+}
+
 .job-challan-details-table {
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--table-border-color);
   border-collapse: collapse;
   text-align: center;
 }
@@ -71,12 +83,43 @@ body {
 .job-challan-taka-index-column {
   background-color: rgb(25 74 109);
   color: #fff;
+  padding-left: 7px !important;
+  padding-right: 7px !important;
 }
 
 .job-challan-taka-plus-option {
   border: 0px solid;
   background-color: transparent !important;
 }
+
+.job-challan-table-total{
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: #FFFFFF;
+}
+
+.job-challan-details-table input:focus{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input:hover{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input{
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.job-challan-details-table input[type="number"]::-webkit-outer-spin-button,
+.job-challan-details-table input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 
 /* .ant-table {
   font-size: 14px !important;
@@ -172,6 +215,11 @@ td {
 .custom-table tbody tr td {
   padding: 5px;
   /* text-align: center; */
+}
+
+.custom-table thead tr th,
+.custom-table tbody tr td {
+  border: 1px solid #d3d3d3; /* Change #3498db to your desired color */
 }
 
 .red-input-field {
@@ -300,10 +348,17 @@ input:read-only {
 
 .header-row {
   background-color: #fff;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 20px;
 }
 
 .header-col {
   padding: 2px;
+}
+
+.header-card-text{
+  margin-left: 8px;
 }
 
 .header-card {
@@ -315,6 +370,8 @@ input:read-only {
   color: #333;
   background-color: #f0f0f0;
   padding: 0.2rem;
+  font-size: 1.2rem !important;
+  padding-left: 0.5rem;
 }
 
 .description-card {
@@ -325,8 +382,17 @@ input:read-only {
 .header-card .ant-card-body {
   padding: 0 !important;
 }
+
+.data-table{
+  margin-left: 12px;
+  margin-right: 12px;
+  border-radius: 0px !important;
+  margin-bottom: 15px;
+}
+
 .data-table .ant-table-thead > tr > th {
   color: black;
+  border-radius: 0px !important;
 }
 
 .view-information-table table thead tr th {
@@ -348,6 +414,61 @@ input:read-only {
   margin: 4px 0;
 }
 
+.red-dotted-line {
+  border-top: 2px dotted #ff0000;
+  margin: 20px 0;
+}
+
+.card-wrapper{
+  border:1px solid black;
+  border-radius: 0px !important;
+}
+
+.card-wrapper .ant-card-body{
+  padding: 0px !important;
+}
+
+.ant-table-summary .ant-table-cell{
+  background-color: #f4f7f7 !important;
+}
+
+.number-of-beam-div:hover{
+  cursor: pointer;
+  color: rgb(25 74 109);
+  width: fit-content;
+  font-weight: 700;
+}
+
+.load-machine-table-div{
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-top: 15px;
+  border-top: 1px solid #efefef;
+}
+
+.production-item-descriptions .ant-descriptions-item-label span{
+  font-weight: 600 ;
+  color: #000000;
+}
+
+/* Custom scrollbar css  */
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-background-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover-background-color);
+}
 .card-wrapper {
   border: 1px solid black;
 }

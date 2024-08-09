@@ -98,10 +98,10 @@ const ReceiveReworkTakaFieldTable = ({
   }, [activeField, reworkChallan, setValue]);
 
   return (
-    <Row style={{ marginTop: "-20" }} gutter={18}>
+    <Row style={{ marginTop: "-20px" }} gutter={18}>
       <Col span={24}>
         <table
-          className="job-challan-details-table"
+          className="job-challan-details-table receive-rework-taka-table"
           border={1}
           style={{ width: "100%" }}
         >
@@ -123,12 +123,6 @@ const ReceiveReworkTakaFieldTable = ({
             {numOfFields.map((fieldNumber) => {
               return (
                 <tr key={fieldNumber}>
-                  {/* <td
-                    className="job-challan-taka-index-column"
-                    style={{ textAlign: "center" }}
-                  >
-                    {fieldNumber}
-                  </td> */}
                   <td>
                     <Form.Item
                       name={`taka_no_${fieldNumber}`}

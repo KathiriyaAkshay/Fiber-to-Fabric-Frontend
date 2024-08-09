@@ -193,6 +193,13 @@ const InhouseProduction = () => {
       title: "Taka No.",
       dataIndex: "taka_no",
       key: "taka_no",
+      render: (text, record) => {
+        return (
+          <div>
+            {text || "-"}
+          </div>
+        )
+      }
     },
     {
       title: "Meter",
@@ -213,6 +220,17 @@ const InhouseProduction = () => {
       title: "Average",
       dataIndex: "average",
       key: "average",
+      render: (text, record) => {
+        let meter = record?.meter;
+        let weight = record?.weight;
+        let average = (Number(weight) * 100) / (Number(meter));
+        return (
+          <div>
+            {average.toFixed(2)}
+          </div>
+        )
+
+      }
     },
     {
       title: "Meter",
@@ -233,7 +251,7 @@ const InhouseProduction = () => {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
       key: "quality",
-      render: (text) => `${text.quality_name} (${text.quality_weight}KG)`,
+      render: (text, record) => `${text.quality_name} (${text.quality_weight}KG) (${record?.machine_name})`,
     },
     {
       title: "Action",
@@ -251,8 +269,16 @@ const InhouseProduction = () => {
             >
               <EditOutlined />
             </Button>
+
             <DeleteProduction details={details} />
-            <ProductionQrModal details={details} />
+            
+            <ProductionQrModal details={[{
+              "taka_no": details?.taka_no, 
+              "meter": details?.meter, 
+              "machine_no": details?.machine_no, 
+              "quality_name": `${details?.inhouse_quality?.quality_name}`
+            }]} />
+
           </Space>
         );
       },
@@ -281,18 +307,20 @@ const InhouseProduction = () => {
         }}
         style={{ textAlign: "left" }}
         summary={(tableData) => {
+
           let totalMeter = 0;
           let totalWeight = 0;
           let totalAvg = 0;
-
           tableData.forEach(({ meter, weight, average }) => {
             totalMeter += +meter;
             totalWeight += +weight;
-            totalAvg += +average;
+            totalAvg += +Number(weight*100)/ Number(meter);
           });
 
           return (
             <>
+
+              {/* Page wise summary information  */}
               <Table.Summary.Row>
                 <Table.Summary.Cell index={0} align="left">
                   <b>Total</b>
@@ -315,6 +343,7 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
               </Table.Summary.Row>
 
+              {/* Total count information  */}
               <Table.Summary.Row>
                 <Table.Summary.Cell index={0} align="left">
                   <b>Grand Total</b>
@@ -322,15 +351,15 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalMeter.toFixed(2)}</b>
+                  <b>{productionList?.total_meters.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalWeight.toFixed(2)}</b>
+                  <b>{productionList?.total_weight?.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalAvg.toFixed(2)}</b>
+                  {/* <b>{totalAvg.toFixed(2)}</b> */}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -346,19 +375,6 @@ const InhouseProduction = () => {
 
   return (
     <div className="flex flex-col gap-2 p-4">
-      <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-        <Radio.Group
-          name="filter"
-          value={state}
-          onChange={(e) => setState(e.target.value)}
-        >
-          <Flex align="center" gap={10}>
-            <Radio value={"current"}> Current</Radio>
-            <Radio value={"previous"}> Previous </Radio>
-          </Flex>
-        </Radio.Group>
-      </div>
-
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
           <h3 className="m-0 text-primary">In House Production</h3>
@@ -369,25 +385,7 @@ const InhouseProduction = () => {
           />
         </div>
         <Flex align="center" gap={10}>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Type
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select Type"
-              value={type}
-              onChange={setType}
-              options={ORDER_TYPE}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Quality
@@ -414,6 +412,7 @@ const InhouseProduction = () => {
               className="min-w-40"
             />
           </Flex>
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Date
@@ -425,6 +424,7 @@ const InhouseProduction = () => {
               format={"DD-MM-YYYY"}
             />
           </Flex>
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
@@ -434,6 +434,23 @@ const InhouseProduction = () => {
               format={"DD-MM-YYYY"}
             />
           </Flex>
+
+          <Flex align="center" gap={10}>
+            <Select
+              allowClear
+              placeholder="Select Folding user"
+              value={foldingUser}
+              onChange={setFoldingUser}
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+            />
+          </Flex>
+
         </Flex>
       </div>
 
@@ -441,7 +458,7 @@ const InhouseProduction = () => {
         <Flex
           align="center"
           gap={10}
-          style={{ border: "1px solid gray", padding: "15px" }}
+          style={{ border: "1px solid #efefef", padding: "15px", borderRadius: "5px" }}
         >
           <Radio.Group
             value={radioSelection}
@@ -458,7 +475,7 @@ const InhouseProduction = () => {
         <Flex
           align="center"
           gap={10}
-          style={{ border: "1px solid gray", padding: "10px" }}
+          style={{ border: "1px solid #efefef", padding: "10px", borderRadius: "5px" }}
         >
           <Flex align="center" gap={1}>
             <Typography.Text className="whitespace-nowrap">
@@ -468,7 +485,7 @@ const InhouseProduction = () => {
               placeholder="Taka No"
               value={fromTakaNo}
               onChange={setFromTakaNo}
-              style={{ width: "150px" }}
+              style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
           <Flex align="center" gap={1}>
@@ -477,7 +494,7 @@ const InhouseProduction = () => {
               placeholder="Taka No"
               value={toTakaNo}
               onChange={setToTakaNo}
-              style={{ width: "150px" }}
+              style={{ width: "150px", marginLeft : "7px" }}
             />
           </Flex>
         </Flex>
@@ -485,7 +502,7 @@ const InhouseProduction = () => {
         <Flex
           align="center"
           gap={10}
-          style={{ border: "1px solid gray", padding: "10px" }}
+          style={{ border: "1px solid #efefef", padding: "10px", borderRadius: "5px" }}
         >
           <Flex align="center" gap={1}>
             <Typography.Text className="whitespace-nowrap">
@@ -495,7 +512,7 @@ const InhouseProduction = () => {
               placeholder="Machine No"
               value={fromMachineNo}
               onChange={setFromMachineNo}
-              style={{ width: "150px" }}
+              style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
           <Flex align="center" gap={1}>
@@ -504,15 +521,55 @@ const InhouseProduction = () => {
               placeholder="Machine No"
               value={toMachineNo}
               onChange={setToMachineNo}
-              style={{ width: "150px" }}
+              style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
+        </Flex>
+
+        <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">
+            Grade:
+          </Typography.Text>
+          <Select
+            allowClear
+            placeholder="Select Grade"
+            value={grade}
+            onChange={(value) => setGrade(value)}
+            options={[
+              { value: "A", label: "A" },
+              { value: "B", label: "B" },
+              { value: "C", label: "C" },
+              { value: "D", label: "D" },
+            ]}
+            dropdownStyle={{
+              textTransform: "capitalize",
+            }}
+            style={{
+              textTransform: "capitalize",
+            }}
+            className="min-w-40"
+          />
+        </Flex>
+
+      </div>
+
+      <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+
+        <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">
+            Challan No:
+          </Typography.Text>
+          <Input
+            value={challanNo}
+            onChange={setChallanNo}
+            placeholder="Challan No"
+          />
         </Flex>
 
         <Flex
           align="center"
           gap={10}
-          style={{ border: "1px solid gray", padding: "10px" }}
+          style={{ border: "1px solid #efefef", padding: "10px", borderRadius: "5px" }}
         >
           <Flex align="center" gap={1}>
             <Typography.Text className="whitespace-nowrap">
@@ -522,63 +579,12 @@ const InhouseProduction = () => {
               placeholder="Beam No"
               value={beamNo}
               onChange={setBeamNo}
-              style={{ width: "150px" }}
+              style={{ width: "150px", marginLeft: "10px" }}
             />
           </Flex>
         </Flex>
-      </div>
 
-      <div className="flex items-center justify-end gap-5 mx-3 mb-3">
         <Flex align="center" gap={10}>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Challan No:
-            </Typography.Text>
-            <Input
-              value={challanNo}
-              onChange={setChallanNo}
-              placeholder="Challan No"
-            />
-          </Flex>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Grade:
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select Grade"
-              value={grade}
-              onChange={(value) => setGrade(value)}
-              options={[
-                { value: "A", label: "A" },
-                { value: "B", label: "B" },
-                { value: "C", label: "C" },
-                { value: "D", label: "D" },
-              ]}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
-          <Flex align="center" gap={10}>
-            <Select
-              allowClear
-              placeholder="Select Folding user"
-              value={foldingUser}
-              onChange={setFoldingUser}
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-            />
-          </Flex>
           <Button
             icon={<FilePdfOutlined />}
             type="primary"

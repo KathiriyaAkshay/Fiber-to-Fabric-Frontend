@@ -226,13 +226,6 @@ const ReceiveReworkTaka = () => {
                 { title: "Average", value: details.average },
               ]}
             />
-            {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>*/}
             <DeleteReceiveReworkTaka details={details} />
           </Space>
         );

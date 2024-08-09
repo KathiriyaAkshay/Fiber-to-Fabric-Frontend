@@ -21,15 +21,52 @@ const ViewReworkChallanInfo = ({ details }) => {
   const [totalMeter, setTotalMeter] = useState(0);
 
   const pageStyle = `
-        @media print {
-             .print-instructions {
-                display: none;
-            }
-            .printable-content {
-                padding: 20px; /* Add padding for print */
-                width: 100%;
-            }
-    `;
+    @media print {
+      /* General styles for print */
+      body {
+        margin: 0;
+        font-size: 12pt;
+      }
+
+      .print-instructions {
+        display: none;
+      }
+
+      .printable-content {
+        padding: 20px;
+        width: 100%;
+        page-break-inside: avoid;
+      }
+
+      /* Adjust layout for smaller screens */
+      @media print and (max-width: 768px) {
+        .printable-content {
+          padding: 10px;
+          font-size: 10pt;
+        }
+      }
+
+      /* Adjust layout for larger screens */
+      @media print and (min-width: 769px) {
+        .printable-content {
+          padding: 20px;
+          font-size: 12pt;
+        }
+      }
+
+      /* Landscape orientation */
+      @page {
+        size: auto;
+        margin: 10mm;
+      }
+
+      @media print and (orientation: landscape) {
+        .printable-content {
+          padding: 15px;
+        }
+      }
+    }
+  `;
 
   useEffect(() => {
     let tempTotal1 = 0;
@@ -124,209 +161,209 @@ const ViewReworkChallanInfo = ({ details }) => {
             backgroundColor: "#efefef",
           },
         }}
-        width={"70vw"}
+        width={"60vw"}
       >
-        <Flex
-          className="flex-col border border-b-0 border-solid"
-          ref={componentRef}
-        >
-          <Row
-            className="border p-4 border-b ,0border-solid !m-0"
-            style={{
-              borderTop: 0,
-              borderLeft: 0,
-              borderRight: 0,
-              borderBottom: 0,
-            }}
-          >
-            <Col span={12}>
-              <Row>
-                <Col span={24}>
-                  <Text>To,</Text>
-                  <Text className="block font-bold">
-                    {details?.supplier?.supplier_company}(
-                    {details?.supplier?.supplier_name})
-                  </Text>
-                  <Text className="block">
-                    {details?.supplier?.user?.address}
-                  </Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>Challan</Text>
-                  <Text className="block">{details?.challan_no}</Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>GST</Text>
-                  <Text className="block">
-                    {details?.supplier?.user?.gst_no}
-                  </Text>
-                </Col>
-              </Row>
-            </Col>
-            <Col span={12}>
-              <Row>
-                <Col span={24}>
-                  <Text>From,</Text>
-                  <Text className="block font-bold">
-                    {companyInfo?.company_name}
-                  </Text>
-                  <Text className="block">{`${companyInfo?.address_line_1} ${
-                    companyInfo?.address_line_2 == null
-                      ? ""
-                      : companyInfo?.address_line_2
-                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
-                    companyInfo?.pincode
-                  }, ${companyInfo?.country}`}</Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>Broker</Text>
-                  <Text className="block font-bold">
-                    {details?.broker?.first_name} {details?.broker?.last_name}
-                  </Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>GST</Text>
-                  <Text className="block">{companyInfo?.gst_no}</Text>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-          <Row
-            className="p-4 border-0 border-b border-solid !m-0"
-            style={{ borderTop: "1px dashed" }}
-          >
-            <Col span={6}>Description:</Col>
-            <Col span={6}>
-              {details?.inhouse_quality?.quality_name} (
-              {details?.inhouse_quality?.quality_weight}KG)
-            </Col>
-            <Col span={6}>Date:</Col>
-            <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
-          </Row>
-          <Row
-            className="p-4 border-0 border-b border-solid !m-0"
-            style={{ borderBottom: 0 }}
-          >
-            <Col span={1} style={{ textAlign: "center" }}>
-              <strong>No</strong>
-            </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>TAKA NO</strong>
-            </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Weight</strong>
-            </Col>
-            <Col span={1} style={{ textAlign: "center" }}>
-              <strong>No</strong>
-            </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>TAKA NO</strong>
-            </Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Meter</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Recv Weight</strong>
-            </Col>
-          </Row>
 
-          {TakaArray?.map((element, index) => {
-            return (
-              <Row
-                key={index}
-                className="p-3 border-0"
-                style={{ borderTop: 0 }}
-              >
-                <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 1}
-                </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.taka_no}
-                </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.received_meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index]?.received_weight}
-                </Col>
-                <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 13}
-                </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index + 12]?.taka_no}
-                </Col>
-                <Col span={2} style={{ textAlign: "center" }}>
-                  {details?.job_rework_challan_details[index + 12]?.meter}
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {
-                    details?.job_rework_challan_details[index + 12]
-                      ?.received_meter
-                  }
-                </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
-                  {
-                    details?.job_rework_challan_details[index + 12]
-                      ?.received_weight
-                  }
-                </Col>
-              </Row>
-            );
-          })}
-
-          <Row className="p-3 border-0" style={{ borderTop: 0 }}>
-            <Col span={1} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>{totalTaka1}</strong>
-            </Col>
-            <Col span={3} style={{ textAlign: "center" }}></Col>
-            <Col span={3} style={{ textAlign: "center" }}></Col>
-            <Col span={1} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={2} style={{ textAlign: "center" }}>
-              <strong>{totalTaka2}</strong>
-            </Col>
-          </Row>
-
-          <Row
-            className="p-3 border-0"
-            style={{ borderTop: "1px dashed", borderBottom: "1px dashed" }}
+        <div ref={componentRef} style={{marginRight: "1px"}}>
+          <Flex
+            className="flex-col border border-b-0 border-solid"
           >
-            <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Total Taka:</strong>
-            </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              {details?.job_rework_challan_details?.length}
-            </Col>
-            <Col span={4} style={{ textAlign: "center" }}>
-              <strong>Total Meter:</strong>
-            </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              {totalMeter}
-            </Col>
-          </Row>
-        </Flex>
+            <Row
+              className="border p-4 border-b ,0border-solid !m-0"
+              style={{
+                borderTop: 0,
+                borderLeft: 0,
+                borderRight: 0,
+                borderBottom: 0,
+              }}
+            >
+              <Col span={12}>
+                <Row>
+                  <Col span={24}>
+                    <Text>To,</Text>
+                    <Text className="block font-bold">
+                      {details?.supplier?.supplier_company}(
+                      {details?.supplier?.supplier_name})
+                    </Text>
+                    <Text className="block">
+                      {details?.supplier?.user?.address}
+                    </Text>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Text>Challan</Text>
+                    <Text className="block">{details?.challan_no}</Text>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Text>GST</Text>
+                    <Text className="block">
+                      {details?.supplier?.user?.gst_no}
+                    </Text>
+                  </Col>
+                </Row>
+              </Col>
+              <Col span={12}>
+                <Row>
+                  <Col span={24}>
+                    <Text>From,</Text>
+                    <Text className="block font-bold">
+                      {companyInfo?.company_name}
+                    </Text>
+                    <Text className="block">{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
+                        ? ""
+                        : companyInfo?.address_line_2
+                      }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
+                      }, ${companyInfo?.country}`}</Text>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Text>Broker</Text>
+                    <Text className="block font-bold">
+                      {details?.broker?.first_name} {details?.broker?.last_name}
+                    </Text>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={24}>
+                    <Text>GST</Text>
+                    <Text className="block">{companyInfo?.gst_no}</Text>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+            <Row
+              className="p-4 border-0 border-b border-solid !m-0"
+              style={{ borderTop: "1px dashed" }}
+            >
+              <Col span={6}><strong>Description:</strong></Col>
+              <Col span={6}>
+                {details?.inhouse_quality?.quality_name} (
+                {details?.inhouse_quality?.quality_weight}KG)
+              </Col>
+              <Col span={6}><strong>Date:</strong></Col>
+              <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
+            </Row>
+            <Row
+              className="p-4 border-0 border-b border-solid !m-0"
+              style={{ borderBottom: 0 }}
+            >
+              <Col span={1} style={{ textAlign: "center" }}>
+                <strong>No</strong>
+              </Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>TAKA NO</strong>
+              </Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>Meter</strong>
+              </Col>
+              <Col span={3} style={{ textAlign: "center" }}>
+                <strong>Recv Meter</strong>
+              </Col>
+              <Col span={3} style={{ textAlign: "center" }}>
+                <strong>Recv Weight</strong>
+              </Col>
+              <Col span={1} style={{ textAlign: "center" }}>
+                <strong>No</strong>
+              </Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>TAKA NO</strong>
+              </Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>Meter</strong>
+              </Col>
+              <Col span={3} style={{ textAlign: "center" }}>
+                <strong>Recv Meter</strong>
+              </Col>
+              <Col span={3} style={{ textAlign: "center" }}>
+                <strong>Recv Weight</strong>
+              </Col>
+            </Row>
+
+            {TakaArray?.map((element, index) => {
+              return (
+                <Row
+                  key={index}
+                  className="p-3 border-0"
+                  style={{ borderTop: 0 }}
+                >
+                  <Col span={1} style={{ textAlign: "center" }}>
+                    <strong>{index + 1}</strong>
+                  </Col>
+                  <Col span={2} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index]?.taka_no}
+                  </Col>
+                  <Col span={2} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index]?.meter}
+                  </Col>
+                  <Col span={3} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index]?.received_meter}
+                  </Col>
+                  <Col span={3} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index]?.received_weight}
+                  </Col>
+                  <Col span={1} style={{ textAlign: "center" }}>
+                    <strong>{index + 13}</strong>
+                  </Col>
+                  <Col span={2} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index + 12]?.taka_no}
+                  </Col>
+                  <Col span={2} style={{ textAlign: "center" }}>
+                    {details?.job_rework_challan_details[index + 12]?.meter}
+                  </Col>
+                  <Col span={3} style={{ textAlign: "center" }}>
+                    {
+                      details?.job_rework_challan_details[index + 12]
+                        ?.received_meter
+                    }
+                  </Col>
+                  <Col span={3} style={{ textAlign: "center" }}>
+                    {
+                      details?.job_rework_challan_details[index + 12]
+                        ?.received_weight
+                    }
+                  </Col>
+                </Row>
+              );
+            })}
+
+            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle:"dashed" }}>
+              <Col span={1} style={{ textAlign: "center" }}></Col>
+              <Col span={2} style={{ textAlign: "center" }}></Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>{totalTaka1}</strong>
+              </Col>
+              <Col span={3} style={{ textAlign: "center" }}></Col>
+              <Col span={3} style={{ textAlign: "center" }}></Col>
+              <Col span={1} style={{ textAlign: "center" }}></Col>
+              <Col span={2} style={{ textAlign: "center" }}></Col>
+              <Col span={2} style={{ textAlign: "center" }}>
+                <strong>{totalTaka2}</strong>
+              </Col>
+            </Row>
+
+            <Row
+              className="p-3 border-0"
+              style={{ borderTop: "1px dashed", borderBottom: "1px dashed" }}
+            >
+              <Col span={3} style={{ textAlign: "center" }}>
+                <strong>Total Taka:</strong>
+              </Col>
+              <Col span={5} style={{ textAlign: "center" }}>
+                {details?.job_rework_challan_details?.length}
+              </Col>
+              <Col span={4} style={{ textAlign: "center" }}>
+                <strong>Total Meter:</strong>
+              </Col>
+              <Col span={5} style={{ textAlign: "center" }}>
+                {totalMeter}
+              </Col>
+            </Row>
+          </Flex>
+        </div>
       </Modal>
     </>
   );

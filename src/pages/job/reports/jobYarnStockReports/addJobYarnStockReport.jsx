@@ -53,12 +53,6 @@ const AddJobYarnStockReport = () => {
     },
     mutationKey: ["job", "yarn-stock-report", "add"],
     onSuccess: (res) => {
-      //   queryClient.invalidateQueries([
-      //     "yarn-stock",
-      //     "company",
-      //     "list",
-      //     companyId,
-      //   ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);

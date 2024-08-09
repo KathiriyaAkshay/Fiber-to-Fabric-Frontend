@@ -30,11 +30,12 @@ import {
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import {
   addYarnSentRequest,
+  GetJobYarnSentLastChallanRequest,
   getYarnSentLastChallanNoRequest,
 } from "../../../../api/requests/job/sent/yarnSent";
-import { disableBeforeDate } from "../../../../utils/date";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -163,13 +164,13 @@ const AddYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`current_stock_${index}`)) {
-          setError(`current_stock_${index}`, {
-            type: "manual",
-            message: "Please enter current stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`current_stock_${index}`)) {
+        //   setError(`current_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter current stock.",
+        //   });
+        //   isValid = false;
+        // }
         if (!getValues(`cartoon_${index}`)) {
           setError(`cartoon_${index}`, {
             type: "manual",
@@ -184,13 +185,13 @@ const AddYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`remaining_stock_${index}`)) {
-          setError(`remaining_stock_${index}`, {
-            type: "manual",
-            message: "Please enter remaining stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`remaining_stock_${index}`)) {
+        //   setError(`remaining_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter remaining stock.",
+        //   });
+        //   isValid = false;
+        // }
       }
     });
 
@@ -209,30 +210,31 @@ const AddYarnSent = () => {
     setFieldArray(newFields);
   };
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
@@ -319,10 +321,11 @@ const AddYarnSent = () => {
   //   });
   // }, [yscdListRes?.yarnCompanyList]);
 
-  const {
-    data: lastChallanNumber,
-  } = useQuery({
-    queryKey: ["/sale/challan/yarn-sale/last-challan-no", { company_id: companyId }],
+  const { data: lastChallanNumber } = useQuery({
+    queryKey: [
+      "/sale/challan/yarn-sale/last-challan-no",
+      { company_id: companyId },
+    ],
     queryFn: async () => {
       const res = await GetJobYarnSentLastChallanRequest({
         params: { company_id: companyId },
@@ -365,7 +368,7 @@ const AddYarnSent = () => {
                     <DatePicker
                       {...field}
                       style={{ width: "100%" }}
-                      disabledDate={disableBeforeDate}
+                      disabledDate={disabledFutureDate}
                       format={"DD-MM-YYYY"}
                     />
                   );
@@ -407,7 +410,7 @@ const AddYarnSent = () => {
 
           <Col span={4}>
             <Form.Item
-              label="Supplier Name"
+              label="Party Name"
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
@@ -440,7 +443,7 @@ const AddYarnSent = () => {
 
           <Col span={4}>
             <Form.Item
-              label="Supplier Company"
+              label="Party Company"
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
@@ -626,6 +629,12 @@ const RenderDynamicFields = ({
   const [denierOptions, setDenierOptions] = useState([]);
 
   const createDenierOption = (companyName) => {
+    setValue(`yarn_stock_company_id_${field}`, null);
+    setValue(`current_stock_${field}`, "");
+    setValue(`cartoon_${field}`, "");
+    setValue(`kg_${field}`, "");
+    setValue(`remaining_stock_${field}`, "");
+
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
       ({ yarn_company_name }) => companyName === yarn_company_name
     );
@@ -648,7 +657,6 @@ const RenderDynamicFields = ({
       );
     } else {
       setDenierOptions([]);
-      setValue(`yarn_stock_company_id_${field}`, null);
     }
   };
 
@@ -695,7 +703,10 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onChange={createDenierOption}
+                onChange={(value) => {
+                  field.onChange(value);
+                  createDenierOption(value);
+                }}
               />
             )}
           />
@@ -731,15 +742,27 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onSelect={(selectedValue) => {
+                onChange={(selectedValue) => {
+                  fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => yarn_company_id === selectedValue
                     );
-                    // setCurrentStockValue(obj.current_stock);
-                    setValue(`current_stock_${field}`, obj.current_stock);
+                    setValue(
+                      `current_stock_${field}`,
+                      obj ? obj.current_stock : 0
+                    );
                   });
                 }}
+                // onSelect={(selectedValue) => {
+                //   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+                //     const obj = yarn_details.find(
+                //       ({ yarn_company_id }) => yarn_company_id === selectedValue
+                //     );
+                //     // setCurrentStockValue(obj.current_stock);
+                //     setValue(`current_stock_${field}`, obj.current_stock);
+                //   });
+                // }}
               />
             )}
           />

@@ -16,6 +16,7 @@ import { useMemo } from 'react'
 import DeleteGeneralPurchaseButton from '../../../components/purchase/generalPurchase/DeleteGeneralPurchase'
 import PaidGeneralPurchaseInfo from '../../../components/purchase/generalPurchase/paidGeneralPurchaseInfo'
 
+
 const PurchaseEntryList = () => {
     const { companyId, financialYearEnd } = useContext(GlobalContext);
     const navigation = useNavigate();

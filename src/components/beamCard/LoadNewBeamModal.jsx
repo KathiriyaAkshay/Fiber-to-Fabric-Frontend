@@ -25,6 +25,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
 
   const { companyId } = useContext(GlobalContext);
 
+  // Add NewBeam load handler 
   const { mutateAsync: AddNBNBeamLoad, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createNBNBeamRequest({
@@ -62,6 +63,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
   });
   const { machine_name } = watch();
 
+  // Load machine name dropdown list 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -74,6 +76,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
     enabled: Boolean(companyId),
   });
 
+  // Load Machine name information list 
   const { data: loadedMachineList } = useQuery({
     queryKey: [
       "loaded",
@@ -90,10 +93,11 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
         return res.data?.data;
       }
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(companyId && isModalOpen),
     initialData: { rows: [], machineDetail: {} },
   });
 
+  // Load dropdown quality list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -124,13 +128,11 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
         }
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   const lastBeamNo = useMemo(() => {
     if (loadedMachineList.lastBeam) {
       const digits = loadedMachineList.lastBeam.match(/\d+/g);
-
-      // Convert the array of digits to a single string or a number
       const result = digits ? digits.join("") : "";
 
       return +result || 0;
@@ -177,8 +179,6 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
           machine_no: machine_no,
           quality_id: quality_id,
           meters: meter,
-          // peak: null,
-          // read: null,
           beam_no,
           taka,
           pano,
@@ -190,6 +190,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
     AddNBNBeamLoad(payload);
   };
 
+  // Save load machine handler ...............................
   const saveHandler = () => {
     if (machine_name && machineNoOption.length) {
       const BeamDetails = [];
@@ -209,8 +210,6 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             meters,
             pano,
             ends_or_tars: tar,
-            // peak: null,
-            // read: null,
           });
         }
       });
@@ -251,10 +250,15 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
         },
         body: {
           padding: "10px 16px",
+          maxHeight: "90vh", 
         },
       }}
     >
-      <Flex gap={10} justify="space-between" align="center">
+      <Flex 
+        gap={10} 
+        justify="space-between" 
+        align="center" >
+
         <Form.Item
           label="Machine Name"
           name="machine_name"
@@ -286,6 +290,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             )}
           />
         </Form.Item>
+
         <Button
           type="primary"
           disabled={!machineNoOption.length}
@@ -296,141 +301,145 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
         </Button>
       </Flex>
 
-      <table border={1} className="custom-table">
-        <thead>
-          <tr className="font-semibold">
-            <th align="center">Machine No</th>
-            <th align="center">Beam no</th>
-            <th align="center">Quality</th>
-            <th align="center">Taka</th>
-            <th align="center">Meter</th>
-            <th align="center">Pano</th>
-            <th align="center">Tar</th>
-            <th align="center">Save</th>
-          </tr>
-        </thead>
-        <tbody>
-          {machineNoOption.map((item, index) => {
-            const beamNo = `NBN-${lastBeamNo + (index + 1)}`;
-            return (
-              <tr key={index + "_load_new_beam"}>
-                <td width={100}>
-                  <Typography.Text>{item}</Typography.Text>
-                </td>
-                <td width={120}>
-                  <Typography.Text>{beamNo}</Typography.Text>
-                </td>
-                <td width={270}>
-                  <Controller
-                    control={control}
-                    name={`quality_id_${index}`}
-                    render={({ field }) => {
-                      return (
-                        <Select
-                          {...field}
-                          name={`quality_id_${index}`}
-                          placeholder="Select Quality"
-                          loading={dropDownQualityLoading}
-                          style={{ width: "100%" }}
-                          options={
-                            dropDownQualityListRes &&
-                            dropDownQualityListRes?.rows?.map((item) => ({
-                              value: item.id,
-                              label: item.quality_name,
-                            }))
-                          }
-                        />
-                      );
-                    }}
-                  />
-                </td>
-                <td width={70}>
-                  <Controller
-                    control={control}
-                    name={`taka_${index}`}
-                    render={({ field }) => {
-                      return (
-                        <Input
-                          {...field}
-                          type="number"
-                          name={`taka_${index}`}
-                          placeholder="12"
-                          style={{ width: "100%" }}
-                        />
-                      );
-                    }}
-                  />
-                </td>
-                <td width={70}>
-                  <Controller
-                    control={control}
-                    name={`meter_${index}`}
-                    render={({ field }) => {
-                      return (
-                        <Input
-                          {...field}
-                          type="number"
-                          name={`meter_${index}`}
-                          placeholder="12"
-                          style={{ width: "100%" }}
-                        />
-                      );
-                    }}
-                  />
-                </td>
-                <td width={70}>
-                  <Controller
-                    control={control}
-                    name={`pano_${index}`}
-                    render={({ field }) => {
-                      return (
-                        <Input
-                          {...field}
-                          type="number"
-                          name={`pano_${index}`}
-                          placeholder="12"
-                          style={{ width: "100%" }}
-                        />
-                      );
-                    }}
-                  />
-                </td>
-                <td width={70}>
-                  <Controller
-                    control={control}
-                    name={`tar_${index}`}
-                    render={({ field }) => {
-                      return (
-                        <Input
-                          {...field}
-                          type="number"
-                          name={`tar_${index}`}
-                          placeholder="12"
-                          style={{ width: "100%" }}
-                        />
-                      );
-                    }}
-                  />
-                </td>
-                <td width={100}>
-                  <Button
-                    disabled={isPending}
-                    type="secondary"
-                    icon={<CheckOutlined />}
-                    onClick={() =>
-                      checkClickHandler({
-                        index,
-                        machine_no: item,
-                        beam_no: beamNo,
-                      })
-                    }
-                  ></Button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="load-machine-table-div">
+        <table border={1} className="custom-table">
+          <thead>
+            <tr className="font-semibold">
+              <th align="center">Machine No</th>
+              <th align="center">Beam no</th>
+              <th align="center">Quality</th>
+              <th align="center">Taka</th>
+              <th align="center">Meter</th>
+              <th align="center">Pano</th>
+              <th align="center">Tar</th>
+              <th align="center">Save</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...machineNoOption].map((item, index) => {
+              const beamNo = `NBN-${lastBeamNo + (index + 1)}`;
+              return (
+                <tr key={index + "_load_new_beam"}>
+                  <td width={100} style={{textAlign: "center"}}>
+                    <Typography.Text>{item}</Typography.Text>
+                  </td>
+                  <td width={120}style={{textAlign: "center"}}>
+                    <Typography.Text style={{fontWeight: 600}}>{beamNo}</Typography.Text>
+                  </td>
+                  <td width={270}>
+                    <Controller
+                      control={control}
+                      name={`quality_id_${index}`}
+                      render={({ field }) => {
+                        return (
+                          <Select
+                            {...field}
+                            name={`quality_id_${index}`}
+                            placeholder="Select Quality"
+                            loading={dropDownQualityLoading}
+                            style={{ width: "100%" }}
+                            options={
+                              dropDownQualityListRes &&
+                              dropDownQualityListRes?.rows?.map((item) => ({
+                                value: item.id,
+                                label: item.quality_name,
+                              }))
+                            }
+                          />
+                        );
+                      }}
+                    />
+                  </td>
+                  <td width={70}>
+                    <Controller
+                      control={control}
+                      name={`taka_${index}`}
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            {...field}
+                            type="number"
+                            name={`taka_${index}`}
+                            placeholder="12"
+                            style={{ width: "100%" }}
+                          />
+                        );
+                      }}
+                    />
+                  </td>
+                  <td width={70}>
+                    <Controller
+                      control={control}
+                      name={`meter_${index}`}
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            {...field}
+                            type="number"
+                            name={`meter_${index}`}
+                            placeholder="12"
+                            style={{ width: "100%" }}
+                          />
+                        );
+                      }}
+                    />
+                  </td>
+                  <td width={70}>
+                    <Controller
+                      control={control}
+                      name={`pano_${index}`}
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            {...field}
+                            type="number"
+                            name={`pano_${index}`}
+                            placeholder="12"
+                            style={{ width: "100%" }}
+                          />
+                        );
+                      }}
+                    />
+                  </td>
+                  <td width={70}>
+                    <Controller
+                      control={control}
+                      name={`tar_${index}`}
+                      render={({ field }) => {
+                        return (
+                          <Input
+                            {...field}
+                            type="number"
+                            name={`tar_${index}`}
+                            placeholder="12"
+                            style={{ width: "100%" }}
+                          />
+                        );
+                      }}
+                    />
+                  </td>
+                  <td width={100}>
+                    <Button
+                      disabled={isPending}
+                      type="secondary"
+                      icon={<CheckOutlined style={{color: "green"}} />}
+                      onClick={() =>
+                        checkClickHandler({
+                          index,
+                          machine_no: item,
+                          beam_no: beamNo,
+                        })
+                      }
+                    ></Button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+
     </Modal>
   );
 };

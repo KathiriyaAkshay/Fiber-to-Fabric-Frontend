@@ -411,6 +411,7 @@ const UpdateReworkChallan = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -457,6 +458,7 @@ const UpdateReworkChallan = () => {
                   <Select
                     {...field}
                     allowClear
+                    disabled
                     placeholder="Select Machine Name"
                     loading={isLoadingMachineList}
                     options={machineListRes?.rows?.map((machine) => ({
@@ -491,6 +493,7 @@ const UpdateReworkChallan = () => {
                   return (
                     <Select
                       {...field}
+                      disabled
                       placeholder="Select Quality"
                       loading={dropDownQualityLoading}
                       options={
@@ -583,7 +586,7 @@ const UpdateReworkChallan = () => {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} placeholder="CH123456" />
+                  <Input {...field} readOnly placeholder="CH123456" />
                 )}
               />
             </Form.Item>

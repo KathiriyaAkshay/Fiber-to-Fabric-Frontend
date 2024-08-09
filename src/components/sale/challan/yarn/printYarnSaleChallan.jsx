@@ -192,11 +192,9 @@ const PrintYarnSaleChallan = ({ details }) => {
                     </Row>
 
                     <Row gutter={24} >
-                        {/* <Col span={4}>TERMS OF SALES:</Col> */}
                     </Row>
 
                     <Row gutter={24} >
-                        {/* <Col span={4}>TERMS OF SALES:</Col> */}
                     </Row>
                     <Row gutter={24} style={{ borderTop: "1px dashed", paddingTop: 15 }}>
                         <Col span={4} style={{color: "#000", fontWeight: 600}}>TERMS OF SALES:</Col>

@@ -58,6 +58,7 @@ function AddSizeBeamOrder() {
 
   const [denierOptions, setDenierOptions] = useState([]);
   const [supplierCompanyOptions, setSupplierCompanyOptions] = useState([]);
+  const [loading, setLoading] = useState(false) ; 
 
   function goBack() {
     navigate(-1);
@@ -117,6 +118,7 @@ function AddSizeBeamOrder() {
 
   const { mutateAsync: createSizeBeamOrder } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true) ; 
       const res = await createSizeBeamOrderRequest({
         data,
         params: {
@@ -127,6 +129,7 @@ function AddSizeBeamOrder() {
     },
     mutationKey: ["order-master", "yarn-order", "create"],
     onSuccess: (res) => {
+      setLoading(false) ; 
       queryClient.invalidateQueries([
         "order-master",
         "yarn-order",
@@ -140,6 +143,7 @@ function AddSizeBeamOrder() {
       navigate(-1);
     },
     onError: (error) => {
+      setLoading(false) ; 
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -549,7 +553,7 @@ function AddSizeBeamOrder() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {loading}>
             Create
           </Button>
         </Flex>

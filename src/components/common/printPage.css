@@ -35,7 +35,46 @@
     font-size: 17px;
     font-weight: 700;
     margin-top: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+}
+
+.printable-page{
+    padding: 10px;
+    overflow-y: hidden;
+    height: 88vh;
+}
+  
+.printable-main-div{
+    margin-top: 10px;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+.printable-table-div{
+    height: 60vh;
+    overflow-y: auto;
+    border-top: 2px dotted #d5d5d5;
+    padding-top: 15px;
+    margin-top: 10px;
+}
+
+.company-info {
+    color: black; /* Color for company name */
+    font-size: 15px;
+    text-align: right;
+}
+.company-contact {
+    font-size: 13px;
+    margin-top: 5px;
+}
+.gst-number {
+    font-size: 13px;
+    margin-top: 5px;
+}
+
+.total-information-td{
+    background-color: #f2f2f2;
+    font-weight: 600;
 }
 
 @media print {
@@ -51,5 +90,9 @@
         font-size: 15px;
         margin-top: 10px;
         margin-bottom: 10px;
+    }
+
+    .printable-table-div{
+        height: auto;
     }
 }

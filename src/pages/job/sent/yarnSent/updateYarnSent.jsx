@@ -13,6 +13,7 @@ import {
   Input,
   Row,
   Select,
+  Spin,
   message,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
@@ -168,13 +169,13 @@ const UpdateYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`current_stock_${index}`)) {
-          setError(`current_stock_${index}`, {
-            type: "manual",
-            message: "Please enter current stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`current_stock_${index}`)) {
+        //   setError(`current_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter current stock.",
+        //   });
+        //   isValid = false;
+        // }
         if (!getValues(`cartoon_${index}`)) {
           setError(`cartoon_${index}`, {
             type: "manual",
@@ -189,13 +190,13 @@ const UpdateYarnSent = () => {
           });
           isValid = false;
         }
-        if (!getValues(`remaining_stock_${index}`)) {
-          setError(`remaining_stock_${index}`, {
-            type: "manual",
-            message: "Please enter remaining stock.",
-          });
-          isValid = false;
-        }
+        // if (!getValues(`remaining_stock_${index}`)) {
+        //   setError(`remaining_stock_${index}`, {
+        //     type: "manual",
+        //     message: "Please enter remaining stock.",
+        //   });
+        //   isValid = false;
+        // }
       }
     });
 
@@ -337,7 +338,6 @@ const UpdateYarnSent = () => {
 
   useEffect(() => {
     if (yarnSentDetails) {
-      console.log({ yarnSentDetails });
       const {
         sent_date,
         challan_no,
@@ -351,7 +351,7 @@ const UpdateYarnSent = () => {
         job_yarn_sent_details,
       } = yarnSentDetails;
       setFieldArray(() => {
-        return job_yarn_sent_details.map((item, index) => index);
+        return job_yarn_sent_details.map((_, index) => index);
       });
       let jobYarnSentDetails = {};
       job_yarn_sent_details.forEach((item, index) => {
@@ -364,6 +364,7 @@ const UpdateYarnSent = () => {
         jobYarnSentDetails[`kg_${index}`] = item.kg;
         jobYarnSentDetails[`remaining_stock_${index}`] = item.remaining_stock;
       });
+
       reset({
         sent_date: dayjs(sent_date),
         challan_no,
@@ -661,7 +662,6 @@ const UpdateYarnSent = () => {
         <Divider />
 
         {/* {fieldArray.map((field, index) => {
-          console.log({ field });
           return (
             <Row
               gutter={18}
@@ -821,43 +821,71 @@ const UpdateYarnSent = () => {
             </Row>
           );
         })} */}
-        {fieldArray.map((field, index) => {
-          // const yarnDetailObj = yarnSentDetails?.job_yarn_sent_details[index];
+        {yarnSentDetails ? (
+          fieldArray.map((field, index) => {
+            const companyName =
+              yarnSentDetails?.job_yarn_sent_details[index]?.yarn_stock_company
+                ?.yarn_company_name;
 
-          // const {
-          //   yarn_company_id = 0,
-          //   filament = 0,
-          //   yarn_denier = 0,
-          //   luster_type = "",
-          //   yarn_color = "",
-          // } = yarnDetailObj?.yarn_stock_company;
+            const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
+              ({ yarn_company_name }) => companyName === yarn_company_name
+            );
 
-          // const editDenierOption = [
-          //   {
-          //     label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-          //     value: yarn_company_id,
-          //   },
-          // ];
-          return (
-            <RenderDynamicFields
-              key={index}
-              field={field}
-              index={index}
-              errors={errors}
-              yscdListRes={yscdListRes}
-              isLoadingYSCDList={isLoadingYSCDList}
-              control={control}
-              fieldArray={fieldArray}
-              addNewFieldRow={addNewFieldRow}
-              deleteFieldRow={deleteFieldRow}
-              setValue={setValue}
-              setError={setError}
-              getValues={getValues}
-              clearErrors={clearErrors}
-              // editDenierOption={editDenierOption}
-            />
-          );
-        })}
+            const editDenierOption = selectedYarnCompany?.yarn_details.map(
+              ({
+                yarn_company_id = 0,
+                filament = 0,
+                yarn_denier = 0,
+                luster_type = "",
+                yarn_color = "",
+              }) => {
+                return {
+                  label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+                  value: yarn_company_id,
+                };
+              }
+            );
+
+            // const {
+            //   yarn_company_id = 0,
+            //   filament = 0,
+            //   yarn_denier = 0,
+            //   luster_type = "",
+            //   yarn_color = "",
+            // } = yarnDetailObj?.yarn_stock_company;
+
+            // const editDenierOption = [
+            //   {
+            //     label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
+            //     value: yarn_company_id,
+            //   },
+            // ];
+
+            return (
+              <RenderDynamicFields
+                key={index}
+                field={field}
+                index={index}
+                errors={errors}
+                yscdListRes={yscdListRes}
+                isLoadingYSCDList={isLoadingYSCDList}
+                control={control}
+                fieldArray={fieldArray}
+                addNewFieldRow={addNewFieldRow}
+                deleteFieldRow={deleteFieldRow}
+                setValue={setValue}
+                setError={setError}
+                getValues={getValues}
+                clearErrors={clearErrors}
+                editDenierOption={editDenierOption}
+              />
+            );
+          })
+        ) : (
+          <center>
+            <Spin />
+          </center>
+        )}
 
         <Flex gap={10} justify="flex-end">
           <Button type="primary" htmlType="submit" loading={isPending}>
@@ -885,19 +913,26 @@ const RenderDynamicFields = ({
   getValues,
   setError,
   clearErrors,
-  // editDenierOption,
+  editDenierOption,
 }) => {
-  const [denierOptions, setDenierOptions] = useState([]);
+  const [denierOptions, setDenierOptions] = useState(editDenierOption || []);
 
   const createDenierOption = (companyName) => {
+    setValue(`yarn_stock_company_id_${field}`, null);
+    setValue(`current_stock_${field}`, "");
+    setValue(`cartoon_${field}`, "");
+    setValue(`kg_${field}`, "");
+    setValue(`remaining_stock_${field}`, "");
+
     const selectedYarnCompany = yscdListRes?.yarnCompanyList.find(
       ({ yarn_company_name }) => companyName === yarn_company_name
     );
+
     if (selectedYarnCompany) {
       setDenierOptions(
         selectedYarnCompany.yarn_details.map(
           ({
-            id = 0,
+            yarn_company_id = 0,
             filament = 0,
             yarn_denier = 0,
             luster_type = "",
@@ -905,14 +940,13 @@ const RenderDynamicFields = ({
           }) => {
             return {
               label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-              value: id,
+              value: yarn_company_id,
             };
           }
         )
       );
     } else {
       setDenierOptions([]);
-      setValue(`yarn_stock_company_id_${field}`, null);
     }
   };
 
@@ -959,7 +993,10 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onChange={createDenierOption}
+                onChange={(value) => {
+                  field.onChange(value);
+                  createDenierOption(value);
+                }}
               />
             )}
           />
@@ -995,15 +1032,27 @@ const RenderDynamicFields = ({
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
-                onSelect={(selectedValue) => {
+                onChange={(selectedValue) => {
+                  fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => yarn_company_id === selectedValue
                     );
-                    // setCurrentStockValue(obj.current_stock);
-                    setValue(`current_stock_${field}`, obj.current_stock);
+                    setValue(
+                      `current_stock_${field}`,
+                      obj ? obj.current_stock : 0
+                    );
                   });
                 }}
+                // onSelect={(selectedValue) => {
+                //   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+                //     const obj = yarn_details.find(
+                //       ({ yarn_company_id }) => yarn_company_id === selectedValue
+                //     );
+                //     // setCurrentStockValue(obj.current_stock);
+                //     setValue(`current_stock_${field}`, obj.current_stock);
+                //   });
+                // }}
               />
             )}
           />

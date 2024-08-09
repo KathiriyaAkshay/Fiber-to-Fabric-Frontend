@@ -43,6 +43,8 @@ export function deleteYarnOrderRequest({ id, params }) {
   return api.delete(`/order-master/yarn-order/delete/${id}`, { params });
 }
 
+
+
 // yarn order advance
 export function createYarnOrderAdvanceRequest({ id, data, params }) {
   return api.post(`/order-master/yarn-order/advances/create/${id}`, data, {
@@ -65,6 +67,10 @@ export function getSizeBeamOrderNumberRequest({params}){
 
 export function getSizeBeamOrderByIdRequest({ id, params }) {
   return api.get(`/order-master/size-beam-order/get/${id}`, { params });
+}
+
+export function getLastBeamNumberRequest({params}){
+  return api.get(`/order-master/recive-size-beam/last-beam-no`, {params}) ; 
 }
 
 export function getSizeBeamOrderListRequest({ params }) {

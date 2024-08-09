@@ -62,6 +62,8 @@ const AddBeamReceive = () => {
     navigate(-1);
   }
 
+  // Create Beam receive handler ==========================================================
+
   const { mutateAsync: addNewBeamReceive, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addJobBeamReceiveRequest({
@@ -136,6 +138,7 @@ const AddBeamReceive = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const { machine_name, supplier_name, challan_beam_type } = watch();
+
   // ------------------------------------------------------------------------------------------
 
   const { data: lastBeamNo } = useQuery({
@@ -152,7 +155,8 @@ const AddBeamReceive = () => {
         });
         const regex = /-(\d+)/;
         const match = res?.data?.data.match(regex);
-        const number = match ? parseInt(match[1], 10) : null;
+        
+        const number = match ? parseInt(match[1], 10) : 0;
         return number;
       }
     },
@@ -568,7 +572,7 @@ const AddBeamReceive = () => {
           </Col>
         </Row>
 
-        {fieldArray.map((fieldNumber, index) => {
+        {challan_beam_type != undefined && fieldArray.map((fieldNumber, index) => {
           return (
             <Row
               key={index + "_add_beam_receive"}
@@ -591,11 +595,6 @@ const AddBeamReceive = () => {
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
-                  {/* <Controller
-                control={control}
-                name="beam_no"
-                render={({ field }) => <Input {...field} placeholder="12" />}
-              /> */}
                   <Typography.Text style={{ fontWeight: "bold" }}>
                     {lastBeamNo
                       ? challan_beam_type === "non pasarela (secondary)"

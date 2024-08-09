@@ -42,26 +42,19 @@ const BeamCardInformationModel = ({ data }) => {
           return (
             <>
               <ReactToPrint
-                trigger={() => (
-                  <Flex>
-                    <Button
-                      type="primary"
-                      style={{ marginLeft: "auto", marginTop: 15 }}
-                    >
-                      PRINT
-                    </Button>
-                  </Flex>
-                )}
+                trigger={() => <Flex>
+                  <Button type="primary" style={{ marginLeft: "auto", marginTop: 15 }}>
+                    PRINT
+                  </Button>
+                </Flex>}
                 content={() => ComponentRef.current}
                 pageStyle={pageStyle}
               />
             </>
-          );
+          )
         }}
         width={"25%"}
-        onCancel={() => {
-          setIsModalOpen(false);
-        }}
+        onCancel={() => { setIsModalOpen(false) }}
         styles={{
           content: {
             padding: 0,
@@ -73,42 +66,49 @@ const BeamCardInformationModel = ({ data }) => {
           body: {
             padding: "10px 16px",
             maxHeight: "80vh",
-            overflowY: "auto",
+            overflowY: "auto"
+
           },
           footer: {
             paddingBottom: 10,
             paddingRight: 10,
-            backgroundColor: "#efefef",
-          },
+            backgroundColor: "#efefef"
+          }
         }}
       >
         <div ref={ComponentRef}>
-          {data?.recieve_size_beam_details?.map((element, index) => {
+
+          {data?.map((element, index) => {
             return (
-              <Flex key={index} style={{ marginBottom: "20px" }}>
-                <div>
+              <Flex key={index} style={{ marginBottom: '20px' }}>
+                <div >
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?data=${element?.beam_no}&size=100x100`}
                     alt={`QR code for ${element?.beam_no}`}
-                    style={{ width: "100%", height: 112 }}
+                    style={{ width: '100%', height: 112, width: 112 }}
                   />
                 </div>
                 <div style={{ marginLeft: 20 }}>
-                  <p>
-                    <strong>{element?.beam_no}</strong>
-                  </p>
-                  <p>
-                    Taka: <strong>{element?.taka}</strong>
-                  </p>
-                  <p>
-                    Meter: <strong>{element?.meters}</strong>
-                  </p>
+                  <p><strong>{element?.beam_no}</strong></p>
+                  <p>Taka: <strong>{element?.taka}</strong></p>
+                  <p>Meter: <strong>{element?.meters}</strong></p>
                 </div>
               </Flex>
-            );
+            )
           })}
         </div>
-      </Modal>
+        <div style={{ marginLeft: 20 }}>
+          <p>
+            <strong>{element?.beam_no}</strong>
+          </p>
+          <p>
+            Taka: <strong>{element?.taka}</strong>
+          </p>
+          <p>
+            Meter: <strong>{element?.meters}</strong>
+          </p>
+        </div>
+      </Modal >
     </>
   );
 };

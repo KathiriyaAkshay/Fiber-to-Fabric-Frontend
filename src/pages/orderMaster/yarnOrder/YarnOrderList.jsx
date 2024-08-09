@@ -32,15 +32,14 @@ import { getSupplierListRequest } from "../../../api/requests/users";
 function YarnOrderList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
-  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const { companyId, financialYearEnd } = useContext(GlobalContext);
 
   const [orderStatus, setOrderStatus] = useState(null);
-  const debouncedOrderStatus = useDebounce(orderStatus, 500) ; 
-  const [yarnCompanyName, setYarnCompanyName] = useState(null) ; 
-  const debouceYarnCompanyName = useDebounce(yarnCompanyName, 500) ; 
-  const [supplier, setSupplier] = useState(null) ; 
-  const debounceSupplier = useDebounce(supplier, 500) ; 
+  const debouncedOrderStatus = useDebounce(orderStatus, 500);
+  const [yarnCompanyName, setYarnCompanyName] = useState(null);
+  const debouceYarnCompanyName = useDebounce(yarnCompanyName, 500);
+  const [supplier, setSupplier] = useState(null);
+  const debounceSupplier = useDebounce(supplier, 500);
 
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
     queryKey: ["supplier", "list", { company_id: companyId }],
@@ -76,6 +75,7 @@ function YarnOrderList() {
         end: financialYearEnd,
         order_status: debouncedOrderStatus,
         yarn_company_name: debouceYarnCompanyName,
+        supplier_name: debounceSupplier
         // yarn_company_id: debouncedDenier,
         // supplier_id: debouncedSupplier,
       },
@@ -87,11 +87,11 @@ function YarnOrderList() {
           page,
           pageSize,
           end: financialYearEnd,
-          pending: true,
           order_status: debouncedOrderStatus,
           yarn_company_name: debouceYarnCompanyName,
           // yarn_company_id: debouncedDenier,
           // supplier_id: debouncedSupplier,
+          supplier_name: debounceSupplier
         },
       });
       return res.data?.data;
@@ -110,7 +110,7 @@ function YarnOrderList() {
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder) => {
+    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder, index) => {
       const {
         id,
         order_date,
@@ -136,7 +136,7 @@ function YarnOrderList() {
 
       const { first_name: supplierName } = user;
       return [
-        id,
+        index + 1,
         order_no,
         dayjs(order_date).format("DD-MM-YYYY"),
         supplierName,
@@ -152,7 +152,7 @@ function YarnOrderList() {
       ];
     });
 
-    let tableTitle =  [
+    let tableTitle = [
       "ID",
       "Order No.",
       "Order Date",
@@ -166,12 +166,13 @@ function YarnOrderList() {
       "Rate",
       "Approx Amount",
       "Order Status",
-    ] ; 
+    ];
 
     // Set localstorage item information 
-    localStorage.setItem("print-array", JSON.stringify(body)) ; 
+    localStorage.setItem("print-array", JSON.stringify(body));
     localStorage.setItem("print-title", "Yarn Order List")
-    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0") ; 
 
     // downloadUserPdf({
     //   body,
@@ -197,8 +198,8 @@ function YarnOrderList() {
     //   title: "Yarn Order List",
     // });
 
-    
-    window.open("/print") ; 
+
+    window.open("/print");
   }
 
   const columns = [
@@ -358,13 +359,17 @@ function YarnOrderList() {
                 { label: "Approx Amount", value: approx_amount },
               ]}
             />
-            <Button
-              onClick={() => {
-                navigateToUpdate(id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
+
+            {quantity == pending_quantity && (
+              <Button
+                onClick={() => {
+                  navigateToUpdate(id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+            )}
+
 
             {!has_advance_payment_count && (
               <DeleteYarnOrderButton data={yarnOrder} />
@@ -455,11 +460,11 @@ function YarnOrderList() {
         <Flex style={{ marginLeft: "auto" }} gap={15}>
 
           <Flex align="center" gap={10}>
-            
+
             <Typography.Text className="whitespace-nowrap">
               Order Status
             </Typography.Text>
-            
+
             <Select
               placeholder="Select order status"
               loading={isLoading}
@@ -490,24 +495,24 @@ function YarnOrderList() {
             />
 
           </Flex>
-          
+
           <Flex align="center" gap={10}>
-            
+
             <Typography.Text className="whitespace-nowrap">
               Yarn company
             </Typography.Text>
-            
+
             <Select
               placeholder="Select Yarn company"
               loading={isLoading}
               options={yscdListRes?.yarnCompanyList?.map(
-                  ({ yarn_company_name = "" }) => {
-                    return {
-                      label: yarn_company_name,
-                      value: yarn_company_name,
-                    };
-                  }
-                )}
+                ({ yarn_company_name = "" }) => {
+                  return {
+                    label: yarn_company_name,
+                    value: yarn_company_name,
+                  };
+                }
+              )}
               value={yarnCompanyName}
               onChange={setYarnCompanyName}
               style={{
@@ -521,7 +526,27 @@ function YarnOrderList() {
             />
 
           </Flex>
-       
+
+          <Flex align="center" gap={10}>
+
+            <Typography.Text className="whitespace-nowrap">
+              Select Supplier
+            </Typography.Text>
+
+            <Select
+              placeholder="Select supplier"
+              loading={isLoadingSupplierList}
+              options={supplierListRes?.rows?.map((supervisor) => ({
+                label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
+                value: supervisor?.first_name,
+              }))}
+              allowClear
+              value={supplier}
+              onChange={setSupplier}
+            />
+
+          </Flex>
+
         </Flex>
 
         <Button

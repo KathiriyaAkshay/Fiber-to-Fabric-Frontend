@@ -136,6 +136,7 @@ import SaleChallanList from "./pages/sale/challan/saleChallan/SaleChallanList";
 import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
 import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
 import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
+import BeamSentReport from "./pages/job/reports/beamSentReport";
 import UpdatePurchaseTaka from "./pages/purchase/purchaseTaka/updatePurchaseTaka";
 
 const queryClient = new QueryClient({
@@ -592,10 +593,12 @@ const router = createBrowserRouter([
           {
             path: "report",
             children: [
-              { index: true, element: <div>beam-sent-report</div> },
+              { 
+                index: true, 
+                element: <BeamSentReport/>},
               {
                 path: "beam-sent-report",
-                element: <div>beam-sent-report</div>,
+                element: <BeamSentReport/>,
               },
               {
                 path: "yarn-sent-report",

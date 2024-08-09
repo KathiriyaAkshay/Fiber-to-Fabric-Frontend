@@ -13,8 +13,6 @@ import {
   downloadUserPdf,
   getPDFTitleContent,
 } from "../../../../lib/pdf/userPdf";
-// import dayjs from "dayjs";
-// import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -25,6 +23,8 @@ import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal
 import { getJobBeamReceiveListRequest } from "../../../../api/requests/job/receive/beamReceive";
 import dayjs from "dayjs";
 import { getPartyListRequest } from "../../../../api/requests/users";
+import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
+import BeamCardInformationModel from "../../../../components/common/modal/beamCardInformation";
 
 const BeamReceiveList = () => {
   const navigate = useNavigate();
@@ -43,6 +43,10 @@ const BeamReceiveList = () => {
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedParty = useDebounce(party, 500);
 
+  const [isBeamInformationModel, setIsBeamInformationModel] = useState(false);
+  const [beamInformation, setBeamInformation] = useState(null);
+
+  // Machine list dropdown 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -55,6 +59,7 @@ const BeamReceiveList = () => {
     enabled: Boolean(companyId),
   });
 
+  // Partylist dropdown 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -66,6 +71,7 @@ const BeamReceiveList = () => {
     enabled: Boolean(companyId),
   });
 
+  // InHouse Quality dropdown 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -138,58 +144,115 @@ const BeamReceiveList = () => {
     navigate(`/job/receive/beam-receive/update/${id}`);
   }
 
+  // Download PDF Functionality
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamReceiveListData?.rows?.map((item, index) => {
-      const {
-        challan_no,
-        createdAt,
-        inhouse_quality,
-        supplier,
-        challan_beam_type,
-      } = item;
+    // const body = beamReceiveListData?.rows?.map((item, index) => {
+    //   const {
+    //     challan_no,
+    //     createdAt,
+    //     inhouse_quality,
+    //     supplier,
+    //     challan_beam_type,
+    //   } = item;
+    //   let totalTaka = 0;
+    //   let totalMeter = 0;
+    //   item.job_beam_receive_details.forEach(({ taka, meter }) => {
+    //     totalTaka += taka;
+    //     totalMeter += meter;
+    //   });
+
+    //   return [
+    //     index + 1,
+    //     challan_no,
+    //     dayjs(createdAt).format("DD-MM-YYYY"),
+    //     `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}Kg)`,
+    //     supplier.supplier.supplier_name,
+    //     supplier.supplier.supplier_company,
+    //     totalTaka,
+    //     totalMeter,
+    //     item.job_beam_receive_details.length,
+    //     challan_beam_type,
+    //   ];
+    // });
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Challan Date",
+    //       "Challan No",
+    //       "Quality",
+    //       "Supplier Name",
+    //       "Supplier Company",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "No of Beam",
+    //       "Challan Beam Type",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Beam Receive List",
+    // });
+
+    let title = [
+      "ID",
+      "Challan Date",
+      "Challan No",
+      "Quality",
+      "Supplier Name",
+      "Supplier Company",
+      "Total Taka",
+      "Total Meter",
+      "No of Beam",
+    ];
+
+    let temp = [];
+
+    beamReceiveListData?.rows?.map((element, index) => {
       let totalTaka = 0;
       let totalMeter = 0;
-      item.job_beam_receive_details.forEach(({ taka, meter }) => {
+
+      element.job_beam_receive_details.forEach(({ taka, meter }) => {
         totalTaka += taka;
         totalMeter += meter;
       });
 
-      return [
+      temp.push([
         index + 1,
-        challan_no,
-        dayjs(createdAt).format("DD-MM-YYYY"),
-        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}Kg)`,
-        supplier.supplier.supplier_name,
-        supplier.supplier.supplier_company,
+        dayjs(element?.createdAt).format("DD-MM-YYYY"),
+        element?.challan_no,
+        element.inhouse_quality.quality_name,
+        element?.supplier?.supplier?.supplier_name,
+        element?.supplier?.supplier?.supplier_company,
         totalTaka,
         totalMeter,
-        item.job_beam_receive_details.length,
-        challan_beam_type,
-      ];
+        element?.job_beam_receive_details?.length
+      ])
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Challan Date",
-          "Challan No",
-          "Quality",
-          "Supplier Name",
-          "Supplier Company",
-          "Total Taka",
-          "Total Meter",
-          "No of Beam",
-          "Challan Beam Type",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Beam Receive List",
-    });
+    let total = [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      beamReceiveListData?.total_taka,
+      beamReceiveListData?.total_meter,
+      beamReceiveListData?.total_beams
+    ]
+
+    localStorage.setItem("print-title", "Job Beam Receive List");
+    localStorage.setItem("print-head", JSON.stringify(title));
+    localStorage.setItem("print-array", JSON.stringify(temp));
+    localStorage.setItem("table-count", "1");
+    localStorage.setItem("total-data", JSON.stringify(total));
+
+    window.open("/print");
   }
 
   const columns = [
@@ -247,8 +310,15 @@ const BeamReceiveList = () => {
     },
     {
       title: "No of Beam",
-      render: (details) => {
-        return details?.job_beam_receive_details?.length;
+      render: (details, record) => {
+        return (
+          <div
+            className="number-of-beam-div"
+            onClick={() => {
+              setIsBeamInformationModel(true);
+              setBeamInformation(record);
+            }}>{details?.job_beam_receive_details?.length}</div>
+        )
       },
     },
     {
@@ -259,15 +329,22 @@ const BeamReceiveList = () => {
     {
       title: "Action",
       render: (details) => {
+
         let totalMeter = 0;
+        let totalTaka = 0;
+        let beam_info_list = [];
+
         details.job_beam_receive_details.forEach(({ meter }) => {
           totalMeter += meter;
         });
 
-        let totalTaka = 0;
         details.job_beam_receive_details.forEach(({ taka }) => {
           totalTaka += taka;
         });
+
+        details?.job_beam_receive_details?.map((element) => {
+          beam_info_list.push(element);
+        })
         return (
           <Space>
             <ViewDetailModal
@@ -310,9 +387,11 @@ const BeamReceiveList = () => {
             >
               <EditOutlined />
             </Button>
-            <Button>
-              <AppstoreOutlined />
-            </Button>
+
+            <BeamCardInformationModel
+              data={beam_info_list}
+            />
+
           </Space>
         );
       },
@@ -339,6 +418,32 @@ const BeamReceiveList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          if (beamReceiveListData?.rows?.length == 0) return;
+          return (
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0}>
+                <b>Total</b>
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell>
+                {beamReceiveListData?.total_taka || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {beamReceiveListData?.total_meter || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {beamReceiveListData?.total_beams || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell />
+              <Table.Summary.Cell />
+            </Table.Summary.Row>
+          )
         }}
       />
     );
@@ -470,16 +575,23 @@ const BeamReceiveList = () => {
             onClick={downloadPdf}
             className="flex-none"
           />
-          <Button
+          {/* <Button
             icon={<PrinterOutlined />}
             type="primary"
             disabled={!beamReceiveListData?.rows?.length}
             onClick={downloadPdf}
             className="flex-none"
-          />
+          /> */}
         </Flex>
       </div>
       {renderTable()}
+
+      {isBeamInformationModel && (
+        <BeamInformationModel
+          details={beamInformation}
+          setBeamModel={setIsBeamInformationModel}
+        />
+      )}
     </div>
   );
 };

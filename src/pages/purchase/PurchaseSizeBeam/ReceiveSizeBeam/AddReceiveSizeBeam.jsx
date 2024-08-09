@@ -28,6 +28,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
+import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -60,9 +61,30 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
 );
 
 function AddReceiveSizeBeam() {
+  const navigate = useNavigate();
+
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [pendingMeter, setPendingMeter] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+    setValue,
+    getValues
+  } = useForm({
+    resolver: addReceiveSizeBeamSchemaResolver,
+    defaultValues: {
+      receive_date: dayjs(),
+    },
+  });
+
+  const { size_beam_order_id, beam_type, machine_name } = watch();
 
   const [pendingMeter, setPendingMeter] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
@@ -77,11 +99,15 @@ function AddReceiveSizeBeam() {
       ],
       queryFn: async () => {
         const res = await getSizeBeamOrderListRequest({
-          params: { company_id: companyId, status: "PENDING" },
+          params: {
+            company_id: companyId,
+            status: "PENDING",
+            machine_name: machine_name
+          },
         });
         return res.data?.data;
       },
-      enabled: Boolean(companyId),
+      enabled: Boolean(companyId && machine_name),
     });
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -89,7 +115,9 @@ function AddReceiveSizeBeam() {
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: {
+          company_id: companyId
+        },
       });
       return res.data?.data?.machineList;
     },
@@ -117,6 +145,7 @@ function AddReceiveSizeBeam() {
 
   const { mutateAsync: createReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
+      setLoading(true);
       const res = await createReceiveSizeBeamRequest({
         data,
         params: { company_id: companyId },
@@ -125,6 +154,7 @@ function AddReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
+      setLoading(false);
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -136,6 +166,7 @@ function AddReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
+      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -144,58 +175,89 @@ function AddReceiveSizeBeam() {
     // delete not allowed properties here
     delete data?.supplier_name;
     delete data?.supplier_company;
-    await createReceiveSizeBeam(data);
+
+    let requestData = data;
+    let beamData = requestData?.beam_details?.map((element) => {
+      return {
+        ...element,
+        size_beam_order_detail_id: data?.size_beam_order_id,
+        id: undefined,
+        deletedAt: undefined,
+        order_no: undefined,
+        size_beam_order_id: undefined,
+        is_received: undefined,
+        createdAt: undefined,
+        updatedAt: undefined
+      }
+    });
+    requestData["beam_details"] = beamData;
+
+    await createReceiveSizeBeam(requestData);
   }
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    watch,
-    setValue,
-  } = useForm({
-    resolver: addReceiveSizeBeamSchemaResolver,
-    defaultValues: {
-      receive_date: dayjs(),
+  // Set default value ======================================================
+  const pasarela_primary_beam = "PBN";
+  const non_pasarela_primary_beam = "PBN";
+  const secondary_beam = "SPBN";
+
+  const { data: lastBeamNo } = useQuery({
+    queryKey: [
+      "last",
+      "beamNo",
+      { company_id: companyId, beam_type: beam_type },
+    ],
+    queryFn: async () => {
+      const res = await getLastBeamNumberRequest({
+        companyId,
+        params: { company_id: companyId, beam_type: beam_type },
+      });
+      return res?.data?.data;
     },
+    enabled: Boolean(companyId && beam_type),
   });
 
-  const { size_beam_order_id } = watch();
-
   useEffect(() => {
-    sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
-      ({
-        id = 0,
-        supplier,
-        supplier_id = 0,
-        size_beam_order_details,
-        total_meters = 0,
-      }) => {
-        if (id == size_beam_order_id) {
-          const { supplier_name = "", supplier_company = "" } = supplier || {};
-          setValue("supplier_id", supplier_id);
-          setValue("supplier_name", supplier_name);
-          setValue("supplier_company", supplier_company);
-          setValue("total_meter", total_meters);
-          // Naa tme koi value pass Kari do..like total meter j send kari do payload ma
-          setValue("remaining_meter", total_meters);
-          setValue(
-            "beam_details",
-            (size_beam_order_details || [])?.map(
-              ({
-                id,
-                beam_no,
-                ends_or_tars,
-                tpm,
-                pano,
-                taka,
-                meters,
-                net_weight,
-                grade,
-              }) => {
-                return {
-                  size_beam_order_detail_id: id,
+    if (beam_type !== undefined) {
+
+      let beam = lastBeamNo;
+      let beamType = null;
+      let lastNumber = 1;
+
+      if (beam == null) {
+        if (beam_type == "pasarela(primary)") {
+          beamType = pasarela_primary_beam;
+        } else if (beam_type == "non pasarela (primary)") {
+          beamType = non_pasarela_primary_beam;
+        } else {
+          beamType = secondary_beam;
+        }
+      } else {
+        let beam_part = String(beam).split("-");
+        beamType = beam_part[0];
+        lastNumber = parseInt(beam_part[1]) + 1;
+      };
+
+      sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
+        ({
+          id = 0,
+          supplier,
+          supplier_id = 0,
+          size_beam_order_details,
+          total_meters = 0,
+        }) => {
+          if (id == size_beam_order_id) {
+            const { supplier_name = "", supplier_company = "" } = supplier || {};
+            setValue("supplier_id", supplier_id);
+            setValue("supplier_name", supplier_name);
+            setValue("supplier_company", supplier_company);
+            setValue("total_meter", total_meters);
+            // Naa tme koi value pass Kari do..like total meter j send kari do payload ma
+            setValue("remaining_meter", total_meters);
+            setValue(
+              "beam_details",
+              (size_beam_order_details || [])?.map(
+                ({
+                  id,
                   beam_no,
                   ends_or_tars,
                   tpm,
@@ -204,14 +266,54 @@ function AddReceiveSizeBeam() {
                   meters,
                   net_weight,
                   grade,
-                };
-              }
-            )
-          );
-        }
-      }
-    );
-  }, [setValue, sizeBeamOrderListRes?.SizeBeamOrderList, size_beam_order_id]);
+                }) => {
+                  return {
+                    size_beam_order_detail_id: id,
+                    beam_no,
+                    ends_or_tars,
+                    tpm,
+                    pano,
+                    taka,
+                    meters,
+                    net_weight,
+                    grade,
+                  };
+                }
+              )
+            );
+          }
+        })
+      // sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
+      //   ({
+      //     id = 0,
+      //     supplier,
+      //     supplier_id = 0,
+      //     size_beam_order_details,
+      //     total_meters = 0,
+      //   }) => {
+      //     if (id == size_beam_order_id) {
+      //       const { supplier_name = "", supplier_company = "" } = supplier || {};
+      //       setValue("supplier_id", supplier_id);
+      //       setValue("supplier_name", supplier_name);
+      //       setValue("supplier_company", supplier_company);
+      //       setValue("total_meter", total_meters);
+      //       setValue("remaining_meter", total_meters);
+      //       setPendingMeter(total_meters - 0);
+      //       let beamDetails = [];
+      //       beamDetails = size_beam_order_details?.map((element, index) => {
+      //         return { ...element, "beam_no": `${beamType}-${Number(lastNumber) + index}` };
+      //       });
+      //       setValue("beam_details", beamDetails);
+      //     }
+      //   }
+      // );
+    }
+  }, [setValue,
+    sizeBeamOrderListRes?.SizeBeamOrderList,
+    size_beam_order_id,
+    lastBeamNo,
+    beam_type
+  ]);
 
   function disabledDate(current) {
     // Disable future dates
@@ -242,6 +344,40 @@ function AddReceiveSizeBeam() {
             padding: "12px",
           }}
         >
+
+          <Col span={4}>
+            <Form.Item
+              label="Machine name"
+              name="machine_name"
+              validateStatus={errors.quality_id ? "error" : ""}
+              help={errors.quality_id && errors.quality_id.message}
+              required={true}
+            >
+              <Controller
+                control={control}
+                name="machine_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select Machine Name"
+                    allowClear
+                    loading={isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
+                    style={{
+                      textTransform: "capitalize",
+                    }}
+                    dropdownStyle={{
+                      textTransform: "capitalize",
+                    }}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+
           <Col span={4}>
             <Form.Item
               label="Order No."
@@ -304,39 +440,6 @@ function AddReceiveSizeBeam() {
                         value: id,
                       })
                     )}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col span={4}>
-            <Form.Item
-              label="Machine name"
-              name="machine_name"
-              validateStatus={errors.quality_id ? "error" : ""}
-              help={errors.quality_id && errors.quality_id.message}
-              required={true}
-            >
-              <Controller
-                control={control}
-                name="machine_name"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Machine Name"
-                    allowClear
-                    loading={isLoadingMachineList}
-                    options={machineListRes?.rows?.map((machine) => ({
-                      label: machine?.machine_name,
-                      value: machine?.machine_name,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
                   />
                 )}
               />
@@ -475,14 +578,19 @@ function AddReceiveSizeBeam() {
           </Col>
         </Row>
 
-        {size_beam_order_id && (
-          <ReceiveSizeBeamDetail
-            control={control}
-            errors={errors}
-            sizeBeamOrderListRes={sizeBeamOrderListRes}
-            size_beam_order_id={size_beam_order_id}
-          />
-        )}
+        {
+          size_beam_order_id && beam_type !== undefined && (
+            <ReceiveSizeBeamDetail
+              control={control}
+              errors={errors}
+              setPendingMeter={setPendingMeter}
+              setValue={setValue}
+              pendingMeter={pendingMeter}
+              totalMeter={totalMeter}
+              getValues={getValues}
+              sizeBeamOrderListRes={sizeBeamOrderListRes}
+              size_beam_order_id={size_beam_order_id}
+            />)}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
@@ -492,8 +600,8 @@ function AddReceiveSizeBeam() {
             Create
           </Button>
         </Flex>
-      </Form>
-    </div>
+      </Form >
+    </div >
   );
 }
 

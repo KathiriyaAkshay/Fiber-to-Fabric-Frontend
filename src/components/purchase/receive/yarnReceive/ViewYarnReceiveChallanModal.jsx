@@ -45,10 +45,10 @@ const toWords = new ToWords({
 
 const ViewYarnReceiveChallan = ({ details }) => {
     const [isModelOpen, setIsModalOpen] = useState(false);
-    const { companyId } = useContext(GlobalContext);
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalCartoon, setTotalCartoon] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
+    const {company} = useContext(GlobalContext) ;   
 
     useEffect(() => {
         let tempQuantity = 0;
@@ -136,13 +136,13 @@ const ViewYarnReceiveChallan = ({ details }) => {
                             <Row>
                                 <Col span={24}>
                                     <Typography.Text>From,</Typography.Text>
-                                    <Typography.Text className="block font-bold">SONU TEXTILES</Typography.Text>
+                                    <Typography.Text className="block font-bold">{company?.company_name}</Typography.Text>
                                 </Col>
                             </Row>
                             <Row>
                                 <Col span={24}>
                                     <Typography.Text>Gst In</Typography.Text>
-                                    <Typography.Text className="block">24ABHPP6021C1Z4</Typography.Text>
+                                    <Typography.Text className="block">{company?.gst_no}</Typography.Text>
                                 </Col>
                             </Row>
                             <Row>

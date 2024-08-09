@@ -7,3 +7,7 @@ export function getJobYarnStockReportListRequest({ params }) {
 export function addJobYarnStockReportRequest({ data, params }) {
     return api.post(`/job/report/yarn_stock_report/create`, data, { params });
 }
+
+export function jobBeamSentReportRequest({params}){
+    return api.get(`/job/beam/sent/report`, {params}) ; 
+}

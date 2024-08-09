@@ -30,6 +30,7 @@ import {
   getBeamCardListRequest,
   getLoadedMachineListRequest,
 } from "../../api/requests/beamCard";
+import { disabledFutureDate } from "../../utils/date";
 
 const AddProduction = () => {
   const queryClient = useQueryClient();
@@ -39,6 +40,8 @@ const AddProduction = () => {
 
   const [activeField, setActiveField] = useState(1);
   const [weightPlaceholder, setWeightPlaceholder] = useState(null);
+
+  // Add New Production option handler ===================================================================================
 
   const { mutateAsync: addNewProduction, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -103,6 +106,8 @@ const AddProduction = () => {
     await addNewProduction(newData);
   };
 
+  // Add New Production option handler complete ============================================================================
+
   const {
     control,
     handleSubmit,
@@ -124,7 +129,6 @@ const AddProduction = () => {
       last_taka_no: "",
       last_taka_no_date: dayjs(),
       m_no: null,
-
       grade: "A",
       pis: "",
     },
@@ -132,6 +136,7 @@ const AddProduction = () => {
   });
   const { machine_name, production_filter, quality_id, m_no } = watch();
 
+  // Last production taka get
   const { data: lastProductionTaka } = useQuery({
     queryKey: ["last", "production", "taka", { company_id: companyId }],
     queryFn: async () => {
@@ -200,6 +205,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Machine name dropdown list 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -212,6 +218,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality dropdown list machine name wise 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -329,15 +336,18 @@ const AddProduction = () => {
       style={{ marginTop: "1rem" }}
       onFinish={handleSubmit(onSubmit)}
     >
-      <div className="flex flex-col gap-2 p-4">
+      <div className="flex flex-col gap-2 p-4 pt-2">
+
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+
           <div className="flex items-center gap-5">
             <Button onClick={() => navigate(-1)}>
               <ArrowLeftOutlined />
             </Button>
             <h3 className="m-0 text-primary">Add Production</h3>
           </div>
-          <div>
+
+          <div style={{ marginLeft: "auto" }}>
             <Controller
               control={control}
               name="production_filter"
@@ -345,7 +355,6 @@ const AddProduction = () => {
                 <Radio.Group
                   {...field}
                   name="production_filter"
-                  // options={plainOptions}
                   onChange={(e) => {
                     field.onChange(e);
                     changeProductionFilter(e.target.value);
@@ -473,14 +482,15 @@ const AddProduction = () => {
                 control={control}
                 name="date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />
                 )}
               />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
+        <Row style={{ gap: "16px", marginTop: "-25px" }} className="w-100" justify={"start"}>
+
           {production_filter == "machine_wise" && (
             <Col span={4}>
               <Form.Item
@@ -515,10 +525,6 @@ const AddProduction = () => {
           <Col span={8}>
             <Form.Item
               label="Last Entered Taka No."
-              // name="last_taka_no"
-              // validateStatus={errors.enter_weight ? "error" : ""}
-              // help={errors.enter_weight && errors.enter_weight.message}
-              // required={true}
               wrapperCol={{ sm: 24 }}
             >
               <Row gutter={15}>
@@ -547,27 +553,30 @@ const AddProduction = () => {
           </Col>
         </Row>
 
-        <AddProductionTable
-          errors={errors}
-          control={control}
-          setFocus={setFocus}
-          activeField={activeField}
-          setActiveField={setActiveField}
-          getValues={getValues}
-          setValue={setValue}
-          setError={setError}
-          trigger={trigger}
-          lastProductionTaka={lastProductionTaka}
-          beamCardList={beamCardList}
-          production_filter={production_filter}
-          avgWeight={avgWeight}
-          weightPlaceholder={weightPlaceholder}
-          setWeightPlaceholder={setWeightPlaceholder}
-          dropDownQualityListRes={dropDownQualityListRes}
-        />
+        {machine_name !== undefined && machine_name !== null && (
+          <AddProductionTable
+            errors={errors}
+            control={control}
+            setFocus={setFocus}
+            activeField={activeField}
+            setActiveField={setActiveField}
+            getValues={getValues}
+            setValue={setValue}
+            setError={setError}
+            trigger={trigger}
+            lastProductionTaka={lastProductionTaka}
+            beamCardList={beamCardList}
+            production_filter={production_filter}
+            avgWeight={avgWeight}
+            weightPlaceholder={weightPlaceholder}
+            setWeightPlaceholder={setWeightPlaceholder}
+            dropDownQualityListRes={dropDownQualityListRes}
+          />
+        )}
 
         {production_filter === "machine_wise" && (
-          <Row style={{ gap: "12px" }}>
+          
+          <Row style={{ gap: "12px", marginTop: "20px" }}>
             <Col span={3}>
               <Form.Item
                 label="Pis"
@@ -623,13 +632,14 @@ const AddProduction = () => {
               </Form.Item>
             </Col>
           </Row>
+
         )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button type="primary" htmlType="button" onClick={handleSubmit(onSubmit)} loading={isPending}>
             Create
           </Button>
         </Flex>

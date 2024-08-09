@@ -9,7 +9,7 @@ import {
   Typography,
   Select,
 } from "antd";
-import { FileTextOutlined } from "@ant-design/icons";
+import { FileExcelFilled, FilePdfFilled, FileTextOutlined } from "@ant-design/icons";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
@@ -26,6 +26,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
 import dayjs from "dayjs";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
+import * as XLSX from 'xlsx';
 
 const YarnSalesBillList = () => {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -49,8 +50,8 @@ const YarnSalesBillList = () => {
   const debounceParty = useDebounce(party, 500);
   const [vehicle, setVehicle] = useState(null);
   const debouncedVehicle = useDebounce(vehicle, 500);
-  const [billStatus, setBillStatus] = useState(null) ; 
-  const debounceBillStatus = useDebounce(billStatus, 500) ; 
+  const [billStatus, setBillStatus] = useState(null);
+  const debounceBillStatus = useDebounce(billStatus, 500);
 
   const {
     data: dropdownSupplierListRes,
@@ -92,7 +93,7 @@ const YarnSalesBillList = () => {
           supplier_name: debounceParty,
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
-          bill_status: "confirmed", 
+          bill_status: "confirmed",
           is_paid: debounceBillStatus
         },
       ],
@@ -106,7 +107,7 @@ const YarnSalesBillList = () => {
             supplier_name: debounceParty,
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
-            bill_status: "confirmed", 
+            bill_status: "confirmed",
             is_paid: debounceBillStatus
           },
         });
@@ -160,7 +161,7 @@ const YarnSalesBillList = () => {
       dataIndex: ["yarn_sale_bill", "rate"],
     },
     {
-      title: "Amount",
+      title: "Amount (Exc GST)",
       dataIndex: ["yarn_sale_bill", "amount"],
     },
     {
@@ -171,20 +172,20 @@ const YarnSalesBillList = () => {
     },
     {
       title: "Due Days",
-      dataIndex: "due_date", 
+      dataIndex: "due_date",
       render: (text, record) => {
         const currentDate = new Date();
         const targetDate = new Date(record?.yarn_sale_bill?.due_date);
 
-        if (currentDate > targetDate){
-          return(
+        if (currentDate > targetDate) {
+          return (
             <div>0</div>
           )
         } else {
           const differenceInMilliseconds = currentDate - targetDate;
           const millisecondsInADay = 24 * 60 * 60 * 1000;
           const daysDifference = Math.floor(differenceInMilliseconds / millisecondsInADay);
-          return(
+          return (
             <div>{daysDifference}</div>
           )
         }
@@ -227,6 +228,89 @@ const YarnSalesBillList = () => {
     },
   ];
 
+  const DownloadOption = async (option) => {
+
+    const tableTitle = [
+      "No", 
+      "Bill Date", 
+      "Challan No", 
+      "Party Name", 
+      "Dennier", 
+      "HSN No", 
+      "Kg", 
+      "Rate", 
+      "Amount", 
+      "SGST", 
+      "CGST", 
+      "IGST", 
+      "Net Amount"
+    ];
+
+    let temp = [] ;
+    let totalKG = 0; 
+    let totalAmount = 0;
+    let totalNetAmount = 0 ;
+
+    yarnSaleBillListData?.list?.map((element, index) => {
+      totalKG = totalKG + Number(element?.kg) ; 
+      totalAmount = totalAmount + Number(element?.yarn_sale_bill?.amount) ; 
+      totalNetAmount = totalNetAmount + Number(element?.yarn_sale_bill?.net_amount) ; 
+
+      temp.push([
+        index + 1, 
+        moment(element?.bill_date).format("DD-MM-YYYY"), 
+        element?.challan_no, 
+        element?.supplier?.supplier_company,
+        `${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F - ( ${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.yarn_color} )`,
+        element?.yarn_stock_company?.hsn_no, 
+        element?.kg, 
+        element?.yarn_sale_bill?.rate,
+        element?.yarn_sale_bill?.amount, 
+        element?.yarn_sale_bill?.SGST_amount, 
+        element?.yarn_sale_bill?.CGST_amount, 
+        element?.yarn_sale_bill?.IGST_amount, 
+        element?.yarn_sale_bill?.net_amount
+      ])
+    });
+
+    let total = [
+      "", 
+      "", 
+      "", 
+      "", 
+      "", 
+      "", 
+      totalKG, 
+      "", 
+      totalAmount, 
+      "", 
+      "", 
+      "", 
+      totalNetAmount
+    ] ;
+    
+    localStorage.setItem("print-title", "Yarn Sale Bill List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("print-array", JSON.stringify(temp));
+    localStorage.setItem("total-count", "1");
+    localStorage.setItem("total-data", JSON.stringify(total));
+
+    if (option == "pdf"){
+      window.open("/print") ; 
+    } else {
+      let data = [tableTitle, ...temp, total];
+      let worksheet = XLSX.utils.aoa_to_sheet(data);
+      let workbook = XLSX.utils.book_new(); 
+      
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Yarn-Sales");
+      
+      // Export to Excel file
+      const dateString = moment().format("YYYY-MMD-D_HH:mm:ss");
+      const fileName = `yarn_sale_${dateString}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }
+  }
+
   function renderTable() {
     if (isLoadingYarnSaleBill) {
       return (
@@ -247,6 +331,32 @@ const YarnSalesBillList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        summary={() => {
+          if (yarnSaleBillListData?.list?.length == 0) return;
+          return (
+            <>
+              <Table.Summary.Row className="font-semiboid">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  {yarnSaleBillListData?.total_bill_kgs}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  {yarnSaleBillListData?.total_bill_amount}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          )
+        }}
       />
     );
   }
@@ -257,13 +367,6 @@ const YarnSalesBillList = () => {
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Yarn Sale Bill List</h3>
-            {/* <Button
-              onClick={() => {
-                navigation("/sales/challan/yarn-sale/add");
-              }}
-              icon={<PlusCircleOutlined />}
-              type="text"
-            /> */}
           </div>
 
           <Flex align="center" gap={10}>
@@ -276,8 +379,8 @@ const YarnSalesBillList = () => {
                 placeholder="Select bill status"
                 value={billStatus}
                 options={[
-                  {label: "Paid", value: true},
-                  {label: "Un-paid", value: false}
+                  { label: "Paid", value: "1" },
+                  { label: "Un-paid", value: "0" }
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -306,6 +409,7 @@ const YarnSalesBillList = () => {
                 style={{
                   textTransform: "capitalize",
                 }}
+                allowClear
                 className="min-w-40"
               />
             </Flex>
@@ -324,8 +428,8 @@ const YarnSalesBillList = () => {
                     vehicle.last_name +
                     " " +
                     `| ( ${vehicle?.username})`,
-                  value: vehicle.id,
-                }))}
+                    value: vehicle.id,
+                  }))}
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
@@ -333,7 +437,26 @@ const YarnSalesBillList = () => {
                 style={{
                   textTransform: "capitalize",
                 }}
+                allowClear
                 className="min-w-40"
+              />
+            </Flex>
+
+
+            <Flex align="center" gap={10}>
+              <Button
+                type="primary"
+                icon = {<FilePdfFilled/>}
+                onClick={() => {DownloadOption("pdf")}}
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Button
+                icon = {<FileExcelFilled/>}
+                onClick={() => {
+                  DownloadOption("excel")
+                }}
               />
             </Flex>
           </Flex>

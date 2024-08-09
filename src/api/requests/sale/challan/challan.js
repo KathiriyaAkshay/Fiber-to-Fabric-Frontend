@@ -30,6 +30,12 @@ export function saleYarnChallanListRequest({ params }) {
     });
 }
 
+export function returnYarnSaleChallanRequest({ data, params}){
+    return api.post(`/sale/challan/yarn-sale/return/create`, data,  {
+        params
+    })
+}
+
 export function deleteSaleYarnChallanRequest({ id, params }) {
     return api.delete(`/sale/challan/yarn-sale/delete/${id}`, { params });
 }

@@ -154,7 +154,7 @@ const AddReceiveReworkTaka = () => {
         </Button>
         <h3 className="m-0 text-primary">Create Receive Rework Taka</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{marginTop: "20px"}}>
         <Row
           gutter={18}
           style={{

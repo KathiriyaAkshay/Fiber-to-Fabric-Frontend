@@ -12,10 +12,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import { getVehicleUserListRequest, getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { createSaleYarnChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
-import { createSaleJobWorkChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import { getSaleJobworkChllanByIdRequest } from "../../../../api/requests/sale/challan/challan";
 import { updateJobWorkSaleChallanRequest } from "../../../../api/requests/sale/challan/challan";
 
@@ -24,7 +21,8 @@ const jobWorkChallanResolver = yupResolver(
         kg: yup.string().required("Please, enter kg value"), 
         current_stock: yup.string(), 
         hsn_no: yup.string().required("Please enter hsn code"), 
-        notes:  yup.string().required("Please enter notes for this challan")
+        notes:  yup.string().required("Please enter notes for this challan"), 
+        order_date: yup.string().required("Please, Select job work date")
     })
 );
 
@@ -82,6 +80,7 @@ function UpdateJobWorkChallan(){
         }
     }, [jobWorkChallanDetails, reset])
 
+    // Vehicle dropdown list 
     const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
         queryKey: [
             "vehicle",
@@ -97,6 +96,7 @@ function UpdateJobWorkChallan(){
         enabled: Boolean(companyId),
     });
 
+    // Yarn company dropdown list
     const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
         queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
         queryFn: async () => {
@@ -171,7 +171,7 @@ function UpdateJobWorkChallan(){
         });
     }, [dropdownSupplierListRes, supplier_name]);
 
-    const { mutateAsync: updateJobWorkChallan } = useMutation({
+    const { mutateAsync: updateJobWorkChallan, isPending } = useMutation({
         mutationFn: async (data) => {
           const res = await updateJobWorkSaleChallanRequest({
             id,
@@ -194,7 +194,6 @@ function UpdateJobWorkChallan(){
     async function onSubmit(data) {
         delete data?.remaining_stock ; 
         delete data?.supplier_name ;
-        delete data?.order_date ; 
         delete data?.yarn_company_name ; 
         delete data?.order_type ; 
         delete data?.cartoon ; 
@@ -203,7 +202,10 @@ function UpdateJobWorkChallan(){
         delete data?.supplier_id ; 
         delete data?.vehicle_id ; 
         delete data?.yarn_company_id ;
-        data["is_gray"] = workType ; 
+        
+        data.createdAt = dayjs(data?.order_date).format("YYYY-MM-DD") ; 
+        delete data?.order_date ; 
+        
         await updateJobWorkChallan(data) ; 
     };
 
@@ -307,33 +309,6 @@ function UpdateJobWorkChallan(){
                         </Form.Item>
                     </Col>
 
-                    {/* <Col span={6}>
-                        <Form.Item
-                            label="Company name"
-                            name="company_name"
-                            validateStatus={errors.company_name ? "error" : ""}
-                            help={errors.company_name && errors.company_name.message}
-                            wrapperCol={{ sm: 24 }}
-                            required={true}
-                        >
-                            <Controller
-                                control={control}
-                                name="company_name"
-                                render={({ field }) => (
-                                    <Select
-                                        {...field}
-                                        placeholder="Select Company name"
-                                        options={companyListRes?.rows?.map(
-                                            ({ company_name = "", id = "" }) => ({
-                                                label: company_name,
-                                                value: id,
-                                            })
-                                        )}
-                                    />
-                                )}
-                            />
-                        </Form.Item>
-                    </Col> */}
 
                     <Col span={6}>
                         <Form.Item
@@ -567,7 +542,7 @@ function UpdateJobWorkChallan(){
                     <Button htmlType="button" onClick={() => reset()}>
                         Reset
                     </Button>
-                    <Button type="primary" htmlType="submit">
+                    <Button type="primary" htmlType="submit" loading = {isPending}>
                         Update
                     </Button>
                 </Flex>

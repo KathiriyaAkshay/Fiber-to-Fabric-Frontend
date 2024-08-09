@@ -83,12 +83,15 @@ const JobWorkSaleChallanModel = ({
     enabled: Boolean(companyId),
   });
 
+  // Create and update bill handler ===============================================
+
   const { mutateAsync: generateJobWorkBill, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleJobWorkChallanBillRequest({
         data,
         params: {
           company_id: companyId,
+          bill_id: MODE == "UPDATE"?details?.id: undefined
         },
       });
       return res.data;
@@ -166,10 +169,10 @@ const JobWorkSaleChallanModel = ({
       IGST_value: 0,
 
       SGST_amount: 0,
-      SGST_value: 0,
+      SGST_value: 2.5,
 
       CGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 2.5,
 
       round_off: 0,
     },

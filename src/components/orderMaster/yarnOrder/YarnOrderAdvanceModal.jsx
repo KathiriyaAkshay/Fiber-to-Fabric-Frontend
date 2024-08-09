@@ -90,11 +90,13 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
 
   return (
     <>
-      <Button onClick={showModal}>₹</Button>
+      <Button style={{color: "#FFFFFF", fontWeight: 700, backgroundColor: "#228B22"}} onClick={showModal}>₹</Button>
+
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
-          <Typography.Text className="text-xl font-medium text-white">
+          <Typography.Text 
+            className="text-xl font-medium text-white mb-3">
             Yarn Order Advance
           </Typography.Text>
         }
@@ -116,6 +118,8 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
           },
           body: {
             padding: "10px 16px",
+            maxHeight: "70vh", 
+            overflowY: "auto"
           },
         }}
       >
@@ -123,7 +127,7 @@ const YarnOrderAdvanceModal = ({ yarnOrder = {} }) => {
 
         <Typography.Text
           className="text-xl font-medium text-primary"
-          style={{ marginBottom: 10 }}
+          style={{ marginBottom: 10, fontSize: "1.1rem" }}
         >
           {`Advance List (Order: ${yarnOrder.order_no})`}
         </Typography.Text>

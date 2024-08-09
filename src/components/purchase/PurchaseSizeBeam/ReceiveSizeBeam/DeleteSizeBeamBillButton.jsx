@@ -1,20 +1,20 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { deleteYarnBill } from "../../../../api/requests/purchase/purchaseTaka";
 import DeleteConfirmationDialog from "../../../common/modal/DeleteConfirmationDialog";
 import { useContext } from "react";
 import { useState } from "react";
 import { Button, message } from "antd";
+import { deleteReceiveSizeBeamBillRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 
-const DeleteYarnBillButton = ({ details }) => {
-    const { companyId } = useContext(GlobalContext);
-    const queryClient = useQueryClient();
+const DeleteSizeBeamBillButton = ({details}) => {
+    const {companyId} = useContext(GlobalContext) ; 
+    const queryClient = useQueryClient() ; 
     const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
-    const { mutateAsync: deleteYarnBillRequest } = useMutation({
+    const { mutateAsync: deleteSizeBeamBill } = useMutation({
         mutationFn: async ({ id }) => {
-          const res = await deleteYarnBill({
+          const res = await deleteReceiveSizeBeamBillRequest({
             id,
             params: {
               company_id: companyId,
@@ -25,10 +25,10 @@ const DeleteYarnBillButton = ({ details }) => {
         onSuccess: (res) => {
           const successMessage = res?.message;
           if (successMessage) {
-            message.success("Yarn bill deleted successfully");
+            message.success("Size beam bill deleted successfully");
           }
           queryClient.invalidateQueries([
-            "yarn/bill/list",
+            "recive-size-beam/bill/list",
             { company_id: companyId },
           ]);
         },
@@ -38,16 +38,15 @@ const DeleteYarnBillButton = ({ details }) => {
             message.error(errorMessage);
           }
         },
-      }); 
-    
-    async function handleDelete() {
-        deleteYarnBillRequest({
-          id: details.id,
-        });
-        setIsOpenDeleteDialog(false);
+    }); 
+
+    const handleDelete = async () => {
+        await deleteSizeBeamBill({
+            id: details?.id
+        }); 
+        setIsOpenDeleteDialog(false) ; 
     }
-    
-    return (
+    return(
         <div>
             <Button
                 danger
@@ -60,10 +59,10 @@ const DeleteYarnBillButton = ({ details }) => {
 
             <DeleteConfirmationDialog
                 open={isOpenDeleteDialog}
-                onCancel={() => setIsOpenDeleteDialog(false)}
+                onCancel={() => {setIsOpenDeleteDialog(false)}}
                 onConfirm={handleDelete}
                 title="Delete Confirmation"
-                content="Are you sure you want to delete this Yarn Bill?"
+                content="Are you sure you want to delete this Size beam Receive Bill?"
                 confirmText="Delete"
                 cancelText="Cancel"
             />
@@ -71,4 +70,4 @@ const DeleteYarnBillButton = ({ details }) => {
     )
 }
 
-export default DeleteYarnBillButton; 
+export default DeleteSizeBeamBillButton ; 

@@ -104,7 +104,7 @@ const MultipleChallanCreateButton = ({ details }) => {
                     setIsModalOpen(true);
                 }}
             >
-                <CopyOutlined />
+                <CopyOutlined style={{color: "#228B22"}} />
             </Button>
 
             <Modal
