@@ -27,6 +27,7 @@ import { addJobTakaRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import FieldTable from "../../../components/fieldTable";
 import moment from "moment/moment";
+import { checkUniqueTakaNoRequest } from "../../../api/requests/purchase/purchaseTaka";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -49,11 +50,18 @@ const AddJobTaka = () => {
   const queryClient = useQueryClient();
   // const [fieldArray, setFieldArray] = useState([0]);
 
-  const [activeField, setActiveField] = useState(1);
+  const [activeField, setActiveField] = useState(0);
+
+  const [isTakaExist, setIsTakaExist] = useState(false);
+
+  const [totalTaka, setTotalTaka] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
+  const [pendingWeight, setPendingWeight] = useState("");
 
   const navigate = useNavigate();
   //   const { data: user } = useCurrentUser();
@@ -88,11 +96,25 @@ const AddJobTaka = () => {
   });
 
   async function onSubmit(data) {
-    console.log({ data });
     const jobChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
     );
+
+    const job_challan_detail = [];
+    jobChallanDetailArr.forEach((field) => {
+      if (
+        !isNaN(data[`taka_no_${field}`]) &&
+        !isNaN(data[`meter_${field}`]) &&
+        !isNaN(data[`weight_${field}`])
+      ) {
+        job_challan_detail.push({
+          taka_no: parseInt(data[`taka_no_${field}`]),
+          meter: parseInt(data[`meter_${field}`]),
+          weight: parseInt(data[`weight_${field}`]),
+        });
+      }
+    });
 
     const newData = {
       delivery_address: data.delivery_address,
@@ -103,20 +125,14 @@ const AddJobTaka = () => {
       supplier_id: +data.supplier_id,
       broker_id: +data.broker_id,
       quality_id: +data.quality_id,
-      total_meter: +data.total_meter,
-      total_weight: +data.total_weight,
+      total_taka: +totalTaka,
+      total_meter: +totalMeter,
+      total_weight: +totalWeight,
       pending_meter: +pendingMeter,
-      pending_weight: 0,
+      pending_weight: +pendingWeight,
       pending_taka: +pendingTaka,
-      total_taka: +data.total_taka,
       is_grey: true,
-      job_challan_detail: jobChallanDetailArr.map((field) => {
-        return {
-          taka_no: parseInt(data[`taka_no_${field}`]),
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
-        };
-      }),
+      job_challan_detail: job_challan_detail,
     };
     await AddJobTaka(newData);
   }
@@ -129,9 +145,12 @@ const AddJobTaka = () => {
     watch,
     setValue,
     setFocus,
+    clearErrors,
+    getValues,
+    setError,
   } = useForm({
     defaultValues: {
-      company_id: null,
+      // company_id: null,
       challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
@@ -151,7 +170,7 @@ const AddJobTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -220,6 +239,44 @@ const AddJobTaka = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
+  const checkUniqueTakaHandler = async (takaNo, fieldNumber) => {
+    try {
+      const params = { company_id: companyId, taka_no: +takaNo };
+      const response = await checkUniqueTakaNoRequest({ params });
+      if (response.data.success) {
+        setIsTakaExist(false);
+        clearErrors(`taka_no_${fieldNumber}`);
+      }
+    } catch (error) {
+      if (!error.response.data.success) {
+        message.error(error.response.data.message);
+        setIsTakaExist(true);
+        setError(`taka_no_${fieldNumber}`, {
+          type: "manual",
+          message: "Taka No already exist.",
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (gray_order_id) {
+      setActiveField((prev) => (prev === 0 ? 1 : prev));
+    } else {
+      setActiveField(0);
+    }
+  }, [gray_order_id]);
+
+  useEffect(() => {
+    if (grayOrderListRes && gray_order_id) {
+      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+
+      setPendingMeter(+order.pending_meter - +totalMeter);
+      setPendingTaka(+order.pending_taka - +totalTaka);
+      setPendingWeight(+order.pending_weight - +totalWeight);
+    }
+  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
@@ -241,14 +298,23 @@ const AddJobTaka = () => {
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
+  // useEffect(() => {
+  //   if (company_id) {
+  //     const selectedCompany = companyListRes?.rows?.find(
+  //       ({ id }) => id === company_id
+  //     );
+  //     setValue("gst_in_1", selectedCompany.gst_no);
+  //   }
+  // }, [companyListRes, company_id, setValue]);
+
   useEffect(() => {
-    if (company_id) {
+    if (companyId) {
       const selectedCompany = companyListRes?.rows?.find(
-        ({ id }) => id === company_id
+        ({ id }) => id === companyId
       );
       setValue("gst_in_1", selectedCompany.gst_no);
     }
-  }, [companyListRes, company_id, setValue]);
+  }, [companyListRes, companyId, setValue]);
 
   useEffect(() => {
     if (supplier_id) {
@@ -273,14 +339,14 @@ const AddJobTaka = () => {
         </Button>
         <h3 className="m-0 text-primary">Create Job Challan</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Form layout="vertical">
         <Row
           gutter={18}
           style={{
             padding: "12px",
           }}
         >
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Company"
               name="company_id"
@@ -311,7 +377,7 @@ const AddJobTaka = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -710,7 +776,7 @@ const AddJobTaka = () => {
 
             <Col span={3} style={{ textAlign: "start" }}>
               <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                0
+                {pendingWeight}
               </Typography>
             </Col>
 
@@ -731,13 +797,44 @@ const AddJobTaka = () => {
           setValue={setValue}
           activeField={activeField}
           setActiveField={setActiveField}
+          checkUniqueTaka={true}
+          checkUniqueTakaHandler={checkUniqueTakaHandler}
+          isTakaExist={isTakaExist}
+          setTotalMeter={setTotalMeter}
+          setTotalWeight={setTotalWeight}
+          setTotalTaka={setTotalTaka}
+          getValues={getValues}
+          clearErrors={clearErrors}
         />
+
+        <Row style={{ marginTop: "20px" }} gutter={20}>
+          <Col span={6}>
+            <Form.Item label="Total Taka">
+              <Input value={totalTaka} disabled />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Total Meter">
+              <Input value={totalMeter} disabled />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Total Weight">
+              <Input value={totalWeight} disabled />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="button"
+            loading={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
             Create
           </Button>
         </Flex>

@@ -24,8 +24,9 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
-  getNonPasarelaBeamListRequest,
-  getPasarelaBeamListRequest,
+  getBeamCardListRequest,
+  // getNonPasarelaBeamListRequest,
+  // getPasarelaBeamListRequest,
 } from "../../../../api/requests/beamCard";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
@@ -52,6 +53,31 @@ const addJobTakaSchemaResolver = yupResolver(
     delivery_charge: yup.string().required("Please enter delivery charge."),
   })
 );
+
+const getTakaDetailsObject = (details) => {
+  if (details) {
+    let object =
+      details.non_pasarela_beam_detail ||
+      details.recieve_size_beam_detail ||
+      details.job_beam_receive_detail;
+
+    return object === null || object === undefined
+      ? null
+      : { ...object, meter: object?.meters || object?.meter };
+  }
+};
+
+function getStatus(beam_type) {
+  switch (beam_type) {
+    case "pasarela(primary)":
+      return "pasarela";
+    case "non pasarela (primary)":
+    case "non pasarela (secondary)":
+      return "non-pasarela";
+    default:
+      return "";
+  }
+}
 
 const AddBeamSent = () => {
   const queryClient = useQueryClient();
@@ -264,33 +290,33 @@ const AddBeamSent = () => {
       },
     ],
     queryFn: async () => {
-      if (machine_name && quality_id && beam_type === "pasarela(primary)") {
+      if (machine_name && quality_id) {
         setBeamLoadIds([]);
         setBeamTypeList();
         resetField("total_weight");
         resetField("total_meter");
-        const res = await getPasarelaBeamListRequest({
-          params: {
-            company_id: companyId,
-            machine_name,
-            quality_id,
-            is_job: quality_group === "job" ? true : false,
-          },
-        });
+        // const res = await getPasarelaBeamListRequest({
+        const params = {
+          company_id: companyId,
+          machine_name,
+          quality_id,
+          is_job: quality_group === "job" ? 1 : 0,
+          is_secondary: beam_type === "non pasarela (secondary)" ? 1 : 0,
+          status: getStatus(beam_type),
+        };
+
+        const res = await getBeamCardListRequest({ params });
         if (res.data?.data?.rows.length) {
           setBeamTypeList(
             res.data?.data?.rows.map((item) => {
-              const obj =
-                item.non_pasarela_beam_detail ||
-                item.recieve_size_beam_detail ||
-                item.job_beam_receive_detail;
+              const obj = getTakaDetailsObject(item);
               return {
                 beam_load_id: item.id,
-                beam_no: item.beam_no,
+                beam_no: obj.beam_no,
                 ends_or_tars: obj.ends_or_tars,
                 pano: obj.pano,
                 taka: obj.taka,
-                meters: obj.meters,
+                meters: obj.meter,
                 weight: obj.net_weight,
               };
             })
@@ -305,46 +331,46 @@ const AddBeamSent = () => {
     initialData: { rows: [] },
   });
 
-  useQuery({
-    queryKey: [
-      "non-pasarela",
-      "beam",
-      "list",
-      {
-        company_id: companyId,
-        machine_name,
-        quality_id,
-        beam_type,
-        quality_group,
-      },
-    ],
-    queryFn: async () => {
-      if (
-        machine_name &&
-        quality_id &&
-        !beam_type &&
-        beam_type !== "pasarela(primary)"
-      ) {
-        setBeamLoadIds([]);
-        setBeamTypeList();
-        resetField("total_weight");
-        resetField("total_meter");
-        const params = {
-          company_id: companyId,
-          machine_name,
-          quality_id,
-          is_job: quality_group === "job" ? true : false,
-        };
-        if (beam_type === "non-pasarela(secondary)") {
-          params.is_secondary = true;
-        }
-        const res = await getNonPasarelaBeamListRequest({ params });
-        setBeamTypeList(res.data?.data?.rows);
-      }
-    },
-    enabled: Boolean(companyId),
-    initialData: { rows: [] },
-  });
+  // useQuery({
+  //   queryKey: [
+  //     "non-pasarela",
+  //     "beam",
+  //     "list",
+  //     {
+  //       company_id: companyId,
+  //       machine_name,
+  //       quality_id,
+  //       beam_type,
+  //       quality_group,
+  //     },
+  //   ],
+  //   queryFn: async () => {
+  //     if (
+  //       machine_name &&
+  //       quality_id &&
+  //       !beam_type &&
+  //       beam_type !== "pasarela(primary)"
+  //     ) {
+  //       setBeamLoadIds([]);
+  //       setBeamTypeList();
+  //       resetField("total_weight");
+  //       resetField("total_meter");
+  //       const params = {
+  //         company_id: companyId,
+  //         machine_name,
+  //         quality_id,
+  //         is_job: quality_group === "job" ? true : false,
+  //       };
+  //       if (beam_type === "non-pasarela(secondary)") {
+  //         params.is_secondary = true;
+  //       }
+  //       const res = await getNonPasarelaBeamListRequest({ params });
+  //       setBeamTypeList(res.data?.data?.rows);
+  //     }
+  //   },
+  //   enabled: Boolean(companyId),
+  //   initialData: { rows: [] },
+  // });
 
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
@@ -738,46 +764,47 @@ const AddBeamSent = () => {
             </thead>
             <tbody>
               {beamTypeList && beamTypeList?.length ? (
-                beamTypeList?.map(
-                  (
-                    {
-                      beam_load_id,
-                      beam_no,
-                      ends_or_tars,
-                      pano,
-                      taka,
-                      meters,
-                      weight,
-                    },
-                    index
-                  ) => {
-                    return (
-                      <tr key={index}>
-                        <td width={50}>
-                          <Checkbox
-                            checked={beamLoadIds.includes(beam_load_id)}
-                            onChange={(e) =>
-                              beamLoadIdHandler(
-                                e.target.checked,
-                                beam_load_id,
-                                meters,
-                                weight
-                              )
-                            }
-                          />
-                        </td>
-                        <td width={150}>{beam_no}</td>
-                        <td>{ends_or_tars}</td>
-                        <td>{pano}</td>
-                        <td>{taka}</td>
-                        <td>{meters}</td>
-                      </tr>
-                    );
-                  }
-                )
+                beamTypeList?.map((item, index) => {
+                  const {
+                    beam_load_id,
+                    beam_no,
+                    ends_or_tars,
+                    pano,
+                    taka,
+                    meters,
+                    weight,
+                  } = item;
+
+                  return (
+                    <tr key={index}>
+                      <td width={50} style={{ textAlign: "center" }}>
+                        <Checkbox
+                          checked={beamLoadIds.includes(beam_load_id)}
+                          onChange={(e) =>
+                            beamLoadIdHandler(
+                              e.target.checked,
+                              beam_load_id,
+                              meters,
+                              weight
+                            )
+                          }
+                        />
+                      </td>
+                      <td width={150} style={{ textAlign: "center" }}>
+                        {beam_no}
+                      </td>
+                      <td style={{ textAlign: "center" }}>{ends_or_tars}</td>
+                      <td style={{ textAlign: "center" }}>{pano}</td>
+                      <td style={{ textAlign: "center" }}>{taka}</td>
+                      <td style={{ textAlign: "center" }}>{meters}</td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={6}>Not found</td>
+                  <td colSpan={6} style={{ textAlign: "center" }}>
+                    Not found
+                  </td>
                 </tr>
               )}
             </tbody>

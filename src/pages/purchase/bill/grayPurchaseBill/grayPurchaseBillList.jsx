@@ -69,30 +69,31 @@ const GrayPurchaseBillList = () => {
     }));
   };
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const {
     data: dropdownSupplierListRes,
@@ -167,7 +168,7 @@ const GrayPurchaseBillList = () => {
   });
 
   function navigateToUpdate(id) {
-    navigate(`/purchase/purchase-taka/update/${id}`);
+    navigate(`/purchase/purchased-taka/update/${id}`);
   }
 
   function downloadPdf() {
@@ -234,9 +235,8 @@ const GrayPurchaseBillList = () => {
       title: "Rate",
       dataIndex: ["purchase_taka_bill", "rate"],
       key: "rate",
-      render: (text, record) => (
-        text == null?<div>-</div>:<div>{text}</div>
-      )
+      render: (text, record) =>
+        text == null ? <div>-</div> : <div>{text}</div>,
     },
     {
       title: "Amount",
@@ -251,17 +251,13 @@ const GrayPurchaseBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["purchase_taka_bill", "due_date"],
-      render: (text, record) => (
-        <div>-</div>
-      )
+      render: (text, record) => <div>-</div>,
     },
     {
       title: "Due Days",
       dataIndex: ["purchase_taka_bill", "due_days"],
       key: "due_days",
-      render: (text, record) => (
-        <div>-</div>
-      )
+      render: (text, record) => <div>-</div>,
     },
     {
       title: "Bill Status",
@@ -318,7 +314,7 @@ const GrayPurchaseBillList = () => {
   ];
 
   const disableFutureDates = (current) => {
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   function renderTable() {
@@ -391,7 +387,6 @@ const GrayPurchaseBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Gray Purchase Bills</h3>

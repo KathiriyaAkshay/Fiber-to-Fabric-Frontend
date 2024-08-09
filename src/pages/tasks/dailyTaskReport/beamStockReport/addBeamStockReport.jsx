@@ -32,12 +32,13 @@ import {
   createBeamStockPasarelaRequest,
   createBeamStockReportRequest,
   getLastBeamNumberRequest,
-  getNonPasarelaBeamRequest,
-  getSecondaryBeamRequest,
+  // getNonPasarelaBeamRequest,
+  // getSecondaryBeamRequest,
 } from "../../../../api/requests/reports/beamStockReport";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { disabledFutureDate } from "../../../../utils/date";
+import { getBeamCardListRequest } from "../../../../api/requests/beamCard";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -47,6 +48,19 @@ const addJobTakaSchemaResolver = yupResolver(
     beam_type: yup.string().required("Please select beam type."),
   })
 );
+
+const getTakaDetailsObject = (details) => {
+  if (details) {
+    let object =
+      details.non_pasarela_beam_detail ||
+      details.recieve_size_beam_detail ||
+      details.job_beam_receive_detail;
+
+    return object === null || object === undefined
+      ? null
+      : { ...object, meter: object?.meters || object?.meter };
+  }
+};
 
 const AddBeamStockReport = () => {
   const queryClient = useQueryClient();
@@ -159,33 +173,24 @@ const AddBeamStockReport = () => {
     if (data.beam_type === "pasarela (primary)") {
       const formData = [];
       selectedNonPasarela.forEach((index) => {
+        const secondaryBeamNo = data[`secondary_beam_no_${index}`];
+
         formData.push({
-          beam_load_id: nonPasarelaList[index].beam_load_id,
-          // receive_size_beam_details_id:
-          //   nonPasarelaList[index].receive_size_beam_details_id,
-          // job_beam_receive_details_id:
-          //   nonPasarelaList[index].job_beam_receive_details_id,
-          // non_pasarela_beam_details_id:
-          //   nonPasarelaList[index].non_pasarela_beam_details_id,
-          secondary_loaded_beam_id:
-            nonPasarelaList[index].secondary_loaded_beam_id,
+          beam_load_id: nonPasarelaList[index].id,
+          secondary_loaded_beam_id: secondaryBeamNo,
         });
 
-        // "beam_load_id": 123,
-        // "secondary_loaded_beam_id" : 34
+        // if (secondaryBeamNo) {
+        //   const { secondary_job_beam_no, secondary_receive_beam_no } =
+        //     secondaryBeamDropDown.find(
+        //       ({ id }) => id === data[`secondary_beam_no_${index}`]
+        //     );
 
-        const secondaryBeamNo = data[`secondary_beam_no_${index}`];
-        if (secondaryBeamNo) {
-          const { secondary_job_beam_no, secondary_receive_beam_no } =
-            secondaryBeamDropDown.find(
-              ({ beam_no }) => beam_no === data[`secondary_beam_no_${index}`]
-            );
-
-          formData.secondary_job_beam_no = secondary_job_beam_no;
-          formData.secondary_receive_beam_no = secondary_receive_beam_no;
-        }
+        //    formData.secondary_job_beam_no = secondary_job_beam_no;
+        //    formData.secondary_receive_beam_no = secondary_receive_beam_no;
+        // }
       });
-      // console.log({ formData });
+
       await addPasarelaBeamStockReport(formData);
     }
   }
@@ -221,9 +226,16 @@ const AddBeamStockReport = () => {
     ],
     queryFn: async () => {
       if (beam_type === "pasarela (primary)" && quality_id && machine_name) {
-        const res = await getNonPasarelaBeamRequest({
+        // const res = await getNonPasarelaBeamRequest({
+        const res = await getBeamCardListRequest({
           companyId,
-          params: { company_id: companyId, quality_id, machine_name },
+          params: {
+            company_id: companyId,
+            quality_id,
+            machine_name,
+            status: "non-pasarela",
+            is_job: quality_group === "job" ? 1 : 0,
+          },
         });
         return res.data?.data?.rows;
       }
@@ -240,10 +252,21 @@ const AddBeamStockReport = () => {
       { company_id: companyId, quality_id, beam_type },
     ],
     queryFn: async () => {
-      if (beam_type === "pasarela (primary)" && quality_id) {
-        const res = await getSecondaryBeamRequest({
+      if (
+        quality_group === "inhouse(gray)" &&
+        beam_type === "pasarela (primary)" &&
+        quality_id
+      ) {
+        // const res = await getSecondaryBeamRequest({
+        const res = await getBeamCardListRequest({
           companyId,
-          params: { company_id: companyId, quality_id },
+          params: {
+            company_id: companyId,
+            quality_id,
+            machine_name,
+            status: "non-pasarela",
+            is_secondary: 1,
+          },
         });
         return res.data?.data.rows;
       }
@@ -686,19 +709,22 @@ const AddBeamStockReport = () => {
 
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
-            return (
-              <PasarelaFormRow
-                key={index + "_form_row"}
-                index={index}
-                row={row}
-                fieldNumber={index}
-                control={control}
-                errors={errors}
-                secondaryBeamDropDown={secondaryBeamDropDown}
-                selectedNonPasarela={selectedNonPasarela}
-                setSelectedNonPasarela={setSelectedNonPasarela}
-              />
-            );
+            const item = getTakaDetailsObject(row);
+            if (item !== null) {
+              return (
+                <PasarelaFormRow
+                  key={index + "_form_row"}
+                  index={index}
+                  row={item}
+                  fieldNumber={index}
+                  control={control}
+                  errors={errors}
+                  secondaryBeamDropDown={secondaryBeamDropDown}
+                  selectedNonPasarela={selectedNonPasarela}
+                  setSelectedNonPasarela={setSelectedNonPasarela}
+                />
+              );
+            }
           })}
 
         <Flex gap={10} justify="flex-end">
@@ -965,8 +991,9 @@ const PasarelaFormRow = ({
                   {...field}
                   name={`secondary_beam_no_${fieldNumber}`}
                   placeholder="Select secondary beam"
-                  options={secondaryBeamDropDown.map(({ beam_no }) => {
-                    return { label: beam_no, value: beam_no };
+                  options={secondaryBeamDropDown.map((details) => {
+                    const item = getTakaDetailsObject(details);
+                    return { label: item.beam_no, value: details.id };
                   })}
                 />
               )}
@@ -993,7 +1020,7 @@ const PasarelaFormRow = ({
                 <Input
                   {...field}
                   type="number"
-                  value={row.tars}
+                  value={row.ends_or_tars}
                   placeholder="0"
                   disabled
                 />

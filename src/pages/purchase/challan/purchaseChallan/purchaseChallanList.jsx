@@ -15,6 +15,7 @@ import {
   FilePdfOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ import dayjs from "dayjs";
 import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import ViewPurchaseChallanInfo from "../../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
-
+import ReturnPurchaseChallan from "../../../../components/purchase/purchaseChallan/ReturnPurchaseChallan";
 
 const PurchaseChallanList = () => {
   const { company, companyId } = useContext(GlobalContext);
@@ -159,18 +160,54 @@ const PurchaseChallanList = () => {
   }
 
   function navigateToUpdate(id) {
-    navigate(`/purchase/purchase-taka/update/${id}`);
+    navigate(`/purchase/purchased-taka/update/${id}`);
   }
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = purchaseChallanList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    const body = purchaseChallanList?.rows?.map((item, index) => {
+      const {
+        challan_no,
+        gray_order,
+        createdAt,
+        supplier,
+        inhouse_quality,
+        total_meter,
+        total_taka,
+        bill_status,
+      } = item;
+
+      return [
+        index + 1,
+        "", // bill no
+        challan_no,
+        gray_order.order_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        supplier.supplier_name,
+        supplier.user.gst_no,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        total_taka,
+        total_meter,
+        bill_status === "received" ? "Received" : "Not Received",
+      ];
     });
     downloadUserPdf({
       body,
-      head: [["ID", "Challan NO"]],
+      head: [
+        [
+          "ID",
+          "Bill No",
+          "Challan NO",
+          "Order No",
+          "Challan Date",
+          "Supplier Name",
+          "Supplier Company GST",
+          "Quality",
+          "Total Taka",
+          "Total Meter",
+          "Bill Status",
+        ],
+      ],
       leftContent,
       rightContent,
       title: "Purchase Challan List",
@@ -247,40 +284,53 @@ const PurchaseChallanList = () => {
     {
       title: "Action",
       render: (details) => {
+        let isShowReturn = false;
+        details.purchase_challan_details.forEach((is_returned) => {
+          if (is_returned === false) {
+            isShowReturn = true;
+            return;
+          }
+        });
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
             <ViewPurchaseChallanInfo details={details} />
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeletePurchaseTaka details={details} />
-            <Button
-              onClick={() => {
-                let MODE;
-                if (details.bill_status === "received") {
-                  MODE = "VIEW";
-                } else if (details.bill_status === "not_received") {
-                  MODE = "ADD";
-                }
-                setPurchaseTakaChallanModal((prev) => {
-                  return {
-                    ...prev,
-                    isModalOpen: true,
-                    details: details,
-                    mode: MODE,
-                  };
-                });
-              }}
-            >
-              <FileTextOutlined />
+            {details.bill_status === "received" ? null : (
+              <>
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                <DeletePurchaseTaka details={details} />
+                <Button
+                  onClick={() => {
+                    let MODE;
+                    if (details.bill_status === "received") {
+                      MODE = "VIEW";
+                    } else if (details.bill_status === "not_received") {
+                      MODE = "ADD";
+                    }
+                    setPurchaseTakaChallanModal((prev) => {
+                      return {
+                        ...prev,
+                        isModalOpen: true,
+                        details: details,
+                        mode: MODE,
+                      };
+                    });
+                  }}
+                >
+                  <FileTextOutlined />
+                </Button>
+              </>
+            )}
+            {isShowReturn && (
+              <ReturnPurchaseChallan details={details} companyId={companyId} />
+            )}
+            <Button>
+              <RedoOutlined />
             </Button>
           </Space>
         );
@@ -308,28 +358,28 @@ const PurchaseChallanList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        summary={(pageData) => {
-          let totalGrandTaka = 0;
-          let totalGrandMeter = 0;
-
-          pageData.forEach(({ total_taka, total_meter }) => {
-            totalGrandTaka += +total_taka;
-            totalGrandMeter += +total_meter;
-          });
+        summary={() => {
           return (
             <>
               <Table.Summary.Row className="font-semibold">
-                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  Grand
+                  <br /> Total
+                </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalGrandTaka}</Typography.Text>
+                  <Typography.Text>
+                    {purchaseChallanList?.total_taka}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalGrandMeter}</Typography.Text>
+                  <Typography.Text>
+                    {purchaseChallanList?.total_meter}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -345,7 +395,6 @@ const PurchaseChallanList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Purchase Challan List</h3>

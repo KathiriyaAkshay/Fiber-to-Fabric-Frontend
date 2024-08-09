@@ -1,4 +1,13 @@
-import { Button, Flex, Select, Space, Spin, Table, Typography, Tag } from "antd";
+import {
+  Button,
+  Flex,
+  Select,
+  Space,
+  Spin,
+  Table,
+  Typography,
+  Tag,
+} from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
@@ -9,7 +18,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -23,8 +32,15 @@ import {
 } from "../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder";
-import { ORDER_STATUS, ORDER_TYPE } from "../../../constants/orderMaster";
+import { ORDER_TYPE } from "../../../constants/orderMaster";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
+import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+
+const ORDER_STATUS = [
+  { label: "Pending", value: "pending" },
+  { label: "Finished", value: "complete" },
+  { label: "Cancelled", value: "cancel" },
+];
 
 const MyOrderList = () => {
   const [machine, setMachine] = useState();
@@ -36,6 +52,8 @@ const MyOrderList = () => {
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedStatus = useDebounce(status, 500);
   const debouncedOrderType = useDebounce(orderType, 500);
+  console.log({ debouncedOrderType });
+
   const debouncedBroker = useDebounce(broker, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedParty = useDebounce(party, 500);
@@ -155,23 +173,44 @@ const MyOrderList = () => {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = myOrderList?.row?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
+    const body = myOrderList?.row?.map((order, index) => {
+      const companyName =
+        order.order_type === "job"
+          ? order.party.party.company_name
+          : order.party.party.company_name; // supplier company should be here in else part.
       return [
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
+        order.order_no,
+        dayjs(order.order_date).format("DD-MM-YYYY"),
+        companyName,
+        `${order.inhouse_quality.quality_name} (${order.inhouse_quality.quality_weight}KG)`,
+        order.pending_taka,
+        order.delivered_taka,
+        order.pending_meter,
+        order.delivered_meter,
+        order.status,
       ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+      head: [
+        [
+          "ID",
+          "Order No",
+          "Order Date",
+          "Company Name",
+          "Quality",
+          "Pending Taka",
+          "Deliver Taka",
+          "Pending Meter",
+          "Deliver Meter",
+          "Status",
+        ],
+      ],
       leftContent,
       rightContent,
-      title: "Trading Quality List",
+      title: "Order List",
     });
   }
 
@@ -180,7 +219,7 @@ const MyOrderList = () => {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Order Date",
@@ -250,48 +289,42 @@ const MyOrderList = () => {
       title: "Order Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => (
-        text == "complete"?<>
+      render: (text) =>
+        text == "complete" ? (
           <Tag color="green">{text}</Tag>
-        </>:<>
+        ) : (
           <Tag color="red">{String(text).toUpperCase()}</Tag>
-        </>
-      )
+        ),
     },
     {
       title: "Action",
       render: (details) => {
-        console.log(details);
         return (
           <Space>
             <GridInformationModel
               title="Order Details"
               isScroll={true}
               details={[
-                { label: "Order Type", value: details.order_type },
+                { label: "Order Type", value: details?.order_type },
                 {
                   label: "Order Date",
-                  value: dayjs(details.order_date).format("DD-MM-YYYY"),
-                },
-                {
-                  label: "Order Time",
-                  value: dayjs(details.order_date).format("HH:mm:ss"),
+                  value: dayjs(details?.order_date).format("DD-MM-YYYY"),
                 },
                 { label: "Soda Code", value: details?.order_no },
                 {
-                  label: "Party / Supplier Name",
+                  label: "Party Name",
                   value: `${
                     details.party
-                      ? `${details.party.first_name} ${details.party.last_name}`
-                      : `${details.supplier_name}`
+                      ? `${details?.party.first_name} ${details?.party.last_name}`
+                      : `${details?.supplier_name}`
                   }`,
                 },
                 {
                   label: "Quality Name",
-                  value: details.inhouse_quality.quality_name,
+                  value: details?.inhouse_quality.quality_name,
                 },
                 {
-                  label: "Broker name", 
+                  label: "Broker name",
                   value: `${details.broker.first_name} ${details.broker.last_name}`,
                 },
                 { label: "Total Lot", value: details.total_lot },
@@ -302,16 +335,34 @@ const MyOrderList = () => {
                 { label: "Brokerage(%)", value: 0 },
                 { label: "Brokerage(Rs)", value: 0 },
                 { label: "Total Amount", value: details.total_amount },
-
+                { label: "Discount", value: details.discount },
                 { label: "Credit Days", value: details?.credit_days },
                 { label: "Remarks", value: details?.notes },
-                { label: "Delivered Lot", value: "" },
                 { label: "Delivered Taka", value: details.delivered_taka },
                 { label: "Delivered Meter", value: details.delivered_meter },
+                { label: "Pending Taka", value: details.pending_taka },
                 { label: "Pending Meter", value: details.pending_meter },
-                { label: "Return Meter", value: "" },
-                { label: "Checker Name", value: "" },
-                { label: "Checker Mobile No.", value: "" },
+                { label: "Return Taka", value: "**" },
+                { label: "Return Meter", value: "**" },
+
+                { label: "Delivered", value: "**" },
+                {
+                  label: "Date",
+                  value: dayjs(details?.createdAt).format("DD-MM-YYYY"),
+                },
+                {
+                  label: "Time",
+                  value: dayjs(details?.createdAt).format("hh:mm:ss"),
+                },
+
+                {
+                  label: "Checker Name",
+                  value: details?.party?.party.checker_name,
+                },
+                {
+                  label: "Checker Mobile No.",
+                  value: details?.party?.party?.checker_number,
+                },
               ]}
             />
             <Button
@@ -322,9 +373,11 @@ const MyOrderList = () => {
               <EditOutlined />
             </Button>
             <DeleteMyOrder details={details} />
-            <Button>
-              <ClockCircleOutlined />
-            </Button>
+            {orderType === "taka(inhouse)" && (
+              <Button>
+                <ClockCircleOutlined />
+              </Button>
+            )}
             <Button>
               <RedoOutlined />
             </Button>
@@ -355,51 +408,33 @@ const MyOrderList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        summary={(tableData) => {
-          let totalPendingTaka = 0;
-          let totalDeliveredTaka = 0;
-          let totalPendingMeter = 0;
-          let totalDeliveredMeter = 0;
-
-          tableData.forEach(
-            ({
-              pending_taka,
-              delivered_taka,
-              pending_meter,
-              delivered_meter,
-            }) => {
-              totalPendingTaka += pending_taka;
-              totalDeliveredTaka += delivered_taka;
-              totalPendingMeter += pending_meter;
-              totalDeliveredMeter += delivered_meter;
-            }
-          );
+        summary={() => {
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>
                 <b>Total</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <b>{totalPendingTaka}</b>
+              <Table.Summary.Cell index={2}></Table.Summary.Cell>
+              <Table.Summary.Cell index={3}></Table.Summary.Cell>
+              <Table.Summary.Cell index={4}></Table.Summary.Cell>
+              <Table.Summary.Cell index={5}></Table.Summary.Cell>
+              <Table.Summary.Cell index={6}></Table.Summary.Cell>
+              <Table.Summary.Cell index={7}></Table.Summary.Cell>
+              <Table.Summary.Cell index={8}>
+                <b>{myOrderList?.pendingTaka}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <b>{totalDeliveredTaka}</b>
+              <Table.Summary.Cell index={9}>
+                <b>{myOrderList?.deliveredTaka}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <b>{totalPendingMeter}</b>
+              <Table.Summary.Cell index={10}></Table.Summary.Cell>
+              <Table.Summary.Cell index={11}>
+                <b>{myOrderList?.pendingMeter}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <b>{totalDeliveredMeter}</b>
+              <Table.Summary.Cell index={12}>
+                <b>{myOrderList?.deliveredMeter}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}></Table.Summary.Cell>
+              <Table.Summary.Cell index={13}></Table.Summary.Cell>
+              <Table.Summary.Cell index={14}></Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}
@@ -551,7 +586,7 @@ const MyOrderList = () => {
             dropdownStyle={{
               textTransform: "capitalize",
             }}
-            allowClear = {true}
+            allowClear={true}
             onChange={setBroker}
             style={{
               textTransform: "capitalize",

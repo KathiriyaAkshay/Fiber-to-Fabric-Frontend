@@ -1,24 +1,16 @@
 import {
   Button,
-  Col,
   DatePicker,
   Flex,
   Input,
-  Modal,
-  Radio,
-  Row,
   Select,
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
-import {
-  CloseOutlined,
-  EyeOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
@@ -33,13 +25,14 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { getPurchaseTakaDetailListRequest } from "../../../api/requests/purchase/purchaseTaka";
 import { disabledFutureDate } from "../../../utils/date";
+import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const PurchaseTakaList = () => {
-  const { company, companyId } = useContext(GlobalContext);
+  const { company, companyId, companyListRes } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
-  const [state, setState] = useState("current");
+  // const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [type, setType] = useState();
@@ -53,7 +46,7 @@ const PurchaseTakaList = () => {
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedType = useDebounce(type, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const debouncedState = useDebounce(state, 500);
+  // const debouncedState = useDebounce(state, 500);
   const debouncedTakaNo = useDebounce(takaNo, 500);
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
@@ -131,6 +124,7 @@ const PurchaseTakaList = () => {
         quality_id: debouncedQuality,
         challan_no: debouncedChallanNo,
         supplier_id: debouncedSupplierCompany,
+        toka_no: debouncedTakaNo,
         in_stock: debouncedType === "in_stock" ? true : false,
       },
     ],
@@ -144,6 +138,7 @@ const PurchaseTakaList = () => {
           to: debouncedToDate,
           quality_id: debouncedQuality,
           challan_no: debouncedChallanNo,
+          toka_no: debouncedTakaNo,
           supplier_id: debouncedSupplierCompany,
           in_stock: debouncedType === "in_stock" ? true : false,
         },
@@ -163,16 +158,47 @@ const PurchaseTakaList = () => {
 
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = purchaseTakaList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    const body = purchaseTakaList?.rows?.map((item, index) => {
+      const {
+        taka_no,
+        meter,
+        weight,
+        purchase_taka_challan,
+        is_returned,
+        in_stock,
+        createdAt,
+      } = item;
+
+      return [
+        index + 1,
+        purchase_taka_challan.challan_no,
+        `${purchase_taka_challan?.inhouse_quality?.quality_name} (${purchase_taka_challan?.inhouse_quality?.quality_weight}KG)`,
+        taka_no,
+        meter,
+        weight,
+        "", // average will be here.
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        is_returned ? "Returned" : in_stock ? "In Stock" : "Sold",
+      ];
     });
     downloadUserPdf({
       body,
-      head: [["ID", "Challan NO"]],
+      head: [
+        [
+          "ID",
+          "Purchase Challan No",
+          "Quality",
+          "Taka No.",
+          "Meter",
+          "weight",
+          "Average",
+          "Date",
+          "Status",
+        ],
+      ],
       leftContent,
       rightContent,
-      title: "Job Taka List",
+      title: "Purchase Production List",
     });
   }
 
@@ -186,13 +212,13 @@ const PurchaseTakaList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`;
+        return `${details?.purchase_taka_challan?.inhouse_quality?.quality_name} (${details?.purchase_taka_challan?.inhouse_quality?.quality_weight}KG)`;
       },
     },
     {
       title: "Purchase Challan No",
       render: (details) => {
-        return details.challan_no;
+        return details?.purchase_taka_challan?.challan_no;
       },
     },
     {
@@ -224,21 +250,56 @@ const PurchaseTakaList = () => {
     {
       title: "Status",
       render: (details) => {
-        return details.in_stock ? (
-          <span style={{ color: "green" }}>In Stock</span>
+        return details.is_returned ? (
+          <Tag color="red">Returned</Tag>
+        ) : details.in_stock ? (
+          <Tag color="green">In Stock</Tag>
         ) : (
-          <span style={{ color: "red" }}>Sold</span>
+          <Tag color="red">Sold</Tag>
         );
       },
     },
     {
       title: "Action",
       render: (details) => {
+        const purchaseCompany = companyListRes.rows.find(
+          ({ id }) => id === details.purchase_taka_challan.company_id
+        );
         return (
           <Space>
-            <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
+            <GridInformationModel
+              key={"purchased production details"}
+              title="Purchased Production Details"
+              details={[
+                {
+                  label: "Quality Name",
+                  value: `${details?.purchase_taka_challan?.inhouse_quality?.quality_name} (${details?.purchase_taka_challan?.inhouse_quality?.quality_weight}KG)`,
+                },
+                {
+                  label: "Date",
+                  value: dayjs(details.createdAt).format("DD-MM-YYYY"),
+                },
+                { label: "Taka No", value: details?.taka_no },
+                { label: "Meter", value: details?.meter },
+                { label: "Weight", value: details?.weight },
+                {
+                  label: "Order Type",
+                  value: details?.purchase_taka_challan?.gray_order?.order_type,
+                },
+                { label: "Average", value: details?.total_weight },
+                {
+                  label: "Purchase Challan No",
+                  value: details?.purchase_taka_challan?.challan_no,
+                },
+                {
+                  label: "Supplier Name",
+                  value: details?.purchase_taka_challan.supplier?.supplier_name,
+                },
+                {
+                  label: "Purchase Company Name",
+                  value: purchaseCompany?.company_name,
+                },
+              ]}
             />
             {/* <Button
                 onClick={() => {
@@ -274,13 +335,64 @@ const PurchaseTakaList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        summary={(pageData) => {
+          let totalMeter = 0;
+          let totalWeight = 0;
+          pageData.forEach(({ meter, weight }) => {
+            totalMeter += +meter;
+            totalWeight += +weight;
+          });
+
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalWeight}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>
+                  Grand <br /> Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {purchaseTakaList?.total_meter}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {purchaseTakaList?.total_weight}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
+        }}
       />
     );
   }
 
   return (
     <div className="flex flex-col p-4">
-      <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+      {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
         <Radio.Group
           name="filter"
           value={state}
@@ -291,7 +403,7 @@ const PurchaseTakaList = () => {
             <Radio value={"previous"}> Previous </Radio>
           </Flex>
         </Radio.Group>
-      </div>
+      </div> */}
 
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
@@ -460,113 +572,3 @@ const PurchaseTakaList = () => {
 };
 
 export default PurchaseTakaList;
-
-const ViewPurchaseTakaDetailsModal = ({ title = "-", details = [] }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const jobTakaDetails = [
-    {
-      title: "Quality Name",
-      value: details?.inhouse_quality?.quality_name,
-    },
-    // { title: "Company Name", value: details.delivery_address },
-    { title: "Date", value: dayjs(details.createdAt).format("DD-MM-YYYY") },
-    { title: "Taka No", value: details.taka_no },
-    { title: "Meter", value: details.meter },
-    { title: "Weight", value: details.weight },
-
-    { title: "Return Sale Challan No", value: details.total_weight },
-    { title: "Sale Challan No", value: details?.total_weight },
-    {
-      title: "Order Type",
-      value: details?.gray_order?.order_type,
-    },
-    { title: "Average", value: details.total_weight },
-    { title: "Purchase Challan No", value: details.total_weight },
-    { title: "Supplier Name", value: details.total_weight },
-    { title: "Purchase Company Name", value: details.total_weight },
-  ];
-
-  return (
-    <>
-      <Button type="primary" onClick={showModal}>
-        <EyeOutlined />
-      </Button>
-      <Modal
-        closeIcon={<CloseOutlined className="text-white" />}
-        title={
-          <Typography.Text className="text-xl font-medium text-white">
-            {title}
-          </Typography.Text>
-        }
-        open={isModalOpen}
-        footer={null}
-        onCancel={handleCancel}
-        centered={true}
-        // className="view-in-house-quality-model"
-        classNames={{
-          header: "text-center",
-        }}
-        styles={{
-          content: {
-            padding: 0,
-            width: "600px",
-          },
-          header: {
-            padding: "16px",
-            margin: 0,
-          },
-          body: {
-            padding: "10px 16px",
-          },
-        }}
-      >
-        <Flex className="flex-col gap-1">
-          {jobTakaDetails?.map(({ title = "", value }) => {
-            return (
-              <Row gutter={12} className="flex-grow" key={title}>
-                <Col span={10} className="font-medium">
-                  {title}
-                </Col>
-                <Col span={14}>{value ?? "-"}</Col>
-              </Row>
-            );
-          })}
-
-          {/* {job_challan_details.map((item, index) => {
-              return (
-                <>
-                  <Divider />
-                  <Row
-                    gutter={12}
-                    className="flex-grow"
-                    key={index + "_job_challan_details"}
-                  >
-                    <Col span={4} className="font-medium">
-                      Taka No:
-                    </Col>
-                    <Col span={4}>{item.taka_no}</Col>
-                    <Col span={3} className="font-medium">
-                      Meter:
-                    </Col>
-                    <Col span={4}>{item.meter}</Col>
-                    <Col span={3} className="font-medium">
-                      Weight:
-                    </Col>
-                    <Col span={4}>{item.weight}</Col>
-                  </Row>
-                </>
-              );
-            })} */}
-        </Flex>
-      </Modal>
-    </>
-  );
-};

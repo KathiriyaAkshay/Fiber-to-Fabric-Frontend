@@ -1,6 +1,7 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, Row } from "antd";
+import { Button, Col, Form, Input, message, Row } from "antd";
 import { Controller } from "react-hook-form";
+import { useDebounceCallback } from "../../hooks/useDebounce";
 
 const numOfFields = Array.from({ length: 48 }, (_, i) => i + 1);
 const chunkSize = numOfFields.length / 4;
@@ -12,13 +13,29 @@ const FieldTable = ({
   activeField,
   setActiveField,
   setValue,
+  checkUniqueTaka = false,
+  checkUniqueTakaHandler,
+  isTakaExist,
+  setTotalMeter,
+  setTotalWeight,
+  setTotalTaka,
+  getValues,
+  clearErrors,
 }) => {
   const activeNextField = (event, fieldNumber) => {
-    if (event.keyCode === 32) {
-      setActiveField((prev) => prev + 1);
-      setTimeout(() => {
-        setFocus(`taka_no_${fieldNumber + 1}`);
-      }, 0);
+    if (event.keyCode === 13) {
+      if (isTakaExist) {
+        message.error("Please enter valid taka no.");
+      } else {
+        setActiveField((prev) => prev + 1);
+        setTimeout(() => {
+          setFocus(`taka_no_${fieldNumber + 1}`);
+        }, 0);
+
+        setTotalTaka((prev) => prev + 1);
+        setTotalMeter((prev) => prev + +getValues(`meter_${fieldNumber}`));
+        setTotalWeight((prev) => prev + +getValues(`weight_${fieldNumber}`));
+      }
     }
   };
 
@@ -28,11 +45,33 @@ const FieldTable = ({
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
       }
+
+      const takaNo = getValues(`taka_no_${fieldNumber}`);
+      const meter = +getValues(`meter_${fieldNumber}`);
+      const weight = +getValues(`weight_${fieldNumber}`);
+
+      if (takaNo && meter && weight) {
+        setTotalTaka((prev) => (prev === 0 ? prev : prev - 1));
+        setTotalMeter((prev) => (prev === 0 ? prev : prev - meter));
+        setTotalWeight((prev) => (prev === 0 ? prev : prev - weight));
+      }
+
       setValue(`taka_no_${fieldNumber}`, "");
       setValue(`meter_${fieldNumber}`, "");
       setValue(`weight_${fieldNumber}`, "");
+
+      clearErrors(`taka_no_${fieldNumber}`);
+      clearErrors(`meter_${fieldNumber}`);
+      clearErrors(`weight_${fieldNumber}`);
     }
   };
+
+  const debouncedCheckUniqueTakaHandler = useDebounceCallback(
+    (value, fieldNumber) => {
+      checkUniqueTakaHandler(value, fieldNumber);
+    },
+    500
+  );
 
   return (
     <Row style={{ marginTop: "-20" }}>
@@ -60,15 +99,20 @@ const FieldTable = ({
                       validateStatus={
                         errors[`taka_no_${fieldNumber}`] ? "error" : ""
                       }
-                      help={
-                        errors[`taka_no_${fieldNumber}`] &&
-                        errors[`taka_no_${fieldNumber}`].message
-                      }
+                      // help={
+                      //   errors[`taka_no_${fieldNumber}`] &&
+                      //   errors[`taka_no_${fieldNumber}`].message
+                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: "0px solid !important",
+                        border: `${
+                          errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
+                        borderColor: errors[`taka_no_${fieldNumber}`]
+                          ? "red"
+                          : "",
                       }}
                     >
                       <Controller
@@ -80,10 +124,28 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "75px",
-                              border: "0px solid",
+                              border: `${
+                                errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
+                              borderColor: errors[`taka_no_${fieldNumber}`]
+                                ? "red"
+                                : "",
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              if (checkUniqueTaka) {
+                                debouncedCheckUniqueTakaHandler(
+                                  e.target.value,
+                                  fieldNumber
+                                );
+                                // checkUniqueTakaHandler(
+                                //   e.target.value,
+                                //   fieldNumber
+                                // );
+                              }
+                            }}
                           />
                         )}
                       />

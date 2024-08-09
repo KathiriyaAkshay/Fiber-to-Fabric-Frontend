@@ -137,6 +137,7 @@ import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
 import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
 import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 import BeamSentReport from "./pages/job/reports/beamSentReport";
+import UpdatePurchaseTaka from "./pages/purchase/purchaseTaka/updatePurchaseTaka";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -456,6 +457,7 @@ const router = createBrowserRouter([
             children: [
               { index: true, element: <PurchaseTakaList /> },
               { path: "add", element: <AddPurchaseTaka /> },
+              { path: "update/:id", element: <UpdatePurchaseTaka /> },
             ],
           },
           {
@@ -486,7 +488,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: "bills-of-size-beam",
-                element: <SizeBeamBillList/>,
+                element: <SizeBeamBillList />,
               },
               {
                 path: "receive-size-beam",

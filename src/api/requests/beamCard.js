@@ -29,7 +29,19 @@ export function createLoadNewBeamRequest({ data, params }) {
 }
 
 export function updateLoadNewBeamRequest({ id, data, params }) {
-    return api.patch(`/beam/load/update/${id}`, data, { params });
+    return api.post(`/beam/load/update/${id}`, data, { params });
+}
+
+export function finishRunningBeamRequest({ data, params }) {
+    return api.post(`/beam/finish-loaded-beam`, data, { params });
+}
+
+export function moveCutToNonPasarelaRequest({ data, params }) {
+    return api.post(`/beam/cut-to-non-pasarela-beam`, data, { params });
+}
+
+export function reloadBeamRequest({ data, params }) {
+    return api.post(`/beam/reload-beam`, data, { params });
 }
 
 export function getBeamCardByIdRequest({ id, params }) {
@@ -46,4 +58,8 @@ export function getBeamCardListRequest({ params }) {
 
 export function createNBNBeamRequest({ data, params }) {
     return api.post("/beam/nbn/load/create", data, { params });
+}
+
+export function deleteBeamCardRequest({ id, params }) {
+    return api.delete(`/beam/delete/${id}`, { params });
 }

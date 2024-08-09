@@ -706,18 +706,18 @@ export const menubarOptionsList = [
       </Link>
     ),
     children: [
-      {
-        path: "taka",
-        key: "Taka",  
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="job/taka"
-          >
-            Taka
-          </Link>
-        ),
-      },
+      // {
+      //   path: "taka",
+      //   key: "Taka",
+      //   label: (
+      //     <Link
+      //       className="text-current no-underline hover:text-current"
+      //       to="job/taka"
+      //     >
+      //       Taka
+      //     </Link>
+      //   ),
+      // },
       {
         path: "job-taka",
         key: "Job Taka",

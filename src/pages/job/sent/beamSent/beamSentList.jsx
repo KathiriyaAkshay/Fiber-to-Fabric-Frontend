@@ -1,7 +1,6 @@
 import {
   Button,
   Col,
-  Divider,
   Flex,
   Modal,
   Row,
@@ -10,7 +9,7 @@ import {
   Spin,
   Table,
   Typography,
-  Card
+  Card,
 } from "antd";
 import {
   CloseOutlined,
@@ -74,36 +73,37 @@ const BeamSentList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        machine_name: debouncedMachine,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          machine_name: debouncedMachine,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        if (debouncedMachine) {
+          const res = await getInHouseQualityListRequest({
+            params: {
+              company_id: companyId,
+              machine_name: debouncedMachine,
+              page: 0,
+              pageSize: 9999,
+              is_active: 1,
+            },
+          });
+          return res.data?.data;
+        } else {
+          return { row: [] };
+        }
       },
-    ],
-    queryFn: async () => {
-      if (debouncedMachine) {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-            machine_name: debouncedMachine,
-            page: 0,
-            pageSize: 9999,
-            is_active: 1,
-          },
-        });
-        return res.data?.data;
-      } else {
-        return { row: [] };
-      }
-    },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -209,11 +209,11 @@ const BeamSentList = () => {
         let totalMeter = 0;
         job_beam_sent_details?.map((item) => {
           const obj =
-            item.loaded_beam.non_pasarela_beam_detail ||
-            item.loaded_beam.recieve_size_beam_detail ||
-            item.loaded_beam.job_beam_receive_detail;
+            item?.loaded_beam?.non_pasarela_beam_detail ||
+            item?.loaded_beam?.recieve_size_beam_detail ||
+            item?.loaded_beam?.job_beam_receive_detail;
 
-          totalMeter += obj.meters;
+          totalMeter += obj ? obj?.meters : 0;
         });
 
         return totalMeter;
@@ -226,11 +226,11 @@ const BeamSentList = () => {
         let totalWeight = 0;
         job_beam_sent_details?.map((item) => {
           const obj =
-            item.loaded_beam.non_pasarela_beam_detail ||
-            item.loaded_beam.recieve_size_beam_detail ||
-            item.loaded_beam.job_beam_receive_detail;
+            item?.loaded_beam?.non_pasarela_beam_detail ||
+            item?.loaded_beam?.recieve_size_beam_detail ||
+            item?.loaded_beam?.job_beam_receive_detail;
 
-          totalWeight += obj.net_weight || 0;
+          totalWeight += obj ? obj?.net_weight : 0;
         });
 
         return totalWeight;
@@ -321,8 +321,6 @@ const BeamSentList = () => {
       />
     );
   }
-
-
 
   return (
     <div className="flex flex-col p-4">
@@ -489,46 +487,46 @@ const BeamSentViewDetailModal = ({
 
   const dataSource = [
     {
-      key: '1',
-      no: '1',
-      bno: 'PBN-67',
-      taar: '100',
-      pano: '100',
-      meter: '100',
-      weight: '17.33',
+      key: "1",
+      no: "1",
+      bno: "PBN-67",
+      taar: "100",
+      pano: "100",
+      meter: "100",
+      weight: "17.33",
     },
   ];
 
   const ModalColumns = [
     {
-      title: 'No',
-      dataIndex: 'no',
-      key: 'no',
+      title: "No",
+      dataIndex: "no",
+      key: "no",
     },
     {
-      title: 'B no.',
-      dataIndex: 'bno',
-      key: 'bno',
+      title: "B no.",
+      dataIndex: "bno",
+      key: "bno",
     },
     {
-      title: 'taar/ends',
-      dataIndex: 'taar',
-      key: 'taar',
+      title: "taar/ends",
+      dataIndex: "taar",
+      key: "taar",
     },
     {
-      title: 'pano',
-      dataIndex: 'pano',
-      key: 'pano',
+      title: "pano",
+      dataIndex: "pano",
+      key: "pano",
     },
     {
-      title: 'meter',
-      dataIndex: 'meter',
-      key: 'meter',
+      title: "meter",
+      dataIndex: "meter",
+      key: "meter",
     },
     {
-      title: 'weight',
-      dataIndex: 'weight',
-      key: 'weight',
+      title: "weight",
+      dataIndex: "weight",
+      key: "weight",
     },
   ];
 

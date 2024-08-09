@@ -24,7 +24,10 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import FieldTable from "../../../components/fieldTable";
-import { addPurchaseTakaRequest } from "../../../api/requests/purchase/purchaseTaka";
+import {
+  addPurchaseTakaRequest,
+  checkUniqueTakaNoRequest,
+} from "../../../api/requests/purchase/purchaseTaka";
 import { disabledFutureDate } from "../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
@@ -47,10 +50,17 @@ const addJobTakaSchemaResolver = yupResolver(
 const AddPurchaseTaka = () => {
   const queryClient = useQueryClient();
 
-  const [activeField, setActiveField] = useState(1);
+  const [isTakaExist, setIsTakaExist] = useState(false);
+
+  const [totalTaka, setTotalTaka] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
+
+  const [activeField, setActiveField] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
+  const [pendingWeight, setPendingWeight] = useState("");
 
   const navigate = useNavigate();
   //   const { data: user } = useCurrentUser();
@@ -85,10 +95,25 @@ const AddPurchaseTaka = () => {
   });
 
   async function onSubmit(data) {
-    const jobChallanDetailArr = Array.from(
+    const purchaseChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
     );
+
+    const purchase_challan_detail = [];
+    purchaseChallanDetailArr.forEach((field) => {
+      if (
+        !isNaN(data[`taka_no_${field}`]) &&
+        !isNaN(data[`meter_${field}`]) &&
+        !isNaN(data[`weight_${field}`])
+      ) {
+        purchase_challan_detail.push({
+          taka_no: parseInt(data[`taka_no_${field}`]),
+          meter: parseInt(data[`meter_${field}`]),
+          weight: parseInt(data[`weight_${field}`]),
+        });
+      }
+    });
 
     const newData = {
       delivery_address: data.delivery_address,
@@ -99,20 +124,14 @@ const AddPurchaseTaka = () => {
       supplier_id: +data.supplier_id,
       broker_id: +data.broker_id,
       quality_id: +data.quality_id,
-      total_meter: +data.total_meter,
-      total_weight: +data.total_weight,
+      total_meter: +totalMeter,
+      total_weight: +totalWeight,
+      total_taka: +totalTaka,
       pending_meter: +pendingMeter,
-      pending_weight: 0,
+      pending_weight: +pendingWeight,
       pending_taka: +pendingTaka,
-      total_taka: +data.total_taka,
       is_grey: true,
-      job_challan_detail: jobChallanDetailArr.map((field) => {
-        return {
-          taka_no: parseInt(data[`taka_no_${field}`]),
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
-        };
-      }),
+      purchase_challan_detail: purchase_challan_detail,
     };
     await AddPurchaseTaka(newData);
   }
@@ -125,9 +144,12 @@ const AddPurchaseTaka = () => {
     watch,
     setValue,
     setFocus,
+    setError,
+    clearErrors,
+    getValues,
   } = useForm({
     defaultValues: {
-      company_id: null,
+      // company_id: null,
       challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
@@ -147,32 +169,33 @@ const AddPurchaseTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id } = watch();
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
@@ -197,7 +220,7 @@ const AddPurchaseTaka = () => {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, type: "purchase/trading" },
       });
       return res.data?.data?.supplierList;
     },
@@ -222,6 +245,44 @@ const AddPurchaseTaka = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
+  const checkUniqueTakaHandler = async (takaNo, fieldNumber) => {
+    try {
+      const params = { company_id: companyId, taka_no: +takaNo };
+      const response = await checkUniqueTakaNoRequest({ params });
+      if (response.data.success) {
+        setIsTakaExist(false);
+        clearErrors(`taka_no_${fieldNumber}`);
+      }
+    } catch (error) {
+      if (!error.response.data.success) {
+        message.error(error.response.data.message);
+        setIsTakaExist(true);
+        setError(`taka_no_${fieldNumber}`, {
+          type: "manual",
+          message: "Taka No already exist.",
+        });
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (gray_order_id) {
+      setActiveField((prev) => (prev === 0 ? 1 : prev));
+    } else {
+      setActiveField(0);
+    }
+  }, [gray_order_id]);
+
+  useEffect(() => {
+    if (grayOrderListRes && gray_order_id) {
+      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+
+      setPendingMeter(+order.pending_meter - +totalMeter);
+      setPendingTaka(+order.pending_taka - +totalTaka);
+      setPendingWeight(+order.pending_weight - +totalWeight);
+    }
+  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
@@ -238,19 +299,20 @@ const AddPurchaseTaka = () => {
       setValue("supplier_name", order.supplier_name);
       setValue("pending_meter", order.pending_meter);
 
-      setPendingMeter(order.pending_meter);
-      setPendingTaka(order.pending_taka);
+      setPendingMeter(order.pending_meter || 0);
+      setPendingTaka(order.pending_taka || 0);
+      setPendingWeight(order.pending_weight || 0);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
   useEffect(() => {
-    if (company_id) {
+    if (companyId) {
       const selectedCompany = companyListRes?.rows?.find(
-        ({ id }) => id === company_id
+        ({ id }) => id === companyId
       );
       setValue("gst_in_1", selectedCompany.gst_no);
     }
-  }, [companyListRes, company_id, setValue]);
+  }, [companyListRes, companyId, setValue]);
 
   useEffect(() => {
     if (supplier_id) {
@@ -270,14 +332,14 @@ const AddPurchaseTaka = () => {
         </Button>
         <h3 className="m-0 text-primary">Create Purchase Challan</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Form layout="vertical">
         <Row
           gutter={18}
           style={{
             padding: "12px",
           }}
         >
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Company"
               name="company_id"
@@ -308,7 +370,7 @@ const AddPurchaseTaka = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -529,7 +591,6 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-
         </Row>
 
         <Row
@@ -681,7 +742,7 @@ const AddPurchaseTaka = () => {
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>0</Typography>
+              <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
@@ -699,17 +760,49 @@ const AddPurchaseTaka = () => {
           setValue={setValue}
           activeField={activeField}
           setActiveField={setActiveField}
+          checkUniqueTaka={true}
+          checkUniqueTakaHandler={checkUniqueTakaHandler}
+          isTakaExist={isTakaExist}
+          setTotalMeter={setTotalMeter}
+          setTotalWeight={setTotalWeight}
+          setTotalTaka={setTotalTaka}
+          getValues={getValues}
+          clearErrors={clearErrors}
         />
+
+        <Row style={{ marginTop: "20px" }} gutter={20}>
+          <Col span={6}>
+            <Form.Item label="Total Taka">
+              <Input value={totalTaka} disabled />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Total Meter">
+              <Input value={totalMeter} disabled />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item label="Total Weight">
+              <Input value={totalWeight} disabled />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={handleSubmit(onSubmit)}
+            loading={isPending}
+            disabled={isTakaExist}
+          >
             Create
           </Button>
         </Flex>
-      </Form> 
+      </Form>
     </div>
   );
 };

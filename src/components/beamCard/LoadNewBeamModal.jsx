@@ -134,9 +134,10 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
     if (loadedMachineList.lastBeam) {
       const digits = loadedMachineList.lastBeam.match(/\d+/g);
       const result = digits ? digits.join("") : "";
+
       return +result || 0;
-    } else{
-      return 0 ; 
+    } else {
+      return 0;
     }
   }, [loadedMachineList]);
 

@@ -23,6 +23,7 @@ import {
   FilePdfOutlined,
   PlusCircleOutlined,
   PrinterOutlined,
+  SwapOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -41,12 +42,125 @@ import dayjs from "dayjs";
 import FinishBeamCardModal from "../../components/beamCard/FinishBeamCardModal";
 import LoadNewBeamModal from "../../components/beamCard/LoadNewBeamModal";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
+import DeleteBeamCard from "../../components/beamCard/DeleteBeamCard";
+import MoveBhidanModal from "../../components/beamCard/moveBhidanModal";
+
+const getTakaDetailsObject = (details) => {
+  if (details) {
+    let object =
+      details.non_pasarela_beam_detail ||
+      details.recieve_size_beam_detail ||
+      details.job_beam_receive_detail;
+
+    return object === null || object === undefined
+      ? null
+      : { ...object, meter: object?.meters || object?.meter };
+  }
+};
+
+const getActions = (details) => {
+  const obj = getTakaDetailsObject(details);
+
+  switch (details.status) {
+    case "running":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "finished":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: !details.is_completed,
+      };
+
+    case "cut":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: obj.beam_no === null ? false : !obj.beam_no.includes("NBN"),
+      };
+
+    case "pasarela":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: Boolean(details.non_pasarela_beam_id),
+        isArrow: false,
+      };
+
+    case "non-pasarela":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: false,
+        isBarCode: true,
+        isDelete: Boolean(details.non_pasarela_beam_id),
+        isArrow: false,
+      };
+
+    case "bhidan_of_beam":
+      return {
+        isView: true,
+        isEdit: true,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "sent":
+      return {
+        isView: true,
+        isEdit: false,
+        isPlus: false,
+        isBarCode: true,
+        isDelete: false,
+        isArrow: false,
+      };
+
+    case "primary(advance)":
+      return {
+        isView: true,
+        isEdit: false,
+        isPlus: true,
+        isBarCode: true,
+        isDelete: true,
+        isArrow: false,
+      };
+
+    default:
+      return {
+        isView: false,
+        isEdit: false,
+        isPlus: false,
+        isBarCode: false,
+        isDelete: false,
+      };
+  }
+};
 
 const BeamCardList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: user } = useCurrentUser();
+
+  const [isOpenMoveBhidan, setIsOpenMoveBhidan] = useState(false);
+  const [row, setRow] = useState(null);
 
   const [search, setSearch] = useState({
     beamNo: "",
@@ -57,7 +171,7 @@ const BeamCardList = () => {
 
   const [machine, setMachine] = useState();
   const [beamType, setBeamType] = useState("primary");
-  const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
+  const [beamTypeDropDown, setBeamTypeDropDow] = useState("running");
   const [quality, setQuality] = useState(null);
 
   const debouncedSearch = useDebounce(search, 500);
@@ -117,9 +231,10 @@ const BeamCardList = () => {
         company_id: companyId,
         page,
         pageSize,
-        search: debouncedSearch,
+        beam_no: debouncedSearch.beamNo,
+        machine_no: debouncedSearch.machNo,
         machine_name: debouncedMachine,
-        beam_type: debouncedBeamTypeDropDown,
+        status: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
         // status: debouncedStatus,
       },
@@ -130,9 +245,10 @@ const BeamCardList = () => {
           company_id: companyId,
           page,
           pageSize,
-          search: debouncedSearch,
+          beam_no: debouncedSearch.beamNo,
+          machine_no: debouncedSearch.machNo,
           machine_name: debouncedMachine,
-          beam_type: debouncedBeamTypeDropDown,
+          status: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
           // status: debouncedStatus,
         },
@@ -142,40 +258,12 @@ const BeamCardList = () => {
     enabled: Boolean(companyId),
   });
 
-  //   const {
-  //     mutateAsync: updateTradingQuality,
-  //     isPending: updatingTradingQuality,
-  //     variables,
-  //   } = useMutation({
-  //     mutationFn: async ({ id, data }) => {
-  //       const res = await updateTradingQualityRequest({
-  //         id,
-  //         data,
-  //         params: { company_id: companyId },
-  //       });
-  //       return res.data;
-  //     },
-  //     mutationKey: ["trading", "Quantity", "update"],
-  //     onSuccess: (res) => {
-  //       const successMessage = res?.message;
-  //       if (successMessage) {
-  //         message.success(successMessage);
-  //       }
-  //     },
-  //     onError: (error) => {
-  //       const errorMessage = error?.response?.data?.message;
-  //       if (errorMessage && typeof errorMessage === "string") {
-  //         message.error(errorMessage);
-  //       }
-  //     },
-  //   });
-
   function navigateToAdd() {
     navigate("/beam-card/add");
   }
 
-  function navigateToUpdate(id) {
-    navigate(`/beam-card/update/${id}`);
+  function navigateToUpdate(id, non_pasarela_beam_id) {
+    navigate(`/beam-card/update/${id}`, { state: { non_pasarela_beam_id } });
   }
 
   function downloadPdf() {
@@ -210,8 +298,10 @@ const BeamCardList = () => {
     },
     {
       title: "Beam No",
-      dataIndex: ["non_pasarela_beam_detail", "beam_no"],
-      key: "beam_no",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item?.beam_no || "-";
+      },
     },
     {
       title: "Quality",
@@ -219,24 +309,27 @@ const BeamCardList = () => {
         `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
     },
     {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-    },
-    {
       title: "Taka",
-      dataIndex: ["non_pasarela_beam_detail", "taka"],
-      key: "taka",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item?.taka || "-";
+      },
     },
     {
       title: "Meter",
-      dataIndex: ["non_pasarela_beam_detail", "meters"],
-      key: "meter",
+      render: (details) => {
+        const obj =
+          details.non_pasarela_beam_detail ||
+          details.recieve_size_beam_detail ||
+          details.job_beam_receive_detail;
+        return obj?.meters || obj?.meter || "-";
+      },
     },
     {
       title: "Pending Meter",
       dataIndex: "pending_meter",
       key: "pending_meter",
+      render: (text) => text || 0,
     },
     {
       title: "Shortage %",
@@ -246,18 +339,22 @@ const BeamCardList = () => {
     },
     {
       title: "pano",
-      dataIndex: ["non_pasarela_beam_detail", "pano"],
-      key: "pano",
+      render: (details) => {
+        const item = getTakaDetailsObject(details);
+        return item?.pano || "-";
+      },
     },
     {
       title: "Mach.No",
       dataIndex: "machine_no",
       key: "machine_no",
+      render: (text) => text || "-",
     },
     {
       title: "Day Duration",
       dataIndex: "day_duration",
       key: "day_duration",
+      render: (text) => text || "-",
     },
     {
       title: "Date",
@@ -274,21 +371,48 @@ const BeamCardList = () => {
     {
       title: "Action",
       render: (details) => {
-        console.log({ details });
+        const { isView, isEdit, isDelete, isPlus, isArrow, isBarCode } =
+          getActions(details);
+
         return (
           <Space>
-            <BeamCardViewDetailModal title="Beam Details" details={details} />
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <FinishBeamCardModal />
-            <Button>
-              <AppstoreOutlined />
-            </Button>
+            {isView && (
+              <BeamCardViewDetailModal title="Beam Details" details={details} />
+            )}
+            {isEdit && (
+              <Button
+                onClick={() => {
+                  navigateToUpdate(details.id, details.non_pasarela_beam_id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+            )}
+            {isPlus && (
+              <FinishBeamCardModal
+                details={details}
+                companyId={companyId}
+                beamTypeDropDown={details.status}
+              />
+            )}
+            {isBarCode && (
+              <Button>
+                <AppstoreOutlined details={details} />
+              </Button>
+            )}
+            {isArrow && (
+              <Button
+                onClick={() => {
+                  setRow(details);
+                  setIsOpenMoveBhidan(true);
+                }}
+              >
+                <SwapOutlined />
+              </Button>
+            )}
+            {isDelete && (
+              <DeleteBeamCard key={"delete_beam_card"} details={details} />
+            )}
           </Space>
         );
       },
@@ -315,6 +439,65 @@ const BeamCardList = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={(pageData) => {
+          let totalMeter = 0;
+          let totalPendingMeter = 0;
+          pageData.forEach((details) => {
+            const item = getTakaDetailsObject(details);
+
+            totalPendingMeter += +details.pending_meter || 0;
+            totalMeter += item ? +item.meter : 0;
+          });
+
+          return (
+            <>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{totalPendingMeter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                {/* <Table.Summary.Cell /> */}
+              </Table.Summary.Row>
+              <Table.Summary.Row className="font-semibold">
+                <Table.Summary.Cell>
+                  Grand <br />
+                  Total
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{beamCardList?.total_meter}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>
+                    {beamCardList?.pending_meter}
+                  </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+              </Table.Summary.Row>
+            </>
+          );
         }}
       />
     );
@@ -390,7 +573,6 @@ const BeamCardList = () => {
               Beam Type
             </Typography.Text>
             <Select
-              allowClear
               placeholder="Select Beam Type"
               value={beamTypeDropDown}
               options={BEAM_TYPE}
@@ -484,6 +666,15 @@ const BeamCardList = () => {
           setIsModalOpen={setIsLoadBeamModalOpen}
         />
       )}
+
+      {isOpenMoveBhidan && (
+        <MoveBhidanModal
+          open={isOpenMoveBhidan}
+          handleClose={() => setIsOpenMoveBhidan(false)}
+          companyId={companyId}
+          row={row}
+        />
+      )}
     </div>
   );
 };
@@ -509,6 +700,8 @@ const BeamCardViewDetailModal = ({
     adjustHeight.height = "calc(100vh - 150px)";
     adjustHeight.overflowY = "scroll";
   }
+
+  const item = getTakaDetailsObject(details);
 
   return (
     <>
@@ -596,9 +789,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.beam_no}
-                  </Typography.Text>
+                  <Typography.Text>{item?.beam_no}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -706,9 +897,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.end_of_tars}
-                  </Typography.Text>
+                  <Typography.Text>{item?.end_of_tars}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -718,9 +907,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.pano}
-                  </Typography.Text>
+                  <Typography.Text>{item?.pano}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -742,9 +929,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.taka}
-                  </Typography.Text>
+                  <Typography.Text>{item?.taka}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">
@@ -754,9 +939,7 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>
-                    {details.non_pasarela_beam_detail.meters}
-                  </Typography.Text>
+                  <Typography.Text>{item?.meter}</Typography.Text>
                 </Col>
               </Row>
               <Row id="row">

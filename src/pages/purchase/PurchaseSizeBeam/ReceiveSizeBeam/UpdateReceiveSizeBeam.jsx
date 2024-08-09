@@ -11,20 +11,24 @@ import {
   TimePicker,
   message,
 } from "antd";
-import { useState } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import dayjs from "dayjs";
-import { updateReceiveSizeBeamRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
+import {
+  // createReceiveSizeBeamRequest,
+  updateReceiveSizeBeamRequest,
+} from "../../../../api/requests/purchase/purchaseSizeBeam";
+// import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
+// import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
 import { getReceiveSizeBeamOrderRequest } from "../../../../api/requests/purchase/yarnReceive";
 import UpdateSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateSizeBeamDetails";
@@ -33,13 +37,27 @@ import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
+    // size_beam_order_id: yup.string().required("Please select order"),
+    // quality_id: yup.string().required("Please select Quality"),
+    // supplier_id: yup.string().required("Please select supplier"),
+    challan_no: yup.string().required("Please enter challan number"),
+    // beam_type: yup.string().required("Please select Beam type"),
     receive_date: yup.string().required("Please select Date"),
+    // total_meter:yup.string().required("Please enter Total meter"),
+    // remaining_meter: yup.string().required("Please enter remaining meter"),
+    machine_name: yup.string().required("Please enter machine name"),
     beam_details: yup.array().of(
       yup.object().shape({
         ends_or_tars: yup.string().required("Please enter ends of tars"),
         tpm: yup.string().required("Please enter tpm"),
+        // grade: yup.string().optional(),
         meters: yup.string().notRequired(),
         pano: yup.string().required("Please enter pano"),
+        // remark: yup.string().optional(),
+        // beam_no: yup.string().optional(),
+        // taka: yup.string().optional(),
+        // net_weight: yup.string().optional(),
+        // supplier_beam_no: yup.string().optional()
       })
     ),
   })
@@ -59,7 +77,9 @@ function UpdateReceiveSizeBeam() {
 
   const queryClient = useQueryClient();
 
-  // Machine dropdown list
+  const [deletedRecords, setDeletedRecords] = useState([]);
+  const [orderOptions, setOrderOptions] = useState([]);
+
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
     queryFn: async () => {
@@ -98,16 +118,14 @@ function UpdateReceiveSizeBeam() {
     queryFn: async () => {
       const res = await getReceiveSizeBeamOrderRequest({
         id,
-        params: { company_id: companyId }
-      })
+        params: { company_id: companyId },
+      });
       return res?.data?.data;
     },
-    enabled: Boolean(companyId)
-  })
+    enabled: Boolean(companyId),
+  });
 
-  // Update size beam request handler ==========================================================
-
-  const { mutateAsync: updateReceiveSizeBeam } = useMutation({
+  const { mutateAsync: updateReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
       setLoading(true);
       const res = await updateReceiveSizeBeamRequest({
@@ -140,30 +158,41 @@ function UpdateReceiveSizeBeam() {
     delete data?.supplier_name;
     delete data?.supplier_company;
 
-    let beamData = data?.beam_details?.map((element) => {
-      return { ...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id }
-    })
+    // let beamData = data?.beam_details?.map((element) => {
+    //   return { ...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id }
+    // })
 
-    let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ; 
-    if (tempRemaingMeter <0 ){
-      tempRemaingMeter = 0 ;
-    }
+    // let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ; 
+    // if (tempRemaingMeter <0 ){
+    //   tempRemaingMeter = 0 ;
+    // }
 
-    let requestData = {
-      "size_beam_order_id": receiveSizeBeamDetails?.size_beam_order_id,
-      "quality_id": receiveSizeBeamDetails?.quality_id,
-      "supplier_id": receiveSizeBeamDetails?.supplier_id,
-      "challan_no": receiveSizeBeamDetails?.challan_no,
-      "beam_type": receiveSizeBeamDetails?.beam_type,
-      "receive_date": data?.receive_date,
-      "total_meter": totalMeter,
-      "remaining_meter": tempRemaingMeter,
-      "machine_name": receiveSizeBeamDetails?.machine_name,
-      "beam_details": beamData
+    // let requestData = {
+    //   "size_beam_order_id": receiveSizeBeamDetails?.size_beam_order_id,
+    //   "quality_id": receiveSizeBeamDetails?.quality_id,
+    //   "supplier_id": receiveSizeBeamDetails?.supplier_id,
+    //   "challan_no": receiveSizeBeamDetails?.challan_no,
+    //   "beam_type": receiveSizeBeamDetails?.beam_type,
+    //   "receive_date": data?.receive_date,
+    //   "total_meter": totalMeter,
+    //   "remaining_meter": tempRemaingMeter,
+    //   "machine_name": receiveSizeBeamDetails?.machine_name,
+    //   "beam_details": beamData
+    // };
+
+    // await updateReceiveSizeBeam(requestData);
+    const payload = {
+      ...data,
+      deleted_beam_detail_ids: deletedRecords.map(({ _id }) => _id),
+      receive_date: dayjs(data.receive_date).format("YYYY-MM-DD"),
+      beam_details: data.beam_details.map((item) => {
+        let obj = { ...item, id: item._id };
+        delete obj._id;
+        return obj;
+      }),
     };
 
-    await updateReceiveSizeBeam(requestData);
-
+    await updateReceiveSizeBeam(payload);
   }
 
   // Update data handler ========================================================================
@@ -177,10 +206,17 @@ function UpdateReceiveSizeBeam() {
     setValue,
     getValues
   } = useForm({
-    resolver: addReceiveSizeBeamSchemaResolver,
     defaultValues: {
-      receive_date: dayjs(),
+      size_beam_order_id: null,
+      quality_id: null,
+      machine_name: null,
+      challan_no: "",
+      beam_type: null,
+      supplier_name: "",
+      supplier_company: "",
+      beam_details: [],
     },
+    resolver: addReceiveSizeBeamSchemaResolver,
   });
 
   const { size_beam_order_id, beam_type } = watch();
@@ -292,12 +328,58 @@ function UpdateReceiveSizeBeam() {
 
       setRemaingMeter(receiveSizeBeamDetails?.remaining_meter);
       setTotalMeter(receiveSizeBeamDetails?.total_meter);
+    }},[]) ; 
+    
+  const current = watch();
 
+  useEffect(() => {
+    if (receiveSizeBeamDetails && Object.keys(receiveSizeBeamDetails).length) {
+      const beam_details =
+        receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
+          console.log({ element });
+          return {
+            _id: element?.id,
+            size_beam_order_detail_id: element.size_beam_order_detail_id,
+            supplier_beam_no: element.supplier_beam_no,
+            ends_or_tars: element?.ends_or_tars,
+            grade: element?.grade,
+            meters: element?.meters,
+            pano: element?.pano,
+            remark: element?.remark || "",
+            beam_no: element?.beam_no,
+            taka: element?.taka,
+            net_weight: element?.net_weight,
+            tpm: element?.tpm,
+            is_running: element?.is_running,
+          };
+        });
+
+      setOrderOptions([
+        {
+          label: receiveSizeBeamDetails.size_beam_order.order_no,
+          value: receiveSizeBeamDetails.size_beam_order.id,
+        },
+      ]);
+      setTotalMeter(receiveSizeBeamDetails.total_meter);
+      setPendingMeter(receiveSizeBeamDetails.remaining_meter);
+
+      reset({
+        size_beam_order_id: receiveSizeBeamDetails.size_beam_order_id,
+        quality_id: receiveSizeBeamDetails.quality_id,
+        machine_name: receiveSizeBeamDetails.machine_name,
+        challan_no: receiveSizeBeamDetails.challan_no,
+        beam_type: receiveSizeBeamDetails.beam_type,
+        supplier_name: receiveSizeBeamDetails.supplier.supplier.supplier_name,
+        supplier_company:
+          receiveSizeBeamDetails.supplier.supplier.supplier_company,
+        beam_details: beam_details,
+        receive_date: dayjs(receiveSizeBeamDetails.createdAt),
+      });
     }
-  }, [receiveSizeBeamDetails, reset])
+  }, [receiveSizeBeamDetails, reset, setValue]);
 
   function disabledDate(current) {
-    if (current && current > moment().endOf('day')) {
+    if (current && current > moment().endOf("day")) {
       return true;
     }
   }
@@ -309,7 +391,6 @@ function UpdateReceiveSizeBeam() {
         <h3 className="m-0 text-primary">Update Receive size beam</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-
         <Flex className="mt-3" gap={20}>
           <Flex>
             <div className="font-weight-bold">Total meter: {receiveSizeBeamDetails?.total_meter}</div>
@@ -338,23 +419,29 @@ function UpdateReceiveSizeBeam() {
             >
               <Controller
                 control={control}
-                name="order_no"
-                disabled
+                name="size_beam_order_id"
                 render={({ field }) => (
                   <Select
                     {...field}
+                    name="size_beam_order_id"
+                    id="size_beam_order_id"
                     placeholder="Select size beam order"
-                    loading={isLoadingSizeBeamOrderList}
-                    value={sizeBeamOrderListRes?.order_no || "100"}
-                    options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
-                      ({ order_no = "", id = "", total_meters = 0 }) => {
-                        return {
-                          label: order_no,
-                          value: order_no,
-                          total_meter: total_meters
-                        };
-                      }
-                    )}
+                    // loading={isLoadingSizeBeamOrderList}
+                    // options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
+                    //   ({ order_no = "", id = "", total_meters = 0 }) => {
+                    //     return {
+                    //       label: order_no,
+                    //       value: id,
+                    //       total_meter: total_meters,
+                    //     };
+                    //   }
+                    // )}
+                    options={orderOptions}
+                    // onSelect={(value, option) => {
+                    //   setTotalMeter(
+                    //     option?.total_meter == null ? 0 : option?.total_meter
+                    //   );
+                    // }}
                   />
                 )}
               />
@@ -370,23 +457,26 @@ function UpdateReceiveSizeBeam() {
               required={true}
             >
               <Controller
-                disabled
                 control={control}
                 name="quality_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Quality"
-                    allowClear={true}
-                    loading={isLoadingInHouseQualityList}
-                    options={inHouseQualityList?.rows?.map(
-                      ({ id = 0, quality_name = "" }) => ({
-                        label: quality_name,
-                        value: id,
-                      })
-                    )}
-                  />
-                )}
+                render={({ field }) => {
+                  return (
+                    <Select
+                      {...field}
+                      name="quality_id"
+                      id="quality_id"
+                      placeholder="Quality"
+                      allowClear={true}
+                      loading={isLoadingInHouseQualityList}
+                      options={inHouseQualityList?.rows?.map(
+                        ({ id = 0, quality_name = "" }) => ({
+                          label: quality_name,
+                          value: id,
+                        })
+                      )}
+                    />
+                  );
+                }}
               />
             </Form.Item>
           </Col>
@@ -402,10 +492,11 @@ function UpdateReceiveSizeBeam() {
               <Controller
                 control={control}
                 name="machine_name"
-                // disabled
                 render={({ field }) => (
                   <Select
                     {...field}
+                    name="machine_name"
+                    id="machine_name"
                     placeholder="Select Machine Name"
                     allowClear
                     disabled
@@ -420,6 +511,7 @@ function UpdateReceiveSizeBeam() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -438,7 +530,14 @@ function UpdateReceiveSizeBeam() {
               <Controller
                 control={control}
                 name="supplier_name"
-                render={({ field }) => <Input {...field} disabled={true} />}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    readOnly
+                    name="supplier_name"
+                    id="supplier_name"
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -455,7 +554,14 @@ function UpdateReceiveSizeBeam() {
               <Controller
                 control={control}
                 name="supplier_company"
-                render={({ field }) => <Input {...field} disabled={true} />}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    readOnly
+                    name="supplier_company"
+                    id="supplier_company"
+                  />
+                )}
               />
             </Form.Item>
           </Col>
@@ -464,7 +570,6 @@ function UpdateReceiveSizeBeam() {
             <Form.Item
               label="Challan No"
               name="challan_no"
-              disabled
               validateStatus={errors.challan_no ? "error" : ""}
               help={errors.challan_no && errors.challan_no.message}
               required={true}
@@ -474,7 +579,12 @@ function UpdateReceiveSizeBeam() {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} readOnly />
+                  <Input
+                    {...field}
+                    name="challan_no"
+                    id="challan_no"
+                    readOnly
+                  />
                 )}
               />
             </Form.Item>
@@ -489,16 +599,18 @@ function UpdateReceiveSizeBeam() {
               required={true}
             >
               <Controller
-                disabled
                 control={control}
                 name="beam_type"
-                render={({ field }) => (
-                  <Select
-                    allowClear
-                    {...field}
-                    options={BEAM_TYPE_OPTION_LIST}
-                  />
-                )}
+                render={({ field }) => {
+                  return (
+                    <Select
+                      {...field}
+                      name="beam_type"
+                      id="beam_type"
+                      options={BEAM_TYPE_OPTION_LIST}
+                    />
+                  );
+                }}
               />
             </Form.Item>
           </Col>
@@ -518,6 +630,8 @@ function UpdateReceiveSizeBeam() {
                 render={({ field }) => (
                   <DatePicker
                     {...field}
+                    name="receive_date"
+                    id="receive_date"
                     style={{
                       width: "100%",
                     }}
@@ -544,11 +658,12 @@ function UpdateReceiveSizeBeam() {
                   <TimePicker
                     {...field}
                     value={dayjs()}
+                    name="report_time"
+                    id="report_time"
                     style={{
                       width: "100%",
                     }}
                     format="h:mm:ss A"
-                    disabled={true}
                   />
                 )}
               />
@@ -568,6 +683,11 @@ function UpdateReceiveSizeBeam() {
             setPendingMeter={setPendingMeter}
             getValues={getValues}
             setValue={setValue}
+            // sizeBeamOrderListRes={sizeBeamOrderListRes}
+            orderData={receiveSizeBeamDetails?.size_beam_order || {}}
+            size_beam_order_id={current?.size_beam_order_id}
+            deletedRecords={deletedRecords}
+            setDeletedRecords={setDeletedRecords}
           />
         )}
 
@@ -575,7 +695,7 @@ function UpdateReceiveSizeBeam() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
