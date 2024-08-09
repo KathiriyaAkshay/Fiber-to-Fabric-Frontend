@@ -86,9 +86,6 @@ function AddReceiveSizeBeam() {
 
   const { size_beam_order_id, beam_type, machine_name } = watch();
 
-  const [pendingMeter, setPendingMeter] = useState(0);
-  const [totalMeter, setTotalMeter] = useState(0);
-
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
       queryKey: [
@@ -233,6 +230,7 @@ function AddReceiveSizeBeam() {
         }
       } else {
         let beam_part = String(beam).split("-");
+
         beamType = beam_part[0];
         lastNumber = parseInt(beam_part[1]) + 1;
       };
