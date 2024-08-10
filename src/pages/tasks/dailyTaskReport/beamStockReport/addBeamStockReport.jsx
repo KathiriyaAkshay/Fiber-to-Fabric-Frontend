@@ -25,15 +25,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
   createBeamStockPasarelaRequest,
   createBeamStockReportRequest,
   getLastBeamNumberRequest,
-  // getNonPasarelaBeamRequest,
-  // getSecondaryBeamRequest,
 } from "../../../../api/requests/reports/beamStockReport";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
@@ -226,7 +223,6 @@ const AddBeamStockReport = () => {
     ],
     queryFn: async () => {
       if (beam_type === "pasarela (primary)" && quality_id && machine_name) {
-        // const res = await getNonPasarelaBeamRequest({
         const res = await getBeamCardListRequest({
           companyId,
           params: {
@@ -244,6 +240,7 @@ const AddBeamStockReport = () => {
     initialData: [],
   });
 
+  // Get Secondary beam dropdown list
   const { data: secondaryBeamDropDown } = useQuery({
     queryKey: [
       "secondary",
@@ -275,6 +272,7 @@ const AddBeamStockReport = () => {
     initialData: [],
   });
 
+  // Get Employee dropdown list 
   const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
     queryKey: ["employee", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -288,6 +286,7 @@ const AddBeamStockReport = () => {
     initialData: { rows: [], count: 0 },
   });
 
+  // Get Machine dropdown list 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -300,6 +299,7 @@ const AddBeamStockReport = () => {
     enabled: Boolean(companyId),
   });
 
+  // Get Quality dropdown list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -333,8 +333,9 @@ const AddBeamStockReport = () => {
       },
       enabled: Boolean(companyId),
       initialData: { rows: [] },
-    });
+  });
 
+  // Get LastNumber beam number information 
   const { data: lastBeamNumber } = useQuery({
     queryKey: [
       "lastBeam",
@@ -992,6 +993,10 @@ const PasarelaFormRow = ({
                   name={`secondary_beam_no_${fieldNumber}`}
                   placeholder="Select secondary beam"
                   options={secondaryBeamDropDown.map((details) => {
+                    console.log("Object information");
+                    console.log(details);
+                    
+                    
                     const item = getTakaDetailsObject(details);
                     return { label: item.beam_no, value: details.id };
                   })}
