@@ -10,6 +10,7 @@ import {
   Select,
   TimePicker,
   message,
+  Checkbox
 } from "antd";
 import { useState, useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -67,19 +68,16 @@ function UpdateReceiveSizeBeam() {
   const params = useParams();
   const { id } = params;
 
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { companyId } = useContext(GlobalContext);
-  const [loading, setLoading] = useState(false);
-
   const [totalMeter, setTotalMeter] = useState(0);
-  const [remaingMeter, setRemaingMeter] = useState(0);
   const [pendingMeter, setPendingMeter] = useState(0);
-
-  const queryClient = useQueryClient();
-
+  const [is_beam_stock_added, set_is_beam_stock_added] = useState(false) ; 
   const [deletedRecords, setDeletedRecords] = useState([]);
   const [orderOptions, setOrderOptions] = useState([]);
 
+  // Machine dropdown list information
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
     queryFn: async () => {
@@ -127,7 +125,6 @@ function UpdateReceiveSizeBeam() {
 
   const { mutateAsync: updateReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true);
       const res = await updateReceiveSizeBeamRequest({
         id,
         data,
@@ -137,7 +134,6 @@ function UpdateReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
-      setLoading(false);
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -149,7 +145,6 @@ function UpdateReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
-      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -163,21 +158,31 @@ function UpdateReceiveSizeBeam() {
       ...data,
       deleted_beam_detail_ids: deletedRecords.map(({ _id }) => _id),
       receive_date: dayjs(data.receive_date).format("YYYY-MM-DD"),
-      beam_details: data.beam_details.map((item) => {
-        let obj = { ...item, id: item._id };
-        delete obj.is_running ; 
-        delete obj._id;
-        delete obj.deletedAt ; 
-        delete obj.order_no ; 
-        delete obj.size_beam_order_id ; 
-        delete obj.is_received ; 
-        delete obj.createdAt ; 
-        delete obj.updatedAt ; 
-        delete obj.is_append ; 
-        return obj;
-      }),
+      // is_beam_stock_added: is_beam_stock_added,
+      beam_details:[] 
     };
 
+    let size_beam_order_details = []; 
+    receiveSizeBeamDetails?.size_beam_order?.size_beam_order_details?.map((element) => {
+      size_beam_order_details.push(element?.id)
+    }); 
+    
+
+    let beamInfo = data.beam_details.map((item, index) => {
+      let obj = { ...item, id: item._id, size_beam_order_detail_id: size_beam_order_details[index], meters: Number(item?.meters)};
+      delete obj.is_running ; 
+      delete obj._id;
+      delete obj.deletedAt ; 
+      delete obj.order_no ; 
+      delete obj.size_beam_order_id ; 
+      delete obj.is_received ; 
+      delete obj.createdAt ; 
+      delete obj.updatedAt ; 
+      delete obj.is_append ; 
+      return obj;
+    }) ;
+
+    payload["beam_details"] = beamInfo ; 
     await updateReceiveSizeBeam(payload);
   }
 
@@ -339,7 +344,16 @@ function UpdateReceiveSizeBeam() {
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <GoBackButton />
-        <h3 className="m-0 text-primary">Update Receive size beam</h3>
+        <Flex style={{width: "100%"}}>
+          <h3 className="m-0 text-primary">Update Receive size beam</h3>
+          <div style={{marginLeft: "auto", marginTop: "auto", marginBottom: "auto"}}>
+            <Checkbox
+              style={{color: "red"}}
+              value={is_beam_stock_added}
+              onChange={set_is_beam_stock_added}
+            >Do you want to add this beam to Beam stock ?</Checkbox>
+          </div>
+        </Flex>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Flex className="mt-3" gap={20}>

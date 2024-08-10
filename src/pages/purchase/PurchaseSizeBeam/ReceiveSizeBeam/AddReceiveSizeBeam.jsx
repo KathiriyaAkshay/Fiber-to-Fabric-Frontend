@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
   Flex,
@@ -65,9 +66,9 @@ function AddReceiveSizeBeam() {
 
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(false);
   const [pendingMeter, setPendingMeter] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
+  const [is_beam_stock_added, set_is_beam_stock_added] = useState(false) ; 
 
   const {
     control,
@@ -142,7 +143,6 @@ function AddReceiveSizeBeam() {
 
   const { mutateAsync: createReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true);
       const res = await createReceiveSizeBeamRequest({
         data,
         params: { company_id: companyId },
@@ -151,7 +151,6 @@ function AddReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
-      setLoading(false);
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -163,7 +162,6 @@ function AddReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
-      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -188,6 +186,7 @@ function AddReceiveSizeBeam() {
       }
     });
     requestData["beam_details"] = beamData;
+    requestData["is_beam_stock_added"] = is_beam_stock_added ; 
 
     await createReceiveSizeBeam(requestData);
   }
@@ -297,9 +296,20 @@ function AddReceiveSizeBeam() {
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <GoBackButton />
-        <h3 className="m-0 text-primary">Add Receive size beam</h3>
+        <Flex style={{width: "100%"}}>
+          <h3 className="m-0 text-primary">Add Receive size beam</h3>
+          <div style={{marginLeft: "auto", marginTop: "auto", marginBottom: "auto"}}>
+            <Checkbox
+              style={{color: "red"}}
+              value={is_beam_stock_added}
+              onChange={set_is_beam_stock_added}
+            >Do you want to add this beam to Beam stock ?</Checkbox>
+          </div>
+        </Flex>
+
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+
         <Flex className="mt-3" gap={20}>
           <Flex>
             <div className="font-weight-bold">Total meter: {totalMeter}</div>

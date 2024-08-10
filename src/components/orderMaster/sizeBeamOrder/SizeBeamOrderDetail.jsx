@@ -265,12 +265,18 @@ function SizeBeamOrderDetail({ control, errors }) {
           <Button
             htmlType="button"
             onClick={() => {
-              append(
-                Array.from({ length: noOfAdd }, () => ({
-                  ...fields[fields.length - 1],
-                  id: undefined,
-                }))
-              );
+
+              let lastBeamInfo = fields[fields?.length - 1] ; 
+              let temp = []
+
+              let data = Array.from({ length: noOfAdd }).map((element) => {
+                temp.push({
+                  ...lastBeamInfo, 
+                  id: undefined
+                })
+              })
+
+              append(temp);
               setNoOfAdd(1);
             }}
           >
