@@ -92,7 +92,7 @@ function UpdateReceiveSizeBeam() {
     enabled: Boolean(companyId),
   });
 
-  // InHouse Quality dropdown list 
+  // InHouse Quality dropdown list
   const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
     useQuery({
       queryKey: [
@@ -162,7 +162,7 @@ function UpdateReceiveSizeBeam() {
     //   return { ...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id }
     // })
 
-    // let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ; 
+    // let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ;
     // if (tempRemaingMeter <0 ){
     //   tempRemaingMeter = 0 ;
     // }
@@ -204,7 +204,7 @@ function UpdateReceiveSizeBeam() {
     reset,
     watch,
     setValue,
-    getValues
+    getValues,
   } = useForm({
     defaultValues: {
       size_beam_order_id: null,
@@ -222,7 +222,7 @@ function UpdateReceiveSizeBeam() {
   const { size_beam_order_id, beam_type } = watch();
   const [totalOrderBeam, setTotalOrderBeam] = useState(0);
 
-  // Get particular size beam order information 
+  // Get particular size beam order information
   const { data: sizeBeamOrderListRes, isLoading: isLoadingSizeBeamOrderList } =
     useQuery({
       queryKey: [
@@ -245,7 +245,7 @@ function UpdateReceiveSizeBeam() {
       enabled: Boolean(companyId && size_beam_order_id),
     });
 
-  // Get last beam number information 
+  // Get last beam number information
   const pasarela_primary_beam = "PBN";
   const non_pasarela_primary_beam = "PBN";
   const secondary_beam = "SPBN";
@@ -290,13 +290,12 @@ function UpdateReceiveSizeBeam() {
 
         lastNumber = parseInt(beam_part[1]);
         setAppendLastBeamNumber(lastNumber);
-      };
+      }
     }
-  }, [beam_type])
+  }, [beam_type]);
 
   useEffect(() => {
     if (receiveSizeBeamDetails) {
-
       let temp = [];
 
       receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
@@ -310,7 +309,7 @@ function UpdateReceiveSizeBeam() {
           taka: element?.taka,
           net_weight: element?.net_weight,
           tpm: element?.tpm,
-          supplier_beam_no: element?.supplier_beam_no
+          supplier_beam_no: element?.supplier_beam_no,
         };
         temp.push(value);
       });
@@ -322,14 +321,17 @@ function UpdateReceiveSizeBeam() {
         challan_no: receiveSizeBeamDetails?.challan_no,
         beam_type: receiveSizeBeamDetails?.beam_type,
         beam_details: temp,
-        supplier_name: receiveSizeBeamDetails?.supplier?.supplier?.supplier_name,
-        supplier_company: receiveSizeBeamDetails?.supplier?.supplier?.supplier_company
+        supplier_name:
+          receiveSizeBeamDetails?.supplier?.supplier?.supplier_name,
+        supplier_company:
+          receiveSizeBeamDetails?.supplier?.supplier?.supplier_company,
       });
 
       setRemaingMeter(receiveSizeBeamDetails?.remaining_meter);
       setTotalMeter(receiveSizeBeamDetails?.total_meter);
-    }},[]) ; 
-    
+    }
+  }, []);
+
   const current = watch();
 
   useEffect(() => {
@@ -393,7 +395,9 @@ function UpdateReceiveSizeBeam() {
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Flex className="mt-3" gap={20}>
           <Flex>
-            <div className="font-weight-bold">Total meter: {receiveSizeBeamDetails?.total_meter}</div>
+            <div className="font-weight-bold">
+              Total meter: {receiveSizeBeamDetails?.total_meter}
+            </div>
           </Flex>
           <Flex>
             <div>Pending meter: {pendingMeter}</div>
@@ -411,9 +415,7 @@ function UpdateReceiveSizeBeam() {
               label="Order No."
               name="order_no"
               validateStatus={errors.order_no ? "error" : ""}
-              help={
-                errors.order_no && errors.order_no.message
-              }
+              help={errors.order_no && errors.order_no.message}
               required={true}
               wrapperCol={{ sm: 24 }}
             >
@@ -511,7 +513,6 @@ function UpdateReceiveSizeBeam() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                    disabled
                   />
                 )}
               />
@@ -671,25 +672,27 @@ function UpdateReceiveSizeBeam() {
           </Col>
         </Row>
 
-        {!isLoadingSizeBeamOrderList && appendBeamType !== null && appendLastBeamNumber !== null && (
-          <UpdateSizeBeamDetail
-            control={control}
-            errors={errors}
-            appendBeamType={appendBeamType}
-            appendLastBeamNumber={appendLastBeamNumber}
-            setAppendLastBeamNumber={setAppendLastBeamNumber}
-            sizeBeamOrderListRes={totalOrderBeam}
-            totalMeter={totalMeter}
-            setPendingMeter={setPendingMeter}
-            getValues={getValues}
-            setValue={setValue}
-            // sizeBeamOrderListRes={sizeBeamOrderListRes}
-            orderData={receiveSizeBeamDetails?.size_beam_order || {}}
-            size_beam_order_id={current?.size_beam_order_id}
-            deletedRecords={deletedRecords}
-            setDeletedRecords={setDeletedRecords}
-          />
-        )}
+        {!isLoadingSizeBeamOrderList &&
+          appendBeamType !== null &&
+          appendLastBeamNumber !== null && (
+            <UpdateSizeBeamDetail
+              control={control}
+              errors={errors}
+              appendBeamType={appendBeamType}
+              appendLastBeamNumber={appendLastBeamNumber}
+              setAppendLastBeamNumber={setAppendLastBeamNumber}
+              sizeBeamOrderListRes={totalOrderBeam}
+              totalMeter={totalMeter}
+              setPendingMeter={setPendingMeter}
+              getValues={getValues}
+              setValue={setValue}
+              // sizeBeamOrderListRes={sizeBeamOrderListRes}
+              orderData={receiveSizeBeamDetails?.size_beam_order || {}}
+              size_beam_order_id={current?.size_beam_order_id}
+              deletedRecords={deletedRecords}
+              setDeletedRecords={setDeletedRecords}
+            />
+          )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

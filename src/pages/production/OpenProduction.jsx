@@ -3,7 +3,6 @@ import {
   Checkbox,
   Col,
   Flex,
-  Radio,
   Row,
   Form,
   Select,
@@ -12,7 +11,6 @@ import {
   Typography,
   message,
 } from "antd";
-import { PlusCircleOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +29,7 @@ import AddOpeningProductionTable from "../../components/production/AddOpeningPro
 import { useNavigate } from "react-router-dom";
 import { getMyOrderListRequest } from "../../api/requests/orderMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
+import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
 
 const OpenProduction = () => {
   const [form] = Form.useForm();
@@ -122,7 +121,7 @@ const OpenProduction = () => {
   } = useForm({
     defaultValues: {
       is_create_challan: true,
-      year_type: "current",
+      // year_type: "current",
       challan_no: "",
       challan_date: dayjs(),
       gst_state: "",
@@ -369,8 +368,10 @@ const OpenProduction = () => {
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-5">
-            <h3 className="m-0 text-primary">Opening Production</h3>
-            <Button onClick={""} icon={<PlusCircleOutlined />} />
+            <Button onClick={() => navigate(-1)}>
+              <ArrowLeftOutlined />
+            </Button>
+            <h3 className="m-0 text-primary">Add New Production</h3>
           </div>
           <div className="flex items-center gap-5">
             <Controller
@@ -390,7 +391,7 @@ const OpenProduction = () => {
               )}
             />
 
-            <Controller
+            {/* <Controller
               control={control}
               name="year_type"
               render={({ field }) => (
@@ -401,7 +402,7 @@ const OpenProduction = () => {
                   </Flex>
                 </Radio.Group>
               )}
-            />
+            /> */}
           </div>
         </div>
 
@@ -524,12 +525,7 @@ const OpenProduction = () => {
               </Col>
             </Row>
 
-            <Row
-              className="w-100"
-              justify={"flex-start"}
-              // style={{ gap: "12px" }}
-              gutter={12}
-            >
+            <Row className="w-100" justify={"flex-start"} gutter={12}>
               <Col span={6}>
                 <Form.Item
                   label="Order no"
@@ -539,28 +535,36 @@ const OpenProduction = () => {
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
-                  <Controller
-                    control={control}
-                    name="order_id"
-                    rules={{ required: "Order is required." }}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        loading={isLoadingGrayOrderList}
-                        placeholder="Select Order"
-                        options={grayOrderListRes?.row?.map((order) => ({
-                          label: order.order_no,
-                          value: order.id,
-                        }))}
-                        style={{
-                          textTransform: "capitalize",
-                        }}
-                        dropdownStyle={{
-                          textTransform: "capitalize",
-                        }}
-                      />
-                    )}
-                  />
+                  <Flex gap={5}>
+                    <Controller
+                      control={control}
+                      name="order_id"
+                      rules={{ required: "Order is required." }}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          loading={isLoadingGrayOrderList}
+                          placeholder="Select Order"
+                          options={grayOrderListRes?.row?.map((order) => ({
+                            label: order.order_no,
+                            value: order.id,
+                          }))}
+                          style={{
+                            textTransform: "capitalize",
+                          }}
+                          dropdownStyle={{
+                            textTransform: "capitalize",
+                          }}
+                        />
+                      )}
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => navigate("/order-master/my-orders")}
+                    >
+                      <EyeOutlined />
+                    </Button>
+                  </Flex>
                 </Form.Item>
               </Col>
               <Col span={6}>

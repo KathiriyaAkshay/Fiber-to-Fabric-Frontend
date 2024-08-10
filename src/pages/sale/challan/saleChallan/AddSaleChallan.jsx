@@ -56,6 +56,8 @@ const AddSaleChallan = () => {
   const queryClient = useQueryClient();
   // const [fieldArray, setFieldArray] = useState([0]);
 
+  const [saleChallanTypes, setSaleChallanTypes] = useState([]);
+
   const [totalTaka, setTotalTaka] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
@@ -128,7 +130,7 @@ const AddSaleChallan = () => {
       total_meter: +totalMeter,
       total_weight: +totalWeight,
 
-      sale_challan_types: data.type.map((type) => {
+      sale_challan_types: saleChallanTypes.map((type) => {
         return {
           sale_challan_type: type,
         };
@@ -187,8 +189,7 @@ const AddSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id, type } =
-    watch();
+  const { supplier_name, gray_order_id, supplier_id, type } = watch();
 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
@@ -303,13 +304,13 @@ const AddSaleChallan = () => {
   }, [gray_order_id, grayOrderListRes, setValue]);
 
   useEffect(() => {
-    if (company_id) {
+    if (companyId) {
       const selectedCompany = companyListRes?.rows?.find(
-        ({ id }) => id === company_id
+        ({ id }) => id === companyId
       );
       setValue("gst_in_1", selectedCompany.gst_no);
     }
-  }, [companyListRes, company_id, setValue]);
+  }, [companyListRes, companyId, setValue]);
 
   useEffect(() => {
     if (supplier_id) {
@@ -369,7 +370,7 @@ const AddSaleChallan = () => {
           paddingTop: "12px",
         }}
       >
-        <Col span={6}>
+        {/* <Col span={6}>
           <Form.Item
             label="Company"
             name="company_id"
@@ -400,7 +401,7 @@ const AddSaleChallan = () => {
               )}
             />
           </Form.Item>
-        </Col>
+        </Col> */}
 
         <Col span={6}>
           <Form.Item
@@ -814,14 +815,7 @@ const AddSaleChallan = () => {
       </Row>
 
       {gray_order_id ? (
-        <Row
-          gutter={18}
-          style={
-            {
-              // padding: "12px",
-            }
-          }
-        >
+        <Row gutter={18}>
           <Col span={6}></Col>
 
           <Col span={6} style={{ textAlign: "end" }}>
@@ -928,6 +922,7 @@ const AddSaleChallan = () => {
                 return (
                   <Checkbox.Group
                     {...field}
+                    disabled={activeField > 1}
                     options={[
                       { label: "Taka(In House)", value: "taka(inhouse)" },
                       { label: "Purchase/Trading", value: "purchase/trading" },
@@ -970,22 +965,23 @@ const AddSaleChallan = () => {
         setPendingMeter={setPendingMeter}
         setPendingTaka={setPendingTaka}
         setPendingWeight={setPendingWeight}
+        setSaleChallanTypes={setSaleChallanTypes}
       />
 
       <Row style={{ marginTop: "20px" }} gutter={20}>
         <Col span={6}>
           <Form.Item label="Total Taka">
-            <Input value={totalTaka} disabled />
+            <Input value={totalTaka.toFixed(2)} disabled />
           </Form.Item>
         </Col>
         <Col span={6}>
           <Form.Item label="Total Meter">
-            <Input value={totalMeter} disabled />
+            <Input value={totalMeter.toFixed(2)} disabled />
           </Form.Item>
         </Col>
         <Col span={6}>
           <Form.Item label="Total Weight">
-            <Input value={totalWeight} disabled />
+            <Input value={totalWeight.toFixed(2)} disabled />
           </Form.Item>
         </Col>
       </Row>
