@@ -204,16 +204,20 @@ const BeamSentList = () => {
     },
     {
       title: "Total Meter",
-      render: (detail) => {
+      render: (text, detail) => {
         const { job_beam_sent_details } = detail;
+        console.log("Job beam sent details");
+        console.log(job_beam_sent_details);
+        
         let totalMeter = 0;
         job_beam_sent_details?.map((item) => {
+          
           const obj =
             item?.loaded_beam?.non_pasarela_beam_detail ||
             item?.loaded_beam?.recieve_size_beam_detail ||
             item?.loaded_beam?.job_beam_receive_detail;
-
-          totalMeter += obj ? obj?.meters : 0;
+            
+          totalMeter += obj?.meters !== undefined ? obj?.meters : obj?.meter != undefined?obj.meter:0;
         });
 
         return totalMeter;
@@ -229,11 +233,10 @@ const BeamSentList = () => {
             item?.loaded_beam?.non_pasarela_beam_detail ||
             item?.loaded_beam?.recieve_size_beam_detail ||
             item?.loaded_beam?.job_beam_receive_detail;
-
           totalWeight += obj ? obj?.net_weight : 0;
         });
 
-        return totalWeight;
+        return totalWeight || 0;
       },
     },
     {
@@ -466,10 +469,6 @@ const BeamSentViewDetailModal = ({
   details = [],
   company
 }) => {
-  console.log("Details information");
-  console.log(details);
-  
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
