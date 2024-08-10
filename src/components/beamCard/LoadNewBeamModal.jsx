@@ -168,7 +168,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
     const tar = +getValues(`tar_${index}`);
 
     if (!quality_id || !taka || !meter || !pano || !tar) {
-      message.error("All fields are blank.");
+      message.error("Please, Fill all required details");
       return;
     }
 
@@ -194,6 +194,8 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
   const saveHandler = () => {
     if (machine_name && machineNoOption.length) {
       const BeamDetails = [];
+      let hasError = 0
+
       machineNoOption.forEach((item, index) => {
         const beamNo = `NBN-${lastBeamNo + (index + 1)}`;
         const quality_id = getValues(`quality_id_${index}`);
@@ -201,6 +203,9 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
         const meters = +getValues(`meter_${index}`);
         const pano = +getValues(`pano_${index}`);
         const tar = +getValues(`tar_${index}`);
+        const fields = [quality_id, taka, meters, pano, tar];
+        const areAllFieldsInvalid = fields.every(field => field === undefined || isNaN(field));
+        
         if (quality_id && taka && meters && pano && tar) {
           BeamDetails.push({
             machine_no: item,
@@ -211,14 +216,19 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             pano,
             ends_or_tars: tar,
           });
+        } else if (!areAllFieldsInvalid) {
+          message.error("Please, Fill all required details");
+          hasError = 1 ; 
         }
       });
 
-      const finalPayload = {
-        machine_name,
-        BeamDetails,
-      };
-      AddNBNBeamLoad(finalPayload);
+      if (hasError == 0){
+        const finalPayload = {
+          machine_name,
+          BeamDetails,
+        };
+        AddNBNBeamLoad(finalPayload);
+      }
     }
   };
 
@@ -326,7 +336,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
                   <td width={120}style={{textAlign: "center"}}>
                     <Typography.Text style={{fontWeight: 600}}>{beamNo}</Typography.Text>
                   </td>
-                  <td width={270}>
+                  <td width={200}>
                     <Controller
                       control={control}
                       name={`quality_id_${index}`}
@@ -335,6 +345,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
                           <Select
                             {...field}
                             name={`quality_id_${index}`}
+                            showSearch
                             placeholder="Select Quality"
                             loading={dropDownQualityLoading}
                             style={{ width: "100%" }}
