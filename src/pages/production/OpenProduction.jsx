@@ -366,7 +366,7 @@ const OpenProduction = () => {
       style={{ marginTop: "1rem" }}
       onFinish={handleSubmit(onSubmit)}
     >
-      <div className="flex flex-col gap-2 p-4">
+      <div  className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-5">
             <h3 className="m-0 text-primary">Opening Production</h3>
