@@ -72,13 +72,15 @@ const BeamPipeChallanModel = ({ details }) => {
 
     const pageStyle = `
         @media print {
-             .print-instructions {
+            .print-instructions {
                 display: none;
             }
             .printable-content {
                 padding: 20px; /* Add padding for print */
                 width: 100%;
+                box-sizing: border-box; /* Include padding in width calculation */
             }
+        }
     `;
 
     useEffect(() => {
@@ -148,225 +150,225 @@ const BeamPipeChallanModel = ({ details }) => {
                     }
                 }}
             >
-                <Flex className="flex-col border border-solid" ref={componentRef}>
-                    <Row className="p-2 border-0 border-b border-solid">
-                        <Col
-                            span={24}
-                            className="flex items-center justify-center border"
-                        >
-                            <div style={{ fontSize: "1.5rem" }} className="font-semibold text-center">
-                                Beam Pipe Challan
-                            </div>
-                        </Col>
-                    </Row>
+                <div ref={componentRef}>
+                    <Flex className="flex-col border border-solid" >
+                        <Row className="p-2 border-0 border-b border-solid">
+                            <Col
+                                span={24}
+                                className="flex items-center justify-center border"
+                            >
+                                <div style={{ fontSize: "1.5rem" }} className="font-semibold text-center">
+                                    Beam Pipe Challan
+                                </div>
+                            </Col>
+                        </Row>
 
-                    <Row gutter={16} className="pr-0" >
-                        <Col span={12} style={{ borderRight: "1px solid", paddingRight: "0px !important" }}>
-                            <div className="pl-4 pt-4">
-                                <Typography.Text strong>To,</Typography.Text>
-                                <br />
-                                <Typography.Text>{details?.supplier?.supplier_name}</Typography.Text>
-                                <br />
-                                <Typography.Text>{details?.supplier?.user?.address}</Typography.Text>
-                            </div>
+                        <Row gutter={16} className="pr-0" >
+                            <Col span={12} style={{ borderRight: "1px solid", paddingRight: "0px !important" }}>
+                                <div className="pl-4 pt-4">
+                                    <Typography.Text strong>To,</Typography.Text>
+                                    <br />
+                                    <Typography.Text>{details?.supplier?.supplier_name}</Typography.Text>
+                                    <br />
+                                    <Typography.Text>{details?.supplier?.user?.address}</Typography.Text>
+                                </div>
 
-                            <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>
-                                <Flex>
-                                    <div><strong>DESCRIPTION OF GOODS : </strong></div>
-                                    <div style={{ marginLeft: 6 }}>
-                                        {`${details?.yarn_stock_company?.yarn_count}C/${details?.yarn_stock_company?.filament}F (${details?.yarn_stock_company?.yarn_type}(${details?.yarn_stock_company?.yarn_Sub_type}) - ${details?.yarn_stock_company?.yarn_color})`}
-                                    </div>
-                                </Flex>
-                            </div>
-                        </Col>
-                        <Col span={12} style={{ paddingLeft: "0px !important" }}>
-                            <div className="pl-4 pt-4 pr-4" style={{ justifyContent: "flex-end", textAlign: "right" }}>
-                                <Typography.Text strong>Dated : </Typography.Text>{moment(details?.order_date).format("DD-MM-YYYY")}<br></br>
-                                <Typography.Text strong>Order No :- </Typography.Text>{details?.order_no}
-                            </div>
-                            <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>
-                                <Typography.Text strong>From,</Typography.Text>
-                                <br />
-                                <Typography.Text>{companyInfo?.company_name}</Typography.Text>
-                                <br />
-                                <Typography.Text>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</Typography.Text>
-                            </div>
-                        </Col>
-                    </Row>
+                                <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>
+                                    <Flex>
+                                        <div><strong>DESCRIPTION OF GOODS : </strong></div>
+                                        <div style={{ marginLeft: 6 }}>
+                                            {`${details?.yarn_stock_company?.yarn_count}C/${details?.yarn_stock_company?.filament}F (${details?.yarn_stock_company?.yarn_type}(${details?.yarn_stock_company?.yarn_Sub_type}) - ${details?.yarn_stock_company?.yarn_color})`}
+                                        </div>
+                                    </Flex>
+                                </div>
+                            </Col>
+                            <Col span={12} style={{ paddingLeft: "0px !important" }}>
+                                <div className="pl-4 pt-4 pr-4" style={{ justifyContent: "flex-end", textAlign: "right" }}>
+                                    <Typography.Text strong>Dated : </Typography.Text>{moment(details?.order_date).format("DD-MM-YYYY")}<br></br>
+                                    <Typography.Text strong>Order No :- </Typography.Text>{details?.order_no}
+                                </div>
+                                <div className="pt-4 pl-4 pb-4" style={{ marginTop: 20, borderTop: "1px solid" }}>
+                                    <Typography.Text strong>From,</Typography.Text>
+                                    <br />
+                                    <Typography.Text>{companyInfo?.company_name}</Typography.Text>
+                                    <br />
+                                    <Typography.Text>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</Typography.Text>
+                                </div>
+                            </Col>
+                        </Row>
 
-                    <Row className=" p-0 border-0 border-b border-solid !m-0" style={{ borderTop: "1px solid" }}>
-                        <Col
-                            span={2}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>SRL</strong>
-                        </Col>
-                        <Col
-                            span={4}
-                            className="p-2 font-medium border-0 border-r border-solid text-center" 
-                        >
-                            <strong>ENDS/TAAR</strong>
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>TPM</strong>
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>PANO</strong>
-                        </Col>
-                        <Col
-                            span={5}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>GRADE</strong>
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>MTR</strong>
-                        </Col>
-                        <Col span={4} className="p-2 font-medium text-center">
-                            <strong>REMARKS</strong>
-                        </Col>
-                    </Row>
-
-                    {details?.size_beam_order_details?.map((element, index) => (
-                        <Row className=" p-0 border-0 border-solid !m-0" >
+                        <Row className=" p-0 border-0 border-b border-solid !m-0" style={{ borderTop: "1px solid" }}>
                             <Col
                                 span={2}
                                 className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
-                                {index + 1}
+                                <strong>SRL</strong>
                             </Col>
                             <Col
                                 span={4}
-                                className="p-2 font-medium border-0 border-r border-solid text-center"
+                                className="p-2 font-medium border-0 border-r border-solid text-center" 
                             >
-                                {element?.ends_or_tars}
+                                <strong>ENDS/TAAR</strong>
                             </Col>
                             <Col
                                 span={3}
                                 className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
-                                {element?.tpm}
+                                <strong>TPM</strong>
                             </Col>
                             <Col
                                 span={3}
                                 className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
-                                {element?.pano}
+                                <strong>PANO</strong>
                             </Col>
                             <Col
                                 span={5}
                                 className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
-                                {element?.grade}
+                                <strong>GRADE</strong>
                             </Col>
                             <Col
                                 span={3}
                                 className="p-2 font-medium border-0 border-r border-solid text-center"
                             >
-                                {element?.meters}
+                                <strong>MTR</strong>
                             </Col>
                             <Col span={4} className="p-2 font-medium text-center">
-                               {element?.remark}
+                                <strong>REMARKS</strong>
                             </Col>
                         </Row>
 
-                    ))}
+                        {details?.size_beam_order_details?.map((element, index) => (
+                            <Row className=" p-0 border-0 border-solid !m-0" >
+                                <Col
+                                    span={2}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {index + 1}
+                                </Col>
+                                <Col
+                                    span={4}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {element?.ends_or_tars}
+                                </Col>
+                                <Col
+                                    span={3}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {element?.tpm}
+                                </Col>
+                                <Col
+                                    span={3}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {element?.pano}
+                                </Col>
+                                <Col
+                                    span={5}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {element?.grade}
+                                </Col>
+                                <Col
+                                    span={3}
+                                    className="p-2 font-medium border-0 border-r border-solid text-center"
+                                >
+                                    {element?.meters}
+                                </Col>
+                                <Col span={4} className="p-2 font-medium text-center">
+                                {element?.remark}
+                                </Col>
+                            </Row>
 
+                        ))}
 
-                    <Row className=" p-0 border-0 border-b border-solid !m-0" style={{ height: 200 }} >
-                        <Col
-                            span={2}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={4}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={5}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col span={4} className="p-2 font-medium">
-                        </Col>
-                    </Row>
+                        <Row className=" p-0 border-0 border-b border-solid !m-0" style={{ height: 200 }} >
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={5}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                            </Col>
+                        </Row>
 
-                    <Row className=" p-0 border-0 border-b border-solid !m-0">
-                        <Col
-                            span={2}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>Total</strong>
-                        </Col>
-                        <Col
-                            span={4}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={5}
-                            className="p-2 font-medium border-0 border-r border-solid"
-                        >
-                        </Col>
-                        <Col
-                            span={3}
-                            className="p-2 font-medium border-0 border-r border-solid text-center"
-                        >
-                            <strong>{totalMeter}</strong>
-                        </Col>
-                        <Col span={4} className="p-2 font-medium">
-                        </Col>
-                    </Row>
+                        <Row className=" p-0 border-0 border-b border-solid !m-0">
+                            <Col
+                                span={2}
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
+                            >
+                                <strong>Total</strong>
+                            </Col>
+                            <Col
+                                span={4}
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={5}
+                                className="p-2 font-medium border-0 border-r border-solid"
+                            >
+                            </Col>
+                            <Col
+                                span={3}
+                                className="p-2 font-medium border-0 border-r border-solid text-center"
+                            >
+                                <strong>{totalMeter}</strong>
+                            </Col>
+                            <Col span={4} className="p-2 font-medium">
+                            </Col>
+                        </Row>
 
-                    <Row gutter={16} className="mt-4 p-4" >
-                        <Col span={12}>
-                            <Typography.Text>Receiver Sign</Typography.Text>
-                        </Col>
-                        <Col span={12} style={{textAlign: "right" }}>
-                            <Typography.Text>For, {companyInfo?.company_name}</Typography.Text>
-                            <br /><br /><br /><br /><br /><br /><br /><br />
-                            <Typography.Text>Checked by Authorised Signatory</Typography.Text>
-                        </Col>
-                    </Row>
-                    
+                        <Row gutter={16} className="mt-4 p-4" >
+                            <Col span={12}>
+                                <Typography.Text>Receiver Sign</Typography.Text>
+                            </Col>
+                            <Col span={12} style={{textAlign: "right" }}>
+                                <Typography.Text>For, {companyInfo?.company_name}</Typography.Text>
+                                <br /><br /><br /><br /><br /><br /><br /><br />
+                                <Typography.Text>Checked by Authorised Signatory</Typography.Text>
+                            </Col>
+                        </Row>
 
-                </Flex>
+                    </Flex>
+                </div>
                 
             </Modal>
         </>

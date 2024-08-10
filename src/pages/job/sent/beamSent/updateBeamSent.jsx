@@ -261,101 +261,6 @@ const UpdateBeamSent = () => {
     }
   }, [dropDownQualityListRes, quality_id]);
 
-  //   useQuery({
-  //     queryKey: [
-  //       "pasarela",
-  //       "beam",
-  //       "list",
-  //       {
-  //         company_id: companyId,
-  //         machine_name,
-  //         quality_id,
-  //         beam_type,
-  //         quality_group,
-  //       },
-  //     ],
-  //     queryFn: async () => {
-  //       if (machine_name && quality_id && beam_type === "pasarela(primary)") {
-  //         setBeamLoadIds([]);
-  //         setBeamTypeList();
-  //         resetField("total_weight");
-  //         resetField("total_meter");
-  //         const res = await getPasarelaBeamListRequest({
-  //           params: {
-  //             company_id: companyId,
-  //             machine_name,
-  //             quality_id,
-  //             is_job: quality_group === "job" ? true : false,
-  //           },
-  //         });
-  //         if (res.data?.data?.rows.length) {
-  //           setBeamTypeList(
-  //             res.data?.data?.rows.map((item) => {
-  //               const obj =
-  //                 item.non_pasarela_beam_detail ||
-  //                 item.recieve_size_beam_detail ||
-  //                 item.job_beam_receive_detail;
-  //               return {
-  //                 beam_load_id: item.id,
-  //                 beam_no: item.beam_no,
-  //                 ends_or_tars: obj.ends_or_tars,
-  //                 pano: obj.pano,
-  //                 taka: obj.taka,
-  //                 meters: obj.meters,
-  //                 weight: obj.net_weight,
-  //               };
-  //             })
-  //           );
-  //         } else {
-  //           setBeamTypeList([]);
-  //         }
-  //         // return res.data?.data;
-  //       }
-  //     },
-  //     enabled: Boolean(companyId),
-  //     initialData: { rows: [] },
-  //   });
-
-  //   useQuery({
-  //     queryKey: [
-  //       "non-pasarela",
-  //       "beam",
-  //       "list",
-  //       {
-  //         company_id: companyId,
-  //         machine_name,
-  //         quality_id,
-  //         beam_type,
-  //         quality_group,
-  //       },
-  //     ],
-  //     queryFn: async () => {
-  //       if (
-  //         machine_name &&
-  //         quality_id &&
-  // //   !beam_type &&
-  //         beam_type !== "pasarela(primary)"
-  //       ) {
-  //         setBeamLoadIds([]);
-  //         setBeamTypeList();
-  //         resetField("total_weight");
-  //         resetField("total_meter");
-  //         const params = {
-  //           company_id: companyId,
-  //           machine_name,
-  //           quality_id,
-  //           is_job: quality_group === "job" ? true : false,
-  //         };
-  //         if (beam_type === "non-pasarela(secondary)") {
-  //           params.is_secondary = true;
-  //         }
-  //         const res = await getNonPasarelaBeamListRequest({ params });
-  //         setBeamTypeList(res.data?.data?.rows);
-  //       }
-  //     },
-  //     enabled: Boolean(companyId),
-  //     initialData: { rows: [] },
-  //   });
 
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
@@ -434,19 +339,24 @@ const UpdateBeamSent = () => {
         return job_beam_sent_details.map(({ beam_load_id }) => beam_load_id);
       });
 
+      let temp_total_meter = 0 ; 
+      let temp_total_weight = 0 ; 
+
       setBeamTypeList(
         job_beam_sent_details?.map((item) => {
           const obj =
             item.loaded_beam.non_pasarela_beam_detail ||
             item.loaded_beam.recieve_size_beam_detail ||
             item.loaded_beam.job_beam_receive_detail;
+          temp_total_meter = temp_total_meter + Number(obj.meters || obj.meter) ; 
+          temp_total_weight = temp_total_weight + Number(obj?.net_weight || 0) ; 
           return {
             beam_load_id: item.beam_load_id,
             beam_no: obj.beam_no,
-            ends_or_tars: obj.ends_or_tars,
+            ends_or_tars: obj.ends_or_tars || obj?.tars,
             pano: obj.pano,
             taka: obj.taka,
-            meters: obj.meters,
+            meters: obj.meters || obj.meter,
             weight: obj.net_weight,
           };
         })
@@ -464,9 +374,8 @@ const UpdateBeamSent = () => {
         quality_id,
         power_cost_per_meter,
         delivery_charge,
-
-        total_meter: 0,
-        total_weight: 0,
+        total_meter: temp_total_meter,
+        total_weight: temp_total_weight,
       });
     }
   }, [beamSentDetails, reset]);

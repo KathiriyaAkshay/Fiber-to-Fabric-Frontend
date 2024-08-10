@@ -25,8 +25,6 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
   getBeamCardListRequest,
-  // getNonPasarelaBeamListRequest,
-  // getPasarelaBeamListRequest,
 } from "../../../../api/requests/beamCard";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
@@ -35,6 +33,8 @@ import {
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import { addBeamSentRequest } from "../../../../api/requests/job/sent/beamSent";
+import { disabledFutureDate } from "../../../../utils/date";
+
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -92,6 +92,8 @@ const AddBeamSent = () => {
   function goBack() {
     navigate(-1);
   }
+
+  // Beam sent handler =============================================
 
   const { mutateAsync: addBeamSent, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -176,6 +178,7 @@ const AddBeamSent = () => {
 
   // ------------------------------------------------------------------------------------------
 
+  // Vehicle user dropdown list request
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -191,6 +194,7 @@ const AddBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
+  // Supplier user dropdown list request
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -223,6 +227,7 @@ const AddBeamSent = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
+  // Get Machine dropdown list request
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -235,6 +240,7 @@ const AddBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
+  // Get Quality dropdown list request
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -313,7 +319,7 @@ const AddBeamSent = () => {
               return {
                 beam_load_id: item.id,
                 beam_no: obj.beam_no,
-                ends_or_tars: obj.ends_or_tars,
+                ends_or_tars: obj.ends_or_tars || obj?.tars,
                 pano: obj.pano,
                 taka: obj.taka,
                 meters: obj.meter,
@@ -330,47 +336,6 @@ const AddBeamSent = () => {
     enabled: Boolean(companyId),
     initialData: { rows: [] },
   });
-
-  // useQuery({
-  //   queryKey: [
-  //     "non-pasarela",
-  //     "beam",
-  //     "list",
-  //     {
-  //       company_id: companyId,
-  //       machine_name,
-  //       quality_id,
-  //       beam_type,
-  //       quality_group,
-  //     },
-  //   ],
-  //   queryFn: async () => {
-  //     if (
-  //       machine_name &&
-  //       quality_id &&
-  //       !beam_type &&
-  //       beam_type !== "pasarela(primary)"
-  //     ) {
-  //       setBeamLoadIds([]);
-  //       setBeamTypeList();
-  //       resetField("total_weight");
-  //       resetField("total_meter");
-  //       const params = {
-  //         company_id: companyId,
-  //         machine_name,
-  //         quality_id,
-  //         is_job: quality_group === "job" ? true : false,
-  //       };
-  //       if (beam_type === "non-pasarela(secondary)") {
-  //         params.is_secondary = true;
-  //       }
-  //       const res = await getNonPasarelaBeamListRequest({ params });
-  //       setBeamTypeList(res.data?.data?.rows);
-  //     }
-  //   },
-  //   enabled: Boolean(companyId),
-  //   initialData: { rows: [] },
-  // });
 
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
@@ -509,7 +474,7 @@ const AddBeamSent = () => {
                 control={control}
                 name="challan_date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
                 )}
               />
             </Form.Item>
@@ -773,6 +738,7 @@ const AddBeamSent = () => {
                     taka,
                     meters,
                     weight,
+                    tars
                   } = item;
 
                   return (
@@ -793,7 +759,7 @@ const AddBeamSent = () => {
                       <td width={150} style={{ textAlign: "center" }}>
                         {beam_no}
                       </td>
-                      <td style={{ textAlign: "center" }}>{ends_or_tars}</td>
+                      <td style={{ textAlign: "center" }}>{ends_or_tars || tars}</td>
                       <td style={{ textAlign: "center" }}>{pano}</td>
                       <td style={{ textAlign: "center" }}>{taka}</td>
                       <td style={{ textAlign: "center" }}>{meters}</td>

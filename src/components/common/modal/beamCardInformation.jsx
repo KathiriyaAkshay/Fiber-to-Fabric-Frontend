@@ -108,17 +108,6 @@ const BeamCardInformationModel = ({ data }) => {
             );
           })}
         </div>
-        <div style={{ marginLeft: 20 }}>
-          <p>
-            <strong>{element?.beam_no}</strong>
-          </p>
-          <p>
-            Taka: <strong>{element?.taka}</strong>
-          </p>
-          <p>
-            Meter: <strong>{element?.meters}</strong>
-          </p>
-        </div>
       </Modal>
     </>
   );

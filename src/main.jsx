@@ -139,6 +139,7 @@ import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChalla
 import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 import BeamSentReport from "./pages/job/reports/beamSentReport";
 import UpdatePurchaseTaka from "./pages/purchase/purchaseTaka/updatePurchaseTaka";
+import OpeningProductionStock from "./pages/production/OpeningProductionStock";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -335,6 +336,10 @@ const router = createBrowserRouter([
             path: "monthly-production-report",
             element: <MonthlyProductionReport />,
           },
+          {
+            path: "opening-production-stock",
+            element: <OpeningProductionStock/>
+          }, 
           {
             path: "folding-production",
             element: (

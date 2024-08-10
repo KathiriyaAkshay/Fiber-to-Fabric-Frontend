@@ -26,8 +26,6 @@ export function currentMonthStartDateEndDate() {
 
     // Start date is the first day of the current month
     const startDate = new Date(year, month, 1);
-    console.log(startDate);
-
     // End date is the last day of the current month
     const endDate = new Date(year, month + 1, 0); // The `0` will give the last day of the previous month
 

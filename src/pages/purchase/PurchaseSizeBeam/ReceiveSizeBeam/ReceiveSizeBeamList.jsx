@@ -295,7 +295,7 @@ function ReceiveSizeBeamList() {
                   label: "Supplier Address	",
                   value: details?.supplier?.address,
                 },
-                { label: "Supplier GST	", value: details?.gst_no },
+                { label: "Supplier GST	", value: details?.supplier?.gst_no },
                 {
                   label: "Supplier Company",
                   value: details?.supplier?.supplier?.supplier_company,
@@ -367,7 +367,6 @@ function ReceiveSizeBeamList() {
         }}
         summary={() => {
           if (receiveSizeBeamListRes?.rows?.length == 0) return;
-          const totalTaka = receiveSizeBeamListRes?.totalTaka;
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>

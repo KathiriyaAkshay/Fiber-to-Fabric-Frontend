@@ -10,6 +10,7 @@ import {
   Select,
   TimePicker,
   message,
+  Checkbox,
 } from "antd";
 import { useState, useContext, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -45,7 +46,7 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
     receive_date: yup.string().required("Please select Date"),
     // total_meter:yup.string().required("Please enter Total meter"),
     // remaining_meter: yup.string().required("Please enter remaining meter"),
-    machine_name: yup.string().required("Please enter machine name"),
+    // machine_name: yup.string().required("Please enter machine name"),
     beam_details: yup.array().of(
       yup.object().shape({
         ends_or_tars: yup.string().required("Please enter ends of tars"),
@@ -55,9 +56,11 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
         pano: yup.string().required("Please enter pano"),
         // remark: yup.string().optional(),
         // beam_no: yup.string().optional(),
-        // taka: yup.string().optional(),
-        // net_weight: yup.string().optional(),
-        // supplier_beam_no: yup.string().optional()
+        taka: yup.string().required("Taka required"),
+        net_weight: yup.string().required("Net weight required"),
+        supplier_beam_no: yup
+          .string()
+          .required("Supplier beam number is required"),
       })
     ),
   })
@@ -67,19 +70,16 @@ function UpdateReceiveSizeBeam() {
   const params = useParams();
   const { id } = params;
 
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { companyId } = useContext(GlobalContext);
-  const [loading, setLoading] = useState(false);
-
   const [totalMeter, setTotalMeter] = useState(0);
-  const [remaingMeter, setRemaingMeter] = useState(0);
   const [pendingMeter, setPendingMeter] = useState(0);
-
-  const queryClient = useQueryClient();
-
+  const [is_beam_stock_added, set_is_beam_stock_added] = useState(false);
   const [deletedRecords, setDeletedRecords] = useState([]);
   const [orderOptions, setOrderOptions] = useState([]);
 
+  // Machine dropdown list information
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
     queryFn: async () => {
@@ -127,7 +127,6 @@ function UpdateReceiveSizeBeam() {
 
   const { mutateAsync: updateReceiveSizeBeam, isPending } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true);
       const res = await updateReceiveSizeBeamRequest({
         id,
         data,
@@ -137,7 +136,6 @@ function UpdateReceiveSizeBeam() {
     },
     mutationKey: ["order-master/recive-size-beam/create"],
     onSuccess: (res) => {
-      setLoading(false);
       queryClient.invalidateQueries([
         "order-master/recive-size-beam/list",
         { company_id: companyId },
@@ -149,7 +147,6 @@ function UpdateReceiveSizeBeam() {
       navigate(-1);
     },
     onError: (error) => {
-      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -158,40 +155,42 @@ function UpdateReceiveSizeBeam() {
     delete data?.supplier_name;
     delete data?.supplier_company;
 
-    // let beamData = data?.beam_details?.map((element) => {
-    //   return { ...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id }
-    // })
-
-    // let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ;
-    // if (tempRemaingMeter <0 ){
-    //   tempRemaingMeter = 0 ;
-    // }
-
-    // let requestData = {
-    //   "size_beam_order_id": receiveSizeBeamDetails?.size_beam_order_id,
-    //   "quality_id": receiveSizeBeamDetails?.quality_id,
-    //   "supplier_id": receiveSizeBeamDetails?.supplier_id,
-    //   "challan_no": receiveSizeBeamDetails?.challan_no,
-    //   "beam_type": receiveSizeBeamDetails?.beam_type,
-    //   "receive_date": data?.receive_date,
-    //   "total_meter": totalMeter,
-    //   "remaining_meter": tempRemaingMeter,
-    //   "machine_name": receiveSizeBeamDetails?.machine_name,
-    //   "beam_details": beamData
-    // };
-
     // await updateReceiveSizeBeam(requestData);
     const payload = {
       ...data,
       deleted_beam_detail_ids: deletedRecords.map(({ _id }) => _id),
       receive_date: dayjs(data.receive_date).format("YYYY-MM-DD"),
-      beam_details: data.beam_details.map((item) => {
-        let obj = { ...item, id: item._id };
-        delete obj._id;
-        return obj;
-      }),
+      // is_beam_stock_added: is_beam_stock_added,
+      beam_details: [],
     };
 
+    let size_beam_order_details = [];
+    receiveSizeBeamDetails?.size_beam_order?.size_beam_order_details?.map(
+      (element) => {
+        size_beam_order_details.push(element?.id);
+      }
+    );
+
+    let beamInfo = data.beam_details.map((item, index) => {
+      let obj = {
+        ...item,
+        id: item._id,
+        size_beam_order_detail_id: size_beam_order_details[index],
+        meters: Number(item?.meters),
+      };
+      delete obj.is_running;
+      delete obj._id;
+      delete obj.deletedAt;
+      delete obj.order_no;
+      delete obj.size_beam_order_id;
+      delete obj.is_received;
+      delete obj.createdAt;
+      delete obj.updatedAt;
+      delete obj.is_append;
+      return obj;
+    });
+
+    payload["beam_details"] = beamInfo;
     await updateReceiveSizeBeam(payload);
   }
 
@@ -271,6 +270,7 @@ function UpdateReceiveSizeBeam() {
 
   useEffect(() => {
     if (beam_type !== undefined) {
+      // Last beam number related information
       let beam = lastBeamNo;
       let beamType = null;
       let lastNumber = 1;
@@ -294,51 +294,12 @@ function UpdateReceiveSizeBeam() {
     }
   }, [beam_type]);
 
-  useEffect(() => {
-    if (receiveSizeBeamDetails) {
-      let temp = [];
-
-      receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
-        let value = {
-          ends_or_tars: element?.ends_or_tars,
-          grade: element?.grade,
-          meters: element?.meters,
-          pano: element?.pano,
-          remark: element?.remark || "",
-          beam_no: element?.beam_no,
-          taka: element?.taka,
-          net_weight: element?.net_weight,
-          tpm: element?.tpm,
-          supplier_beam_no: element?.supplier_beam_no,
-        };
-        temp.push(value);
-      });
-
-      reset({
-        size_beam_order_id: receiveSizeBeamDetails?.size_beam_order_id,
-        quality_id: receiveSizeBeamDetails?.inhouse_quality?.id,
-        machine_name: receiveSizeBeamDetails?.machine_name,
-        challan_no: receiveSizeBeamDetails?.challan_no,
-        beam_type: receiveSizeBeamDetails?.beam_type,
-        beam_details: temp,
-        supplier_name:
-          receiveSizeBeamDetails?.supplier?.supplier?.supplier_name,
-        supplier_company:
-          receiveSizeBeamDetails?.supplier?.supplier?.supplier_company,
-      });
-
-      setRemaingMeter(receiveSizeBeamDetails?.remaining_meter);
-      setTotalMeter(receiveSizeBeamDetails?.total_meter);
-    }
-  }, []);
-
   const current = watch();
 
   useEffect(() => {
     if (receiveSizeBeamDetails && Object.keys(receiveSizeBeamDetails).length) {
       const beam_details =
         receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
-          console.log({ element });
           return {
             _id: element?.id,
             size_beam_order_detail_id: element.size_beam_order_detail_id,
@@ -390,7 +351,24 @@ function UpdateReceiveSizeBeam() {
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
         <GoBackButton />
-        <h3 className="m-0 text-primary">Update Receive size beam</h3>
+        <Flex style={{ width: "100%" }}>
+          <h3 className="m-0 text-primary">Update Receive size beam</h3>
+          <div
+            style={{
+              marginLeft: "auto",
+              marginTop: "auto",
+              marginBottom: "auto",
+            }}
+          >
+            <Checkbox
+              style={{ color: "red" }}
+              value={is_beam_stock_added}
+              onChange={set_is_beam_stock_added}
+            >
+              Do you want to add this beam to Beam stock ?
+            </Checkbox>
+          </div>
+        </Flex>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Flex className="mt-3" gap={20}>
@@ -428,6 +406,7 @@ function UpdateReceiveSizeBeam() {
                     name="size_beam_order_id"
                     id="size_beam_order_id"
                     placeholder="Select size beam order"
+                    disabled
                     // loading={isLoadingSizeBeamOrderList}
                     // options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
                     //   ({ order_no = "", id = "", total_meters = 0 }) => {
@@ -468,6 +447,7 @@ function UpdateReceiveSizeBeam() {
                       name="quality_id"
                       id="quality_id"
                       placeholder="Quality"
+                      disabled
                       allowClear={true}
                       loading={isLoadingInHouseQualityList}
                       options={inHouseQualityList?.rows?.map(
@@ -606,6 +586,7 @@ function UpdateReceiveSizeBeam() {
                   return (
                     <Select
                       {...field}
+                      disabled
                       name="beam_type"
                       id="beam_type"
                       options={BEAM_TYPE_OPTION_LIST}
@@ -665,6 +646,7 @@ function UpdateReceiveSizeBeam() {
                       width: "100%",
                     }}
                     format="h:mm:ss A"
+                    disabled
                   />
                 )}
               />
@@ -672,27 +654,25 @@ function UpdateReceiveSizeBeam() {
           </Col>
         </Row>
 
-        {!isLoadingSizeBeamOrderList &&
-          appendBeamType !== null &&
-          appendLastBeamNumber !== null && (
-            <UpdateSizeBeamDetail
-              control={control}
-              errors={errors}
-              appendBeamType={appendBeamType}
-              appendLastBeamNumber={appendLastBeamNumber}
-              setAppendLastBeamNumber={setAppendLastBeamNumber}
-              sizeBeamOrderListRes={totalOrderBeam}
-              totalMeter={totalMeter}
-              setPendingMeter={setPendingMeter}
-              getValues={getValues}
-              setValue={setValue}
-              // sizeBeamOrderListRes={sizeBeamOrderListRes}
-              orderData={receiveSizeBeamDetails?.size_beam_order || {}}
-              size_beam_order_id={current?.size_beam_order_id}
-              deletedRecords={deletedRecords}
-              setDeletedRecords={setDeletedRecords}
-            />
-          )}
+        {appendBeamType !== null && appendLastBeamNumber !== null && (
+          <UpdateSizeBeamDetail
+            control={control}
+            errors={errors}
+            appendBeamType={appendBeamType}
+            appendLastBeamNumber={appendLastBeamNumber}
+            setAppendLastBeamNumber={setAppendLastBeamNumber}
+            sizeBeamOrderListRes={totalOrderBeam}
+            totalMeter={totalMeter}
+            setPendingMeter={setPendingMeter}
+            getValues={getValues}
+            setValue={setValue}
+            // sizeBeamOrderListRes={sizeBeamOrderListRes}
+            orderData={receiveSizeBeamDetails?.size_beam_order || {}}
+            size_beam_order_id={current?.size_beam_order_id}
+            deletedRecords={deletedRecords}
+            setDeletedRecords={setDeletedRecords}
+          />
+        )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
