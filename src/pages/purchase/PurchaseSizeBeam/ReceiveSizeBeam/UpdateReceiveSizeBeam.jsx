@@ -45,7 +45,7 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
     receive_date: yup.string().required("Please select Date"),
     // total_meter:yup.string().required("Please enter Total meter"),
     // remaining_meter: yup.string().required("Please enter remaining meter"),
-    machine_name: yup.string().required("Please enter machine name"),
+    // machine_name: yup.string().required("Please enter machine name"),
     beam_details: yup.array().of(
       yup.object().shape({
         ends_or_tars: yup.string().required("Please enter ends of tars"),
