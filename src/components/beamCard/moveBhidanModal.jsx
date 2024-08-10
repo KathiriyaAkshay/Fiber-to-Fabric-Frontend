@@ -30,6 +30,7 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
     handleClose();
   };
 
+  // Machine name dropdown list request
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -42,6 +43,7 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
     enabled: Boolean(companyId),
   });
 
+  // Machine number dropdownlist request
   const { data: loadedMachineList } = useQuery({
     queryKey: [
       "loaded",
@@ -163,8 +165,6 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
           <Form.Item
             label="Machine Name"
             name="machine_name"
-            // validateStatus={errors.machine_name ? "error" : ""}
-            // help={errors.machine_name && errors.machine_name.message}
             required={true}
             wrapperCol={{ sm: 24 }}
           >
@@ -173,6 +173,7 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
               onChange={setMachineName}
               placeholder="Select Machine Name"
               loading={isLoadingMachineList}
+              showSearch
               options={machineListRes?.rows?.map((machine) => ({
                 label: machine?.machine_name,
                 value: machine?.machine_name,
@@ -191,8 +192,6 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
           <Form.Item
             label="Machine No"
             name="machine_no"
-            // validateStatus={errors.machine_no ? "error" : ""}
-            // help={errors.machine_no && errors.machine_no.message}
             required={true}
             wrapperCol={{ sm: 24 }}
           >
@@ -201,6 +200,7 @@ const MoveBhidanModal = ({ open, handleClose, row, companyId }) => {
               onChange={setMachineNo}
               placeholder="Select Machine No"
               loading={isLoadingMachineList}
+              showSearch
               options={machineNoOption?.map((item) => ({
                 label: item,
                 value: item,

@@ -45,6 +45,7 @@ import MoveBhidanModal from "../../components/beamCard/moveBhidanModal";
 import { capitalizeFirstCharacter } from "../../utils/mutationUtils";
 import { calculateTimeDifference } from "../../utils/mutationUtils";
 import { disabledFutureDate } from "../../utils/date";
+import BeamCardInformationModel from "../../components/common/modal/beamCardInformation";
 
 const getTakaDetailsObject = (details) => {
   if (details) {
@@ -304,7 +305,9 @@ const BeamCardList = () => {
       title: "Beam No",
       render: (details) => {
         const item = getTakaDetailsObject(details);
-        return item?.beam_no || "-";
+         return (
+          <div>{item?.beam_no || "-"} {item?.supplier_beam_no !== undefined && <span style={{fontWeight: 600}}>{`(${item?.supplier_beam_no})`}</span>} </div>
+        );  
       },
     },
     {
@@ -326,7 +329,14 @@ const BeamCardList = () => {
           details.non_pasarela_beam_detail ||
           details.recieve_size_beam_detail ||
           details.job_beam_receive_detail;
-        return obj?.meters || obj?.meter || "-";
+
+        if (obj !== null){
+          return obj?.meters || obj?.meter || "-";
+        } else {
+          return (
+            <div>-</div>
+          )
+        }
       },
     },
     {
@@ -339,7 +349,37 @@ const BeamCardList = () => {
       title: "Shortage %",
       dataIndex: "shortage",
       key: "shortage",
-      render: (text) => text || 0,
+      render: (text, record) => {
+        let pending_meter = record?.pending_meter ; 
+        const obj =
+          record.non_pasarela_beam_detail ||
+          record.recieve_size_beam_detail ||
+          record.job_beam_receive_detail;
+        let total_meter = 0 ; 
+        if (obj != null){
+          total_meter = obj?.meters || obj.meter || 0 ; 
+        } 
+
+        let shortage = (Number(pending_meter)*100) / Number(total_meter) ; 
+        let shortage_status = ["finished", "cut"] ; 
+
+        if (pending_meter < 0 ){
+          shortage = `-${shortage.toFixed(2)}`
+        } else {
+          shortage = shortage.toFixed(2)
+        }
+
+        if (shortage_status?.includes(record?.status)){
+          return(
+            <div>{shortage}%</div>
+          )
+        } else {
+          return(
+            <div>-</div>
+          )
+        }
+
+      }
     },
     {
       title: "pano",
@@ -353,11 +393,21 @@ const BeamCardList = () => {
       dataIndex: "machine_no",
       key: "machine_no",
       render: (text, record) => {
-        return (
-          <div>
-            {text} ({record?.machine_name})
-          </div>
-        )
+
+        console.log("Machine number information", text);
+
+        if (text !== null){
+          return (
+            <div>
+              {text} ({record?.machine_name})
+            </div>
+          )
+        } else {
+          return(
+            <div>-</div>
+          )
+        }
+        
       }
     },
     {
@@ -429,6 +479,17 @@ const BeamCardList = () => {
         const { isView, isEdit, isDelete, isPlus, isArrow, isBarCode } =
           getActions(details);
 
+        let beamList = [] ; 
+        let object =
+          details.non_pasarela_beam_detail ||
+          details.recieve_size_beam_detail ||
+          details.job_beam_receive_detail;
+        beamList.push({
+          "beam_no": object?.beam_no, 
+          "taka": object?.taka, 
+          "meters": object?.meter || object?.meters || 0
+        })
+
         return (
           <Space>
             {isView && (
@@ -451,9 +512,7 @@ const BeamCardList = () => {
               />
             )}
             {isBarCode && (
-              <Button>
-                <AppstoreOutlined details={details} />
-              </Button>
+              <BeamCardInformationModel data = {beamList} />
             )}
             {isArrow && (
               <Button
@@ -832,6 +891,19 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>Beam Type</Typography.Text>
                 </Col>
               </Row>
+              
+              {item?.supplier_beam_no !== undefined && (
+                <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+                  <Col span={8}>
+                    <Typography.Text className="font-medium beam-card-info-title">
+                      Supplier Beam No
+                    </Typography.Text>
+                  </Col>
+                  <Col span={8}>
+                    <Typography.Text>{item?.supplier_beam_no}</Typography.Text>
+                  </Col>
+                </Row>
+              )}
 
             </Col>
 

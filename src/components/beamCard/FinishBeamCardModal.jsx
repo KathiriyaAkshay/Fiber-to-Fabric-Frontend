@@ -88,7 +88,7 @@ const FinishBeamCardModal = ({ details = {}, companyId, beamTypeDropDown }) => {
         queryClient.invalidateQueries(["beamCard", "list", companyId]);
         const successMessage = res?.message;
         if (successMessage) {
-          message.success(successMessage);
+          message.success("Beam successfully move to Non Pasarela");
         }
         handleCancel();
       },
