@@ -11,15 +11,29 @@ import {
   Row,
   Typography,
 } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   finishRunningBeamRequest,
   moveCutToNonPasarelaRequest,
   reloadBeamRequest,
 } from "../../api/requests/beamCard";
+import { capitalizeFirstCharacter } from "../../utils/mutationUtils";
 
 const FinishBeamCardModal = ({ details = {}, companyId, beamTypeDropDown }) => {
+  console.log(details);
+  
   const queryClient = useQueryClient();
+  const [beamNumber, setBeamNumber] = useState(null) ; 
+
+  useEffect(() => {
+    if (details?.non_pasarela_beam_detail != null){
+      setBeamNumber(details?.non_pasarela_beam_detail?.beam_no) ; 
+    } else if (details?.recieve_size_beam_detail !== null){
+      setBeamNumber(details?.recieve_size_beam_detail?.beam_no) ; 
+    } else {
+      setBeamNumber(details?.job_beam_receive_detail?.beam_no)
+    }
+  }, [details])
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [finishValue, setFinishValue] = useState("bhidan(finish)");
@@ -155,14 +169,16 @@ const FinishBeamCardModal = ({ details = {}, companyId, beamTypeDropDown }) => {
           "Are you sure to Move this beam to Running?"
         ) : (
           <>
-            <Row>
-              <Col span={6}> Beam No </Col>
-              <Col span={6}>BN 347</Col>
+            <Row className="beam-card-info-title-div beam-card-main-div">
+              <Col span={6} className=" beam-card-info-title"> Beam No </Col>
+              <Col span={6}>
+                {beamNumber}
+              </Col>
             </Row>
 
-            <Row>
-              <Col span={6}> Machine No </Col>
-              <Col span={6}>1</Col>
+            <Row className="beam-card-info-title-div">
+              <Col span={6} className="beam-card-info-title"> Machine No </Col>
+              <Col span={6}>{details?.machine_no} ({capitalizeFirstCharacter(details?.machine_name)})</Col>
             </Row>
 
             <Divider />

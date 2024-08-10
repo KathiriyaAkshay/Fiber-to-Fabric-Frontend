@@ -480,3 +480,24 @@ input:read-only {
 .ant-input-disabled{
   color: #000000 !important;
 }
+
+.grand-total-div .ant-table-cell{
+  border-top: 1px solid #d3d3d3 !important;
+  border-bottom: 1px solid #d3d3d3 !important;
+}
+
+.beam-card-info-title-div{
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-left: 5px;
+  margin-top: 5px;
+}
+
+.beam-card-info-title{
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.beam-card-main-div{
+  background-color: #f7f7f7;
+}
