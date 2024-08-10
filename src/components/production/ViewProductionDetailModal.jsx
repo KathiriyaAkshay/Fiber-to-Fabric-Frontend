@@ -9,18 +9,18 @@ const ViewProductionDetailModal = ({ title, details }) => {
   const showModal = () => {
     setIsModalOpen(true);
   };
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
+  // const handleOk = () => {
+  //   setIsModalOpen(false);
+  // };
   const handleCancel = () => {
     setIsModalOpen(false);
   };
 
   const adjustHeight = {};
-  if (true) {
-    adjustHeight.height = "calc(100vh - 150px)";
-    adjustHeight.overflowY = "scroll";
-  }
+  // if (true) {
+  adjustHeight.height = "calc(100vh - 150px)";
+  adjustHeight.overflowY = "scroll";
+  // }
 
   const columnsModal = [
     {
@@ -197,7 +197,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "22",
       label: "Challan No",
-      children: "-",
+      children: details?.sale_challan?.challan_no || "-",
       span: 2,
     },
     {
@@ -248,7 +248,12 @@ const ViewProductionDetailModal = ({ title, details }) => {
           },
         }}
       >
-        <Descriptions className="production-item-descriptions" bordered items={items} size="small" />
+        <Descriptions
+          className="production-item-descriptions"
+          bordered
+          items={items}
+          size="small"
+        />
 
         <div
           className="text-center"
@@ -257,10 +262,10 @@ const ViewProductionDetailModal = ({ title, details }) => {
           Employee Avg. Report
         </div>
 
-        <Table 
-          style={{marginTop: "20px"}}
-          columns={columnsModal} 
-          dataSource={data} 
+        <Table
+          style={{ marginTop: "20px" }}
+          columns={columnsModal}
+          dataSource={data}
         />
       </Modal>
     </>
