@@ -44,6 +44,7 @@ import DeleteBeamCard from "../../components/beamCard/DeleteBeamCard";
 import MoveBhidanModal from "../../components/beamCard/moveBhidanModal";
 import { capitalizeFirstCharacter } from "../../utils/mutationUtils";
 import { calculateTimeDifference } from "../../utils/mutationUtils";
+import { disabledFutureDate } from "../../utils/date";
 
 const getTakaDetailsObject = (details) => {
   if (details) {
@@ -699,7 +700,7 @@ const BeamCardList = () => {
               From
             </Typography.Text>
             <DatePicker
-              //   value={machine}
+              disabledDate={disabledFutureDate}
               onChange={setMachine}
               className="min-w-40"
             />
@@ -708,7 +709,7 @@ const BeamCardList = () => {
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
-              //   value={machine}
+              disabledDate={disabledFutureDate}
               onChange={setMachine}
               className="min-w-40"
             />
@@ -744,9 +745,6 @@ const BeamCardViewDetailModal = ({
   isScroll = false,
   details = [],
 }) => {
-  console.log("Details information");
-  console.log(details);
-  
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
