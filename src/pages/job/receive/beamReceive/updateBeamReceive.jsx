@@ -107,27 +107,76 @@ const UpdateBeamReceive = () => {
   });
 
   async function onSubmit(data) {
-    const newData = {
-      machine_name: data.machine_name,
-      quality_id: data.quality_id,
-      supplier_id: data.supplier_id,
-      challan_beam_type: data.challan_beam_type,
-      challan_no: data.challan_no,
-      receive_date: dayjs(data.date),
-      deleted_beam_detail_ids: deletedRecords,
-      job_beam_details: fieldArray.map((field) => {
-        return {
-          id: data[`id_${field}`],
-          supplier_beam_no: data[`supplier_beam_no_${field}`],
-          tars: parseInt(data[`tars_${field}`]),
-          pano: parseInt(data[`pano_${field}`]),
-          taka: parseInt(data[`taka_${field}`]),
-          meter: parseInt(data[`meter_${field}`]),
-        };
-      }),
-    };
 
-    await updateBeamReceive(newData);
+    let hasError = 0 ; 
+
+    fieldArray.forEach((item, index) => {
+      if (!getValues(`supplier_beam_no_${index}`)){
+        setError(`supplier_beam_no_${index}`, {
+          type: "manual",
+          message: "Please, Provide Supplier beam number",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`tars_${index}`)){
+        setError(`tars_${index}`, {
+          type: "manual",
+          message: "Please enter tars",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`pano_${index}`)){
+        setError(`pano_${index}`, {
+          type: "manual",
+          message: "Please enter pano",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`taka_${index}`)){
+        setError(`taka_${index}`, {
+          type: "manual",
+          message: "Please enter taka",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`meter_${index}`)){
+        setError(`meter_${index}`, {
+          type: "manual",
+          message: "Please enter meter",
+        });
+        hasError = 1
+      }
+    })
+    
+    if (hasError == 0){
+
+      const newData = {
+        machine_name: data.machine_name,
+        quality_id: data.quality_id,
+        supplier_id: data.supplier_id,
+        challan_beam_type: data.challan_beam_type,
+        challan_no: data.challan_no,
+        receive_date: dayjs(data.date),
+        deleted_beam_detail_ids: deletedRecords,
+        job_beam_details: fieldArray.map((field) => {
+          return {
+            id: data[`id_${field}`],
+            supplier_beam_no: data[`supplier_beam_no_${field}`],
+            tars: parseInt(data[`tars_${field}`]),
+            pano: parseInt(data[`pano_${field}`]),
+            taka: parseInt(data[`taka_${field}`]),
+            meter: parseInt(data[`meter_${field}`]),
+            beam_no: data[`beam_no_${field}`]
+          };
+        }),
+      };
+      await updateBeamReceive(newData);
+    }
+    
   }
 
   const {
@@ -139,6 +188,8 @@ const UpdateBeamReceive = () => {
     getValues,
     clearErrors,
     setError,
+    setValue, 
+    
   } = useForm({
     defaultValues: {
       machine_name: null,
@@ -252,6 +303,9 @@ const UpdateBeamReceive = () => {
       },
       enabled: Boolean(companyId),
     });
+  
+  const [appendRowValue, setAppendRowValue] = useState([]) ; 
+  const [lastBeamAppendValue, setLastBeamAppendValue] = useState(0) ; 
 
   const addNewFieldRow = (indexValue) => {
     let isValid = true;
@@ -270,7 +324,7 @@ const UpdateBeamReceive = () => {
         if (!getValues(`supplier_beam_no_${index}`)) {
           setError(`supplier_beam_no_${index}`, {
             type: "manual",
-            message: "Please select supplier beam no",
+            message: "Please, Provide Supplier beam number",
           });
           isValid = false;
         }
@@ -307,9 +361,31 @@ const UpdateBeamReceive = () => {
 
     if (isValid) {
       const nextValue = fieldArray[fieldArray.length - 1] + 1;
+      setAppendRowValue([...appendRowValue, nextValue]) ; 
+      
       setFieldArray((prev) => {
         return [...prev, nextValue];
       });
+
+      let beam_number = null ;
+
+      if (challan_beam_type == "non pasarela (secondary)"){
+        beam_number = `SJBN-${Number(lastBeamNo) + (lastBeamAppendValue + 1)}`
+      } else {
+        beam_number = `JBN-${Number(lastBeamNo) + (lastBeamAppendValue + 1)}`
+      }
+      setLastBeamAppendValue((prev) => prev +1) ; 
+
+      let previous_beam_tars = getValues(`tars_${nextValue-1}`) ; 
+      let previous_beam_pano = getValues(`pano_${nextValue - 1}`) ; 
+      let previous_beam_taka = getValues(`taka_${nextValue - 1}`) ; 
+      let previous_beam_meter = getValues(`meter_${nextValue - 1}`) ; 
+
+      setValue(`tars_${nextValue}`, previous_beam_tars) ; 
+      setValue(`pano_${nextValue}`, previous_beam_pano) ; 
+      setValue(`taka_${nextValue}`, previous_beam_taka) ; 
+      setValue(`meter_${nextValue}`, previous_beam_meter) ;
+      setValue(`beam_no_${nextValue}`, beam_number) ; 
     }
   };
 
@@ -347,6 +423,7 @@ const UpdateBeamReceive = () => {
         return job_beam_receive_details.map((item, index) => index);
       });
       let jobBeamReceiveDetails = {};
+      
       job_beam_receive_details.forEach((item, index) => {
         jobBeamReceiveDetails[`id_${index}`] = item.id;
         jobBeamReceiveDetails[`beam_no_${index}`] = item.beam_no;
@@ -356,6 +433,7 @@ const UpdateBeamReceive = () => {
         jobBeamReceiveDetails[`pano_${index}`] = item.pano;
         jobBeamReceiveDetails[`taka_${index}`] = item.taka;
         jobBeamReceiveDetails[`meter_${index}`] = item.meter;
+        jobBeamReceiveDetails[`is_running_${index}`] = item?.is_running ;
       });
       reset({
         machine_name,
@@ -666,21 +744,16 @@ const UpdateBeamReceive = () => {
                     required={true}
                     wrapperCol={{ sm: 24 }}
                   >
-                    {/* <Controller
-                      control={control}
-                      name="beam_no"
-                      render={({ field }) => {
-                        return <Input {...field} placeholder="12" />;
-                      }}
-                    /> */}
                     <Typography.Text style={{ fontWeight: "bold" }}>
-                      {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
+                      {/* {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
                         ?.beam_no ||
                         (lastBeamNo
                           ? challan_beam_type === "non pasarela (secondary)"
                             ? "SJBN-" + (lastBeamNo + index)
                             : "JBN-" + (lastBeamNo + index)
-                          : 0)}
+                          : 0)} */}
+                      {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
+                        ?.beam_no ||getValues(`beam_no_${fieldNumber}`)}
                     </Typography.Text>
                   </Form.Item>
                 </Col>
@@ -712,7 +785,11 @@ const UpdateBeamReceive = () => {
                       control={control}
                       name={`supplier_beam_no_${fieldNumber}`}
                       render={({ field }) => (
-                        <Input {...field} placeholder="12" />
+                        <Input
+                          {...field}
+                          placeholder="12"
+                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                        />
                       )}
                     />
                   </Form.Item>
@@ -735,7 +812,11 @@ const UpdateBeamReceive = () => {
                       control={control}
                       name={`tars_${fieldNumber}`}
                       render={({ field }) => (
-                        <Input {...field} placeholder="12" />
+                        <Input
+                          {...field}
+                          placeholder="12"
+                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                        />
                       )}
                     />
                   </Form.Item>
@@ -758,7 +839,10 @@ const UpdateBeamReceive = () => {
                       control={control}
                       name={`pano_${fieldNumber}`}
                       render={({ field }) => (
-                        <Input {...field} placeholder="12" />
+                        <Input {...field} 
+                          placeholder="12" 
+                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                        />
                       )}
                     />
                   </Form.Item>
@@ -782,7 +866,7 @@ const UpdateBeamReceive = () => {
                       control={control}
                       name={`taka_${fieldNumber}`}
                       render={({ field }) => (
-                        <Input {...field} placeholder="12" />
+                        <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}/>
                       )}
                     />
                   </Form.Item>
@@ -806,13 +890,13 @@ const UpdateBeamReceive = () => {
                       control={control}
                       name={`meter_${fieldNumber}`}
                       render={({ field }) => (
-                        <Input {...field} placeholder="12" />
+                        <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false} />
                       )}
                     />
                   </Form.Item>
                 </Col>
 
-                {fieldArray.length > 1 && (
+                {fieldArray.length > 1 && (getValues(`is_running_${fieldNumber}`) == false) && (
                   <Col span={1}>
                     <Button
                       style={{ marginTop: "1.9rem" }}
@@ -840,9 +924,9 @@ const UpdateBeamReceive = () => {
           })}
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit" loading={isPending}>
-            Update
-          </Button>
+            <Button type="primary" htmlType="submit" loading={isPending}>
+              Update
+            </Button>
         </Flex>
       </Form>
     </div>

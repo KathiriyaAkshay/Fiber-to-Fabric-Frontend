@@ -27,7 +27,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -90,29 +90,76 @@ const AddBeamReceive = () => {
   });
 
   async function onSubmit(data) {
-    const newData = {
-      machine_name: data.machine_name,
-      quality_id: data.quality_id,
-      supplier_id: data.supplier_id,
-      challan_beam_type: data.challan_beam_type,
-      challan_no: data.challan_no,
-      receive_date: dayjs(data.date).format("YYYY-MM-DD"),
-      job_beam_details: fieldArray.map((field, index) => {
-        return {
-          beam_no: lastBeamNo
-            ? challan_beam_type === "non pasarela (secondary)"
-              ? "SJBN-" + (lastBeamNo + (index + 1))
-              : "JBN-" + (lastBeamNo + (index + 1))
-            : 0,
-          supplier_beam_no: data[`supplier_beam_no_${field}`],
-          tars: parseInt(data[`tars_${field}`]),
-          pano: parseInt(data[`pano_${field}`]),
-          taka: parseInt(data[`taka_${field}`]),
-          meter: parseInt(data[`meter_${field}`]),
-        };
-      }),
-    };
-    await addNewBeamReceive(newData);
+
+    let hasError = 0 ; 
+
+    fieldArray.forEach((item, index) => {
+      if (!getValues(`supplier_beam_no_${index}`)){
+        setError(`supplier_beam_no_${index}`, {
+          type: "manual",
+          message: "Please, Provide Supplier beam number",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`tars_${index}`)){
+        setError(`tars_${index}`, {
+          type: "manual",
+          message: "Please enter tars",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`pano_${index}`)){
+        setError(`pano_${index}`, {
+          type: "manual",
+          message: "Please enter pano",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`taka_${index}`)){
+        setError(`taka_${index}`, {
+          type: "manual",
+          message: "Please enter taka",
+        });
+        hasError = 1
+      }
+
+      if (!getValues(`meter_${index}`)){
+        setError(`meter_${index}`, {
+          type: "manual",
+          message: "Please enter meter",
+        });
+        hasError = 1
+      }
+    })
+
+    if (hasError == 0){
+      const newData = {
+        machine_name: data.machine_name,
+        quality_id: data.quality_id,
+        supplier_id: data.supplier_id,
+        challan_beam_type: data.challan_beam_type,
+        challan_no: data.challan_no,
+        receive_date: dayjs(data.date).format("YYYY-MM-DD"),
+        job_beam_details: fieldArray.map((field, index) => {
+          return {
+            beam_no: lastBeamNo
+              ? challan_beam_type === "non pasarela (secondary)"
+                ? "SJBN-" + (lastBeamNo + (index + 1))
+                : "JBN-" + (lastBeamNo + (index + 1))
+              : 0,
+            supplier_beam_no: data[`supplier_beam_no_${field}`],
+            tars: parseInt(data[`tars_${field}`]),
+            pano: parseInt(data[`pano_${field}`]),
+            taka: parseInt(data[`taka_${field}`]),
+            meter: parseInt(data[`meter_${field}`]),
+          };
+        }),
+      };
+      await addNewBeamReceive(newData);
+    }
   }
 
   const {
@@ -123,6 +170,7 @@ const AddBeamReceive = () => {
     watch,
     getValues,
     clearErrors,
+    setValue,
     setError,
   } = useForm({
     defaultValues: {
@@ -149,9 +197,18 @@ const AddBeamReceive = () => {
     ],
     queryFn: async () => {
       if (challan_beam_type) {
+        let beam_type = null ;
+        let pasarela_beam_type = ["pasarela (primary)", "non pasarela (primary)"] ; 
+        
+        if (pasarela_beam_type.includes(challan_beam_type)){
+          beam_type = "pasarela (primary)"
+        } else {
+          beam_type = challan_beam_type ; 
+        }
+
         const res = await getLastJobBeamReceiveNoRequest({
           companyId,
-          params: { company_id: companyId, beam_type: challan_beam_type },
+          params: { company_id: companyId, beam_type: beam_type },
         });
         const regex = /-(\d+)/;
         const match = res?.data?.data.match(regex);
@@ -296,6 +353,26 @@ const AddBeamReceive = () => {
       setFieldArray((prev) => {
         return [...prev, nextValue];
       });
+
+      let beam_number = null ;
+
+      if (challan_beam_type == "non pasarela (secondary)"){
+        beam_number = `SJBN-${Number(lastBeamNo) + (nextValue + 1)}`
+      } else {
+        beam_number = `JBN-${Number(lastBeamNo) + (nextValue + 1)}`
+      }
+
+      let previous_beam_tars = getValues(`tars_${nextValue-1}`) ; 
+      let previous_beam_pano = getValues(`pano_${nextValue - 1}`) ; 
+      let previous_beam_taka = getValues(`taka_${nextValue - 1}`) ; 
+      let previous_beam_meter = getValues(`meter_${nextValue - 1}`) ; 
+
+      setValue(`tars_${nextValue}`, previous_beam_tars) ; 
+      setValue(`pano_${nextValue}`, previous_beam_pano) ; 
+      setValue(`taka_${nextValue}`, previous_beam_taka) ; 
+      setValue(`meter_${nextValue}`, previous_beam_meter) ;
+      setValue(`beam_no_${nextValue}`, beam_number) ; 
+    
     }
   };
 
@@ -572,7 +649,7 @@ const AddBeamReceive = () => {
           </Col>
         </Row>
 
-        {challan_beam_type != undefined && fieldArray.map((fieldNumber, index) => {
+        {challan_beam_type != undefined && lastBeamNo !== undefined && fieldArray.map((fieldNumber, index) => {
           return (
             <Row
               key={index + "_add_beam_receive"}

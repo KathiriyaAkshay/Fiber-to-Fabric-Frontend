@@ -476,3 +476,7 @@ input:read-only {
 .ant-select-disabled .ant-select-selector .ant-select-selection-item{
   color: #000000 !important;
 }
+
+.ant-input-disabled{
+  color: #000000 !important;
+}
