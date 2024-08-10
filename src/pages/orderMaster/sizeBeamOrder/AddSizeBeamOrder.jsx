@@ -152,6 +152,7 @@ function AddSizeBeamOrder() {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
     data["order_no"] = String(orderNumber);
+    data["credit_day"] = parseInt(data?.credit_day) ; 
     await createSizeBeamOrder(data);
   }
 
