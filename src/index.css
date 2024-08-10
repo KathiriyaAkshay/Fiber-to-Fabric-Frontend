@@ -472,3 +472,7 @@ input:read-only {
 .card-wrapper {
   border: 1px solid black;
 }
+
+.ant-select-disabled .ant-select-selector .ant-select-selection-item{
+  color: #000000 !important;
+}

@@ -55,9 +55,9 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
         pano: yup.string().required("Please enter pano"),
         // remark: yup.string().optional(),
         // beam_no: yup.string().optional(),
-        // taka: yup.string().optional(),
-        // net_weight: yup.string().optional(),
-        // supplier_beam_no: yup.string().optional()
+        taka: yup.string().required("Taka required"),
+        net_weight: yup.string().required("Net weight required"),
+        supplier_beam_no: yup.string().required("Supplier beam number is required")
       })
     ),
   })
@@ -158,28 +158,6 @@ function UpdateReceiveSizeBeam() {
     delete data?.supplier_name;
     delete data?.supplier_company;
 
-    // let beamData = data?.beam_details?.map((element) => {
-    //   return { ...element, size_beam_order_detail_id: receiveSizeBeamDetails?.size_beam_order_id }
-    // })
-
-    // let tempRemaingMeter = Number(totalMeter) - Number(pendingMeter) ; 
-    // if (tempRemaingMeter <0 ){
-    //   tempRemaingMeter = 0 ;
-    // }
-
-    // let requestData = {
-    //   "size_beam_order_id": receiveSizeBeamDetails?.size_beam_order_id,
-    //   "quality_id": receiveSizeBeamDetails?.quality_id,
-    //   "supplier_id": receiveSizeBeamDetails?.supplier_id,
-    //   "challan_no": receiveSizeBeamDetails?.challan_no,
-    //   "beam_type": receiveSizeBeamDetails?.beam_type,
-    //   "receive_date": data?.receive_date,
-    //   "total_meter": totalMeter,
-    //   "remaining_meter": tempRemaingMeter,
-    //   "machine_name": receiveSizeBeamDetails?.machine_name,
-    //   "beam_details": beamData
-    // };
-
     // await updateReceiveSizeBeam(requestData);
     const payload = {
       ...data,
@@ -187,7 +165,15 @@ function UpdateReceiveSizeBeam() {
       receive_date: dayjs(data.receive_date).format("YYYY-MM-DD"),
       beam_details: data.beam_details.map((item) => {
         let obj = { ...item, id: item._id };
+        delete obj.is_running ; 
         delete obj._id;
+        delete obj.deletedAt ; 
+        delete obj.order_no ; 
+        delete obj.size_beam_order_id ; 
+        delete obj.is_received ; 
+        delete obj.createdAt ; 
+        delete obj.updatedAt ; 
+        delete obj.is_append ; 
         return obj;
       }),
     };
@@ -271,6 +257,8 @@ function UpdateReceiveSizeBeam() {
 
   useEffect(() => {
     if (beam_type !== undefined) {
+
+      // Last beam number related information 
       let beam = lastBeamNo;
       let beamType = null;
       let lastNumber = 1;
@@ -293,42 +281,6 @@ function UpdateReceiveSizeBeam() {
       };
     }
   }, [beam_type])
-
-  useEffect(() => {
-    if (receiveSizeBeamDetails) {
-
-      let temp = [];
-
-      receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
-        let value = {
-          ends_or_tars: element?.ends_or_tars,
-          grade: element?.grade,
-          meters: element?.meters,
-          pano: element?.pano,
-          remark: element?.remark || "",
-          beam_no: element?.beam_no,
-          taka: element?.taka,
-          net_weight: element?.net_weight,
-          tpm: element?.tpm,
-          supplier_beam_no: element?.supplier_beam_no
-        };
-        temp.push(value);
-      });
-
-      reset({
-        size_beam_order_id: receiveSizeBeamDetails?.size_beam_order_id,
-        quality_id: receiveSizeBeamDetails?.inhouse_quality?.id,
-        machine_name: receiveSizeBeamDetails?.machine_name,
-        challan_no: receiveSizeBeamDetails?.challan_no,
-        beam_type: receiveSizeBeamDetails?.beam_type,
-        beam_details: temp,
-        supplier_name: receiveSizeBeamDetails?.supplier?.supplier?.supplier_name,
-        supplier_company: receiveSizeBeamDetails?.supplier?.supplier?.supplier_company
-      });
-
-      setRemaingMeter(receiveSizeBeamDetails?.remaining_meter);
-      setTotalMeter(receiveSizeBeamDetails?.total_meter);
-    }},[]) ; 
     
   const current = watch();
 
@@ -336,7 +288,6 @@ function UpdateReceiveSizeBeam() {
     if (receiveSizeBeamDetails && Object.keys(receiveSizeBeamDetails).length) {
       const beam_details =
         receiveSizeBeamDetails?.recieve_size_beam_details?.map((element) => {
-          console.log({ element });
           return {
             _id: element?.id,
             size_beam_order_detail_id: element.size_beam_order_detail_id,
@@ -426,6 +377,7 @@ function UpdateReceiveSizeBeam() {
                     name="size_beam_order_id"
                     id="size_beam_order_id"
                     placeholder="Select size beam order"
+                    disabled
                     // loading={isLoadingSizeBeamOrderList}
                     // options={sizeBeamOrderListRes?.SizeBeamOrderList?.map(
                     //   ({ order_no = "", id = "", total_meters = 0 }) => {
@@ -466,6 +418,7 @@ function UpdateReceiveSizeBeam() {
                       name="quality_id"
                       id="quality_id"
                       placeholder="Quality"
+                      disabled
                       allowClear={true}
                       loading={isLoadingInHouseQualityList}
                       options={inHouseQualityList?.rows?.map(
@@ -511,7 +464,6 @@ function UpdateReceiveSizeBeam() {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                    disabled
                   />
                 )}
               />
@@ -605,6 +557,7 @@ function UpdateReceiveSizeBeam() {
                   return (
                     <Select
                       {...field}
+                      disabled
                       name="beam_type"
                       id="beam_type"
                       options={BEAM_TYPE_OPTION_LIST}
@@ -664,6 +617,7 @@ function UpdateReceiveSizeBeam() {
                       width: "100%",
                     }}
                     format="h:mm:ss A"
+                    disabled
                   />
                 )}
               />
@@ -671,7 +625,8 @@ function UpdateReceiveSizeBeam() {
           </Col>
         </Row>
 
-        {!isLoadingSizeBeamOrderList && appendBeamType !== null && appendLastBeamNumber !== null && (
+        {appendBeamType !== null && appendLastBeamNumber !== null && (
+
           <UpdateSizeBeamDetail
             control={control}
             errors={errors}
@@ -690,6 +645,7 @@ function UpdateReceiveSizeBeam() {
             setDeletedRecords={setDeletedRecords}
           />
         )}
+
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

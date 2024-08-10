@@ -40,7 +40,7 @@ const addReceiveSizeBeamSchemaResolver = yupResolver(
     receive_date: yup.string().required("Please select Date"),
     // total_meter:yup.string().required("Please enter Total meter"),
     // remaining_meter: yup.string().required("Please enter remaining meter"),
-    // machine_name: yup.string().required("Please enter machine name"),
+    machine_name: yup.string().required("Please enter machine name"),
     beam_details: yup.array().of(
       yup.object().shape({
         ends_or_tars: yup.string().required("Please enter ends of tars"),
@@ -204,9 +204,18 @@ function AddReceiveSizeBeam() {
       { company_id: companyId, beam_type: beam_type },
     ],
     queryFn: async () => {
+      let pararela_beam_list = ["pasarela(primary)", "non pasarela (primary)"]; 
+      let send_beam_type = null ; 
+      
+      if (pararela_beam_list?.includes(beam_type)){
+        send_beam_type = "pasarela(primary)"
+      } else{
+        send_beam_type = "non pasarela (secondary)"
+      }
+
       const res = await getLastBeamNumberRequest({
         companyId,
-        params: { company_id: companyId, beam_type: beam_type },
+        params: { company_id: companyId, beam_type: send_beam_type },
       });
       return res?.data?.data;
     },
@@ -214,6 +223,7 @@ function AddReceiveSizeBeam() {
   });
 
   useEffect(() => {
+    
     if (beam_type !== undefined) {
 
       let beam = lastBeamNo;
@@ -243,68 +253,32 @@ function AddReceiveSizeBeam() {
           size_beam_order_details,
           total_meters = 0,
         }) => {
+          
           if (id == size_beam_order_id) {
             const { supplier_name = "", supplier_company = "" } = supplier || {};
             setValue("supplier_id", supplier_id);
             setValue("supplier_name", supplier_name);
             setValue("supplier_company", supplier_company);
             setValue("total_meter", total_meters);
-            // Naa tme koi value pass Kari do..like total meter j send kari do payload ma
             setValue("remaining_meter", total_meters);
-            setValue(
-              "beam_details",
-              (size_beam_order_details || [])?.map(
-                ({
-                  id,
-                  beam_no,
-                  ends_or_tars,
-                  tpm,
-                  pano,
-                  taka,
-                  meters,
-                  net_weight,
-                  grade,
-                }) => {
-                  return {
-                    size_beam_order_detail_id: id,
-                    beam_no,
-                    ends_or_tars,
-                    tpm,
-                    pano,
-                    taka,
-                    meters,
-                    net_weight,
-                    grade,
-                  };
-                }
-              )
-            );
+            let beamDetails = [];
+            beamDetails = size_beam_order_details?.map((element, index) => {
+              return { 
+                "beam_no": `${beamType}-${Number(lastNumber) + index}`,  
+                "id": element?.id, 
+                "ends_or_tars": element?.ends_or_tars, 
+                "tpm": element?.tpm, 
+                "pano": element?.pano, 
+                "taka": element?.taka, 
+                "meters": element?.meters, 
+                "net_weight": element?.net_weight, 
+                "grade": element?.grade
+              }
+            })
+            setValue("beam_details", beamDetails)
           }
-        })
-      // sizeBeamOrderListRes?.SizeBeamOrderList?.forEach(
-      //   ({
-      //     id = 0,
-      //     supplier,
-      //     supplier_id = 0,
-      //     size_beam_order_details,
-      //     total_meters = 0,
-      //   }) => {
-      //     if (id == size_beam_order_id) {
-      //       const { supplier_name = "", supplier_company = "" } = supplier || {};
-      //       setValue("supplier_id", supplier_id);
-      //       setValue("supplier_name", supplier_name);
-      //       setValue("supplier_company", supplier_company);
-      //       setValue("total_meter", total_meters);
-      //       setValue("remaining_meter", total_meters);
-      //       setPendingMeter(total_meters - 0);
-      //       let beamDetails = [];
-      //       beamDetails = size_beam_order_details?.map((element, index) => {
-      //         return { ...element, "beam_no": `${beamType}-${Number(lastNumber) + index}` };
-      //       });
-      //       setValue("beam_details", beamDetails);
-      //     }
-      //   }
-      // );
+      })
+    
     }
   }, [setValue,
     sizeBeamOrderListRes?.SizeBeamOrderList,
@@ -314,7 +288,6 @@ function AddReceiveSizeBeam() {
   ]);
 
   function disabledDate(current) {
-    // Disable future dates
     if (current && current > moment().endOf("day")) {
       return true;
     }
@@ -347,8 +320,8 @@ function AddReceiveSizeBeam() {
             <Form.Item
               label="Machine name"
               name="machine_name"
-              validateStatus={errors.quality_id ? "error" : ""}
-              help={errors.quality_id && errors.quality_id.message}
+              validateStatus={errors.machine_name ? "error" : ""}
+              help={errors.machine_name && errors.machine_name.message}
               required={true}
             >
               <Controller
