@@ -42,7 +42,6 @@ const AddProduction = () => {
   const [weightPlaceholder, setWeightPlaceholder] = useState(null);
 
   // Add New Production option handler ===================================================================================
-
   const { mutateAsync: addNewProduction, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addProductionRequest({
@@ -71,17 +70,12 @@ const AddProduction = () => {
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
 
-    console.log("Run this function");
-    
-
     const newData = array.map((fieldNumber) => {
 
       const beamCard = beamCardList.rows.find(({ machine_no }) => {
         return machine_no === data[`machine_no_${fieldNumber}`];
       });
       if (beamCard !== undefined){
-        console.log("Last Production taka information", lastProductionTaka);
-        
         const payload = {
           machine_name: data.machine_name,
           production_date: dayjs(data.date).format("YYYY-MM-DD"),
@@ -97,12 +91,18 @@ const AddProduction = () => {
           pending_meter: +data[`pending_meter_${fieldNumber}`],
           pending_percentage: +data[`pending_percentage_${fieldNumber}`],
         };
+
+        console.log("Payload information");
+        console.log(payload);
+        
+        
   
         if (data.production_filter !== "multi_quality_wise") {
           payload.quality_id = data.quality_id;
         } else {
           payload.quality_id = data[`quality_${fieldNumber}`];
         }
+
         if (data.production_filter === "machine_wise") {
           payload.grade = data.grade;
           payload.pis = data.pis;
@@ -112,13 +112,13 @@ const AddProduction = () => {
 
     });
 
-    let temp = []; 
-    newData?.map((element) => {
-      if (element !== undefined){
-        temp.push(element) ; 
-      }
-    })
-    await addNewProduction(temp);
+    // let temp = []; 
+    // newData?.map((element) => {
+    //   if (element !== undefined){
+    //     temp.push(element) ; 
+    //   }
+    // })
+    // await addNewProduction(temp);
   };
 
   // Add New Production option handler complete ============================================================================
@@ -166,6 +166,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Get Beamcard list information
   const { data: beamCardList } = useQuery({
     queryKey: [
       "beamCard",

@@ -538,8 +538,8 @@ input:read-only {
     /* Add your desired padding */
     margin: 20px;
     /* Add your desired margin */
-  }
 }
+
 
 .query-chart-wrapper {
   -webkit-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);

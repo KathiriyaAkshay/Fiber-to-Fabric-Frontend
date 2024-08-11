@@ -359,7 +359,7 @@ const AddProductionTable = ({
                         render={({ field }) => (
                           <Select
                             {...field}
-                            disabled={fieldNumber !== activeField}
+                            disabled={true}
                             options={
                               dropDownQualityListRes &&
                               dropDownQualityListRes?.rows?.map((item) => ({
@@ -623,10 +623,10 @@ const AddProductionTable = ({
             <td style={{ textAlign: "center" }}>
               <b>{Number(totalMeter).toFixed(2)}</b>
             </td>
+            <td></td>
             <td style={{ textAlign: "center" }}>
               <b>{Number(totalWeight).toFixed(2)}</b>
             </td>
-            <td></td>
             <td style={{ textAlign: "center" }}>
               <b>{Number(totalAvg).toFixed(2)}</b>
             </td>
