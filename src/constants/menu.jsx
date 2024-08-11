@@ -272,18 +272,18 @@ export const menubarOptionsList = [
           </Link>
         ),
       },
-      {
-        path: "monthly-production-report",
-        key: "Monthly Production Report",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="production/monthly-production-report"
-          >
-            Monthly Production Report
-          </Link>
-        ),
-      },
+      // {
+      //   path: "monthly-production-report",
+      //   key: "Monthly Production Report",
+      //   label: (
+      //     <Link
+      //       className="text-current no-underline hover:text-current"
+      //       to="production/monthly-production-report"
+      //     >
+      //       Monthly Production Report
+      //     </Link>
+      //   ),
+      // },
       {
         path: "folding-production",
         key: "Folding Production Menu",
