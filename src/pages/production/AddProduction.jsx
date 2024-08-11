@@ -58,7 +58,7 @@ const AddProduction = () => {
       queryClient.invalidateQueries(["production", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("Production add successfully");
       }
       navigate("/production/inhouse-production");
     },
@@ -71,39 +71,54 @@ const AddProduction = () => {
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
 
+    console.log("Run this function");
+    
+
     const newData = array.map((fieldNumber) => {
+
       const beamCard = beamCardList.rows.find(({ machine_no }) => {
         return machine_no === data[`machine_no_${fieldNumber}`];
       });
-
-      const payload = {
-        machine_name: data.machine_name,
-        production_date: dayjs(data.date).format("YYYY-MM-DD"),
-        last_enter_taka_no: data.last_taka_no || 1,
-        taka_no: +(+lastProductionTaka + fieldNumber),
-        meter: +data[`meter_${fieldNumber}`],
-        weight: +data[`weight_${fieldNumber}`],
-        machine_no: data[`machine_no_${fieldNumber}`],
-        beam_load_id: beamCard.id,
-        average: +data[`average_${fieldNumber}`],
-        beam_no: data[`beam_no_${fieldNumber}`],
-        production_meter: +data[`production_meter_${fieldNumber}`],
-        pending_meter: +data[`pending_meter_${fieldNumber}`],
-        pending_percentage: +data[`pending_percentage_${fieldNumber}`],
-      };
-
-      if (data.production_filter !== "multi_quality_wise") {
-        payload.quality_id = data.quality_id;
-      } else {
-        payload.quality_id = data[`quality_${fieldNumber}`];
+      if (beamCard !== undefined){
+        console.log("Last Production taka information", lastProductionTaka);
+        
+        const payload = {
+          machine_name: data.machine_name,
+          production_date: dayjs(data.date).format("YYYY-MM-DD"),
+          last_enter_taka_no: data.last_taka_no || 1,
+          taka_no: +(+lastProductionTaka?.taka_no + fieldNumber),
+          meter: +data[`meter_${fieldNumber}`],
+          weight: +data[`weight_${fieldNumber}`],
+          machine_no: data[`machine_no_${fieldNumber}`],
+          beam_load_id: beamCard.id,
+          average: +data[`average_${fieldNumber}`],
+          beam_no: data[`beam_no_${fieldNumber}`],
+          production_meter: +data[`production_meter_${fieldNumber}`],
+          pending_meter: +data[`pending_meter_${fieldNumber}`],
+          pending_percentage: +data[`pending_percentage_${fieldNumber}`],
+        };
+  
+        if (data.production_filter !== "multi_quality_wise") {
+          payload.quality_id = data.quality_id;
+        } else {
+          payload.quality_id = data[`quality_${fieldNumber}`];
+        }
+        if (data.production_filter === "machine_wise") {
+          payload.grade = data.grade;
+          payload.pis = data.pis;
+        }
+        return payload;
       }
-      if (data.production_filter === "machine_wise") {
-        payload.grade = data.grade;
-        payload.pis = data.pis;
-      }
-      return payload;
+
     });
-    await addNewProduction(newData);
+
+    let temp = []; 
+    newData?.map((element) => {
+      if (element !== undefined){
+        temp.push(element) ; 
+      }
+    })
+    await addNewProduction(temp);
   };
 
   // Add New Production option handler complete ============================================================================
