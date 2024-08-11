@@ -69,13 +69,21 @@ const AddProduction = () => {
 
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
+    let hasError = 0 ; 
 
     const newData = array.map((fieldNumber) => {
 
       const beamCard = beamCardList.rows.find(({ machine_no }) => {
         return machine_no === data[`machine_no_${fieldNumber}`];
       });
+
       if (beamCard !== undefined){
+
+        const taka_no = +(+lastProductionTaka?.taka_no + fieldNumber);
+        const meter = +data[`meter_${fieldNumber}`];
+        const weight = +data[`weight_${fieldNumber}`];
+        const average = +data[`average_${fieldNumber}`];
+        const pending_meter = +data[`pending_meter_${fieldNumber}`];
 
         const payload = {
           machine_name: data.machine_name,
@@ -93,15 +101,26 @@ const AddProduction = () => {
           pending_percentage: +data[`pending_percentage_${fieldNumber}`],
         };
 
-        console.log("Payload information");
-        console.log(payload);
+        let weightFrom = ((avgWeight.weight_from / 100) * meter).toFixed(3);
+        let weightTo = ((avgWeight.weight_to / 100) * meter).toFixed(3);
 
-        console.log("Average weight information");
-        console.log(avgWeight);
-        
-        
-        
-  
+        if (isNaN(meter) || meter == ""){
+          message.error(`Please, Enter meter for ${taka_no} taka number`)
+          hasError = 1; 
+        } else if (isNaN(weight) || weight == ""){
+          message.error(`Please, Enter weight for ${taka_no} taka number`)
+          hasError = 1; 
+        } else if (isNaN(average) || average == ""){
+          message.error(`Please, Enter proper taka details`)
+          hasError = 1; 
+        } else if (isNaN(pending_meter) || pending_meter == ""){
+          message.error("Please, Enter proper taka details") ; 
+          hasError = 1;
+        } else if  (weight < Number(weightFrom).toFixed(2) && weight > Number(weightTo).toFixed(2)){
+          message.error(`Please, Enter taka weight in between from ${Number(weightFrom).toFixed(2)}Kg to ${Number(weightTo).toFixed(2)}Kg `)
+          hasError = 1; 
+        }
+
         if (data.production_filter !== "multi_quality_wise") {
           payload.quality_id = data.quality_id;
         } else {
@@ -109,8 +128,17 @@ const AddProduction = () => {
         }
 
         if (data.production_filter === "machine_wise") {
-          payload.grade = data.grade;
-          payload.pis = data.pis;
+
+          let pisValue = data?.pis ; 
+          
+          if (pisValue == "" || pisValue == undefined || pisValue == null){
+            hasError = 1;  
+            message.error("Please, Provide Pis information") ; 
+          } else {
+            payload.grade = data.grade;
+            payload.pis = data.pis;
+          }
+          
         }
         return payload;
       }
@@ -123,7 +151,16 @@ const AddProduction = () => {
         temp.push(element) ; 
       }
     })
-    await addNewProduction(temp);
+
+    console.log("Temp information");
+    console.log(temp);
+    
+    
+
+    if (hasError == 0){
+      await addNewProduction(temp);
+    }
+
   };
 
   // Add New Production option handler complete ============================================================================
@@ -439,7 +476,7 @@ const AddProduction = () => {
                   />
                 )}
               />
-            </Form.Item>
+            </Form.Item>  
           </Col>
 
           {production_filter != "multi_quality_wise" && (
@@ -460,6 +497,7 @@ const AddProduction = () => {
                       <>
                         <Select
                           {...field}
+                          disabled = {production_filter == "machine_wise"?true:false}
                           placeholder="Select Quality"
                           loading={dropDownQualityLoading}
                           options={

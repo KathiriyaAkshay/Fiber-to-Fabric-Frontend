@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Form,
@@ -23,6 +23,7 @@ import {
   getProductionByIdRequest,
   updateProductionRequest,
 } from "../../api/requests/production/inhouseProduction";
+import { getBeamCardListRequest } from "../../api/requests/beamCard";
 
 const updateProductionSchema = yupResolver(
   yup.object().shape({
@@ -94,7 +95,12 @@ const UpdateProduction = () => {
       pending_meter: +productionDetail.pending_meter,
     };
 
-    await updateProduction(newData);
+    console.log("Payload information");
+    console.log(newData);
+    
+    
+
+    // await updateProduction(newData);
   };
 
   const {
@@ -121,6 +127,7 @@ const UpdateProduction = () => {
 
   const { quality_id, meter } = watch();
 
+  // DropDown quality list request
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -151,7 +158,56 @@ const UpdateProduction = () => {
         // }
       },
       enabled: Boolean(companyId),
-    });
+  });
+
+  // Machinenumber dropdown list information 
+  const {data: beamCardList, isLoading: isBeamCardListLoading} = useQuery({
+    queryKey: [
+      "beamCard",
+      "list",
+      {
+        company_id: companyId,
+        quality_id: quality_id,
+      },
+    ], 
+    queryFn: async () => {
+      const res = await getBeamCardListRequest({
+        params:{
+          company_id: companyId, 
+          page: 0 ,
+          pageSize: 99999, 
+          quality_id: quality_id, 
+          status: "running"
+        }
+      }); 
+
+      return res?.data?.data ; 
+    }, 
+    enabled: Boolean(companyId && quality_id)
+  })
+
+  const [machineListDropDown, setMachineListDropDown] = useState([]) ; 
+  const [changedBeamNumber, setChangedBeamNumber] = useState(null) ; 
+  const [changedPendingMeter, setChangedPendigMeter] = useState(null) ; 
+ 
+  useEffect(() => {
+    let temp = [] ; 
+    beamCardList?.rows?.map((element) => {
+
+      const obj =
+        element?.non_pasarela_beam_detail ||
+        element?.recieve_size_beam_detail ||
+        element?.job_beam_receive_detail;
+
+      temp.push({
+        label: element?.machine_no, 
+        value: element?.machine_no, 
+        beam_no: obj?.beam_no, 
+        pending_meter: obj?.pending_meter
+      })
+    })
+    setMachineListDropDown(temp) ; 
+  }, [beamCardList]) ; 
 
   const avgWeight = useMemo(() => {
     if (
@@ -166,17 +222,6 @@ const UpdateProduction = () => {
     }
   }, [dropDownQualityListRes, quality_id]);
 
-  // const [weightPlaceholder, setWeightPlaceholder] = useState(null);
-
-  // const calculateWeight =  (meterValue) => {
-  //   const weightFrom = ((avgWeight.weight_from / 100) * meterValue).toFixed(3);
-  //   const weightTo = ((avgWeight.weight_to / 100) * meterValue).toFixed(3);
-
-  //   setWeightPlaceholder({
-  //     weightFrom: +weightFrom,
-  //     weightTo: +weightTo,
-  //   });
-  // };
   const weightPlaceholder = useMemo(() => {
     if (avgWeight) {
       const weightFrom = ((avgWeight.weight_from / 100) * meter).toFixed(3);
@@ -279,12 +324,6 @@ const UpdateProduction = () => {
                           // handleQualityChange();
                         }}
                       />
-                      {/* {quality_id && (
-                          <Typography.Text style={{ color: "red" }}>
-                            Avg weight must be between {avgWeight?.weight_from}{" "}
-                            to {avgWeight?.weight_to}
-                          </Typography.Text>
-                        )} */}
                     </>
                   );
                 }}
@@ -427,11 +466,16 @@ const UpdateProduction = () => {
                 control={control}
                 name="machine_no"
                 render={({ field }) => (
-                  <Input
+                  <Select
                     {...field}
-                    name="machine_no"
-                    style={{
-                      width: "100%",
+                    placeholder="Select Machine number"
+                    loading={isBeamCardListLoading}
+                    options={machineListDropDown}
+                    onChange={(value, details) => {
+                      field.onChange(value);
+                      setChangedBeamNumber(details?.beam_no) ; 
+                      setChangedPendigMeter(details?.pending_meter) ; 
+                      // handleQualityChange();
                     }}
                   />
                 )}
@@ -480,14 +524,22 @@ const UpdateProduction = () => {
                 control={control}
                 name="beam_no"
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    name="beam_no"
-                    style={{
-                      width: "100%",
-                    }}
-                    disabled
-                  />
+                  <>
+                    <Input
+                      {...field}
+                      name="beam_no"
+                      style={{
+                        width: "100%",
+                      }}
+                      disabled
+                    />
+                    <div style={{marginTop: "6px"}}>
+                      {changedBeamNumber !== null && <span style={{
+                        fontWeight: 600,
+                        color: "green"
+                      }}>Beam No. Found {changedBeamNumber}</span>}
+                    </div>
+                  </>
                 )}
               />
             </Form.Item>

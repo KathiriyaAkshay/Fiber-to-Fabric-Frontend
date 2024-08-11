@@ -1,6 +1,6 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { Button, Form, Input, message, Select } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 
 const AddProductionTable = ({
@@ -21,6 +21,7 @@ const AddProductionTable = ({
   setWeightPlaceholder,
   dropDownQualityListRes,
 }) => {
+
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
@@ -32,17 +33,55 @@ const AddProductionTable = ({
       return Array.from({ length: 15 }, (_, i) => i + 1);
     }
   }, [production_filter]);
+  useEffect(() => { 
+    if (production_filter == "machine_wise"){
+      const obj =
+        beamCardList?.rows[0]?.non_pasarela_beam_detail ||
+        beamCardList?.rows[0]?.recieve_size_beam_detail ||
+        beamCardList?.rows[0]?.job_beam_receive_detail;
 
+      if (obj !== undefined){
+        setValue(`machine_no_1`, beamCardList?.rows[0]?.machine_no) ; 
+        setValue(`beam_no_1`, obj?.beam_no); 
+        setValue(`production_meter_1`, beamCardList?.rows[0]?.pending_meter) ; 
+        setValue("quality_id", beamCardList?.rows[0]?.inhouse_quality?.id)
+        
+      } else {
+        setValue(`machine_no_1`, undefined) ; 
+        setValue(`beam_no_1`, undefined); 
+        setValue(`production_meter_1`, undefined) ; 
+        setValue("quality_id", undefined)
+      }
+      
+        
+      
+    }
+  }, [production_filter, beamCardList])
   const activeNextField = (event, fieldNumber) => {
     
     if (event.keyCode === 13) {
       let meters = getValues(`meter_${fieldNumber}`) ; 
       let production_meter = getValues(`production_meter_${fieldNumber}`) ; 
+      let machine_number = getValues(`machine_no_${fieldNumber}`) ; 
+      let weight = getValues(`weight_${fieldNumber}`) ; 
+      let average = getValues(`average_${fieldNumber}`) ; 
 
-      if (meters  > production_meter){
-        message.warning("Please, enter valid meter") ; 
+      if (meters == "" || meters == undefined){
+        message.error("Please, Enter taka meter") ; 
         return ; 
-      } else {
+      } else if (machine_number == "" || machine_number == undefined){
+        message.error("Please, Select machine number") ; 
+        return ; 
+      } else if (weight == "" || weight == undefined){
+        message.error("Please, Enter taka weight") ; 
+        return ; 
+      } else if (average == "" || average == undefined){
+        message.error("Please, Enter proper taka weight") ; 
+        return ; 
+      } else if (meters  > production_meter){
+        message.error("Please, Enter valid meter") ; 
+        return ; 
+      }   else {
         let pending_meter = Number(production_meter) - Number(meters) ; 
         setValue(`pending_meter_${fieldNumber}`, pending_meter) ; 
 
@@ -120,7 +159,6 @@ const AddProductionTable = ({
     const beamCard = beamCardList.rows.find(({ machine_no }) => {
       return machine_no === value;
     });
-
     let lastPendingMeter = undefined ; 
 
     numOfFields.map((element, index) => {
@@ -132,8 +170,8 @@ const AddProductionTable = ({
           lastPendingMeter = tempPendingMeter ; 
         }
       }
-      
     })
+
     const obj =
       beamCard.non_pasarela_beam_detail ||
       beamCard.recieve_size_beam_detail ||
@@ -142,7 +180,7 @@ const AddProductionTable = ({
     setValue(`beam_no_${fieldNumber}`, obj.beam_no);
     
     if (lastPendingMeter == undefined){
-      setValue(`production_meter_${fieldNumber}`, obj?.meters);
+      setValue(`production_meter_${fieldNumber}`, beamCard?.pending_meter);
     } else {
       setValue(`production_meter_${fieldNumber}`, lastPendingMeter);
     }
@@ -183,9 +221,6 @@ const AddProductionTable = ({
       });
     }
     field.onChange(value ? value : "");
-    
-    
-  
   };
 
   const calculateTotals = () => {
@@ -317,7 +352,7 @@ const AddProductionTable = ({
                           style={{
                             width: "100%",
                           }}
-                          disabled={fieldNumber !== activeField}
+                          disabled={fieldNumber !== activeField || production_filter === "machine_wise"}
                           options={
                             beamCardList &&
                             beamCardList?.rows?.map(({ machine_no }) => ({

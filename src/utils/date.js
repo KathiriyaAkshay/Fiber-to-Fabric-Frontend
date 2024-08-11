@@ -31,3 +31,23 @@ export function currentMonthStartDateEndDate() {
 
     return [startDate, endDate]; 
 }
+
+export function getCurrentFinancialYearDates() {
+    let today = new Date();
+    let currentYear = today.getFullYear();
+    let startFinanceYear, endFinanceYear;
+
+    // Financial year starts from April 1st
+    if (today.getMonth() + 1 >= 4) { // getMonth() is zero-based, adding 1 to make it 1-based
+        startFinanceYear = new Date(currentYear, 3, 1); // April 1 of current year
+    } else {
+        startFinanceYear = new Date(currentYear - 1, 3, 1); // April 1 of the previous year
+    }
+
+    let currentDate = today;
+
+    return {
+        startFinanceYear: startFinanceYear,
+        currentDate: currentDate
+    };
+}

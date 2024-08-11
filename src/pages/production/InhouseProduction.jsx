@@ -13,6 +13,7 @@ import {
   Tag,
   Checkbox,
   message,
+  Badge
 } from "antd";
 import {
   BarcodeOutlined,
@@ -38,12 +39,17 @@ import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
 import { useCurrentUser } from "../../api/hooks/auth";
 import useDebounce from "../../hooks/useDebounce";
+import { disabledFutureDate } from "../../utils/date";
+import { getCurrentFinancialYearDates } from "../../utils/date";
+import dayjs from "dayjs";
+import moment from "moment";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { companyId, company } = useContext(GlobalContext);
   const { data: user } = useCurrentUser();
+  const financialYearData = getCurrentFinancialYearDates();
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -55,21 +61,21 @@ const InhouseProduction = () => {
   const [qrDetails, setQrDetails] = useState([]);
 
   const [quality, setQuality] = useState(null);
-  const [fromDate, setFromDate] = useState(null);
-  const [toDate, setToDate] = useState(null);
-  const [radioSelection, setRadioSelection] = useState("sold");
-  const [fromTakaNo, setFromTakaNo] = useState("");
-  const [toTakaNo, setToTakaNo] = useState("");
-  const [fromMachineNo, setFromMachineNo] = useState("");
-  const [toMachineNo, setToMachineNo] = useState("");
-  const [beamNo, setBeamNo] = useState("");
-  const [challanNo, setChallanNo] = useState("");
+  const [fromDate, setFromDate] = useState(dayjs(financialYearData?.startFinanceYear));
+  const [toDate, setToDate] = useState(dayjs(financialYearData?.currentDate));
+  const [radioSelection, setRadioSelection] = useState("stock");
+  const [fromTakaNo, setFromTakaNo] = useState(null);
+  const [toTakaNo, setToTakaNo] = useState(null);
+  const [fromMachineNo, setFromMachineNo] = useState(null);
+  const [toMachineNo, setToMachineNo] = useState(null);
+  const [beamNo, setBeamNo] = useState(null);
+  const [challanNo, setChallanNo] = useState(null);
   const [grade, setGrade] = useState(null);
   const [foldingUser, setFoldingUser] = useState(null);
 
   const debounceQuality = useDebounce(quality, 500);
-  const debounceFromDate = useDebounce(fromDate, 500);
-  const debounceToDate = useDebounce(toDate, 500);
+  const debounceFromDate = useDebounce(dayjs(fromDate).format("YYYY-MM-DD"), 500);
+  const debounceToDate = useDebounce(dayjs(toDate).format("YYYY-MM-DD"), 500);
   const debounceType = useDebounce(radioSelection, 500);
   const debounceFromTakaNo = useDebounce(fromTakaNo, 500);
   const debounceToTakaNo = useDebounce(toTakaNo, 500);
@@ -80,7 +86,7 @@ const InhouseProduction = () => {
   const debounceGrade = useDebounce(grade, 500);
   const debounceFoldingUser = useDebounce(foldingUser, 500);
 
-  const { mutateAsync: deleteProduction } = useMutation({
+  const { mutateAsync: deleteProduction, isPending: deleteProductionPending  } = useMutation({
     mutationFn: async ({ data }) => {
       const res = await deleteProductionRequest({
         data,
@@ -94,7 +100,7 @@ const InhouseProduction = () => {
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("In-House Production taka deleted successfully");
       }
       setSelectedRecords([]);
       queryClient.invalidateQueries(["production", "list", companyId]);
@@ -107,6 +113,7 @@ const InhouseProduction = () => {
     },
   });
 
+  // Quality list dropdown request
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -133,6 +140,7 @@ const InhouseProduction = () => {
       enabled: Boolean(companyId),
     });
 
+  // Production taka list request
   const { data: productionList, isLoading } = useQuery({
     queryKey: [
       "production",
@@ -150,30 +158,40 @@ const InhouseProduction = () => {
         toMachine: debounceToMachineNo,
         challanNo: debounceChallanNo,
         type: debounceType,
-        folding_user_id: debounceFoldingUser,
+        // folding_user_id: debounceFoldingUser,
         fromTaka: debounceFromTakaNo,
         toTaka: debounceToTakaNo,
       },
     ],
     queryFn: async () => {
+      let requestPaylaod = {
+        company_id: companyId,
+        page,
+        pageSize,
+        quality_id: debounceQuality,
+        fromDate: debounceFromDate,
+        toDate: debounceToDate,
+        beam_no: debounceBeamNo,
+        grade: debounceGrade,
+        fromMachine: debounceFromMachineNo,
+        toMachine: debounceToMachineNo,
+        challanNo: debounceChallanNo,
+        fromTaka: debounceFromTakaNo,
+        toTaka: debounceToTakaNo,
+      }
+
+      if (radioSelection == "sold") {
+        requestPaylaod["is_stock"] = "0";
+      } else if (radioSelection == "stock") {
+        requestPaylaod["is_stock"] = "1";
+      } else if (radioSelection == "tp") {
+        requestPaylaod["is_tp"] = "1";
+      } else if (radioSelection == "re-work") {
+        requestPaylaod["is_rework"] = "1";
+      }
+
       const res = await getProductionListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          quality_id: debounceQuality,
-          fromDate: debounceFromDate,
-          toDate: debounceToDate,
-          beam_no: debounceBeamNo,
-          grade: debounceGrade,
-          fromMachine: debounceFromMachineNo,
-          toMachine: debounceToMachineNo,
-          challanNo: debounceChallanNo,
-          type: debounceType,
-          folding_user_id: debounceFoldingUser,
-          fromTaka: debounceFromTakaNo,
-          toTaka: debounceToTakaNo,
-        },
+        params: requestPaylaod,
       });
       return res.data?.data;
     },
@@ -192,7 +210,7 @@ const InhouseProduction = () => {
     const data = {
       ids: selectedRecords,
     };
-    deleteProduction({ data });
+    await deleteProduction({ data });
   }
 
   const printQrHandler = () => {
@@ -315,10 +333,20 @@ const InhouseProduction = () => {
     },
     {
       title: "Taka No.",
-      render: (record) =>
-        record.taka_no
-          ? `${record.taka_no} ${record.is_tp ? "(TP)" : ""}`
-          : "-",
+      dataIndex: 'taka_no',
+      key: 'taka_no',
+      render: (text, record) => {
+        return (
+          <Badge
+            color={record.is_tp ? "blue" : "green"} // Custom color based on is_tp
+            text={
+              record.taka_no
+                ? `${record.taka_no} ${record.is_tp ? "(TP)" : ""}`
+                : "-"
+            }
+          />
+        );
+      }
     },
     {
       title: "Meter",
@@ -328,7 +356,7 @@ const InhouseProduction = () => {
     {
       title: "Weight",
       dataIndex: "weight",
-      key: "weight",
+      key: "to tot",
     },
     {
       title: "Machine No",
@@ -431,7 +459,7 @@ const InhouseProduction = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: 0,
+          total: productionList?.count,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -441,11 +469,13 @@ const InhouseProduction = () => {
           let totalMeter = 0;
           let totalWeight = 0;
           let totalAvg = 0;
+
           tableData.forEach(({ meter, weight }) => {
             totalMeter += +meter;
             totalWeight += +weight;
-            totalAvg += +Number(weight * 100) / Number(meter);
           });
+
+          totalAvg = (Number(totalWeight) * 100) / Number(totalMeter);
 
           return (
             <>
@@ -457,14 +487,14 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalMeter.toFixed(2)}</b>
+                  <b>{totalMeter.toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalWeight.toFixed(2)}</b>
+                  <b>{totalWeight.toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalAvg.toFixed(2)}</b>
+                  <b>{totalAvg.toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -473,7 +503,7 @@ const InhouseProduction = () => {
               </Table.Summary.Row>
 
               {/* Total count information  */}
-              <Table.Summary.Row>
+              <Table.Summary.Row className="font-semibold grand-total-div">
                 <Table.Summary.Cell index={0} align="left">
                   <b>
                     Grand <br />
@@ -488,10 +518,10 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0} align="left">
                   <b>{productionList?.total_weight?.toFixed(2)}</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
                 <Table.Summary.Cell index={0} align="left">
-                  {/* <b>{totalAvg.toFixed(2)}</b> */}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}>
+                  <b>{productionList?.net_average?.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -517,6 +547,20 @@ const InhouseProduction = () => {
           />
         </div>
         <Flex align="center" gap={10}>
+          <Flex align="center" gap={10}>
+            <Button type="primary" onClick={()=> {
+              navigate("/purchase/purchased-taka")
+            }}>
+              View Purchased Taka
+            </Button>
+          </Flex>
+          <Flex align="center" gap={10} onClick={() => {
+            navigate("/job/job-taka")
+          }}>
+            <Button type="primary">
+              View Job Taka
+            </Button>
+          </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Quality
@@ -553,6 +597,7 @@ const InhouseProduction = () => {
               onChange={setFromDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -563,6 +608,7 @@ const InhouseProduction = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              // disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -622,7 +668,10 @@ const InhouseProduction = () => {
             <Input
               placeholder="Taka No"
               value={fromTakaNo}
-              onChange={setFromTakaNo}
+              type="number"
+              onChange={(e) => {
+                setFromTakaNo(e.target.value)
+              }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
@@ -631,7 +680,10 @@ const InhouseProduction = () => {
             <Input
               placeholder="Taka No"
               value={toTakaNo}
-              onChange={setToTakaNo}
+              type="number"
+              onChange={(e) => {
+                setToTakaNo(e.target.value)
+              }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
@@ -653,7 +705,10 @@ const InhouseProduction = () => {
             <Input
               placeholder="Machine No"
               value={fromMachineNo}
-              onChange={setFromMachineNo}
+              type="number"
+              onChange={(e) => {
+                setFromMachineNo(e.target.value)
+              }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
@@ -662,7 +717,10 @@ const InhouseProduction = () => {
             <Input
               placeholder="Machine No"
               value={toMachineNo}
-              onChange={setToMachineNo}
+              type="number"
+              onChange={(e) => {
+                setToMachineNo(e.target.value)
+              }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
           </Flex>
@@ -695,13 +753,36 @@ const InhouseProduction = () => {
       </div>
 
       <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+
+        {selectedRecords.length ? (
+          <Flex gap={12} justify="space-between">
+            <Button danger 
+              onClick={handleDelete} 
+              style={{ width: "50px" }} 
+              loading = {deleteProductionPending}          
+            >
+              <DeleteOutlined />
+            </Button>
+            <Button
+              type="default"
+              disabled={!selectedRecords.length}
+              className="flex-none"
+              style={{ backgroundColor: "#247840", color: "#fff" }}
+              onClick={printQrHandler}
+            >
+              PRINT QR
+            </Button>
+          </Flex>
+        ) : null}
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Challan No:
           </Typography.Text>
           <Input
             value={challanNo}
-            onChange={setChallanNo}
+            onChange={(e) => {
+              setChallanNo(e.target.value)
+            }}
             placeholder="Challan No"
           />
         </Flex>
@@ -722,7 +803,9 @@ const InhouseProduction = () => {
             <Input
               placeholder="Beam No"
               value={beamNo}
-              onChange={setBeamNo}
+              onChange={(e) => {
+                setBeamNo(e.target.value)
+              }}
               style={{ width: "150px", marginLeft: "10px" }}
             />
           </Flex>
@@ -753,22 +836,6 @@ const InhouseProduction = () => {
         </Flex>
       </div>
 
-      {selectedRecords.length ? (
-        <Flex gap={12} justify="space-between">
-          <Button danger onClick={handleDelete} style={{ width: "50px" }}>
-            <DeleteOutlined />
-          </Button>
-          <Button
-            type="default"
-            disabled={!selectedRecords.length}
-            className="flex-none"
-            style={{ backgroundColor: "#247840", color: "#fff" }}
-            onClick={printQrHandler}
-          >
-            PRINT QR
-          </Button>
-        </Flex>
-      ) : null}
 
       {renderTable()}
 
