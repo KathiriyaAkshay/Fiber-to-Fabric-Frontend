@@ -581,6 +581,19 @@ const ViewYarnSentDetailsModal = ({
 
   const componentRef = useRef();
 
+  const pageStyle = `
+    @media print {
+      .print-instructions {
+          display: none;
+      }
+      .printable-content {
+          padding: 20px; /* Add padding for print */
+          width: 100%;
+          box-sizing: border-box; /* Include padding in width calculation */
+      }
+    }
+  `;
+
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -609,6 +622,7 @@ const ViewYarnSentDetailsModal = ({
                   </Flex>
                 )}
                 content={() => componentRef.current}
+                pageStyle={pageStyle}
               />
             </>
           );
@@ -638,7 +652,7 @@ const ViewYarnSentDetailsModal = ({
           },
         }}
       >
-        <div ref={componentRef} style={{ padding: "25px" }}>
+        <div ref={componentRef} style={{marginLeft: "1px", marginRight: "1px", width: "100%"}}>
           <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
