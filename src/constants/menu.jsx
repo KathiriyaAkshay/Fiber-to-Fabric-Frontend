@@ -213,12 +213,12 @@ export const menubarOptionsList = [
     ],
   },
   {
-    path: "/production",
+    path: "production/inhouse-production",
     key: "Production",
     label: (
       <Link
         className="text-current no-underline hover:text-current"
-        to="/production"
+        to="production/inhouse-production"
       >
         Production
       </Link>
