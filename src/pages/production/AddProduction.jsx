@@ -76,6 +76,7 @@ const AddProduction = () => {
         return machine_no === data[`machine_no_${fieldNumber}`];
       });
       if (beamCard !== undefined){
+
         const payload = {
           machine_name: data.machine_name,
           production_date: dayjs(data.date).format("YYYY-MM-DD"),
@@ -94,6 +95,10 @@ const AddProduction = () => {
 
         console.log("Payload information");
         console.log(payload);
+
+        console.log("Average weight information");
+        console.log(avgWeight);
+        
         
         
   
@@ -118,9 +123,7 @@ const AddProduction = () => {
         temp.push(element) ; 
       }
     })
-    console.log(temp);
-    
-    // await addNewProduction(temp);
+    await addNewProduction(temp);
   };
 
   // Add New Production option handler complete ============================================================================
