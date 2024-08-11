@@ -452,7 +452,7 @@ const UpdateSaleChallan = () => {
           paddingTop: "12px",
         }}
       >
-        <Col span={6}>
+        {/* <Col span={6}>
           <Form.Item
             label="Company"
             name="company_id"
@@ -483,7 +483,7 @@ const UpdateSaleChallan = () => {
               )}
             />
           </Form.Item>
-        </Col>
+        </Col> */}
 
         <Col span={6}>
           <Form.Item

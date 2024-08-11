@@ -205,7 +205,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
-  // Machine name dropdown list 
+  // Machine name dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -218,7 +218,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
-  // Quality dropdown list machine name wise 
+  // Quality dropdown list machine name wise
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -337,9 +337,7 @@ const AddProduction = () => {
       onFinish={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col gap-2 p-4 pt-2">
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-
           <div className="flex items-center gap-5">
             <Button onClick={() => navigate(-1)}>
               <ArrowLeftOutlined />
@@ -482,15 +480,22 @@ const AddProduction = () => {
                 control={control}
                 name="date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    disabledDate={disabledFutureDate}
+                  />
                 )}
               />
             </Form.Item>
           </Col>
         </Row>
 
-        <Row style={{ gap: "16px", marginTop: "-25px" }} className="w-100" justify={"start"}>
-
+        <Row
+          style={{ gap: "16px", marginTop: "-25px" }}
+          className="w-100"
+          justify={"start"}
+        >
           {production_filter == "machine_wise" && (
             <Col span={4}>
               <Form.Item
@@ -511,6 +516,7 @@ const AddProduction = () => {
                       style={{
                         width: "100%",
                       }}
+                      showSearch
                       loading={isLoadingLoadedMachineNo}
                       options={loadedMachineList.map((item) => {
                         return { label: item, value: item };
@@ -523,10 +529,7 @@ const AddProduction = () => {
           )}
 
           <Col span={8}>
-            <Form.Item
-              label="Last Entered Taka No."
-              wrapperCol={{ sm: 24 }}
-            >
+            <Form.Item label="Last Entered Taka No." wrapperCol={{ sm: 24 }}>
               <Row gutter={15}>
                 <Col span={8}>
                   <Controller
@@ -575,7 +578,6 @@ const AddProduction = () => {
         )}
 
         {production_filter === "machine_wise" && (
-          
           <Row style={{ gap: "12px", marginTop: "20px" }}>
             <Col span={3}>
               <Form.Item
@@ -632,14 +634,18 @@ const AddProduction = () => {
               </Form.Item>
             </Col>
           </Row>
-
         )}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="button" onClick={handleSubmit(onSubmit)} loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="button"
+            onClick={handleSubmit(onSubmit)}
+            loading={isPending}
+          >
             Create
           </Button>
         </Flex>

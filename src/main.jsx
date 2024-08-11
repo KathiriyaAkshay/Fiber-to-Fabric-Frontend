@@ -110,6 +110,7 @@ import AddJobGrayBill from "./pages/sale/bill/jobgray/addJobGrayBill";
 import YarnBillList from "./pages/purchase/bill/yarnbill/yarnBillList";
 import AddProduction from "./pages/production/AddProduction";
 import InhouseProduction from "./pages/production/InhouseProduction";
+import MonthlyProductionReport from "./pages/production/MonthlyProductionReport";
 import OpenProduction from "./pages/production/OpenProduction";
 import Payment from "./pages/accounts/Payment";
 import PurchaseEntryList from "./pages/purchase/purchaseEntry/PurchaseEntryList";
@@ -333,7 +334,7 @@ const router = createBrowserRouter([
           },
           {
             path: "monthly-production-report",
-            element: <div>monthly-production-report</div>,
+            element: <MonthlyProductionReport />,
           },
           {
             path: "opening-production-stock",
@@ -598,12 +599,13 @@ const router = createBrowserRouter([
           {
             path: "report",
             children: [
-              { 
-                index: true, 
-                element: <BeamSentReport/>},
+              {
+                index: true,
+                element: <BeamSentReport />,
+              },
               {
                 path: "beam-sent-report",
-                element: <BeamSentReport/>,
+                element: <BeamSentReport />,
               },
               {
                 path: "yarn-sent-report",

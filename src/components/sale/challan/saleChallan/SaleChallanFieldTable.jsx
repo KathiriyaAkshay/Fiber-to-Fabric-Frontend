@@ -22,6 +22,7 @@ const SaleChallanFieldTable = ({
   // setPendingMeter,
   // setPendingTaka,
   // setPendingWeight,
+  setSaleChallanTypes,
 }) => {
   const getModelFromTakaNo = async (taka_no) => {
     try {
@@ -46,6 +47,11 @@ const SaleChallanFieldTable = ({
       const data = await getModelFromTakaNo(event.target.value);
 
       if (data.success) {
+        setSaleChallanTypes((prev) => {
+          if (data.data.model && !prev.includes(data.data.model))
+            return [...prev, data.data.model];
+          else return [...prev];
+        });
         setValue(`meter_${fieldNumber}`, data.data.meter);
         setValue(`weight_${fieldNumber}`, data.data.weight);
         setValue(`model_${fieldNumber}`, data.data.model);
@@ -147,7 +153,7 @@ const SaleChallanFieldTable = ({
                                 border: "0px solid",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField}
+                              disabled={fieldNumber !== activeField}
                               onKeyDown={(event) =>
                                 activeNextField(event, fieldNumber)
                               }
@@ -182,7 +188,7 @@ const SaleChallanFieldTable = ({
                                 border: "0px solid",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField}
+                              disabled={fieldNumber !== activeField}
                             />
                           )}
                         />
@@ -214,7 +220,7 @@ const SaleChallanFieldTable = ({
                                 border: "0px solid",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField}
+                              disabled={fieldNumber !== activeField}
                             />
                           )}
                         />
@@ -245,7 +251,7 @@ const SaleChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            disabled={fieldNumber !== activeField}
                           />
                         )}
                       />
@@ -255,7 +261,7 @@ const SaleChallanFieldTable = ({
                       <Button
                         className="job-challan-taka-plus-option"
                         icon={<MinusCircleOutlined />}
-                        disabled={fieldNumber !== activeField}
+                        disabled={fieldNumber > activeField}
                         onClick={() => removeCurrentField(fieldNumber)}
                       ></Button>
                     </td>
@@ -390,7 +396,7 @@ const SaleChallanFieldTable = ({
                         <Button
                           className="job-challan-taka-plus-option"
                           icon={<MinusCircleOutlined />}
-                          disabled={fieldNumber !== activeField}
+                          disabled={fieldNumber > activeField}
                         ></Button>
                       </td>
                     </tr>
@@ -524,7 +530,7 @@ const SaleChallanFieldTable = ({
                         <Button
                           className="job-challan-taka-plus-option"
                           icon={<MinusCircleOutlined />}
-                          disabled={fieldNumber !== activeField}
+                          disabled={fieldNumber > activeField}
                         ></Button>
                       </td>
                     </tr>
@@ -658,7 +664,7 @@ const SaleChallanFieldTable = ({
                         <Button
                           className="job-challan-taka-plus-option"
                           icon={<MinusCircleOutlined />}
-                          disabled={fieldNumber !== activeField}
+                          disabled={fieldNumber > activeField}
                         ></Button>
                       </td>
                     </tr>

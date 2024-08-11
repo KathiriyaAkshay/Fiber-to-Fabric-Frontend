@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Radio,
@@ -29,6 +29,8 @@ import {
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { ORDER_TYPE } from "../../constants/orderMaster";
+import { createSaleChallanTakaDetailRequest } from "../../api/requests/sale/challan/challan";
+import { useDebounceCallback } from "../../hooks/useDebounce";
 
 const addTakaTpCuttingResolver = yupResolver(
   yup.object().shape({
@@ -123,8 +125,7 @@ const AddTakaTpCutting = () => {
     },
     resolver: addTakaTpCuttingResolver,
   });
-  const { machine_name, sr_no_1, sr_no_2 } = watch();
-  console.log({ sr_no_1, sr_no_2 });
+  const { machine_name, from_type, to_type } = watch();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -185,6 +186,42 @@ const AddTakaTpCutting = () => {
     setValue("sr_no_1", "TCP");
     setValue("sr_no_2", SrNoData ? SrNoData + 1 : 1);
   }, [SrNoData, setValue]);
+
+  const [isValidFromTakaNo, setIsValidFromTakaNo] = useState(true);
+  const [isValidToTakaNo, setIsValidToTakaNo] = useState(true);
+
+  const checkTakaNo = async (type, takaNo, isFrom) => {
+    try {
+      const data = {
+        sale_challan_type: [type],
+      };
+      const response = await createSaleChallanTakaDetailRequest({
+        data,
+        params: {
+          company_id: companyId,
+          taka_no: takaNo,
+        },
+      });
+      if (response.data.success) {
+        isFrom && setIsValidFromTakaNo(true);
+        !isFrom && setIsValidToTakaNo(true);
+      } else {
+        isFrom && setIsValidFromTakaNo(false);
+        !isFrom && setIsValidToTakaNo(false);
+      }
+    } catch (error) {
+      message.error(error.response.data.message);
+      isFrom && setIsValidFromTakaNo(false);
+      !isFrom && setIsValidToTakaNo(false);
+    }
+  };
+
+  const debouncedCheckUniqueTakaHandler = useDebounceCallback(
+    (type, takaNo, isFrom) => {
+      checkTakaNo(type, takaNo, isFrom);
+    },
+    500
+  );
 
   return (
     <Form
@@ -395,7 +432,14 @@ const AddTakaTpCutting = () => {
                         {...field}
                         type="number"
                         placeholder="101"
-                        onChange={(e) => field.onChange(+e.target.value)}
+                        onChange={(e) => {
+                          field.onChange(+e.target.value);
+                          debouncedCheckUniqueTakaHandler(
+                            from_type,
+                            +e.target.value,
+                            true
+                          );
+                        }}
                       />
                     )}
                   />
@@ -421,7 +465,14 @@ const AddTakaTpCutting = () => {
                         {...field}
                         type="number"
                         placeholder="101"
-                        onChange={(e) => field.onChange(+e.target.value)}
+                        onChange={(e) => {
+                          field.onChange(+e.target.value);
+                          debouncedCheckUniqueTakaHandler(
+                            to_type,
+                            +e.target.value,
+                            false
+                          );
+                        }}
                       />
                     )}
                   />
@@ -525,7 +576,12 @@ const AddTakaTpCutting = () => {
                 <Button htmlType="button" onClick={() => reset()}>
                   Reset
                 </Button>
-                <Button type="primary" htmlType="submit" loading={isPending}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={isPending}
+                  disabled={!isValidFromTakaNo || !isValidToTakaNo}
+                >
                   Create
                 </Button>
               </Flex>
