@@ -274,7 +274,7 @@ input:read-only {
   border-radius: 6px !important;
 }
 
-.ant-menu-item:hover {
+/* .ant-menu-item:hover {
   background-color: var(--menu-item-hover-color) !important;
   border-radius: 6px !important;
 
@@ -294,20 +294,16 @@ input:read-only {
     padding-bottom: 8px;
     padding-left: 12px;
   }
-}
+} */
 
-.highlight-text {
-  .ant-descriptions-item-content {
+.highlight-text .ant-descriptions-item-content {
     color: red;
     font-weight: 600;
-  }
 }
 
-.finalamount-text {
-  .ant-descriptions-item-content {
+.finalamount-text .ant-descriptions-item-content {
     color: green;
     font-weight: 600;
-  }
 }
 
 /* Menu related css  */

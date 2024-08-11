@@ -112,12 +112,14 @@ const AddProduction = () => {
 
     });
 
-    // let temp = []; 
-    // newData?.map((element) => {
-    //   if (element !== undefined){
-    //     temp.push(element) ; 
-    //   }
-    // })
+    let temp = []; 
+    newData?.map((element) => {
+      if (element !== undefined){
+        temp.push(element) ; 
+      }
+    })
+    console.log(temp);
+    
     // await addNewProduction(temp);
   };
 

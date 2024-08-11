@@ -387,9 +387,6 @@ const AddBeamStockReport = () => {
       { company_id: companyId, type: quality_group, beam_type },
     ],
     queryFn: async () => {
-      console.log("Quality group", quality_group);
-      console.log("Beam type", beam_type);
-      
       
       if (
         quality_group === "inhouse(gray)" ||
@@ -751,6 +748,11 @@ const AddBeamStockReport = () => {
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
             const item = getTakaDetailsObject(row);
+            console.log("Beam object information");
+            console.log(item);
+            console.log(item?.supplier_beam_no  );
+            
+            
             if (item !== null) {
               return (
                 <PasarelaFormRow
@@ -763,6 +765,7 @@ const AddBeamStockReport = () => {
                   secondaryBeamDropDown={secondaryBeamDropDown}
                   selectedNonPasarela={selectedNonPasarela}
                   setSelectedNonPasarela={setSelectedNonPasarela}
+                  supplier_beam_number={item?.supplier_beam_no}
                 />
               );
             }
@@ -975,6 +978,7 @@ const PasarelaFormRow = ({
   secondaryBeamDropDown,
   selectedNonPasarela,
   setSelectedNonPasarela,
+  supplier_beam_number
 }) => {
   const actionHandler = (e) => {
     if (e.target.checked) {
@@ -1013,15 +1017,21 @@ const PasarelaFormRow = ({
               control={control}
               name={`beam_no_${fieldNumber}`}
               render={({ field }) => (
-                <Flex gap={8}>
-                  <Input
-                    {...field}
-                    placeholder="0"
-                    value={row.beam_no}
-                    style={{ width: "480px" }}
-                    disabled
-                  />
-                </Flex>
+                <>
+                  <Flex gap={8}>
+                    <Input
+                      {...field}
+                      placeholder="0"
+                      value={row.beam_no}
+                      style={{ width: "480px" }}
+                      disabled
+                    />
+                  </Flex>
+                  <div style={{fontWeight: 600, color: "blue", marginTop: "7px"}}>
+                    {supplier_beam_number !== undefined?<span>Sup B.N :{supplier_beam_number}</span>:""}
+                    
+                  </div>
+                </>
               )}
             />
           </Form.Item>
@@ -1050,10 +1060,6 @@ const PasarelaFormRow = ({
                   name={`secondary_beam_no_${fieldNumber}`}
                   placeholder="Select secondary beam"
                   options={secondaryBeamDropDown.map((details) => {
-                    console.log("Object information");
-                    console.log(details);
-                    
-                    
                     const item = getTakaDetailsObject(details);
                     return { label: item.beam_no, value: details.id };
                   })}
