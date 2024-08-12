@@ -18,6 +18,7 @@ const ReworkChallanFieldTable = ({
   setActiveField,
   setValue,
   getValues,
+  quality_id,
 }) => {
   const { companyId } = useContext(GlobalContext);
 
@@ -27,12 +28,13 @@ const ReworkChallanFieldTable = ({
 
   const [currentFieldNumber, setCurrentFieldNumber] = useState(null);
   const [storeTakaNo, setStoreTakaNo] = useState();
-  const debounceTakaNo = useDebounce(storeTakaNo, 500);
+  const debounceTakaNo = useDebounce(storeTakaNo, 300);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
 
       let taka_number = getValues(`taka_no_${fieldNumber}`) ; 
+      let meter =getValues(`meter_${fieldNumber}`) ; 
       
       if (taka_number == undefined || taka_number == ""){
         message.warning("Please, Enter taka number") ; 
@@ -46,16 +48,24 @@ const ReworkChallanFieldTable = ({
   };
 
   const removeCurrentField = (fieldNumber) => {
+    const detailArray = Array.from({length: activeField}).fill(0)  ;
+    
+    detailArray?.map((element, index) => {
+      let value = index + 1; 
+      if ((value + 1) > fieldNumber){
+        let taka_number = getValues(`taka_no_${value + 1}`); 
+        let meter = getValues(`meter_${value + 1}`) ; 
+        setValue(`taka_no_${value}`, taka_number) ; 
+        setValue(`meter_${value}`, meter)
+      }
+    })
     if (fieldNumber) {
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
       }
-      setValue(`taka_no_${fieldNumber}`, "");
-      setValue(`meter_${fieldNumber}`, "");
-      setValue(`received_meter_${fieldNumber}`, "");
-      setValue(`received_weight_${fieldNumber}`, "");
-      setValue(`short_${fieldNumber}`, "");
     }
+
+    calculateTotal() ; 
   };
 
   const calculateTotal = () => {
@@ -64,8 +74,12 @@ const ReworkChallanFieldTable = ({
     let totalTaka = 0;
     let totalMeter = 0;
     let totalReceiveMeter = 0;
+
     numOfFields.forEach((fieldNumber) => {
-      totalTaka += +getValues(`taka_no_${fieldNumber}`) || 0;
+      let taka_number = getValues(`taka_no_${fieldNumber}`); 
+      if (taka_number !== undefined && taka_number != null && taka_number != ""){
+        totalTaka += 1;
+      }
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
       totalReceiveMeter += +getValues(`received_meter_${fieldNumber}`) || 0;
     });
@@ -78,35 +92,62 @@ const ReworkChallanFieldTable = ({
     setValue("total_taka", totalTaka);
     setValue("taka_receive_meter", totalReceiveMeter);
   };
-
+  
+  // Get Particular production taka number information
   useQuery({
     queryKey: [
       "productionDetail",
       "get",
-      { company_id: companyId, taka_no: debounceTakaNo },
+      { company_id: companyId, taka_no: debounceTakaNo, quality_id: quality_id},
     ],
     queryFn: async () => {
-      if (debounceTakaNo) {
+      const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
+      let already_taka = 0 ; 
+      numOfFields.forEach((fieldNumber) => {
+        let taka_number = getValues(`taka_no_${fieldNumber}`); 
+        if (taka_number == e.target.value && fieldNumber !== activeField){
+          already_taka = 1 ; 
+        }
+      });
+
+      if (already_taka == 1){
+        message.warning(`Tako ${e.target.value} already in used`) ; 
+        setValue(`taka_no_${activeField}`, undefined) ; 
+        setValue(`meter_${activeField}`, undefined) ; 
+      }
+
+      if (debounceTakaNo && already_taka == 0) {
         const res = await getProductionByIdRequest({
           id: 0,
-          params: { company_id: companyId, taka_no: debounceTakaNo },
+          params: { 
+            company_id: companyId, 
+            taka_no: debounceTakaNo,  
+            quality_id: quality_id
+          },
         });
         if (res.data.success) {
+
+          if (res?.data?.data == null){
+            message.warning("Please, Provide valid taka number") ; 
+            setValue(`meter_${activeField}`, undefined) ; 
+          }
           setValue(
             `meter_${currentFieldNumber}`,
-            res.data.data !== null ? res.data.data.meter : 0
+            res.data.data !== null ? res.data.data.meter : undefined
           );
+          calculateTotal()
+
         } else {
-          setValue(`meter_${currentFieldNumber}`, "");
+          setValue(`meter_${currentFieldNumber}`, undefined);
+          message.warning("Please, Provide valid taka number")
         }
-        // return res.data?.data;
-      }
+      } 
     },
     enabled: Boolean(companyId),
   });
 
   return (
-    <Row style={{ marginTop: "-30px" }} gutter={18}>
+    <Row gutter={18}>
 
       <Col span={12}>
         <table
@@ -164,7 +205,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            readOnly={fieldNumber > activeField}
                             onChange={(e) => {
                               field.onChange(e);
                               setStoreTakaNo(e.target.value);
@@ -206,7 +247,7 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             // disabled={fieldNumber > activeField}
-                            disabled
+                            readOnly
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();
@@ -279,7 +320,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            readOnly
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }
@@ -314,7 +355,6 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
                             readOnly
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
@@ -328,7 +368,7 @@ const ReworkChallanFieldTable = ({
                     <Button
                       className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
-                      disabled={fieldNumber !== activeField}
+                      disabled={fieldNumber > activeField}
                       onClick={() => removeCurrentField(fieldNumber)}
                     ></Button>
                   </td>
@@ -558,7 +598,7 @@ const ReworkChallanFieldTable = ({
                     <Button
                       className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
-                      disabled={fieldNumber !== activeField}
+                      disabled={fieldNumber > activeField}
                     ></Button>
                   </td>
                 </tr>

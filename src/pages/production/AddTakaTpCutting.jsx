@@ -31,6 +31,7 @@ import * as yup from "yup";
 import { ORDER_TYPE } from "../../constants/orderMaster";
 import { createSaleChallanTakaDetailRequest } from "../../api/requests/sale/challan/challan";
 import { useDebounceCallback } from "../../hooks/useDebounce";
+import { disabledFutureDate } from "../../utils/date";
 
 const addTakaTpCuttingResolver = yupResolver(
   yup.object().shape({
@@ -81,7 +82,7 @@ const AddTakaTpCutting = () => {
 
   const onSubmit = async (data) => {
     const payload = {
-      machine_name: data.machine,
+      machine_name: data.machine_name,
       quality_id: +data.quality_id,
       from_type: data.from_type,
       to_type: data.to_type,
@@ -93,6 +94,7 @@ const AddTakaTpCutting = () => {
       is_taka_tp: data.option === "taka_tp",
       is_sample_cutting: data.option === "sample_cutting",
       is_cut: data.option === "cut",
+      sr_number: `${data?.sr_no_1}-${data?.sr_no_2}`
     };
     await addTakaTpCuttingHandler(payload);
   };
@@ -105,13 +107,13 @@ const AddTakaTpCutting = () => {
     resetField,
     reset,
     setValue,
+    getValues
   } = useForm({
     defaultValues: {
       sr_no_1: "",
       sr_no_2: "",
       machine_name: null,
       quality_id: null,
-
       option: "taka_tp",
       from_type: "taka(inhouse)",
       to_type: "taka(inhouse)",
@@ -119,14 +121,14 @@ const AddTakaTpCutting = () => {
       to_taka: "",
       total_meter: "",
       total_weight: "",
-
       remark: "",
       date: dayjs(),
     },
     resolver: addTakaTpCuttingResolver,
   });
-  const { machine_name, from_type, to_type } = watch();
+  const { machine_name, from_type, to_type, option } = watch();
 
+  // Machinename dropdown list request
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -150,6 +152,7 @@ const AddTakaTpCutting = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality list related dropdown list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -180,7 +183,7 @@ const AddTakaTpCutting = () => {
         }
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   useEffect(() => {
     setValue("sr_no_1", "TCP");
@@ -189,30 +192,69 @@ const AddTakaTpCutting = () => {
 
   const [isValidFromTakaNo, setIsValidFromTakaNo] = useState(true);
   const [isValidToTakaNo, setIsValidToTakaNo] = useState(true);
+  const [fromTakaInfo, setFromTakaInfo] = useState({}) ; 
+  const [toTakaInfo, setToTakaInfo] = useState({}); 
 
   const checkTakaNo = async (type, takaNo, isFrom) => {
-    try {
-      const data = {
-        sale_challan_type: [type],
-      };
-      const response = await createSaleChallanTakaDetailRequest({
-        data,
-        params: {
-          company_id: companyId,
-          taka_no: takaNo,
-        },
-      });
-      if (response.data.success) {
-        isFrom && setIsValidFromTakaNo(true);
-        !isFrom && setIsValidToTakaNo(true);
-      } else {
+    let machine_name = getValues("machine_name") ; 
+    let quality_id = getValues("quality_id") ; 
+    let from_taka_number = getValues("from_taka") ; 
+    let to_taka_number = getValues("to_taka") ; 
+  
+    if (machine_name == null || machine_name == undefined || machine_name == ""){
+      message.error("Please, Select Machine name") ;  
+      setValue("from_taka", undefined) ; 
+      setValue("to_taka", undefined) ; 
+    
+    } else if (quality_id == null || quality_id == undefined || quality_id == ""){
+      message.error("Please, Select Quality") ; 
+      setValue("from_taka", undefined) ; 
+      setValue("to_taka", undefined) ; 
+    
+    } else if (from_taka_number == to_taka_number){
+      message.error("Please, Provide different taka number") ;
+      setValue("from_taka", undefined) ; 
+      setValue("to_taka", undefined) ; 
+
+    } else {
+      try {
+        const data = {
+          sale_challan_type: [type],
+        };
+        
+        const response = await createSaleChallanTakaDetailRequest({
+          data,
+          params: {
+            company_id: companyId,
+            taka_no: takaNo,
+            quality_id: quality_id
+          },
+        });
+        if (response.data.success) {
+          if (isFrom){
+            setFromTakaInfo({
+              meter: response?.data?.data?.meter, 
+              weight: response?.data?.data?.weight
+            })
+          } else {
+            setToTakaInfo({
+              meter: response?.data?.data?.meter, 
+              weight: response?.data?.data?.weight
+            })
+          }
+          isFrom && setIsValidFromTakaNo(true);
+          !isFrom && setIsValidToTakaNo(true);
+        } else {
+          setFromTakaInfo(null) ; 
+          setToTakaInfo(null) ; 
+          isFrom && setIsValidFromTakaNo(false);
+          !isFrom && setIsValidToTakaNo(false);
+        }
+      } catch (error) {
+        message.error(error.response.data.message);
         isFrom && setIsValidFromTakaNo(false);
         !isFrom && setIsValidToTakaNo(false);
       }
-    } catch (error) {
-      message.error(error.response.data.message);
-      isFrom && setIsValidFromTakaNo(false);
-      !isFrom && setIsValidToTakaNo(false);
     }
   };
 
@@ -222,6 +264,30 @@ const AddTakaTpCutting = () => {
     },
     500
   );
+
+  const MeterChangeHandler = (value) => {
+    if (fromTakaInfo !== null && toTakaInfo !== null){
+      let totalMeter = 0 ; 
+      totalMeter = totalMeter + Number(fromTakaInfo?.meter) ; 
+      totalMeter = totalMeter + Number(toTakaInfo?.meter) ; 
+      
+      let totalWeight = 0; 
+      totalWeight = totalWeight + Number(fromTakaInfo?.weight) ; 
+      totalWeight = totalWeight + Number(toTakaInfo?.weight) ; 
+    
+      let tempWeight = Number(value)*totalWeight / totalMeter ; 
+      setValue("total_weight", tempWeight.toFixed(2))
+    }
+    
+  }
+
+  useEffect(() => {
+    if (fromTakaInfo !== null && toTakaInfo !== null){
+      MeterChangeHandler() ; 
+    } else {
+      setValue("total_weight", undefined) ;
+    }
+  }, [fromTakaInfo, toTakaInfo])
 
   return (
     <Form
@@ -376,6 +442,7 @@ const AddTakaTpCutting = () => {
               <Divider />
 
               <Flex style={{ marginTop: "1rem", gap: "12px" }}>
+
                 <Form.Item
                   label="From Type"
                   name="from_type"
@@ -393,22 +460,26 @@ const AddTakaTpCutting = () => {
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label="To Type"
-                  name="to_type"
-                  validateStatus={errors.to_type ? "error" : ""}
-                  help={errors.to_type && errors.to_type.message}
-                  wrapperCol={{ sm: 24 }}
-                  className="flex-grow"
-                >
-                  <Controller
-                    control={control}
+                {option == "taka_tp" && (
+                  <Form.Item
+                    label="To Type"
                     name="to_type"
-                    render={({ field }) => (
-                      <Select {...field} options={ORDER_TYPE} />
-                    )}
-                  />
-                </Form.Item>
+                    validateStatus={errors.to_type ? "error" : ""}
+                    help={errors.to_type && errors.to_type.message}
+                    wrapperCol={{ sm: 24 }}
+                    className="flex-grow"
+                  >
+                    <Controller
+                      control={control}
+                      name="to_type"
+                      render={({ field }) => (
+                        <Select {...field} options={ORDER_TYPE} />
+                      )}
+                    />
+                  </Form.Item>
+                )}
+                
+
               </Flex>
 
               <Flex style={{ marginTop: "1rem", gap: "12px" }}>
@@ -420,8 +491,6 @@ const AddTakaTpCutting = () => {
                   wrapperCol={{ sm: 24 }}
                   style={{
                     width: "100%",
-                    // marginBottom: "0px",
-                    // border: "0px solid !important",
                   }}
                 >
                   <Controller
@@ -445,38 +514,39 @@ const AddTakaTpCutting = () => {
                   />
                 </Form.Item>
 
-                <Form.Item
-                  label="To Taka"
-                  name={`to_taka`}
-                  validateStatus={errors.to_taka ? "error" : ""}
-                  help={errors.to_taka && errors.to_taka.message}
-                  wrapperCol={{ sm: 24 }}
-                  style={{
-                    width: "100%",
-                    // marginBottom: "0px",
-                    // border: "0px solid !important",
-                  }}
-                >
-                  <Controller
-                    control={control}
+                {option == "taka_tp" && (
+                  <Form.Item
+                    label="To Taka"
                     name={`to_taka`}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        type="number"
-                        placeholder="101"
-                        onChange={(e) => {
-                          field.onChange(+e.target.value);
-                          debouncedCheckUniqueTakaHandler(
-                            to_type,
-                            +e.target.value,
-                            false
-                          );
-                        }}
-                      />
-                    )}
-                  />
-                </Form.Item>
+                    validateStatus={errors.to_taka ? "error" : ""}
+                    help={errors.to_taka && errors.to_taka.message}
+                    wrapperCol={{ sm: 24 }}
+                    style={{
+                      width: "100%",
+                    }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`to_taka`}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder="101"
+                          onChange={(e) => {
+                            field.onChange(+e.target.value);
+                            debouncedCheckUniqueTakaHandler(
+                              to_type,
+                              +e.target.value,
+                              false
+                            );
+                          }}
+                        />
+                      )}
+                    />
+                  </Form.Item>
+                )}
+
               </Flex>
 
               <Flex style={{ marginTop: "1rem", gap: "12px" }}>
@@ -496,7 +566,10 @@ const AddTakaTpCutting = () => {
                         {...field}
                         type="number"
                         placeholder="101"
-                        onChange={(e) => field.onChange(+e.target.value)}
+                        onChange={(e) => {
+                          field.onChange(+e.target.value)
+                          MeterChangeHandler(e.target.value) ; 
+                        }}
                       />
                     )}
                   />
@@ -518,6 +591,7 @@ const AddTakaTpCutting = () => {
                         {...field}
                         type="number"
                         placeholder="101"
+                        readOnly
                         onChange={(e) => field.onChange(+e.target.value)}
                       />
                     )}
@@ -567,7 +641,7 @@ const AddTakaTpCutting = () => {
                   control={control}
                   name="date"
                   render={({ field }) => (
-                    <DatePicker {...field} style={{ width: "100%" }} />
+                    <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
                   )}
                 />
               </Form.Item>

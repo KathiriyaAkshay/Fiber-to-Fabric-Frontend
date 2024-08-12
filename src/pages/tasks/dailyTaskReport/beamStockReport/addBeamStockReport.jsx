@@ -1,4 +1,4 @@
-import {
+  import {
   ArrowLeftOutlined,
   DeleteOutlined,
   PlusOutlined,
@@ -42,6 +42,7 @@ const addJobTakaSchemaResolver = yupResolver(
     machine_name: yup.string().required("Please select machine name."),
     quality_id: yup.string().required("Please select quality id."),
     quality_group: yup.string().required("Please select quality group."),
+    employee: yup.string().required("Please, Select employee"),
     beam_type: yup.string().required("Please select beam type."),
   })
 );
@@ -135,7 +136,11 @@ const AddBeamStockReport = () => {
   });
 
   async function onSubmit(data) {
+
     if (data.beam_type === "non pasarela (primary)") {
+      
+      let hasError = 0; 
+
       const newData = {
         machine_name: data.machine_name,
         quality_id: +data.quality_id,
@@ -143,28 +148,76 @@ const AddBeamStockReport = () => {
         beam_type: data.beam_type,
         quality_group: data.quality_group,
       };
-      if (data.quality_group === "job") {
-        newData.beam_details = fieldArray.map((fieldNumber) => {
-          return {
-            beam_no: `IJBN-${data[`beam_no_${fieldNumber}`]}`,
-            ends_or_tars: +data[`taar_${fieldNumber}`],
-            meters: +data[`meter_${fieldNumber}`],
-            pano: +data[`pano_${fieldNumber}`],
-            taka: +data[`taka_${fieldNumber}`],
-          };
-        });
-      } else {
-        newData.beam_details = fieldArray.map((fieldNumber) => {
-          return {
-            beam_no: `BN-${data[`beam_no_${fieldNumber}`]}`,
-            ends_or_tars: +data[`taar_${fieldNumber}`],
-            meters: +data[`meter_${fieldNumber}`],
-            pano: +data[`pano_${fieldNumber}`],
-            taka: +data[`taka_${fieldNumber}`],
-          };
-        });
+
+      fieldArray.map((fieldNumber, indexValue) => {
+        if (!getValues(`beam_no_${fieldNumber}`)) {
+          setError(`beam_no_${fieldNumber}`, {
+            type: "manual",
+            message: "Required",
+          });
+          hasError = 1 ; 
+        }
+
+        if (!getValues(`taar_${fieldNumber}`)) {
+          setError(`taar_${fieldNumber}`, {
+            type: "manual",
+            message: "Required",
+          });
+          hasError = 1 ; 
+        }
+
+        if (!getValues(`pano_${fieldNumber}`)) {
+          setError(`pano_${fieldNumber}`, {
+            type: "manual",
+            message: "Required",
+          });
+          hasError = 1 ; 
+        }
+
+        if (!getValues(`taka_${fieldNumber}`)) {
+          setError(`taka_${fieldNumber}`, {
+            type: "manual",
+            message: "Required",
+          });
+          hasError = 1;
+        }
+
+        if (!getValues(`meter_${fieldNumber}`)) {
+          setError(`meter_${fieldNumber}`, {
+            type: "manual", 
+            message: "Required",
+          });
+          hasError = 1;
+        }
+
+      })
+
+
+      if (hasError == 0){
+        if (data.quality_group === "job") {
+          newData.beam_details = fieldArray.map((fieldNumber) => {
+            return {
+              beam_no: `IJBN-${data[`beam_no_${fieldNumber}`]}`,
+              ends_or_tars: +data[`taar_${fieldNumber}`],
+              meters: +data[`meter_${fieldNumber}`],
+              pano: +data[`pano_${fieldNumber}`],
+              taka: +data[`taka_${fieldNumber}`],
+            };
+          });
+        } else {
+          newData.beam_details = fieldArray.map((fieldNumber) => {
+            return {
+              beam_no: `BN-${data[`beam_no_${fieldNumber}`]}`,
+              ends_or_tars: +data[`taar_${fieldNumber}`],
+              meters: +data[`meter_${fieldNumber}`],
+              pano: +data[`pano_${fieldNumber}`],
+              taka: +data[`taka_${fieldNumber}`],
+            };
+          });
+        }
+        await addBeamStockReport(newData); 
       }
-      await addBeamStockReport(newData);
+      
     }
 
     if (data.beam_type === "pasarela (primary)") {
@@ -176,20 +229,11 @@ const AddBeamStockReport = () => {
           beam_load_id: nonPasarelaList[index].id,
           secondary_loaded_beam_id: secondaryBeamNo,
         });
-
-        // if (secondaryBeamNo) {
-        //   const { secondary_job_beam_no, secondary_receive_beam_no } =
-        //     secondaryBeamDropDown.find(
-        //       ({ id }) => id === data[`secondary_beam_no_${index}`]
-        //     );
-
-        //    formData.secondary_job_beam_no = secondary_job_beam_no;
-        //    formData.secondary_receive_beam_no = secondary_receive_beam_no;
-        // }
       });
 
       await addPasarelaBeamStockReport(formData);
     }
+  
   }
 
   const {
@@ -343,6 +387,7 @@ const AddBeamStockReport = () => {
       { company_id: companyId, type: quality_group, beam_type },
     ],
     queryFn: async () => {
+      
       if (
         quality_group === "inhouse(gray)" ||
         beam_type === "non pasarela (primary)"
@@ -373,6 +418,7 @@ const AddBeamStockReport = () => {
     setFieldArray([]);
   };
 
+  const [currentWorkingIndex, setCurrentWorkingIndex] = useState(0);  
   const addNewFieldRow = (indexValue) => {
     let isValid = true;
     if (!fieldArray.length && indexValue === -1) {
@@ -394,17 +440,7 @@ const AddBeamStockReport = () => {
     clearErrors(`pano_${indexValue}`);
     clearErrors(`taka_${indexValue}`);
     clearErrors(`meter_${indexValue}`);
-    // });
-
-    // fieldArray.forEach((item) => {
-    // if (item === indexValue) {
-    // if (!getValues(`beam_no_${indexValue}`)) {
-    //   setError(`beam_no_${indexValue}`, {
-    //     type: "manual",
-    //     message: "Required",
-    //   });
-    //   isValid = false;
-    // }
+    
     if (!getValues(`taar_${indexValue}`)) {
       setError(`taar_${indexValue}`, {
         type: "manual",
@@ -433,11 +469,11 @@ const AddBeamStockReport = () => {
       });
       isValid = false;
     }
-    // }
-    // });
 
     if (isValid) {
       const nextValue = fieldArray[fieldArray.length - 1] + 1;
+      setCurrentWorkingIndex(nextValue) ; 
+
       setFieldArray((prev) => {
         return [...prev, nextValue];
       });
@@ -704,6 +740,7 @@ const AddBeamStockReport = () => {
                 setValue={setValue}
                 lastBeamNumber={lastBeamNumber}
                 quality_group={quality_group}
+                currentWorkingIndex = {currentWorkingIndex}
               />
             );
           })}
@@ -711,6 +748,11 @@ const AddBeamStockReport = () => {
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
             const item = getTakaDetailsObject(row);
+            console.log("Beam object information");
+            console.log(item);
+            console.log(item?.supplier_beam_no  );
+            
+            
             if (item !== null) {
               return (
                 <PasarelaFormRow
@@ -723,6 +765,7 @@ const AddBeamStockReport = () => {
                   secondaryBeamDropDown={secondaryBeamDropDown}
                   selectedNonPasarela={selectedNonPasarela}
                   setSelectedNonPasarela={setSelectedNonPasarela}
+                  supplier_beam_number={item?.supplier_beam_no}
                 />
               );
             }
@@ -752,6 +795,8 @@ const FormRow = ({
   deleteFieldRow,
   fieldArray,
   quality_group,
+  setValue,
+  currentWorkingIndex
 }) => {
   return (
     <>
@@ -788,6 +833,8 @@ const FormRow = ({
                     {...field}
                     placeholder="0"
                     style={{ width: "480px" }}
+                    readOnly = {currentWorkingIndex > fieldNumber?true:false}
+                    
                   />
                 </Flex>
               )}
@@ -853,7 +900,20 @@ const FormRow = ({
               control={control}
               name={`taka_${fieldNumber}`}
               render={({ field }) => (
-                <Input {...field} type="number" placeholder="0" />
+                <Input 
+                  {...field} 
+                  type="number" 
+                  placeholder="0" 
+                  onChange={(e) => {
+                    setValue(`taka_${fieldNumber}`, e.target.value) ; 
+
+                    if (quality_group == "inhouse(gray)"){
+                      let meter = Number(e.target.value)*220; 
+                      setValue(`meter_${fieldNumber}`, meter) ; 
+                    }
+                    
+                  }}
+                />
               )}
             />
           </Form.Item>
@@ -918,6 +978,7 @@ const PasarelaFormRow = ({
   secondaryBeamDropDown,
   selectedNonPasarela,
   setSelectedNonPasarela,
+  supplier_beam_number
 }) => {
   const actionHandler = (e) => {
     if (e.target.checked) {
@@ -956,15 +1017,21 @@ const PasarelaFormRow = ({
               control={control}
               name={`beam_no_${fieldNumber}`}
               render={({ field }) => (
-                <Flex gap={8}>
-                  <Input
-                    {...field}
-                    placeholder="0"
-                    value={row.beam_no}
-                    style={{ width: "480px" }}
-                    disabled
-                  />
-                </Flex>
+                <>
+                  <Flex gap={8}>
+                    <Input
+                      {...field}
+                      placeholder="0"
+                      value={row.beam_no}
+                      style={{ width: "480px" }}
+                      disabled
+                    />
+                  </Flex>
+                  <div style={{fontWeight: 600, color: "blue", marginTop: "7px"}}>
+                    {supplier_beam_number !== undefined?<span>Sup B.N :{supplier_beam_number}</span>:""}
+                    
+                  </div>
+                </>
               )}
             />
           </Form.Item>
@@ -993,10 +1060,6 @@ const PasarelaFormRow = ({
                   name={`secondary_beam_no_${fieldNumber}`}
                   placeholder="Select secondary beam"
                   options={secondaryBeamDropDown.map((details) => {
-                    console.log("Object information");
-                    console.log(details);
-                    
-                    
                     const item = getTakaDetailsObject(details);
                     return { label: item.beam_no, value: details.id };
                   })}

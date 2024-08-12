@@ -46,6 +46,8 @@ import { capitalizeFirstCharacter } from "../../utils/mutationUtils";
 import { calculateTimeDifference } from "../../utils/mutationUtils";
 import { disabledFutureDate } from "../../utils/date";
 import BeamCardInformationModel from "../../components/common/modal/beamCardInformation";
+import BeamCardNumberInfoModel from "../../components/beamCard/beamCardNumberInfoModel";
+import { InfoCircleFilled } from "@ant-design/icons";
 
 const getTakaDetailsObject = (details) => {
   if (details) {
@@ -162,6 +164,7 @@ const BeamCardList = () => {
   const { data: user } = useCurrentUser();
 
   const [isOpenMoveBhidan, setIsOpenMoveBhidan] = useState(false);
+  const [beamNumberInfoModel, setBeamNumberInfoModel] = useState(false) ; 
   const [row, setRow] = useState(null);
 
   const [search, setSearch] = useState({
@@ -620,10 +623,16 @@ const BeamCardList = () => {
     );
   }
 
+
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <Button 
+            icon = {<InfoCircleFilled/>} 
+            onClick={() => {setBeamNumberInfoModel(true); console.log("Run this function");
+          }}></Button>
           <h3 className="m-0 text-primary">Beam Card List</h3>
           <Button
             onClick={navigateToAdd}
@@ -790,6 +799,13 @@ const BeamCardList = () => {
           handleClose={() => setIsOpenMoveBhidan(false)}
           companyId={companyId}
           row={row}
+        />
+      )}
+
+      {beamNumberInfoModel && (
+        <BeamCardNumberInfoModel
+          isModalOpen= {beamNumberInfoModel}
+          setIsModelOpen={setBeamNumberInfoModel}
         />
       )}
     </div>

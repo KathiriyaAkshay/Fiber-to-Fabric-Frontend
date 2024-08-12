@@ -25,7 +25,7 @@ const TakaTpCutting = () => {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const [status, setStatus] = useState("taka_tp");
-  const [status2, setStatus2] = useState("all");
+  const [status2, setStatus2] = useState(null);
   const [search, setSearch] = useState("");
 
   const debounceStatus = useDebounce(status, 500);
@@ -242,11 +242,10 @@ const TakaTpCutting = () => {
           <Flex align="center" gap={10}>
             <Select
               allowClear
-              placeholder="Select Quality"
+              placeholder="Select Status"
               value={status2}
               onChange={setStatus2}
               options={[
-                { label: "All", value: "all" },
                 { label: "Pending", value: "pending" },
                 { label: "Generated", value: "generated" },
               ]}

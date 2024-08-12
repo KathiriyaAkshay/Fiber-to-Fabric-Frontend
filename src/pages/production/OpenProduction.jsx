@@ -10,6 +10,7 @@ import {
   DatePicker,
   Typography,
   message,
+  Divider,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
@@ -30,14 +31,19 @@ import { useNavigate } from "react-router-dom";
 import { getMyOrderListRequest } from "../../api/requests/orderMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
+import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
+import { disabledFutureDate } from "../../utils/date";
+
 
 const OpenProduction = () => {
+
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { companyId, company } = useContext(GlobalContext);
   const [activeField, setActiveField] = useState(1);
 
+  // Opening Production related handler ==========================
   const { mutateAsync: addNewOpeningProduction, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addOpeningProductionRequest({
@@ -66,45 +72,103 @@ const OpenProduction = () => {
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
     if (data.is_create_challan) {
-      const payload = {
-        deliver_address: data.delivery_address,
-        order_id: data.order_id,
-        vehicle_id: data.vehicle_id,
-        challan_no: data.challan_no,
-        customer_gst: data.customer_gst_in,
-        machine_name: data.machine_name,
-        createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-        pending_meter: data.pending_meter,
-        pending_weight: data.pending_weight,
-        pending_taka: data.pending_taka,
-        total_meter: data.total_meter,
-        total_weight: data.total_weight,
-        total_taka: data.total_taka,
-        production_details: array.map((fieldNumber) => {
-          return {
-            taka_no: data.last_taka_no + fieldNumber,
-            meter: +data[`meter_${fieldNumber}`],
-            weight: +data[`weight_${fieldNumber}`],
-            machine_no: data[`machine_no_${fieldNumber}`],
-          };
-        }),
-      };
-      await addNewOpeningProduction(payload);
+
+      let hasError = 0 ; 
+
+      array.map((fieldNumber) => {
+        let meter = +data[`meter_${fieldNumber}`];
+        let weight = +data[`weight_${fieldNumber}`];
+        let machine_no = +data[`machine_no_${fieldNumber}`];
+
+        if (isNaN(meter) || meter == undefined || meter == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+
+        } else if (isNaN(weight) || weight == undefined || weight == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+
+        } else if (isNaN(machine_no) || machine_no == undefined || machine_no == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+        }
+
+      })
+
+      if (hasError == 0){
+        const payload = {
+          deliver_address: data.delivery_address,
+          order_id: data.order_id,
+          vehicle_id: data.vehicle_id,
+          challan_no: data.challan_no,
+          customer_gst: data.customer_gst_in,
+          machine_name: data.machine_name,
+          createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+          pending_meter: data.pending_meter,
+          pending_weight: data.pending_weight,
+          pending_taka: data.pending_taka,
+          total_meter: data.total_meter,
+          total_weight: data.total_weight,
+          total_taka: data.total_taka,
+          production_details: array.map((fieldNumber) => {
+            return {
+              taka_no: data.last_taka_no + fieldNumber,
+              meter: +data[`meter_${fieldNumber}`],
+              weight: +data[`weight_${fieldNumber}`],
+              machine_no: data[`machine_no_${fieldNumber}`],
+            };
+          }),
+        };
+        await addNewOpeningProduction(payload);
+      }
+
     } else {
-      const payload = {
-        order_id: data.order_id,
-        machine_name: data.machine_name,
-        createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-        production_details: array.map((fieldNumber) => {
-          return {
-            taka_no: data.last_taka_no + fieldNumber,
-            meter: +data[`meter_${fieldNumber}`],
-            weight: +data[`weight_${fieldNumber}`],
-            machine_no: data[`machine_no_${fieldNumber}`],
-          };
-        }),
-      };
-      await addNewOpeningProduction(payload);
+
+      let hasError = 0;
+
+      array.map((fieldNumber) => {
+        let meter = +data[`meter_${fieldNumber}`];
+        let weight = +data[`weight_${fieldNumber}`];
+        let machine_no = +data[`machine_no_${fieldNumber}`];
+
+        if (isNaN(meter) || meter == undefined || meter == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+
+        } else if (isNaN(weight) || weight == undefined || weight == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+
+        } else if (isNaN(machine_no) || machine_no == undefined || machine_no == "") {
+          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          hasError = 1;
+          return
+        }
+
+      })
+
+      if (hasError == 0) {
+        const payload = {
+          order_id: data.order_id,
+          machine_name: data.machine_name,
+          createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+          production_details: array.map((fieldNumber) => {
+            return {
+              taka_no: data.last_taka_no + fieldNumber,
+              meter: +data[`meter_${fieldNumber}`],
+              weight: +data[`weight_${fieldNumber}`],
+              machine_no: data[`machine_no_${fieldNumber}`],
+            };
+          }),
+        };
+
+        await addNewOpeningProduction(payload);
+      }
     }
   };
 
@@ -118,9 +182,10 @@ const OpenProduction = () => {
     setFocus,
     getValues,
     trigger,
+
   } = useForm({
     defaultValues: {
-      is_create_challan: true,
+      is_create_challan: false,
       // year_type: "current",
       challan_no: "",
       challan_date: dayjs(),
@@ -147,8 +212,9 @@ const OpenProduction = () => {
       machine_name: null,
       quality_id: null,
     },
-    // resolver: addJobTakaSchemaResolver,
+
   });
+
   const {
     is_create_challan,
     last_taka_no,
@@ -159,9 +225,11 @@ const OpenProduction = () => {
     broker_id,
     machine_name,
     party_id,
+    quality_id
   } = watch();
 
-  useQuery({
+  // Fetch last production taka number fetch
+  const { data: productionLastTaka } = useQuery({
     queryKey: [
       "last",
       "opening",
@@ -170,17 +238,24 @@ const OpenProduction = () => {
       { company_id: companyId },
     ],
     queryFn: async () => {
-      const res = await getLastOpeningProductionTakaRequest({
+      const res = await getLastProductionTakaRequest({
         companyId,
         params: { company_id: companyId },
       });
-      setValue("last_taka_no", res.data?.data ? +res.data?.data?.taka_no : 0);
-      setValue("last_taka_no_date", dayjs(res.data?.data?.createdAt));
+      return res?.data?.data;
       // return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
 
+  useEffect(() => {
+    if (productionLastTaka !== null && productionLastTaka !== undefined) {
+      setValue("last_taka_no", productionLastTaka ? +productionLastTaka?.taka_no : 0);
+      setValue("last_taka_no_date", dayjs(productionLastTaka?.createdAt));
+    }
+  }, [is_create_challan, productionLastTaka])
+
+  // Fetch party related dropdown list 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId, broker_id }],
     queryFn: async () => {
@@ -208,6 +283,7 @@ const OpenProduction = () => {
     }
   }, [partyUserListRes, party_id]);
 
+  // Gery order dropdown list 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
@@ -224,6 +300,7 @@ const OpenProduction = () => {
       enabled: Boolean(companyId),
     });
 
+  // Get Inhouse quality dropdown list 
   const { data: allQualityListRes, isLoading: allQualityLoading } = useQuery({
     queryKey: [
       "allQualityListRes",
@@ -237,20 +314,15 @@ const OpenProduction = () => {
       },
     ],
     queryFn: async () => {
-      // if (machine_name) {
       const res = await getInHouseQualityListRequest({
         params: {
           company_id: companyId,
-          // machine_name: machine_name,
           page: 0,
           pageSize: 99999,
           is_active: 1,
         },
       });
       return res.data?.data;
-      // } else {
-      //   return { row: [] };
-      // }
     },
     enabled: Boolean(companyId),
   });
@@ -286,7 +358,8 @@ const OpenProduction = () => {
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Get Vehicle dropdown list  
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -302,6 +375,7 @@ const OpenProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Get machinedropdown list 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -329,6 +403,7 @@ const OpenProduction = () => {
       setValue("total_taka", order.total_taka);
       setValue("total_weight", order.weight);
       setValue("machine_name", order.machine_name);
+      setValue("customer_gst_in", order?.party?.gst_no)
 
       setValue("party_id", order.party.id);
       setValue("company", order.party.id);
@@ -356,7 +431,7 @@ const OpenProduction = () => {
     if (company) {
       setValue("gst_in", company.gst_no);
     }
-  }, [company, setValue]);
+  }, [company, setValue, is_create_challan]);
 
   return (
     <Form
@@ -365,8 +440,10 @@ const OpenProduction = () => {
       style={{ marginTop: "1rem" }}
       onFinish={handleSubmit(onSubmit)}
     >
-      <div  className="flex flex-col gap-2 p-4">
-        <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+      <div className="flex flex-col gap-2 p-4">
+
+        <div className="flex items-center justify-between gap-5 mx-3 mb-3"
+          style={{ marginTop: "-15px" }}>
           <div className="flex items-center gap-5">
             <Button onClick={() => navigate(-1)}>
               <ArrowLeftOutlined />
@@ -411,7 +488,6 @@ const OpenProduction = () => {
             <Row
               className="w-100"
               justify={"flex-start"}
-              // style={{ gap: "12px" }}
               gutter={12}
             >
               <Col span={6}>
@@ -451,6 +527,7 @@ const OpenProduction = () => {
                         {...field}
                         style={{ width: "100%" }}
                         placeholder="Challan no"
+                        disabledDate={disabledFutureDate}
                       />
                     )}
                   />
@@ -461,8 +538,8 @@ const OpenProduction = () => {
             <Row
               className="w-100"
               justify={"flex-start"}
-              // style={{ gap: "12px" }}
               gutter={12}
+              style={{marginTop: "-15px"}}
             >
               <Col span={6}>
                 <Form.Item
@@ -497,7 +574,7 @@ const OpenProduction = () => {
                     name={"gst_in"}
                     rules={{ required: "GST IN is required." }}
                     render={({ field }) => (
-                      <Input {...field} placeholder="GST in" />
+                      <Input readOnly {...field} placeholder="GST in" />
                     )}
                   />
                 </Form.Item>
@@ -525,7 +602,7 @@ const OpenProduction = () => {
               </Col>
             </Row>
 
-            <Row className="w-100" justify={"flex-start"} gutter={12}>
+            <Row className="w-100" justify={"flex-start"} gutter={12} style={{marginTop: "-15px"}}>
               <Col span={6}>
                 <Form.Item
                   label="Order no"
@@ -664,8 +741,8 @@ const OpenProduction = () => {
             <Row
               className="w-100"
               justify={"flex-start"}
-              // style={{ gap: "12px" }}
               gutter={12}
+              style={{marginTop: "-15px"}}
             >
               <Col span={6}>
                 <Form.Item
@@ -799,7 +876,7 @@ const OpenProduction = () => {
             <Row
               className="w-100"
               justify={"flex-start"}
-              style={{ alignItems: "center" }}
+              style={{ alignItems: "center", marginTop: "-15px" }}
               gutter={12}
             >
               <Col span={6}>
@@ -840,37 +917,44 @@ const OpenProduction = () => {
                     name={"customer_gst_in"}
                     rules={{ required: "GST In is required." }}
                     render={({ field }) => (
-                      <Input {...field} placeholder="GST in" />
+                      <Input readOnly {...field} placeholder="GST in" />
                     )}
                   />
                 </Form.Item>
               </Col>
-              <Col span={2} style={{ textAlign: "end" }}>
-                <Typography.Text style={{ color: "red" }}>
+              {/* All Pending information  */}
+              <Col span={2} style={{ textAlign: "end", marginTop: "-25px" }}>
+                <Typography.Text style={{ color: "red", fontWeight: 600 }}>
                   Pending
                 </Typography.Text>
               </Col>
-              <Col span={4} style={{ textAlign: "center" }}>
+
+              <Col span={4} style={{ 
+                textAlign: "left", marginTop: "-25px", paddingLeft: "10px" }}>
                 <Typography.Text style={{ color: "red" }}>
                   {pending_meter || 0}
                 </Typography.Text>
               </Col>
-              <Col span={4} style={{ textAlign: "center" }}>
+              
+              <Col span={4} style={{ textAlign: "left", marginTop: "-25px"  }}>
                 <Typography.Text style={{ color: "red" }}>
                   {pending_weight || 0}
                 </Typography.Text>
               </Col>
-              <Col span={4} style={{ textAlign: "center" }}>
+              
+              <Col span={4} style={{ textAlign: "left", marginTop: "-25px"  }}>
                 <Typography.Text style={{ color: "red" }}>
                   {pending_taka || 0}
                 </Typography.Text>
               </Col>
+            
             </Row>
+
           </>
         ) : (
           <Row
             gutter={15}
-            style={{ justifyContent: "space-between", alignItems: "center" }}
+            style={{ justifyContent: "space-between", alignItems: "center", marginTop: "-15px" }}
           >
             <Col span={8}>
               <Form.Item
@@ -960,6 +1044,7 @@ const OpenProduction = () => {
                         {...field}
                         className="w-100"
                         style={{ width: "100%" }}
+                        disabledDate={disabledFutureDate}
                       />
                     );
                   }}
@@ -969,9 +1054,11 @@ const OpenProduction = () => {
           </Row>
         )}
 
+        <Divider style={{marginTop: "-15px"}}/>
+
         <Row
           gutter={15}
-          style={{ justifyContent: "space-between", alignItems: "center" }}
+          style={{ justifyContent: "space-between", alignItems: "center", marginTop: "-15px" }}
         >
           <Col span={6}>
             <Form.Item
@@ -998,39 +1085,39 @@ const OpenProduction = () => {
                     <DatePicker
                       {...field}
                       disabled
-                      // style={{ width: "100%" }}
+                    // style={{ width: "100%" }}
                     />
                   )}
                 />
               </Flex>
             </Form.Item>
           </Col>
-          <Col span={4}>
-            <Flex justify="flex-end">
-              <Button type="primary">Submit</Button>
+
+          <Col>
+            <Flex gap={10} justify="flex-end">
+              <Button htmlType="button" onClick={() => reset()}>
+                Reset
+              </Button>
+              <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
+                Create
+              </Button>
             </Flex>
           </Col>
         </Row>
 
-        <AddOpeningProductionTable
-          errors={errors}
-          control={control}
-          setFocus={setFocus}
-          activeField={activeField}
-          setActiveField={setActiveField}
-          setValue={setValue}
-          lastOpeningProductionTaka={last_taka_no}
-          getValues={getValues}
-        />
+        {quality_id != undefined && (
+          <AddOpeningProductionTable
+            errors={errors}
+            control={control}
+            setFocus={setFocus}
+            activeField={activeField}
+            setActiveField={setActiveField}
+            setValue={setValue}
+            lastOpeningProductionTaka={last_taka_no}
+            getValues={getValues}
+          />
+        )}
 
-        <Flex gap={10} justify="flex-end">
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
-          </Button>
-        </Flex>
       </div>
     </Form>
   );

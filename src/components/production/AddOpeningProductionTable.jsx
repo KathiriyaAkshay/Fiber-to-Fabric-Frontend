@@ -3,9 +3,7 @@ import { Button, Form, Input } from "antd";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
 
-const numOfFields = Array.from({ length: 12 }, (_, i) => i + 1);
-// const chunkSize = numOfFields.length / 4;
-
+const numOfFields = Array.from({ length: 100 }, (_, i) => i + 1);
 const AddOpeningProductionTable = ({
   errors,
   control,
@@ -20,7 +18,7 @@ const AddOpeningProductionTable = ({
   const [totalWeight, setTotalWeight] = useState(0);
 
   const activeNextField = (event, fieldNumber) => {
-    if (event.keyCode === 32) {
+    if (event.keyCode === 13) {
       setActiveField((prev) => prev + 1);
       setTimeout(() => {
         setFocus(`meter_${fieldNumber + 1}`);
@@ -64,21 +62,11 @@ const AddOpeningProductionTable = ({
     }, 500);
   };
 
-  //   useEffect(() => {
-  //     numOfFields.forEach((fieldNumber) => {
-  //       const value =
-  //         fieldNumber <= activeField
-  //           ? `O${lastOpeningProductionTaka + fieldNumber}`
-  //           : "";
-  //       setValue(`taka_no_${fieldNumber}`, value);
-  //     });
-  //   }, [activeField, lastOpeningProductionTaka, setValue]);
-
   return (
-    <div>
+    <div className="production-table-div">
       <table
         style={{ width: "100%", textAlign: "center" }}
-        className="job-challan-details-table"
+        className="job-challan-details-table receive-rework-taka-table"
         border={1}
       >
         <thead>
@@ -96,20 +84,11 @@ const AddOpeningProductionTable = ({
             return (
               <tr key={fieldNumber}>
                 <td
-                  className="job-challan-taka-index-column"
+                  className="job-challan-taka-index-column job-production-index-column"
                   style={{ textAlign: "center" }}
                 >
                   {fieldNumber}
                 </td>
-                {/* <td
-                  style={{ textAlign: "center" }}
-                  className="job-challan-taka-index-column"
-                  width={80}
-                >
-                  {fieldNumber <= activeField
-                    ? `O${lastOpeningProductionTaka + fieldNumber}`
-                    : ""}
-                </td> */}
                 <td width={200}>
                   <Form.Item
                     name={`taka_no_${fieldNumber}`}
@@ -141,7 +120,7 @@ const AddOpeningProductionTable = ({
                             }}
                             value={
                               fieldNumber <= activeField
-                                ? `O${lastOpeningProductionTaka + fieldNumber}`
+                                ? `${lastOpeningProductionTaka + fieldNumber}`
                                 : ""
                             }
                             // disabled={fieldNumber > activeField}
@@ -270,7 +249,7 @@ const AddOpeningProductionTable = ({
               </tr>
             );
           })}
-          <tr>
+          <tr className="job-challan-table-total production-table-total">
             <td>
               <b>Total</b>
             </td>

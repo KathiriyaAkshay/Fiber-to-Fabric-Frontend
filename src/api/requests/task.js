@@ -19,3 +19,7 @@ export function updateTaskRequest({ id, data, params }) {
 export function deleteTaskRequest({ id, params }) {
   return api.delete(`/task-assignment/delete/${id}`, { params });
 }
+
+export function getDailyBeamStockRequest({params}){
+  return api.get(`beam/beam-stock-report`, {params}) ; 
+}

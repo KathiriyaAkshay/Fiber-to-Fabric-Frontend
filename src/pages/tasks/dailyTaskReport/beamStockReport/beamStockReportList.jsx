@@ -1,8 +1,8 @@
-import { Button, Flex, Input, Spin, Table, Typography } from "antd";
+import { Button, Flex, Input, Spin, Table, Typography, message } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getTaskListRequest } from "../../../../api/requests/task";
+import { getDailyBeamStockRequest, getTaskListRequest } from "../../../../api/requests/task";
 import { useCurrentUser } from "../../../../api/hooks/auth";
 import {
   downloadUserPdf,
@@ -10,76 +10,99 @@ import {
 } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useContext, useState } from "react";
-import useDebounce from "../../../../hooks/useDebounce";
-// import { getSupervisorListRequest } from "../../../api/requests/users";
+import { useContext, useEffect, useState } from "react";
+import { updateCompanyRequest } from "../../../../api/requests/company";
+import { useMutation } from "@tanstack/react-query";
 
 function BeamStockReportList() {
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  const { data: user } = useCurrentUser();
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
-  const [search, setSearch] = useState("");
   const [bhidan, setBhidan] = useState("");
+  
+  useEffect(() => {
+    setBhidan(company?.bhidan_of_month) ; 
+  }, [company])
+  
 
-  const debouncedSearch = useDebounce(search, 500);
-  const debouncedBhidan = useDebounce(bhidan, 500);
-  console.log({ debouncedSearch, debouncedBhidan });
-
-  const { data: taskListRes, isLoading: isLoadingTaskList } = useQuery({
+  const {data: beamStockReport, isLoading: isBeamStockReportLoading} = useQuery({
     queryKey: [
-      "task-assignment",
-      "list",
-      { company_id: companyId, page, pageSize, end: financialYearEnd },
+      "daily-task",
+      "beam-stock", 
+      "list", 
+      {company_id: companyId}
     ],
     queryFn: async () => {
-      const res = await getTaskListRequest({
+      const res = await getDailyBeamStockRequest({
         companyId,
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          end: financialYearEnd,
-        },
+        params:{
+          company_id: companyId
+        }
+      })
+      return res?.data?.data;
+    }, 
+    enabled: Boolean(companyId)
+    
+  })
+
+  const { mutateAsync: updateBhidanOfMonth, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await updateCompanyRequest({
+        companyId,
+        data,
+        params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data;
     },
-    enabled: Boolean(companyId),
+    mutationKey: ["update", "company", companyId],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Bhidan of Month successfully update");
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
   });
 
   function navigateToAdd() {
     navigate("/tasks/daily-task-report/beam-stock-report/add");
   }
 
-  //   function navigateToUpdate(id) {
-  //     navigate(`/tasks/daily-task/update/${id}`);
-  //   }
+  const updateBhidanOfMonthHandler = async () => {
+    await updateBhidanOfMonth({
+      bhidan_of_month: bhidan
+    })
+  }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = taskListRes?.taskList?.rows?.map((task) => {
-      const { id, task_detail, assign_time, achievement, reason, status } =
-        task;
-      return [id, task_detail, assign_time, achievement, reason, status];
-    });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const body = taskListRes?.taskList?.rows?.map((task) => {
+    //   const { id, task_detail, assign_time, achievement, reason, status } =
+    //     task;
+    //   return [id, task_detail, assign_time, achievement, reason, status];
+    // });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Task Detail",
-          "Assigned Time",
-          "Achievement",
-          "Reason",
-          "Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Assign Task List",
-    });
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Task Detail",
+    //       "Assigned Time",
+    //       "Achievement",
+    //       "Reason",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Assign Task List",
+    // });
   }
 
   const columns = [
@@ -91,72 +114,62 @@ function BeamStockReportList() {
     },
     {
       title: "Quality Name",
+      dataIndex: "quality_name", 
+      render:(text, record) =>{
+        return(
+          <div>{record?.quality_name}-({record?.quality_weight}KG)</div>
+        )
+      }
     },
     {
       title: "Req. eve. non pasarela beam",
+      dataIndex:"require_non_pasarela_beam"
     },
     {
       title: "T.N. pasarela beam",
+      dataIndex: "non_pasarela_beam_count"
     },
     {
       title: "T.N. pasarela short beam",
+      dataIndex: "non_pasarela_short_beam_count",
+      render: (text, record) => {
+        return(
+          <div>0</div>
+        )
+      }
     },
     {
       title: "Req. Eve. pasarela beam",
+      dataIndex: "require_pasarela_beam"
     },
     {
       title: "Today's pasarela beam",
+      dataIndex: "today_pasarela_beam"
     },
     {
       title: "Today's pasarela short beam",
+      render: (text, record) => {
+        let today_beam = Number(record?.today_pasarela_beam) ;
+        let required_beam = Number(record?.require_pasarela_beam);
+        let short_beam = today_beam - required_beam; 
+        return(
+          <div style={{color: "red"}}>
+              {short_beam}
+          </div>
+        )
+      }
     },
     {
       title: "Bhidan of month",
+      dataIndex: "beam_count_below_bhidan"
     },
     {
       title: "N.pasarela secondary beam",
     },
-    // {
-    //   title: "Action",
-    //   render: (taskDetails) => {
-    //     const {
-    //       createdAt,
-    //       assign_time,
-    //       task_detail,
-    //       achievement,
-    //       reason,
-    //       status,
-    //     } = taskDetails;
-    //     return (
-    //       <Space>
-    //         <ViewDetailModal
-    //           title="Task Report"
-    //           details={[
-    //             { title: "Date", value: dayjs(createdAt).format("DD/MM/YYYY") },
-    //             { title: "Assigned Time", value: assign_time },
-    //             { title: "Task", value: task_detail },
-    //             { title: "Achievement", value: achievement },
-    //             { title: "Reason", value: reason },
-    //             { title: "Status", value: status },
-    //           ]}
-    //         />
-    //         <Button
-    //           onClick={() => {
-    //             navigateToUpdate(taskDetails.id);
-    //           }}
-    //         >
-    //           <EditOutlined />
-    //         </Button>
-    //         <DeleteTaskButton details={taskDetails} />
-    //       </Space>
-    //     );
-    //   },
-    //   key: "action",
-    // },
   ];
 
   function renderTable() {
-    if (isLoadingTaskList) {
+    if (isBeamStockReportLoading) {
       return (
         <Spin tip="Loading" size="large">
           <div className="p-14" />
@@ -166,15 +179,10 @@ function BeamStockReportList() {
 
     return (
       <Table
-        dataSource={taskListRes?.taskList?.rows || []}
+        dataSource={beamStockReport}
         columns={columns}
         rowKey={"id"}
-        pagination={{
-          total: taskListRes?.taskList?.count || 0,
-          showSizeChanger: true,
-          onShowSizeChange: onShowSizeChange,
-          onChange: onPageChange,
-        }}
+        pagination = {false}
       />
     );
   }
@@ -197,21 +205,21 @@ function BeamStockReportList() {
             </Typography.Text>
             <Input
               value={bhidan}
-              onChange={setBhidan}
+              onChange={(e) => {
+                setBhidan(e.target.value)
+              }}
               placeholder="Bhidan of month"
               style={{ width: "200px" }}
             />
           </Flex>
-          <Input
-            value={search}
-            onChange={setSearch}
-            placeholder="search"
-            style={{ width: "200px" }}
-          />
+          <Button type="primary" 
+            onClick={updateBhidanOfMonthHandler}
+            loading = {isPending}>
+            Save Bhidan Of Month
+          </Button>
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!taskListRes?.taskList?.rows?.length}
             onClick={downloadPdf}
           />
         </Flex>
