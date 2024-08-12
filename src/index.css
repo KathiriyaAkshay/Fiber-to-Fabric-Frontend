@@ -59,6 +59,10 @@ body {
   background-color: #000000 !important;
 }
 
+.job-production-index-column{
+  background-color: #000000 !important;
+}
+
 .job-challan-details-table {
   border: 1px solid var(--table-border-color);
   border-collapse: collapse;
@@ -97,6 +101,24 @@ body {
   bottom: 0;
   z-index: 10;
   background-color: #FFFFFF;
+}
+
+.production-table-div{
+  height: 50vh;
+  max-height:50vh;
+  overflow-y: auto;
+  margin-top: -10px;
+}
+
+.production-table-total{
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
+}
+
+.production-table-total td{
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+  padding-left: 5px !important;
 }
 
 .job-challan-details-table input:focus{

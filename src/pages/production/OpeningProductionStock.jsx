@@ -23,6 +23,7 @@ import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import useDebounce from "../../hooks/useDebounce";
 import { Controller, useForm } from "react-hook-form";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
+import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
 
 const OpeningProductionStock = () => {
     const queryClient = useQueryClient();
@@ -89,8 +90,6 @@ const OpeningProductionStock = () => {
 
     useEffect(() => {
         let temp = [] ; 
-        console.log(inHouseQualityList);
-        
         inHouseQualityList?.rows?.map((element, index) => {
             console.log("Run this function");
             
