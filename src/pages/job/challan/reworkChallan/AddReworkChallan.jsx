@@ -54,11 +54,12 @@ const AddReworkChallan = () => {
 
   const [activeField, setActiveField] = useState(1);
 
-  const { companyId, companyListRes } = useContext(GlobalContext);
+  const { companyId, companyListRes, company } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
 
+  // Add work challan related handler =================================
   const { mutateAsync: AddReworkChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addReworkChallanRequest({
@@ -87,6 +88,27 @@ const AddReworkChallan = () => {
   async function onSubmit(data) {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
+    let hasError = 0; 
+    detailArray?.map((field, index) => {
+
+      let taka_no =  +data[`taka_no_${field}`] ; 
+      let meter = +data[`meter_${field}`] ; 
+    
+      if (isNaN(taka_no) || taka_no == undefined || taka_no == null || taka_no == ""){
+        message.error("Please, Provide valid taka details") ; 
+        hasError = 1; 
+        return 
+      
+      } else if (isNaN(meter) || meter == undefined || meter == null || meter == ""){
+        message.error(`Please, Provide valid details for taka ${taka_no}`) ;
+        hasError = 1 ;
+        return ; 
+      }
+      
+      // if (taka_no == undefined || taka_no == null || taka_no)
+
+    })
+
     const newData = {
       createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
       machine_name: data.machine_name,
@@ -110,7 +132,7 @@ const AddReworkChallan = () => {
         };
       }),
     };
-    await AddReworkChallan(newData);
+    // await AddReworkChallan(newData);
   }
 
   const {
@@ -123,6 +145,7 @@ const AddReworkChallan = () => {
     getValues,
     setFocus,
     resetField,
+    setError
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -145,8 +168,9 @@ const AddReworkChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, company_id, supplier_id, machine_name } = watch();
+  const { supplier_name, company_id, supplier_id, machine_name, quality_id } = watch();
 
+  // Machinelist dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -159,6 +183,7 @@ const AddReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Rework option list 
   const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
     useQuery({
       queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
@@ -172,6 +197,7 @@ const AddReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Dropdown quality list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -202,6 +228,7 @@ const AddReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Vehicle dropdown list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -217,6 +244,7 @@ const AddReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown supplier list request
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -251,13 +279,8 @@ const AddReworkChallan = () => {
 
 
   useEffect(() => {
-    if (company_id) {
-      const selectedCompany = companyListRes?.rows?.find(
-        ({ id }) => id === company_id
-      );
-      setValue("gst_in_1", selectedCompany.gst_no);
-    }
-  }, [companyListRes, company_id, setValue]);
+    setValue("gst_in_1", company?.gst_no);
+  }, [company, setValue]);
 
   useEffect(() => {
     if (supplier_id) {
@@ -270,7 +293,6 @@ const AddReworkChallan = () => {
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
   function disabledFutureDate(current) {
-    // Disable dates after today
     return current && current > moment().endOf("day");
   }
 
@@ -283,44 +305,14 @@ const AddReworkChallan = () => {
         <h3 className="m-0 text-primary">Create Rework Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+
         <Row
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-10px"
           }}
         >
-          <Col span={6}>
-            <Form.Item
-              label="Company"
-              name="company_id"
-              validateStatus={errors.company_id ? "error" : ""}
-              help={errors.company_id && errors.company_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Company"
-                    options={companyListRes?.rows?.map((company) => ({
-                      label: company.company_name,
-                      value: company.id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-
           <Col span={6}>
             <Form.Item
               label="Challan Date"
@@ -410,15 +402,6 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-            marginTop: "-30px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Option"
@@ -451,6 +434,15 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
 
           <Col span={6}>
             <Form.Item
@@ -508,15 +500,6 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-            marginTop: "-30px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Select Supplier"
@@ -549,6 +532,15 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
 
           <Col span={6}>
             <Form.Item
@@ -646,17 +638,21 @@ const AddReworkChallan = () => {
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{marginTop: "-15px"}} />
 
-        <ReworkChallanFieldTable
-          errors={errors}
-          control={control}
-          setFocus={setFocus}
-          setValue={setValue}
-          getValues={getValues}
-          activeField={activeField}
-          setActiveField={setActiveField}
-        />
+        {/* Rework challan table information  */}
+        {quality_id !== undefined && quality_id !== null &&(
+          <ReworkChallanFieldTable
+            errors={errors}
+            control={control}
+            setFocus={setFocus}
+            setValue={setValue}
+            getValues={getValues}
+            activeField={activeField}
+            setActiveField={setActiveField}
+            quality_id={quality_id}
+          />
+        )}
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button htmlType="button" onClick={() => reset()}>
