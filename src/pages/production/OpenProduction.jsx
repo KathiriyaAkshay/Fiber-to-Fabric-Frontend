@@ -23,7 +23,7 @@ import {
 } from "../../api/requests/users";
 import {
   addOpeningProductionRequest,
-  getLastOpeningProductionTakaRequest,
+  // getLastOpeningProductionTakaRequest,
 } from "../../api/requests/production/openingProduction";
 import dayjs from "dayjs";
 import AddOpeningProductionTable from "../../components/production/AddOpeningProductionTable";
@@ -34,9 +34,7 @@ import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
 import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
 import { disabledFutureDate } from "../../utils/date";
 
-
 const OpenProduction = () => {
-
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -72,8 +70,7 @@ const OpenProduction = () => {
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
     if (data.is_create_challan) {
-
-      let hasError = 0 ; 
+      let hasError = 0;
 
       array.map((fieldNumber) => {
         let meter = +data[`meter_${fieldNumber}`];
@@ -81,27 +78,41 @@ const OpenProduction = () => {
         let machine_no = +data[`machine_no_${fieldNumber}`];
 
         if (isNaN(meter) || meter == undefined || meter == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
-
+          return;
         } else if (isNaN(weight) || weight == undefined || weight == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
-
-        } else if (isNaN(machine_no) || machine_no == undefined || machine_no == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          return;
+        } else if (
+          isNaN(machine_no) ||
+          machine_no == undefined ||
+          machine_no == ""
+        ) {
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
+          return;
         }
+      });
 
-      })
-
-      if (hasError == 0){
+      if (hasError == 0) {
         const payload = {
           deliver_address: data.delivery_address,
           order_id: data.order_id,
+          quality_id: data.quality_id,
           vehicle_id: data.vehicle_id,
           challan_no: data.challan_no,
           customer_gst: data.customer_gst_in,
@@ -124,9 +135,7 @@ const OpenProduction = () => {
         };
         await addNewOpeningProduction(payload);
       }
-
     } else {
-
       let hasError = 0;
 
       array.map((fieldNumber) => {
@@ -135,27 +144,41 @@ const OpenProduction = () => {
         let machine_no = +data[`machine_no_${fieldNumber}`];
 
         if (isNaN(meter) || meter == undefined || meter == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
-
+          return;
         } else if (isNaN(weight) || weight == undefined || weight == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
-
-        } else if (isNaN(machine_no) || machine_no == undefined || machine_no == "") {
-          message.error(`Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber}`)
+          return;
+        } else if (
+          isNaN(machine_no) ||
+          machine_no == undefined ||
+          machine_no == ""
+        ) {
+          message.error(
+            `Please, Enter valid details for Taka ${
+              data.last_taka_no + fieldNumber
+            }`
+          );
           hasError = 1;
-          return
+          return;
         }
-
-      })
+      });
 
       if (hasError == 0) {
         const payload = {
           order_id: data.order_id,
           machine_name: data.machine_name,
+          quality_id: data.quality_id,
           createdAt: dayjs(data.date).format("YYYY-MM-DD"),
           production_details: array.map((fieldNumber) => {
             return {
@@ -182,7 +205,6 @@ const OpenProduction = () => {
     setFocus,
     getValues,
     trigger,
-
   } = useForm({
     defaultValues: {
       is_create_challan: false,
@@ -212,7 +234,6 @@ const OpenProduction = () => {
       machine_name: null,
       quality_id: null,
     },
-
   });
 
   const {
@@ -225,7 +246,7 @@ const OpenProduction = () => {
     broker_id,
     machine_name,
     party_id,
-    quality_id
+    quality_id,
   } = watch();
 
   // Fetch last production taka number fetch
@@ -250,12 +271,15 @@ const OpenProduction = () => {
 
   useEffect(() => {
     if (productionLastTaka !== null && productionLastTaka !== undefined) {
-      setValue("last_taka_no", productionLastTaka ? +productionLastTaka?.taka_no : 0);
+      setValue(
+        "last_taka_no",
+        productionLastTaka ? +productionLastTaka?.taka_no : 0
+      );
       setValue("last_taka_no_date", dayjs(productionLastTaka?.createdAt));
     }
-  }, [is_create_challan, productionLastTaka])
+  }, [is_create_challan, productionLastTaka]);
 
-  // Fetch party related dropdown list 
+  // Fetch party related dropdown list
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId, broker_id }],
     queryFn: async () => {
@@ -283,7 +307,7 @@ const OpenProduction = () => {
     }
   }, [partyUserListRes, party_id]);
 
-  // Gery order dropdown list 
+  // Gery order dropdown list
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
@@ -300,7 +324,7 @@ const OpenProduction = () => {
       enabled: Boolean(companyId),
     });
 
-  // Get Inhouse quality dropdown list 
+  // Get Inhouse quality dropdown list
   const { data: allQualityListRes, isLoading: allQualityLoading } = useQuery({
     queryKey: [
       "allQualityListRes",
@@ -358,8 +382,8 @@ const OpenProduction = () => {
       },
       enabled: Boolean(companyId),
     });
-  
-  // Get Vehicle dropdown list  
+
+  // Get Vehicle dropdown list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -375,7 +399,7 @@ const OpenProduction = () => {
     enabled: Boolean(companyId),
   });
 
-  // Get machinedropdown list 
+  // Get machinedropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -403,7 +427,7 @@ const OpenProduction = () => {
       setValue("total_taka", order.total_taka);
       setValue("total_weight", order.weight);
       setValue("machine_name", order.machine_name);
-      setValue("customer_gst_in", order?.party?.gst_no)
+      setValue("customer_gst_in", order?.party?.gst_no);
 
       setValue("party_id", order.party.id);
       setValue("company", order.party.id);
@@ -441,9 +465,10 @@ const OpenProduction = () => {
       onFinish={handleSubmit(onSubmit)}
     >
       <div className="flex flex-col gap-2 p-4">
-
-        <div className="flex items-center justify-between gap-5 mx-3 mb-3"
-          style={{ marginTop: "-15px" }}>
+        <div
+          className="flex items-center justify-between gap-5 mx-3 mb-3"
+          style={{ marginTop: "-15px" }}
+        >
           <div className="flex items-center gap-5">
             <Button onClick={() => navigate(-1)}>
               <ArrowLeftOutlined />
@@ -485,11 +510,7 @@ const OpenProduction = () => {
 
         {is_create_challan == true ? (
           <>
-            <Row
-              className="w-100"
-              justify={"flex-start"}
-              gutter={12}
-            >
+            <Row className="w-100" justify={"flex-start"} gutter={12}>
               <Col span={6}>
                 <Form.Item
                   label="Challan No"
@@ -539,7 +560,7 @@ const OpenProduction = () => {
               className="w-100"
               justify={"flex-start"}
               gutter={12}
-              style={{marginTop: "-15px"}}
+              style={{ marginTop: "-15px" }}
             >
               <Col span={6}>
                 <Form.Item
@@ -602,7 +623,12 @@ const OpenProduction = () => {
               </Col>
             </Row>
 
-            <Row className="w-100" justify={"flex-start"} gutter={12} style={{marginTop: "-15px"}}>
+            <Row
+              className="w-100"
+              justify={"flex-start"}
+              gutter={12}
+              style={{ marginTop: "-15px" }}
+            >
               <Col span={6}>
                 <Form.Item
                   label="Order no"
@@ -742,7 +768,7 @@ const OpenProduction = () => {
               className="w-100"
               justify={"flex-start"}
               gutter={12}
-              style={{marginTop: "-15px"}}
+              style={{ marginTop: "-15px" }}
             >
               <Col span={6}>
                 <Form.Item
@@ -929,32 +955,40 @@ const OpenProduction = () => {
                 </Typography.Text>
               </Col>
 
-              <Col span={4} style={{ 
-                textAlign: "left", marginTop: "-25px", paddingLeft: "10px" }}>
+              <Col
+                span={4}
+                style={{
+                  textAlign: "left",
+                  marginTop: "-25px",
+                  paddingLeft: "10px",
+                }}
+              >
                 <Typography.Text style={{ color: "red" }}>
                   {pending_meter || 0}
                 </Typography.Text>
               </Col>
-              
-              <Col span={4} style={{ textAlign: "left", marginTop: "-25px"  }}>
+
+              <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
                 <Typography.Text style={{ color: "red" }}>
                   {pending_weight || 0}
                 </Typography.Text>
               </Col>
-              
-              <Col span={4} style={{ textAlign: "left", marginTop: "-25px"  }}>
+
+              <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
                 <Typography.Text style={{ color: "red" }}>
                   {pending_taka || 0}
                 </Typography.Text>
               </Col>
-            
             </Row>
-
           </>
         ) : (
           <Row
             gutter={15}
-            style={{ justifyContent: "space-between", alignItems: "center", marginTop: "-15px" }}
+            style={{
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "-15px",
+            }}
           >
             <Col span={8}>
               <Form.Item
@@ -1054,11 +1088,15 @@ const OpenProduction = () => {
           </Row>
         )}
 
-        <Divider style={{marginTop: "-15px"}}/>
+        <Divider style={{ marginTop: "-15px" }} />
 
         <Row
           gutter={15}
-          style={{ justifyContent: "space-between", alignItems: "center", marginTop: "-15px" }}
+          style={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: "-15px",
+          }}
         >
           <Col span={6}>
             <Form.Item
@@ -1085,7 +1123,7 @@ const OpenProduction = () => {
                     <DatePicker
                       {...field}
                       disabled
-                    // style={{ width: "100%" }}
+                      // style={{ width: "100%" }}
                     />
                   )}
                 />
@@ -1098,7 +1136,11 @@ const OpenProduction = () => {
               <Button htmlType="button" onClick={() => reset()}>
                 Reset
               </Button>
-              <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
+              <Button
+                type="primary"
+                onClick={handleSubmit(onSubmit)}
+                loading={isPending}
+              >
                 Create
               </Button>
             </Flex>
@@ -1117,7 +1159,6 @@ const OpenProduction = () => {
             getValues={getValues}
           />
         )}
-
       </div>
     </Form>
   );

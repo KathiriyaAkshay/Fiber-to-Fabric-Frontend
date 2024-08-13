@@ -32,12 +32,11 @@ const ReworkChallanFieldTable = ({
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
+      let taka_number = getValues(`taka_no_${fieldNumber}`);
+      let meter = getValues(`meter_${fieldNumber}`);
 
-      let taka_number = getValues(`taka_no_${fieldNumber}`) ; 
-      let meter =getValues(`meter_${fieldNumber}`) ; 
-      
-      if (taka_number == undefined || taka_number == ""){
-        message.warning("Please, Enter taka number") ; 
+      if (taka_number == undefined || taka_number == "") {
+        message.warning("Please, Enter taka number");
       } else {
         setActiveField((prev) => prev + 1);
         setTimeout(() => {
@@ -48,24 +47,24 @@ const ReworkChallanFieldTable = ({
   };
 
   const removeCurrentField = (fieldNumber) => {
-    const detailArray = Array.from({length: activeField}).fill(0)  ;
-    
+    const detailArray = Array.from({ length: activeField }).fill(0);
+
     detailArray?.map((element, index) => {
-      let value = index + 1; 
-      if ((value + 1) > fieldNumber){
-        let taka_number = getValues(`taka_no_${value + 1}`); 
-        let meter = getValues(`meter_${value + 1}`) ; 
-        setValue(`taka_no_${value}`, taka_number) ; 
-        setValue(`meter_${value}`, meter)
+      let value = index + 1;
+      if (value + 1 > fieldNumber) {
+        let taka_number = getValues(`taka_no_${value + 1}`);
+        let meter = getValues(`meter_${value + 1}`);
+        setValue(`taka_no_${value}`, taka_number);
+        setValue(`meter_${value}`, meter);
       }
-    })
+    });
     if (fieldNumber) {
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
       }
     }
 
-    calculateTotal() ; 
+    calculateTotal();
   };
 
   const calculateTotal = () => {
@@ -76,8 +75,12 @@ const ReworkChallanFieldTable = ({
     let totalReceiveMeter = 0;
 
     numOfFields.forEach((fieldNumber) => {
-      let taka_number = getValues(`taka_no_${fieldNumber}`); 
-      if (taka_number !== undefined && taka_number != null && taka_number != ""){
+      let taka_number = getValues(`taka_no_${fieldNumber}`);
+      if (
+        taka_number !== undefined &&
+        taka_number != null &&
+        taka_number != ""
+      ) {
         totalTaka += 1;
       }
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
@@ -92,63 +95,64 @@ const ReworkChallanFieldTable = ({
     setValue("total_taka", totalTaka);
     setValue("taka_receive_meter", totalReceiveMeter);
   };
-  
+
   // Get Particular production taka number information
   useQuery({
     queryKey: [
       "productionDetail",
       "get",
-      { company_id: companyId, taka_no: debounceTakaNo, quality_id: quality_id},
+      {
+        company_id: companyId,
+        taka_no: debounceTakaNo,
+        quality_id: quality_id,
+      },
     ],
     queryFn: async () => {
       const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
-      let already_taka = 0 ; 
+      let already_taka = 0;
       numOfFields.forEach((fieldNumber) => {
-        let taka_number = getValues(`taka_no_${fieldNumber}`); 
-        if (taka_number == e.target.value && fieldNumber !== activeField){
-          already_taka = 1 ; 
+        let taka_number = getValues(`taka_no_${fieldNumber}`);
+        if (taka_number == e.target.value && fieldNumber !== activeField) {
+          already_taka = 1;
         }
       });
 
-      if (already_taka == 1){
-        message.warning(`Tako ${e.target.value} already in used`) ; 
-        setValue(`taka_no_${activeField}`, undefined) ; 
-        setValue(`meter_${activeField}`, undefined) ; 
+      if (already_taka == 1) {
+        message.warning(`Tako ${e.target.value} already in used`);
+        setValue(`taka_no_${activeField}`, undefined);
+        setValue(`meter_${activeField}`, undefined);
       }
 
       if (debounceTakaNo && already_taka == 0) {
         const res = await getProductionByIdRequest({
           id: 0,
-          params: { 
-            company_id: companyId, 
-            taka_no: debounceTakaNo,  
-            quality_id: quality_id
+          params: {
+            company_id: companyId,
+            taka_no: debounceTakaNo,
+            quality_id: quality_id,
           },
         });
         if (res.data.success) {
-
-          if (res?.data?.data == null){
-            message.warning("Please, Provide valid taka number") ; 
-            setValue(`meter_${activeField}`, undefined) ; 
+          if (res?.data?.data == null) {
+            message.warning("Please, Provide valid taka number");
+            setValue(`meter_${activeField}`, undefined);
           }
           setValue(
             `meter_${currentFieldNumber}`,
             res.data.data !== null ? res.data.data.meter : undefined
           );
-          calculateTotal()
-
+          calculateTotal();
         } else {
           setValue(`meter_${currentFieldNumber}`, undefined);
-          message.warning("Please, Provide valid taka number")
+          message.warning("Please, Provide valid taka number");
         }
-      } 
+      }
     },
     enabled: Boolean(companyId),
   });
 
   return (
     <Row gutter={18}>
-
       <Col span={12}>
         <table
           className="job-challan-details-table"
@@ -214,7 +218,7 @@ const ReworkChallanFieldTable = ({
                             }}
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
-                            } 
+                            }
                           />
                         )}
                       />
@@ -495,15 +499,15 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                          // onChange={(e) => {
-                          //   if (e.key === " ") {
-                          //     e.stopPropagation();
-                          //   }
-                          //   setValue(
-                          //     `weight_${fieldNumber}`,
-                          //     e.target.value
-                          //   );
-                          // }}
+                            // onChange={(e) => {
+                            //   if (e.key === " ") {
+                            //     e.stopPropagation();
+                            //   }
+                            //   setValue(
+                            //     `weight_${fieldNumber}`,
+                            //     e.target.value
+                            //   );
+                            // }}
                           />
                         )}
                       />
@@ -536,15 +540,15 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                          // onChange={(e) => {
-                          //   if (e.key === " ") {
-                          //     e.stopPropagation();
-                          //   }
-                          //   setValue(
-                          //     `weight_${fieldNumber}`,
-                          //     e.target.value
-                          //   );
-                          // }}
+                            // onChange={(e) => {
+                            //   if (e.key === " ") {
+                            //     e.stopPropagation();
+                            //   }
+                            //   setValue(
+                            //     `weight_${fieldNumber}`,
+                            //     e.target.value
+                            //   );
+                            // }}
                           />
                         )}
                       />
@@ -605,7 +609,6 @@ const ReworkChallanFieldTable = ({
               );
             })}
           </tbody>
-
         </table>
       </Col>
 
@@ -626,7 +629,6 @@ const ReworkChallanFieldTable = ({
           </Form.Item>
         </Flex>
       </Col>
-
     </Row>
   );
 };
