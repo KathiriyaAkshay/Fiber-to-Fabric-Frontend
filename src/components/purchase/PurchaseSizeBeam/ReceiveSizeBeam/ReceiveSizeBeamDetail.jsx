@@ -7,9 +7,19 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { DeleteOutlined, PlusCircleFilled } from "@ant-design/icons";
 
-function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue, pendingMeter, totalMeter, getValues, sizeBeamOrderListRes, size_beam_order_id }) {
+function ReceiveSizeBeamDetail({
+  control,
+  errors,
+  setPendingMeter,
+  setValue,
+  pendingMeter,
+  totalMeter,
+  getValues,
+  sizeBeamOrderListRes,
+  size_beam_order_id,
+}) {
   const { companyId } = useContext(GlobalContext);
-  const [totalInitalTotalBeam, setInitalTotalBeam] = useState(0) ; 
+  const [totalInitalTotalBeam, setInitalTotalBeam] = useState(0);
   // const [noOfAdd, setNoOfAdd] = useState(1);
   const [deletedRecords, setDeletedRecords] = useState([]);
 
@@ -19,17 +29,16 @@ function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue, pen
   });
 
   useEffect(() => {
-    if (fields?.length > totalInitalTotalBeam){
-      setInitalTotalBeam(fields?.length) ; 
-    }; 
+    if (fields?.length > totalInitalTotalBeam) {
+      setInitalTotalBeam(fields?.length);
+    }
 
-    let tempTotalMeter = 0 ; 
+    let tempTotalMeter = 0;
     fields?.map((element) => {
-      tempTotalMeter = tempTotalMeter + Number(element?.meters) ;
-    })
-    setPendingMeter(Number(totalMeter) - Number(tempTotalMeter)) ; 
-    
-  }, [fields]) ; 
+      tempTotalMeter = tempTotalMeter + Number(element?.meters);
+    });
+    setPendingMeter(Number(totalMeter) - Number(tempTotalMeter));
+  }, [fields]);
 
   const addNewRowHandler = () => {
     const selectedOrder = sizeBeamOrderListRes?.SizeBeamOrderList.find(
@@ -258,21 +267,23 @@ function ReceiveSizeBeamDetail({ control, errors, setPendingMeter, setValue, pen
               control={control}
               name={`beam_details.${index}.meters`}
               render={({ field }) => (
-                <Input 
-                  {...field} 
-                  type="number" 
-                  min={0} 
-                  step={0.01} 
+                <Input
+                  {...field}
+                  type="number"
+                  min={0}
+                  step={0.01}
                   onChange={(e) => {
-                    setValue(`beam_details.${index}.meters`, e.target.value) ; 
-                    let tempTotalMeter = 0 ;
+                    setValue(`beam_details.${index}.meters`, e.target.value);
+                    let tempTotalMeter = 0;
                     fields?.map((element, i) => {
-                      let tempValue = getValues(`beam_details.${i}.meters`); 
-                      if (tempValue != "" && tempValue != undefined){
-                        tempTotalMeter = tempTotalMeter + Number(tempValue) ; 
+                      let tempValue = getValues(`beam_details.${i}.meters`);
+                      if (tempValue != "" && tempValue != undefined) {
+                        tempTotalMeter = tempTotalMeter + Number(tempValue);
                       }
-                    })
-                    setPendingMeter(Number(totalMeter) - Number(tempTotalMeter)) ; 
+                    });
+                    setPendingMeter(
+                      Number(totalMeter) - Number(tempTotalMeter)
+                    );
                   }}
                 />
               )}

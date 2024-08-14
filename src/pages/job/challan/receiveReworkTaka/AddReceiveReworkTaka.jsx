@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReceiveReworkTakaFieldTable from "../../../../components/job/challan/receiveReworkTaka/receiveReworkTakaFieldTable";
 import { addReceiveReworkTakaRequest } from "../../../../api/requests/job/challan/receiveReworkTaka";
+import AlertModal from "../../../../components/common/modal/alertModal";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -95,6 +96,7 @@ const AddReceiveReworkTaka = () => {
     setValue,
     getValues,
     setFocus,
+    resetField,
   } = useForm({
     defaultValues: {
       machine_name: null,
@@ -146,6 +148,65 @@ const AddReceiveReworkTaka = () => {
       enabled: Boolean(companyId),
     });
 
+  // **************************************************************
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [tempOrderValue, setTempOrderValue] = useState(null);
+
+  const qualityChangeHandler = (field, selectedValue) => {
+    setTempOrderValue(selectedValue);
+    if (activeField >= 1) {
+      if (
+        getValues(`taka_no_1`) ||
+        getValues(`meter_1`) ||
+        getValues(`received_meter_1`) ||
+        getValues(`received_weight__1`) ||
+        getValues(`short_1`) ||
+        getValues(`average_1`) ||
+        getValues(`tp_1`) ||
+        getValues(`pis_1`)
+      ) {
+        setIsAlertOpen(true);
+      } else {
+        field.onChange(selectedValue);
+      }
+    } else {
+      field.onChange(selectedValue);
+    }
+  };
+
+  const onCancelHandler = () => {
+    setIsAlertOpen(false);
+  };
+
+  const onConfirmHandler = () => {
+    const detailArr = Array.from({ length: activeField }, (_, i) => i + 1);
+
+    detailArr.forEach((field) => {
+      // resetField(`taka_no_${field}`, "");
+      // resetField(`meter_${field}`, "");
+      // resetField(`received_meter_${field}`, "");
+      // resetField(`received_weight_${field}`, "");
+      // resetField(`short_${field}`, "");
+
+      resetField(`taka_no_${field}`, "");
+      resetField(`meter_${field}`, "");
+      resetField(`received_meter_${field}`, "");
+      resetField(`short_${field}`, "");
+      resetField(`received_weight_${field}`, "");
+      resetField(`average_${field}`, "");
+      resetField(`tp_${field}`, "");
+      resetField(`pis_${field}`, "");
+    });
+
+    setValue("quality_id", tempOrderValue);
+    setActiveField(1);
+    setIsAlertOpen(false);
+    // setTotalTaka(0);
+    // setTotalMeter(0);
+    // setTotalWeight(0);
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -154,7 +215,7 @@ const AddReceiveReworkTaka = () => {
         </Button>
         <h3 className="m-0 text-primary">Create Receive Rework Taka</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{marginTop: "20px"}}>
+      <Form layout="vertical" style={{ marginTop: "20px" }}>
         <Row
           gutter={18}
           style={{
@@ -220,6 +281,10 @@ const AddReceiveReworkTaka = () => {
                           label: item.quality_name,
                         }))
                       }
+                      onChange={(value) => {
+                        // field.onChange(value);
+                        qualityChangeHandler(field, value);
+                      }}
                     />
                   );
                 }}
@@ -245,11 +310,26 @@ const AddReceiveReworkTaka = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="button"
+            loading={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
             Create
           </Button>
         </Flex>
       </Form>
+
+      {isAlertOpen && (
+        <AlertModal
+          key={"alert_modal"}
+          open={isAlertOpen}
+          content="Are you sure you want to change? You will lose your entries!"
+          onCancel={onCancelHandler}
+          onConfirm={onConfirmHandler}
+        />
+      )}
     </div>
   );
 };

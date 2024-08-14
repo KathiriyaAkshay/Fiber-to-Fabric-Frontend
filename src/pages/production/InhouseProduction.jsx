@@ -13,7 +13,7 @@ import {
   Tag,
   Checkbox,
   message,
-  Badge
+  Badge,
 } from "antd";
 import {
   BarcodeOutlined,
@@ -61,7 +61,9 @@ const InhouseProduction = () => {
   const [qrDetails, setQrDetails] = useState([]);
 
   const [quality, setQuality] = useState(null);
-  const [fromDate, setFromDate] = useState(dayjs(financialYearData?.startFinanceYear));
+  const [fromDate, setFromDate] = useState(
+    dayjs(financialYearData?.startFinanceYear)
+  );
   const [toDate, setToDate] = useState(dayjs(financialYearData?.currentDate));
   const [radioSelection, setRadioSelection] = useState("stock");
   const [fromTakaNo, setFromTakaNo] = useState(null);
@@ -74,7 +76,10 @@ const InhouseProduction = () => {
   const [foldingUser, setFoldingUser] = useState(null);
 
   const debounceQuality = useDebounce(quality, 500);
-  const debounceFromDate = useDebounce(dayjs(fromDate).format("YYYY-MM-DD"), 500);
+  const debounceFromDate = useDebounce(
+    dayjs(fromDate).format("YYYY-MM-DD"),
+    500
+  );
   const debounceToDate = useDebounce(dayjs(toDate).format("YYYY-MM-DD"), 500);
   const debounceType = useDebounce(radioSelection, 500);
   const debounceFromTakaNo = useDebounce(fromTakaNo, 500);
@@ -86,32 +91,33 @@ const InhouseProduction = () => {
   const debounceGrade = useDebounce(grade, 500);
   const debounceFoldingUser = useDebounce(foldingUser, 500);
 
-  const { mutateAsync: deleteProduction, isPending: deleteProductionPending  } = useMutation({
-    mutationFn: async ({ data }) => {
-      const res = await deleteProductionRequest({
-        data,
-        params: {
-          company_id: companyId,
-        },
-      });
-      return res?.data;
-    },
-    mutationKey: ["production", "delete"],
-    onSuccess: (res) => {
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success("In-House Production taka deleted successfully");
-      }
-      setSelectedRecords([]);
-      queryClient.invalidateQueries(["production", "list", companyId]);
-    },
-    onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
-    },
-  });
+  const { mutateAsync: deleteProduction, isPending: deleteProductionPending } =
+    useMutation({
+      mutationFn: async ({ data }) => {
+        const res = await deleteProductionRequest({
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res?.data;
+      },
+      mutationKey: ["production", "delete"],
+      onSuccess: (res) => {
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success("In-House Production taka deleted successfully");
+        }
+        setSelectedRecords([]);
+        queryClient.invalidateQueries(["production", "list", companyId]);
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage && typeof errorMessage === "string") {
+          message.error(errorMessage);
+        }
+      },
+    });
 
   // Quality list dropdown request
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -178,7 +184,7 @@ const InhouseProduction = () => {
         challanNo: debounceChallanNo,
         fromTaka: debounceFromTakaNo,
         toTaka: debounceToTakaNo,
-      }
+      };
 
       if (radioSelection == "sold") {
         requestPaylaod["is_stock"] = "0";
@@ -333,8 +339,8 @@ const InhouseProduction = () => {
     },
     {
       title: "Taka No.",
-      dataIndex: 'taka_no',
-      key: 'taka_no',
+      dataIndex: "taka_no",
+      key: "taka_no",
       render: (text, record) => {
         return (
           <Badge
@@ -346,7 +352,7 @@ const InhouseProduction = () => {
             }
           />
         );
-      }
+      },
     },
     {
       title: "Meter",
@@ -518,8 +524,7 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0} align="left">
                   <b>{productionList?.total_weight?.toFixed(2)}</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={0} align="left">
-                </Table.Summary.Cell>
+                <Table.Summary.Cell index={0} align="left"></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}>
                   <b>{productionList?.net_average?.toFixed(2)}</b>
                 </Table.Summary.Cell>
@@ -548,18 +553,23 @@ const InhouseProduction = () => {
         </div>
         <Flex align="center" gap={10}>
           <Flex align="center" gap={10}>
-            <Button type="primary" onClick={()=> {
-              navigate("/purchase/purchased-taka")
-            }}>
+            <Button
+              type="primary"
+              onClick={() => {
+                navigate("/purchase/purchased-taka");
+              }}
+            >
               View Purchased Taka
             </Button>
           </Flex>
-          <Flex align="center" gap={10} onClick={() => {
-            navigate("/job/job-taka")
-          }}>
-            <Button type="primary">
-              View Job Taka
-            </Button>
+          <Flex
+            align="center"
+            gap={10}
+            onClick={() => {
+              navigate("/job/job-taka");
+            }}
+          >
+            <Button type="primary">View Job Taka</Button>
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
@@ -670,7 +680,7 @@ const InhouseProduction = () => {
               value={fromTakaNo}
               type="number"
               onChange={(e) => {
-                setFromTakaNo(e.target.value)
+                setFromTakaNo(e.target.value);
               }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
@@ -682,7 +692,7 @@ const InhouseProduction = () => {
               value={toTakaNo}
               type="number"
               onChange={(e) => {
-                setToTakaNo(e.target.value)
+                setToTakaNo(e.target.value);
               }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
@@ -707,7 +717,7 @@ const InhouseProduction = () => {
               value={fromMachineNo}
               type="number"
               onChange={(e) => {
-                setFromMachineNo(e.target.value)
+                setFromMachineNo(e.target.value);
               }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
@@ -719,7 +729,7 @@ const InhouseProduction = () => {
               value={toMachineNo}
               type="number"
               onChange={(e) => {
-                setToMachineNo(e.target.value)
+                setToMachineNo(e.target.value);
               }}
               style={{ width: "150px", marginLeft: "7px" }}
             />
@@ -753,13 +763,13 @@ const InhouseProduction = () => {
       </div>
 
       <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-
         {selectedRecords.length ? (
           <Flex gap={12} justify="space-between">
-            <Button danger 
-              onClick={handleDelete} 
-              style={{ width: "50px" }} 
-              loading = {deleteProductionPending}          
+            <Button
+              danger
+              onClick={handleDelete}
+              style={{ width: "50px" }}
+              loading={deleteProductionPending}
             >
               <DeleteOutlined />
             </Button>
@@ -781,7 +791,7 @@ const InhouseProduction = () => {
           <Input
             value={challanNo}
             onChange={(e) => {
-              setChallanNo(e.target.value)
+              setChallanNo(e.target.value);
             }}
             placeholder="Challan No"
           />
@@ -804,7 +814,7 @@ const InhouseProduction = () => {
               placeholder="Beam No"
               value={beamNo}
               onChange={(e) => {
-                setBeamNo(e.target.value)
+                setBeamNo(e.target.value);
               }}
               style={{ width: "150px", marginLeft: "10px" }}
             />
@@ -835,7 +845,6 @@ const InhouseProduction = () => {
           </Button>
         </Flex>
       </div>
-
 
       {renderTable()}
 

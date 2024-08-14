@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import moment from "moment/moment";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
+import AlertModal from "../../../../components/common/modal/alertModal";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -54,7 +55,7 @@ const AddReworkChallan = () => {
 
   const [activeField, setActiveField] = useState(1);
 
-  const { companyId, companyListRes, company } = useContext(GlobalContext);
+  const { companyId, company } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
@@ -88,26 +89,56 @@ const AddReworkChallan = () => {
   async function onSubmit(data) {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
-    let hasError = 0; 
-    detailArray?.map((field, index) => {
+    let hasError = 0;
+    detailArray?.map((field) => {
+      let taka_no = +data[`taka_no_${field}`];
+      let meter = +data[`meter_${field}`];
+      let received_meter = +data[`received_meter_${field}`];
+      let received_weight = +data[`received_weight_${field}`];
+      let short = +data[`short_${field}`];
 
-      let taka_no =  +data[`taka_no_${field}`] ; 
-      let meter = +data[`meter_${field}`] ; 
-    
-      if (isNaN(taka_no) || taka_no == undefined || taka_no == null || taka_no == ""){
-        message.error("Please, Provide valid taka details") ; 
-        hasError = 1; 
-        return 
-      
-      } else if (isNaN(meter) || meter == undefined || meter == null || meter == ""){
-        message.error(`Please, Provide valid details for taka ${taka_no}`) ;
-        hasError = 1 ;
-        return ; 
+      if (isNaN(taka_no) || !taka_no) {
+        message.error("Please, Provide valid taka details");
+        setError(`taka_no_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(meter) || !meter) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`meter_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(received_meter) || !received_meter) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`received_meter_${field}`, {
+          type: "manual",
+          message: "Received meter is required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(received_weight) || !received_weight) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`received_weight_${field}`, {
+          type: "manual",
+          message: "Received weight is required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(short) || !short) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`short_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
       }
-      
-      // if (taka_no == undefined || taka_no == null || taka_no)
-
-    })
+    });
 
     const newData = {
       createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
@@ -132,7 +163,10 @@ const AddReworkChallan = () => {
         };
       }),
     };
-    // await AddReworkChallan(newData);
+
+    if (hasError === 0) {
+      await AddReworkChallan(newData);
+    }
   }
 
   const {
@@ -145,7 +179,7 @@ const AddReworkChallan = () => {
     getValues,
     setFocus,
     resetField,
-    setError
+    setError,
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -168,7 +202,7 @@ const AddReworkChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, company_id, supplier_id, machine_name, quality_id } = watch();
+  const { supplier_name, supplier_id, machine_name, quality_id } = watch();
 
   // Machinelist dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -183,7 +217,7 @@ const AddReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  // Rework option list 
+  // Rework option list
   const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
     useQuery({
       queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
@@ -197,7 +231,7 @@ const AddReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Dropdown quality list 
+  // Dropdown quality list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -228,7 +262,7 @@ const AddReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Vehicle dropdown list 
+  // Vehicle dropdown list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -277,7 +311,6 @@ const AddReworkChallan = () => {
     }
   }, [supplier_name, dropdownSupplierListRes, resetField]);
 
-
   useEffect(() => {
     setValue("gst_in_1", company?.gst_no);
   }, [company, setValue]);
@@ -296,6 +329,62 @@ const AddReworkChallan = () => {
     return current && current > moment().endOf("day");
   }
 
+  // **************************************************************
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [tempOrderValue, setTempOrderValue] = useState(null);
+
+  const qualityChangeHandler = (field, selectedValue) => {
+    setTempOrderValue(selectedValue);
+    if (activeField >= 1) {
+      if (
+        getValues(`taka_no_1`) ||
+        getValues(`meter_1`) ||
+        getValues(`received_meter_1`) ||
+        getValues(`received_weight__1`) ||
+        getValues(`short_1`)
+        // getValues(`production_meter_1`) ||
+        // getValues(`pending_meter_1`) ||
+        // getValues(`pending_percentage_1`)
+      ) {
+        setIsAlertOpen(true);
+      } else {
+        field.onChange(selectedValue);
+      }
+    } else {
+      field.onChange(selectedValue);
+    }
+  };
+
+  const onCancelHandler = () => {
+    setIsAlertOpen(false);
+  };
+
+  const onConfirmHandler = () => {
+    const purchaseChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
+
+    purchaseChallanDetailArr.forEach((field) => {
+      resetField(`taka_no_${field}`, "");
+      resetField(`meter_${field}`, "");
+      resetField(`received_meter_${field}`, "");
+      resetField(`received_weight_${field}`, "");
+      resetField(`short_${field}`, "");
+      // resetField(`production_meter_${field}`, "");
+      // resetField(`pending_meter_${field}`, "");
+      // resetField(`pending_percentage_${field}`, "");
+    });
+
+    setValue("quality_id", tempOrderValue);
+    setActiveField(1);
+    setIsAlertOpen(false);
+    // setTotalTaka(0);
+    // setTotalMeter(0);
+    // setTotalWeight(0);
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -305,12 +394,11 @@ const AddReworkChallan = () => {
         <h3 className="m-0 text-primary">Create Rework Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-
         <Row
           gutter={18}
           style={{
             padding: "12px",
-            marginTop: "-10px"
+            marginTop: "-10px",
           }}
         >
           <Col span={6}>
@@ -396,6 +484,10 @@ const AddReworkChallan = () => {
                           label: item.quality_name,
                         }))
                       }
+                      onChange={(value) => {
+                        // field.onChange(value);
+                        qualityChangeHandler(field, value);
+                      }}
                     />
                   );
                 }}
@@ -443,7 +535,6 @@ const AddReworkChallan = () => {
             marginTop: "-30px",
           }}
         >
-
           <Col span={6}>
             <Form.Item
               label="Gst In"
@@ -541,7 +632,6 @@ const AddReworkChallan = () => {
             marginTop: "-30px",
           }}
         >
-
           <Col span={6}>
             <Form.Item
               label="Company"
@@ -638,10 +728,10 @@ const AddReworkChallan = () => {
           </Col>
         </Row>
 
-        <Divider style={{marginTop: "-15px"}} />
+        <Divider style={{ marginTop: "-15px" }} />
 
         {/* Rework challan table information  */}
-        {quality_id !== undefined && quality_id !== null &&(
+        {quality_id !== undefined && quality_id !== null && (
           <ReworkChallanFieldTable
             errors={errors}
             control={control}
@@ -658,11 +748,25 @@ const AddReworkChallan = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
+          <Button
+            type="primary"
+            onClick={handleSubmit(onSubmit)}
+            loading={isPending}
+          >
             Create
           </Button>
         </Flex>
       </Form>
+
+      {isAlertOpen && (
+        <AlertModal
+          key={"alert_modal"}
+          open={isAlertOpen}
+          content="Are you sure you want to change? You will lose your entries!"
+          onCancel={onCancelHandler}
+          onConfirm={onConfirmHandler}
+        />
+      )}
     </div>
   );
 };

@@ -34,6 +34,7 @@ import {
   updateSaleChallanRequest,
 } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
+import AlertModal from "../../../../components/common/modal/alertModal";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -121,6 +122,53 @@ const UpdateSaleChallan = () => {
       (_, i) => i + 1
     );
 
+    const sale_challan_detail = [];
+    let hasError = 0;
+    saleChallanDetailArr.forEach((field, index) => {
+      const takaNo = data[`taka_no_${field}`];
+      const meter = data[`meter_${field}`];
+      const weight = data[`weight_${field}`];
+
+      if (isNaN(takaNo) || takaNo === "") {
+        message.error(`Enter taka no for ${field} number row.`);
+        setError(`taka_no_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+      }
+      if (isNaN(meter) || meter === "") {
+        message.error(`Enter meter for ${field} number row.`);
+        setError(`meter_${field}`, {
+          type: "manual",
+          message: "Meter required.",
+        });
+        hasError = 1;
+      }
+      if (isNaN(weight) || weight === "") {
+        message.error(`Enter weight for ${field} number row.`);
+        setError(`weight_${field}`, {
+          type: "manual",
+          message: "Weight required.",
+        });
+        hasError = 1;
+      }
+
+      if (
+        !isNaN(data[`taka_no_${field}`]) &&
+        !isNaN(data[`meter_${field}`]) &&
+        !isNaN(data[`weight_${field}`])
+      ) {
+        sale_challan_detail.push({
+          index: index + 1,
+          taka_no: data[`taka_no_${field}`],
+          meter: parseInt(data[`meter_${field}`]),
+          weight: parseInt(data[`weight_${field}`]),
+          model: data[`model_${field}`],
+        });
+      }
+    });
+
     const newData = {
       party_id: selectedOrder.party_id,
       customer_gst_state: data.gst_state_2,
@@ -150,17 +198,21 @@ const UpdateSaleChallan = () => {
           sale_challan_type: type,
         };
       }),
-      sale_challan_details: saleChallanDetailArr.map((field, index) => {
-        return {
-          index: index + 1,
-          taka_no: data[`taka_no_${field}`],
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
-          model: data[`model_${field}`],
-        };
-      }),
+      sale_challan_details: sale_challan_detail,
+      // saleChallanDetailArr.map((field, index) => {
+      //   return {
+      //     index: index + 1,
+      //     taka_no: data[`taka_no_${field}`],
+      //     meter: parseInt(data[`meter_${field}`]),
+      //     weight: parseInt(data[`weight_${field}`]),
+      //     model: data[`model_${field}`],
+      //   };
+      // }),
     };
-    await UpdateSaleChallan(newData);
+
+    if (hasError === 0) {
+      await UpdateSaleChallan(newData);
+    }
   }
 
   const {
@@ -173,6 +225,7 @@ const UpdateSaleChallan = () => {
     resetField,
     getValues,
     reset,
+    setError,
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -413,6 +466,52 @@ const UpdateSaleChallan = () => {
       });
     }
   }, [saleChallanDetail, reset]);
+
+  // *******************************************************************
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [tempOrderValue, setTempOrderValue] = useState(null);
+
+  const orderChangeHandler = (field, selectedValue) => {
+    setTempOrderValue(selectedValue);
+    if (activeField >= 1) {
+      if (
+        getValues(`taka_no_1`) ||
+        getValues(`meter_1`) ||
+        getValues(`weight_1`)
+      ) {
+        setIsAlertOpen(true);
+      } else {
+        field.onChange(selectedValue);
+      }
+    } else {
+      field.onChange(selectedValue);
+    }
+  };
+
+  const onCancelHandler = () => {
+    setIsAlertOpen(false);
+  };
+
+  const onConfirmHandler = () => {
+    const purchaseChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
+
+    purchaseChallanDetailArr.forEach((field) => {
+      resetField(`taka_no_${field}`, "");
+      resetField(`meter_${field}`, "");
+      resetField(`weight_${field}`, "");
+    });
+
+    setValue("gray_order_id", tempOrderValue);
+    setActiveField(1);
+    setIsAlertOpen(false);
+    setTotalTaka(0);
+    setTotalMeter(0);
+    setTotalWeight(0);
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -663,6 +762,9 @@ const UpdateSaleChallan = () => {
                   dropdownStyle={{
                     textTransform: "capitalize",
                   }}
+                  onChange={(selectedValue) =>
+                    orderChangeHandler(field, selectedValue)
+                  }
                 />
               )}
             />
@@ -1077,6 +1179,16 @@ const UpdateSaleChallan = () => {
         </Button>
       </Flex>
       {/* </Form> */}
+
+      {isAlertOpen && (
+        <AlertModal
+          key={"alert_modal"}
+          open={isAlertOpen}
+          content="Are you sure you want to change? You will lose your entries!"
+          onCancel={onCancelHandler}
+          onConfirm={onConfirmHandler}
+        />
+      )}
     </div>
   );
 };
