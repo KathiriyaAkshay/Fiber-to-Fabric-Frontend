@@ -108,22 +108,26 @@ const ReworkChallanFieldTable = ({
       },
     ],
     queryFn: async () => {
-      const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
-      let already_taka = 0;
-      numOfFields.forEach((fieldNumber) => {
-        let taka_number = getValues(`taka_no_${fieldNumber}`);
-        if (taka_number == e.target.value && fieldNumber !== activeField) {
-          already_taka = 1;
-        }
-      });
 
-      if (already_taka == 1) {
-        message.warning(`Tako ${e.target.value} already in used`);
-        setValue(`taka_no_${activeField}`, undefined);
-        setValue(`meter_${activeField}`, undefined);
-      }
+      // const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
+      // let already_taka = 0;
+      // numOfFields.forEach((fieldNumber) => {
+      //   let taka_number = getValues(`taka_no_${fieldNumber}`);
+      //   if (taka_number == e.target.value && fieldNumber !== activeField) {
+      //     already_taka = 1;
+      //   }
+      // });
 
-      if (debounceTakaNo && already_taka == 0) {
+      // if (already_taka == 1) {
+      //   message.warning(`Tako ${e.target.value} already in used`);
+      //   setValue(`taka_no_${activeField}`, undefined);
+      //   setValue(`meter_${activeField}`, undefined);
+      // }
+
+
+      // console.log("Run this function");
+      
+      if (debounceTakaNo) {
         const res = await getProductionByIdRequest({
           id: 0,
           params: {
