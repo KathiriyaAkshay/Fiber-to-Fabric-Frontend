@@ -113,31 +113,32 @@ const AddReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } else if (isNaN(received_meter) || !received_meter) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`received_meter_${field}`, {
-          type: "manual",
-          message: "Received meter is required.",
-        });
-        hasError = 1;
-        return;
-      } else if (isNaN(received_weight) || !received_weight) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`received_weight_${field}`, {
-          type: "manual",
-          message: "Received weight is required.",
-        });
-        hasError = 1;
-        return;
-      } else if (isNaN(short) || !short) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`short_${field}`, {
-          type: "manual",
-          message: "Taka No required.",
-        });
-        hasError = 1;
-        return;
-      }
+      } 
+      // else if (isNaN(received_meter) || !received_meter) {
+      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
+      //   setError(`received_meter_${field}`, {
+      //     type: "manual",
+      //     message: "Received meter is required.",
+      //   });
+      //   hasError = 1;
+      //   return;
+      // } else if (isNaN(received_weight) || !received_weight) {
+      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
+      //   setError(`received_weight_${field}`, {
+      //     type: "manual",
+      //     message: "Received weight is required.",
+      //   });
+      //   hasError = 1;
+      //   return;
+      // } else if (isNaN(short) || !short) {
+      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
+      //   setError(`short_${field}`, {
+      //     type: "manual",
+      //     message: "Taka No required.",
+      //   });
+      //   hasError = 1;
+      //   return;
+      // }
     });
 
     const newData = {

@@ -275,7 +275,7 @@ const ReworkChallanFieldTable = ({
                         errors[`received_meter_${fieldNumber}`] &&
                         errors[`received_meter_${fieldNumber}`].message
                       }
-                      required={true}
+                      // required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{ marginBottom: "0px" }}
                     >
