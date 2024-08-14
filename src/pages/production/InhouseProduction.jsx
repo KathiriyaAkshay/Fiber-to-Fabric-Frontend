@@ -313,7 +313,7 @@ const InhouseProduction = () => {
       ),
       render: (record) => {
         return (
-          record.status.toLowerCase() === "instock" &&
+          record?.status?.toLowerCase() === "instock" &&
           !record.is_tp && (
             <Checkbox
               checked={selectedRecords.includes(record.id)}
@@ -388,12 +388,12 @@ const InhouseProduction = () => {
     {
       title: "Status",
       render: (record) => {
-        if (record.status.toLowerCase() === "rework") {
+        if (record.status?.toLowerCase() === "rework") {
           if (record.is_stock) {
             return <Tag color="green">Re-work (In-Stock)</Tag>;
           }
           return <Tag color="red">Re-work</Tag>;
-        } else if (record.status.toLowerCase() === "instock") {
+        } else if (record.status?.toLowerCase() === "instock") {
           return <Tag color="green">In-Stock</Tag>;
         }
       },
@@ -415,7 +415,7 @@ const InhouseProduction = () => {
               details={details}
             />
 
-            {details.status.toLowerCase() === "instock" && (
+            {details?.status?.toLowerCase() === "instock" && (
               <Button
                 onClick={() => {
                   navigateToUpdate(details.id);
@@ -425,7 +425,7 @@ const InhouseProduction = () => {
               </Button>
             )}
 
-            {details.status.toLowerCase() === "instock" && !details.is_tp && (
+            {details?.status?.toLowerCase() === "instock" && !details.is_tp && (
               <DeleteProduction details={details} />
             )}
 
