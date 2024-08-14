@@ -301,6 +301,7 @@ const ReworkChallan = () => {
         return (
           <Space>
             <ViewReworkChallanInfo details={details} />
+            
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -308,7 +309,11 @@ const ReworkChallan = () => {
             >
               <EditOutlined />
             </Button>
-            <DeleteReworkChallan details={details} />
+            
+            {Number(details?.total_meter) != Number(details?.   taka_receive_meter) && (
+              <DeleteReworkChallan details={details} />
+            )}
+            
             <Button
               onClick={() => {
                 let MODE;
@@ -365,8 +370,12 @@ const ReworkChallan = () => {
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {reworkChallanList?.total_taka || 0}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {reworkChallanList?.total_meter || 0}
+                </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>

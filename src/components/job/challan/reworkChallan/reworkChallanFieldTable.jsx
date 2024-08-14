@@ -1,7 +1,7 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, message, Row } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getProductionByIdRequest } from "../../../../api/requests/production/inhouseProduction";
@@ -28,7 +28,7 @@ const ReworkChallanFieldTable = ({
 
   const [currentFieldNumber, setCurrentFieldNumber] = useState(null);
   const [storeTakaNo, setStoreTakaNo] = useState();
-  const debounceTakaNo = useDebounce(storeTakaNo, 300);
+  const debounceTakaNo = useDebounce(storeTakaNo, 150);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
@@ -96,64 +96,58 @@ const ReworkChallanFieldTable = ({
     setValue("taka_receive_meter", totalReceiveMeter);
   };
 
-  // Get Particular production taka number information
-  useQuery({
-    queryKey: [
-      "productionDetail",
-      "get",
-      {
+  const fetchTakaDetailsInfo = async () => {
+    const res = await getProductionByIdRequest({
+      id: 0,
+      params: {
         company_id: companyId,
         taka_no: debounceTakaNo,
         quality_id: quality_id,
       },
-    ],
-    queryFn: async () => {
-
-      // const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
-      // let already_taka = 0;
-      // numOfFields.forEach((fieldNumber) => {
-      //   let taka_number = getValues(`taka_no_${fieldNumber}`);
-      //   if (taka_number == e.target.value && fieldNumber !== activeField) {
-      //     already_taka = 1;
-      //   }
-      // });
-
-      // if (already_taka == 1) {
-      //   message.warning(`Tako ${e.target.value} already in used`);
-      //   setValue(`taka_no_${activeField}`, undefined);
-      //   setValue(`meter_${activeField}`, undefined);
-      // }
-
-
-      // console.log("Run this function");
-      
-      if (debounceTakaNo) {
-        const res = await getProductionByIdRequest({
-          id: 0,
-          params: {
-            company_id: companyId,
-            taka_no: debounceTakaNo,
-            quality_id: quality_id,
-          },
-        });
-        if (res.data.success) {
-          if (res?.data?.data == null) {
-            message.warning("Please, Provide valid taka number");
-            setValue(`meter_${activeField}`, undefined);
-          }
-          setValue(
-            `meter_${currentFieldNumber}`,
-            res.data.data !== null ? res.data.data.meter : undefined
-          );
-          calculateTotal();
-        } else {
-          setValue(`meter_${currentFieldNumber}`, undefined);
-          message.warning("Please, Provide valid taka number");
-        }
+    });
+    if (res.data.success) {
+      if (res?.data?.data == null) {
+        message.warning("Please, Provide valid taka number");
+        setValue(`meter_${activeField}`, undefined);
       }
-    },
-    enabled: Boolean(companyId),
-  });
+      setValue(
+        `meter_${currentFieldNumber}`,
+        res.data.data !== null ? res.data.data.meter : undefined
+      );
+      calculateTotal();
+    } else {
+      setValue(`meter_${currentFieldNumber}`, undefined);
+      message.warning("Please, Provide valid taka number");
+    }
+  }
+
+  useEffect(() => {
+
+    if (debounceTakaNo !== undefined && debounceTakaNo !== null){
+      console.log("RUn this functiona");
+      
+      const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
+  
+      let already_taka = 0;
+      numOfFields.map((fieldNumber, index) => {
+        let taka_number = getValues(`taka_no_${index}`);
+        if (taka_number == debounceTakaNo && index !== activeField) {
+          already_taka = 1;
+        }
+      });
+  
+      if (already_taka == 1) {
+        message.warning(`Tako ${debounceTakaNo} already in used`);
+        setValue(`taka_no_${activeField}`, undefined);
+        setValue(`meter_${activeField}`, undefined);
+      }
+  
+      if (already_taka == 0){
+        fetchTakaDetailsInfo() ; 
+      }
+    }
+    
+  }, [debounceTakaNo])
 
   return (
     <Row gutter={18}>

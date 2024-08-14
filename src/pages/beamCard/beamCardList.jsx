@@ -400,10 +400,10 @@ const BeamCardList = () => {
         console.log("Machine number information", text);
 
         if (text !== null){
-          return (
-            <div>
-              {text} ({record?.machine_name})
-            </div>
+          return ( 
+            <Tag color="#108ee9">
+              <strong>{text} ({record?.machine_name})</strong>
+            </Tag>
           )
         } else {
           return(

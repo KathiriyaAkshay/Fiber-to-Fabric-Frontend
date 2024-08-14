@@ -7,7 +7,7 @@ import { useRef, useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 const ViewReworkChallanInfo = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
@@ -164,7 +164,7 @@ const ViewReworkChallanInfo = ({ details }) => {
         width={"60vw"}
       >
 
-        <div ref={componentRef} style={{marginRight: "1px"}}>
+        <div ref={componentRef} style={{ marginRight: "1px", marginLeft: "1px", width: "99%" }}>
           <Flex
             className="flex-col border border-b-0 border-solid"
           >
@@ -213,8 +213,8 @@ const ViewReworkChallanInfo = ({ details }) => {
                       {companyInfo?.company_name}
                     </Text>
                     <Text className="block">{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
-                        ? ""
-                        : companyInfo?.address_line_2
+                      ? ""
+                      : companyInfo?.address_line_2
                       }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
                       }, ${companyInfo?.country}`}</Text>
                   </Col>
@@ -251,7 +251,8 @@ const ViewReworkChallanInfo = ({ details }) => {
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderBottom: 0 }}
             >
-              <Col span={1} style={{ textAlign: "center" }}>
+
+              <Col span={2} style={{ textAlign: "center" }}>
                 <strong>No</strong>
               </Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -266,7 +267,8 @@ const ViewReworkChallanInfo = ({ details }) => {
               <Col span={3} style={{ textAlign: "center" }}>
                 <strong>Recv Weight</strong>
               </Col>
-              <Col span={1} style={{ textAlign: "center" }}>
+
+              <Col span={2} style={{ textAlign: "center" }}>
                 <strong>No</strong>
               </Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -290,7 +292,7 @@ const ViewReworkChallanInfo = ({ details }) => {
                   className="p-3 border-0"
                   style={{ borderTop: 0 }}
                 >
-                  <Col span={1} style={{ textAlign: "center" }}>
+                  <Col span={2} style={{ textAlign: "center" }}>
                     <strong>{index + 1}</strong>
                   </Col>
                   <Col span={2} style={{ textAlign: "center" }}>
@@ -305,7 +307,7 @@ const ViewReworkChallanInfo = ({ details }) => {
                   <Col span={3} style={{ textAlign: "center" }}>
                     {details?.job_rework_challan_details[index]?.received_weight}
                   </Col>
-                  <Col span={1} style={{ textAlign: "center" }}>
+                  <Col span={2} style={{ textAlign: "center" }}>
                     <strong>{index + 13}</strong>
                   </Col>
                   <Col span={2} style={{ textAlign: "center" }}>
@@ -330,7 +332,7 @@ const ViewReworkChallanInfo = ({ details }) => {
               );
             })}
 
-            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle:"dashed" }}>
+            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle: "dashed" }}>
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -362,6 +364,52 @@ const ViewReworkChallanInfo = ({ details }) => {
                 {totalMeter}
               </Col>
             </Row>
+
+
+            <Row className="border-b !m-0 p-4" style={{ borderBottom: "1px solid" }}>
+              <Col span={16} className="p-2">
+                <Title level={5} className="m-0">
+                  ➤ TERMS OF SALES :-
+                </Title>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  1. Interest at 2% per month will be charged remaining unpaid
+                  from the date bill.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  2. Complaint if any regarding this invoice must be settled
+                  within 24 hours.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  3. Disputes shall be settled in SURAT court only.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  4. We are not responsible for processed goods & width.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  5. Subject to SURAT Jurisdiction.
+                </Text>
+                <Text className="block mt-2"></Text>
+              </Col>
+              <Col span={8} className="p-2 text-right">
+                <Text strong>For, {companyInfo?.company_name}</Text><br />Authorized Signature
+              </Col>
+            </Row>
+
           </Flex>
         </div>
       </Modal>

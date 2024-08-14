@@ -158,9 +158,9 @@ const AddReworkChallan = () => {
           index: index + 1,
           taka_no: +data[`taka_no_${field}`],
           meter: +data[`meter_${field}`],
-          received_meter: +data[`received_meter_${field}`],
-          received_weight: +data[`received_weight_${field}`],
-          short: +data[`short_${field}`],
+          received_meter: +data[`received_meter_${field}`] || 0,
+          received_weight: +data[`received_weight_${field}`] || 0,
+          short: +data[`short_${field}`] || 100 ,
         };
       }),
     };
@@ -592,6 +592,15 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
           <Col span={6}>
             <Form.Item
               label="Select Supplier"
@@ -624,15 +633,6 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-            marginTop: "-30px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Company"
