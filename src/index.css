@@ -16,9 +16,9 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
-  --table-border-color: #ababab ;
-  --scrollbar-background-color: #f1f1f1 ; 
-  --scrollbar-hover-background-color: #bdbdbd ; 
+  --table-border-color: #ababab;
+  --scrollbar-background-color: #f1f1f1;
+  --scrollbar-hover-background-color: #bdbdbd;
 }
 
 body {
@@ -50,16 +50,16 @@ body {
   cursor: pointer !important;
 }
 
-.job-challan-table-div{
+.job-challan-table-div {
   max-height: 49vh;
   overflow-y: auto;
 }
 
-.receive-rework-taka-table thead th{
+.receive-rework-taka-table thead th {
   background-color: #000000 !important;
 }
 
-.job-production-index-column{
+.job-production-index-column {
   background-color: #000000 !important;
 }
 
@@ -96,52 +96,51 @@ body {
   background-color: transparent !important;
 }
 
-.job-challan-table-total{
+.job-challan-table-total {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
-.production-table-div{
+.production-table-div {
   height: 50vh;
-  max-height:50vh;
+  max-height: 50vh;
   overflow-y: auto;
   margin-top: -10px;
 }
 
-.production-table-total{
+.production-table-total {
   background-color: #000000 !important;
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
-.production-table-total td{
+.production-table-total td {
   padding-top: 5px !important;
   padding-bottom: 5px !important;
   padding-left: 5px !important;
 }
 
-.job-challan-details-table input:focus{
+.job-challan-details-table input:focus {
   box-shadow: none;
   border-color: transparent;
 }
 
-.job-challan-details-table input:hover{
+.job-challan-details-table input:hover {
   box-shadow: none;
   border-color: transparent;
 }
 
-.job-challan-details-table input{
+.job-challan-details-table input {
   box-shadow: none;
   border-color: transparent;
 }
 
 .job-challan-details-table input[type="number"]::-webkit-outer-spin-button,
-.job-challan-details-table input[type="number"]::-webkit-inner-spin-button{
+.job-challan-details-table input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 
 /* .ant-table {
   font-size: 14px !important;
@@ -310,7 +309,6 @@ input:read-only {
     color: black;
   }
 
-
   .ant-descriptions-item-content {
     padding-top: 8px;
     padding-bottom: 8px;
@@ -318,14 +316,35 @@ input:read-only {
   }
 } */
 
+.ant-menu-item:hover {
+  background-color: var(--menu-item-hover-color) !important;
+  border-radius: 6px !important;
+}
+
+.ant-menu-item:hover .ant-descriptions-item-label {
+  width: 50%;
+  background-color: #efefef;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  font-weight: 600;
+  color: black;
+}
+
+.ant-menu-item:hover .ant-descriptions-item-content {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+}
+
 .highlight-text .ant-descriptions-item-content {
-    color: red;
-    font-weight: 600;
+  color: red;
+  font-weight: 600;
 }
 
 .finalamount-text .ant-descriptions-item-content {
-    color: green;
-    font-weight: 600;
+  color: green;
+  font-weight: 600;
 }
 
 /* Menu related css  */
@@ -409,7 +428,7 @@ input:read-only {
   padding: 2px;
 }
 
-.header-card-text{
+.header-card-text {
   margin-left: 8px;
 }
 
@@ -435,7 +454,7 @@ input:read-only {
   padding: 0 !important;
 }
 
-.data-table{
+.data-table {
   margin-left: 12px;
   margin-right: 12px;
   border-radius: 0px !important;
@@ -471,35 +490,35 @@ input:read-only {
   margin: 20px 0;
 }
 
-.card-wrapper{
-  border:1px solid black;
+.card-wrapper {
+  border: 1px solid black;
   border-radius: 0px !important;
 }
 
-.card-wrapper .ant-card-body{
+.card-wrapper .ant-card-body {
   padding: 0px !important;
 }
 
-.ant-table-summary .ant-table-cell{
+.ant-table-summary .ant-table-cell {
   background-color: #f4f7f7 !important;
 }
 
-.number-of-beam-div:hover{
+.number-of-beam-div:hover {
   cursor: pointer;
   color: rgb(25 74 109);
   width: fit-content;
   font-weight: 700;
 }
 
-.load-machine-table-div{
+.load-machine-table-div {
   max-height: 70vh;
   overflow-y: auto;
   padding-top: 15px;
   border-top: 1px solid #efefef;
 }
 
-.production-item-descriptions .ant-descriptions-item-label span{
-  font-weight: 600 ;
+.production-item-descriptions .ant-descriptions-item-label span {
+  font-weight: 600;
   color: #000000;
 }
 
@@ -525,39 +544,38 @@ input:read-only {
   border: 1px solid black;
 }
 
-.ant-select-disabled .ant-select-selector .ant-select-selection-item{
+.ant-select-disabled .ant-select-selector .ant-select-selection-item {
   color: #000000 !important;
 }
 
-.ant-input-disabled{
+.ant-input-disabled {
   color: #000000 !important;
 }
 
-.grand-total-div .ant-table-cell{
+.grand-total-div .ant-table-cell {
   border-top: 1px solid #d3d3d3 !important;
   border-bottom: 1px solid #d3d3d3 !important;
 }
 
-.beam-card-info-title-div{
+.beam-card-info-title-div {
   padding-top: 7px;
   padding-bottom: 7px;
   padding-left: 5px;
   margin-top: 5px;
 }
 
-.beam-card-info-title{
+.beam-card-info-title {
   color: #000000 !important;
   font-weight: 600;
 }
 
-.beam-card-main-div{
+.beam-card-main-div {
   background-color: #f7f7f7;
-    padding: 20px;
-    /* Add your desired padding */
-    margin: 20px;
-    /* Add your desired margin */
+  padding: 20px;
+  /* Add your desired padding */
+  margin: 20px;
+  /* Add your desired margin */
 }
-
 
 .query-chart-wrapper {
   -webkit-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);
@@ -565,27 +583,26 @@ input:read-only {
   box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1);
   border-radius: 0.5rem;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   padding-left: 1rem;
   padding-top: 0.3rem;
-  align-items: center; 
-   background-color: #fff;
-
+  align-items: center;
+  background-color: #fff;
 }
 
-.chart-wrapper{
+.chart-wrapper {
   border: 1px solid rgb(208, 208, 208);
   border-radius: 0.4rem;
   margin-bottom: 0.4rem;
   min-height: 14rem;
-  width:1005;
+  width: 1005;
   padding: 0.4rem;
   background-color: #fff;
 }
 
-.dashboard-wrapper{
+.dashboard-wrapper {
   background-color: #fafafa;
   height: 100%;
-  overflow-x:hidden;
+  overflow-x: hidden;
   min-height: 92vh;
 }

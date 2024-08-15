@@ -1,6 +1,5 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { Button, Form, Input } from "antd";
-import { useState } from "react";
 import { Controller } from "react-hook-form";
 
 const numOfFields = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -13,9 +12,16 @@ const AddOpeningProductionTable = ({
   setValue,
   lastOpeningProductionTaka,
   getValues,
+
+  totalMeter,
+  setTotalMeter,
+  totalWeight,
+  setTotalWeight,
+  totalTaka,
+  setTotalTaka,
 }) => {
-  const [totalMeter, setTotalMeter] = useState(0);
-  const [totalWeight, setTotalWeight] = useState(0);
+  // const [totalMeter, setTotalMeter] = useState(0);
+  // const [totalWeight, setTotalWeight] = useState(0);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
@@ -41,6 +47,7 @@ const AddOpeningProductionTable = ({
   const calculateTotals = () => {
     let totalMeter = 0;
     let totalWeight = 0;
+    let totalTaka = 0;
 
     const activeFieldArray = Array.from(
       { length: activeField },
@@ -48,12 +55,14 @@ const AddOpeningProductionTable = ({
     );
 
     activeFieldArray.forEach((fieldNumber) => {
+      totalTaka += 1;
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
       totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
     });
 
     setTotalMeter(totalMeter);
     setTotalWeight(totalWeight);
+    setTotalTaka(totalTaka);
   };
 
   const total = () => {
@@ -253,7 +262,9 @@ const AddOpeningProductionTable = ({
             <td>
               <b>Total</b>
             </td>
-            <td></td>
+            <td>
+              <b>{totalTaka}</b>
+            </td>
             <td>
               <b>{totalMeter}</b>
             </td>
