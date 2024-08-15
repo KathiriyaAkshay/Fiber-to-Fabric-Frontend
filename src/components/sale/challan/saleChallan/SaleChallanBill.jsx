@@ -277,10 +277,8 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         details.gray_order.credit_days,
         "days"
       );
-      setValue(
-        "due_date",
-        dayjs(calculateDueDate).format("DD-MM-YYYY").toString()
-      );
+
+      setValue("due_date", dayjs(calculateDueDate));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [details, setValue]);
@@ -978,7 +976,8 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="p-2 font-medium border-0 border-r border-solid"
               >
                 <div style={{ color: "gray" }}>
-                  Due date: {currentValues?.due_date}
+                  Due date:{" "}
+                  {dayjs(currentValues?.due_date).format("DD-MM-YYYY")}
                 </div>
               </Col>
               <Col
