@@ -32,6 +32,7 @@ const AddReceiveReworkTaka = () => {
     navigate(-1);
   }
 
+  // Receive rework taka option handler 
   const { mutateAsync: AddReceiveReworkTakaHandler, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addReceiveReworkTakaRequest({
@@ -123,6 +124,7 @@ const AddReceiveReworkTaka = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality dropdown list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [

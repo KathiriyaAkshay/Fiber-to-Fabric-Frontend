@@ -34,10 +34,17 @@ const ReceiveReworkTakaFieldTable = ({
       setActiveField((prev) => prev + 1);
       console.log("Field number", fieldNumber);
       
+      setValue(`taka_no_${fieldNumber + 1}`, undefined) ; 
+      setValue(`meter_${fieldNumber + 1}`, undefined) ;
+      setValue(`received_meter_${fieldNumber + 1}`, null) ; 
+      setValue(`short_${fieldNumber + 1}`, null) ; 
+      setValue(`received_weight_${fieldNumber + 1}`, null) ; 
+      setValue(`average_${fieldNumber + 1}`, null) ; 
+      setValue(`tp_${fieldNumber + 1}`, null) ; 
+      setValue(`pis_${fieldNumber + 1}`, null) ; 
       setTimeout(() => {
         setFocus(`taka_no_${fieldNumber + 1}`);
-        setValue(`taka_no${fieldNumber}`, undefined) ; 
-        setValue(``)
+
       }, 20);
     }
   };
@@ -81,6 +88,7 @@ const ReceiveReworkTakaFieldTable = ({
     setTotalReceiveMeter(totalReceiveMeter);
   };
 
+  // Get Rework challan taka number request
   const { data: reworkChallan } = useQuery({
     queryKey: [
       "rework",
@@ -105,10 +113,16 @@ const ReceiveReworkTakaFieldTable = ({
 
   useEffect(() => {
     if (reworkChallan) {
-      console.log({ reworkChallan });
       setValue(`meter_${activeField}`, reworkChallan.total_meter);
     } else {
       setValue(`meter_${activeField}`, "");
+      setValue(`received_meter_${activeField}`, "") ; 
+      setValue(`short_${activeField}`, "") ; 
+      setValue(`received_weight_${activeField}`, "") ; 
+      setValue(`average_${activeField}`, "") ; 
+      setValue(`tp_${activeField}`, "") ; 
+      setValue(`pis_${activeField}`, "") ; 
+      calculateTotal() ; 
     }
   }, [activeField, reworkChallan, setValue]);
 
@@ -329,7 +343,8 @@ const ReceiveReworkTakaFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             onChange={(e) => {
-                              setValue(`average_${fieldNumber}`, "100") ; 
+                              setValue(`average_${fieldNumber}`, "100") ;
+                              field.onChange(e) ;  
                             }}
                           />
                         )}
