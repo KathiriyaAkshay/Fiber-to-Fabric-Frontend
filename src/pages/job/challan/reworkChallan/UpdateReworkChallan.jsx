@@ -106,14 +106,16 @@ const UpdateReworkChallan = () => {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
     let hasError = 0;
-    detailArray?.map((field) => {
+    let temp = [] ; 
+
+    detailArray?.map((field, index) => {
       let taka_no = +data[`taka_no_${field}`];
       let meter = +data[`meter_${field}`];
       let received_meter = +data[`received_meter_${field}`];
       let received_weight = +data[`received_weight_${field}`];
       let short = +data[`short_${field}`];
 
-      if (isNaN(taka_no) || !taka_no) {
+      if ((isNaN(taka_no) || !taka_no) && !isNaN(meter)) {
         message.error("Please, Provide valid taka details");
         setError(`taka_no_${field}`, {
           type: "manual",
@@ -121,7 +123,7 @@ const UpdateReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } else if (isNaN(meter) || !meter) {
+      } else if ((isNaN(meter) || !meter) && !isNaN(taka_no)) {
         message.error(`Please, Provide valid details for taka ${taka_no}`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -129,30 +131,19 @@ const UpdateReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } else if (isNaN(received_meter) || !received_meter) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`received_meter_${field}`, {
-          type: "manual",
-          message: "Received meter is required.",
-        });
-        hasError = 1;
-        return;
-      } else if (isNaN(received_weight) || !received_weight) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`received_weight_${field}`, {
-          type: "manual",
-          message: "Received weight is required.",
-        });
-        hasError = 1;
-        return;
-      } else if (isNaN(short) || !short) {
-        message.error(`Please, Provide valid details for taka ${taka_no}`);
-        setError(`short_${field}`, {
-          type: "manual",
-          message: "Taka No required.",
-        });
-        hasError = 1;
-        return;
+      } 
+
+      if (!isNaN(taka_no) && !isNaN(meter)){
+        temp.push(
+          {
+            index: index + 1,
+            taka_no: +data[`taka_no_${field}`],
+            meter: +data[`meter_${field}`],
+            received_meter: +data[`received_meter_${field}`] || 0,
+            received_weight: +data[`received_weight_${field}`] || 0,
+            short: +data[`short_${field}`] || 100 ,
+          }
+        )
       }
     });
 
@@ -168,20 +159,15 @@ const UpdateReworkChallan = () => {
       total_meter: +data.total_meter,
       taka_receive_meter: +data.taka_receive_meter,
 
-      details: detailArray.map((field, index) => {
-        return {
-          index: index + 1,
-          taka_no: +data[`taka_no_${field}`],
-          meter: +data[`meter_${field}`],
-          received_meter: +data[`received_meter_${field}`],
-          received_weight: +data[`received_weight_${field}`],
-          short: +data[`short_${field}`],
-        };
-      }),
+      details: temp
     };
 
+
+    console.log(newData);
+    
+
     if (hasError === 0) {
-      await UpdateReworkChallan(newData);
+      // await UpdateReworkChallan(newData);
     }
   }
 
@@ -200,8 +186,6 @@ const UpdateReworkChallan = () => {
     defaultValues: {
       company_id: null,
       challan_date: dayjs(),
-      delivery_address: "",
-      // gst_state: "",
       gst_in_1: "",
       gst_in_2: "",
       challan_no: "",
@@ -220,6 +204,7 @@ const UpdateReworkChallan = () => {
   });
   const { supplier_name, company_id, supplier_id, machine_name } = watch();
 
+  // Machinename dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -245,6 +230,7 @@ const UpdateReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Quality dropdown list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -275,6 +261,7 @@ const UpdateReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Vechicle dropdown list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -290,6 +277,7 @@ const UpdateReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Supplierdropdown list
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -319,27 +307,6 @@ const UpdateReworkChallan = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
-  //   useEffect(() => {
-  //     if (grayOrderListRes && gray_order_id) {
-  //       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-  //       setSelectedOrder(order);
-  //       setValue("total_meter", order.total_meter);
-  //       setValue("total_taka", order.total_taka);
-  //       setValue("total_weight", order.weight);
-  //       setValue(
-  //         "broker_name",
-  //         `${order.broker.first_name} ${order.broker.last_name}`
-  //       );
-  //       setValue("broker_id", order.broker.id);
-  //       setValue("quality_id", order.inhouse_quality.id);
-  //       setValue("supplier_name", order.supplier_name);
-  //       setValue("pending_meter", order.pending_meter);
-
-  //       setPendingMeter(order.pending_meter);
-  //       setPendingTaka(order.pending_taka);
-  //     }
-  //   }, [gray_order_id, grayOrderListRes, setValue]);
-
   useEffect(() => {
     if (company_id) {
       const selectedCompany = companyListRes?.rows?.find(
@@ -351,22 +318,23 @@ const UpdateReworkChallan = () => {
 
   useEffect(() => {
     if (supplier_id) {
+      console.log("Run this function");
+      
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      setValue("delivery_address", selectedSupplierCompany?.users?.address);
+      console.log("Selected supplier company");
+      console.log(selectedSupplierCompany?.users?.address); 
       setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
   function disabledFutureDate(current) {
-    // Disable dates after today
     return current && current > moment().endOf("day");
   }
 
   useEffect(() => {
     if (reworkChallanDetails) {
-      console.log({ reworkChallanDetails });
       const {
         company_id,
         challan_no,
@@ -402,26 +370,21 @@ const UpdateReworkChallan = () => {
       reset({
         company_id,
         challan_date: dayjs(createdAt),
-        delivery_address: supplier.user.delivery_address,
         gst_in_1: selectedCompany.gst_no,
         gst_in_2: supplier.user.gst_no,
         challan_no,
         option,
         vehicle_id,
-
         supplier_name: supplier?.supplier_name,
         supplier_id: supplier_id,
-
         machine_name,
         quality_id,
-
         total_taka,
         total_meter,
         taka_receive_meter,
         ...jobReworkChallanDetails,
+        delivery_address: reworkChallanDetails?.supplier?.user?.address
       });
-      // setPendingMeter(gray_order.pending_meter);
-      // setPendingTaka(gray_order.pending_taka);
     }
   }, [reworkChallanDetails, reset, company_id, companyListRes?.rows]);
 
@@ -814,7 +777,7 @@ const UpdateReworkChallan = () => {
                 name="delivery_address"
                 render={({ field }) => {
                   return (
-                    <Input {...field} placeholder="Delivery Address" disabled />
+                    <Input {...field} placeholder="Delivery Address" readOnly />
                   );
                 }}
               />
