@@ -1,18 +1,48 @@
 import { Button, Flex } from "antd";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useState, useEffect } from "react";
 import { PrinterOutlined } from "@ant-design/icons";
-import "./printPage.css";
 import ReactToPrint from "react-to-print";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { useContext } from "react";
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, PDFViewer, Font } from '@react-pdf/renderer';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  PDFDownloadLink,
+  PDFViewer,
+  Font,
+} from "@react-pdf/renderer";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FileExcelFilled } from "@ant-design/icons";
+import "./printPage.css";
+
+function getFileName(input) {
+  const formattedString = input?.toLowerCase()?.split(" ").join("-");
+
+  // Get the current date and time
+  const currentDate = new Date();
+  const day = String(currentDate.getDate()).padStart(2, "0"); // Get day and pad with 0 if necessary
+  const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so add 1 and pad with 0
+  const year = currentDate.getFullYear(); // Get full year
+
+  const hours = String(currentDate.getHours()).padStart(2, "0"); // Get hours and pad with 0 if necessary
+  const minutes = String(currentDate.getMinutes()).padStart(2, "0"); // Get minutes and pad with 0 if necessary
+  const seconds = String(currentDate.getSeconds()).padStart(2, "0"); // Get seconds and pad with 0 if necessary
+
+  // Format the date as DD-MM-YYYY and time as HH-MM-SS
+  const formattedDate = `${day}-${month}-${year}`;
+  const formattedTime = `${hours}-${minutes}-${seconds}`;
+
+  // Combine the formatted string with the date and time
+  return `${formattedString}-${formattedDate}-${formattedTime}`;
+}
 
 const PrintPage = () => {
-    const ComponentRef = useRef();
-    const pageStyle = `
+  const ComponentRef = useRef();
+  const pageStyle = `
          @media print {
             * {
                 box-sizing: border-box; /* Include box-sizing for better layout control */
@@ -40,282 +70,303 @@ const PrintPage = () => {
                 text-overflow: ellipsis; /* To add ellipsis (...) for overflow text */
                 word-wrap: break-word; /* To wrap long words */
             }
-    }` ;
+    }`;
 
-    // const printPageStyle = StyleSheet.create({
-    //     page: {
-    //       flexDirection: 'row',
-    //       backgroundColor: '#E4E4E4',
-    //     },
-    //     section: {
-    //       margin: 10,
-    //       padding: 10,
-    //       flexGrow: 1,
-    //     },
-    // });
-    
-    Font.register({
-        family: 'Roboto',
-        fonts: [
-            {
-                src: './font/Roboto-Medium.ttf', // Regular
-                fontWeight: 'normal',
-            },
-            {
-                src: "./font/Roboto-Bold.ttf", 
-                fontWeight: "bold"
-            }
-        ],
-    });
+  // const printPageStyle = StyleSheet.create({
+  //     page: {
+  //       flexDirection: 'row',
+  //       backgroundColor: '#E4E4E4',
+  //     },
+  //     section: {
+  //       margin: 10,
+  //       padding: 10,
+  //       flexGrow: 1,
+  //     },
+  // });
 
-    const borderColorValue = "#efefef" ; 
-    const printPageStyle = StyleSheet.create({
-        page: {
-            flexDirection: 'column',
-            padding: 20,
-            fontFamily: "Roboto"
-        },
+  Font.register({
+    family: "Roboto",
+    fonts: [
+      {
+        src: "./font/Roboto-Medium.ttf", // Regular
+        fontWeight: "normal",
+      },
+      {
+        src: "./font/Roboto-Bold.ttf",
+        fontWeight: "bold",
+      },
+    ],
+  });
 
-        section: {
-            marginRight: "auto", 
-        },  
+  const borderColorValue = "#efefef";
+  const printPageStyle = StyleSheet.create({
+    page: {
+      flexDirection: "column",
+      padding: 20,
+      fontFamily: "Roboto",
+    },
 
-        title: {
-            fontSize: 13,
-            textAlign: 'center',
-            marginBottom: 20,
-            color: "#194A6D",
-            fontWeight: "bold"
-        },
+    section: {
+      marginRight: "auto",
+    },
 
-        companyInfo: {
-            display: "flex",
-            flexDirection: "row", 
-            width: "100%", 
-            marginBottom: 20
-        },
+    title: {
+      fontSize: 13,
+      textAlign: "center",
+      marginBottom: 20,
+      color: "#194A6D",
+      fontWeight: "bold",
+    },
 
-        infoText: {
-            fontSize: 9,
-        },
+    companyInfo: {
+      display: "flex",
+      flexDirection: "row",
+      width: "100%",
+      marginBottom: 20,
+    },
 
-        leftColumn: {
-            fontSize: 9,
-            color: 'black',
-            marginRight: "auto"
-        },
+    infoText: {
+      fontSize: 9,
+    },
 
-        rightColumn: {
-            fontSize: 9,
-            color: 'black',
-            marginRight: "auto", 
-            justifyContent: "flex-end"
-        },
+    leftColumn: {
+      fontSize: 9,
+      color: "black",
+      marginRight: "auto",
+    },
 
-        table: {
-            display: "table",
-            width: "auto",
-            borderStyle: "solid",
-            borderWidth: 1,
-            borderRightWidth: 0,
-            borderBottomWidth: 0,
-            borderLeftColor: borderColorValue, 
-            borderTopColor: borderColorValue
-        },
-        tableRow: {
-            flexDirection: "row"
-        },
-        tableCol: {
-            borderStyle: "solid",
-            borderWidth: 1,
-            borderLeftWidth: 0,
-            borderTopWidth: 0, 
-            paddingBottom: 5, 
-            borderRightColor: borderColorValue, 
-            borderBottomColor: borderColorValue , 
-            paddingLeft: 2,
-            paddingRight: 2, 
-            flex: 1,
-            fontSize: 10
-        },
+    rightColumn: {
+      fontSize: 9,
+      color: "black",
+      marginRight: "auto",
+      justifyContent: "flex-end",
+    },
 
-        tableHeaderCol: {
-            borderStyle: "solid",
-            borderWidth: 1,
-            borderLeftWidth: 0,
-            borderTopWidth: 0, 
-            backgroundColor: "#194A6D",
-            paddingBottom: 3, 
-            borderRightColor: borderColorValue, 
-            borderBottomColor: borderColorValue, 
-            flex: 1, 
-            fontSize: 10
-        },
-        tableCell: {
-            margin: "auto",
-            marginTop: 5,
-            fontSize: 9
-        },
-    });
+    table: {
+      display: "table",
+      width: "auto",
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderRightWidth: 0,
+      borderBottomWidth: 0,
+      borderLeftColor: borderColorValue,
+      borderTopColor: borderColorValue,
+    },
+    tableRow: {
+      flexDirection: "row",
+    },
+    tableCol: {
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+      paddingBottom: 5,
+      borderRightColor: borderColorValue,
+      borderBottomColor: borderColorValue,
+      paddingLeft: 2,
+      paddingRight: 2,
+      flex: 1,
+      fontSize: 10,
+    },
 
-    const [orderData, setOrderData] = useState([]);
-    const [orderTitle, setOrderTitle] = useState(null);
-    const [tableHead, setTableHead] = useState(null);
-    const [totalVisible, setTotalVisible] = useState(false);
-    const [totalCount, setTotalCount] = useState(null);
+    tableHeaderCol: {
+      borderStyle: "solid",
+      borderWidth: 1,
+      borderLeftWidth: 0,
+      borderTopWidth: 0,
+      backgroundColor: "#194A6D",
+      paddingBottom: 3,
+      borderRightColor: borderColorValue,
+      borderBottomColor: borderColorValue,
+      flex: 1,
+      fontSize: 10,
+    },
+    tableCell: {
+      margin: "auto",
+      marginTop: 5,
+      fontSize: 9,
+    },
+  });
 
-    const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const [orderData, setOrderData] = useState([]);
+  const [orderTitle, setOrderTitle] = useState(null);
+  const [tableHead, setTableHead] = useState(null);
+  const [totalVisible, setTotalVisible] = useState(false);
+  const [totalCount, setTotalCount] = useState(null);
 
-    useEffect(() => {
-        let page_title = localStorage.getItem("print-title");
-        setOrderTitle(page_title);
+  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
-        let page_data = JSON.parse(localStorage.getItem("print-array"));
-        setOrderData([...page_data]);
+  useEffect(() => {
+    let page_title = localStorage.getItem("print-title");
+    setOrderTitle(page_title);
 
-        let page_head = JSON.parse(localStorage.getItem("print-head"));
-        setTableHead(page_head);
+    let page_data = JSON.parse(localStorage.getItem("print-array"));
+    setOrderData([...page_data]);
 
-        let total_visible = localStorage.getItem("total-count");
-        if (total_visible == "1") {
-            setTotalVisible(true);
-        } else {
-            setTotalVisible(false);
-        }
+    let page_head = JSON.parse(localStorage.getItem("print-head"));
+    setTableHead(page_head);
 
-        let total_data = JSON.parse(localStorage.getItem("total-data"));
-        setTotalCount(total_data);
+    let total_visible = localStorage.getItem("total-count");
+    if (total_visible == "1") {
+      setTotalVisible(true);
+    } else {
+      setTotalVisible(false);
+    }
 
-    }, []);
+    let total_data = JSON.parse(localStorage.getItem("total-data"));
+    setTotalCount(total_data);
+  }, []);
 
-    const MyDocument = () => (
-        <Document>
-            <Page size="A3" style={printPageStyle.page}>
-                <View style={[printPageStyle.section]}>
-                    <Text style={[printPageStyle.title]}>Yarn Order List</Text>
+  const MyDocument = () => (
+    <Document>
+      <Page size="A3" style={printPageStyle.page}>
+        <View style={[printPageStyle.section]}>
+          <Text style={[printPageStyle.title]}>Yarn Order List</Text>
+        </View>
+        <View style={[printPageStyle.companyInfo]}>
+          <View style={printPageStyle.rightColumn}>
+            <Text
+              style={[
+                printPageStyle.infoText,
+                { textAlign: "right", marginBottom: 6 },
+              ]}
+            >
+              Company Name:- {company?.company_name}
+            </Text>
+            <Text style={[printPageStyle.infoText, { marginBottom: 6 }]}>
+              Company Contact:- {company?.company_contact}
+            </Text>
+            <Text style={[printPageStyle.infoText, { textAlign: "right" }]}>
+              GST No.:- {company?.gst_no}
+            </Text>
+          </View>
+        </View>
+        <View style={printPageStyle.table}>
+          <View style={printPageStyle.tableRow}>
+            {tableHead?.map((element, index) => (
+              <View
+                key={index + "_element"}
+                style={printPageStyle.tableHeaderCol}
+              >
+                <Text style={[printPageStyle.tableCell, { color: "#FFFFFF" }]}>
+                  {element}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {orderData?.map((order, index) => (
+            <View key={index + "_order"} style={printPageStyle.tableRow}>
+              {order?.map((element, elementIndex) => (
+                <View key={elementIndex} style={printPageStyle.tableCol}>
+                  <Text style={printPageStyle.tableCell}>{element}</Text>
                 </View>
-                <View style={[ printPageStyle.companyInfo]}>
-                    <View style={printPageStyle.rightColumn}>
-                        <Text style={[printPageStyle.infoText, {textAlign: "right", marginBottom: 6}]}>Company Name:- {company?.company_name}</Text>
-                        <Text style={[printPageStyle.infoText, {marginBottom: 6}]}>Company Contact:- {company?.company_contact}</Text>
-                        <Text style={[printPageStyle.infoText, {textAlign: "right"}]}>GST No.:- {company?.gst_no}</Text>
-                    </View>
+              ))}
+            </View>
+          ))}
+
+          {totalVisible &&
+            totalCount?.map((element, index) => (
+              <View key={index} style={printPageStyle.tableRow}>
+                <View style={printPageStyle.tableHeaderCol}>
+                  <Text
+                    style={[printPageStyle.tableCell, { color: "#FFFFFF" }]}
+                  >
+                    {element}
+                  </Text>
                 </View>
-                <View style={printPageStyle.table}>
-                    <View style={printPageStyle.tableRow}>
-                        {tableHead?.map((element) => (
-                            <View style={printPageStyle.tableHeaderCol}>
-                                <Text style={[printPageStyle.tableCell, {color: "#FFFFFF"}]}>
-                                    {element}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
+              </View>
+            ))}
+        </View>
+      </Page>
+    </Document>
+  );
 
-                    {orderData?.map((order, index) => (
-                        <View style={printPageStyle.tableRow}>
-                            {order?.map((element, elementIndex) => (
-                                <View style={printPageStyle.tableCol}>
-                                    <Text style={printPageStyle.tableCell}>{element}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    ))}
+  return (
+    <>
+      <div className="printable-page">
+        <Flex justify="flex-start" style={{ textAlign: "left" }} gap={10}>
+          <ReactToPrint
+            trigger={() => (
+              <Button type="primary" icon={<PrinterOutlined />}>
+                Print
+              </Button>
+            )}
+            content={() => ComponentRef.current}
+            pageStyle={pageStyle}
+          />
 
-                    {totalVisible && totalCount?.map((element, index) => (
-                        <View style={printPageStyle.tableRow}>
-                            <View style={printPageStyle.tableHeaderCol}>
-                                <Text style={[printPageStyle.tableCell, {color: "#FFFFFF"}]}>{element}</Text>
-                            </View>
-                        </View>
-                    ))}
-                    
-                </View>
-            </Page>
-        </Document>
-    );
+          <Button
+            type="primary"
+            icon={<DownloadOutlined />}
+            // onClick={handleDownloadPDF}
+          >
+            <PDFDownloadLink
+              PDFDownloadLink
+              document={<MyDocument />}
+              fileName={getFileName(orderTitle)}
+            >
+              {({ loading }) =>
+                loading ? "Loading document..." : "Download PDF"
+              }
+            </PDFDownloadLink>
+          </Button>
 
-    return (
-        <>
-            <div className="printable-page">
-
-                <Flex justify="flex-start" style={{textAlign:"left"}} gap={10}>
-
-                    <ReactToPrint
-                        trigger={() =>
-                            <Button type="primary" icon={<PrinterOutlined />}>
-                                Print
-                            </Button>
-                        }
-                        content={() => ComponentRef.current}
-                        pageStyle={pageStyle}
-                    />
-                    
-                    <Button type="primary" icon = {<DownloadOutlined/>}>
-                        <PDFDownloadLink PDFDownloadLink document={<MyDocument />} fileName="table.pdf">
-                            {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
-                        </PDFDownloadLink>
-                    </Button>
-
-                    <Button icon = {<FileExcelFilled/>} type="primary">
-                        Download Excel
-                    </Button>
-                    
-                </Flex>
-                {/* <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
+          <Button icon={<FileExcelFilled />} type="primary">
+            Download Excel
+          </Button>
+        </Flex>
+        {/* <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
                 </div> */}
 
-                <div
-                    className="printable-main-div"
-                    ref={ComponentRef}>
+        <div className="printable-main-div" ref={ComponentRef}>
+          <div className="page_title">{orderTitle}</div>
 
-                    <div className="page_title">
-                        {orderTitle}
-                    </div>
-
-                    <div class="company-info">
-                        <div>Company Name: <strong>{company?.company_name}</strong></div>
-                        <div class="company-contact">Company Contact: <strong>{company?.company_contact}</strong></div>
-                        <div class="gst-number">GST No.: <strong>{company?.gst_no}</strong></div>
-                    </div>
-
-                    <div className="printable-table-div">
-
-                        <table className="printable_table">
-                            <thead>
-                                <tr>
-                                    {tableHead?.map((element) => (
-                                        <th>{element}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orderData.map((order, index) => (
-                                    <tr key={index}>
-                                        {order?.map((element, elementIndex) => (
-                                            <td key={elementIndex}>{element}</td>
-                                        ))}
-                                    </tr>
-                                ))}
-
-                                <tr>
-                                    {totalVisible && (
-                                        totalCount?.map((element, index) => (
-                                            <td className="total-information-td">{element}</td>
-                                        ))
-                                    )}
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-
-
-                </div>
-
+          <div className="company-info">
+            <div>
+              Company Name: <strong>{company?.company_name}</strong>
             </div>
-        </>
-    )
-}
+            <div className="company-contact">
+              Company Contact: <strong>{company?.company_contact}</strong>
+            </div>
+            <div className="gst-number">
+              GST No.: <strong>{company?.gst_no}</strong>
+            </div>
+          </div>
 
-export default PrintPage; 
+          <div className="printable-table-div">
+            <table className="printable_table">
+              <thead>
+                <tr>
+                  {tableHead?.map((element, index) => (
+                    <th key={index}>{element}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {orderData.map((order, index) => (
+                  <tr key={index}>
+                    {order?.map((element, elementIndex) => (
+                      <td key={elementIndex}>{element}</td>
+                    ))}
+                  </tr>
+                ))}
+
+                <tr>
+                  {totalVisible &&
+                    totalCount?.map((element, index) => (
+                      <td key={index} className="total-information-td">
+                        {element}
+                      </td>
+                    ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PrintPage;

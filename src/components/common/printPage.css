@@ -1,98 +1,98 @@
 .printable_table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12px; /* Slightly reducing font-size for better fit */
-    page-break-inside: auto;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px; /* Slightly reducing font-size for better fit */
+  page-break-inside: auto;
 }
 
 .printable_table thead {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 .printable_table thead th {
-    padding: 5px; /* Slightly reducing padding */
-    border: 1px solid #ddd;
-    text-align: left;
+  padding: 5px; /* Slightly reducing padding */
+  border: 1px solid #ddd;
+  text-align: left;
 }
 
 .printable_table tbody tr {
-    page-break-inside: avoid; /* Ensures that rows are not broken between pages */
-    page-break-after: auto;
-    text-align: left;
+  page-break-inside: avoid; /* Ensures that rows are not broken between pages */
+  page-break-after: auto;
+  text-align: left;
 }
 
 .printable_table tbody tr:hover {
-    background-color: #f1f1f1;
+  background-color: #f1f1f1;
 }
 
 .printable_table tbody td {
-    padding: 5px; /* Slightly reducing padding */
-    border: 1px solid #ddd;
-    text-align: left;
+  padding: 5px; /* Slightly reducing padding */
+  border: 1px solid #ddd;
+  text-align: left;
 }
 
 .page_title {
-    font-size: 17px;
-    font-weight: 700;
-    margin-top: 20px;
-    margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  margin-top: 20px;
+  margin-bottom: 10px;
 }
 
-.printable-page{
-    padding: 10px;
-    overflow-y: hidden;
-    height: 88vh;
-}
-  
-.printable-main-div{
-    margin-top: 10px;
-    padding-left: 1px;
-    padding-right: 1px;
+.printable-page {
+  padding: 10px;
+  overflow-y: hidden;
+  height: 88vh;
 }
 
-.printable-table-div{
-    height: 60vh;
-    overflow-y: auto;
-    border-top: 2px dotted #d5d5d5;
-    padding-top: 15px;
-    margin-top: 10px;
+.printable-main-div {
+  margin-top: 10px;
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.printable-table-div {
+  height: 60vh;
+  overflow-y: auto;
+  border-top: 2px dotted #d5d5d5;
+  padding-top: 15px;
+  margin-top: 10px;
 }
 
 .company-info {
-    color: black; /* Color for company name */
-    font-size: 15px;
-    text-align: right;
+  color: black; /* Color for company name */
+  font-size: 15px;
+  text-align: right;
 }
 .company-contact {
-    font-size: 13px;
-    margin-top: 5px;
+  font-size: 13px;
+  margin-top: 5px;
 }
 .gst-number {
-    font-size: 13px;
-    margin-top: 5px;
+  font-size: 13px;
+  margin-top: 5px;
 }
 
-.total-information-td{
-    background-color: #f2f2f2;
-    font-weight: 600;
+.total-information-td {
+  background-color: #f2f2f2;
+  font-weight: 600;
 }
 
 @media print {
-    body {
-        -webkit-print-color-adjust: exact; /* Ensure colors are printed as specified */
-    }
+  body {
+    -webkit-print-color-adjust: exact; /* Ensure colors are printed as specified */
+  }
 
-    .printable_table {
-        font-size: 10px; /* Further reduce font-size for print */
-    }
+  .printable_table {
+    font-size: 10px; /* Further reduce font-size for print */
+  }
 
-    .page_title {
-        font-size: 15px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
+  .page_title {
+    font-size: 15px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
 
-    .printable-table-div{
-        height: auto;
-    }
+  .printable-table-div {
+    height: auto;
+  }
 }

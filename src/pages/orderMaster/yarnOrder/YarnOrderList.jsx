@@ -75,7 +75,7 @@ function YarnOrderList() {
         end: financialYearEnd,
         order_status: debouncedOrderStatus,
         yarn_company_name: debouceYarnCompanyName,
-        supplier_name: debounceSupplier
+        supplier_name: debounceSupplier,
         // yarn_company_id: debouncedDenier,
         // supplier_id: debouncedSupplier,
       },
@@ -91,14 +91,13 @@ function YarnOrderList() {
           yarn_company_name: debouceYarnCompanyName,
           // yarn_company_id: debouncedDenier,
           // supplier_id: debouncedSupplier,
-          supplier_name: debounceSupplier
+          supplier_name: debounceSupplier,
         },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
-
 
   function navigateToAdd() {
     navigate("/order-master/my-yarn-orders/add");
@@ -110,47 +109,49 @@ function YarnOrderList() {
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = yarnOrderListRes?.yarnOrderList?.rows?.map((yarnOrder, index) => {
-      const {
-        id,
-        order_date,
-        yarn_stock_company = {},
-        user = {},
-        order_no,
-        lot_no,
-        yarn_grade,
-        rate,
-        quantity,
-        approx_cartoon,
-        approx_amount,
-        status,
-      } = yarnOrder;
-      const {
-        yarn_denier,
-        filament,
-        luster_type,
-        yarn_color,
-        yarn_Sub_type,
-        yarn_company_name,
-      } = yarn_stock_company;
+    const body = yarnOrderListRes?.yarnOrderList?.rows?.map(
+      (yarnOrder, index) => {
+        const {
+          id,
+          order_date,
+          yarn_stock_company = {},
+          user = {},
+          order_no,
+          lot_no,
+          yarn_grade,
+          rate,
+          quantity,
+          approx_cartoon,
+          approx_amount,
+          status,
+        } = yarnOrder;
+        const {
+          yarn_denier,
+          filament,
+          luster_type,
+          yarn_color,
+          yarn_Sub_type,
+          yarn_company_name,
+        } = yarn_stock_company;
 
-      const { first_name: supplierName } = user;
-      return [
-        index + 1,
-        order_no,
-        dayjs(order_date).format("DD-MM-YYYY"),
-        supplierName,
-        yarn_company_name,
-        `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
-        lot_no,
-        yarn_grade,
-        approx_cartoon,
-        quantity,
-        rate,
-        approx_amount,
-        status,
-      ];
-    });
+        const { first_name: supplierName } = user;
+        return [
+          index + 1,
+          order_no,
+          dayjs(order_date).format("DD-MM-YYYY"),
+          supplierName,
+          yarn_company_name,
+          `${yarn_denier}D/${filament}F (${yarn_Sub_type} ${luster_type} - ${yarn_color})`,
+          lot_no,
+          yarn_grade,
+          approx_cartoon,
+          quantity,
+          rate,
+          approx_amount,
+          status,
+        ];
+      }
+    );
 
     let tableTitle = [
       "ID",
@@ -168,11 +169,11 @@ function YarnOrderList() {
       "Order Status",
     ];
 
-    // Set localstorage item information 
+    // Set localstorage item information
     localStorage.setItem("print-array", JSON.stringify(body));
-    localStorage.setItem("print-title", "Yarn Order List")
+    localStorage.setItem("print-title", "Yarn Order List");
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
-    localStorage.setItem("total-count", "0") ; 
+    localStorage.setItem("total-count", "0");
 
     // downloadUserPdf({
     //   body,
@@ -197,7 +198,6 @@ function YarnOrderList() {
     //   rightContent,
     //   title: "Yarn Order List",
     // });
-
 
     window.open("/print");
   }
@@ -316,7 +316,7 @@ function YarnOrderList() {
           delivered_cartoon,
           approx_amount,
           id,
-          has_advance_payment_count
+          has_advance_payment_count,
         } = yarnOrder;
 
         const {
@@ -369,7 +369,6 @@ function YarnOrderList() {
                 <EditOutlined />
               </Button>
             )}
-
 
             {!has_advance_payment_count && (
               <DeleteYarnOrderButton data={yarnOrder} />
@@ -458,9 +457,7 @@ function YarnOrderList() {
         </div>
 
         <Flex style={{ marginLeft: "auto" }} gap={15}>
-
           <Flex align="center" gap={10}>
-
             <Typography.Text className="whitespace-nowrap">
               Order Status
             </Typography.Text>
@@ -493,11 +490,9 @@ function YarnOrderList() {
               className="min-w-40"
               allowClear={true}
             />
-
           </Flex>
 
           <Flex align="center" gap={10}>
-
             <Typography.Text className="whitespace-nowrap">
               Yarn company
             </Typography.Text>
@@ -524,11 +519,9 @@ function YarnOrderList() {
               className="min-w-40"
               allowClear={true}
             />
-
           </Flex>
 
           <Flex align="center" gap={10}>
-
             <Typography.Text className="whitespace-nowrap">
               Select Supplier
             </Typography.Text>
@@ -544,9 +537,7 @@ function YarnOrderList() {
               value={supplier}
               onChange={setSupplier}
             />
-
           </Flex>
-
         </Flex>
 
         <Button
@@ -555,7 +546,6 @@ function YarnOrderList() {
           disabled={!yarnOrderListRes?.yarnOrderList?.rows?.length}
           onClick={downloadPdf}
         />
-
       </div>
       {renderTable()}
     </div>
