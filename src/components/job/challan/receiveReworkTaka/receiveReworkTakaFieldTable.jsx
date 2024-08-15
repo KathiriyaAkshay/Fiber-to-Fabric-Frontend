@@ -28,7 +28,7 @@ const ReceiveReworkTakaFieldTable = ({
   const debounceTakaNo = useDebounce(storeTakaNo, 500);
 
   const activeNextField = (event, fieldNumber) => {
-    if (event.keyCode === 32) {
+    if (event.keyCode === 13) {
       setActiveField((prev) => prev + 1);
       setTimeout(() => {
         setFocus(`taka_no_${fieldNumber + 1}`);
@@ -263,9 +263,6 @@ const ReceiveReworkTakaFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            onKeyDown={(event) =>
-                              activeNextField(event, fieldNumber)
-                            }
                           />
                         )}
                       />
@@ -397,6 +394,9 @@ const ReceiveReworkTakaFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
+                            onKeyDown={(event) =>
+                              activeNextField(event, fieldNumber)
+                            }
                           />
                         )}
                       />

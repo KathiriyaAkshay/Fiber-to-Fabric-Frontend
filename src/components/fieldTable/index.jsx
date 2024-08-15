@@ -157,13 +157,21 @@ const FieldTable = ({
                       validateStatus={
                         errors[`meter_${fieldNumber}`] ? "error" : ""
                       }
-                      help={
-                        errors[`meter_${fieldNumber}`] &&
-                        errors[`meter_${fieldNumber}`].message
-                      }
+                      // help={
+                      //   errors[`meter_${fieldNumber}`] &&
+                      //   errors[`meter_${fieldNumber}`].message
+                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
-                      style={{ marginBottom: "0px" }}
+                      style={{
+                        marginBottom: "0px",
+                        border: `${
+                          errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
+                        borderColor: errors[`meter_${fieldNumber}`]
+                          ? "red"
+                          : "",
+                      }}
                     >
                       <Controller
                         control={control}
@@ -174,7 +182,12 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: "0px solid",
+                              border: `${
+                                errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
+                              borderColor: errors[`meter_${fieldNumber}`]
+                                ? "red"
+                                : "",
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
@@ -189,13 +202,21 @@ const FieldTable = ({
                       validateStatus={
                         errors[`weight_${fieldNumber}`] ? "error" : ""
                       }
-                      help={
-                        errors[`weight_${fieldNumber}`] &&
-                        errors[`weight_${fieldNumber}`].message
-                      }
+                      // help={
+                      //   errors[`weight_${fieldNumber}`] &&
+                      //   errors[`weight_${fieldNumber}`].message
+                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
-                      style={{ marginBottom: "0px" }}
+                      style={{
+                        marginBottom: "0px",
+                        border: `${
+                          errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
+                        borderColor: errors[`weight_${fieldNumber}`]
+                          ? "red"
+                          : "",
+                      }}
                     >
                       <Controller
                         control={control}
@@ -206,7 +227,12 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: "0px solid",
+                              border: `${
+                                errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
+                              borderColor: errors[`weight_${fieldNumber}`]
+                                ? "red"
+                                : "",
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}

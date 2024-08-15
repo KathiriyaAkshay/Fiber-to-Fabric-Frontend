@@ -32,6 +32,7 @@ import dayjs from "dayjs";
 import moment from "moment/moment";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
+import AlertModal from "../../../../components/common/modal/alertModal";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -102,8 +103,58 @@ const UpdateReworkChallan = () => {
   });
 
   async function onSubmit(data) {
-    console.log({ data });
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
+
+    let hasError = 0;
+    detailArray?.map((field) => {
+      let taka_no = +data[`taka_no_${field}`];
+      let meter = +data[`meter_${field}`];
+      let received_meter = +data[`received_meter_${field}`];
+      let received_weight = +data[`received_weight_${field}`];
+      let short = +data[`short_${field}`];
+
+      if (isNaN(taka_no) || !taka_no) {
+        message.error("Please, Provide valid taka details");
+        setError(`taka_no_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(meter) || !meter) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`meter_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(received_meter) || !received_meter) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`received_meter_${field}`, {
+          type: "manual",
+          message: "Received meter is required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(received_weight) || !received_weight) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`received_weight_${field}`, {
+          type: "manual",
+          message: "Received weight is required.",
+        });
+        hasError = 1;
+        return;
+      } else if (isNaN(short) || !short) {
+        message.error(`Please, Provide valid details for taka ${taka_no}`);
+        setError(`short_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+        return;
+      }
+    });
 
     const newData = {
       createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
@@ -128,8 +179,10 @@ const UpdateReworkChallan = () => {
         };
       }),
     };
-    console.log({ newData });
-    await UpdateReworkChallan(newData);
+
+    if (hasError === 0) {
+      await UpdateReworkChallan(newData);
+    }
   }
 
   const {
@@ -141,6 +194,8 @@ const UpdateReworkChallan = () => {
     getValues,
     setFocus,
     reset,
+    setError,
+    resetField,
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -370,6 +425,62 @@ const UpdateReworkChallan = () => {
     }
   }, [reworkChallanDetails, reset, company_id, companyListRes?.rows]);
 
+  // **************************************************************
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [tempOrderValue, setTempOrderValue] = useState(null);
+
+  const qualityChangeHandler = (field, selectedValue) => {
+    setTempOrderValue(selectedValue);
+    if (activeField >= 1) {
+      if (
+        getValues(`taka_no_1`) ||
+        getValues(`meter_1`) ||
+        getValues(`received_meter_1`) ||
+        getValues(`received_weight__1`) ||
+        getValues(`short_1`)
+        // getValues(`production_meter_1`) ||
+        // getValues(`pending_meter_1`) ||
+        // getValues(`pending_percentage_1`)
+      ) {
+        setIsAlertOpen(true);
+      } else {
+        field.onChange(selectedValue);
+      }
+    } else {
+      field.onChange(selectedValue);
+    }
+  };
+
+  const onCancelHandler = () => {
+    setIsAlertOpen(false);
+  };
+
+  const onConfirmHandler = () => {
+    const purchaseChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
+
+    purchaseChallanDetailArr.forEach((field) => {
+      resetField(`taka_no_${field}`, "");
+      resetField(`meter_${field}`, "");
+      resetField(`received_meter_${field}`, "");
+      resetField(`received_weight_${field}`, "");
+      resetField(`short_${field}`, "");
+      // resetField(`production_meter_${field}`, "");
+      // resetField(`pending_meter_${field}`, "");
+      // resetField(`pending_percentage_${field}`, "");
+    });
+
+    setValue("quality_id", tempOrderValue);
+    setActiveField(1);
+    setIsAlertOpen(false);
+    // setTotalTaka(0);
+    // setTotalMeter(0);
+    // setTotalWeight(0);
+  };
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -503,6 +614,10 @@ const UpdateReworkChallan = () => {
                           label: item.quality_name,
                         }))
                       }
+                      onChange={(value) => {
+                        // field.onChange(value);
+                        qualityChangeHandler(field, value);
+                      }}
                     />
                   );
                 }}
@@ -766,6 +881,16 @@ const UpdateReworkChallan = () => {
           </Button>
         </Flex>
       </Form>
+
+      {isAlertOpen && (
+        <AlertModal
+          key={"alert_modal"}
+          open={isAlertOpen}
+          content="Are you sure you want to change? You will lose your entries!"
+          onCancel={onCancelHandler}
+          onConfirm={onConfirmHandler}
+        />
+      )}
     </div>
   );
 };

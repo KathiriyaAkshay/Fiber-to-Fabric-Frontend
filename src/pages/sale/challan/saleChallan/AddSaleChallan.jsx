@@ -31,6 +31,7 @@ import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import { createSaleChallanRequest } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
+import AlertModal from "../../../../components/common/modal/alertModal";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -106,6 +107,53 @@ const AddSaleChallan = () => {
       (_, i) => i + 1
     );
 
+    const sale_challan_detail = [];
+    let hasError = 0;
+    saleChallanDetailArr.forEach((field, index) => {
+      const takaNo = data[`taka_no_${field}`];
+      const meter = data[`meter_${field}`];
+      const weight = data[`weight_${field}`];
+
+      if (isNaN(takaNo) || takaNo === "") {
+        message.error(`Enter taka no for ${field} number row.`);
+        setError(`taka_no_${field}`, {
+          type: "manual",
+          message: "Taka No required.",
+        });
+        hasError = 1;
+      }
+      if (isNaN(meter) || meter === "") {
+        message.error(`Enter meter for ${field} number row.`);
+        setError(`meter_${field}`, {
+          type: "manual",
+          message: "Meter required.",
+        });
+        hasError = 1;
+      }
+      if (isNaN(weight) || weight === "") {
+        message.error(`Enter weight for ${field} number row.`);
+        setError(`weight_${field}`, {
+          type: "manual",
+          message: "Weight required.",
+        });
+        hasError = 1;
+      }
+
+      if (
+        !isNaN(data[`taka_no_${field}`]) &&
+        !isNaN(data[`meter_${field}`]) &&
+        !isNaN(data[`weight_${field}`])
+      ) {
+        sale_challan_detail.push({
+          index: index + 1,
+          taka_no: data[`taka_no_${field}`],
+          meter: parseInt(data[`meter_${field}`]),
+          weight: parseInt(data[`weight_${field}`]),
+          model: data[`model_${field}`],
+        });
+      }
+    });
+
     const newData = {
       party_id: selectedOrder.party_id,
       customer_gst_state: data.gst_state_2,
@@ -135,17 +183,21 @@ const AddSaleChallan = () => {
           sale_challan_type: type,
         };
       }),
-      sale_challan_details: saleChallanDetailArr.map((field, index) => {
-        return {
-          index: index + 1,
-          taka_no: data[`taka_no_${field}`],
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
-          model: data[`model_${field}`],
-        };
-      }),
+      sale_challan_details: sale_challan_detail,
+      // saleChallanDetailArr.map((field, index) => {
+      //   return {
+      //     index: index + 1,
+      //     taka_no: data[`taka_no_${field}`],
+      //     meter: parseInt(data[`meter_${field}`]),
+      //     weight: parseInt(data[`weight_${field}`]),
+      //     model: data[`model_${field}`],
+      //   };
+      // }),
     };
-    await AddSaleChallan(newData);
+
+    if (hasError === 0) {
+      await AddSaleChallan(newData);
+    }
   }
 
   const {
@@ -158,6 +210,7 @@ const AddSaleChallan = () => {
     setFocus,
     resetField,
     getValues,
+    setError,
   } = useForm({
     defaultValues: {
       company_id: null,
@@ -284,6 +337,7 @@ const AddSaleChallan = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+      console.log({ order });
 
       setSelectedOrder(order);
       setValue("total_meter", order.total_meter);
@@ -296,6 +350,8 @@ const AddSaleChallan = () => {
       setValue("broker_id", order.broker.id);
       setValue("quality_id", order.inhouse_quality.id);
       setValue("supplier_name", order.supplier_name);
+
+      setValue("delivery_address", order?.party?.party?.delivery_address);
 
       // setPendingMeter(order.pending_meter);
       // setPendingTaka(order.pending_taka);
@@ -317,7 +373,7 @@ const AddSaleChallan = () => {
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      setValue("delivery_address", selectedSupplierCompany?.users?.address);
+      // setValue("delivery_address", selectedSupplierCompany?.users?.address);
       setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
@@ -331,6 +387,52 @@ const AddSaleChallan = () => {
       setPendingWeight(+order.pending_weight - +totalWeight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+
+  // *******************************************************************
+
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [tempOrderValue, setTempOrderValue] = useState(null);
+
+  const orderChangeHandler = (field, selectedValue) => {
+    setTempOrderValue(selectedValue);
+    if (activeField >= 1) {
+      if (
+        getValues(`taka_no_1`) ||
+        getValues(`meter_1`) ||
+        getValues(`weight_1`)
+      ) {
+        setIsAlertOpen(true);
+      } else {
+        field.onChange(selectedValue);
+      }
+    } else {
+      field.onChange(selectedValue);
+    }
+  };
+
+  const onCancelHandler = () => {
+    setIsAlertOpen(false);
+  };
+
+  const onConfirmHandler = () => {
+    const purchaseChallanDetailArr = Array.from(
+      { length: activeField },
+      (_, i) => i + 1
+    );
+
+    purchaseChallanDetailArr.forEach((field) => {
+      resetField(`taka_no_${field}`, "");
+      resetField(`meter_${field}`, "");
+      resetField(`weight_${field}`, "");
+    });
+
+    setValue("gray_order_id", tempOrderValue);
+    setActiveField(1);
+    setIsAlertOpen(false);
+    setTotalTaka(0);
+    setTotalMeter(0);
+    setTotalWeight(0);
+  };
 
   return (
     <div className="flex flex-col p-4">
@@ -581,6 +683,9 @@ const AddSaleChallan = () => {
                   dropdownStyle={{
                     textTransform: "capitalize",
                   }}
+                  onChange={(selectedValue) =>
+                    orderChangeHandler(field, selectedValue)
+                  }
                 />
               )}
             />
@@ -1000,6 +1105,16 @@ const AddSaleChallan = () => {
         </Button>
       </Flex>
       {/* </Form> */}
+
+      {isAlertOpen && (
+        <AlertModal
+          key={"alert_modal"}
+          open={isAlertOpen}
+          content="Are you sure you want to change? You will lose your entries!"
+          onCancel={onCancelHandler}
+          onConfirm={onConfirmHandler}
+        />
+      )}
     </div>
   );
 };
