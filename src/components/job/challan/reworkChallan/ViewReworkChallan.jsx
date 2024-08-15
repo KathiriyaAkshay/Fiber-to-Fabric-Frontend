@@ -169,6 +169,33 @@ const ViewReworkChallanInfo = ({ details }) => {
             className="flex-col border border-b-0 border-solid"
           >
             <Row
+              justify="center"
+              align="middle"
+              style={{
+                borderBottom: "1px dashed",
+                paddingTop: 15,
+                paddingBottom: 15,
+              }}
+            >
+              <Col span={24} style={{ textAlign: "center" }}>
+                <p style={{ marginTop: 0, marginBottom: 0 }}>
+                  <strong>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
+                    ? ""
+                    : companyInfo?.address_line_2
+                    }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
+                    }, ${companyInfo?.country}`}</strong>
+                </p>
+                <p style={{ marginTop: 3, marginBottom: 0 }}>
+                  Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp;
+                  PAYMENT: {companyInfo?.account_number}
+                </p>
+                <p style={{ marginTop: 3, marginBottom: 0 }}>
+                  GST NO: {companyInfo?.gst_no} &nbsp;&nbsp;&nbsp;&nbsp; PAN NO:{" "}
+                  {companyInfo?.pancard_no}
+                </p>
+              </Col>
+            </Row>
+            <Row
               className="border p-4 border-b ,0border-solid !m-0"
               style={{
                 borderTop: 0,
@@ -178,35 +205,57 @@ const ViewReworkChallanInfo = ({ details }) => {
               }}
             >
               <Col span={12}>
+
                 <Row>
-                  <Col span={24}>
-                    <Text>To,</Text>
-                    <Text className="block font-bold">
-                      {details?.supplier?.supplier_company}(
+                  <Col span={3}>
+                    <Text className="font-bold">M/S,</Text>
+                  </Col>
+                  <Col span={20}>
+                    <Text>
+                      {details?.supplier?.supplier_company} (
                       {details?.supplier?.supplier_name})
                     </Text>
+
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col span={3}></Col>
+                  <Col span={10}>
                     <Text className="block">
                       {details?.supplier?.user?.address}
                     </Text>
                   </Col>
                 </Row>
-                <Row>
+
+                <Row className="mt-2">
+                  <Col span={3}>
+                    <Text strong style={{ fontWeight: 600 }}>GST :</Text>
+                  </Col>
+                  <Col span={10}>
+                    {details?.supplier?.user?.gst_no}
+                  </Col>
+                </Row>
+                {/* <Row>
                   <Col span={24}>
                     <Text>Challan</Text>
                     <Text className="block">{details?.challan_no}</Text>
                   </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <Text>GST</Text>
-                    <Text className="block">
-                      {details?.supplier?.user?.gst_no}
-                    </Text>
-                  </Col>
-                </Row>
+                </Row> */}
               </Col>
               <Col span={12}>
                 <Row>
+                  <Col span={10}>
+                    <Text className="font-bold">CHALLAN NO :</Text>
+                  </Col>
+                  <Col span={10}>
+                    <Text>
+                      {details?.challan_no}
+                    </Text>
+
+                  </Col>
+                </Row>
+                {/* <Row>
                   <Col span={24}>
                     <Text>From,</Text>
                     <Text className="block font-bold">
@@ -232,19 +281,19 @@ const ViewReworkChallanInfo = ({ details }) => {
                     <Text>GST</Text>
                     <Text className="block">{companyInfo?.gst_no}</Text>
                   </Col>
-                </Row>
+                </Row> */}
               </Col>
             </Row>
             <Row
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderTop: "1px dashed" }}
             >
-              <Col span={6}><strong>Description:</strong></Col>
-              <Col span={6}>
+              <Col span={3}><strong>Description:</strong></Col>
+              <Col span={9}>
                 {details?.inhouse_quality?.quality_name} (
                 {details?.inhouse_quality?.quality_weight}KG)
               </Col>
-              <Col span={6}><strong>Date:</strong></Col>
+              <Col span={3}><strong>Date:</strong></Col>
               <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
             </Row>
             <Row

@@ -107,7 +107,7 @@ const ReworkChallanFieldTable = ({
     });
     if (res.data.success) {
       if (res?.data?.data == null) {
-        message.warning("Please, Provide valid taka number");
+        message.warning("This taka number not available in Production");
         setValue(`meter_${activeField}`, undefined);
       }
       setValue(
@@ -124,15 +124,15 @@ const ReworkChallanFieldTable = ({
   useEffect(() => {
 
     if (debounceTakaNo !== undefined && debounceTakaNo !== null){
-      console.log("RUn this functiona");
-      
       const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
-  
       let already_taka = 0;
+      let temp_total_taka = 0 ;
       numOfFields.map((fieldNumber, index) => {
         let taka_number = getValues(`taka_no_${index}`);
         if (taka_number == debounceTakaNo && index !== activeField) {
           already_taka = 1;
+        } else {
+          temp_total_taka += 1; 
         }
       });
   
@@ -140,6 +140,7 @@ const ReworkChallanFieldTable = ({
         message.warning(`Tako ${debounceTakaNo} already in used`);
         setValue(`taka_no_${activeField}`, undefined);
         setValue(`meter_${activeField}`, undefined);
+        setTotalTaka(temp_total_taka); 
       }
   
       if (already_taka == 0){

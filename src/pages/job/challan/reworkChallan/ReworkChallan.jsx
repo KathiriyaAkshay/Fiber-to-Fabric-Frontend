@@ -233,22 +233,22 @@ const ReworkChallan = () => {
       dataIndex: "taka_receive_meter",
       key: "taka_receive_meter",
     },
-    {
-      title: "Wastage in KG.",
-      dataIndex: "wastageInKg",
-      key: "wastageInKg",
-      render: (text, record) => {
-        let received_meter = Number(record?.taka_receive_meter) ; 
-        let total_meter = Number(record?.total_meter) ; 
+    // {
+    //   title: "Wastage in KG.",
+    //   dataIndex: "wastageInKg",
+    //   key: "wastageInKg",
+    //   render: (text, record) => {
+    //     let received_meter = Number(record?.taka_receive_meter) ; 
+    //     let total_meter = Number(record?.total_meter) ; 
         
-        let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ; 
-        return(
-          <div>
-            {wastage_kg.toFixed(2)}
-          </div>
-        )
-      }
-    },
+    //     let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ; 
+    //     return(
+    //       <div>
+    //         {wastage_kg.toFixed(2)}
+    //       </div>
+    //     )
+    //   }
+    // },
     {
       title: "Short(%)",
       dataIndex: "shortPercentage",
