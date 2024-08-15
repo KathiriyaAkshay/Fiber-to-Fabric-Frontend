@@ -1,6 +1,7 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { Button, Form, Input } from "antd";
 import { Controller } from "react-hook-form";
+import { useDebounceCallback } from "../../hooks/useDebounce";
 
 const numOfFields = Array.from({ length: 100 }, (_, i) => i + 1);
 const AddOpeningProductionTable = ({
@@ -37,10 +38,21 @@ const AddOpeningProductionTable = ({
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
       }
+
+      const takaNo = getValues(`taka_no_${fieldNumber}`);
+      const meter = +getValues(`meter_${fieldNumber}`);
+      const weight = +getValues(`weight_${fieldNumber}`);
+
+      if (takaNo && meter && weight) {
+        setTotalTaka((prev) => (prev === 0 ? prev : prev - 1));
+        setTotalMeter((prev) => (prev === 0 ? prev : prev - meter));
+        setTotalWeight((prev) => (prev === 0 ? prev : prev - weight));
+      }
+
       setValue(`taka_no_${fieldNumber}`, "");
       setValue(`meter_${fieldNumber}`, "");
       setValue(`weight_${fieldNumber}`, "");
-      setValue(`machine_${fieldNumber}`, "");
+      setValue(`machine_no_${fieldNumber}`, "");
     }
   };
 
@@ -65,11 +77,7 @@ const AddOpeningProductionTable = ({
     setTotalTaka(totalTaka);
   };
 
-  const total = () => {
-    setTimeout(() => {
-      calculateTotals();
-    }, 500);
-  };
+  const total = useDebounceCallback(calculateTotals, 200);
 
   return (
     <div className="production-table-div">
