@@ -38,7 +38,7 @@ const AddGeneralPurchaseEntry = () => {
 
     const [isAddCashBillChecked, setAddCashBillChecked] = useState(false);
     const [isAddOpeningCurrentBillsChecked, setAddOpeningCurrentBillsChecked] = useState(false); // Assuming it is checked by default (as per your image)
-    const [isUpdateStockChecked, setIsUpdateStockChecked] = useState(false) ; 
+    const [isUpdateStockChecked, setIsUpdateStockChecked] = useState(false);
 
     const [is_millgine_bill, set_is_millgine_bill] = useState(false);
     const [supplierName, setSupplierName] = useState("");
@@ -50,7 +50,7 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddOpeningCurrentBillsChecked(false);
-            setIsUpdateStockChecked(false) ; 
+            setIsUpdateStockChecked(false);
         }
     };
 
@@ -59,29 +59,29 @@ const AddGeneralPurchaseEntry = () => {
 
         if (e.target.checked) {
             setAddCashBillChecked(false);
-            setIsUpdateStockChecked(false) ; 
+            setIsUpdateStockChecked(false);
         }
     };
 
     const handleUpdateStockChange = (e) => {
-        setIsUpdateStockChecked(e.target.checked) ; 
+        setIsUpdateStockChecked(e.target.checked);
 
-        if (e.target.checked){
-            setAddCashBillChecked(false) ; 
-            setAddOpeningCurrentBillsChecked(false) ; 
+        if (e.target.checked) {
+            setAddCashBillChecked(false);
+            setAddOpeningCurrentBillsChecked(false);
         }
     }
 
     const AddValidationSchema = yup.object().shape({
         supplier_name: yup.string().required("Please, Select supplier"),
-        head: yup.string().required("Please, Select head type"), 
-        supplier_id : yup.string().required("Please, Select supplier company"), 
-        invoice_no: yup.string().required("Please, Enter invoice number"), 
-        sub_head: yup.string().required("Please, Enter sub head"), 
-        createdAt: yup.string().required("Please, Select invoice date"), 
-        due_date: yup.string().required("Pease, Select due date"), 
+        head: yup.string().required("Please, Select head type"),
+        supplier_id: yup.string().required("Please, Select supplier company"),
+        invoice_no: yup.string().required("Please, Enter invoice number"),
+        sub_head: yup.string().required("Please, Enter sub head"),
+        createdAt: yup.string().required("Please, Select invoice date"),
+        due_date: yup.string().required("Pease, Select due date"),
         remark: yup.string(),
-        tds_percent: yup.string().required("Please, Enter TDS amount"), 
+        tds_percent: yup.string().required("Please, Enter TDS amount"),
         create_passbook_entry: yup.string().required()
     })
 
@@ -98,9 +98,9 @@ const AddGeneralPurchaseEntry = () => {
     } = useForm({
         resolver: yupResolver(AddValidationSchema),
         defaultValues: {
-            createdAt: dayjs(), 
-            due_date: dayjs(), 
-            tds_percent: "0", 
+            createdAt: dayjs(),
+            due_date: dayjs(),
+            tds_percent: "0",
             create_passbook_entry: "yes"
         },
     });
@@ -313,9 +313,9 @@ const AddGeneralPurchaseEntry = () => {
     const [finalAmount, setFinalAmount] = useState(0);
     const [afterTDSAmount, setAfterTDSAmount] = useState(0);
 
-    const [totalPics, setTotalPics] = useState(0) ; 
-    const [totalQuantity, setTotalQuantity] = useState(0) ; 
-    const [miligineTotalAmount, setMilgineTotalAmount] = useState(0) ; 
+    const [totalPics, setTotalPics] = useState(0);
+    const [totalQuantity, setTotalQuantity] = useState(0);
+    const [miligineTotalAmount, setMilgineTotalAmount] = useState(0);
 
     useEffect(() => {
 
@@ -348,12 +348,12 @@ const AddGeneralPurchaseEntry = () => {
 
         setRoundOff(roundOff.toFixed(2));
         setFinalAmount(Math.round(temp_final).toFixed(2));
-        setValue("final_amount", Math.round(temp_final).toFixed(2)) ; 
-    
+        setValue("final_amount", Math.round(temp_final).toFixed(2));
+
     }, [initialData]);
 
     const CalculateGstTotalAmount = () => {
-        
+
         let temp = [
             {
                 key: '1',
@@ -408,10 +408,10 @@ const AddGeneralPurchaseEntry = () => {
         ];
 
         let gstCheckKey = ["5", "12", "18", "28"];
-        
-        let tempTotalPics = 0 ; 
-        let tempTotalQuantity = 0 ;
-        let tempTotalAmount = 0 ;  
+
+        let tempTotalPics = 0;
+        let tempTotalQuantity = 0;
+        let tempTotalAmount = 0;
 
 
         millgineOrderArray?.map((element, index) => {
@@ -424,15 +424,15 @@ const AddGeneralPurchaseEntry = () => {
             if (pics !== "" && pics != "0") {
                 let amount = Number(pics) * Number(rate);
                 amountInfo = amount;
-                tempTotalPics = tempTotalPics + Number(pics) ;
-                tempTotalAmount = tempTotalAmount = Number(amountInfo) ;  
+                tempTotalPics = tempTotalPics + Number(pics);
+                tempTotalAmount = tempTotalAmount = Number(amountInfo);
             }
 
             if (quantity !== "" && quantity != "0") {
                 let amount = Number(quantity) * Number(rate);
                 amountInfo = amount;
-                tempTotalQuantity = tempTotalQuantity +  Number(quantity) ; 
-                tempTotalAmount = tempTotalAmount = Number(amountInfo) ;  
+                tempTotalQuantity = tempTotalQuantity + Number(quantity);
+                tempTotalAmount = tempTotalAmount = Number(amountInfo);
             }
 
 
@@ -455,7 +455,7 @@ const AddGeneralPurchaseEntry = () => {
                             temp[i]["cgst"] = SGSTAmount;
                         }
                     })
-                }   else {
+                } else {
 
                     // Calculate totalAmount
                     let tempTotal = temp[4]["total"];
@@ -467,9 +467,9 @@ const AddGeneralPurchaseEntry = () => {
         })
 
         setInitialData(temp);
-        setTotalPics(tempTotalPics) ; 
-        setTotalQuantity(tempTotalQuantity) ; 
-        setMilgineTotalAmount(tempTotalAmount) ; 
+        setTotalPics(tempTotalPics);
+        setTotalQuantity(tempTotalQuantity);
+        setMilgineTotalAmount(tempTotalAmount);
     }
 
     // Handle discount amount change 
@@ -605,26 +605,26 @@ const AddGeneralPurchaseEntry = () => {
 
     const { mutateAsync: createGeneralPurchase } = useMutation({
         mutationFn: async (data) => {
-          const res = await createGeneralPurchaseEntryRequest({
-            data,
-            params: { company_id: companyId },
-          });
-          return res.data;
+            const res = await createGeneralPurchaseEntryRequest({
+                data,
+                params: { company_id: companyId },
+            });
+            return res.data;
         },
         mutationKey: ["purchase/generalPurchase/create"],
         onSuccess: (res) => {
-          queryClient.invalidateQueries([
-            "purchase/generalPurchase/list",
-            { company_id: companyId },
-          ]);
-          const successMessage = res?.message;
-          if (successMessage) {
-            message.success(successMessage);
-          }
-          navigate(-1);
+            queryClient.invalidateQueries([
+                "purchase/generalPurchase/list",
+                { company_id: companyId },
+            ]);
+            const successMessage = res?.message;
+            if (successMessage) {
+                message.success(successMessage);
+            }
+            navigate(-1);
         },
         onError: (error) => {
-          mutationOnErrorHandler({ error, message });
+            mutationOnErrorHandler({ error, message });
         },
     });
 
@@ -682,15 +682,15 @@ const AddGeneralPurchaseEntry = () => {
             }
         })
 
-        if (!is_millgine_bill){
-            if (totalAmount == 0){
-                message.warning("Please, Provide GST details") ; 
+        if (!is_millgine_bill) {
+            if (totalAmount == 0) {
+                message.warning("Please, Provide GST details");
                 return
             }
         }
 
-        let millginDetails = []; 
-        let purchaseEntryDetails = [] ; 
+        let millginDetails = [];
+        let purchaseEntryDetails = [];
 
         initialData?.map((element) => {
             purchaseEntryDetails.push(
@@ -700,7 +700,7 @@ const AddGeneralPurchaseEntry = () => {
                     "discount": element?.discount,
                     "sgst": element?.sgst,
                     "cgst": element?.cgst,
-                    "total_gst": element?.totalGst  
+                    "total_gst": element?.totalGst
                 }
             )
         })
@@ -739,7 +739,7 @@ const AddGeneralPurchaseEntry = () => {
             "sub_head": values?.sub_head,
             "createdAt": values?.createdAt,
             "due_date": values?.due_date,
-            "remark": values?.remark == undefined?null:values?.remark,
+            "remark": values?.remark == undefined ? null : values?.remark,
             "is_millgine_bill": is_millgine_bill,
             "sub_total": totalAmount,
             "discount": totalDiscount,
@@ -750,18 +750,18 @@ const AddGeneralPurchaseEntry = () => {
             "round_off": roundOff,
             "grand_total": finalAmount,
             "after_tds_amount": afterTDSAmount,
-            "is_passbook_added": values?.create_passbook_entry == "yes"?true:false,
+            "is_passbook_added": values?.create_passbook_entry == "yes" ? true : false,
             "main_total": totalAmount,
             "main_discount": totalDiscount,
             "main_sgst": totalSGST,
             "main_cgst": totalSGST,
-            "main_gst":totalGST,
+            "main_gst": totalGST,
             "debit_note_date": dayjs(),
             "millgineDetails": millginDetails,
             "purchaseEntryDetails": purchaseEntryDetails
         }
 
-        await createGeneralPurchase(requestPayload) ; z 
+        await createGeneralPurchase(requestPayload); z
 
 
     }
@@ -822,7 +822,7 @@ const AddGeneralPurchaseEntry = () => {
                 },
             ])
         }
-    }, [is_millgine_bill]); 
+    }, [is_millgine_bill]);
 
     const disableFutureDates = (current) => {
         return current && current > moment().endOf('day');
@@ -836,7 +836,7 @@ const AddGeneralPurchaseEntry = () => {
 
                 <Flex style={{ marginLeft: "auto" }} gap={10}>
                     <Checkbox
-                        disabled = {is_millgine_bill?true:false}
+                        disabled={is_millgine_bill ? true : false}
                         checked={isAddCashBillChecked}
                         onChange={handleAddCashBillChange}
                     >
@@ -844,7 +844,7 @@ const AddGeneralPurchaseEntry = () => {
                     </Checkbox>
 
                     <Checkbox
-                        disabled = {is_millgine_bill?true:false}
+                        disabled={is_millgine_bill ? true : false}
                         checked={isAddOpeningCurrentBillsChecked}
                         onChange={handleAddOpeningCurrentBillsChange}
                     >
@@ -852,7 +852,7 @@ const AddGeneralPurchaseEntry = () => {
                     </Checkbox>
 
                     <Checkbox
-                        disabled = {is_millgine_bill?true:false}
+                        disabled={is_millgine_bill ? true : false}
                         checked={isUpdateStockChecked}
                         onChange={handleUpdateStockChange}
                     >
@@ -1113,7 +1113,7 @@ const AddGeneralPurchaseEntry = () => {
 
                 <Divider style={{ marginTop: 0 }} />
 
-                {( isAddCashBillChecked ||  (millgineOrderArray?.length && is_millgine_bill)) ?
+                {(isAddCashBillChecked || (millgineOrderArray?.length && is_millgine_bill)) ?
                     millgineOrderArray?.map((field, index) => {
                         return (
                             <>
@@ -1450,10 +1450,10 @@ const AddGeneralPurchaseEntry = () => {
                             </>
                         )
                     })
-                : null}
+                    : null}
 
                 {is_millgine_bill && (
-                    <Row gutter={18} style={{paddingBottom: 10}}>
+                    <Row gutter={18} style={{ paddingBottom: 10 }}>
                         <Col span={2}><strong>Total</strong></Col>
                         <Col span={2}></Col>
                         <Col span={3}></Col>
@@ -1525,16 +1525,16 @@ const AddGeneralPurchaseEntry = () => {
 
 
                             <Row gutter={18}>
-                                
+
                                 <Col span={24}>
 
-                                    <Form.Item 
-                                        label="TDS %" 
+                                    <Form.Item
+                                        label="TDS %"
                                         name="tds_percent"
-                                        validateStatus = {errors?.tds_percent?"error":""}
-                                        help = {errors?.tds_percent && errors?.tds_percent?.message}
-                                        required = {true}
-                                        wrapperCol={{sm: 24}}
+                                        validateStatus={errors?.tds_percent ? "error" : ""}
+                                        help={errors?.tds_percent && errors?.tds_percent?.message}
+                                        required={true}
+                                        wrapperCol={{ sm: 24 }}
                                     >
                                         <Controller
                                             control={control}
@@ -1555,9 +1555,9 @@ const AddGeneralPurchaseEntry = () => {
                                             )}
                                         />
                                     </Form.Item>
-                                
+
                                 </Col>
-                            
+
                             </Row>
 
                             <Col span={24}>
@@ -1567,19 +1567,19 @@ const AddGeneralPurchaseEntry = () => {
                                         {roundOff}
                                     </Descriptions.Item>
                                 </Descriptions>
-                            
+
                                 <Descriptions>
                                     <Descriptions.Item className="purchase-bill-description finalamount-text" label="Grand total">{finalAmount}</Descriptions.Item>
                                 </Descriptions>
-                            
+
                                 <Descriptions>
                                     <Descriptions.Item className="purchase-bill-description" label="After TDS amount">{afterTDSAmount}</Descriptions.Item>
                                 </Descriptions>
-                            
+
                                 <Descriptions>
                                     <Descriptions.Item className="purchase-bill-description highlight-text" label="Discount">{totalSGST}</Descriptions.Item>
                                 </Descriptions>
-                            
+
                             </Col>
 
                             <Row>
@@ -1601,9 +1601,9 @@ const AddGeneralPurchaseEntry = () => {
                                     </Form.Item>
                                 </Col>
                                 <Col span={24}>
-                                    <Form.Item 
+                                    <Form.Item
                                         label="Do you want to create Entry in Passbook Statement?"
-                                        name = "create_passbook_entry"
+                                        name="create_passbook_entry"
                                     >
                                         <Controller
                                             control={control}
