@@ -22,8 +22,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { SALARY_TYPE_LIST, USER_ROLES } from "../../../constants/userRole";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
@@ -40,10 +40,10 @@ function EmployeeList() {
   const debouncedSearch = useDebounce(search, 500);
   const debouncedSalaryType = useDebounce(salaryType, 500);
   const debouncedStatus = useDebounce(status, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: [
@@ -112,20 +112,35 @@ function EmployeeList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.empoloyeeList?.rows?.map((user) => {
       const { id, first_name, last_name, mobile, username } = user;
       return [id, first_name, last_name, mobile, username];
     });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "First Name", "Last Name", "Contact No", "Username"]],
-      leftContent,
-      rightContent,
-      title: "Employee List",
-    });
+    let tableTitle = [
+      "ID",
+      "First Name",
+      "Last Name",
+      "Contact No",
+      "Username",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Employee List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "First Name", "Last Name", "Contact No", "Username"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Employee List",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -133,7 +148,7 @@ function EmployeeList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Username",
@@ -144,9 +159,8 @@ function EmployeeList() {
       title: "Employee name",
       dataIndex: "first_name",
       key: "first_name",
-      render: (text, record) => (
-        `${record?.first_name} ${record?.last_name} | ( ${record?.username} )`
-      )
+      render: (text, record) =>
+        `${record?.first_name} ${record?.last_name} | ( ${record?.username} )`,
     },
     {
       title: "Employee Type",

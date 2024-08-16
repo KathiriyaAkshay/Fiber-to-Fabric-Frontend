@@ -11,8 +11,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext } from "react";
@@ -21,11 +21,11 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 const roleId = USER_ROLES.ACCOUNTANT_USER.role_id;
 
 function AccountantUserList() {
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: [
@@ -81,22 +81,39 @@ function AccountantUserList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.accountantUserList?.rows?.map((user) => {
       const { id, first_name, last_name, mobile, email, address } = user;
       return [id, first_name, last_name, mobile, email, address];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        ["ID", "First Name", "Last Name", "Contact No", "Email", "Address"],
-      ],
-      leftContent,
-      rightContent,
-      title: "Accountant Users List",
-    });
+    const tableTitle = [
+      "ID",
+      "First Name",
+      "Last Name",
+      "Contact No",
+      "Email",
+      "Address",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Supervisor List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     ["ID", "First Name", "Last Name", "Contact No", "Email", "Address"],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Accountant Users List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -104,12 +121,12 @@ function AccountantUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
-      title: "Username", 
-      dataIndex: "username"
-    }, 
+      title: "Username",
+      dataIndex: "username",
+    },
     {
       title: "Name",
       render: (userDetails) => {
@@ -132,9 +149,7 @@ function AccountantUserList() {
       title: "Salary",
       dataIndex: "salary",
       key: "address",
-      render: (text, record) => (
-        `₹${text}`
-      )
+      render: (text) => `₹${text}`,
     },
     {
       title: "Action",
@@ -149,7 +164,7 @@ function AccountantUserList() {
           pancard_no,
           adhar_no,
           address,
-          salary
+          salary,
         } = userDetails;
         return (
           <Space>
@@ -164,7 +179,7 @@ function AccountantUserList() {
                 { title: "PAN No", value: pancard_no },
                 { title: "Adhaar No", value: adhar_no },
                 { title: "Address", value: address },
-                { title: "Salary", value:`₹${salary}`}
+                { title: "Salary", value: `₹${salary}` },
               ]}
             />
             <Button

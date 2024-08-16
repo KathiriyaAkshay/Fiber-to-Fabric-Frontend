@@ -10,18 +10,18 @@ import {
   Spin,
   Space,
 } from "antd";
-import { EditOutlined, FileOutlined, FilePdfOutlined, LockFilled } from "@ant-design/icons";
+import { EditOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import useDebounce from "../../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
 import { getPruchaseReturnListRequest } from "../../../../api/requests/purchase/purchaseReturn";
@@ -43,8 +43,8 @@ const PurchaseReturnList = () => {
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
 
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const {
@@ -127,18 +127,74 @@ const PurchaseReturnList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = purchaseReturnList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = purchaseReturnList?.rows?.map((item, index) => {
+      const {
+        createdAt,
+        purchase_taka_challan: {
+          challan_no,
+          inhouse_quality,
+          gray_order,
+          supplier,
+          total_taka,
+          total_meter,
+          createdAt: createdAt2,
+        },
+      } = item;
+      return [
+        index + 1,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        challan_no,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        gray_order.order_no,
+        supplier.supplier_name,
+        supplier.supplier_company,
+        total_meter,
+        total_taka,
+        dayjs(createdAt2).format("DD-MM-YYYY"),
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Challan Date",
+      "Challan/Bill No",
+      "Quality",
+      "Order Code",
+      "Supplier Name",
+      "Supplier Company",
+      "Total Meter",
+      "Total Taka",
+      "Date",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Purchased Return");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Challan Date",
+    //       "Challan/Bill No",
+    //       "Quality",
+    //       "Order Code",
+    //       "Supplier Name",
+    //       "Supplier Company",
+    //       "Total Meter",
+    //       "Total Taka",
+    //       "Date",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Purchased Return",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -156,24 +212,23 @@ const PurchaseReturnList = () => {
     },
     {
       title: "Challan No",
-      dataIndex: "challan_no",
+      dataIndex: ["purchase_taka_challan", "challan_no"],
       key: "challan_no",
     },
     {
       title: "Quality",
-      dataIndex: ["inhouse_quality"],
-      key: ["inhouse_quality"],
-      render: (quality) =>
-        `${quality?.quality_name} (${quality?.quality_weight})`,
+      dataIndex: ["purchase_taka_challan", "inhouse_quality"],
+      key: "inhouse_quality",
+      render: (text) => `${text?.quality_name} (${text?.quality_weight})`,
     },
     {
       title: "Order No",
-      dataIndex: "order_no",
+      dataIndex: ["purchase_taka_challan", "gray_order", "order_no"],
       key: "order_no",
     },
     {
       title: "Supplier Name",
-      dataIndex: "supplier",
+      dataIndex: ["purchase_taka_challan", "supplier"],
       key: "supplier",
       render: (supplier) => `${supplier?.supplier_name}`,
     },
@@ -184,8 +239,7 @@ const PurchaseReturnList = () => {
     },
     {
       title: "Return Meter",
-      dataIndex: "return_meter",
-      key: "return_meter",
+      render: (details) => details?.purchase_taka_challan?.total_meter,
     },
     {
       title: "Total Taka",
@@ -209,7 +263,7 @@ const PurchaseReturnList = () => {
             >
               <EditOutlined />
             </Button>
-            <DebitNote/>
+            <DebitNote />
             <DeleteReworkChallan details={details} />
           </Space>
         );

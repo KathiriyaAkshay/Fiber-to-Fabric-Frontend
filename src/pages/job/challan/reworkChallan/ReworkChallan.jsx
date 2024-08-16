@@ -21,16 +21,12 @@ import { useNavigate } from "react-router-dom";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getReworkChallanListRequest } from "../../../../api/requests/job/challan/reworkChallan";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import useDebounce from "../../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
 import ViewReworkChallanInfo from "../../../../components/job/challan/reworkChallan/ViewReworkChallan";
@@ -53,8 +49,8 @@ const ReworkChallan = () => {
   const debouncedChallanNo = useDebounce(challanNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
 
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const [reworkChallanModal, setReworkChallanModal] = useState({
@@ -173,18 +169,45 @@ const ReworkChallan = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = reworkChallanList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = reworkChallanList?.rows?.map((item, index) => {
+      const { challan_no, createdAt } = item;
+      return [
+        index + 1,
+        "***",
+        "***",
+        "***",
+        challan_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        "***",
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "GSTIN of job worker (JW)",
+      "State",
+      "Job Worker Type",
+      "Challan No",
+      "Challan Date",
+      "Type of Goods",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Rework Challan List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Challan NO"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Job Taka List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -238,32 +261,24 @@ const ReworkChallan = () => {
       dataIndex: "wastageInKg",
       key: "wastageInKg",
       render: (text, record) => {
-        let received_meter = Number(record?.taka_receive_meter) ; 
-        let total_meter = Number(record?.total_meter) ; 
-        
-        let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ; 
-        return(
-          <div>
-            {wastage_kg.toFixed(2)}
-          </div>
-        )
-      }
+        let received_meter = Number(record?.taka_receive_meter);
+        let total_meter = Number(record?.total_meter);
+
+        let wastage_kg = 100 - Number(received_meter * 100) / total_meter;
+        return <div>{wastage_kg.toFixed(2)}</div>;
+      },
     },
     {
       title: "Short(%)",
       dataIndex: "shortPercentage",
       key: "shortPercentage",
       render: (text, record) => {
-        let received_meter = Number(record?.taka_receive_meter) ; 
-        let total_meter = Number(record?.total_meter) ; 
-        let shoratge_precentage = (total_meter - received_meter)*100 / total_meter ; 
-        return(
-          <div>
-            {shoratge_precentage.toFixed(2)}
-          </div>
-        ) 
-
-      }
+        let received_meter = Number(record?.taka_receive_meter);
+        let total_meter = Number(record?.total_meter);
+        let shoratge_precentage =
+          ((total_meter - received_meter) * 100) / total_meter;
+        return <div>{shoratge_precentage.toFixed(2)}</div>;
+      },
     },
     {
       title: "Bill Status",
@@ -280,8 +295,8 @@ const ReworkChallan = () => {
           {billStatus?.toString()?.toLowerCase() === "pending"
             ? "Pending"
             : billStatus?.toString()?.toLowerCase() === "confirmed"
-              ? "Confirmed"
-              : "-"}
+            ? "Confirmed"
+            : "-"}
         </Tag>
       ),
     },
@@ -301,7 +316,7 @@ const ReworkChallan = () => {
         return (
           <Space>
             <ViewReworkChallanInfo details={details} />
-            
+
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -309,11 +324,12 @@ const ReworkChallan = () => {
             >
               <EditOutlined />
             </Button>
-            
-            {Number(details?.total_meter) != Number(details?.   taka_receive_meter) && (
+
+            {Number(details?.total_meter) !=
+              Number(details?.taka_receive_meter) && (
               <DeleteReworkChallan details={details} />
             )}
-            
+
             <Button
               onClick={() => {
                 let MODE;
@@ -361,8 +377,8 @@ const ReworkChallan = () => {
           onChange: onPageChange,
         }}
         summary={() => {
-          if (reworkChallanList?.rows?.length == 0) return ; 
-          return(
+          if (reworkChallanList?.rows?.length == 0) return;
+          return (
             <>
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
@@ -384,7 +400,7 @@ const ReworkChallan = () => {
                 <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );

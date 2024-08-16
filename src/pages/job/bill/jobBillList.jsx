@@ -3,7 +3,6 @@ import {
   DatePicker,
   Flex,
   Input,
-  Radio,
   Select,
   Space,
   Spin,
@@ -16,8 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
@@ -27,10 +26,10 @@ import dayjs from "dayjs";
 import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
 
 const JobBillList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
 
-  const [state, setState] = useState("current");
+  // const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [isPaid, setIsPaid] = useState();
@@ -46,7 +45,7 @@ const JobBillList = () => {
   const debouncedIsPaid = useDebounce(isPaid, 500);
   const debouncedQuality = useDebounce(quality, 500);
   //   const debouncedCompanyFilter = useDebounce(companyFilter, 500);
-  const debouncedState = useDebounce(state, 500);
+  // const debouncedState = useDebounce(state, 500);
   const debouncedBillNo = useDebounce(billNo, 500);
   const debouncedOrderNo = useDebounce(orderNo, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
@@ -144,18 +143,61 @@ const JobBillList = () => {
   });
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = jobTakaBillList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = jobTakaBillList?.rows?.map((item, index) => {
+      const {
+        challan_no,
+        supplier,
+        gray_order,
+        createdAt,
+        inhouse_quality,
+        job_taka_bill,
+        total_taka,
+        total_meter,
+      } = item;
+      return [
+        index + 1,
+        challan_no,
+        supplier.supplier_name,
+        gray_order.order_no,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        total_taka,
+        total_meter,
+        job_taka_bill.rate,
+        job_taka_bill.amount,
+        job_taka_bill.net_amount,
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Bill No",
+      "Supplier Name",
+      "Order No",
+      "Bill Date",
+      "Quality",
+      "Total Taka",
+      "Total Meter",
+      "Rate",
+      "Amount",
+      "Net Amount",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Job Bill List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Challan NO"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Job Bill List",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -314,7 +356,7 @@ const JobBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
           <Radio.Group
             name="filter"
             value={state}
@@ -325,7 +367,7 @@ const JobBillList = () => {
               <Radio value={"previous"}> Previous </Radio>
             </Flex>
           </Radio.Group>
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">

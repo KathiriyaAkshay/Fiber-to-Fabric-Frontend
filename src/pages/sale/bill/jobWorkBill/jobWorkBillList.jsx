@@ -1,18 +1,20 @@
 import { useState } from "react";
 import { Button, Flex, Space, Spin, Table, Tag } from "antd";
-import { FileExcelFilled, FilePdfFilled, FileTextOutlined } from "@ant-design/icons";
+import {
+  FileExcelFilled,
+  FilePdfFilled,
+  FileTextOutlined,
+} from "@ant-design/icons";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import {
-  saleJobWorkChallanListRequest,
-} from "../../../../api/requests/sale/challan/challan";
+import { saleJobWorkChallanListRequest } from "../../../../api/requests/sale/challan/challan";
 import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork/JobSaleChallan";
 import dayjs from "dayjs";
 import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
 const JobWorkBillList = () => {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -43,7 +45,7 @@ const JobWorkBillList = () => {
         page,
         pageSize,
         end: financialYearEnd,
-        bill_status: "confirmed"
+        bill_status: "confirmed",
       },
     ],
     queryFn: async () => {
@@ -54,7 +56,7 @@ const JobWorkBillList = () => {
           page,
           pageSize,
           end: financialYearEnd,
-          bill_status: "confirmed"
+          bill_status: "confirmed",
         },
       });
       return res.data?.data;
@@ -103,11 +105,7 @@ const JobWorkBillList = () => {
     {
       title: "Rate",
       dataIndex: ["job_work_bill"],
-      render: (text) => (
-        <>
-          {text?.rate}
-        </>
-      ),
+      render: (text) => <>{text?.rate}</>,
     },
     {
       title: "Amount",
@@ -125,12 +123,8 @@ const JobWorkBillList = () => {
         const date1 = new Date(record?.createdAt);
         const date2 = new Date(record?.job_work_bill?.due_date);
         const difference = date2 - date1;
-        return (
-          <div>
-            {difference}
-          </div>
-        )
-      }
+        return <div>{difference}</div>;
+      },
     },
     {
       title: "Bill Status",
@@ -171,87 +165,86 @@ const JobWorkBillList = () => {
 
   const DownloadOption = async (option) => {
     const tableTitle = [
-      "No", 
-      "Bill Date", 
-      "Challan No", 
-      "Party Name", 
-      "Dennier", 
-      "HSN No", 
-      "Kg", 
-      "Rate", 
-      "Amount", 
-      "SGST", 
-      "CGST", 
-      "IGST", 
-      "Net Amount"
+      "No",
+      "Bill Date",
+      "Challan No",
+      "Party Name",
+      "Dennier",
+      "HSN No",
+      "Kg",
+      "Rate",
+      "Amount",
+      "SGST",
+      "CGST",
+      "IGST",
+      "Net Amount",
     ];
 
-    let temp = [] ;
-    let totalKG = 0; 
+    let temp = [];
+    let totalKG = 0;
     let totalAmount = 0;
-    let totalNetAmount = 0 ;
+    let totalNetAmount = 0;
 
     saleJobWorkChallanListData?.list?.map((element, index) => {
-      totalKG = totalKG + Number(element?.kg) ; 
-      totalAmount = totalAmount + Number(element?.job_work_bill?.amount) ; 
-      totalNetAmount = totalNetAmount + Number(element?.job_work_bill?.net_amount) ; 
+      totalKG = totalKG + Number(element?.kg);
+      totalAmount = totalAmount + Number(element?.job_work_bill?.amount);
+      totalNetAmount =
+        totalNetAmount + Number(element?.job_work_bill?.net_amount);
 
       temp.push([
-        index + 1, 
-        moment(element?.bill_date).format("DD-MM-YYYY"), 
-        element?.challan_no, 
+        index + 1,
+        moment(element?.bill_date).format("DD-MM-YYYY"),
+        element?.challan_no,
         element?.supplier?.supplier_company,
         `${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F - ( ${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.yarn_color} )`,
-        element?.yarn_stock_company?.hsn_no, 
-        element?.kg, 
+        element?.yarn_stock_company?.hsn_no,
+        element?.kg,
         element?.job_work_bill?.rate,
-        element?.job_work_bill?.amount, 
-        element?.job_work_bill?.SGST_amount, 
-        element?.job_work_bill?.CGST_amount, 
-        element?.job_work_bill?.IGST_amount, 
-        element?.job_work_bill?.net_amount
-      ]) ; 
+        element?.job_work_bill?.amount,
+        element?.job_work_bill?.SGST_amount,
+        element?.job_work_bill?.CGST_amount,
+        element?.job_work_bill?.IGST_amount,
+        element?.job_work_bill?.net_amount,
+      ]);
 
       let total = [
-        "", 
-        "", 
-        "", 
-        "", 
-        "", 
-        "", 
-        totalKG, 
-        "", 
-        totalAmount, 
-        "", 
-        "", 
-        "", 
-        totalNetAmount
-      ] ;
-      
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        totalKG,
+        "",
+        totalAmount,
+        "",
+        "",
+        "",
+        totalNetAmount,
+      ];
+
       localStorage.setItem("print-title", "Job Work Bill List");
       localStorage.setItem("print-head", JSON.stringify(tableTitle));
       localStorage.setItem("print-array", JSON.stringify(temp));
       localStorage.setItem("total-count", "1");
       localStorage.setItem("total-data", JSON.stringify(total));
 
-      if (option == "pdf"){
-        window.open("/print") ; 
+      if (option == "pdf") {
+        window.open("/print");
       } else {
         let data = [tableTitle, ...temp, total];
         let worksheet = XLSX.utils.aoa_to_sheet(data);
-        let workbook = XLSX.utils.book_new(); 
-        
+        let workbook = XLSX.utils.book_new();
+
         XLSX.utils.book_append_sheet(workbook, worksheet, "Job work");
-        
+
         // Export to Excel file
         const dateString = moment().format("YYYY-MMD-D_HH:mm:ss");
         const fileName = `job_work_${dateString}.xlsx`;
         XLSX.writeFile(workbook, fileName);
       }
-      
-    })
-
-  }
+    });
+  };
 
   function renderTable() {
     if (isLoadingSaleJobWorkData) {
@@ -284,16 +277,20 @@ const JobWorkBillList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell>{saleJobWorkChallanListData?.total_kg || 0}</Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {saleJobWorkChallanListData?.total_kg || 0}
+                </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell>{saleJobWorkChallanListData?.total_amount || 0}</Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {saleJobWorkChallanListData?.total_amount || 0}
+                </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );
@@ -309,17 +306,19 @@ const JobWorkBillList = () => {
             <Flex align="center" gap={10}>
               <Button
                 type="primary"
-                icon = {<FilePdfFilled/>}
+                icon={<FilePdfFilled />}
+                disabled={!saleJobWorkChallanListData.list.length}
                 onClick={() => {
-                  DownloadOption("pdf")
+                  DownloadOption("pdf");
                 }}
               />
             </Flex>
             <Flex align="center" gap={10}>
               <Button
-                icon = {<FileExcelFilled/>}
+                icon={<FileExcelFilled />}
+                disabled={!saleJobWorkChallanListData.list.length}
                 onClick={() => {
-                  DownloadOption("excel")
+                  DownloadOption("excel");
                 }}
               />
             </Flex>

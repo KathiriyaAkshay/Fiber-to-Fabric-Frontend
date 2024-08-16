@@ -22,15 +22,15 @@ import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
 import SaleBillComp from "../../../../components/sale/bill/saleBillComp";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
 import { useQuery } from "@tanstack/react-query";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import useDebounce from "../../../../hooks/useDebounce";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { ORDER_TYPE } from "../../../../constants/orderMaster";
 import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
@@ -38,8 +38,8 @@ import dayjs from "dayjs";
 import DeleteSaleBill from "../../../../components/sale/bill/DeleteSaleBill";
 
 const SaleBillList = () => {
-  const { company, companyId, companyListRes } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   const [saleBillChallanModel, setSaleBillChallanModel] = useState({
@@ -75,7 +75,7 @@ const SaleBillList = () => {
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
-  const debouncePayment = useDebounce(payment, 500) ; 
+  const debouncePayment = useDebounce(payment, 500);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -90,30 +90,31 @@ const SaleBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } = useQuery({
-    queryKey: [
-      "dropDownQualityListRes",
-      "list",
-      {
-        company_id: companyId,
-        page: 0,
-        pageSize: 9999,
-        is_active: 1,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getInHouseQualityListRequest({
-        params: {
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
           company_id: companyId,
           page: 0,
           pageSize: 9999,
           is_active: 1,
         },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: SaleBillList, isLoading } = useQuery({
     queryKey: [
@@ -127,7 +128,7 @@ const SaleBillList = () => {
         fromBill: debouncedFromDate,
         toBill: debouncedToDate,
         quality_id: debouncedQuality,
-        is_paid: debouncePayment
+        is_paid: debouncePayment,
       },
     ],
     queryFn: async () => {
@@ -139,31 +140,113 @@ const SaleBillList = () => {
           fromBill: debouncedFromDate,
           toBill: debouncedToDate,
           quality_id: debouncedQuality,
-          is_paid: debouncePayment
+          is_paid: debouncePayment,
         },
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
+  console.log({ SaleBillList });
 
   function navigateToAdd() {
     navigate("/sales/bill/sales-bill-list/add");
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = SaleBillList?.saleBill?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = SaleBillList?.SaleBill?.map((item, index) => {
+      const {
+        createdAt,
+        invoice_no,
+        party,
+        inhouse_quality,
+        due_days,
+        total_meter,
+        total_taka,
+        rate,
+        amount,
+        net_amount,
+        is_paid,
+        discount_amount,
+      } = item;
+
+      let dueDate = new Date(createdAt);
+      dueDate.setDate(dueDate.getDate() + due_days);
+
+      return [
+        index + 1,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        invoice_no,
+        "***",
+        `${party.first_name} ${party.last_name}`,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight})KG`,
+        "hsn no",
+        total_taka,
+        total_meter,
+        rate,
+        amount,
+        discount_amount,
+        amount - discount_amount,
+        net_amount,
+        dayjs(dueDate).format("DD-MM-YYYY"),
+        is_paid ? "Paid" : "Un-Paid",
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Date",
+      "Bill No",
+      "Order No",
+      "Party Name",
+      "Quality",
+      "HSN No",
+      "Total Taka",
+      "Total Meter",
+      "Rate",
+      "Amount",
+      "Discount",
+      "After Dis Amt",
+      "Net Amount",
+      "Due Date",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Bill Invoice List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Date",
+    //       "Bill No",
+    //       "Order No",
+    //       "Party Name",
+    //       "Quality",
+    //       "HSN No",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "Rate",
+    //       "Amount",
+    //       "Discount",
+    //       "After Dis Amt",
+    //       "Net Amount",
+    //       "Due Date",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Bill Invoice List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -227,10 +310,8 @@ const SaleBillList = () => {
       render: (text, record) => {
         let result = new Date(record?.createdAt);
         result.setDate(result.getDate() + record?.due_days);
-        return(
-          <div>{dayjs(result).format("DD-MM-YYYY")}</div>
-        )
-      }
+        return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
+      },
     },
     {
       title: "Due Days",

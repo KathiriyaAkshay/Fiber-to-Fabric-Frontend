@@ -21,7 +21,6 @@ import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
-  PrinterFilled,
 } from "@ant-design/icons";
 import {
   deleteProductionRequest,
@@ -36,8 +35,8 @@ import ViewProductionDetailModal from "../../components/production/ViewProductio
 import DeleteProduction from "../../components/production/DeleteProduction";
 import ProductionQrModal from "../../components/production/ProductionQrModal";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../api/hooks/auth";
 import useDebounce from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
 import { getCurrentFinancialYearDates } from "../../utils/date";
@@ -46,8 +45,8 @@ import dayjs from "dayjs";
 const InhouseProduction = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { companyId, company } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const financialYearData = getCurrentFinancialYearDates();
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
@@ -238,7 +237,7 @@ const InhouseProduction = () => {
   };
 
   const downloadPdf = () => {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     let body = [];
     productionList?.rows?.forEach((item, index) => {
       const {
@@ -270,27 +269,49 @@ const InhouseProduction = () => {
       }
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Taka No",
-          "Meter",
-          "Weight",
-          "Machine No",
-          "Average",
-          "Status",
-          "Beam",
-          "Quality",
-          "Challan No",
-          "Party",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Inhouse Production List",
-    });
+    const tableTitle = [
+      "ID",
+      "Taka No",
+      "Meter",
+      "Weight",
+      "Machine No",
+      "Average",
+      "Status",
+      "Beam",
+      "Quality",
+      "Challan No",
+      "Party",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Inhouse Production List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Taka No",
+    //       "Meter",
+    //       "Weight",
+    //       "Machine No",
+    //       "Average",
+    //       "Status",
+    //       "Beam",
+    //       "Quality",
+    //       "Challan No",
+    //       "Party",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Inhouse Production List",
+    // });
+
+    window.open("/print");
   };
 
   const columns = [
@@ -765,7 +786,11 @@ const InhouseProduction = () => {
         </Flex>
       </div>
 
-      <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+      <div
+        className={`flex items-center ${
+          selectedRecords.length ? "justify-between" : "justify-end"
+        } gap-5 mx-3 mb-3`}
+      >
         {selectedRecords.length ? (
           <Flex gap={12} justify="space-between">
             <Button
@@ -787,65 +812,68 @@ const InhouseProduction = () => {
             </Button>
           </Flex>
         ) : null}
-        <Flex align="center" gap={10}>
-          <Typography.Text className="whitespace-nowrap">
-            Challan No:
-          </Typography.Text>
-          <Input
-            value={challanNo}
-            onChange={(e) => {
-              setChallanNo(e.target.value);
-            }}
-            placeholder="Challan No"
-          />
-        </Flex>
 
-        <Flex
-          align="center"
-          gap={10}
-          style={{
-            border: "1px solid #efefef",
-            padding: "10px",
-            borderRadius: "5px",
-          }}
-        >
-          <Flex align="center" gap={1}>
+        <Flex gap={12}>
+          <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
-              Beam No
+              Challan No:
             </Typography.Text>
             <Input
-              placeholder="Beam No"
-              value={beamNo}
+              value={challanNo}
               onChange={(e) => {
-                setBeamNo(e.target.value);
+                setChallanNo(e.target.value);
               }}
-              style={{ width: "150px", marginLeft: "10px" }}
+              placeholder="Challan No"
             />
           </Flex>
-        </Flex>
 
-        <Flex align="center" gap={10}>
-          <Button
-            icon={<FilePdfOutlined />}
-            type="primary"
-            disabled={!productionList?.rows?.length}
-            onClick={downloadPdf}
-            className="flex-none"
-          />
-          <Button
+          <Flex
+            align="center"
+            gap={10}
+            style={{
+              border: "1px solid #efefef",
+              padding: "10px",
+              borderRadius: "5px",
+            }}
+          >
+            <Flex align="center" gap={1}>
+              <Typography.Text className="whitespace-nowrap">
+                Beam No
+              </Typography.Text>
+              <Input
+                placeholder="Beam No"
+                value={beamNo}
+                onChange={(e) => {
+                  setBeamNo(e.target.value);
+                }}
+                style={{ width: "150px", marginLeft: "10px" }}
+              />
+            </Flex>
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Button
+              icon={<FilePdfOutlined />}
+              type="primary"
+              disabled={!productionList?.rows?.length}
+              onClick={downloadPdf}
+              className="flex-none"
+            />
+            {/* <Button
             icon={<PrinterFilled />}
             type="primary"
             disabled={!productionList?.rows?.length}
             onClick={downloadPdf}
             className="flex-none"
-          />
-          <Button
-            type="primary"
-            disabled={!productionList?.rows?.length}
-            className="flex-none"
-          >
-            Summary
-          </Button>
+          /> */}
+            <Button
+              type="primary"
+              disabled={!productionList?.rows?.length}
+              className="flex-none"
+            >
+              Summary
+            </Button>
+          </Flex>
         </Flex>
       </div>
 

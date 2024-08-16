@@ -100,7 +100,7 @@ function SupervisorList() {
       return [id, first_name, last_name, adhar_no, mobile, email];
     });
 
-    let tableTitle = [
+    const tableTitle = [
       "ID",
       "First Name",
       "Last Name",

@@ -21,15 +21,15 @@ import {
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
 import { useQuery } from "@tanstack/react-query";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import useDebounce from "../../../../hooks/useDebounce";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { useNavigate } from "react-router-dom";
 import { ORDER_TYPE } from "../../../../constants/orderMaster";
 import dayjs from "dayjs";
@@ -40,8 +40,8 @@ import DeleteJobGrayBill from "../../../../components/sale/bill/DeleteJobGrayBil
 import moment from "moment";
 
 const JobGrayList = () => {
-  const { company, companyId, companyListRes } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   const [jobGraySaleBillChallanModel, setJobGraySaleBillChallanModel] =
@@ -157,18 +157,102 @@ const JobGrayList = () => {
   // }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = JobGrayBillList?.jobGraySaleBill?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = JobGrayBillList?.jobGraySaleBill?.map((item, index) => {
+      const {
+        createdAt,
+        invoice_no,
+        party,
+        inhouse_quality,
+        total_meter,
+        total_taka,
+        amount,
+        rate,
+        discount_amount,
+        net_amount,
+        due_days,
+        is_paid,
+        hsn_no,
+      } = item;
+
+      let initialDate = new Date(createdAt);
+      let daysToAdd = due_days;
+      let dueDate = new Date(initialDate);
+      dueDate.setDate(initialDate.getDate() + daysToAdd);
+
+      return [
+        index + 1,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        invoice_no,
+        "****",
+        `${party.first_name} ${party.last_name}`,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        hsn_no,
+        total_taka,
+        total_meter,
+        rate,
+        amount,
+        discount_amount,
+        amount - discount_amount,
+        net_amount,
+        dayjs(dueDate).format("DD-MM-YYYY"),
+        is_paid ? "Paid" : "Un-Paid",
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Date",
+      "Bill No",
+      "Order No",
+      "Party Name",
+      "Quality",
+      "HSN No",
+      "Total Taka",
+      "Total Meter",
+      "Rate",
+      "Amount",
+      "Discount",
+      "After Dis Amt",
+      "Net Amount",
+      "Due Date",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Bill Invoice List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Date",
+    //       "Bill No",
+    //       "Order No",
+    //       "Party Name",
+    //       "Quality",
+    //       "HSN No",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "Rate",
+    //       "Amount",
+    //       "Discount",
+    //       "After Dis Amt",
+    //       "Net Amount",
+    //       "Due Date",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Bill Invoice List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

@@ -11,8 +11,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
@@ -24,10 +24,10 @@ const roleId = USER_ROLES.COLLECTION_USER.role_id;
 function CollectionUserList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: [
@@ -88,7 +88,7 @@ function CollectionUserList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.collectionUserList?.rows?.map((user) => {
       const { id, first_name, last_name, mobile, email, address, salary } =
@@ -96,23 +96,41 @@ function CollectionUserList() {
       return [id, first_name, last_name, mobile, email, address, salary];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "First Name",
-          "Last Name",
-          "Contact No",
-          "Email",
-          "Address",
-          "Salary",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Collection Users List",
-    });
+    const tableTitle = [
+      "ID",
+      "First Name",
+      "Last Name",
+      "Contact No",
+      "Email",
+      "Address",
+      "Salary",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Collection Users List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "First Name",
+    //       "Last Name",
+    //       "Contact No",
+    //       "Email",
+    //       "Address",
+    //       "Salary",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Collection Users List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -120,7 +138,7 @@ function CollectionUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Username",
@@ -149,9 +167,7 @@ function CollectionUserList() {
       title: "Salary",
       dataIndex: "salary",
       key: "salary",
-      render: (text, record) => (
-        `₹${record?.salary}`
-      )
+      render: (text, record) => `₹${record?.salary}`,
     },
     {
       title: "Address",

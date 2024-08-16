@@ -166,9 +166,9 @@ const PrintBeamSaleChallan = ({ details }) => {
             </Row>
             {details?.beam_sale_details.map((item, index) => {
               const obj =
-                item.loaded_beam.non_pasarela_beam_detail ||
-                item.loaded_beam.recieve_size_beam_detail ||
-                item.loaded_beam.job_beam_receive_detail;
+                item?.loaded_beam?.non_pasarela_beam_detail ||
+                item?.loaded_beam?.recieve_size_beam_detail ||
+                item?.loaded_beam?.job_beam_receive_detail;
               return (
                 <Row
                   key={index}

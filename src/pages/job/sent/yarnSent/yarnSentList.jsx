@@ -33,11 +33,11 @@ import {
   getDropdownSupplierListRequest,
   // getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import DeleteYarnSent from "../../../../components/job/yarnSent/DeleteYarnSent";
 const { Title, Text } = Typography;
 import ReactToPrint from "react-to-print";
@@ -45,7 +45,7 @@ import moment from "moment";
 
 const YarnSentList = () => {
   const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -151,7 +151,7 @@ const YarnSentList = () => {
         supplier_id: debouncedSupplierCompany,
         quality_id: debouncedQuality,
         search: debouncedSearch,
-        supplier_name: debouncedSupplier
+        supplier_name: debouncedSupplier,
         // party_id: debouncedParty,
       },
     ],
@@ -164,7 +164,7 @@ const YarnSentList = () => {
           supplier_id: debouncedSupplierCompany,
           quality_id: debouncedQuality,
           search: debouncedSearch,
-          supplier_name: debouncedSupplier
+          supplier_name: debouncedSupplier,
           // party_id: debouncedParty,
         },
       });
@@ -182,72 +182,59 @@ const YarnSentList = () => {
   }
 
   function downloadPdf() {
-
     const tableTitle = [
-      "No", 
-      "Date", 
-      "Challan No", 
-      "Party Name", 
-      "Company Name", 
-      "Cartoon", 
-      "Kg"
-    ]; 
+      "No",
+      "Date",
+      "Challan No",
+      "Party Name",
+      "Company Name",
+      "Cartoon",
+      "Kg",
+    ];
 
-    let temp = [] ; 
-    let total_cartoon = 0 ; 
-    let total_kg = 0 ; 
+    let temp = [];
+    let total_cartoon = 0;
+    let total_kg = 0;
 
     jobYarnSentList?.rows?.map((element, index) => {
       let normalStr = element.company.company_name.replace(/_/g, " ");
       normalStr = normalStr
-      .split(" ")
-      .map((word) => {
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join(" ");
+        .split(" ")
+        .map((word) => {
+          return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
+        .join(" ");
 
       let temp_cartoon = 0;
-      let temp_kg = 0 ; 
+      let temp_kg = 0;
       element?.job_yarn_sent_details?.map((data) => {
         total_cartoon = total_cartoon + Number(data?.cartoon);
         temp_cartoon = temp_cartoon + Number(data?.cartoon);
 
-        total_kg = total_kg + Number(data?.kg) ; 
-        temp_kg = temp_kg + Number(data?.kg) ; 
-      })
-
+        total_kg = total_kg + Number(data?.kg);
+        temp_kg = temp_kg + Number(data?.kg);
+      });
 
       temp.push([
         index + 1,
-        moment(element?.sent_date).format("DD-MM-YYYY"), 
-        element?.challan_no, 
-        element?.supplier?.supplier_name, 
-        normalStr, 
-        temp_cartoon, 
-        temp_kg
-      ]); 
+        moment(element?.sent_date).format("DD-MM-YYYY"),
+        element?.challan_no,
+        element?.supplier?.supplier_name,
+        normalStr,
+        temp_cartoon,
+        temp_kg,
+      ]);
+    });
 
-    })
-    ; 
-    
-    let total = [
-      "", 
-      "", 
-      "", 
-      "", 
-      "", 
-      total_cartoon, 
-      total_kg
-    ]
+    let total = ["", "", "", "", "", total_cartoon, total_kg];
 
-    localStorage.setItem("print-title", "Yarn sent List") ; 
-    localStorage.setItem("print-head", JSON.stringify(tableTitle)) ; 
-    localStorage.setItem("print-array", JSON.stringify(temp)) ; 
-    localStorage.setItem("total-count", "1") ; 
-    localStorage.setItem("total-data", JSON.stringify(total)) ; 
+    localStorage.setItem("print-title", "Yarn sent List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("print-array", JSON.stringify(temp));
+    localStorage.setItem("total-count", "1");
+    localStorage.setItem("total-data", JSON.stringify(total));
 
-    window.open("/print") ; 
-
+    window.open("/print");
 
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
@@ -652,7 +639,10 @@ const ViewYarnSentDetailsModal = ({
           },
         }}
       >
-        <div ref={componentRef} style={{marginLeft: "1px", marginRight: "1px", width: "100%"}}>
+        <div
+          ref={componentRef}
+          style={{ marginLeft: "1px", marginRight: "1px", width: "100%" }}
+        >
           <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
