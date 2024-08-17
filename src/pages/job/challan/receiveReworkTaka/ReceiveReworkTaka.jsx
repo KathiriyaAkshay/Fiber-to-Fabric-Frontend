@@ -10,19 +10,14 @@ import {
   Spin,
   Space,
 } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import useDebounce from "../../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
 import { getReceiveReworkTakaListRequest } from "../../../../api/requests/job/challan/receiveReworkTaka";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import dayjs from "dayjs";
@@ -44,8 +39,7 @@ const ReceiveReworkTaka = () => {
   const debouncedSearch = useDebounce(search, 500);
   const debouncedSupplier = useDebounce(supplier, 500);
 
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const {
@@ -132,21 +126,6 @@ const ReceiveReworkTaka = () => {
   //   function navigateToUpdate(id) {
   //     navigate(`/job/challan/receive-rework-taka/update/${id}`);
   //   }
-
-  function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = receiveReworkTakaList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
-    });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Receive Rework Taka Listt",
-    });
-  }
 
   const columns = [
     {
@@ -381,13 +360,6 @@ const ReceiveReworkTaka = () => {
                 format={"DD-MM-YYYY"}
               />
             </Flex>
-            <Button
-              icon={<FilePdfOutlined />}
-              type="primary"
-              disabled={!receiveReworkTakaList?.rows?.length}
-              onClick={downloadPdf}
-              className="flex-none"
-            />
           </Flex>
         </div>
 

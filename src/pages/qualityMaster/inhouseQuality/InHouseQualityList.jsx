@@ -23,8 +23,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -44,10 +44,10 @@ const InHouseQualityList = () => {
   const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedStatus = useDebounce(status, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -130,7 +130,7 @@ const InHouseQualityList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = inHouseQualityList?.rows?.map((detail, index) => {
       const {
@@ -162,30 +162,55 @@ const InHouseQualityList = () => {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Name",
-          "Group",
-          "Vat HSN No.",
-          "Ceth No.",
-          "From",
-          "To",
-          "Yarn Type",
-          "Wpm",
-          "S",
-          "Z",
-          "Prod Rate",
-          "Maker",
-          "Speaker",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "In House Quality",
-    });
+    const tableTitle = [
+      "ID",
+      "Name",
+      "Group",
+      "Vat HSN No.",
+      "Ceth No.",
+      "From",
+      "To",
+      "Yarn Type",
+      "Wpm",
+      "S",
+      "Z",
+      "Prod Rate",
+      "Maker",
+      "Speaker",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "In House Quality");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Name",
+    //       "Group",
+    //       "Vat HSN No.",
+    //       "Ceth No.",
+    //       "From",
+    //       "To",
+    //       "Yarn Type",
+    //       "Wpm",
+    //       "S",
+    //       "Z",
+    //       "Prod Rate",
+    //       "Maker",
+    //       "Speaker",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "In House Quality",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

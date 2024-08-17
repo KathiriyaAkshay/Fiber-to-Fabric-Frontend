@@ -58,6 +58,10 @@ const UpdateReworkChallan = () => {
   const queryClient = useQueryClient();
 
   const [activeField, setActiveField] = useState(1);
+  const [totalTaka, setTotalTaka] = useState(0);
+  const [totalMeter, setTotalMeter] = useState(0);
+  const [totalReceiveMeter, setTotalReceiveMeter] = useState(0);
+  const [deletedRecords, setDeletedRecords] = useState([]);
 
   const { companyId, companyListRes } = useContext(GlobalContext);
   function goBack() {
@@ -106,14 +110,14 @@ const UpdateReworkChallan = () => {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
     let hasError = 0;
-    let temp = [] ; 
+    let temp = [];
 
     detailArray?.map((field, index) => {
       let taka_no = +data[`taka_no_${field}`];
       let meter = +data[`meter_${field}`];
-      let received_meter = +data[`received_meter_${field}`];
-      let received_weight = +data[`received_weight_${field}`];
-      let short = +data[`short_${field}`];
+      // let received_meter = +data[`received_meter_${field}`];
+      // let received_weight = +data[`received_weight_${field}`];
+      // let short = +data[`short_${field}`];
 
       if ((isNaN(taka_no) || !taka_no) && !isNaN(meter)) {
         message.error("Please, Provide valid taka details");
@@ -131,43 +135,41 @@ const UpdateReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } 
+      }
 
-      if (!isNaN(taka_no) && !isNaN(meter)){
-        temp.push(
-          {
-            index: index + 1,
-            taka_no: +data[`taka_no_${field}`],
-            meter: +data[`meter_${field}`],
-            received_meter: +data[`received_meter_${field}`] || 0,
-            received_weight: +data[`received_weight_${field}`] || 0,
-            short: +data[`short_${field}`] || 100 ,
-          }
-        )
+      if (!isNaN(taka_no) && !isNaN(meter)) {
+        temp.push({
+          index: index + 1,
+          taka_no: +data[`taka_no_${field}`],
+          meter: +data[`meter_${field}`],
+          received_meter: +data[`received_meter_${field}`] || 0,
+          received_weight: +data[`received_weight_${field}`] || 0,
+          short: +data[`short_${field}`] || 100,
+        });
       }
     });
 
     const newData = {
-      createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-      machine_name: data.machine_name,
-      quality_id: +data.quality_id,
-      option: data.option,
-      challan_no: data.challan_no,
-      supplier_id: +data.supplier_id,
+      // createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+      // machine_name: data.machine_name,
+      // quality_id: +data.quality_id,
+      // option: data.option,
+      // challan_no: data.challan_no,
+      // supplier_id: +data.supplier_id,
       vehicle_id: +data.vehicle_id,
-      total_taka: +data.total_taka,
-      total_meter: +data.total_meter,
-      taka_receive_meter: +data.taka_receive_meter,
+      // total_taka: +data.total_taka,
+      // total_meter: +data.total_meter,
+      // taka_receive_meter: +data.taka_receive_meter,
+      total_taka: +totalTaka,
+      total_meter: +totalMeter,
+      // taka_receive_meter: +totalReceiveMeter,
 
-      details: temp
+      details: temp,
+      deleted_rework_taka_ids: deletedRecords.map((item) => item.id),
     };
 
-
-    console.log(newData);
-    
-
     if (hasError === 0) {
-      // await UpdateReworkChallan(newData);
+      await UpdateReworkChallan(newData);
     }
   }
 
@@ -202,7 +204,8 @@ const UpdateReworkChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, company_id, supplier_id, machine_name } = watch();
+  const { supplier_name, company_id, supplier_id, machine_name, quality_id } =
+    watch();
 
   // Machinename dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -230,7 +233,7 @@ const UpdateReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Quality dropdown list 
+  // Quality dropdown list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -261,7 +264,7 @@ const UpdateReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Vechicle dropdown list 
+  // Vechicle dropdown list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -318,13 +321,9 @@ const UpdateReworkChallan = () => {
 
   useEffect(() => {
     if (supplier_id) {
-      console.log("Run this function");
-      
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      console.log("Selected supplier company");
-      console.log(selectedSupplierCompany?.users?.address); 
       setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
@@ -357,7 +356,11 @@ const UpdateReworkChallan = () => {
 
       setActiveField(job_rework_challan_details.length + 1);
       let jobReworkChallanDetails = {};
+      let totalTaka = 0;
+      let totalMeter = 0;
+      let totalReceiveMeter = 0;
       job_rework_challan_details.forEach((item, index) => {
+        jobReworkChallanDetails[`id_${index + 1}`] = item.id;
         jobReworkChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         jobReworkChallanDetails[`meter_${index + 1}`] = item.meter;
         jobReworkChallanDetails[`received_meter_${index + 1}`] =
@@ -365,7 +368,15 @@ const UpdateReworkChallan = () => {
         jobReworkChallanDetails[`received_weight_${index + 1}`] =
           item.received_weight;
         jobReworkChallanDetails[`short_${index + 1}`] = item.short;
+
+        totalTaka += 1;
+        totalMeter += item.meter;
+        totalReceiveMeter += item.received_meter;
       });
+
+      setTotalTaka(totalTaka);
+      setTotalMeter(totalMeter);
+      setTotalReceiveMeter(totalReceiveMeter);
 
       reset({
         company_id,
@@ -383,7 +394,7 @@ const UpdateReworkChallan = () => {
         total_meter,
         taka_receive_meter,
         ...jobReworkChallanDetails,
-        delivery_address: reworkChallanDetails?.supplier?.user?.address
+        delivery_address: reworkChallanDetails?.supplier?.user?.address,
       });
     }
   }, [reworkChallanDetails, reset, company_id, companyListRes?.rows]);
@@ -452,7 +463,7 @@ const UpdateReworkChallan = () => {
         </Button>
         <h3 className="m-0 text-primary">Edit Rework Challan</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Form layout="vertical">
         <Row
           gutter={18}
           style={{
@@ -836,10 +847,24 @@ const UpdateReworkChallan = () => {
           getValues={getValues}
           activeField={activeField}
           setActiveField={setActiveField}
+          quality_id={quality_id}
+          totalTaka={totalTaka}
+          setTotalTaka={setTotalTaka}
+          totalMeter={totalMeter}
+          setTotalMeter={setTotalMeter}
+          totalReceiveMeter={totalReceiveMeter}
+          setTotalReceiveMeter={setTotalReceiveMeter}
+          setDeletedRecords={setDeletedRecords}
+          deletedRecords={deletedRecords}
         />
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
-          <Button type="primary" htmlType="submit" loading={isPending}>
+          <Button
+            type="primary"
+            htmlType="button"
+            loading={isPending}
+            onClick={handleSubmit(onSubmit)}
+          >
             Update
           </Button>
         </Flex>

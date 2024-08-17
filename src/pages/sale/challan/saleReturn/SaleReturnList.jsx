@@ -14,11 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import dayjs from "dayjs";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -28,8 +28,8 @@ import ViewSaleReturn from "../../../../components/sale/challan/saleReturn/ViewS
 import SaleReturnBill from "../../../../components/sale/challan/saleReturn/SaleReturnBill";
 
 const SaleReturnList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
 
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -122,18 +122,70 @@ const SaleReturnList = () => {
   });
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = saleChallanReturnList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = saleChallanReturnList?.rows?.map((item, index) => {
+      const { createdAt, due_days, sale_challan, return_date } = item;
+
+      let dueDate = new Date(createdAt);
+      dueDate.setDate(dueDate.getDate() + due_days);
+
+      let totalMeter = 0;
+      sale_challan.sale_challan_details.forEach(({ meter }) => {
+        totalMeter += +meter;
+      });
+
+      return [
+        index + 1,
+        dueDate,
+        sale_challan.challan_no,
+        `${sale_challan?.inhouse_quality?.quality_name} (${sale_challan?.inhouse_quality?.quality_weight}KG)`,
+        `${sale_challan?.party?.first_name} ${sale_challan?.party?.last_name}`,
+        sale_challan.total_sale,
+        totalMeter,
+        sale_challan.total_taka,
+        dayjs(return_date).format("DD-MM-YYYY"),
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Due Date",
+      "Challan/Bill",
+      "Quality",
+      "Party Name",
+      "Total Sale",
+      "Return Meter",
+      "Total Taka",
+      "Return Date",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Sale return List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Due Date",
+    //       "Challan/Bill",
+    //       "Quality",
+    //       "Party Name",
+    //       "Total Sale",
+    //       "Return Meter",
+    //       "Total Taka",
+    //       "Return Date",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Sale return List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -150,9 +202,11 @@ const SaleReturnList = () => {
     },
     {
       title: "Due Date",
-      // dataIndex: "createdAt",
-      // key: "createdAt",
-      // render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      render: (text, record) => {
+        let result = new Date(record?.createdAt);
+        result.setDate(result.getDate() + record?.due_days);
+        return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
+      },
     },
     {
       title: "Challan/Bill",

@@ -142,19 +142,21 @@ const JobYarnStockReportList = () => {
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}>
+              <Table.Summary.Cell index={1}>
                 <b>Grand Total</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
+              <Table.Summary.Cell index={2}></Table.Summary.Cell>
+              <Table.Summary.Cell index={3}>
                 <b>{totalGreyStockMeter}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
+              <Table.Summary.Cell index={4}>
                 <b>{totalYarnStock}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
+              <Table.Summary.Cell index={5}>
                 <b>{totalBeamStock}</b>
               </Table.Summary.Cell>
+              <Table.Summary.Cell index={6}></Table.Summary.Cell>
+              <Table.Summary.Cell index={6}></Table.Summary.Cell>
             </Table.Summary.Row>
           );
         }}

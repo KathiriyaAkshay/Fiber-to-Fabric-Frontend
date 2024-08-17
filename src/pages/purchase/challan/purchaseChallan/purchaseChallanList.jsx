@@ -23,11 +23,11 @@ import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -39,8 +39,8 @@ import ViewPurchaseChallanInfo from "../../../../components/purchase/purchaseCha
 import ReturnPurchaseChallan from "../../../../components/purchase/purchaseChallan/ReturnPurchaseChallan";
 
 const PurchaseChallanList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   //   const [state, setState] = useState("current");
@@ -164,7 +164,7 @@ const PurchaseChallanList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = purchaseChallanList?.rows?.map((item, index) => {
       const {
         challan_no,
@@ -179,7 +179,7 @@ const PurchaseChallanList = () => {
 
       return [
         index + 1,
-        "", // bill no
+        challan_no, // bill no
         challan_no,
         gray_order.order_no,
         dayjs(createdAt).format("DD-MM-YYYY"),
@@ -191,27 +191,50 @@ const PurchaseChallanList = () => {
         bill_status === "received" ? "Received" : "Not Received",
       ];
     });
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Bill No",
-          "Challan NO",
-          "Order No",
-          "Challan Date",
-          "Supplier Name",
-          "Supplier Company GST",
-          "Quality",
-          "Total Taka",
-          "Total Meter",
-          "Bill Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Purchase Challan List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Bill No",
+      "Challan NO",
+      "Order No",
+      "Challan Date",
+      "Supplier Name",
+      "Supplier Company GST",
+      "Quality",
+      "Total Taka",
+      "Total Meter",
+      "Bill Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Purchase Challan List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Bill No",
+    //       "Challan NO",
+    //       "Order No",
+    //       "Challan Date",
+    //       "Supplier Name",
+    //       "Supplier Company GST",
+    //       "Quality",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "Bill Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Purchase Challan List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

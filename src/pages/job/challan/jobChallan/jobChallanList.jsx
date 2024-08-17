@@ -21,11 +21,11 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getJobTakaListRequest } from "../../../../api/requests/job/jobTaka";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -36,8 +36,8 @@ import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
 import ViewJobTakaInfo from "../../../../components/job/jobTaka/viewJobTakaInfo";
 
 const JobChallanList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   //   const [state, setState] = useState("current");
@@ -178,7 +178,7 @@ const JobChallanList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = jobChallanList?.rows?.map((item, index) => {
       const {
         challan_no,
@@ -192,7 +192,7 @@ const JobChallanList = () => {
       } = item;
       return [
         index + 1,
-        "", // bill no
+        challan_no,
         challan_no,
         gray_order.order_no,
         dayjs(createdAt).format("DD-MM-YYYY"),
@@ -204,27 +204,50 @@ const JobChallanList = () => {
         bill_status === "received" ? "Received" : "Not Received",
       ];
     });
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Bill No",
-          "Challan NO",
-          "Order No",
-          "Challan Date",
-          "Supplier Name",
-          "Supplier Company GST",
-          "Quality",
-          "Total Taka",
-          "Total Meter",
-          "Bill Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Job Challan Lis",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Bill No",
+      "Challan NO",
+      "Order No",
+      "Challan Date",
+      "Supplier Name",
+      "Supplier Company GST",
+      "Quality",
+      "Total Taka",
+      "Total Meter",
+      "Bill Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Job Challan List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Bill No",
+    //       "Challan NO",
+    //       "Order No",
+    //       "Challan Date",
+    //       "Supplier Name",
+    //       "Supplier Company GST",
+    //       "Quality",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "Bill Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Job Challan Lis",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

@@ -17,8 +17,8 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 // import dayjs from "dayjs";
 // import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
@@ -40,10 +40,10 @@ const TradingQualityList = () => {
   const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
   // const debouncedStatus = useDebounce(status, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -123,20 +123,42 @@ const TradingQualityList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = tradingQualityList?.row?.map((user, index) => {
       const { quality_name, quality_group, production_type, is_active } = user;
-      return [index+1, quality_name, quality_group, production_type, is_active ? "Active" : "Inactive" ];
+      return [
+        index + 1,
+        quality_name,
+        quality_group,
+        production_type,
+        is_active ? "Active" : "Inactive",
+      ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-      leftContent,
-      rightContent,
-      title: "Trading Quality List",
-    });
+    const tableTitle = [
+      "ID",
+      "Quality Name",
+      "Quality Group",
+      "Product Type",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Trading Quality List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Trading Quality List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

@@ -1,18 +1,12 @@
 import { Button, Flex, Select, Spin, Table, Tag, Typography } from "antd";
 import {
   EditOutlined,
-  FilePdfOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
   TruckOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -30,9 +24,8 @@ import PrintBeamSaleChallan from "../../../../components/sale/challan/beamSale/p
 
 const BeamSaleList = () => {
   const navigate = useNavigate();
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
 
   const [beamSaleChallanModel, setBeamSaleChallanModel] = useState({
     isModalOpen: false,
@@ -151,28 +144,28 @@ const BeamSaleList = () => {
     navigate(`update/${id}`);
   }
 
-  function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+  // function downloadPdf() {
+  //   const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamSaleListData?.rows?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
-      return [
-        index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
-      ];
-    });
+  //   const body = beamSaleListData?.rows?.map((user, index) => {
+  //     const { quality_name, quality_group, production_type, is_active } = user;
+  //     return [
+  //       index + 1,
+  //       quality_name,
+  //       quality_group,
+  //       production_type,
+  //       is_active ? "Active" : "Inactive",
+  //     ];
+  //   });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-      leftContent,
-      rightContent,
-      title: "Trading Quality List",
-    });
-  }
+  //   downloadUserPdf({
+  //     body,
+  //     head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+  //     leftContent,
+  //     rightContent,
+  //     title: "Trading Quality List",
+  //   });
+  // }
 
   const columns = [
     {
@@ -233,11 +226,11 @@ const BeamSaleList = () => {
         let totalWeight = 0;
         beam_sale_details?.map((item) => {
           const obj =
-            item.loaded_beam.non_pasarela_beam_detail ||
-            item.loaded_beam.recieve_size_beam_detail ||
-            item.loaded_beam.job_beam_receive_detail;
+            item?.loaded_beam?.non_pasarela_beam_detail ||
+            item?.loaded_beam?.recieve_size_beam_detail ||
+            item?.loaded_beam?.job_beam_receive_detail;
 
-          totalWeight += obj.net_weight || 0;
+          totalWeight += obj?.net_weight || 0;
         });
 
         return totalWeight;
@@ -471,13 +464,13 @@ const BeamSaleList = () => {
                 className="min-w-40"
               />
             </Flex>
-            <Button
+            {/* <Button
               icon={<FilePdfOutlined />}
               type="primary"
               disabled={!beamSaleListData?.rows?.length}
               onClick={downloadPdf}
               className="flex-none"
-            />
+            /> */}
           </Flex>
         </div>
       </div>

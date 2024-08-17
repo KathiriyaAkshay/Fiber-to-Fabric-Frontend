@@ -17,8 +17,8 @@ import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
@@ -28,8 +28,8 @@ import { disabledFutureDate } from "../../../utils/date";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const PurchaseTakaList = () => {
-  const { company, companyId, companyListRes } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId, companyListRes } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   // const [state, setState] = useState("current");
@@ -157,7 +157,7 @@ const PurchaseTakaList = () => {
   // }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = purchaseTakaList?.rows?.map((item, index) => {
       const {
         taka_no,
@@ -176,30 +176,50 @@ const PurchaseTakaList = () => {
         taka_no,
         meter,
         weight,
-        "", // average will be here.
+        "****", // average will be here.
         dayjs(createdAt).format("DD-MM-YYYY"),
         is_returned ? "Returned" : in_stock ? "In Stock" : "Sold",
       ];
     });
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Purchase Challan No",
-          "Quality",
-          "Taka No.",
-          "Meter",
-          "weight",
-          "Average",
-          "Date",
-          "Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Purchase Production List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Purchase Challan No",
+      "Quality",
+      "Taka No.",
+      "Meter",
+      "weight",
+      "Average",
+      "Date",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Purchase Production List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Purchase Challan No",
+    //       "Quality",
+    //       "Taka No.",
+    //       "Meter",
+    //       "weight",
+    //       "Average",
+    //       "Date",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Purchase Production List",
+    // });
+    window.open("/print");
   }
 
   const columns = [

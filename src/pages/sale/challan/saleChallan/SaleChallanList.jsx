@@ -23,11 +23,6 @@ import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
 import dayjs from "dayjs";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -40,8 +35,7 @@ import SaleChallanBill from "../../../../components/sale/challan/saleChallan/Sal
 // import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
 
 const SaleChallanList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
 
   const [state, setState] = useState("gray");
@@ -176,18 +170,82 @@ const SaleChallanList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = saleChallanList?.row?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = saleChallanList?.row?.map((item, index) => {
+      const {
+        createdAt,
+        challan_no,
+        gray_order,
+        party,
+        inhouse_quality,
+        total_taka,
+        total_meter,
+        sale_challan_types,
+        bill_status,
+        is_paid,
+      } = item;
+      return [
+        index + 1,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        gray_order?.order_no,
+        challan_no,
+        `${party?.first_name} ${party?.last_name}`,
+        `${inhouse_quality?.quality_name} (${inhouse_quality?.quality_weight}KG)`,
+        total_taka,
+        total_meter,
+        sale_challan_types.length
+          ? sale_challan_types
+              .map(({ sale_challan_type }) => sale_challan_type)
+              .join(", ")
+          : "-",
+        bill_status,
+        is_paid ? "Paid" : "UnPaid",
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Challan Date",
+      "Order No",
+      "Challan / Bill",
+      "Party Name",
+      "Quality",
+      "Total Taka / Piece",
+      "Total Meter",
+      "Challan Type",
+      "Bill Status",
+      "Payment Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Job Taka List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Challan Date",
+    //       "Order No",
+    //       "Challan / Bill",
+    //       "Party Name",
+    //       "Quality",
+    //       "Total Taka / Piece",
+    //       "Total Meter",
+    //       "Challan Type",
+    //       "Bill Status",
+    //       "Payment Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Job Taka List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -282,7 +340,9 @@ const SaleChallanList = () => {
       dataIndex: "sale_challan_types",
       key: "sale_challan_types",
       render: (text) =>
-        text.map(({ sale_challan_type }) => sale_challan_type).join(", "),
+        text.length
+          ? text.map(({ sale_challan_type }) => sale_challan_type).join(", ")
+          : "-",
     },
     {
       title: "Bill Status",
