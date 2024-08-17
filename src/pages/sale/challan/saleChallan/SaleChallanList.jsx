@@ -322,10 +322,7 @@ const SaleChallanList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
+            <ViewChallan details={[details]}/>
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -333,7 +330,6 @@ const SaleChallanList = () => {
             >
               <EditOutlined />
             </Button>
-            <ViewChallan details={details}/>
             <DeleteSaleChallan details={details} />
             <ViewSaleChallan details={details} companyId={companyId} />
             <Button
@@ -361,6 +357,8 @@ const SaleChallanList = () => {
       },
     },
   ];
+
+  
 
   function renderTable() {
     if (isLoading) {
@@ -414,6 +412,11 @@ const SaleChallanList = () => {
         }}
       />
     );
+  }
+
+  const MutlipleChallanPrint = () => {
+    console.log();
+    
   }
 
   return (

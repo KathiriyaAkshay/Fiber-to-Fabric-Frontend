@@ -614,3 +614,41 @@ input:read-only {
 .wrapper-view-challan td, .wrapper-view-challan tr{
   border: 1px solid black;
 }
+
+.sale-challan-font{
+  color: #000000;
+  font-weight: 500;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.sale-challan-data p{
+  margin-top: 0px !important;
+}
+
+.sale-challan-taka-info{
+  width: 100%;
+}
+
+.sale-challan-taka-info td{
+  padding: 0 !important;
+  width: 25%;
+}
+
+.sale-challan-taka-info-table-border{
+  border-left: 1px solid;
+}
+
+.sale-challan-option-selection .ant-select-selector{
+  background-color: transparent !important;
+  border: 0px !important;
+  padding-left: 0px !important;
+}
+
+.sale-challan-option-selection .ant-select-arrow{
+  display: none !important;
+}
+
+.sale-challan-option-selection .ant-select-selection-item{
+  font-weight: 500;
+}
