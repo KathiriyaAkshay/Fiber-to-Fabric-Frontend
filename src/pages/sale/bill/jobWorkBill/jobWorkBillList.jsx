@@ -307,7 +307,7 @@ const JobWorkBillList = () => {
               <Button
                 type="primary"
                 icon={<FilePdfFilled />}
-                disabled={!saleJobWorkChallanListData.list.length}
+                disabled={!saleJobWorkChallanListData?.list?.length}
                 onClick={() => {
                   DownloadOption("pdf");
                 }}
@@ -316,7 +316,7 @@ const JobWorkBillList = () => {
             <Flex align="center" gap={10}>
               <Button
                 icon={<FileExcelFilled />}
-                disabled={!saleJobWorkChallanListData.list.length}
+                disabled={!saleJobWorkChallanListData?.list?.length}
                 onClick={() => {
                   DownloadOption("excel");
                 }}

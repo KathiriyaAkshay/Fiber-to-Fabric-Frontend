@@ -12,12 +12,14 @@ import {
   View,
   StyleSheet,
   PDFDownloadLink,
-  PDFViewer,
+  // PDFViewer,
   Font,
 } from "@react-pdf/renderer";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FileExcelFilled } from "@ant-design/icons";
 import "./printPage.css";
+import * as XLSX from "xlsx";
+import dayjs from "dayjs";
 
 function getFileName(input) {
   const formattedString = input?.toLowerCase()?.split(" ").join("-");
@@ -196,6 +198,26 @@ const PrintPage = () => {
 
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
+  const excelDownloadHandler = () => {
+    console.log("excelDownloadHandler", { orderTitle, orderData, tableHead });
+
+    let data = [];
+    if (totalVisible) {
+      data = [tableHead, ...orderData, totalCount];
+    } else {
+      data = [tableHead, ...orderData];
+    }
+    let worksheet = XLSX.utils.aoa_to_sheet(data);
+    let workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, orderTitle);
+
+    // Export to Excel file
+    const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
+    const fileName = `${orderTitle}_${dateString}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   useEffect(() => {
     let page_title = localStorage.getItem("print-title");
     setOrderTitle(page_title);
@@ -312,7 +334,11 @@ const PrintPage = () => {
             </PDFDownloadLink>
           </Button>
 
-          <Button icon={<FileExcelFilled />} type="primary">
+          <Button
+            icon={<FileExcelFilled />}
+            type="primary"
+            onClick={excelDownloadHandler}
+          >
             Download Excel
           </Button>
         </Flex>
