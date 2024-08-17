@@ -42,6 +42,14 @@ const OpenProduction = () => {
   const { companyId, company } = useContext(GlobalContext);
   const [activeField, setActiveField] = useState(1);
 
+  const [totalMeter, setTotalMeter] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
+  const [totalTaka, setTotalTaka] = useState(0);
+
+  const [pendingMeter, setPendingMeter] = useState("");
+  const [pendingTaka, setPendingTaka] = useState("");
+  const [pendingWeight, setPendingWeight] = useState("");
+
   // Opening Production related handler ==========================
   const { mutateAsync: addNewOpeningProduction, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -119,12 +127,18 @@ const OpenProduction = () => {
           customer_gst: data.customer_gst_in,
           machine_name: data.machine_name,
           createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-          pending_meter: data.pending_meter,
-          pending_weight: data.pending_weight,
-          pending_taka: data.pending_taka,
-          total_meter: data.total_meter,
-          total_weight: data.total_weight,
-          total_taka: data.total_taka,
+
+          // pending_meter: data.pending_meter - totalMeter,
+          // pending_weight: data.pending_weight - totalWeight,
+          // pending_taka: data.pending_taka - totalTaka,
+          pending_meter: pendingMeter,
+          pending_weight: pendingWeight,
+          pending_taka: pendingTaka,
+
+          total_meter: totalMeter,
+          total_weight: totalWeight,
+          total_taka: totalTaka,
+
           production_details: array.map((fieldNumber) => {
             return {
               taka_no: data.last_taka_no + fieldNumber,
@@ -224,9 +238,9 @@ const OpenProduction = () => {
       party_id: null,
       company: null,
 
-      pending_meter: "",
-      pending_taka: "",
-      pending_weight: "",
+      // pending_meter: "",
+      // pending_taka: "",
+      // pending_weight: "",
 
       date: dayjs(),
       // this fields are in both form
@@ -241,9 +255,9 @@ const OpenProduction = () => {
     is_create_challan,
     last_taka_no,
     order_id,
-    pending_meter,
-    pending_taka,
-    pending_weight,
+    // pending_meter,
+    // pending_taka,
+    // pending_weight,
     broker_id,
     machine_name,
     party_id,
@@ -414,6 +428,16 @@ const OpenProduction = () => {
   });
 
   useEffect(() => {
+    if (grayOrderListRes && order_id) {
+      const order = grayOrderListRes.row.find(({ id }) => order_id === id);
+
+      setPendingMeter(+order.pending_meter - +totalMeter);
+      setPendingTaka(+order.pending_taka - +totalTaka);
+      setPendingWeight(+order.pending_weight - +totalWeight);
+    }
+  }, [grayOrderListRes, order_id, totalMeter, totalTaka, totalWeight]);
+
+  useEffect(() => {
     if (order_id && grayOrderListRes) {
       const order = grayOrderListRes.row.find(({ id }) => order_id === id);
 
@@ -432,9 +456,9 @@ const OpenProduction = () => {
 
       setValue("party_id", order.party.id);
       setValue("company", order.party.id);
-      setValue("pending_meter", order.pending_meter);
-      setValue("pending_taka", order.pending_taka);
-      setValue("pending_weight", order.pending_weight);
+      // setValue("pending_meter", order.pending_meter);
+      // setValue("pending_taka", order.pending_taka);
+      // setValue("pending_weight", order.pending_weight);
 
       trigger("quality_id");
       trigger("broker_name");
@@ -1008,19 +1032,19 @@ const OpenProduction = () => {
                   }}
                 >
                   <Typography.Text style={{ color: "red" }}>
-                    {pending_meter || 0}
+                    {pendingMeter || 0}
                   </Typography.Text>
                 </Col>
 
                 <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
                   <Typography.Text style={{ color: "red" }}>
-                    {pending_weight || 0}
+                    {pendingWeight || 0}
                   </Typography.Text>
                 </Col>
 
                 <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
                   <Typography.Text style={{ color: "red" }}>
-                    {pending_taka || 0}
+                    {pendingTaka || 0}
                   </Typography.Text>
                 </Col>
               </Row>
@@ -1201,6 +1225,12 @@ const OpenProduction = () => {
               setValue={setValue}
               lastOpeningProductionTaka={last_taka_no}
               getValues={getValues}
+              totalMeter={totalMeter}
+              setTotalMeter={setTotalMeter}
+              totalWeight={totalWeight}
+              setTotalWeight={setTotalWeight}
+              totalTaka={totalTaka}
+              setTotalTaka={setTotalTaka}
             />
           )}
         </div>

@@ -309,13 +309,33 @@ input:read-only {
     color: black;
   }
 
-
   .ant-descriptions-item-content {
     padding-top: 8px;
     padding-bottom: 8px;
     padding-left: 12px;
   }
 } */
+
+.ant-menu-item:hover {
+  background-color: var(--menu-item-hover-color) !important;
+  border-radius: 6px !important;
+}
+
+.ant-menu-item:hover .ant-descriptions-item-label {
+  width: 50%;
+  background-color: #efefef;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  font-weight: 600;
+  color: black;
+}
+
+.ant-menu-item:hover .ant-descriptions-item-content {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+}
 
 .highlight-text .ant-descriptions-item-content {
   color: red;
