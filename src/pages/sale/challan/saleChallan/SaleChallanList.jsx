@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
 import dayjs from "dayjs";
@@ -39,6 +39,7 @@ const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
 
+  const [rowSelection, setRowSelection] = useState([]) ; 
   const [state, setState] = useState("gray");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -296,7 +297,7 @@ const SaleChallanList = () => {
       title: "Party Name",
       dataIndex: "party",
       key: "party",
-      render: (text) => `${text?.first_name} ${text?.last_name}`,
+      render: (text) => `${text?.first_name || ""} ${text?.last_name || ""}`,
       sorter: {
         compare: (a, b) => {
           return a?.party?.first_name - b?.party?.first_name;
@@ -340,10 +341,15 @@ const SaleChallanList = () => {
       title: "Challan Type",
       dataIndex: "sale_challan_types",
       key: "sale_challan_types",
-      render: (text) =>
-        text.length
-          ? text.map(({ sale_challan_type }) => sale_challan_type).join(", ")
-          : "-",
+      render: (text) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {text.map(({ sale_challan_type }) => sale_challan_type).join(", ")}
+          </div>
+        )
+      }
     },
     {
       title: "Bill Status",
@@ -382,7 +388,6 @@ const SaleChallanList = () => {
       render: (details) => {
         return (
           <Space>
-            <ViewChallan details={[details]}/>
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -418,7 +423,14 @@ const SaleChallanList = () => {
     },
   ];
 
-  
+  const onSelectChange = (newRow) => {
+    setRowSelection(newRow) ;
+  }
+
+  const rowSelectionHandler = {
+    rowSelection,
+    onChange: onSelectChange,
+  };
 
   function renderTable() {
     if (isLoading) {
@@ -440,6 +452,7 @@ const SaleChallanList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        rowSelection={rowSelectionHandler}
         summary={(pageData) => {
           let totalTaka = 0;
           let totalMeter = 0;
@@ -474,10 +487,6 @@ const SaleChallanList = () => {
     );
   }
 
-  const MutlipleChallanPrint = () => {
-    console.log();
-    
-  }
 
   return (
     <div className="flex flex-col p-4">
@@ -588,6 +597,15 @@ const SaleChallanList = () => {
 
       <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
         <Flex align="center" gap={10}>
+
+          {rowSelection?.length > 0 && (
+            <Flex align="center" gap={10}>
+              <Button type="primary">
+                MULTIPLE PRINT
+              </Button>
+            </Flex>
+          )}
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               From

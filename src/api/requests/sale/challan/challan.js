@@ -112,6 +112,10 @@ export function createSaleChallanRequest({ data, params }) {
     });
 }
 
+export function getSaleLastChallanNumberRequest({params}){
+    return api.get(`sale/challan/last-invoice-no`, {params}) ;
+}
+
 export function updateSaleChallanRequest({ id, data, params }) {
     return api.patch(`/sale/challan/update/${id}`, data, { params });
 }

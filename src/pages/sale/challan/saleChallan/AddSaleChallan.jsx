@@ -26,12 +26,12 @@ import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
-import { createSaleChallanRequest } from "../../../../api/requests/sale/challan/challan";
+import { createSaleChallanRequest, getSaleLastChallanNumberRequest } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -76,6 +76,7 @@ const AddSaleChallan = () => {
     navigate(-1);
   }
 
+  // Add sale challan request handler 
   const { mutateAsync: AddSaleChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleChallanRequest({
@@ -114,7 +115,11 @@ const AddSaleChallan = () => {
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
 
-      if (isNaN(takaNo) || takaNo === "") {
+      console.log("Taka number", takaNo);
+      console.log("Meter ", meter); 
+      console.log("Weight", weight);
+
+      if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "") {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
@@ -122,7 +127,7 @@ const AddSaleChallan = () => {
         });
         hasError = 1;
       }
-      if (isNaN(meter) || meter === "") {
+      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -130,7 +135,7 @@ const AddSaleChallan = () => {
         });
         hasError = 1;
       }
-      if (isNaN(weight) || weight === "") {
+      if ((isNaN(weight) || weight === "") && meter !== "" && takaNo !== "") {
         message.error(`Enter weight for ${field} number row.`);
         setError(`weight_${field}`, {
           type: "manual",
@@ -140,9 +145,9 @@ const AddSaleChallan = () => {
       }
 
       if (
-        !isNaN(data[`taka_no_${field}`]) &&
-        !isNaN(data[`meter_${field}`]) &&
-        !isNaN(data[`weight_${field}`])
+        data[`taka_no_${field}`] != "" &&
+        data[`meter_${field}`] != "" &&
+        data[`weight_${field}`] != ""
       ) {
         sale_challan_detail.push({
           index: index + 1,
@@ -184,15 +189,6 @@ const AddSaleChallan = () => {
         };
       }),
       sale_challan_details: sale_challan_detail,
-      // saleChallanDetailArr.map((field, index) => {
-      //   return {
-      //     index: index + 1,
-      //     taka_no: data[`taka_no_${field}`],
-      //     meter: parseInt(data[`meter_${field}`]),
-      //     weight: parseInt(data[`weight_${field}`]),
-      //     model: data[`model_${field}`],
-      //   };
-      // }),
     };
 
     if (hasError === 0) {
@@ -242,8 +238,42 @@ const AddSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id, type } = watch();
+  const { supplier_name, gray_order_id, supplier_id, type, is_gray, quality_id } = watch();
 
+  // Get last challan number for cash order 
+  const {data: lastChallanNumber, isLoading: lastChallanNumberLoading} = useQuery({
+    queryKey: [
+      "sale", 
+      "challan", 
+      "last-invoice-no", 
+      {company_id: companyId, is_grey: is_gray}
+    ], 
+    queryFn: async () => {
+      if (is_gray == "false"){
+        const res = await getSaleLastChallanNumberRequest({
+          params: {company_id :companyId, is_gray: "0"}
+        }); 
+
+        let challan_number = res?.data?.data?.saleChallan?.challan_no || "CH-1"; 
+        challan_number = challan_number.split("-") ; 
+        let new_challan_number = 0 ; 
+
+        if (challan_number?.length == 1){
+          new_challan_number = `CH-${Number(challan_number[0]) + 1}`; 
+        }  else {
+          new_challan_number = `CH-${Number(challan_number[1]) + 1}` ; 
+        }
+        
+        setValue('challan_no', new_challan_number) ; 
+        // return res?.data?.data ; 
+
+      }
+    }, 
+    enabled: Boolean(companyId && is_gray)
+  })
+  
+
+  // Dropdown vechicle list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -259,6 +289,7 @@ const AddSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown quality list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -283,8 +314,9 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
+  // Dropdown greyorder list 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
@@ -299,8 +331,9 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
+  // Dropdown supplier list
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -325,9 +358,6 @@ const AddSaleChallan = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      // return obj?.supplier_company?.map((item) => {
-      //   return { label: item.supplier_company, value: item.supplier_id };
-      // });
       return obj?.supplier_company;
     } else {
       return [];
@@ -337,8 +367,6 @@ const AddSaleChallan = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      console.log({ order });
-
       setSelectedOrder(order);
       setValue("total_meter", order.total_meter);
       setValue("total_taka", order.total_taka);
@@ -373,7 +401,6 @@ const AddSaleChallan = () => {
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      // setValue("delivery_address", selectedSupplierCompany?.users?.address);
       setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
@@ -465,46 +492,13 @@ const AddSaleChallan = () => {
           />
         </Form.Item>
       </div>
-      {/* <Form layout="vertical" onFinish={handleSubmit(onSubmit)}> */}
       <Row
         gutter={18}
         style={{
           paddingTop: "12px",
+          marginTop: "-15px"
         }}
       >
-        {/* <Col span={6}>
-          <Form.Item
-            label="Company"
-            name="company_id"
-            validateStatus={errors.company_id ? "error" : ""}
-            help={errors.company_id && errors.company_id.message}
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="company_id"
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  loading={isLoadingGrayOrderList}
-                  placeholder="Select Company"
-                  options={companyListRes?.rows?.map((company) => ({
-                    label: company.company_name,
-                    value: company.id,
-                  }))}
-                  style={{
-                    textTransform: "capitalize",
-                  }}
-                  dropdownStyle={{
-                    textTransform: "capitalize",
-                  }}
-                />
-              )}
-            />
-          </Form.Item>
-        </Col> */}
-
         <Col span={6}>
           <Form.Item
             label="Challan Type"
@@ -550,7 +544,11 @@ const AddSaleChallan = () => {
               control={control}
               name="challan_no"
               render={({ field }) => (
-                <Input {...field} placeholder="CH123456" />
+                <Input 
+                  {...field} 
+                  placeholder="CH123456" 
+                  readOnly = {is_gray == "false"?true:false}  
+                />
               )}
             />
           </Form.Item>
@@ -573,6 +571,7 @@ const AddSaleChallan = () => {
                   {...field}
                   style={{ width: "100%" }}
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               )}
             />
@@ -582,11 +581,9 @@ const AddSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            // padding: "12px",
-          }
-        }
+        style={{
+          marginTop: "-15px"
+        }}
       >
         <Col span={6}>
           <Form.Item
@@ -652,7 +649,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={
           {
-            // padding: "12px",
+            marginTop: "-15px"
           }
         }
       >
@@ -790,7 +787,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={
           {
-            // padding: "12px",
+            marginTop: "-15px"
           }
         }
       >
@@ -920,23 +917,26 @@ const AddSaleChallan = () => {
       </Row>
 
       {gray_order_id ? (
-        <Row gutter={18}>
+        <Row gutter={18} style={{
+          marginTop: "-15px", 
+          marginBottom: "10px"
+        }}>
           <Col span={6}></Col>
 
           <Col span={6} style={{ textAlign: "end" }}>
             <Typography style={{ color: "red" }}>Pending</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingMeter}</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingWeight}</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingTaka}</Typography>
           </Col>
         </Row>
       ) : null}
@@ -945,6 +945,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
+          marginTop: "-15px"
         }}
       >
         <Col span={6}>
@@ -978,7 +979,7 @@ const AddSaleChallan = () => {
             <Controller
               control={control}
               name="gst_in_2"
-              render={({ field }) => <Input {...field} placeholder="GST In" />}
+              render={({ field }) => <Input {...field} readOnly placeholder="GST In" />}
             />
           </Form.Item>
         </Col>
@@ -1009,6 +1010,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
+          marginTop: "-25px"
         }}
       >
         <Col span={12}>
@@ -1027,23 +1029,13 @@ const AddSaleChallan = () => {
                 return (
                   <Checkbox.Group
                     {...field}
-                    disabled={activeField > 1}
                     options={[
                       { label: "Taka(In House)", value: "taka(inhouse)" },
                       { label: "Purchase/Trading", value: "purchase/trading" },
                       { label: "Job", value: "job" },
-                      {
-                        label: "Sale Multiple Production",
-                        value: "sale_multiple_production",
-                      },
+                      { label: "Sale Multiple Production", value: "sale_multiple_production"},
                     ]}
                   >
-                    {/* <Radio value={"taka(inhouse)"}>Taka(In House)</Radio>
-                    <Radio value={"purchase/trading"}>Purchase/Trading</Radio>
-                    <Radio value={"job"}>Job</Radio>
-                    <Radio value={"sale_multiple_production"}>
-                      Sale Multiple Production
-                    </Radio> */}
                   </Checkbox.Group>
                 );
               }}
@@ -1052,26 +1044,31 @@ const AddSaleChallan = () => {
         </Col>
       </Row>
 
-      <Divider />
+      <Divider style={{marginTop: "-15px"}} />
 
-      <SaleChallanFieldTable
-        errors={errors}
-        control={control}
-        setFocus={setFocus}
-        setValue={setValue}
-        activeField={activeField}
-        setActiveField={setActiveField}
-        type={type}
-        companyId={companyId}
-        getValues={getValues}
-        setTotalMeter={setTotalMeter}
-        setTotalTaka={setTotalTaka}
-        setTotalWeight={setTotalWeight}
-        setPendingMeter={setPendingMeter}
-        setPendingTaka={setPendingTaka}
-        setPendingWeight={setPendingWeight}
-        setSaleChallanTypes={setSaleChallanTypes}
-      />
+      {quality_id !== undefined && quality_id !== null && (
+
+        <SaleChallanFieldTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          setValue={setValue}
+          activeField={activeField}
+          setActiveField={setActiveField}
+          type={type}
+          companyId={companyId}
+          getValues={getValues}
+          setTotalMeter={setTotalMeter}
+          setTotalTaka={setTotalTaka}
+          setTotalWeight={setTotalWeight}
+          setPendingMeter={setPendingMeter}
+          setPendingTaka={setPendingTaka}
+          setPendingWeight={setPendingWeight}
+          setSaleChallanTypes={setSaleChallanTypes}
+          quality_id={quality_id}
+        />
+      )}
+
 
       <Row style={{ marginTop: "20px" }} gutter={20}>
         <Col span={6}>

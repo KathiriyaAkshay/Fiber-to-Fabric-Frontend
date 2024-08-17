@@ -19,6 +19,8 @@
   --table-border-color: #ababab;
   --scrollbar-background-color: #f1f1f1;
   --scrollbar-hover-background-color: #bdbdbd;
+  --index-column-bakcground-color: #e2e2e2 ; 
+  --index-column-text-color : #000000 ; 
 }
 
 body {
@@ -85,10 +87,19 @@ body {
 }
 
 .job-challan-taka-index-column {
-  background-color: rgb(25 74 109);
-  color: #fff;
+  background-color: var(--index-column-bakcground-color);
+  color: var(--index-column-text-color);
   padding-left: 7px !important;
   padding-right: 7px !important;
+  text-align: center;
+  font-weight: 600;
+}
+
+.total-info-td-cell{
+  text-align: center;
+  font-weight: 600;
+  background-color: var(--index-column-bakcground-color);
+  color: var(--index-column-text-color);
 }
 
 .job-challan-taka-plus-option {
