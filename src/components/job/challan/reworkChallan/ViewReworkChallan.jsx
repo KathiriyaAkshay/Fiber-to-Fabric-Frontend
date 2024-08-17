@@ -7,7 +7,7 @@ import { useRef, useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 
 const ViewReworkChallanInfo = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
@@ -164,10 +164,37 @@ const ViewReworkChallanInfo = ({ details }) => {
         width={"60vw"}
       >
 
-        <div ref={componentRef} style={{marginRight: "1px"}}>
+        <div ref={componentRef} style={{ marginRight: "1px", marginLeft: "1px", width: "99%" }}>
           <Flex
             className="flex-col border border-b-0 border-solid"
           >
+            <Row
+              justify="center"
+              align="middle"
+              style={{
+                borderBottom: "1px dashed",
+                paddingTop: 15,
+                paddingBottom: 15,
+              }}
+            >
+              <Col span={24} style={{ textAlign: "center" }}>
+                <p style={{ marginTop: 0, marginBottom: 0 }}>
+                  <strong>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
+                    ? ""
+                    : companyInfo?.address_line_2
+                    }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
+                    }, ${companyInfo?.country}`}</strong>
+                </p>
+                <p style={{ marginTop: 3, marginBottom: 0 }}>
+                  Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp;
+                  PAYMENT: {companyInfo?.account_number}
+                </p>
+                <p style={{ marginTop: 3, marginBottom: 0 }}>
+                  GST NO: {companyInfo?.gst_no} &nbsp;&nbsp;&nbsp;&nbsp; PAN NO:{" "}
+                  {companyInfo?.pancard_no}
+                </p>
+              </Col>
+            </Row>
             <Row
               className="border p-4 border-b ,0border-solid !m-0"
               style={{
@@ -178,43 +205,65 @@ const ViewReworkChallanInfo = ({ details }) => {
               }}
             >
               <Col span={12}>
+
                 <Row>
-                  <Col span={24}>
-                    <Text>To,</Text>
-                    <Text className="block font-bold">
-                      {details?.supplier?.supplier_company}(
+                  <Col span={3}>
+                    <Text className="font-bold">M/S,</Text>
+                  </Col>
+                  <Col span={20}>
+                    <Text>
+                      {details?.supplier?.supplier_company} (
                       {details?.supplier?.supplier_name})
                     </Text>
+
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col span={3}></Col>
+                  <Col span={10}>
                     <Text className="block">
                       {details?.supplier?.user?.address}
                     </Text>
                   </Col>
                 </Row>
-                <Row>
+
+                <Row className="mt-2">
+                  <Col span={3}>
+                    <Text strong style={{ fontWeight: 600 }}>GST :</Text>
+                  </Col>
+                  <Col span={10}>
+                    {details?.supplier?.user?.gst_no}
+                  </Col>
+                </Row>
+                {/* <Row>
                   <Col span={24}>
                     <Text>Challan</Text>
                     <Text className="block">{details?.challan_no}</Text>
                   </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <Text>GST</Text>
-                    <Text className="block">
-                      {details?.supplier?.user?.gst_no}
-                    </Text>
-                  </Col>
-                </Row>
+                </Row> */}
               </Col>
               <Col span={12}>
                 <Row>
+                  <Col span={10}>
+                    <Text className="font-bold">CHALLAN NO :</Text>
+                  </Col>
+                  <Col span={10}>
+                    <Text>
+                      {details?.challan_no}
+                    </Text>
+
+                  </Col>
+                </Row>
+                {/* <Row>
                   <Col span={24}>
                     <Text>From,</Text>
                     <Text className="block font-bold">
                       {companyInfo?.company_name}
                     </Text>
                     <Text className="block">{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
-                        ? ""
-                        : companyInfo?.address_line_2
+                      ? ""
+                      : companyInfo?.address_line_2
                       }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
                       }, ${companyInfo?.country}`}</Text>
                   </Col>
@@ -232,26 +281,27 @@ const ViewReworkChallanInfo = ({ details }) => {
                     <Text>GST</Text>
                     <Text className="block">{companyInfo?.gst_no}</Text>
                   </Col>
-                </Row>
+                </Row> */}
               </Col>
             </Row>
             <Row
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderTop: "1px dashed" }}
             >
-              <Col span={6}><strong>Description:</strong></Col>
-              <Col span={6}>
+              <Col span={3}><strong>Description:</strong></Col>
+              <Col span={9}>
                 {details?.inhouse_quality?.quality_name} (
                 {details?.inhouse_quality?.quality_weight}KG)
               </Col>
-              <Col span={6}><strong>Date:</strong></Col>
+              <Col span={3}><strong>Date:</strong></Col>
               <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
             </Row>
             <Row
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderBottom: 0 }}
             >
-              <Col span={1} style={{ textAlign: "center" }}>
+
+              <Col span={2} style={{ textAlign: "center" }}>
                 <strong>No</strong>
               </Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -266,7 +316,8 @@ const ViewReworkChallanInfo = ({ details }) => {
               <Col span={3} style={{ textAlign: "center" }}>
                 <strong>Recv Weight</strong>
               </Col>
-              <Col span={1} style={{ textAlign: "center" }}>
+
+              <Col span={2} style={{ textAlign: "center" }}>
                 <strong>No</strong>
               </Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -290,7 +341,7 @@ const ViewReworkChallanInfo = ({ details }) => {
                   className="p-3 border-0"
                   style={{ borderTop: 0 }}
                 >
-                  <Col span={1} style={{ textAlign: "center" }}>
+                  <Col span={2} style={{ textAlign: "center" }}>
                     <strong>{index + 1}</strong>
                   </Col>
                   <Col span={2} style={{ textAlign: "center" }}>
@@ -305,7 +356,7 @@ const ViewReworkChallanInfo = ({ details }) => {
                   <Col span={3} style={{ textAlign: "center" }}>
                     {details?.job_rework_challan_details[index]?.received_weight}
                   </Col>
-                  <Col span={1} style={{ textAlign: "center" }}>
+                  <Col span={2} style={{ textAlign: "center" }}>
                     <strong>{index + 13}</strong>
                   </Col>
                   <Col span={2} style={{ textAlign: "center" }}>
@@ -330,7 +381,7 @@ const ViewReworkChallanInfo = ({ details }) => {
               );
             })}
 
-            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle:"dashed" }}>
+            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle: "dashed" }}>
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -362,6 +413,52 @@ const ViewReworkChallanInfo = ({ details }) => {
                 {totalMeter}
               </Col>
             </Row>
+
+
+            <Row className="border-b !m-0 p-4" style={{ borderBottom: "1px solid" }}>
+              <Col span={16} className="p-2">
+                <Title level={5} className="m-0">
+                  ➤ TERMS OF SALES :-
+                </Title>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  1. Interest at 2% per month will be charged remaining unpaid
+                  from the date bill.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  2. Complaint if any regarding this invoice must be settled
+                  within 24 hours.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  3. Disputes shall be settled in SURAT court only.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  4. We are not responsible for processed goods & width.
+                </Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000" }}
+                >
+                  5. Subject to SURAT Jurisdiction.
+                </Text>
+                <Text className="block mt-2"></Text>
+              </Col>
+              <Col span={8} className="p-2 text-right">
+                <Text strong>For, {companyInfo?.company_name}</Text><br />Authorized Signature
+              </Col>
+            </Row>
+
           </Flex>
         </div>
       </Modal>

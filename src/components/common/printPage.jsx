@@ -1,14 +1,17 @@
-import { Button } from "antd";
+import { Button, Flex } from "antd";
 import React, { useRef } from "react";
 import { useState, useEffect } from "react";
 import { PrinterOutlined } from "@ant-design/icons";
-import "./printPage.css"; 
+import "./printPage.css";
 import ReactToPrint from "react-to-print";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { useContext } from "react";
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, PDFViewer, Font } from '@react-pdf/renderer';
+import { DownloadOutlined } from "@ant-design/icons";
+import { FileExcelFilled } from "@ant-design/icons";
 
 const PrintPage = () => {
-    const ComponentRef = useRef() ; 
+    const ComponentRef = useRef();
     const pageStyle = `
          @media print {
             * {
@@ -37,101 +40,281 @@ const PrintPage = () => {
                 text-overflow: ellipsis; /* To add ellipsis (...) for overflow text */
                 word-wrap: break-word; /* To wrap long words */
             }
-    }` ;    
-    const [orderData, setOrderData] = useState([]) ; 
-    const [orderTitle, setOrderTitle] = useState(null) ; 
-    const [tableHead, setTableHead] = useState(null) ; 
-    const [totalVisible, setTotalVisible] = useState(false) ; 
-    const [totalCount, setTotalCount] = useState(null) ; 
+    }` ;
+
+    // const printPageStyle = StyleSheet.create({
+    //     page: {
+    //       flexDirection: 'row',
+    //       backgroundColor: '#E4E4E4',
+    //     },
+    //     section: {
+    //       margin: 10,
+    //       padding: 10,
+    //       flexGrow: 1,
+    //     },
+    // });
+    
+    Font.register({
+        family: 'Roboto',
+        fonts: [
+            {
+                src: './font/Roboto-Medium.ttf', // Regular
+                fontWeight: 'normal',
+            },
+            {
+                src: "./font/Roboto-Bold.ttf", 
+                fontWeight: "bold"
+            }
+        ],
+    });
+
+    const borderColorValue = "#efefef" ; 
+    const printPageStyle = StyleSheet.create({
+        page: {
+            flexDirection: 'column',
+            padding: 20,
+            fontFamily: "Roboto"
+        },
+
+        section: {
+            marginRight: "auto", 
+        },  
+
+        title: {
+            fontSize: 13,
+            textAlign: 'center',
+            marginBottom: 20,
+            color: "#194A6D",
+            fontWeight: "bold"
+        },
+
+        companyInfo: {
+            display: "flex",
+            flexDirection: "row", 
+            width: "100%", 
+            marginBottom: 20
+        },
+
+        infoText: {
+            fontSize: 9,
+        },
+
+        leftColumn: {
+            fontSize: 9,
+            color: 'black',
+            marginRight: "auto"
+        },
+
+        rightColumn: {
+            fontSize: 9,
+            color: 'black',
+            marginRight: "auto", 
+            justifyContent: "flex-end"
+        },
+
+        table: {
+            display: "table",
+            width: "auto",
+            borderStyle: "solid",
+            borderWidth: 1,
+            borderRightWidth: 0,
+            borderBottomWidth: 0,
+            borderLeftColor: borderColorValue, 
+            borderTopColor: borderColorValue
+        },
+        tableRow: {
+            flexDirection: "row"
+        },
+        tableCol: {
+            borderStyle: "solid",
+            borderWidth: 1,
+            borderLeftWidth: 0,
+            borderTopWidth: 0, 
+            paddingBottom: 5, 
+            borderRightColor: borderColorValue, 
+            borderBottomColor: borderColorValue , 
+            paddingLeft: 2,
+            paddingRight: 2, 
+            flex: 1,
+            fontSize: 10
+        },
+
+        tableHeaderCol: {
+            borderStyle: "solid",
+            borderWidth: 1,
+            borderLeftWidth: 0,
+            borderTopWidth: 0, 
+            backgroundColor: "#194A6D",
+            paddingBottom: 3, 
+            borderRightColor: borderColorValue, 
+            borderBottomColor: borderColorValue, 
+            flex: 1, 
+            fontSize: 10
+        },
+        tableCell: {
+            margin: "auto",
+            marginTop: 5,
+            fontSize: 9
+        },
+    });
+
+    const [orderData, setOrderData] = useState([]);
+    const [orderTitle, setOrderTitle] = useState(null);
+    const [tableHead, setTableHead] = useState(null);
+    const [totalVisible, setTotalVisible] = useState(false);
+    const [totalCount, setTotalCount] = useState(null);
 
     const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
     useEffect(() => {
-        let page_title = localStorage.getItem("print-title") ; 
-        setOrderTitle(page_title) ; 
+        let page_title = localStorage.getItem("print-title");
+        setOrderTitle(page_title);
 
-        let page_data = JSON.parse(localStorage.getItem("print-array")) ; 
-        setOrderData([...page_data]) ; 
+        let page_data = JSON.parse(localStorage.getItem("print-array"));
+        setOrderData([...page_data]);
 
-        let page_head = JSON.parse(localStorage.getItem("print-head")) ; 
-        setTableHead(page_head) ; 
+        let page_head = JSON.parse(localStorage.getItem("print-head"));
+        setTableHead(page_head);
 
-        let total_visible = localStorage.getItem("total-count") ; 
-        if (total_visible == "1"){
-            setTotalVisible(true) ; 
-        }   else {
-            setTotalVisible(false) ; 
+        let total_visible = localStorage.getItem("total-count");
+        if (total_visible == "1") {
+            setTotalVisible(true);
+        } else {
+            setTotalVisible(false);
         }
 
-        let total_data = JSON.parse(localStorage.getItem("total-data")) ; 
-        setTotalCount(total_data) ; 
+        let total_data = JSON.parse(localStorage.getItem("total-data"));
+        setTotalCount(total_data);
 
-    }, []); 
+    }, []);
+
+    const MyDocument = () => (
+        <Document>
+            <Page size="A3" style={printPageStyle.page}>
+                <View style={[printPageStyle.section]}>
+                    <Text style={[printPageStyle.title]}>Yarn Order List</Text>
+                </View>
+                <View style={[ printPageStyle.companyInfo]}>
+                    <View style={printPageStyle.rightColumn}>
+                        <Text style={[printPageStyle.infoText, {textAlign: "right", marginBottom: 6}]}>Company Name:- {company?.company_name}</Text>
+                        <Text style={[printPageStyle.infoText, {marginBottom: 6}]}>Company Contact:- {company?.company_contact}</Text>
+                        <Text style={[printPageStyle.infoText, {textAlign: "right"}]}>GST No.:- {company?.gst_no}</Text>
+                    </View>
+                </View>
+                <View style={printPageStyle.table}>
+                    <View style={printPageStyle.tableRow}>
+                        {tableHead?.map((element) => (
+                            <View style={printPageStyle.tableHeaderCol}>
+                                <Text style={[printPageStyle.tableCell, {color: "#FFFFFF"}]}>
+                                    {element}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+
+                    {orderData?.map((order, index) => (
+                        <View style={printPageStyle.tableRow}>
+                            {order?.map((element, elementIndex) => (
+                                <View style={printPageStyle.tableCol}>
+                                    <Text style={printPageStyle.tableCell}>{element}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    ))}
+
+                    {totalVisible && totalCount?.map((element, index) => (
+                        <View style={printPageStyle.tableRow}>
+                            <View style={printPageStyle.tableHeaderCol}>
+                                <Text style={[printPageStyle.tableCell, {color: "#FFFFFF"}]}>{element}</Text>
+                            </View>
+                        </View>
+                    ))}
+                    
+                </View>
+            </Page>
+        </Document>
+    );
 
     return (
-        <div className="printable-page">
-            
-            <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
-                <ReactToPrint
-                    trigger={() => 
-                        <Button style={{ marginLeft: "auto" }} type="primary" icon={<PrinterOutlined />}>
-                            Print
-                        </Button>
-                    }
-                    content={() => ComponentRef.current}
-                    pageStyle={pageStyle}
-                />
-            </div>
+        <>
+            <div className="printable-page">
 
-            <div 
-                className="printable-main-div" 
-                ref={ComponentRef}>
+                <Flex justify="flex-start" style={{textAlign:"left"}} gap={10}>
 
-                <div className="page_title">
-                    {orderTitle}
-                </div>
+                    <ReactToPrint
+                        trigger={() =>
+                            <Button type="primary" icon={<PrinterOutlined />}>
+                                Print
+                            </Button>
+                        }
+                        content={() => ComponentRef.current}
+                        pageStyle={pageStyle}
+                    />
+                    
+                    <Button type="primary" icon = {<DownloadOutlined/>}>
+                        <PDFDownloadLink PDFDownloadLink document={<MyDocument />} fileName="table.pdf">
+                            {({ blob, url, loading, error }) => (loading ? 'Loading document...' : 'Download PDF')}
+                        </PDFDownloadLink>
+                    </Button>
 
-                <div class="company-info">
-                    <div>Company Name: <strong>{company?.company_name}</strong></div>
-                    <div class="company-contact">Company Contact: <strong>{company?.company_contact}</strong></div>
-                    <div class="gst-number">GST No.: <strong>{company?.gst_no}</strong></div>
-                </div>
+                    <Button icon = {<FileExcelFilled/>} type="primary">
+                        Download Excel
+                    </Button>
+                    
+                </Flex>
+                {/* <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
+                </div> */}
 
-                <div className="printable-table-div">
+                <div
+                    className="printable-main-div"
+                    ref={ComponentRef}>
 
-                    <table className="printable_table">
-                        <thead>
-                            <tr>
-                                {tableHead?.map((element) => (
-                                    <th>{element}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orderData.map((order, index) => (
-                                <tr key={index}>
-                                    {order?.map((element, elementIndex) => (
-                                        <td key={elementIndex}>{element}</td>
+                    <div className="page_title">
+                        {orderTitle}
+                    </div>
+
+                    <div class="company-info">
+                        <div>Company Name: <strong>{company?.company_name}</strong></div>
+                        <div class="company-contact">Company Contact: <strong>{company?.company_contact}</strong></div>
+                        <div class="gst-number">GST No.: <strong>{company?.gst_no}</strong></div>
+                    </div>
+
+                    <div className="printable-table-div">
+
+                        <table className="printable_table">
+                            <thead>
+                                <tr>
+                                    {tableHead?.map((element) => (
+                                        <th>{element}</th>
                                     ))}
                                 </tr>
-                            ))}
+                            </thead>
+                            <tbody>
+                                {orderData.map((order, index) => (
+                                    <tr key={index}>
+                                        {order?.map((element, elementIndex) => (
+                                            <td key={elementIndex}>{element}</td>
+                                        ))}
+                                    </tr>
+                                ))}
 
-                            <tr>
-                                {totalVisible && (
-                                    totalCount?.map((element, index) => (
-                                        <td className="total-information-td">{element}</td>
-                                    ))
-                                )}
-                            </tr>
-                        </tbody>
-                    </table>
+                                <tr>
+                                    {totalVisible && (
+                                        totalCount?.map((element, index) => (
+                                            <td className="total-information-td">{element}</td>
+                                        ))
+                                    )}
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
 
                 </div>
 
-
             </div>
-
-        </div>
+        </>
     )
 }
 

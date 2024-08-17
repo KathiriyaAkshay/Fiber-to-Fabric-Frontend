@@ -1,7 +1,7 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Col, Flex, Form, Input, message, Row } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getProductionByIdRequest } from "../../../../api/requests/production/inhouseProduction";
@@ -28,20 +28,69 @@ const ReworkChallanFieldTable = ({
 
   const [currentFieldNumber, setCurrentFieldNumber] = useState(null);
   const [storeTakaNo, setStoreTakaNo] = useState();
-  const debounceTakaNo = useDebounce(storeTakaNo, 300);
+  const debounceTakaNo = useDebounce(storeTakaNo, 150);
 
-  const activeNextField = (event, fieldNumber) => {
+  const activeNextField = async (event, fieldNumber) => {
     if (event.keyCode === 13) {
       let taka_number = getValues(`taka_no_${fieldNumber}`);
-      let meter = getValues(`meter_${fieldNumber}`);
 
       if (taka_number == undefined || taka_number == "") {
         message.warning("Please, Enter taka number");
+
       } else {
-        setActiveField((prev) => prev + 1);
-        setTimeout(() => {
-          setFocus(`taka_no_${fieldNumber + 1}`);
-        }, 0);
+        const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
+        let already_taka = 0;
+        let temp_total_taka = 0 ; 
+
+        numOfFields.map((fieldNumber, index) => {
+          let taka_number = getValues(`taka_no_${fieldNumber}`);
+          if (taka_number == debounceTakaNo && fieldNumber !== activeField) {
+            already_taka = 1;
+          } else {
+            temp_total_taka += 1;
+          }
+        });
+
+        if (already_taka == 1) {
+          message.warning(`Tako ${debounceTakaNo} already in used`);
+          setValue(`taka_no_${activeField}`, undefined);
+          setValue(`meter_${activeField}`, undefined);
+          setTotalTaka(temp_total_taka) ; 
+        } else {
+
+          const res = await getProductionByIdRequest({
+            id: 0,
+            params: {
+              company_id: companyId,
+              taka_no: debounceTakaNo,
+              quality_id: quality_id,
+            },
+          });
+
+          if (res.data.success) {
+            if (res?.data?.data == null) {
+              message.warning("This taka number not available in Production");
+              setValue(`meter_${activeField}`, undefined);
+              setValue(`taka_no_${activeField}`, undefined) ; 
+            } else {
+
+              setValue(
+                `meter_${currentFieldNumber}`,
+                res.data.data !== null ? res.data.data.meter : undefined
+              );
+  
+              setActiveField((prev) => prev + 1);
+              setTimeout(() => {
+                setFocus(`taka_no_${fieldNumber + 1}`);
+              }, 20);
+              calculateTotal();
+            }
+          } else {
+            setValue(`meter_${currentFieldNumber}`, undefined);
+            message.warning("Please, Provide valid taka number");
+          }
+        }
+
       }
     }
   };
@@ -95,61 +144,6 @@ const ReworkChallanFieldTable = ({
     setValue("total_taka", totalTaka);
     setValue("taka_receive_meter", totalReceiveMeter);
   };
-
-  // Get Particular production taka number information
-  useQuery({
-    queryKey: [
-      "productionDetail",
-      "get",
-      {
-        company_id: companyId,
-        taka_no: debounceTakaNo,
-        quality_id: quality_id,
-      },
-    ],
-    queryFn: async () => {
-      const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
-      let already_taka = 0;
-      numOfFields.forEach((fieldNumber) => {
-        let taka_number = getValues(`taka_no_${fieldNumber}`);
-        if (taka_number == e.target.value && fieldNumber !== activeField) {
-          already_taka = 1;
-        }
-      });
-
-      if (already_taka == 1) {
-        message.warning(`Tako ${e.target.value} already in used`);
-        setValue(`taka_no_${activeField}`, undefined);
-        setValue(`meter_${activeField}`, undefined);
-      }
-
-      if (debounceTakaNo && already_taka == 0) {
-        const res = await getProductionByIdRequest({
-          id: 0,
-          params: {
-            company_id: companyId,
-            taka_no: debounceTakaNo,
-            quality_id: quality_id,
-          },
-        });
-        if (res.data.success) {
-          if (res?.data?.data == null) {
-            message.warning("Please, Provide valid taka number");
-            setValue(`meter_${activeField}`, undefined);
-          }
-          setValue(
-            `meter_${currentFieldNumber}`,
-            res.data.data !== null ? res.data.data.meter : undefined
-          );
-          calculateTotal();
-        } else {
-          setValue(`meter_${currentFieldNumber}`, undefined);
-          message.warning("Please, Provide valid taka number");
-        }
-      }
-    },
-    enabled: Boolean(companyId),
-  });
 
   return (
     <Row gutter={18}>
@@ -271,7 +265,7 @@ const ReworkChallanFieldTable = ({
                         errors[`received_meter_${fieldNumber}`] &&
                         errors[`received_meter_${fieldNumber}`].message
                       }
-                      required={true}
+                      // required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{ marginBottom: "0px" }}
                     >
@@ -436,6 +430,9 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber !== activeField}
+                            onKeyDown={(event) =>
+                              activeNextField(event, fieldNumber)
+                            }
                           />
                         )}
                       />
@@ -499,15 +496,6 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
                           />
                         )}
                       />
@@ -540,15 +528,6 @@ const ReworkChallanFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
                           />
                         )}
                       />

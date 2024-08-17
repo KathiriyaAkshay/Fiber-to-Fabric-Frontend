@@ -1,5 +1,5 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, Row } from "antd";
+import { Button, Col, Form, Input, message, Row } from "antd";
 import { useContext, useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import useDebounce from "../../../../hooks/useDebounce";
@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
 
-const numOfFields = Array.from({ length: 1 }, (_, i) => i + 1);
 
 const ReceiveReworkTakaFieldTable = ({
   errors,
@@ -20,35 +19,58 @@ const ReceiveReworkTakaFieldTable = ({
   quality_id,
 }) => {
   const { companyId } = useContext(GlobalContext);
-
+  
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalReceiveMeter, setTotalReceiveMeter] = useState(0);
+  const [totalFieldRow, setTotalFieldRow] = useState(1) ; 
+  const [numOfFields, setNumOfFields] = useState(Array.from({ length: totalFieldRow }, (_, i) => i + 1));
 
   const [storeTakaNo, setStoreTakaNo] = useState();
   const debounceTakaNo = useDebounce(storeTakaNo, 500);
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
+      setTotalFieldRow((prev) => prev + 1)
       setActiveField((prev) => prev + 1);
+      console.log("Field number", fieldNumber);
+      
+      setValue(`taka_no_${fieldNumber + 1}`, undefined) ; 
+      setValue(`meter_${fieldNumber + 1}`, undefined) ;
+      setValue(`received_meter_${fieldNumber + 1}`, null) ; 
+      setValue(`short_${fieldNumber + 1}`, null) ; 
+      setValue(`received_weight_${fieldNumber + 1}`, null) ; 
+      setValue(`average_${fieldNumber + 1}`, null) ; 
+      setValue(`tp_${fieldNumber + 1}`, null) ; 
+      setValue(`pis_${fieldNumber + 1}`, null) ; 
       setTimeout(() => {
         setFocus(`taka_no_${fieldNumber + 1}`);
-      }, 0);
+
+      }, 20);
     }
   };
+
+  useEffect(() => {
+    setNumOfFields(Array.from({ length: totalFieldRow }, (_, i) => i + 1))
+  }, [totalFieldRow])
 
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
+        console.log("numberof field information", fieldNumber);
+        let temp = numOfFields.filter(item => item!=fieldNumber) ; 
+        setNumOfFields(temp) ; 
+        setTotalFieldRow((prev) => prev -1) ;
       }
-      setValue(`taka_no_${fieldNumber}`, "");
-      setValue(`meter_${fieldNumber}`, "");
-      setValue(`received_meter_${fieldNumber}`, "");
-      setValue(`short_${fieldNumber}`, "");
-      setValue(`received_weight_${fieldNumber}`, "");
-      setValue(`average_${fieldNumber}`, "");
-      setValue(`tp_${fieldNumber}`, "");
-      setValue(`pis_${fieldNumber}`, "");
+      
+      // setValue(`taka_no_${fieldNumber}`, "");
+      // setValue(`meter_${fieldNumber}`, "");
+      // setValue(`received_meter_${fieldNumber}`, "");
+      // setValue(`short_${fieldNumber}`, "");
+      // setValue(`received_weight_${fieldNumber}`, "");
+      // setValue(`average_${fieldNumber}`, "");
+      // setValue(`tp_${fieldNumber}`, "");
+      // setValue(`pis_${fieldNumber}`, "");
     }
   };
 
@@ -66,6 +88,7 @@ const ReceiveReworkTakaFieldTable = ({
     setTotalReceiveMeter(totalReceiveMeter);
   };
 
+  // Get Rework challan taka number request
   const { data: reworkChallan } = useQuery({
     queryKey: [
       "rework",
@@ -90,10 +113,16 @@ const ReceiveReworkTakaFieldTable = ({
 
   useEffect(() => {
     if (reworkChallan) {
-      console.log({ reworkChallan });
       setValue(`meter_${activeField}`, reworkChallan.total_meter);
     } else {
       setValue(`meter_${activeField}`, "");
+      setValue(`received_meter_${activeField}`, "") ; 
+      setValue(`short_${activeField}`, "") ; 
+      setValue(`received_weight_${activeField}`, "") ; 
+      setValue(`average_${activeField}`, "") ; 
+      setValue(`tp_${activeField}`, "") ; 
+      setValue(`pis_${activeField}`, "") ; 
+      calculateTotal() ; 
     }
   }, [activeField, reworkChallan, setValue]);
 
@@ -113,8 +142,8 @@ const ReceiveReworkTakaFieldTable = ({
             <th>Short (%)</th>
             <th>Weight</th>
             <th>Average</th>
-            <th>TP</th>
-            <th>PIS</th>
+            <th style={{color: "green"}}>TP</th>
+            <th style={{color: "orange"}}>PIS</th>
             <th>
               <MinusCircleOutlined />
             </th>
@@ -190,7 +219,7 @@ const ReceiveReworkTakaFieldTable = ({
                               borderRadius: "0px",
                             }}
                             // disabled={fieldNumber > activeField}
-                            disabled
+                            readOnly
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();
@@ -228,8 +257,26 @@ const ReceiveReworkTakaFieldTable = ({
                             }}
                             disabled={fieldNumber > activeField}
                             onChange={(e) => {
-                              field.onChange(e);
-                              calculateTotal();
+                              
+                              let meter = getValues(`meter_${fieldNumber}`) ; 
+                              
+                              if (meter == undefined || meter == ""){
+                                message.warning("Please, Enter taka number")
+                                setValue(`short_${fieldNumber}`, undefined)
+                                field.onChange("");
+                              } else if  (Number(meter) < Number(e.target.value)){
+                                message.warning("Please, Provide valid receive meter") ; 
+                                field.onChange("");
+                                setValue(`short_${fieldNumber}`, undefined)
+                              } else {
+                                field.onChange(e);
+                                
+                                let shortage = Number(e.target.value)*100 / Number(meter) ; 
+                                shortage = 100 - shortage ; 
+                                setValue(`short_${fieldNumber}`, shortage.toFixed(2))
+                                calculateTotal();
+                              }
+
                             }}
                           />
                         )}
@@ -262,7 +309,7 @@ const ReceiveReworkTakaFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            readOnly
                           />
                         )}
                       />
@@ -295,6 +342,10 @@ const ReceiveReworkTakaFieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
+                            onChange={(e) => {
+                              setValue(`average_${fieldNumber}`, "100") ;
+                              field.onChange(e) ;  
+                            }}
                           />
                         )}
                       />
@@ -327,7 +378,7 @@ const ReceiveReworkTakaFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            readOnly
                           />
                         )}
                       />
@@ -360,8 +411,19 @@ const ReceiveReworkTakaFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
-                          />
+                            onChange={(e) => {
+
+                              let meter = getValues(`meter_${fieldNumber}`) ; 
+
+                              if (meter == undefined || meter == ""){
+                                message.warning("Please, Provide taka number") ; 
+                              }  else if (Number(meter) < Number(e.target.value)){
+                                message.warning("Please, Provide pis number less than taka meter") ; 
+                              } else {
+                                field.onChange(e) ; 
+                              }
+                            }}
+                          /> 
                         )}
                       />
                     </Form.Item>
@@ -393,7 +455,19 @@ const ReceiveReworkTakaFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            readOnly={fieldNumber > activeField}
+                            onChange={(e) => {
+
+                              let meter = getValues(`meter_${fieldNumber}`) ; 
+
+                              if (meter == undefined || meter == ""){
+                                message.warning("Please, Provide taka number") ; 
+                              }  else if (Number(meter) < Number(e.target.value)){
+                                message.warning("Please, Provide pis number less than taka meter") ; 
+                              } else {
+                                field.onChange(e) ; 
+                              }
+                            }}
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }
@@ -407,7 +481,7 @@ const ReceiveReworkTakaFieldTable = ({
                     <Button
                       className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
-                      disabled={fieldNumber !== activeField}
+                      disabled={fieldNumber > activeField}
                       onClick={() => removeCurrentField(fieldNumber)}
                     ></Button>
                   </td>
