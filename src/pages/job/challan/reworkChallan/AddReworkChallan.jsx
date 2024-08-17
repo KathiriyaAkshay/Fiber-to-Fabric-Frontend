@@ -25,6 +25,8 @@ import {
 } from "../../../../api/requests/users";
 import {
   addReworkChallanRequest,
+  createReworkChallanNewOptionRequest,
+  getReworkChallanLastNumberRequest,
   getReworkOptionsListRequest,
 } from "../../../../api/requests/job/challan/reworkChallan";
 import dayjs from "dayjs";
@@ -86,18 +88,45 @@ const AddReworkChallan = () => {
     },
   });
 
+  // CreateReworkChallanOption 
+  const [otherOptionValue, setOtherOptionValue] = useState(null) ; 
+  const {mutateAsync: createReworkChallanOption, isPending: iscreateReworkChallanLoading} = useMutation({
+    mutationFn: async (data) => {
+      const res = await createReworkChallanNewOptionRequest({
+        data: data,
+        params: {
+          company_id: companyId
+        }
+      }); 
+      return res?.data ; 
+
+    }, 
+    mutationKey: ["rework", "challan", "option"], 
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["reworkOption", "dropdown", "list", {company_id: companyId}]) ; 
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Successfully add new option") ; 
+        setValue("option", "") ; 
+      } 
+    }, 
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    }
+  })
+
   async function onSubmit(data) {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
     let hasError = 0;
-    detailArray?.map((field) => {
+    let temp = [] ; 
+
+    detailArray?.map((field, index) => {
       let taka_no = +data[`taka_no_${field}`];
       let meter = +data[`meter_${field}`];
-      let received_meter = +data[`received_meter_${field}`];
-      let received_weight = +data[`received_weight_${field}`];
-      let short = +data[`short_${field}`];
 
-      if (isNaN(taka_no) || !taka_no) {
+      if ((isNaN(taka_no) || !taka_no) && !isNaN(meter)) {
         message.error("Please, Provide valid taka details");
         setError(`taka_no_${field}`, {
           type: "manual",
@@ -105,7 +134,7 @@ const AddReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } else if (isNaN(meter) || !meter) {
+      } else if ((isNaN(meter) || !meter) && !isNaN(taka_no)) {
         message.error(`Please, Provide valid details for taka ${taka_no}`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -113,32 +142,20 @@ const AddReworkChallan = () => {
         });
         hasError = 1;
         return;
-      } 
-      // else if (isNaN(received_meter) || !received_meter) {
-      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
-      //   setError(`received_meter_${field}`, {
-      //     type: "manual",
-      //     message: "Received meter is required.",
-      //   });
-      //   hasError = 1;
-      //   return;
-      // } else if (isNaN(received_weight) || !received_weight) {
-      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
-      //   setError(`received_weight_${field}`, {
-      //     type: "manual",
-      //     message: "Received weight is required.",
-      //   });
-      //   hasError = 1;
-      //   return;
-      // } else if (isNaN(short) || !short) {
-      //   message.error(`Please, Provide valid details for taka ${taka_no}`);
-      //   setError(`short_${field}`, {
-      //     type: "manual",
-      //     message: "Taka No required.",
-      //   });
-      //   hasError = 1;
-      //   return;
-      // }
+      }
+      
+      if (!isNaN(taka_no) && !isNaN(meter)){
+        temp.push(
+          {
+            index: index + 1,
+            taka_no: +data[`taka_no_${field}`],
+            meter: +data[`meter_${field}`],
+            received_meter: +data[`received_meter_${field}`] || 0,
+            received_weight: +data[`received_weight_${field}`] || 0,
+            short: +data[`short_${field}`] || 100 ,
+          }
+        )
+      }
     });
 
     const newData = {
@@ -151,18 +168,8 @@ const AddReworkChallan = () => {
       vehicle_id: +data.vehicle_id,
       total_taka: +data.total_taka,
       total_meter: +data.total_meter,
-      taka_receive_meter: +data.taka_receive_meter,
-
-      details: detailArray.map((field, index) => {
-        return {
-          index: index + 1,
-          taka_no: +data[`taka_no_${field}`],
-          meter: +data[`meter_${field}`],
-          received_meter: +data[`received_meter_${field}`] || 0,
-          received_weight: +data[`received_weight_${field}`] || 0,
-          short: +data[`short_${field}`] || 100 ,
-        };
-      }),
+      taka_receive_meter: +data.taka_receive_meter, 
+      details: temp,
     };
 
     if (hasError === 0) {
@@ -203,7 +210,7 @@ const AddReworkChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, supplier_id, machine_name, quality_id } = watch();
+  const { supplier_name, supplier_id, machine_name, quality_id, option } = watch();
 
   // Machinelist dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -219,6 +226,9 @@ const AddReworkChallan = () => {
   });
 
   // Rework option list
+  const [reworkChallanOption, setReworkChallanOption] = useState([
+    {label: "Other", value: "Other"}
+  ]) ; 
   const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
     useQuery({
       queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
@@ -227,7 +237,10 @@ const AddReworkChallan = () => {
           companyId,
           params: { company_id: companyId },
         });
-        return res.data?.data;
+        let temp = res?.data?.data?.map((option) => {
+          return {label: option.option, value: option.option }
+        }); 
+        setReworkChallanOption([...temp, ...reworkChallanOption]) ; 
       },
       enabled: Boolean(companyId),
     });
@@ -293,6 +306,26 @@ const AddReworkChallan = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  // Get job rework challan last challan number information
+  const {
+    data: lastChallanNumber,
+    isLoad: lastChllanNumberLoading
+  } = useQuery({
+    queryKey: ["job/challan/rework/last-challan-no", {company_id:companyId}], 
+    queryFn: async () => {
+      const res = await getReworkChallanLastNumberRequest({
+        params: {company_id: companyId}
+      }) ; 
+
+      let challanNumber = Number(res?.data?.data?.challan_no) || 0 ; 
+      challanNumber = challanNumber + 1 ; 
+      setValue(`challan_no`, challanNumber) ; 
+      return challanNumber ;  
+    }, 
+    enabled: Boolean(companyId)
+
+  })
 
   const dropDownSupplierCompanyOption = useMemo(() => {
     if (
@@ -366,24 +399,17 @@ const AddReworkChallan = () => {
       { length: activeField },
       (_, i) => i + 1
     );
-
     purchaseChallanDetailArr.forEach((field) => {
       resetField(`taka_no_${field}`, "");
       resetField(`meter_${field}`, "");
       resetField(`received_meter_${field}`, "");
       resetField(`received_weight_${field}`, "");
       resetField(`short_${field}`, "");
-      // resetField(`production_meter_${field}`, "");
-      // resetField(`pending_meter_${field}`, "");
-      // resetField(`pending_percentage_${field}`, "");
     });
 
     setValue("quality_id", tempOrderValue);
     setActiveField(1);
     setIsAlertOpen(false);
-    // setTotalTaka(0);
-    // setTotalMeter(0);
-    // setTotalWeight(0);
   };
 
   return (
@@ -508,21 +534,38 @@ const AddReworkChallan = () => {
                 control={control}
                 name="option"
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    allowClear
-                    placeholder="Select option"
-                    loading={isLoadingReworkOptionList}
-                    options={reworkOptionsListRes?.map((option) => {
-                      return { label: option.option, value: option.option };
-                    })}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
+                  <>
+                    <Select
+                      {...field}
+                      allowClear
+                      placeholder="Select option"
+                      loading={isLoadingReworkOptionList}
+                      options={reworkChallanOption}
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
+                    />
+
+                    {option == "other" && (
+
+                      <Flex gap={5} style={{marginTop: "10px"}}>
+                        <Input
+                          value={otherOptionValue}
+                          onChange={(e) => {
+                            setOtherOptionValue(e.target.value)
+                          }}
+                        />
+                        <Button type="primary" loading = {iscreateReworkChallanLoading} onClick={async() => {
+                          await createReworkChallanOption({option: otherOptionValue})
+                        }}>
+                          Add
+                        </Button>
+                      </Flex>
+                    )}
+                  </>
                 )}
               />
             </Form.Item>
@@ -568,7 +611,7 @@ const AddReworkChallan = () => {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} placeholder="CH123456" />
+                  <Input {...field} value={lastChallanNumber} placeholder="CH123456" readOnly />
                 )}
               />
             </Form.Item>

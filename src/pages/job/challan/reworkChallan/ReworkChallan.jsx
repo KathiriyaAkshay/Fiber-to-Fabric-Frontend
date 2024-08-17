@@ -66,6 +66,7 @@ const ReworkChallan = () => {
     }));
   };
 
+  // Supplier dropdown list
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -80,6 +81,7 @@ const ReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Machine dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -256,18 +258,22 @@ const ReworkChallan = () => {
       dataIndex: "taka_receive_meter",
       key: "taka_receive_meter",
     },
-    {
-      title: "Wastage in KG.",
-      dataIndex: "wastageInKg",
-      key: "wastageInKg",
-      render: (text, record) => {
-        let received_meter = Number(record?.taka_receive_meter);
-        let total_meter = Number(record?.total_meter);
+    // {
+    //   title: "Wastage in KG.",
+    //   dataIndex: "wastageInKg",
+    //   key: "wastageInKg",
+    //   render: (text, record) => {
+    //     let received_meter = Number(record?.taka_receive_meter) ;
+    //     let total_meter = Number(record?.total_meter) ;
 
-        let wastage_kg = 100 - Number(received_meter * 100) / total_meter;
-        return <div>{wastage_kg.toFixed(2)}</div>;
-      },
-    },
+    //     let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ;
+    //     return(
+    //       <div>
+    //         {wastage_kg.toFixed(2)}
+    //       </div>
+    //     )
+    //   }
+    // },
     {
       title: "Short(%)",
       dataIndex: "shortPercentage",
@@ -313,21 +319,30 @@ const ReworkChallan = () => {
     {
       title: "Action",
       render: (details) => {
+        let delete_visible = 0;
+
+        details?.job_rework_challan_details?.map((element) => {
+          if (element?.is_rework_received == true) {
+            delete_visible = 1;
+          }
+        });
+
         return (
           <Space>
             <ViewReworkChallanInfo details={details} />
 
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
+            {delete_visible == 0 && (
+              <>
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
 
-            {Number(details?.total_meter) !=
-              Number(details?.taka_receive_meter) && (
-              <DeleteReworkChallan details={details} />
+                <DeleteReworkChallan details={details} />
+              </>
             )}
 
             <Button

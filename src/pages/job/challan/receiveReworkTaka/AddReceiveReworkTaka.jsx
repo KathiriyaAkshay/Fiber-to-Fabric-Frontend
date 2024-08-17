@@ -32,6 +32,7 @@ const AddReceiveReworkTaka = () => {
     navigate(-1);
   }
 
+  // Receive rework taka option handler 
   const { mutateAsync: AddReceiveReworkTakaHandler, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addReceiveReworkTakaRequest({
@@ -78,13 +79,18 @@ const AddReceiveReworkTaka = () => {
         pis: +data[`pis_${field}`],
       };
     });
-    const newData = {
-      machine_name: data.machine_name,
-      quality_id: +data.quality_id,
-      createdAt: dayjs(),
-      ...data2[0],
-    };
-    await AddReceiveReworkTakaHandler(newData);
+
+    let temp = [] ; 
+    data2.map((element) => {
+      temp.push({
+        ...element, 
+        machine_name: data?.machine_name, 
+        quality_id : +data?.quality_id, 
+        createdAt: dayjs()
+      })
+    }); 
+
+    await AddReceiveReworkTakaHandler(temp);
   }
 
   const {
@@ -118,6 +124,7 @@ const AddReceiveReworkTaka = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality dropdown list 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -294,17 +301,19 @@ const AddReceiveReworkTaka = () => {
         </Row>
 
         <Divider />
-
-        <ReceiveReworkTakaFieldTable
-          errors={errors}
-          control={control}
-          setFocus={setFocus}
-          setValue={setValue}
-          getValues={getValues}
-          activeField={activeField}
-          setActiveField={setActiveField}
-          quality_id={quality_id}
-        />
+        
+        {quality_id !== undefined && quality_id !== null && (
+          <ReceiveReworkTakaFieldTable
+            errors={errors}
+            control={control}
+            setFocus={setFocus}
+            setValue={setValue}
+            getValues={getValues}
+            activeField={activeField}
+            setActiveField={setActiveField}
+            quality_id={quality_id}
+          />
+        )}
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
           <Button htmlType="button" onClick={() => reset()}>

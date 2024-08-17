@@ -25,3 +25,13 @@ export function updateReworkChallanRequest({ id, data, params }) {
 export function getReworkOptionsListRequest({ params }) {
     return api.get(`/dropdown/job/challan/rework/options/list`, { params });
 }
+
+// Rework challan last challan number request
+export function getReworkChallanLastNumberRequest({params}) {
+    return api.get(`/job/challan/rework/last-chllan-no`, {params}) ; 
+}
+
+// Rework challan other option request 
+export function createReworkChallanNewOptionRequest({data, params}){
+    return api.post(`dropdown/job/challan/rework/options/create`, data, {params}) ; 
+}
