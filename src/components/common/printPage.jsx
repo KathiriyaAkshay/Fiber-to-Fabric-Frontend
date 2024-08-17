@@ -38,8 +38,10 @@ function getFileName(input) {
   const formattedDate = `${day}-${month}-${year}`;
   const formattedTime = `${hours}-${minutes}-${seconds}`;
 
-  // Combine the formatted string with the date and time
-  return `${formattedString}-${formattedDate}-${formattedTime}`;
+  const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
+
+  // return `${formattedString}-${formattedDate}-${formattedTime}`;
+  return `${formattedString}-${dateString}`;
 }
 
 const PrintPage = () => {
@@ -199,23 +201,29 @@ const PrintPage = () => {
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
 
   const excelDownloadHandler = () => {
-    console.log("excelDownloadHandler", { orderTitle, orderData, tableHead });
+    const fileName = prompt(
+      "Please enter the file name",
+      getFileName(orderTitle)
+    );
+    console.log(fileName);
 
-    let data = [];
-    if (totalVisible) {
-      data = [tableHead, ...orderData, totalCount];
-    } else {
-      data = [tableHead, ...orderData];
+    if (fileName) {
+      let data = [];
+      if (totalVisible) {
+        data = [tableHead, ...orderData, totalCount];
+      } else {
+        data = [tableHead, ...orderData];
+      }
+      let worksheet = XLSX.utils.aoa_to_sheet(data);
+      let workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, worksheet, orderTitle);
+
+      // Export to Excel file
+      // const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
+      // const fileName = `${fileName}.xlsx`;
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
-    let worksheet = XLSX.utils.aoa_to_sheet(data);
-    let workbook = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, orderTitle);
-
-    // Export to Excel file
-    const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
-    const fileName = `${orderTitle}_${dateString}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
   };
 
   useEffect(() => {
@@ -304,6 +312,20 @@ const PrintPage = () => {
     </Document>
   );
 
+  const handleDownloadPDF = () => {
+    const fileName = prompt(
+      "Please enter the file name",
+      getFileName(orderTitle)
+    );
+    if (fileName) {
+      setOrderTitle(fileName);
+      setTimeout(() => {
+        const downloadLink = document.getElementById("pdf-download-link");
+        downloadLink.click();
+      }, 200);
+    }
+  };
+
   return (
     <>
       <div className="printable-page">
@@ -321,17 +343,9 @@ const PrintPage = () => {
           <Button
             type="primary"
             icon={<DownloadOutlined />}
-            // onClick={handleDownloadPDF}
+            onClick={handleDownloadPDF}
           >
-            <PDFDownloadLink
-              PDFDownloadLink
-              document={<MyDocument />}
-              fileName={getFileName(orderTitle)}
-            >
-              {({ loading }) =>
-                loading ? "Loading document..." : "Download PDF"
-              }
-            </PDFDownloadLink>
+            Download PDF
           </Button>
 
           <Button
@@ -391,6 +405,17 @@ const PrintPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Download pdf code here. */}
+      <PDFDownloadLink
+        // PDFDownloadLink
+        document={<MyDocument />}
+        fileName={orderTitle}
+        id="pdf-download-link"
+        style={{ display: "none" }}
+      >
+        {({ loading }) => (loading ? "Loading document..." : "Download PDF")}
+      </PDFDownloadLink>
     </>
   );
 };
