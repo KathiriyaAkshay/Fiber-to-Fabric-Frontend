@@ -2,7 +2,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import "react-phone-number-input/style.css";
-import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+} from "react-router-dom";
 import Dashboard from "./pages/dashboard/Dashboard";
 import BaseLayout from "./layouts/BaseLayout";
 import ErrorBoundary from "./components/common/ErrorBoundary";
@@ -338,8 +343,8 @@ const router = createBrowserRouter([
           },
           {
             path: "opening-production-stock",
-            element: <OpeningProductionStock/>
-          }, 
+            element: <OpeningProductionStock />,
+          },
           {
             path: "folding-production",
             element: (
@@ -454,6 +459,7 @@ const router = createBrowserRouter([
       {
         path: "/purchase",
         children: [
+          { index: true, element: <Navigate to={"taka"} /> },
           {
             path: "taka",
             children: [{ index: true, element: <StockPurchaseTaka /> }],

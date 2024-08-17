@@ -21,8 +21,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -41,10 +41,10 @@ function PartyList() {
   const debouncedDueDay = useDebounce(dueDay, 500);
   const debouncedCreditLimitTo = useDebounce(creditLimitTo, 500);
   const debouncedCreditLimitFrom = useDebounce(creditLimitFrom, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: [
@@ -117,22 +117,39 @@ function PartyList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.partyList?.rows?.map((user) => {
       const { id, first_name, last_name, adhar_no, mobile, email } = user;
       return [id, first_name, last_name, adhar_no, mobile, email];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
-      ],
-      leftContent,
-      rightContent,
-      title: "Party List",
-    });
+    let tableTitle = [
+      "ID",
+      "First Name",
+      "Last Name",
+      "Adhaar No",
+      "Contact No",
+      "Email",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Party List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     ["ID", "First Name", "Last Name", "Adhaar No", "Contact No", "Email"],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Party List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [

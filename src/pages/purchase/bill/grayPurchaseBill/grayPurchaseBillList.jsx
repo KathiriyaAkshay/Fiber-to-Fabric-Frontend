@@ -10,21 +10,12 @@ import {
   Tag,
   Typography,
 } from "antd";
-import {
-  EditOutlined,
-  FilePdfOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { FilePdfOutlined, FileTextOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -35,9 +26,9 @@ import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTa
 import moment from "moment";
 
 const GrayPurchaseBillList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
-  const navigate = useNavigate();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
+  // const navigate = useNavigate();
 
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -167,23 +158,78 @@ const GrayPurchaseBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  function navigateToUpdate(id) {
-    navigate(`/purchase/purchased-taka/update/${id}`);
-  }
+  // function navigateToUpdate(id) {
+  //   navigate(`/purchase/purchased-taka/update/${id}`);
+  // }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    const body = grayPurchaseBillList?.rows?.map((user, index) => {
-      const { challan_no } = user;
-      return [index + 1, challan_no];
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    const body = grayPurchaseBillList?.rows?.map((item, index) => {
+      const {
+        purchase_taka_bill,
+        supplier,
+        gray_order,
+        inhouse_quality,
+        total_taka,
+        total_meter,
+      } = item;
+      return [
+        index + 1,
+        purchase_taka_bill?.invoice_no,
+        supplier?.supplier_name,
+        dayjs(purchase_taka_bill?.bill_date).format("DD-MM-YYYY"),
+        gray_order?.order_no,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        total_taka,
+        total_meter,
+        purchase_taka_bill?.rate,
+        purchase_taka_bill?.amount,
+        purchase_taka_bill?.net_amount,
+      ];
     });
-    downloadUserPdf({
-      body,
-      head: [["ID", "Challan NO"]],
-      leftContent,
-      rightContent,
-      title: "Purchase Challan List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Bill NO",
+      "Supplier Name",
+      "Bill Date",
+      "Order No",
+      "Quality",
+      "Total Taka",
+      "Total Meter",
+      "Rate",
+      "Amount",
+      "Net Amount",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Purchase Bill List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Bill NO",
+    //       "Supplier Name",
+    //       "Bill Date",
+    //       "Order No",
+    //       "Quality",
+    //       "Total Taka",
+    //       "Total Meter",
+    //       "Rate",
+    //       "Amount",
+    //       "Net Amount",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Purchase Bill List",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -235,8 +281,7 @@ const GrayPurchaseBillList = () => {
       title: "Rate",
       dataIndex: ["purchase_taka_bill", "rate"],
       key: "rate",
-      render: (text, record) =>
-        text == null ? <div>-</div> : <div>{text}</div>,
+      render: (text) => (text == null ? <div>-</div> : <div>{text}</div>),
     },
     {
       title: "Amount",
@@ -251,7 +296,7 @@ const GrayPurchaseBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["purchase_taka_bill", "due_date"],
-      render: (text, record) => <div>-</div>,
+      render: (text) => <div>-</div>,
     },
     {
       title: "Due Days",
@@ -337,7 +382,7 @@ const GrayPurchaseBillList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        summary={(pageData) => {
+        summary={() => {
           let totalGrandMeter = 0;
           let totalRate = 0;
           let totalAmount = 0;

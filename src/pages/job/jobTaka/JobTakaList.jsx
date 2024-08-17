@@ -16,8 +16,8 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 import { getJobTakaDetailListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
@@ -26,8 +26,8 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 
 const JobTakaList = () => {
-  const { company, companyId } = useContext(GlobalContext);
-  const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   // const [state, setState] = useState("current");
@@ -152,7 +152,7 @@ const JobTakaList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = jobTakaList?.rows?.map((item, index) => {
       const {
         taka_no,
@@ -170,30 +170,50 @@ const JobTakaList = () => {
         taka_no,
         meter,
         weight,
-        "", // average will be here.
+        "****", // average will be here.
         dayjs(createdAt).format("DD-MM-YYYY"),
         is_returned ? "Returned" : in_stock ? "In Stock" : "Sold",
       ];
     });
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Purchase Challan No",
-          "Quality",
-          "Taka No.",
-          "Meter",
-          "weight",
-          "Average",
-          "Date",
-          "Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Job Taka List",
-    });
+
+    const tableTitle = [
+      "ID",
+      "Purchase Challan No",
+      "Quality",
+      "Taka No.",
+      "Meter",
+      "weight",
+      "Average",
+      "Date",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Job Taka List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Purchase Challan No",
+    //       "Quality",
+    //       "Taka No.",
+    //       "Meter",
+    //       "weight",
+    //       "Average",
+    //       "Date",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Job Taka List",
+    // });
+    window.open("/print");
   }
 
   const columns = [

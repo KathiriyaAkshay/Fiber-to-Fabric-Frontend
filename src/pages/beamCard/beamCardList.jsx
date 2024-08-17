@@ -16,19 +16,17 @@ import {
   Typography,
 } from "antd";
 import {
-  AppstoreOutlined,
   CloseOutlined,
   EditOutlined,
   EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
-  PrinterOutlined,
   SwapOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
 import { usePagination } from "../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -159,12 +157,12 @@ const getActions = (details) => {
 
 const BeamCardList = () => {
   const navigate = useNavigate();
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const [isOpenMoveBhidan, setIsOpenMoveBhidan] = useState(false);
-  const [beamNumberInfoModel, setBeamNumberInfoModel] = useState(false) ; 
+  const [beamNumberInfoModel, setBeamNumberInfoModel] = useState(false);
   const [row, setRow] = useState(null);
 
   const [search, setSearch] = useState({
@@ -275,26 +273,55 @@ const BeamCardList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamCardList?.rows?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
+    const body = beamCardList?.rows?.map((item, index) => {
+      const obj = getTakaDetailsObject(item);
+
+      const { inhouse_quality, pending_meter, status, machine_no, createdAt } =
+        item;
       return [
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
+        obj?.beam_no,
+        `${inhouse_quality.quality_name} (${inhouse_quality.quality_weight}KG)`,
+        machine_no,
+        obj.pano,
+        obj.taka,
+        obj.meter,
+        pending_meter,
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        status,
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-      leftContent,
-      rightContent,
-      title: "Trading Quality List",
-    });
+    const tableTitle = [
+      "ID",
+      "Beam No",
+      "Quality Name",
+      "Machine No",
+      "Pano",
+      "Taka",
+      "Meter",
+      "Pending Meter",
+      "Date",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Beam Card List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Beam Card List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -308,9 +335,16 @@ const BeamCardList = () => {
       title: "Beam No",
       render: (details) => {
         const item = getTakaDetailsObject(details);
-         return (
-          <div>{item?.beam_no || "-"} {item?.supplier_beam_no !== undefined && <span style={{fontWeight: 600}}>{`(${item?.supplier_beam_no})`}</span>} </div>
-        );  
+        return (
+          <div>
+            {item?.beam_no || "-"}{" "}
+            {item?.supplier_beam_no !== undefined && (
+              <span
+                style={{ fontWeight: 600 }}
+              >{`(${item?.supplier_beam_no})`}</span>
+            )}{" "}
+          </div>
+        );
       },
     },
     {
@@ -333,12 +367,10 @@ const BeamCardList = () => {
           details.recieve_size_beam_detail ||
           details.job_beam_receive_detail;
 
-        if (obj !== null){
+        if (obj !== null) {
           return obj?.meters || obj?.meter || "-";
         } else {
-          return (
-            <div>-</div>
-          )
+          return <div>-</div>;
         }
       },
     },
@@ -353,36 +385,31 @@ const BeamCardList = () => {
       dataIndex: "shortage",
       key: "shortage",
       render: (text, record) => {
-        let pending_meter = record?.pending_meter ; 
+        let pending_meter = record?.pending_meter;
         const obj =
           record.non_pasarela_beam_detail ||
           record.recieve_size_beam_detail ||
           record.job_beam_receive_detail;
-        let total_meter = 0 ; 
-        if (obj != null){
-          total_meter = obj?.meters || obj.meter || 0 ; 
-        } 
-
-        let shortage = (Number(pending_meter)*100) / Number(total_meter) ; 
-        let shortage_status = ["finished", "cut"] ; 
-
-        if (pending_meter < 0 ){
-          shortage = `-${shortage.toFixed(2)}`
-        } else {
-          shortage = shortage.toFixed(2)
+        let total_meter = 0;
+        if (obj != null) {
+          total_meter = obj?.meters || obj.meter || 0;
         }
 
-        if (shortage_status?.includes(record?.status)){
-          return(
-            <div>{shortage}%</div>
-          )
+        let shortage = (Number(pending_meter) * 100) / Number(total_meter);
+        let shortage_status = ["finished", "cut"];
+
+        if (pending_meter < 0) {
+          shortage = `-${shortage.toFixed(2)}`;
         } else {
-          return(
-            <div>-</div>
-          )
+          shortage = shortage.toFixed(2);
         }
 
-      }
+        if (shortage_status?.includes(record?.status)) {
+          return <div>{shortage}%</div>;
+        } else {
+          return <div>-</div>;
+        }
+      },
     },
     {
       title: "pano",
@@ -396,22 +423,18 @@ const BeamCardList = () => {
       dataIndex: "machine_no",
       key: "machine_no",
       render: (text, record) => {
-
-        console.log("Machine number information", text);
-
-        if (text !== null){
-          return ( 
+        if (text !== null) {
+          return (
             <Tag color="#108ee9">
-              <strong>{text} ({record?.machine_name})</strong>
+              <strong>
+                {text} ({record?.machine_name})
+              </strong>
             </Tag>
-          )
+          );
         } else {
-          return(
-            <div>-</div>
-          )
+          return <div>-</div>;
         }
-        
-      }
+      },
     },
     {
       title: "Day Duration",
@@ -421,10 +444,11 @@ const BeamCardList = () => {
         let timeDifference = calculateTimeDifference(record?.createdAt);
         return (
           <div>
-            {timeDifference?.days}D {timeDifference?.hours}H {timeDifference?.minutes}M
+            {timeDifference?.days}D {timeDifference?.hours}H{" "}
+            {timeDifference?.minutes}M
           </div>
-        )
-      }
+        );
+      },
     },
     {
       title: "Date",
@@ -436,45 +460,27 @@ const BeamCardList = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => {
+      render: (text) => {
         if (text == "running") {
-          return (
-            <Tag color="magenta">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="magenta">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "finished") {
-          return (
-            <Tag color="green">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="green">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "cut") {
-          return (
-            <Tag color="red">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="red">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "pasarela") {
-          return (
-            <Tag color="orange" >{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="orange">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "non-pasarela") {
-          return (
-            <Tag color="volcano">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="volcano">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "bhidan_of_beam") {
-          return (
-            <Tag color="blue">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="blue">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "sent") {
-          return (
-            <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "primary(advance)") {
-          return (
-            <Tag color="cyan">{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag color="cyan">{capitalizeFirstCharacter(text)}</Tag>;
         } else {
-          return (
-            <Tag>{capitalizeFirstCharacter(text)}</Tag>
-          )
+          return <Tag>{capitalizeFirstCharacter(text)}</Tag>;
         }
-      }
+      },
     },
     {
       title: "Action",
@@ -482,16 +488,16 @@ const BeamCardList = () => {
         const { isView, isEdit, isDelete, isPlus, isArrow, isBarCode } =
           getActions(details);
 
-        let beamList = [] ; 
+        let beamList = [];
         let object =
           details.non_pasarela_beam_detail ||
           details.recieve_size_beam_detail ||
           details.job_beam_receive_detail;
         beamList.push({
-          "beam_no": object?.beam_no, 
-          "taka": object?.taka, 
-          "meters": object?.meter || object?.meters || 0
-        })
+          beam_no: object?.beam_no,
+          taka: object?.taka,
+          meters: object?.meter || object?.meters || 0,
+        });
 
         return (
           <Space>
@@ -514,9 +520,7 @@ const BeamCardList = () => {
                 beamTypeDropDown={details.status}
               />
             )}
-            {isBarCode && (
-              <BeamCardInformationModel data = {beamList} />
-            )}
+            {isBarCode && <BeamCardInformationModel data={beamList} />}
             {isArrow && (
               <Button
                 onClick={() => {
@@ -569,7 +573,6 @@ const BeamCardList = () => {
 
           return (
             <>
-
               {/* Total information  */}
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
@@ -623,16 +626,16 @@ const BeamCardList = () => {
     );
   }
 
-
-
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <Button 
-            icon = {<InfoCircleFilled/>} 
-            onClick={() => {setBeamNumberInfoModel(true); console.log("Run this function");
-          }}></Button>
+          <Button
+            icon={<InfoCircleFilled />}
+            onClick={() => {
+              setBeamNumberInfoModel(true);
+            }}
+          ></Button>
           <h3 className="m-0 text-primary">Beam Card List</h3>
           <Button
             onClick={navigateToAdd}
@@ -677,13 +680,6 @@ const BeamCardList = () => {
           </Button>
           <Button
             icon={<FilePdfOutlined />}
-            type="primary"
-            disabled={!beamCardList?.rows?.length}
-            onClick={downloadPdf}
-            className="flex-none"
-          />
-          <Button
-            icon={<PrinterOutlined />}
             type="primary"
             disabled={!beamCardList?.rows?.length}
             onClick={downloadPdf}
@@ -804,7 +800,7 @@ const BeamCardList = () => {
 
       {beamNumberInfoModel && (
         <BeamCardNumberInfoModel
-          isModalOpen= {beamNumberInfoModel}
+          isModalOpen={beamNumberInfoModel}
           setIsModelOpen={setBeamNumberInfoModel}
         />
       )}
@@ -820,7 +816,6 @@ const BeamCardViewDetailModal = ({
   isScroll = false,
   details = [],
 }) => {
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -837,7 +832,6 @@ const BeamCardViewDetailModal = ({
   }
 
   const item = getTakaDetailsObject(details);
-  
 
   return (
     <>
@@ -881,20 +875,19 @@ const BeamCardViewDetailModal = ({
             key={title}
           >
             <Col span={12}>
-
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={6}>
-
                   <Typography.Text className="font-medium beam-card-info-title">
                     Quality Name :
                   </Typography.Text>
-
                 </Col>
 
                 <Col span={12}>
                   <Typography.Text>{`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}</Typography.Text>
                 </Col>
-
               </Row>
 
               <Row id="row" className="beam-card-info-title-div">
@@ -907,9 +900,12 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>Beam Type</Typography.Text>
                 </Col>
               </Row>
-              
+
               {item?.supplier_beam_no !== undefined && (
-                <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+                <Row
+                  id="row"
+                  className="beam-card-info-title-div beam-card-main-div"
+                >
                   <Col span={8}>
                     <Typography.Text className="font-medium beam-card-info-title">
                       Supplier Beam No
@@ -920,11 +916,13 @@ const BeamCardViewDetailModal = ({
                   </Col>
                 </Row>
               )}
-
             </Col>
 
             <Col span={12}>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Beam no.
@@ -958,8 +956,10 @@ const BeamCardViewDetailModal = ({
             key={title}
           >
             <Col span={12}>
-
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Warper Employee Name (P)
@@ -980,8 +980,11 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>-</Typography.Text>
                 </Col>
               </Row>
-              
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Pasaria Employee Name
@@ -994,7 +997,10 @@ const BeamCardViewDetailModal = ({
             </Col>
 
             <Col span={12}>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Non Pasarela Date (P)
@@ -1014,7 +1020,10 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>-</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Pasarela Date
@@ -1036,7 +1045,10 @@ const BeamCardViewDetailModal = ({
             key={title}
           >
             <Col span={12}>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Taar
@@ -1056,7 +1068,10 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>{item?.pano}</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Peak
@@ -1068,7 +1083,10 @@ const BeamCardViewDetailModal = ({
               </Row>
             </Col>
             <Col span={12}>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Taka
@@ -1088,7 +1106,10 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>{item?.meter}</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div beam-card-main-div">
+              <Row
+                id="row"
+                className="beam-card-info-title-div beam-card-main-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Read

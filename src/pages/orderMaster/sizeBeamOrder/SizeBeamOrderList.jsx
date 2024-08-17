@@ -1,5 +1,18 @@
-import { Button, Flex, Space, Spin, Table, Tag, Typography, DatePicker } from "antd";
-import { EditOutlined, FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Flex,
+  Space,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+  DatePicker,
+} from "antd";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../../api/hooks/auth";
@@ -22,7 +35,10 @@ function SizeBeamOrderList() {
   const { company, companyId, financialYearEnd } = useContext(GlobalContext);
   const [fromDate, setFromDate] = useState(dayjs(monthStartDate));
   const [toDate, setToDate] = useState(dayjs(monthEndDate));
-  const debouncedFromDate = useDebounce(dayjs(fromDate).format("YYYY-MM-DD"), 500);
+  const debouncedFromDate = useDebounce(
+    dayjs(fromDate).format("YYYY-MM-DD"),
+    500
+  );
   const debouncedToDate = useDebounce(dayjs(toDate).format("YYYY-MM-DD"), 500);
 
   const { data: sizeBeamOrderListRes, isLoading } = useQuery({
@@ -32,10 +48,11 @@ function SizeBeamOrderList() {
       "list",
       {
         company_id: companyId,
-        page, pageSize,
+        page,
+        pageSize,
         end: financialYearEnd,
         fromDate: debouncedFromDate,
-        toDate: debouncedToDate
+        toDate: debouncedToDate,
       },
     ],
     queryFn: async () => {
@@ -47,7 +64,7 @@ function SizeBeamOrderList() {
           end: financialYearEnd,
           pending: true,
           fromDate: debouncedFromDate,
-          toDate: debouncedToDate
+          toDate: debouncedToDate,
         },
       });
       return res.data?.data;
@@ -132,7 +149,7 @@ function SizeBeamOrderList() {
       let temp_meter = 0;
       element?.size_beam_order_details?.map((data) => {
         temp_meter = temp_meter + Number(data?.meters);
-      })
+      });
       temp.push([
         index + 1,
         element?.id,
@@ -142,9 +159,9 @@ function SizeBeamOrderList() {
         element?.size_beam_order_details?.length,
         temp_meter,
         element?.status,
-        element?.print_challan_status
-      ])
-    })
+        element?.print_challan_status,
+      ]);
+    });
 
     localStorage.setItem("print-title", "Send Beam Pipe Order List");
     localStorage.setItem("print-head", JSON.stringify(title));
@@ -152,7 +169,6 @@ function SizeBeamOrderList() {
     localStorage.setItem("total-count", "0");
 
     window.open("/print");
-
   }
 
   const columns = [
@@ -160,7 +176,7 @@ function SizeBeamOrderList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -172,12 +188,12 @@ function SizeBeamOrderList() {
     {
       title: "Order No",
       key: "order_no",
-      dataIndex: "order_no"
+      dataIndex: "order_no",
     },
     {
       title: "Supplier",
       key: "supplier_name",
-      dataIndex: ["supplier", "supplier_name"]
+      dataIndex: ["supplier", "supplier_name"],
     },
     {
       title: "Supplier company",
@@ -194,10 +210,8 @@ function SizeBeamOrderList() {
       dataIndex: "total_pipe",
       key: "total_pipe",
       render: (text, record) => {
-        return (
-          <div>{record?.size_beam_order_details?.length}</div>
-        )
-      }
+        return <div>{record?.size_beam_order_details?.length}</div>;
+      },
     },
     {
       title: "Total Meter",
@@ -207,11 +221,9 @@ function SizeBeamOrderList() {
         let total_meter = 0;
         record?.size_beam_order_details?.map((element) => {
           total_meter = total_meter + Number(element?.meters);
-        })
-        return (
-          <div>{total_meter}</div>
-        )
-      }
+        });
+        return <div>{total_meter}</div>;
+      },
     },
     {
       title: "Pending Meter",
@@ -222,25 +234,31 @@ function SizeBeamOrderList() {
       title: "Order Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) => (
-        text == "FINISHED" ? <>
-          <Tag color="green">{text}</Tag>
-        </> : <>
-          <Tag color="red">{text}</Tag>
-        </>
-      )
+      render: (text, record) =>
+        text == "FINISHED" ? (
+          <>
+            <Tag color="green">{text}</Tag>
+          </>
+        ) : (
+          <>
+            <Tag color="red">{text}</Tag>
+          </>
+        ),
     },
     {
       title: "Print Challan",
       dataIndex: "print_challan_status",
       key: "print_challan_status",
-      render: (text, record) => (
-        text == "PRINTED" ? <>
-          <Tag color="green">{text}</Tag>
-        </> : <>
-          <Tag color="red">{text}</Tag>
-        </>
-      )
+      render: (text, record) =>
+        text == "PRINTED" ? (
+          <>
+            <Tag color="green">{text}</Tag>
+          </>
+        ) : (
+          <>
+            <Tag color="red">{text}</Tag>
+          </>
+        ),
     },
     {
       title: "Action",
@@ -259,16 +277,14 @@ function SizeBeamOrderList() {
         let total_meter = 0;
         record?.size_beam_order_details?.map((element) => {
           total_meter = total_meter + Number(element?.meters);
-        })
+        });
 
         return (
           <Space>
-
             <BeamPipeChallanModel details={record} />
 
             {record?.status == "PENDING" && (
               <>
-
                 {total_meter == pending_meter && (
                   <Button
                     onClick={() => {
@@ -315,7 +331,7 @@ function SizeBeamOrderList() {
   }
 
   const disableFutureDates = (current) => {
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   return (
@@ -344,9 +360,7 @@ function SizeBeamOrderList() {
           </Flex>
 
           <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              To
-            </Typography.Text>
+            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker
               value={toDate}
               onChange={setToDate}

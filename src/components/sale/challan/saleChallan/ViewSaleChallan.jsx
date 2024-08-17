@@ -136,7 +136,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
       sale_challan_id: details.id,
       sale_challan_detail_ids: selectedSaleChallan,
       createdAt: dayjs(returnDate).format("YYYY-MM-DD"),
-      supplier_name: details.supplier.supplier_name,
+      supplier_name: details?.supplier?.supplier_name,
       quality_id: details.quality_id,
     };
     await AddSaleChallanReturn(payload);

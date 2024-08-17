@@ -21,8 +21,8 @@ import {
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../api/hooks/auth";
+// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
@@ -36,10 +36,10 @@ const roleId = USER_ROLES.SUPPLIER.role_id;
 function SupplierList() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: userListRes, isLoading } = useQuery({
     queryKey: [
@@ -99,7 +99,7 @@ function SupplierList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = userListRes?.supplierList?.rows?.map((user) => {
       const { id, supplier, address, gst_no, supplier_types } = user;
@@ -115,23 +115,41 @@ function SupplierList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Name",
-          "Company Name",
-          "Address",
-          "GST No",
-          "HSN Code",
-          "Supplier Type",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Supplier List",
-    });
+    let tableTitle = [
+      "ID",
+      "Name",
+      "Company Name",
+      "Address",
+      "GST No",
+      "HSN Code",
+      "Supplier Type",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Supplier List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Name",
+    //       "Company Name",
+    //       "Address",
+    //       "GST No",
+    //       "HSN Code",
+    //       "Supplier Type",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Supplier List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -139,7 +157,7 @@ function SupplierList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Username",
@@ -216,9 +234,9 @@ function SupplierList() {
                   value: supplier_types?.map((s) => s?.type)?.join(", "),
                 },
                 {
-                  title: "Broker", 
-                  value: `${supplier?.broker?.first_name} ${supplier?.broker?.last_name} | ( ${supplier?.broker?.username} )`
-                }
+                  title: "Broker",
+                  value: `${supplier?.broker?.first_name} ${supplier?.broker?.last_name} | ( ${supplier?.broker?.username} )`,
+                },
               ]}
             />
             <Button

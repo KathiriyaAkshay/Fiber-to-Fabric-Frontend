@@ -17,7 +17,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../api/hooks/auth";
 // import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
@@ -34,7 +34,6 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder";
 import { ORDER_TYPE } from "../../../constants/orderMaster";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 
 const ORDER_STATUS = [
   { label: "Pending", value: "pending" },
@@ -52,16 +51,15 @@ const MyOrderList = () => {
   const debouncedMachine = useDebounce(machine, 500);
   const debouncedStatus = useDebounce(status, 500);
   const debouncedOrderType = useDebounce(orderType, 500);
-  console.log({ debouncedOrderType });
 
   const debouncedBroker = useDebounce(broker, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncedParty = useDebounce(party, 500);
 
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -113,8 +111,8 @@ const MyOrderList = () => {
           return res.data?.data;
         }
       },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -171,7 +169,7 @@ const MyOrderList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = myOrderList?.row?.map((order, index) => {
       const companyName =
@@ -192,26 +190,46 @@ const MyOrderList = () => {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Order No",
-          "Order Date",
-          "Company Name",
-          "Quality",
-          "Pending Taka",
-          "Deliver Taka",
-          "Pending Meter",
-          "Deliver Meter",
-          "Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Order List",
-    });
+    const tableTitle = [
+      "ID",
+      "Order No",
+      "Order Date",
+      "Company Name",
+      "Quality",
+      "Pending Taka",
+      "Deliver Taka",
+      "Pending Meter",
+      "Deliver Meter",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Order List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Order No",
+    //       "Order Date",
+    //       "Company Name",
+    //       "Quality",
+    //       "Pending Taka",
+    //       "Deliver Taka",
+    //       "Pending Meter",
+    //       "Deliver Meter",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Order List",
+    // });
+    window.open("/print");
   }
 
   const columns = [

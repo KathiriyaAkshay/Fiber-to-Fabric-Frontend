@@ -21,11 +21,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useRef, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -42,12 +38,11 @@ import moment from "moment";
 import ReactToPrint from "react-to-print";
 const { Title, Text } = Typography;
 
-
 const BeamSentList = () => {
   const navigate = useNavigate();
   const { company, companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const [isLoadBeamModalOpen, setIsLoadBeamModalOpen] = useState(false);
 
@@ -157,26 +152,74 @@ const BeamSentList = () => {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = beamSentListData?.rows?.map((user, index) => {
-      const { quality_name, quality_group, production_type, is_active } = user;
+    const body = beamSentListData?.rows?.map((item, index) => {
+      const { createdAt, challan_no, supplier, job_beam_sent_details } = item;
+
+      let totalMeter = 0;
+      let totalWeight = 0;
+      job_beam_sent_details?.map((item) => {
+        const obj =
+          item?.loaded_beam?.non_pasarela_beam_detail ||
+          item?.loaded_beam?.recieve_size_beam_detail ||
+          item?.loaded_beam?.job_beam_receive_detail;
+
+        totalMeter +=
+          obj?.meters !== undefined
+            ? obj?.meters
+            : obj?.meter != undefined
+            ? obj.meter
+            : 0;
+
+        totalWeight += obj ? obj?.net_weight : 0;
+      });
+
       return [
         index + 1,
-        quality_name,
-        quality_group,
-        production_type,
-        is_active ? "Active" : "Inactive",
+        dayjs(createdAt).format("DD-MM-YYYY"),
+        challan_no,
+        supplier?.supplier_company,
+        "*****",
+        totalMeter,
+        totalWeight,
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-      leftContent,
-      rightContent,
-      title: "Trading Quality List",
-    });
+    const tableTitle = [
+      "ID",
+      "Challan Date",
+      "Challan No",
+      "Party Company Name",
+      "Quality Name",
+      "Total Meter",
+      "Total Weight",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Beam Sent List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Challan Date",
+    //       "Challan No",
+    //       "Party Company Name",
+    //       "Quality Name",
+    //       "Total Meter",
+    //       "Total Weight",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Beam Sent List",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -208,13 +251,17 @@ const BeamSentList = () => {
         const { job_beam_sent_details } = detail;
         let totalMeter = 0;
         job_beam_sent_details?.map((item) => {
-          
           const obj =
             item?.loaded_beam?.non_pasarela_beam_detail ||
             item?.loaded_beam?.recieve_size_beam_detail ||
             item?.loaded_beam?.job_beam_receive_detail;
-            
-          totalMeter += obj?.meters !== undefined ? obj?.meters : obj?.meter != undefined?obj.meter:0;
+
+          totalMeter +=
+            obj?.meters !== undefined
+              ? obj?.meters
+              : obj?.meter != undefined
+              ? obj.meter
+              : 0;
         });
 
         return totalMeter;
@@ -249,10 +296,8 @@ const BeamSentList = () => {
     {
       title: "Action",
       render: (details) => {
-        console.log({ details });
         return (
           <Space>
-
             <BeamSentViewDetailModal
               title="Beam Sent Details"
               details={details}
@@ -272,7 +317,6 @@ const BeamSentList = () => {
             <Button>
               <TruckOutlined />
             </Button>
-
           </Space>
         );
       },
@@ -316,7 +360,7 @@ const BeamSentList = () => {
                 <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );
@@ -464,7 +508,7 @@ const BeamSentViewDetailModal = ({
   title = "-",
   isScroll = false,
   details = [],
-  company
+  company,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
@@ -526,7 +570,7 @@ const BeamSentViewDetailModal = ({
     },
   ];
 
-  const componentRef = useRef() ; 
+  const componentRef = useRef();
 
   const pageStyle = `
     @media print {
@@ -555,7 +599,7 @@ const BeamSentViewDetailModal = ({
         }
         open={isModalOpen}
         footer={() => {
-          return(
+          return (
             <>
               <ReactToPrint
                 trigger={() => (
@@ -572,7 +616,7 @@ const BeamSentViewDetailModal = ({
                 pageStyle={pageStyle}
               />
             </>
-          )
+          );
         }}
         onCancel={handleCancel}
         centered={true}
@@ -596,11 +640,13 @@ const BeamSentViewDetailModal = ({
             paddingBottom: 10,
             paddingRight: 10,
             backgroundColor: "#efefef",
-          }
+          },
         }}
-      > 
-        <div ref={componentRef} style={{marginLeft: "1px", marginRight: "1px", width: "100%"}}>
-
+      >
+        <div
+          ref={componentRef}
+          style={{ marginLeft: "1px", marginRight: "1px", width: "100%" }}
+        >
           <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
@@ -613,14 +659,20 @@ const BeamSentViewDetailModal = ({
                       Address: {details?.supplier?.user?.address}
                     </Text>
                     <br />
-                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {details?.supplier?.user?.gst_no}</Text>
-                    <br/>
-                    <Text><span style={{fontWeight: 600}}>E-way bill No</span> : --- </Text>
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>GST NO</span> :{" "}
+                      {details?.supplier?.user?.gst_no}
+                    </Text>
+                    <br />
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>E-way bill No</span> :
+                      ---{" "}
+                    </Text>
                     <br />
                   </div>
                 </Card>
               </Col>
-              <Col span={2}/>
+              <Col span={2} />
 
               <Col span={11} className="header-col">
                 <Card className="header-card">
@@ -634,41 +686,53 @@ const BeamSentViewDetailModal = ({
                       {company.pincode}, {company.country}
                     </Text>
                     <br />
-                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {company?.gst_no}</Text>
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>GST NO</span> :{" "}
+                      {company?.gst_no}
+                    </Text>
                     <br />
                   </div>
                 </Card>
               </Col>
             </Row>
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
 
-            <Row gutter={16} style={{ 
-              marginTop: 10, 
-              paddingLeft: 10, 
-              paddingRight: 10,  
-              marginBottom: 10
-            }}>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 10,
+                paddingLeft: 10,
+                paddingRight: 10,
+                marginBottom: 10,
+              }}
+            >
               <Col span={12}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Description of Goods:</Text><br />
-                  <Text>{details?.inhouse_quality?.quality_name}</Text><br />
+                  <Text strong>Description of Goods:</Text>
+                  <br />
+                  <Text>{details?.inhouse_quality?.quality_name}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Date:</Text><br />
-                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                  <Text strong>Date:</Text>
+                  <br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center ">
-                  <Text strong>Vehicle No:</Text><br />
-                  <Text>{details?.vehicle?.vehicle?.vehicleNo || "-"}</Text><br />
+                  <Text strong>Vehicle No:</Text>
+                  <br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo || "-"}</Text>
+                  <br />
                 </Flex>
               </Col>
             </Row>
-            
-            <div class="dotted-line"></div>
+
+            <div className="dotted-line"></div>
 
             <Table
               dataSource={dataSource}
@@ -696,14 +760,17 @@ const BeamSentViewDetailModal = ({
                 );
               }}
             />
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
 
-            <Row gutter={16} style={{ 
-                marginTop: 16, 
-                marginBottom: 40,               
-                paddingLeft: 10, 
-                paddingRight: 10   
-              }}>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 16,
+                marginBottom: 40,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+            >
               <Col span={12}>
                 <Text>Receivers sign</Text>
               </Col>
@@ -712,7 +779,7 @@ const BeamSentViewDetailModal = ({
               </Col>
             </Row>
           </Card>
-            
+
           <div className="red-dotted-line"></div>
 
           <Card className="card-wrapper">
@@ -727,14 +794,20 @@ const BeamSentViewDetailModal = ({
                       Address: {details?.supplier?.user?.address}
                     </Text>
                     <br />
-                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {details?.supplier?.user?.gst_no}</Text>
-                    <br/>
-                    <Text><span style={{fontWeight: 600}}>E-way bill No</span> : --- </Text>
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>GST NO</span> :{" "}
+                      {details?.supplier?.user?.gst_no}
+                    </Text>
+                    <br />
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>E-way bill No</span> :
+                      ---{" "}
+                    </Text>
                     <br />
                   </div>
                 </Card>
               </Col>
-              <Col span={2}/>
+              <Col span={2} />
 
               <Col span={11} className="header-col">
                 <Card className="header-card">
@@ -748,41 +821,53 @@ const BeamSentViewDetailModal = ({
                       {company.pincode}, {company.country}
                     </Text>
                     <br />
-                    <Text><span style={{fontWeight: 600}} >GST NO</span> : {company?.gst_no}</Text>
+                    <Text>
+                      <span style={{ fontWeight: 600 }}>GST NO</span> :{" "}
+                      {company?.gst_no}
+                    </Text>
                     <br />
                   </div>
                 </Card>
               </Col>
             </Row>
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
 
-            <Row gutter={16} style={{ 
-              marginTop: 10, 
-              paddingLeft: 10, 
-              paddingRight: 10,  
-              marginBottom: 10
-            }}>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 10,
+                paddingLeft: 10,
+                paddingRight: 10,
+                marginBottom: 10,
+              }}
+            >
               <Col span={12}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Description of Goods:</Text><br />
-                  <Text>{details?.inhouse_quality?.quality_name}</Text><br />
+                  <Text strong>Description of Goods:</Text>
+                  <br />
+                  <Text>{details?.inhouse_quality?.quality_name}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center">
-                  <Text strong>Date:</Text><br />
-                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text><br />
+                  <Text strong>Date:</Text>
+                  <br />
+                  <Text>{moment(details?.createdAt).format("DD-MM-YYYY")}</Text>
+                  <br />
                 </Flex>
               </Col>
               <Col span={6}>
                 <Flex gap={2} justify="center ">
-                  <Text strong>Vehicle No:</Text><br />
-                  <Text>{details?.vehicle?.vehicle?.vehicleNo || "-"}</Text><br />
+                  <Text strong>Vehicle No:</Text>
+                  <br />
+                  <Text>{details?.vehicle?.vehicle?.vehicleNo || "-"}</Text>
+                  <br />
                 </Flex>
               </Col>
             </Row>
-            
-            <div class="dotted-line"></div>
+
+            <div className="dotted-line"></div>
 
             <Table
               dataSource={dataSource}
@@ -810,14 +895,17 @@ const BeamSentViewDetailModal = ({
                 );
               }}
             />
-            <div class="dotted-line"></div>
+            <div className="dotted-line"></div>
 
-            <Row gutter={16} style={{ 
-                marginTop: 16, 
-                marginBottom: 40,               
-                paddingLeft: 10, 
-                paddingRight: 10   
-              }}>
+            <Row
+              gutter={16}
+              style={{
+                marginTop: 16,
+                marginBottom: 40,
+                paddingLeft: 10,
+                paddingRight: 10,
+              }}
+            >
               <Col span={12}>
                 <Text>Receivers sign</Text>
               </Col>
@@ -826,7 +914,6 @@ const BeamSentViewDetailModal = ({
               </Col>
             </Row>
           </Card>
-
         </div>
       </Modal>
     </>

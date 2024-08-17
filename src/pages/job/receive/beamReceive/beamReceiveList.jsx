@@ -1,18 +1,18 @@
 import { Button, Flex, Select, Space, Spin, Table, Typography } from "antd";
 import {
-  AppstoreOutlined,
+  // AppstoreOutlined,
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
-  PrinterOutlined,
+  // PrinterOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../../api/hooks/auth";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -28,9 +28,9 @@ import BeamCardInformationModel from "../../../../components/common/modal/beamCa
 
 const BeamReceiveList = () => {
   const navigate = useNavigate();
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const [machine, setMachine] = useState();
   const [beamTypeDropDown, setBeamTypeDropDow] = useState(null);
@@ -46,7 +46,7 @@ const BeamReceiveList = () => {
   const [isBeamInformationModel, setIsBeamInformationModel] = useState(false);
   const [beamInformation, setBeamInformation] = useState(null);
 
-  // Machine list dropdown 
+  // Machine list dropdown
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -59,7 +59,7 @@ const BeamReceiveList = () => {
     enabled: Boolean(companyId),
   });
 
-  // Partylist dropdown 
+  // Partylist dropdown
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -71,7 +71,7 @@ const BeamReceiveList = () => {
     enabled: Boolean(companyId),
   });
 
-  // InHouse Quality dropdown 
+  // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -230,8 +230,8 @@ const BeamReceiveList = () => {
         element?.supplier?.supplier?.supplier_company,
         totalTaka,
         totalMeter,
-        element?.job_beam_receive_details?.length
-      ])
+        element?.job_beam_receive_details?.length,
+      ]);
     });
 
     let total = [
@@ -243,8 +243,8 @@ const BeamReceiveList = () => {
       "",
       beamReceiveListData?.total_taka,
       beamReceiveListData?.total_meter,
-      beamReceiveListData?.total_beams
-    ]
+      beamReceiveListData?.total_beams,
+    ];
 
     localStorage.setItem("print-title", "Job Beam Receive List");
     localStorage.setItem("print-head", JSON.stringify(title));
@@ -317,8 +317,11 @@ const BeamReceiveList = () => {
             onClick={() => {
               setIsBeamInformationModel(true);
               setBeamInformation(record);
-            }}>{details?.job_beam_receive_details?.length}</div>
-        )
+            }}
+          >
+            {details?.job_beam_receive_details?.length}
+          </div>
+        );
       },
     },
     {
@@ -329,7 +332,6 @@ const BeamReceiveList = () => {
     {
       title: "Action",
       render: (details) => {
-
         let totalMeter = 0;
         let totalTaka = 0;
         let beam_info_list = [];
@@ -344,7 +346,7 @@ const BeamReceiveList = () => {
 
         details?.job_beam_receive_details?.map((element) => {
           beam_info_list.push(element);
-        })
+        });
         return (
           <Space>
             <ViewDetailModal
@@ -388,10 +390,7 @@ const BeamReceiveList = () => {
               <EditOutlined />
             </Button>
 
-            <BeamCardInformationModel
-              data={beam_info_list}
-            />
-
+            <BeamCardInformationModel data={beam_info_list} />
           </Space>
         );
       },
@@ -443,7 +442,7 @@ const BeamReceiveList = () => {
               <Table.Summary.Cell />
               <Table.Summary.Cell />
             </Table.Summary.Row>
-          )
+          );
         }}
       />
     );

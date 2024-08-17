@@ -9,13 +9,15 @@ import {
   Typography,
   Select,
 } from "antd";
-import { FileExcelFilled, FilePdfFilled, FileTextOutlined } from "@ant-design/icons";
+import {
+  FileExcelFilled,
+  FilePdfFilled,
+  FileTextOutlined,
+} from "@ant-design/icons";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
-import {
-  saleYarnChallanListRequest,
-} from "../../../../api/requests/sale/challan/challan";
+import { saleYarnChallanListRequest } from "../../../../api/requests/sale/challan/challan";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import {
@@ -26,7 +28,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnSaleChallan";
 import dayjs from "dayjs";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
 const YarnSalesBillList = () => {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -94,7 +96,7 @@ const YarnSalesBillList = () => {
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
           bill_status: "confirmed",
-          is_paid: debounceBillStatus
+          is_paid: debounceBillStatus,
         },
       ],
       queryFn: async () => {
@@ -108,7 +110,7 @@ const YarnSalesBillList = () => {
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
             bill_status: "confirmed",
-            is_paid: debounceBillStatus
+            is_paid: debounceBillStatus,
           },
         });
         return res.data?.data;
@@ -178,16 +180,14 @@ const YarnSalesBillList = () => {
         const targetDate = new Date(record?.yarn_sale_bill?.due_date);
 
         if (currentDate > targetDate) {
-          return (
-            <div>0</div>
-          )
+          return <div>0</div>;
         } else {
           const differenceInMilliseconds = currentDate - targetDate;
           const millisecondsInADay = 24 * 60 * 60 * 1000;
-          const daysDifference = Math.floor(differenceInMilliseconds / millisecondsInADay);
-          return (
-            <div>{daysDifference}</div>
-          )
+          const daysDifference = Math.floor(
+            differenceInMilliseconds / millisecondsInADay
+          );
+          return <div>{daysDifference}</div>;
         }
       },
     },
@@ -229,87 +229,87 @@ const YarnSalesBillList = () => {
   ];
 
   const DownloadOption = async (option) => {
-
     const tableTitle = [
-      "No", 
-      "Bill Date", 
-      "Challan No", 
-      "Party Name", 
-      "Dennier", 
-      "HSN No", 
-      "Kg", 
-      "Rate", 
-      "Amount", 
-      "SGST", 
-      "CGST", 
-      "IGST", 
-      "Net Amount"
+      "No",
+      "Bill Date",
+      "Challan No",
+      "Party Name",
+      "Dennier",
+      "HSN No",
+      "Kg",
+      "Rate",
+      "Amount",
+      "SGST",
+      "CGST",
+      "IGST",
+      "Net Amount",
     ];
 
-    let temp = [] ;
-    let totalKG = 0; 
+    let temp = [];
+    let totalKG = 0;
     let totalAmount = 0;
-    let totalNetAmount = 0 ;
+    let totalNetAmount = 0;
 
     yarnSaleBillListData?.list?.map((element, index) => {
-      totalKG = totalKG + Number(element?.kg) ; 
-      totalAmount = totalAmount + Number(element?.yarn_sale_bill?.amount) ; 
-      totalNetAmount = totalNetAmount + Number(element?.yarn_sale_bill?.net_amount) ; 
+      totalKG = totalKG + Number(element?.kg);
+      totalAmount = totalAmount + Number(element?.yarn_sale_bill?.amount);
+      totalNetAmount =
+        totalNetAmount + Number(element?.yarn_sale_bill?.net_amount);
 
       temp.push([
-        index + 1, 
-        moment(element?.bill_date).format("DD-MM-YYYY"), 
-        element?.challan_no, 
+        index + 1,
+        moment(element?.bill_date).format("DD-MM-YYYY"),
+        element?.challan_no,
         element?.supplier?.supplier_company,
         `${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F - ( ${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.yarn_color} )`,
-        element?.yarn_stock_company?.hsn_no, 
-        element?.kg, 
+        element?.yarn_stock_company?.hsn_no,
+        element?.kg,
         element?.yarn_sale_bill?.rate,
-        element?.yarn_sale_bill?.amount, 
-        element?.yarn_sale_bill?.SGST_amount, 
-        element?.yarn_sale_bill?.CGST_amount, 
-        element?.yarn_sale_bill?.IGST_amount, 
-        element?.yarn_sale_bill?.net_amount
-      ])
+        element?.yarn_sale_bill?.amount,
+        element?.yarn_sale_bill?.SGST_amount,
+        element?.yarn_sale_bill?.CGST_amount,
+        element?.yarn_sale_bill?.IGST_amount,
+        element?.yarn_sale_bill?.net_amount,
+      ]);
     });
 
     let total = [
-      "", 
-      "", 
-      "", 
-      "", 
-      "", 
-      "", 
-      totalKG, 
-      "", 
-      totalAmount, 
-      "", 
-      "", 
-      "", 
-      totalNetAmount
-    ] ;
-    
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      totalKG,
+      "",
+      totalAmount,
+      "",
+      "",
+      "",
+      totalNetAmount,
+    ];
+
     localStorage.setItem("print-title", "Yarn Sale Bill List");
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("print-array", JSON.stringify(temp));
     localStorage.setItem("total-count", "1");
     localStorage.setItem("total-data", JSON.stringify(total));
 
-    if (option == "pdf"){
-      window.open("/print") ; 
+    if (option == "pdf") {
+      window.open("/print");
     } else {
       let data = [tableTitle, ...temp, total];
       let worksheet = XLSX.utils.aoa_to_sheet(data);
-      let workbook = XLSX.utils.book_new(); 
-      
+      let workbook = XLSX.utils.book_new();
+
       XLSX.utils.book_append_sheet(workbook, worksheet, "Yarn-Sales");
-      
+
       // Export to Excel file
       const dateString = moment().format("YYYY-MMD-D_HH:mm:ss");
       const fileName = `yarn_sale_${dateString}.xlsx`;
       XLSX.writeFile(workbook, fileName);
     }
-  }
+  };
 
   function renderTable() {
     if (isLoadingYarnSaleBill) {
@@ -355,7 +355,7 @@ const YarnSalesBillList = () => {
                 <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );
@@ -380,7 +380,7 @@ const YarnSalesBillList = () => {
                 value={billStatus}
                 options={[
                   { label: "Paid", value: "1" },
-                  { label: "Un-paid", value: "0" }
+                  { label: "Un-paid", value: "0" },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -428,8 +428,8 @@ const YarnSalesBillList = () => {
                     vehicle.last_name +
                     " " +
                     `| ( ${vehicle?.username})`,
-                    value: vehicle.id,
-                  }))}
+                  value: vehicle.id,
+                }))}
                 dropdownStyle={{
                   textTransform: "capitalize",
                 }}
@@ -442,20 +442,21 @@ const YarnSalesBillList = () => {
               />
             </Flex>
 
-
             <Flex align="center" gap={10}>
               <Button
                 type="primary"
-                icon = {<FilePdfFilled/>}
-                onClick={() => {DownloadOption("pdf")}}
+                icon={<FilePdfFilled />}
+                onClick={() => {
+                  DownloadOption("pdf");
+                }}
               />
             </Flex>
 
             <Flex align="center" gap={10}>
               <Button
-                icon = {<FileExcelFilled/>}
+                icon={<FileExcelFilled />}
                 onClick={() => {
-                  DownloadOption("excel")
+                  DownloadOption("excel");
                 }}
               />
             </Flex>

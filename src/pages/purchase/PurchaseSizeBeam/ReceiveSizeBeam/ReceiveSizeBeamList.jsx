@@ -122,7 +122,7 @@ function ReceiveSizeBeamList() {
         end: financialYearEnd,
         beam_type: debounceBeamType,
         status: debouceStatus,
-        quality_id: deboucedQuality
+        quality_id: deboucedQuality,
       },
     ],
     queryFn: async () => {
@@ -138,7 +138,7 @@ function ReceiveSizeBeamList() {
           end: financialYearEnd,
           beam_type: debounceBeamType,
           status: debouceStatus,
-          quality_id: deboucedQuality
+          quality_id: deboucedQuality,
         },
       });
       return res.data?.data;
@@ -183,25 +183,20 @@ function ReceiveSizeBeamList() {
     {
       title: "Supplier",
       dataIndex: "supplier",
-      render: (text, record) => (
-        `${record?.supplier?.first_name} ${record?.supplier?.last_name}`
-      )
+      render: (text, record) =>
+        `${record?.supplier?.first_name} ${record?.supplier?.last_name}`,
     },
     {
       title: "Total meter",
       dataIndex: "recieve_size_beam_details",
-      render: (text, record) => {
+      render: (text) => {
         let total_meter = 0;
         text.map((element) => {
           total_meter = total_meter + Number(element?.meters);
         });
 
-        return (
-          <div>
-            {total_meter || "-"}
-          </div>
-        )
-      }
+        return <div>{total_meter || "-"}</div>;
+      },
     },
     {
       title: "Total taka",
@@ -210,26 +205,21 @@ function ReceiveSizeBeamList() {
         let total_taka = 0;
         text.map((element) => {
           total_taka = total_taka + element?.taka;
-        })
-        return (
-          <div>
-            {total_taka}
-          </div>
-        )
-      }
+        });
+        return <div>{total_taka}</div>;
+      },
     },
     {
       title: "No Of Beam",
       dataIndex: "recieve_size_beam_details",
       render: (text, record) => {
-
         let tempBeamInfo = {
-          "challan_no": record?.challan_no,
-          "createdAt": record?.challan_date,
-          "supplier": record?.supplier,
-          "inhouse_quality": record?.inhouse_quality,
-          "job_beam_receive_details": record?.recieve_size_beam_details
-        }
+          challan_no: record?.challan_no,
+          createdAt: record?.challan_date,
+          supplier: record?.supplier,
+          inhouse_quality: record?.inhouse_quality,
+          job_beam_receive_details: record?.recieve_size_beam_details,
+        };
         return (
           <div
             className="number-of-beam-div"
@@ -240,8 +230,8 @@ function ReceiveSizeBeamList() {
           >
             {text?.length}
           </div>
-        )
-      }
+        );
+      },
     },
     {
       title: "Beam Type",
@@ -251,13 +241,12 @@ function ReceiveSizeBeamList() {
     {
       title: "Bill status",
       dataIndex: "bill_status",
-      render: (text, record) => (
-        text == "pending" ? <>
+      render: (text) =>
+        text == "pending" ? (
           <Tag color="red">Pending</Tag>
-        </> : <>
+        ) : (
           <Tag color="green">{text}</Tag>
-        </>
-      )
+        ),
     },
     {
       title: "Action",
@@ -271,7 +260,6 @@ function ReceiveSizeBeamList() {
           totalMeter = Number(totalMeter) + Number(element?.meters);
           beam_info_list.push(element);
         });
-
 
         return (
           <Space>
@@ -328,9 +316,7 @@ function ReceiveSizeBeamList() {
               mode={details?.bill_status == "pending" ? "CREATE" : "VIEW"}
             />
 
-            <BeamCardInformationModel
-              data={beam_info_list}
-            />
+            <BeamCardInformationModel data={beam_info_list} />
           </Space>
         );
       },
@@ -376,22 +362,27 @@ function ReceiveSizeBeamList() {
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalMeter}</Table.Summary.Cell>
-              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalTaka}</Table.Summary.Cell>
-              <Table.Summary.Cell index={0}>{receiveSizeBeamListRes?.totalBeam}</Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamListRes?.totalMeter}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamListRes?.totalTaka}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0}>
+                {receiveSizeBeamListRes?.totalBeam}
+              </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
             </Table.Summary.Row>
-          )
+          );
         }}
       />
     );
   }
 
-  // Download PDF Functionality 
+  // Download PDF Functionality
   const DownloadPDF = () => {
-
     let tableTitle = [
       "No",
       "Challan Date",
@@ -401,7 +392,7 @@ function ReceiveSizeBeamList() {
       "Supplier Company",
       "Total Taka",
       "Total Meter",
-      "No. Of Beam"
+      "No. Of Beam",
     ];
 
     let temp = [];
@@ -424,10 +415,9 @@ function ReceiveSizeBeamList() {
         element?.supplier?.supplier?.supplier_company,
         temp_total_taka,
         temp_total_meter,
-        element?.recieve_size_beam_details?.length
-      ])
+        element?.recieve_size_beam_details?.length,
+      ]);
     });
-
 
     localStorage.setItem("print-title", "Receive Size Beam List");
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
@@ -435,22 +425,22 @@ function ReceiveSizeBeamList() {
     localStorage.setItem("print-array", JSON.stringify(temp));
 
     window.open("/print");
-  }
-
+  };
 
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Receive size beam list</h3>
+          <h3 className="m-0 text-primary" style={{ whiteSpace: "nowrap" }}>
+            Receive size beam list
+          </h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
             type="text"
           />
         </div>
-        <Flex align="center" gap={10} wrap="wrap">
-
+        <Flex align="center" justify="flex-end" gap={10} wrap="wrap">
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Machine
@@ -553,12 +543,12 @@ function ReceiveSizeBeamList() {
               options={[
                 {
                   label: "Pending",
-                  value: "pending"
+                  value: "pending",
                 },
                 {
                   label: "Completed",
-                  value: "completed"
-                }
+                  value: "completed",
+                },
               ]}
               allowClear
               value={status}
