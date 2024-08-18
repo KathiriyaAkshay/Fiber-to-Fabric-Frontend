@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
 import dayjs from "dayjs";
@@ -32,12 +32,14 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import DeleteSaleChallan from "../../../../components/sale/challan/saleChallan/DeleteSaleChallan";
 import ViewSaleChallan from "../../../../components/sale/challan/saleChallan/ViewSaleChallan";
 import SaleChallanBill from "../../../../components/sale/challan/saleChallan/SaleChallanBill";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewChallan";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
 
+  const [rowSelection, setRowSelection] = useState([]) ; 
   const [state, setState] = useState("gray");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -137,7 +139,7 @@ const SaleChallanList = () => {
         company_id: companyId,
         page,
         pageSize,
-        // is_gray: debouncedState === "gray" ? true : false,
+        is_gray: debouncedState === "gray" ? "1" : "0",
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
@@ -295,7 +297,7 @@ const SaleChallanList = () => {
       title: "Party Name",
       dataIndex: "party",
       key: "party",
-      render: (text) => `${text?.first_name} ${text?.last_name}`,
+      render: (text) => `${text?.first_name || ""} ${text?.last_name || ""}`,
       sorter: {
         compare: (a, b) => {
           return a?.party?.first_name - b?.party?.first_name;
@@ -339,10 +341,15 @@ const SaleChallanList = () => {
       title: "Challan Type",
       dataIndex: "sale_challan_types",
       key: "sale_challan_types",
-      render: (text) =>
-        text.length
-          ? text.map(({ sale_challan_type }) => sale_challan_type).join(", ")
-          : "-",
+      render: (text) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {text.map(({ sale_challan_type }) => sale_challan_type).join(", ")}
+          </div>
+        )
+      }
     },
     {
       title: "Bill Status",
@@ -379,21 +386,37 @@ const SaleChallanList = () => {
     {
       title: "Action",
       render: (details) => {
+        let is_return_option = 0 ; 
+
+        details?.sale_challan_details?.map((element) => {
+          if (element?.is_returned){
+            is_return_option = 1 ;
+          } else {
+            is_return_option = 0 ; 
+          }
+        })
+
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteSaleChallan details={details} />
-            <ViewSaleChallan details={details} companyId={companyId} />
+            <ViewChallan details={[details]}/>
+
+            {details?.sale_bill == null && (
+              <>
+              
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteSaleChallan details={details} />
+              </>
+            )}
+            {is_return_option == 0 && (
+              <ViewSaleChallan details={details} companyId={companyId} />
+            )}
             <Button
               onClick={() => {
                 let MODE;
@@ -420,6 +443,21 @@ const SaleChallanList = () => {
     },
   ];
 
+  const rowSelectionHandler = {
+    rowSelection,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setRowSelection(selectedRowKeys) ; 
+      setMultipleData(selectedRows)
+    } ,
+  };
+
+  const [multipleModelOpen, setMultipleModelOpen] = useState(false) ; 
+  const [multipleData, setMultipleData] = useState([]) ; 
+
+  const MutlipleChallanPressHandler = () => {
+    setMultipleModelOpen(true) ; 
+  }
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -440,6 +478,7 @@ const SaleChallanList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        rowSelection={rowSelectionHandler}
         summary={(pageData) => {
           let totalTaka = 0;
           let totalMeter = 0;
@@ -466,6 +505,7 @@ const SaleChallanList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
+                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
           );
@@ -473,6 +513,7 @@ const SaleChallanList = () => {
       />
     );
   }
+
 
   return (
     <div className="flex flex-col p-4">
@@ -583,6 +624,15 @@ const SaleChallanList = () => {
 
       <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
         <Flex align="center" gap={10}>
+
+          {rowSelection?.length > 0 && (
+            <Flex align="center" gap={10}>
+              <Button type="primary" onClick={() => {MutlipleChallanPressHandler()}}>
+                MULTIPLE PRINT
+              </Button>
+            </Flex>
+          )}
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               From
@@ -592,6 +642,7 @@ const SaleChallanList = () => {
               onChange={setFromDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -602,6 +653,7 @@ const SaleChallanList = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -670,6 +722,13 @@ const SaleChallanList = () => {
           isModelOpen={saleChallanModal.isModalOpen}
           handleCloseModal={handleCloseModal}
           MODE={saleChallanModal.mode}
+        />
+      )}
+
+      {multipleModelOpen && (
+        <ViewChallan
+          details={multipleData}
+          isMutliple={true}
         />
       )}
     </div>

@@ -24,11 +24,6 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getWastageReportTaskListRequest } from "../../../../api/requests/reports/wastageReportTask";
 import DeleteWastageReportTaskButton from "../../../../components/tasks/WastageReport/DeleteWastageReportTaskButton";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 function WastageReportTaskList() {
@@ -44,8 +39,8 @@ function WastageReportTaskList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { data: user } = useCurrentUser();
-  const { company, companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -87,7 +82,7 @@ function WastageReportTaskList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = reportListRes?.rows?.map((report) => {
       const {
         id,
@@ -113,25 +108,45 @@ function WastageReportTaskList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "Assigned Time",
-          "Machine Type",
-          "Floor",
-          "wastage(in kgs)",
-          "Note",
-          "Comment",
-          "Status",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Wastage Report List",
-    });
+    const tableTitle = [
+      "ID",
+      "Date",
+      "Assigned Time",
+      "Machine Type",
+      "Floor",
+      "wastage(in kgs)",
+      "Note",
+      "Comment",
+      "Status",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Wastage Report List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Date",
+    //       "Assigned Time",
+    //       "Machine Type",
+    //       "Floor",
+    //       "wastage(in kgs)",
+    //       "Note",
+    //       "Comment",
+    //       "Status",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Wastage Report List",
+    // });
+
+    window.open("/print");
   }
 
   const columns = [
@@ -311,7 +326,7 @@ function WastageReportTaskList() {
         }}
         className="overflow-auto"
         summary={() => {
-          return(
+          return (
             <>
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
@@ -329,9 +344,13 @@ function WastageReportTaskList() {
                   <Typography.Text>{100}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );

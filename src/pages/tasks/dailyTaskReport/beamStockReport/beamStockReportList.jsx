@@ -2,12 +2,15 @@ import { Button, Flex, Input, Spin, Table, Typography, message } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { getDailyBeamStockRequest, getTaskListRequest } from "../../../../api/requests/task";
-import { useCurrentUser } from "../../../../api/hooks/auth";
 import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
+  getDailyBeamStockRequest,
+  // getTaskListRequest,
+} from "../../../../api/requests/task";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
+// import {
+//   downloadUserPdf,
+//   getPDFTitleContent,
+// } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useState } from "react";
@@ -16,34 +19,28 @@ import { useMutation } from "@tanstack/react-query";
 
 function BeamStockReportList() {
   const navigate = useNavigate();
-  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const { page, pageSize } = usePagination();
+  const { company, companyId /*financialYearEnd*/ } = useContext(GlobalContext);
   const [bhidan, setBhidan] = useState("");
-  
-  useEffect(() => {
-    setBhidan(company?.bhidan_of_month) ; 
-  }, [company])
-  
 
-  const {data: beamStockReport, isLoading: isBeamStockReportLoading} = useQuery({
-    queryKey: [
-      "daily-task",
-      "beam-stock", 
-      "list", 
-      {company_id: companyId}
-    ],
-    queryFn: async () => {
-      const res = await getDailyBeamStockRequest({
-        companyId,
-        params:{
-          company_id: companyId
-        }
-      })
-      return res?.data?.data;
-    }, 
-    enabled: Boolean(companyId)
-    
-  })
+  useEffect(() => {
+    setBhidan(company?.bhidan_of_month);
+  }, [company]);
+
+  const { data: beamStockReport, isLoading: isBeamStockReportLoading } =
+    useQuery({
+      queryKey: ["daily-task", "beam-stock", "list", { company_id: companyId }],
+      queryFn: async () => {
+        const res = await getDailyBeamStockRequest({
+          companyId,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res?.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { mutateAsync: updateBhidanOfMonth, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -75,34 +72,57 @@ function BeamStockReportList() {
 
   const updateBhidanOfMonthHandler = async () => {
     await updateBhidanOfMonth({
-      bhidan_of_month: bhidan
-    })
-  }
+      bhidan_of_month: bhidan,
+    });
+  };
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-    // const body = taskListRes?.taskList?.rows?.map((task) => {
-    //   const { id, task_detail, assign_time, achievement, reason, status } =
-    //     task;
-    //   return [id, task_detail, assign_time, achievement, reason, status];
-    // });
+    const body = beamStockReport?.map((item, index) => {
+      const {
+        quality_name,
+        quality_weight,
+        require_non_pasarela_beam,
+        non_pasarela_beam_count,
+        non_pasarela_short_beam_count,
+        require_pasarela_beam,
+        today_pasarela_beam,
+      } = item;
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Task Detail",
-    //       "Assigned Time",
-    //       "Achievement",
-    //       "Reason",
-    //       "Status",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Assign Task List",
-    // });
+      let today_beam = Number(today_pasarela_beam);
+      let required_beam = Number(require_pasarela_beam);
+      let short_beam = today_beam - required_beam;
+
+      return [
+        index + 1,
+        `${quality_name} (${quality_weight}KG)`,
+        require_non_pasarela_beam,
+        non_pasarela_beam_count,
+        non_pasarela_short_beam_count,
+        require_pasarela_beam,
+        today_pasarela_beam,
+        short_beam,
+      ];
+    });
+
+    const tableTitle = [
+      "ID",
+      "Quality",
+      "Req. eve. non pasarela beam",
+      "T.N. pasarela beam",
+      "T.N. pasarela short beam",
+      "Req. Eve. pasarela beam",
+      "Today's pasarela beam",
+      "Today's pasarela short beam",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Beam Stock Report List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    window.open("/print");
   }
 
   const columns = [
@@ -114,54 +134,48 @@ function BeamStockReportList() {
     },
     {
       title: "Quality Name",
-      dataIndex: "quality_name", 
-      render:(text, record) =>{
-        return(
-          <div>{record?.quality_name}-({record?.quality_weight}KG)</div>
-        )
-      }
+      dataIndex: "quality_name",
+      render: (text, record) => {
+        return (
+          <div>
+            {record?.quality_name}-({record?.quality_weight}KG)
+          </div>
+        );
+      },
     },
     {
       title: "Req. eve. non pasarela beam",
-      dataIndex:"require_non_pasarela_beam"
+      dataIndex: "require_non_pasarela_beam",
     },
     {
       title: "T.N. pasarela beam",
-      dataIndex: "non_pasarela_beam_count"
+      dataIndex: "non_pasarela_beam_count",
     },
     {
       title: "T.N. pasarela short beam",
       dataIndex: "non_pasarela_short_beam_count",
-      render: (text, record) => {
-        return(
-          <div>0</div>
-        )
-      }
+      key: "non_pasarela_short_beam_count",
     },
     {
       title: "Req. Eve. pasarela beam",
-      dataIndex: "require_pasarela_beam"
+      dataIndex: "require_pasarela_beam",
     },
     {
       title: "Today's pasarela beam",
-      dataIndex: "today_pasarela_beam"
+      dataIndex: "today_pasarela_beam",
     },
     {
       title: "Today's pasarela short beam",
       render: (text, record) => {
-        let today_beam = Number(record?.today_pasarela_beam) ;
+        let today_beam = Number(record?.today_pasarela_beam);
         let required_beam = Number(record?.require_pasarela_beam);
-        let short_beam = today_beam - required_beam; 
-        return(
-          <div style={{color: "red"}}>
-              {short_beam}
-          </div>
-        )
-      }
+        let short_beam = today_beam - required_beam;
+        return <div style={{ color: "red" }}>{short_beam}</div>;
+      },
     },
     {
       title: "Bhidan of month",
-      dataIndex: "beam_count_below_bhidan"
+      dataIndex: "beam_count_below_bhidan",
     },
     {
       title: "N.pasarela secondary beam",
@@ -182,7 +196,7 @@ function BeamStockReportList() {
         dataSource={beamStockReport}
         columns={columns}
         rowKey={"id"}
-        pagination = {false}
+        pagination={false}
       />
     );
   }
@@ -206,15 +220,17 @@ function BeamStockReportList() {
             <Input
               value={bhidan}
               onChange={(e) => {
-                setBhidan(e.target.value)
+                setBhidan(e.target.value);
               }}
               placeholder="Bhidan of month"
               style={{ width: "200px" }}
             />
           </Flex>
-          <Button type="primary" 
+          <Button
+            type="primary"
             onClick={updateBhidanOfMonthHandler}
-            loading = {isPending}>
+            loading={isPending}
+          >
             Save Bhidan Of Month
           </Button>
           <Button

@@ -22,6 +22,9 @@ const SaleReturnBill = ({ details }) => {
         }
 `;
 
+  if (isModelOpen) {
+    console.log({ details });
+  }
   // const columns = [
   //   { title: "S. NO", dataIndex: "sno", key: "sno", align: "center" },
   //   {
@@ -127,10 +130,10 @@ const SaleReturnBill = ({ details }) => {
                   {company.company_name.split("_").join(" ")}
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Debit Note No. :-</strong> DD-11
+                  <strong>Credit Note No. :-</strong> DD-11
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Dated :-</strong> 24-07-2024
+                  <strong>Date :-</strong> 24-07-2024
                 </td>
               </tr>
               <tr>
@@ -176,36 +179,66 @@ const SaleReturnBill = ({ details }) => {
                 <td colSpan={5}></td>
               </tr>
               <tr>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   <strong>S. NO-</strong>
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   <strong>TOTAL TAKA</strong>
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   <strong>TOTAL METER</strong>
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   <strong>RATE</strong>
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   <strong>AMOUNT</strong>
                 </td>
               </tr>
               <tr className="no-border">
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   1
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   12
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   12
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   15
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   5
                 </td>
               </tr>
@@ -223,61 +256,137 @@ const SaleReturnBill = ({ details }) => {
               <tr className="no-border text-gray-400">
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
+                  (-) Discount
+                </td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                ></td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
+                  0
+                </td>
+              </tr>
+              <tr className="no-border text-gray-400">
+                <td className="border border-gray-400 p-2" colSpan="1"></td>
+                <td className="border border-gray-400 p-2" colSpan="1"></td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
+                  (-) Total Amount
+                </td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                ></td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
+                  0
+                </td>
+              </tr>
+              <tr className="no-border text-gray-400">
+                <td className="border border-gray-400 p-2" colSpan="1"></td>
+                <td className="border border-gray-400 p-2" colSpan="1"></td>
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   SGST(%)
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   2.50
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   1.50
                 </td>
               </tr>
               <tr className="no-border text-gray-400">
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   CGST(%)
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   2.50
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   1.50
                 </td>
               </tr>
               <tr className="no-border text-gray-400">
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   IGST(%)
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   2.50
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   1.50
                 </td>
               </tr>
               <tr className="no-border text-gray-400">
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
                 <td className="border border-gray-400 p-2" colSpan="1"></td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   Round Off
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   2.50
                 </td>
-                <td className="border border-gray-400 p-2" colSpan="1">
+                <td
+                  className="border border-gray-400 p-2 text-center"
+                  colSpan="1"
+                >
                   1.50
                 </td>
               </tr>
 
               <tr>
-                <td colSpan={4}>
+                <td colSpan={4} className="text-end">
                   <strong>NET AMOUNT</strong>
                 </td>
-                <td colSpan={1}>
+                <td colSpan={1} className="text-center">
                   <strong>43</strong>
                 </td>
               </tr>
@@ -288,11 +397,36 @@ const SaleReturnBill = ({ details }) => {
                 </td>
                 <td colSpan={3}>Sixty Three only</td>
               </tr>
+
               <tr className="no-border">
-                <td colSpan={5} className="text-right">
+                <td
+                  style={{ borderColor: "white", padding: "0px 0px 0px 10px" }}
+                >
+                  <strong>IRN:</strong>
+                </td>
+                <td colSpan={4} className="text-right">
                   <strong>For, SONU TEXTILES</strong>
                 </td>
               </tr>
+
+              <tr className="no-border">
+                <td
+                  style={{ borderColor: "white", padding: "0px 0px 0px 10px" }}
+                >
+                  <strong>ACK NO:</strong>
+                </td>
+                <td colSpan={4} className="text-right"></td>
+              </tr>
+
+              <tr className="no-border">
+                <td
+                  style={{ borderColor: "white", padding: "0px 0px 0px 10px" }}
+                >
+                  <strong>ACK DATE:</strong>
+                </td>
+                <td colSpan={4} className="text-right"></td>
+              </tr>
+
               <tr className="no-border">
                 <td colSpan={5} className="text-right">
                   <strong>Authorized Singnatory</strong>

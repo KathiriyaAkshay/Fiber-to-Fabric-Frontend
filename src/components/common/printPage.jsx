@@ -24,19 +24,19 @@ import dayjs from "dayjs";
 function getFileName(input) {
   const formattedString = input?.toLowerCase()?.split(" ").join("-");
 
-  // Get the current date and time
-  const currentDate = new Date();
-  const day = String(currentDate.getDate()).padStart(2, "0"); // Get day and pad with 0 if necessary
-  const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so add 1 and pad with 0
-  const year = currentDate.getFullYear(); // Get full year
+  // // Get the current date and time
+  // const currentDate = new Date();
+  // const day = String(currentDate.getDate()).padStart(2, "0"); // Get day and pad with 0 if necessary
+  // const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so add 1 and pad with 0
+  // const year = currentDate.getFullYear(); // Get full year
 
-  const hours = String(currentDate.getHours()).padStart(2, "0"); // Get hours and pad with 0 if necessary
-  const minutes = String(currentDate.getMinutes()).padStart(2, "0"); // Get minutes and pad with 0 if necessary
-  const seconds = String(currentDate.getSeconds()).padStart(2, "0"); // Get seconds and pad with 0 if necessary
+  // const hours = String(currentDate.getHours()).padStart(2, "0"); // Get hours and pad with 0 if necessary
+  // const minutes = String(currentDate.getMinutes()).padStart(2, "0"); // Get minutes and pad with 0 if necessary
+  // const seconds = String(currentDate.getSeconds()).padStart(2, "0"); // Get seconds and pad with 0 if necessary
 
-  // Format the date as DD-MM-YYYY and time as HH-MM-SS
-  const formattedDate = `${day}-${month}-${year}`;
-  const formattedTime = `${hours}-${minutes}-${seconds}`;
+  // // Format the date as DD-MM-YYYY and time as HH-MM-SS
+  // const formattedDate = `${day}-${month}-${year}`;
+  // const formattedTime = `${hours}-${minutes}-${seconds}`;
 
   const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
 
@@ -197,15 +197,15 @@ const PrintPage = () => {
   const [tableHead, setTableHead] = useState(null);
   const [totalVisible, setTotalVisible] = useState(false);
   const [totalCount, setTotalCount] = useState(null);
+  const [downloadFileName, setDownloadFileName] = useState("");
 
-  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const { company /*companyId, financialYearEnd*/ } = useContext(GlobalContext);
 
   const excelDownloadHandler = () => {
     const fileName = prompt(
       "Please enter the file name",
       getFileName(orderTitle)
     );
-    console.log(fileName);
 
     if (fileName) {
       let data = [];
@@ -246,6 +246,7 @@ const PrintPage = () => {
     let total_data = JSON.parse(localStorage.getItem("total-data"));
     setTotalCount(total_data);
   }, []);
+  console.log({ totalCount });
 
   const MyDocument = () => (
     <Document>
@@ -275,7 +276,7 @@ const PrintPage = () => {
           <View style={printPageStyle.tableRow}>
             {tableHead?.map((element, index) => (
               <View
-                key={index + "_element"}
+                key={index + "_header"}
                 style={printPageStyle.tableHeaderCol}
               >
                 <Text style={[printPageStyle.tableCell, { color: "#FFFFFF" }]}>
@@ -286,7 +287,7 @@ const PrintPage = () => {
           </View>
 
           {orderData?.map((order, index) => (
-            <View key={index + "_order"} style={printPageStyle.tableRow}>
+            <View key={index + "_data"} style={printPageStyle.tableRow}>
               {order?.map((element, elementIndex) => (
                 <View key={elementIndex} style={printPageStyle.tableCol}>
                   <Text style={printPageStyle.tableCell}>{element}</Text>
@@ -295,9 +296,9 @@ const PrintPage = () => {
             </View>
           ))}
 
-          {totalVisible &&
+          {/* {totalVisible &&
             totalCount?.map((element, index) => (
-              <View key={index} style={printPageStyle.tableRow}>
+              <View key={index + "_total"} style={printPageStyle.tableRow}>
                 <View style={printPageStyle.tableHeaderCol}>
                   <Text
                     style={[printPageStyle.tableCell, { color: "#FFFFFF" }]}
@@ -306,7 +307,23 @@ const PrintPage = () => {
                   </Text>
                 </View>
               </View>
-            ))}
+            ))} */}
+          {totalVisible && (
+            <View style={printPageStyle.tableRow}>
+              {totalCount?.map((element, index) => (
+                <View
+                  key={index + "_total"}
+                  style={printPageStyle.tableHeaderCol}
+                >
+                  <Text
+                    style={[printPageStyle.tableCell, { color: "#FFFFFF" }]}
+                  >
+                    {element}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       </Page>
     </Document>
@@ -318,7 +335,7 @@ const PrintPage = () => {
       getFileName(orderTitle)
     );
     if (fileName) {
-      setOrderTitle(fileName);
+      setDownloadFileName(fileName);
       setTimeout(() => {
         const downloadLink = document.getElementById("pdf-download-link");
         downloadLink.click();
@@ -410,7 +427,7 @@ const PrintPage = () => {
       <PDFDownloadLink
         // PDFDownloadLink
         document={<MyDocument />}
-        fileName={orderTitle}
+        fileName={downloadFileName}
         id="pdf-download-link"
         style={{ display: "none" }}
       >

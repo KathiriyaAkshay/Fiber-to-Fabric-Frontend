@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Col, Flex, Modal, Row, Table, Typography } from "antd";
+import { Button, Flex, Modal, Table, Typography } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 
 const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
@@ -57,16 +57,16 @@ const ViewDetailModal = ({ title = "-", isScroll = false, details = [] }) => {
             className="view-information-table"
             columns={[
               {
-                title: "Title", 
-                dataIndex: "title"
+                title: "Title",
+                dataIndex: "title",
               },
               {
-                title: "Value", 
-                dataIndex: "value"
-              }
+                title: "Value",
+                dataIndex: "value",
+              },
             ]}
             dataSource={details}
-            pagination = {false}
+            pagination={false}
           />
           {/* {details?.map(({ title = "", value }, index) => {
             return (

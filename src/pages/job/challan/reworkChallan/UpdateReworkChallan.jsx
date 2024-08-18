@@ -115,6 +115,7 @@ const UpdateReworkChallan = () => {
     detailArray?.map((field, index) => {
       let taka_no = +data[`taka_no_${field}`];
       let meter = +data[`meter_${field}`];
+      let id = data[`id_${field}`];
       // let received_meter = +data[`received_meter_${field}`];
       // let received_weight = +data[`received_weight_${field}`];
       // let short = +data[`short_${field}`];
@@ -137,7 +138,7 @@ const UpdateReworkChallan = () => {
         return;
       }
 
-      if (!isNaN(taka_no) && !isNaN(meter)) {
+      if (!id && !isNaN(taka_no) && !isNaN(meter)) {
         temp.push({
           index: index + 1,
           taka_no: +data[`taka_no_${field}`],

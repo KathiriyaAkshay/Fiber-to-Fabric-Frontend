@@ -69,6 +69,7 @@ const ReworkChallanFieldTable = ({
           );
 
           if (existInDelete) {
+            setValue(`id_${activeField}`, existInDelete.id);
             setValue(`taka_no_${activeField}`, existInDelete.taka_no);
             setValue(`meter_${activeField}`, existInDelete.meter);
             setValue(

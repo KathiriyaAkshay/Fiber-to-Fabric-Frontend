@@ -32,9 +32,9 @@ const FieldTable = ({
           setFocus(`taka_no_${fieldNumber + 1}`);
         }, 0);
 
-        setTotalTaka((prev) => prev + 1);
-        setTotalMeter((prev) => prev + +getValues(`meter_${fieldNumber}`));
-        setTotalWeight((prev) => prev + +getValues(`weight_${fieldNumber}`));
+        // setTotalTaka((prev) => prev + 1);
+        // setTotalMeter((prev) => prev + +getValues(`meter_${fieldNumber}`));
+        // setTotalWeight((prev) => prev + +getValues(`weight_${fieldNumber}`));
       }
     }
   };
@@ -46,15 +46,15 @@ const FieldTable = ({
         setActiveField((prev) => prev - 1);
       }
 
-      const takaNo = getValues(`taka_no_${fieldNumber}`);
-      const meter = +getValues(`meter_${fieldNumber}`);
-      const weight = +getValues(`weight_${fieldNumber}`);
+      // const takaNo = getValues(`taka_no_${fieldNumber}`);
+      // const meter = +getValues(`meter_${fieldNumber}`);
+      // const weight = +getValues(`weight_${fieldNumber}`);
 
-      if (takaNo && meter && weight) {
-        setTotalTaka((prev) => (prev === 0 ? prev : prev - 1));
-        setTotalMeter((prev) => (prev === 0 ? prev : prev - meter));
-        setTotalWeight((prev) => (prev === 0 ? prev : prev - weight));
-      }
+      // if (takaNo && meter && weight) {
+      //   setTotalTaka((prev) => (prev === 0 ? prev : prev - 1));
+      //   setTotalMeter((prev) => (prev === 0 ? prev : prev - meter));
+      //   setTotalWeight((prev) => (prev === 0 ? prev : prev - weight));
+      // }
 
       setValue(`taka_no_${fieldNumber}`, "");
       setValue(`meter_${fieldNumber}`, "");
@@ -73,18 +73,47 @@ const FieldTable = ({
     500
   );
 
+  const calculateTotal = () => {
+    const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
+
+    let totalTaka = 0;
+    let totalMeter = 0;
+    let totalWeight = 0;
+
+    numOfFields.forEach((fieldNumber) => {
+      let taka_number = getValues(`taka_no_${fieldNumber}`);
+      if (
+        taka_number !== undefined &&
+        taka_number != null &&
+        taka_number != ""
+      ) {
+        totalTaka += 1;
+      }
+      totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
+      totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
+    });
+
+    setTotalTaka(totalTaka);
+    setTotalMeter(totalMeter);
+    setTotalWeight(totalWeight);
+  };
+
+  const calculateTotalHandler = useDebounceCallback(calculateTotal, 500);
+
   return (
     <Row style={{ marginTop: "-20" }}>
       <Col span={6}>
         <table className="job-challan-details-table" border={1}>
           <thead>
-            <th>#</th>
-            <th>Taka No</th>
-            <th>Meter</th>
-            <th>Weight</th>
-            <th>
-              <MinusCircleOutlined />
-            </th>
+            <tr>
+              <th>#</th>
+              <th>Taka No</th>
+              <th>Meter</th>
+              <th>Weight</th>
+              <th>
+                <MinusCircleOutlined />
+              </th>
+            </tr>
           </thead>
           <tbody>
             {numOfFields.slice(0, chunkSize).map((fieldNumber) => {
@@ -140,10 +169,7 @@ const FieldTable = ({
                                   e.target.value,
                                   fieldNumber
                                 );
-                                // checkUniqueTakaHandler(
-                                //   e.target.value,
-                                //   fieldNumber
-                                // );
+                                calculateTotalHandler();
                               }
                             }}
                           />
@@ -191,6 +217,10 @@ const FieldTable = ({
                               borderRadius: "0px",
                             }}
                             disabled={fieldNumber > activeField}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              calculateTotalHandler();
+                            }}
                           />
                         )}
                       />
@@ -246,6 +276,10 @@ const FieldTable = ({
                             //     e.target.value
                             //   );
                             // }}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              calculateTotalHandler();
+                            }}
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }

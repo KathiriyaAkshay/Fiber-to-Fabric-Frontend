@@ -19,6 +19,8 @@
   --table-border-color: #ababab;
   --scrollbar-background-color: #f1f1f1;
   --scrollbar-hover-background-color: #bdbdbd;
+  --index-column-bakcground-color: #e2e2e2 ; 
+  --index-column-text-color : #000000 ; 
 }
 
 body {
@@ -85,10 +87,19 @@ body {
 }
 
 .job-challan-taka-index-column {
-  background-color: rgb(25 74 109);
-  color: #fff;
+  background-color: var(--index-column-bakcground-color);
+  color: var(--index-column-text-color);
   padding-left: 7px !important;
   padding-right: 7px !important;
+  text-align: center;
+  font-weight: 600;
+}
+
+.total-info-td-cell{
+  text-align: center;
+  font-weight: 600;
+  background-color: var(--index-column-bakcground-color);
+  color: var(--index-column-text-color);
 }
 
 .job-challan-taka-plus-option {
@@ -605,4 +616,50 @@ input:read-only {
   height: 100%;
   overflow-x: hidden;
   min-height: 92vh;
+}
+.card-wrapper{
+  border:1px solid black;
+}
+
+
+.wrapper-view-challan td, .wrapper-view-challan tr{
+  border: 1px solid black;
+}
+
+.sale-challan-font{
+  color: #000000;
+  font-weight: 500;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.sale-challan-data p{
+  margin-top: 0px !important;
+}
+
+.sale-challan-taka-info{
+  width: 100%;
+}
+
+.sale-challan-taka-info td{
+  padding: 0 !important;
+  width: 25%;
+}
+
+.sale-challan-taka-info-table-border{
+  border-left: 1px solid;
+}
+
+.sale-challan-option-selection .ant-select-selector{
+  background-color: transparent !important;
+  border: 0px !important;
+  padding-left: 0px !important;
+}
+
+.sale-challan-option-selection .ant-select-arrow{
+  display: none !important;
+}
+
+.sale-challan-option-selection .ant-select-selection-item{
+  font-weight: 500;
 }

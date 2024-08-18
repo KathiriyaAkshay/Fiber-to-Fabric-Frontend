@@ -90,8 +90,8 @@ const SaleReturnList = () => {
         company_id: companyId,
         page,
         pageSize,
-        from: debouncedFromDate,
-        to: debouncedToDate,
+        from_date: debouncedFromDate,
+        to_date: debouncedToDate,
         quality_id: debouncedQuality,
         party_id: debouncedParty,
         sale_return_no: debouncedSaleReturnNo,
@@ -102,8 +102,8 @@ const SaleReturnList = () => {
         company_id: companyId,
         page,
         pageSize,
-        from: debouncedFromDate,
-        to: debouncedToDate,
+        from_date: debouncedFromDate,
+        to_date: debouncedToDate,
         quality_id: debouncedQuality,
         party_id: debouncedParty,
         sale_return_no: debouncedSaleReturnNo,
@@ -165,26 +165,6 @@ const SaleReturnList = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Due Date",
-    //       "Challan/Bill",
-    //       "Quality",
-    //       "Party Name",
-    //       "Total Sale",
-    //       "Return Meter",
-    //       "Total Taka",
-    //       "Return Date",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Sale return List",
-    // });
-
     window.open("/print");
   }
 
@@ -203,7 +183,7 @@ const SaleReturnList = () => {
     {
       title: "Due Date",
       render: (text, record) => {
-        let result = new Date(record?.createdAt);
+        let result = new Date(record?.return_date);
         result.setDate(result.getDate() + record?.due_days);
         return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
       },
@@ -321,17 +301,17 @@ const SaleReturnList = () => {
           onChange: onPageChange,
         }}
         summary={(pageData) => {
-          let totalSale = 0;
           let totalTaka = 0;
-          let totalReturnMeter = 0;
+          // let totalSale = 0;
+          // let totalReturnMeter = 0;
           pageData.forEach((row) => {
-            let tt = 0;
-            row.sale_challan.sale_challan_details.forEach(({ meter }) => {
-              tt += +meter;
-            });
+            // let tt = 0;
+            // row.sale_challan.sale_challan_details.forEach(({ meter }) => {
+            //   tt += +meter;
+            // });
 
             totalTaka += +row.sale_challan.total_taka || 0;
-            totalReturnMeter += +tt || 0;
+            // totalReturnMeter += +tt || 0;
           });
           return (
             <>
@@ -342,10 +322,14 @@ const SaleReturnList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalSale}</Typography.Text>
+                  <Typography.Text>
+                    {saleChallanReturnList?.total_sale}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalReturnMeter}</Typography.Text>
+                  <Typography.Text>
+                    {saleChallanReturnList?.retrun_meter}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>{totalTaka}</Typography.Text>
