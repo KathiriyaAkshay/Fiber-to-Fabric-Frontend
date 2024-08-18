@@ -33,7 +33,7 @@ import DeleteSaleChallan from "../../../../components/sale/challan/saleChallan/D
 import ViewSaleChallan from "../../../../components/sale/challan/saleChallan/ViewSaleChallan";
 import SaleChallanBill from "../../../../components/sale/challan/saleChallan/SaleChallanBill";
 import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewChallan";
-// import DeleteJobTaka from "../../../components/job/jobTaka/DeleteJobTaka";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -139,7 +139,7 @@ const SaleChallanList = () => {
         company_id: companyId,
         page,
         pageSize,
-        // is_gray: debouncedState === "gray" ? true : false,
+        is_gray: debouncedState === "gray" ? "1" : "0",
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
@@ -386,17 +386,37 @@ const SaleChallanList = () => {
     {
       title: "Action",
       render: (details) => {
+        let is_return_option = 0 ; 
+
+        details?.sale_challan_details?.map((element) => {
+          if (element?.is_returned){
+            is_return_option = 1 ;
+          } else {
+            is_return_option = 0 ; 
+          }
+        })
+
         return (
           <Space>
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteSaleChallan details={details} />
-            <ViewSaleChallan details={details} companyId={companyId} />
+            <ViewChallan details={[details]}/>
+
+            {details?.sale_bill == null && (
+              <>
+              
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteSaleChallan details={details} />
+              </>
+            )}
+            {is_return_option == 0 && (
+              <ViewSaleChallan details={details} companyId={companyId} />
+            )}
             <Button
               onClick={() => {
                 let MODE;
@@ -423,14 +443,20 @@ const SaleChallanList = () => {
     },
   ];
 
-  const onSelectChange = (newRow) => {
-    setRowSelection(newRow) ;
-  }
-
   const rowSelectionHandler = {
     rowSelection,
-    onChange: onSelectChange,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setRowSelection(selectedRowKeys) ; 
+      setMultipleData(selectedRows)
+    } ,
   };
+
+  const [multipleModelOpen, setMultipleModelOpen] = useState(false) ; 
+  const [multipleData, setMultipleData] = useState([]) ; 
+
+  const MutlipleChallanPressHandler = () => {
+    setMultipleModelOpen(true) ; 
+  }
 
   function renderTable() {
     if (isLoading) {
@@ -475,6 +501,7 @@ const SaleChallanList = () => {
                 <Table.Summary.Cell>
                   <Typography.Text>{totalMeter}</Typography.Text>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -600,7 +627,7 @@ const SaleChallanList = () => {
 
           {rowSelection?.length > 0 && (
             <Flex align="center" gap={10}>
-              <Button type="primary">
+              <Button type="primary" onClick={() => {MutlipleChallanPressHandler()}}>
                 MULTIPLE PRINT
               </Button>
             </Flex>
@@ -615,6 +642,7 @@ const SaleChallanList = () => {
               onChange={setFromDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -625,6 +653,7 @@ const SaleChallanList = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -693,6 +722,13 @@ const SaleChallanList = () => {
           isModelOpen={saleChallanModal.isModalOpen}
           handleCloseModal={handleCloseModal}
           MODE={saleChallanModal.mode}
+        />
+      )}
+
+      {multipleModelOpen && (
+        <ViewChallan
+          details={multipleData}
+          isMutliple={true}
         />
       )}
     </div>

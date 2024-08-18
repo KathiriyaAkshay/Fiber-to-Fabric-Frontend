@@ -25,8 +25,8 @@ import moment from "moment";
 
 const { Text } = Typography;
 
-const ViewChallan = ({ details, companyId }) => {
-  const [isModelOpen, setIsModalOpen] = useState(false);
+const ViewChallan = ({ details, isMutliple }) => {
+  const [isModelOpen, setIsModalOpen] = useState(isMutliple == undefined?false:true);
   const ComponentRef = useRef();
   const [optionSelection, setOptionSelection] = useState("MET");
   const { company } = useContext(GlobalContext);

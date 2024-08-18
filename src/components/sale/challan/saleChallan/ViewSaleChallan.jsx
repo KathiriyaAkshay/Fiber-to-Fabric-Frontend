@@ -18,14 +18,14 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { createSaleChallanReturnRequest } from "../../../../api/requests/sale/challan/challan";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
-
+import { disabledFutureDate } from "../../../../utils/date";
 const { Text } = Typography;
 
 const ViewSaleChallan = ({ details, companyId }) => {
   const queryClient = useQueryClient();
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
-  const { companyListRes } = useContext(GlobalContext);
+  const { companyListRes, company } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
   const TakaArray = Array(12).fill(0);
 
@@ -67,17 +67,6 @@ const ViewSaleChallan = ({ details, companyId }) => {
     }
   };
 
-  // const pageStyle = `
-  //       @media print {
-  //            .print-instructions {
-  //               display: none;
-  //           }
-  //           .printable-content {
-  //               padding: 20px; /* Add padding for print */
-  //               width: 100%;
-  //           }
-  //   `;
-
   useEffect(() => {
     let tempTotal1 = 0;
     let tempTotal2 = 0;
@@ -106,7 +95,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
     });
   }, [details, companyListRes]);
 
-  const { mutateAsync: AddSaleChallanReturn } = useMutation({
+  const { mutateAsync: AddSaleChallanReturn, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleChallanReturnRequest({
         data,
@@ -121,7 +110,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
       queryClient.invalidateQueries(["saleChallan", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("Sale taka return successfully");
       }
       setIsModalOpen(false);
     },
@@ -142,6 +131,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
     await AddSaleChallanReturn(payload);
   };
 
+
   return (
     <>
       <Button
@@ -156,28 +146,34 @@ const ViewSaleChallan = ({ details, companyId }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Sale Challan
+            Sale Return
           </Typography.Text>
         }
         open={isModelOpen}
         footer={() => {
           return (
-            <>
-              {/* <ReactToPrint
-                trigger={() => (
-                  <Flex>
-                    <Button
-                      type="primary"
-                      style={{ marginLeft: "auto", marginTop: 15 }}
-                    >
-                      PRINT
-                    </Button>
-                  </Flex>
-                )}
-                content={() => componentRef.current}
-                pageStyle={pageStyle}
-              /> */}
-            </>
+            <Flex
+              style={{
+                marginTop: "1rem",
+                alignItems: "center",
+                width: "100%",
+                justifyContent: "flex-end",
+                gap: "1rem",
+              }}
+            >
+              <Button type="primary" onClick={submitHandler} loading = {isPending}>
+                Sales Return
+              </Button>
+              <Button
+                type="default"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setSelectedSaleChallan([]);
+                }}
+              >
+                Close
+              </Button>
+            </Flex>
           );
         }}
         onCancel={() => {
@@ -205,6 +201,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
             paddingBottom: 10,
             paddingRight: 10,
             backgroundColor: "#efefef",
+            paddingTop: 2
           },
         }}
         width={"70vw"}
@@ -213,8 +210,39 @@ const ViewSaleChallan = ({ details, companyId }) => {
           className="flex-col border border-b-0 border-solid"
           ref={componentRef}
         >
+          <table>
+            <thead>
+              <tr className="p-2">
+                <th className="text-center" colspan="4" style={{ borderBottom: "1px solid" }}>
+                  <h1 className="text-2xl font-bold">{company?.company_name}</h1>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-center">
+              <tr style={{ borderBottom: "1px solid" }} >
+                <td colspan="4" class="pt-2 pb-2 text-center sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                  {company?.address_line_1} {company?.address_line_2} , {company?.city}
+                </td>
+              </tr>
+
+              <tr className="pt-2 pb-2">
+                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                  PHONE NO: {company?.company_contact}
+                </td>
+                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                  PAYMENT: -
+                </td>
+                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                  GST NO: {company?.gst_no}
+                </td>
+                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                  PAN NO: {company?.pancard_no}
+                </td>
+              </tr>
+            </tbody>
+          </table>
           <Row
-            className="border p-4 border-b ,0border-solid !m-0"
+            className="border pl-4 pr-4 border-b ,0border-solid !m-0"
             style={{
               borderTop: 0,
               borderLeft: 0,
@@ -224,8 +252,10 @@ const ViewSaleChallan = ({ details, companyId }) => {
           >
             <Col span={12}>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={4}>
                   <Text className="font-bold">M/S.</Text>
+                </Col>
+                <Col span={12}>
                   <Text className="block">
                     {details?.party?.party?.company_name}(
                     {`${details?.party?.first_name}${details?.party?.last_name}`}
@@ -235,8 +265,10 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={4}>
                   <Text className="font-bold">GST:</Text>
+                </Col>
+                <Col span={12}>
                   <Text className="block">
                     {details?.supplier?.user?.gst_no}
                   </Text>
@@ -246,56 +278,52 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={24}>
                   <Text className="font-bold">E-Way bill no:</Text>
                   <Text className="block">
-                    {/* {details?.supplier?.user?.gst_no} */}
                   </Text>
                 </Col>
               </Row>
             </Col>
             <Col span={12}>
-              {/* <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
-                  <Text className="font-bold">From,</Text>
-                  <Text className="block ">{companyInfo?.company_name}</Text>
-                  <Text className="block">{`${companyInfo?.address_line_1} ${
-                    companyInfo?.address_line_2 == null
-                      ? ""
-                      : companyInfo?.address_line_2
-                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
-                    companyInfo?.pincode
-                  }, ${companyInfo?.country}`}</Text>
-                </Col>
-              </Row> */}
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={8}>
                   <Text className="font-bold">CHALLAN NO:</Text>
+                </Col>
+                <Col span={16}>
                   <Text className="block">{details?.challan_no}</Text>
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={8}>
                   <Text className="font-bold">ORDER NO:</Text>
+                </Col>
+                <Col span={16}>
                   <Text className="block">{details?.gray_order?.order_no}</Text>
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={8}>
                   <Text className="font-bold">DATE:</Text>
-                  <Text className="block">
-                    {dayjs(details?.createdAt).format("DD-MM-YYYY")}
-                  </Text>
+                </Col>
+                <Col span={16}>
+                  {dayjs(details?.createdAt).format("DD-MM-YYYY")}
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={8}>
                   <Text className="font-bold">BROKER:</Text>
+                </Col>
+                <Col span={16}>
                   <Text className="block">
                     {details?.broker?.first_name} {details?.broker?.last_name}
                   </Text>
                 </Col>
+                <Col span={24}>
+                </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
-                <Col span={24}>
+                <Col span={8}>
                   <Text className="font-bold">VEHICLE NO:</Text>
+                </Col>
+                <Col span={16}>
                   <Text className="block">{companyInfo?.gst_no}</Text>
                 </Col>
               </Row>
@@ -363,15 +391,15 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {details?.sale_challan_details[index]?.is_returned ===
                     false && (
-                    <Checkbox
-                      checked={selectedSaleChallan.includes(
-                        details?.sale_challan_details[index]?.id
-                      )}
-                      onChange={(e) => handleSelectSaleChallan(e, index)}
-                    />
-                  )}
+                      <Checkbox
+                        checked={selectedSaleChallan.includes(
+                          details?.sale_challan_details[index]?.id
+                        )}
+                        onChange={(e) => handleSelectSaleChallan(e, index)}
+                      />
+                    )}
                 </Col>
-                <Col span={1} style={{ textAlign: "center" }}>
+                <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 1}
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
@@ -383,15 +411,15 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {details?.sale_challan_details[index + 12]?.is_returned ===
                     false && (
-                    <Checkbox
-                      checked={selectedSaleChallan.includes(
-                        details?.sale_challan_details[index + 12]?.id
-                      )}
-                      onChange={(e) => handleSelectSaleChallan(e, index + 12)}
-                    />
-                  )}
+                      <Checkbox
+                        checked={selectedSaleChallan.includes(
+                          details?.sale_challan_details[index + 12]?.id
+                        )}
+                        onChange={(e) => handleSelectSaleChallan(e, index + 12)}
+                      />
+                    )}
                 </Col>
-                <Col span={1} style={{ textAlign: "center" }}>
+                <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 13}
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
@@ -438,7 +466,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
               <strong>Return Date:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              <DatePicker value={returnDate} onChange={setReturnDate} />
+              <DatePicker value={returnDate} disabledDate={disabledFutureDate} onChange={setReturnDate} />
             </Col>
           </Row>
 
@@ -458,28 +486,6 @@ const ViewSaleChallan = ({ details, companyId }) => {
           </Row>
         </Flex>
 
-        <Flex
-          style={{
-            marginTop: "1rem",
-            alignItems: "center",
-            width: "100%",
-            justifyContent: "flex-end",
-            gap: "1rem",
-          }}
-        >
-          <Button type="primary" onClick={submitHandler}>
-            Sales Return
-          </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              setIsModalOpen(false);
-              setSelectedSaleChallan([]);
-            }}
-          >
-            Close
-          </Button>
-        </Flex>
       </Modal>
     </>
   );

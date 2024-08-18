@@ -59,8 +59,6 @@ const addJobTakaSchemaResolver = yupResolver(
 const UpdateSaleChallan = () => {
   const queryClient = useQueryClient();
   const { id } = useParams();
-  // const [fieldArray, setFieldArray] = useState([0]);
-
   const [totalTaka, setTotalTaka] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
@@ -70,14 +68,15 @@ const UpdateSaleChallan = () => {
   const [pendingMeter, setPendingMeter] = useState(0);
   const [pendingTaka, setPendingTaka] = useState(0);
   const [pendingWeight, setPendingWeight] = useState(0);
-
+  const [saleChallanTypes, setSaleChallanTypes] = useState([]);
   const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
-  const { companyId, companyListRes } = useContext(GlobalContext);
+
+  const { companyId, companyListRes, company } = useContext(GlobalContext);
   function goBack() {
     navigate(-1);
   }
 
+  // Sale challan details information
   const { data: saleChallanDetail } = useQuery({
     queryKey: ["saleChallan", "get", id, { company_id: companyId }],
     queryFn: async () => {
@@ -90,6 +89,7 @@ const UpdateSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Update sale challan request handler 
   const { mutateAsync: UpdateSaleChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateSaleChallanRequest({
@@ -125,11 +125,23 @@ const UpdateSaleChallan = () => {
     const sale_challan_detail = [];
     let hasError = 0;
     saleChallanDetailArr.forEach((field, index) => {
-      const takaNo = data[`taka_no_${field}`];
-      const meter = data[`meter_${field}`];
-      const weight = data[`weight_${field}`];
+      let takaNo = data[`taka_no_${field}`];
+      let meter = data[`meter_${field}`];
+      let weight = data[`weight_${field}`];
 
-      if (isNaN(takaNo) || takaNo === "") {
+      if (takaNo == undefined){
+        takaNo = ""
+      }
+
+      if (meter == undefined){
+        meter = "";
+      }
+
+      if (weight == undefined){
+        weight = ""
+      }
+
+      if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "" ) {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
@@ -137,7 +149,7 @@ const UpdateSaleChallan = () => {
         });
         hasError = 1;
       }
-      if (isNaN(meter) || meter === "") {
+      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "" ) {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -145,7 +157,7 @@ const UpdateSaleChallan = () => {
         });
         hasError = 1;
       }
-      if (isNaN(weight) || weight === "") {
+      if ((isNaN(weight) || weight === "") && meter !== "" && takaNo !== "") {
         message.error(`Enter weight for ${field} number row.`);
         setError(`weight_${field}`, {
           type: "manual",
@@ -155,9 +167,9 @@ const UpdateSaleChallan = () => {
       }
 
       if (
-        !isNaN(data[`taka_no_${field}`]) &&
-        !isNaN(data[`meter_${field}`]) &&
-        !isNaN(data[`weight_${field}`])
+        takaNo != "" &&
+        meter != "" &&
+        weight != ""
       ) {
         sale_challan_detail.push({
           index: index + 1,
@@ -167,52 +179,50 @@ const UpdateSaleChallan = () => {
           model: data[`model_${field}`],
         });
       }
+
     });
 
-    const newData = {
-      party_id: selectedOrder.party_id,
-      customer_gst_state: data.gst_state_2,
-      is_gray: data.is_gray === "true" ? true : false,
-      challan_type: data.challan_type,
-      challan_no: data.challan_no,
-      createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-      company_gst_state: data.gst_state,
-      delivery_address: data.delivery_address,
-      gray_order_id: +data.gray_order_id,
-      broker_id: +data.broker_id,
-      quality_id: +data.quality_id,
-      vehicle_id: +data.vehicle_id,
-      supplier_id: +data.supplier_id,
-      delivery_note: data.delivery_note,
+    if (sale_challan_detail?.length == 0){
+      message.error("Required at least one taka") ; 
+    } else {
+      
+      const newData = {
+        party_id: saleChallanDetail?.saleChallan?.party_id,
+        customer_gst_state: data.gst_state_2,
+        is_gray: data.is_gray === "true" ? true : false,
+        challan_type: data.challan_type,
+        challan_no: data.challan_no,
+        createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+        company_gst_state: data.gst_state,
+        delivery_address: data.delivery_address,
+        gray_order_id: +data.gray_order_id,
+        broker_id: +data.broker_id,
+        quality_id: +data.quality_id,
+        vehicle_id: +data.vehicle_id,
+        supplier_id: +data.supplier_id,
+        delivery_note: data.delivery_note,
+  
+        pending_meter: +pendingMeter,
+        pending_weight: +pendingWeight,
+        pending_taka: +pendingTaka,
+  
+        total_taka: +totalTaka,
+        total_meter: +totalMeter,
+        total_weight: +totalWeight,
+  
+        sale_challan_types: data.type.map((type) => {
+          return {
+            sale_challan_type: type,
+          };
+        }),
+        sale_challan_details: sale_challan_detail,
+      };
 
-      pending_meter: +pendingMeter,
-      pending_weight: +pendingWeight,
-      pending_taka: +pendingTaka,
-
-      total_taka: +totalTaka,
-      total_meter: +totalMeter,
-      total_weight: +totalWeight,
-
-      sale_challan_types: data.type.map((type) => {
-        return {
-          sale_challan_type: type,
-        };
-      }),
-      sale_challan_details: sale_challan_detail,
-      // saleChallanDetailArr.map((field, index) => {
-      //   return {
-      //     index: index + 1,
-      //     taka_no: data[`taka_no_${field}`],
-      //     meter: parseInt(data[`meter_${field}`]),
-      //     weight: parseInt(data[`weight_${field}`]),
-      //     model: data[`model_${field}`],
-      //   };
-      // }),
-    };
-
-    if (hasError === 0) {
-      await UpdateSaleChallan(newData);
+      if (hasError === 0) {
+        await UpdateSaleChallan(newData);
+      }
     }
+
   }
 
   const {
@@ -257,9 +267,10 @@ const UpdateSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id, type } =
+  const { supplier_name, gray_order_id, company_id, supplier_id, type, quality_id } =
     watch();
 
+  // Vehicle user dropdown list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -275,6 +286,7 @@ const UpdateSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality dropdown list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -301,6 +313,7 @@ const UpdateSaleChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Greyorder list request 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
@@ -317,6 +330,7 @@ const UpdateSaleChallan = () => {
       enabled: Boolean(companyId),
     });
 
+  // Supplier name dropdown   
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -341,9 +355,6 @@ const UpdateSaleChallan = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      // return obj?.supplier_company?.map((item) => {
-      //   return { label: item.supplier_company, value: item.supplier_id };
-      // });
       return obj?.supplier_company;
     } else {
       return [];
@@ -355,16 +366,16 @@ const UpdateSaleChallan = () => {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
 
       setSelectedOrder(order);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("broker_id", order.broker.id);
-      setValue("quality_id", order.inhouse_quality.id);
-      setValue("supplier_name", order.supplier_name);
+      // setValue("total_meter", order.total_meter);
+      // setValue("total_taka", order.total_taka);
+      // setValue("total_weight", order.weight);
+      // setValue(
+      //   "broker_name",
+      //   `${order.broker.first_name} ${order.broker.last_name}`
+      // );
+      // setValue("broker_id", order.broker.id);
+      // setValue("quality_id", order.inhouse_quality.id);
+      // setValue("supplier_name", order.supplier_name);
 
       // setPendingMeter(order.pending_meter);
       // setPendingTaka(order.pending_taka);
@@ -395,27 +406,24 @@ const UpdateSaleChallan = () => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
 
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
+      // setPendingMeter(+order.pending_meter - +totalMeter);
+      // setPendingTaka(+order.pending_taka - +totalTaka);
+      // setPendingWeight(+order.pending_weight - +totalWeight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
   useEffect(() => {
     if (saleChallanDetail) {
+
       const {
         challan_type,
         company_id,
         challan_no,
         delivery_address,
         gst_in,
-        gst_state,
         quality_id,
         supplier_id,
         gray_order_id,
-        total_meter,
-        total_taka,
-        total_weight,
         is_grey,
         supplier,
         createdAt,
@@ -428,6 +436,24 @@ const UpdateSaleChallan = () => {
       } = saleChallanDetail.saleChallan;
 
       setActiveField(sale_challan_details.length + 1);
+
+      let total_meter = saleChallanDetail?.saleChallan?.gray_order?.total_meter ; 
+      let total_taka =  saleChallanDetail?.saleChallan?.gray_order?.total_taka
+      let total_weight = saleChallanDetail?.saleChallan?.gray_order?.weight ; 
+
+      let received_meter = 0; 
+      let received_taka = 0 ; 
+      let received_weight = 0 ; 
+
+      saleChallanDetail?.saleChallan?.sale_challan_details?.map((element) =>{
+        received_taka += 1; 
+        received_meter = received_meter + Number(element?.meter) ;
+        received_weight = received_weight + Number(element?.weight) ; 
+      }); 
+      setPendingMeter(total_meter - received_meter) ;
+      setPendingTaka(total_taka - received_taka) ; 
+      setPendingWeight(total_weight  - received_weight) ; 
+
       let saleChallanDetails = {};
       sale_challan_details.forEach((item, index) => {
         saleChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
@@ -438,22 +464,24 @@ const UpdateSaleChallan = () => {
         setTotalMeter((prev) => prev + +item.meter);
         setTotalWeight((prev) => prev + +item.weight);
       });
+      
       reset({
+        gst_state: saleChallanDetail?.saleChallan?.company_gst_state,
         challan_type,
         company_id,
         challan_no,
         delivery_address,
         gst_in_1: gst_in,
         gst_in_2: gst_in,
-        gst_state_2: gst_state,
+        gst_state_2: saleChallanDetail?.saleChallan?.customer_gst_state,
         quality_id,
         broker_id: broker_id,
         broker_name: `${broker?.first_name} ${broker?.last_name}`,
         supplier_id,
         gray_order_id,
-        total_meter,
-        total_taka,
-        total_weight,
+        total_meter: saleChallanDetail?.saleChallan?.gray_order?.total_meter,
+        total_taka: saleChallanDetail?.saleChallan?.gray_order?.total_taka,
+        total_weight: saleChallanDetail?.saleChallan?.gray_order?.weight,
         is_grey,
         supplier_name: supplier?.supplier_name,
         challan_date: dayjs(createdAt),
@@ -544,46 +572,13 @@ const UpdateSaleChallan = () => {
           />
         </Form.Item>
       </div>
-      {/* <Form layout="vertical" onFinish={handleSubmit(onSubmit)}> */}
       <Row
         gutter={18}
         style={{
           paddingTop: "12px",
+          marginTop: "-15px"
         }}
       >
-        {/* <Col span={6}>
-          <Form.Item
-            label="Company"
-            name="company_id"
-            validateStatus={errors.company_id ? "error" : ""}
-            help={errors.company_id && errors.company_id.message}
-            required={true}
-            wrapperCol={{ sm: 24 }}
-          >
-            <Controller
-              control={control}
-              name="company_id"
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  loading={isLoadingGrayOrderList}
-                  placeholder="Select Company"
-                  options={companyListRes?.rows?.map((company) => ({
-                    label: company.company_name,
-                    value: company.id,
-                  }))}
-                  style={{
-                    textTransform: "capitalize",
-                  }}
-                  dropdownStyle={{
-                    textTransform: "capitalize",
-                  }}
-                />
-              )}
-            />
-          </Form.Item>
-        </Col> */}
-
         <Col span={6}>
           <Form.Item
             label="Challan Type"
@@ -661,11 +656,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            // padding: "12px",
-          }
-        }
+        style={{marginTop: "-15px"}}
       >
         <Col span={6}>
           <Form.Item
@@ -729,11 +720,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            // padding: "12px",
-          }
-        }
+        style={{marginTop: "-15px"}}
       >
         <Col span={6}>
           <Form.Item
@@ -756,6 +743,7 @@ const UpdateSaleChallan = () => {
                     label: order.order_no,
                     value: order.id,
                   }))}
+                  disabled
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -867,11 +855,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            // padding: "12px",
-          }
-        }
+        style={{marginTop: "-15px"}}
       >
         <Col span={6}>
           <Form.Item
@@ -889,7 +873,7 @@ const UpdateSaleChallan = () => {
                 <Select
                   {...field}
                   placeholder="Select Supplier"
-                  disabled={selectedOrder?.supplier_name ? true : false}
+                  disabled={true}
                   loading={isLoadingDropdownSupplierList}
                   options={dropdownSupplierListRes?.map((supervisor) => ({
                     label: supervisor?.supplier_name,
@@ -999,23 +983,23 @@ const UpdateSaleChallan = () => {
       </Row>
 
       {gray_order_id ? (
-        <Row gutter={18}>
+        <Row gutter={18} style={{marginTop: "-10px"}}>
           <Col span={6}></Col>
 
           <Col span={6} style={{ textAlign: "end" }}>
-            <Typography style={{ color: "red" }}>Pending</Typography>
+            <Typography style={{ color: "red", fontWeight: 600 }}>Pending</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingMeter}</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingWeight}</Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "center" }}>
-            <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+          <Col span={3} style={{ textAlign: "left" }}>
+            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingTaka}</Typography>
           </Col>
         </Row>
       ) : null}
@@ -1024,6 +1008,7 @@ const UpdateSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
+          marginTop: "-15px"
         }}
       >
         <Col span={6}>
@@ -1039,7 +1024,7 @@ const UpdateSaleChallan = () => {
               control={control}
               name="gst_state_2"
               render={({ field }) => (
-                <Input {...field} placeholder="GST State" />
+                <Input {...field}  placeholder="GST State" />
               )}
             />
           </Form.Item>
@@ -1057,7 +1042,7 @@ const UpdateSaleChallan = () => {
             <Controller
               control={control}
               name="gst_in_2"
-              render={({ field }) => <Input {...field} placeholder="GST In" />}
+              render={({ field }) => <Input {...field} readOnly placeholder="GST In" />}
             />
           </Form.Item>
         </Col>
@@ -1088,6 +1073,7 @@ const UpdateSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
+          marginTop: "-20px"
         }}
       >
         <Col span={12}>
@@ -1116,12 +1102,6 @@ const UpdateSaleChallan = () => {
                       },
                     ]}
                   >
-                    {/* <Radio value={"taka(inhouse)"}>Taka(In House)</Radio>
-                    <Radio value={"purchase/trading"}>Purchase/Trading</Radio>
-                    <Radio value={"job"}>Job</Radio>
-                    <Radio value={"sale_multiple_production"}>
-                      Sale Multiple Production
-                    </Radio> */}
                   </Checkbox.Group>
                 );
               }}
@@ -1130,25 +1110,30 @@ const UpdateSaleChallan = () => {
         </Col>
       </Row>
 
-      <Divider />
+      <Divider style={{marginTop: "-15px"}} />
 
-      <SaleChallanFieldTable
-        errors={errors}
-        control={control}
-        setFocus={setFocus}
-        setValue={setValue}
-        activeField={activeField}
-        setActiveField={setActiveField}
-        type={type}
-        companyId={companyId}
-        getValues={getValues}
-        setTotalMeter={setTotalMeter}
-        setTotalTaka={setTotalTaka}
-        setTotalWeight={setTotalWeight}
-        setPendingMeter={setPendingMeter}
-        setPendingTaka={setPendingTaka}
-        setPendingWeight={setPendingWeight}
-      />
+      {quality_id !== undefined && quality_id !== null && (
+
+        <SaleChallanFieldTable
+          errors={errors}
+          control={control}
+          setFocus={setFocus}
+          setValue={setValue}
+          activeField={activeField}
+          setActiveField={setActiveField}
+          type={type}
+          companyId={companyId}
+          getValues={getValues}
+          setTotalMeter={setTotalMeter}
+          setTotalTaka={setTotalTaka}
+          setTotalWeight={setTotalWeight}
+          setPendingMeter={setPendingMeter}
+          setPendingTaka={setPendingTaka}
+          setPendingWeight={setPendingWeight}
+          quality_id={quality_id}
+          setSaleChallanTypes={setSaleChallanTypes}
+        />
+      )}
 
       <Row style={{ marginTop: "20px" }} gutter={20}>
         <Col span={6}>

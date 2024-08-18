@@ -114,11 +114,6 @@ const AddSaleChallan = () => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
-
-      console.log("Taka number", takaNo);
-      console.log("Meter ", meter); 
-      console.log("Weight", weight);
-
       if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "") {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
@@ -159,41 +154,47 @@ const AddSaleChallan = () => {
       }
     });
 
-    const newData = {
-      party_id: selectedOrder.party_id,
-      customer_gst_state: data.gst_state_2,
-      is_gray: data.is_gray === "true" ? true : false,
-      challan_type: data.challan_type,
-      challan_no: data.challan_no,
-      createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-      company_gst_state: data.gst_state,
-      delivery_address: data.delivery_address,
-      gray_order_id: +data.gray_order_id,
-      broker_id: +data.broker_id,
-      quality_id: +data.quality_id,
-      vehicle_id: +data.vehicle_id,
-      supplier_id: +data.supplier_id,
-      delivery_note: data.delivery_note,
+    if (sale_challan_detail?.length == 0){
+      message.error("Required at least one taka") ; 
+    } else{
 
-      pending_meter: +pendingMeter,
-      pending_weight: +pendingWeight,
-      pending_taka: +pendingTaka,
-
-      total_taka: +totalTaka,
-      total_meter: +totalMeter,
-      total_weight: +totalWeight,
-
-      sale_challan_types: saleChallanTypes.map((type) => {
-        return {
-          sale_challan_type: type,
+        const newData = {
+          party_id: selectedOrder.party_id,
+          customer_gst_state: data.gst_state_2,
+          is_gray: data.is_gray === "true" ? true : false,
+          challan_type: data.challan_type,
+          challan_no: data.challan_no,
+          createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+          company_gst_state: data.gst_state,
+          delivery_address: data.delivery_address,
+          gray_order_id: +data.gray_order_id,
+          broker_id: +data.broker_id,
+          quality_id: +data.quality_id,
+          vehicle_id: +data.vehicle_id,
+          supplier_id: +data.supplier_id,
+          delivery_note: data.delivery_note,
+    
+          pending_meter: +pendingMeter,
+          pending_weight: +pendingWeight,
+          pending_taka: +pendingTaka,
+    
+          total_taka: +totalTaka,
+          total_meter: +totalMeter,
+          total_weight: +totalWeight,
+    
+          sale_challan_types: saleChallanTypes.map((type) => {
+            return {
+              sale_challan_type: type,
+            };
+          }),
+          sale_challan_details: sale_challan_detail,
         };
-      }),
-      sale_challan_details: sale_challan_detail,
-    };
-
-    if (hasError === 0) {
-      await AddSaleChallan(newData);
+    
+        if (hasError === 0) {
+          await AddSaleChallan(newData);
+        }
     }
+
   }
 
   const {
