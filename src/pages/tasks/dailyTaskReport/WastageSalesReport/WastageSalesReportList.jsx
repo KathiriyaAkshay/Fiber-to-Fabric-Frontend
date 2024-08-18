@@ -8,12 +8,8 @@ import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getWastageSaleReportListRequest } from "../../../../api/requests/reports/wastageSaleReport";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import moment from "moment";
 
 function WastageSalesReportList() {
   const [search, setSearch] = useState("");
@@ -28,11 +24,11 @@ function WastageSalesReportList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  const { data: user } = useCurrentUser();
+  // const { data: user } = useCurrentUser();
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
@@ -68,7 +64,11 @@ function WastageSalesReportList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+
+    let totalPis = 0;
+    let totalRetPerPis = 0;
+    let totalTotal = 0;
 
     const body = reportListRes?.row?.map((report) => {
       const {
@@ -81,6 +81,11 @@ function WastageSalesReportList() {
         notes,
         report_date,
       } = report;
+
+      totalPis += pis;
+      totalRetPerPis += rate_par_pis;
+      totalTotal += total;
+
       return [
         id,
         dayjs(report_date).format("DD-MM-YYYY"),
@@ -93,24 +98,53 @@ function WastageSalesReportList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [
-        [
-          "ID",
-          "Date",
-          "Particular",
-          "Type",
-          "Pis/KG",
-          "Rate per Pis/KG/Meter",
-          "Total",
-          "Notes",
-        ],
-      ],
-      leftContent,
-      rightContent,
-      title: "Wastage Sales Report",
-    });
+    const tableTitle = [
+      "ID",
+      "Date",
+      "Particular",
+      "Type",
+      "Pis/KG",
+      "Rate per Pis/KG/Meter",
+      "Total",
+      "Notes",
+    ];
+    const total = [
+      "Total",
+      "",
+      "",
+      "",
+      totalPis,
+      totalRetPerPis,
+      totalTotal,
+      "",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Wastage Sales Report");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "1");
+    localStorage.setItem("total-data", JSON.stringify(total));
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [
+    //     [
+    //       "ID",
+    //       "Date",
+    //       "Particular",
+    //       "Type",
+    //       "Pis/KG",
+    //       "Rate per Pis/KG/Meter",
+    //       "Total",
+    //       "Notes",
+    //     ],
+    //   ],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Wastage Sales Report",
+    // });
+    window.open("/print");
   }
 
   const columns = [
@@ -118,7 +152,7 @@ function WastageSalesReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -159,10 +193,9 @@ function WastageSalesReportList() {
     },
   ];
 
-  
   const disableFutureDates = (current) => {
     // Check if the current date is after (or equal to) the end of the current day
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   function renderTable() {
@@ -227,7 +260,7 @@ function WastageSalesReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
-          <GoBackButton/>
+          <GoBackButton />
           <h3 className="m-0 text-primary">Wastage Sales report</h3>
           <Button
             onClick={navigateToAdd}
@@ -254,7 +287,7 @@ function WastageSalesReportList() {
 
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker 
+            <DatePicker
               allowClear={true}
               style={{
                 width: "200px",

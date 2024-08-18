@@ -21,11 +21,7 @@ import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import {
-  downloadUserPdf,
-  getPDFTitleContent,
-} from "../../../../lib/pdf/userPdf";
-import { useCurrentUser } from "../../../../api/hooks/auth";
+// import { useCurrentUser } from "../../../../api/hooks/auth";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/checkTakaReport";
 import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
@@ -44,8 +40,8 @@ function CheckTakaReportList() {
     fromDate && dayjs(fromDate).format("YYYY-MM-DD"),
     500
   );
-  const { data: user } = useCurrentUser();
-  const { company, companyId } = useContext(GlobalContext);
+  // const { data: user } = useCurrentUser();
+  const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -87,7 +83,7 @@ function CheckTakaReportList() {
   }
 
   function downloadPdf() {
-    const { leftContent, rightContent } = getPDFTitleContent({ user, company });
+    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = reportListRes?.rows?.map((report, index) => {
       const {
         report_date,
@@ -106,19 +102,35 @@ function CheckTakaReportList() {
       ];
     });
 
-    downloadUserPdf({
-      body,
-      head: [["ID", "Date", "Employee", "Machine", "Machine No", "Taka No"]],
-      leftContent,
-      rightContent,
-      title: "Taka Report List",
-    });
+    const tableTitle = [
+      "ID",
+      "Date",
+      "Employee",
+      "Machine",
+      "Machine No",
+      "Taka No",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-title", "Taka Report List");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    localStorage.setItem("total-count", "0");
+
+    // downloadUserPdf({
+    //   body,
+    //   head: [["ID", "Date", "Employee", "Machine", "Machine No", "Taka No"]],
+    //   leftContent,
+    //   rightContent,
+    //   title: "Taka Report List",
+    // });
+    window.open("/print");
   }
 
   const columns = [
     {
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
       title: "ID",
     },
     {
@@ -130,9 +142,8 @@ function CheckTakaReportList() {
       title: "Employee",
       dataIndex: "employee_name",
       key: "employee_name",
-      render: (text, record) => (
-        `${record?.employee?.first_name} ${record?.employee?.first_name} | ( ${record?.employee?.username} )`
-      )
+      render: (text, record) =>
+        `${record?.employee?.first_name} ${record?.employee?.first_name} | ( ${record?.employee?.username} )`,
     },
     {
       title: "Machine",
@@ -150,23 +161,21 @@ function CheckTakaReportList() {
       key: "taka_no",
     },
     {
-      title: "Quality", 
-      dataIndex: "quality", 
-      key: "quality", 
-      render: (text, record) => (
-        `${record?.inhouse_quality?.quality_name}`
-      )
+      title: "Quality",
+      dataIndex: "quality",
+      key: "quality",
+      render: (text, record) => `${record?.inhouse_quality?.quality_name}`,
     },
     {
-      title: "Problem", 
-      dataIndex: "problem", 
-      key: "problem"
-    }, 
+      title: "Problem",
+      dataIndex: "problem",
+      key: "problem",
+    },
     {
-      title: "Fault", 
-      dataIndex: "fault", 
-      key: "fault"
-    }, 
+      title: "Fault",
+      dataIndex: "fault",
+      key: "fault",
+    },
     {
       title: "Action",
       render: (reportDetails) => {
@@ -177,8 +186,8 @@ function CheckTakaReportList() {
           machine_no = 0,
           taka_no = 0,
           inhouse_quality = {},
-          fault, 
-          problem
+          fault,
+          problem,
         } = reportDetails;
 
         return (
@@ -192,9 +201,9 @@ function CheckTakaReportList() {
                 { title: "Machine", value: machine_name },
                 { title: "Machine No", value: machine_no },
                 { title: "Taka No", value: taka_no },
-                { title: "Quality", value: inhouse_quality?.quality_name}, 
-                { title: "Problem", value: problem} ,
-                { title: "Fault", value: fault}
+                { title: "Quality", value: inhouse_quality?.quality_name },
+                { title: "Problem", value: problem },
+                { title: "Fault", value: fault },
               ]}
             />
             <Button

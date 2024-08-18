@@ -1,19 +1,25 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import { useRef, useEffect } from "react";
 import ReactToPrint from "react-to-print";
 import dayjs from "dayjs";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
 const ViewSaleReturn = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
-  // const { companyListRes } = useContext(GlobalContext);
+  const { company } = useContext(GlobalContext);
+
   // const [companyInfo, setCompanyInfo] = useState({});
   const TakaArray = Array(12).fill(0);
+
+  if (isModelOpen) {
+    console.log({ details });
+  }
 
   const [totalTaka1, setTotalTaka1] = useState(0);
   const [totalTaka2, setTotalTaka2] = useState(0);
@@ -132,6 +138,54 @@ const ViewSaleReturn = ({ details }) => {
           ref={componentRef}
         >
           <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={24}>
+              <Text className="font-bold" style={{ fontSize: "22px" }}>
+                SONU TEXTTILE
+              </Text>
+            </Col>
+          </Row>
+          <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={24}>
+              <Text>
+                {company?.address_line_1} {company?.address_line_2} ,{" "}
+                {company?.city}
+              </Text>
+            </Col>
+          </Row>
+          <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PHONE NO:</span>{" "}
+                {company?.company_contact}
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PAYMENT:</span> -
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">GST NO:</span> {company?.gst_no}
+              </Text>
+            </Col>
+
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PAN NO:</span> {company.pancard_no}
+              </Text>
+            </Col>
+          </Row>
+          <Row
             className="border p-4 border-b ,0border-solid !m-0"
             style={{
               borderTop: 0,
@@ -229,6 +283,13 @@ const ViewSaleReturn = ({ details }) => {
           </Row>
 
           {TakaArray?.map((element, index) => {
+            const isReturned =
+              details?.sale_challan?.sale_challan_details[index]?.is_returned;
+
+            const isReturned2 =
+              details?.sale_challan?.sale_challan_details[index + 12]
+                ?.is_returned;
+
             return (
               <Row
                 key={index}
@@ -236,28 +297,70 @@ const ViewSaleReturn = ({ details }) => {
                 style={{ borderTop: 0 }}
               >
                 <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 1}
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {index + 1}
+                  </Text>
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.sale_challan?.sale_challan_details[index]?.taka_no}
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan?.sale_challan_details[index]
+                        ?.taka_no
+                    }{" "}
+                    {isReturned ? "(return)" : ""}
+                  </Text>
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {details?.sale_challan?.sale_challan_details[index]?.meter}
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {details?.sale_challan?.sale_challan_details[index]?.meter}
+                  </Text>
                 </Col>
+                {/* Table 2 */}
                 <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 13}
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {index + 13}
+                  </Text>
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {
-                    details?.sale_challan?.sale_challan_details[index + 12]
-                      ?.taka_no
-                  }
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan?.sale_challan_details[index + 12]
+                        ?.taka_no
+                    }{" "}
+                    {isReturned2 ? "(return)" : ""}
+                  </Text>
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {
-                    details?.sale_challan?.sale_challan_details[index + 12]
-                      ?.meter
-                  }
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan?.sale_challan_details[index + 12]
+                        ?.meter
+                    }
+                  </Text>
                 </Col>
               </Row>
             );

@@ -60,8 +60,10 @@ function AddEmployeeAttendanceReport() {
 
   const { mutateAsync: createEmployeeAttendance } = useMutation({
     mutationFn: async (data) => {
-      if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length ){
-        message.warning(`Please select ${data?.absent_employee_count} absend employee`)
+      if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length) {
+        message.warning(
+          `Please select ${data?.absent_employee_count} absend employee`
+        );
       } else {
         const res = await createEmployeeAttendanceReportRequest({
           data,
@@ -78,7 +80,7 @@ function AddEmployeeAttendanceReport() {
         message.success(successMessage);
       }
       navigate(-1);
-    },  
+    },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
       message.error(errorMessage);
@@ -230,7 +232,7 @@ function AddEmployeeAttendanceReport() {
               validateStatus={errors.user_ids ? "error" : ""}
               help={errors.user_ids && errors.user_ids.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -266,7 +268,6 @@ function AddEmployeeAttendanceReport() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }
