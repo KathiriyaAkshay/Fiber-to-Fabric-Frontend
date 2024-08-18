@@ -44,9 +44,6 @@ const toWords = new ToWords({
 });
 
 const addSaleBillSchema = yup.object().shape({
-  // invoice_no: yup.string().required("Please enter invoice no."),
-  // freight_value: yup.string().required("Please enter freight value"),
-  // freight_amount: yup.string().required("Please enter freight amount"),
   discount_value: yup.string().required("Please enter is discount"),
   discount_amount: yup.string().required("Please enter is discount"),
 
@@ -67,9 +64,15 @@ const addSaleBillSchema = yup.object().shape({
 
   rate: yup.string().required("Please enter rate"),
   amount: yup.string().required("Please enter amount"),
+
+  e_way_bill_no: yup.string().required("Please, Enter bill number")
 });
 
 const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
+  console.log("Details information =============================");
+  console.log(details);
+
+
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -184,9 +187,6 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
   function calculateDiscount(value = 0) {
     const discountAmount = (+getValues("amount") * +value) / 100;
-    // const discountAmount = parseFloat(
-    //   +getValues("amount") - discountValue
-    // ).toFixed(2);
     setValue("discount_amount", discountAmount);
 
     const totalAmount = +getValues("amount") - +discountAmount;
@@ -213,9 +213,6 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   }
 
   function calculatePercent(value, setName) {
-    // const finalValue = parseFloat(
-    //   (+getValues("discount_amount") * +value) / 100
-    // ).toFixed(2);
     const finalValue = parseFloat(
       (+getValues("total_amount") * +value) / 100
     ).toFixed(2);
@@ -238,10 +235,10 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     const finalNetAmount = parseFloat(
       // +currentValues.discount_amount +
       +currentValues.total_amount +
-        +currentValues.SGST_amount +
-        +currentValues.CGST_amount +
-        +currentValues.IGST_amount +
-        +currentValues.TCS_amount
+      +currentValues.SGST_amount +
+      +currentValues.CGST_amount +
+      +currentValues.IGST_amount +
+      +currentValues.TCS_amount
     ).toFixed(2);
     const roundedNetAmount = Math.round(finalNetAmount);
     const roundOffValue = (roundedNetAmount - finalNetAmount).toFixed(2);
@@ -305,9 +302,9 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const [averageAmount, setAverageAmount] = useState(0);
 
   useEffect(() => {
-    let tempAverage =
-      Number(currentValues?.net_amount) / Number(details.total_taka);
-    setAverageAmount(tempAverage);
+    let total_taka = details?.sale_challan_details?.length ; 
+    let tempAverage = Number(currentValues?.net_amount) / total_taka;
+    setAverageAmount(tempAverage.toFixed(2));
   }, [currentValues?.net_amount]);
 
   return (
@@ -340,8 +337,12 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
           body: {
             padding: "16px 32px",
           },
+          footer: {
+            paddingRight: "10px", 
+            paddingBottom :"20px", 
+            backgroundColor: "#efefef"
+          }
         }}
-        // footer={null}
         footer={() => {
           return (
             <>
@@ -354,7 +355,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       onClick={handleSubmit(onSubmit)}
                       loading={isPending}
                     >
-                      PRINT
+                      Create Bill
                     </Button>
                   </Flex>
                 )}
@@ -402,13 +403,11 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="flex items-center justify-center border"
               >
                 <Typography.Text className="font-semibold text-center">
-                  {`${companyInfo?.address_line_1} ${
-                    companyInfo?.address_line_2 == null
-                      ? ""
-                      : companyInfo?.address_line_2
-                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
-                    companyInfo?.pincode
-                  }, ${companyInfo?.country}`}
+                  {`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
+                    ? ""
+                    : companyInfo?.address_line_2
+                    }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
+                    }, ${companyInfo?.country}`}
                   <br />
                   MOBILE NO: {companyInfo?.company_contact}, PAYMENT:{" "}
                   {companyInfo?.account_number}
@@ -479,12 +478,13 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                     <Typography.Text className="block font-semibold">
                       PARTY ORDER NO.
                     </Typography.Text>
+                    <Typography.Text>-</Typography.Text>
                   </Col>
                   <Col span={12}>
                     <Typography.Text className="block font-semibold">
                       CHALLAN NO.
                     </Typography.Text>
-                    <Typography.Text>21312</Typography.Text>
+                    <Typography.Text>{details?.challan_no}</Typography.Text>
                   </Col>
                 </Row>
                 <Row className="mt-2">
@@ -647,7 +647,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.discount_value ? "error" : ""}
                   help={errors.discount_value && errors.discount_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -731,7 +731,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -785,7 +785,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.CGST_value ? "error" : ""}
                   help={errors.CGST_value && errors.CGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -838,7 +838,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -891,7 +891,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.TCS_value ? "error" : ""}
                   help={errors.TCS_value && errors.TCS_value.message}
                   required={true}
-                  // className="mb-0"
+                // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -937,7 +937,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Round off</div>
+                <div style={{ color: "black" }}>Round off</div>
               </Col>
               <Col
                 span={4}
@@ -975,7 +975,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>
+                <div style={{ color: "black", fontWeight: 600 }}>
                   Due date:{" "}
                   {dayjs(currentValues?.due_date).format("DD-MM-YYYY")}
                 </div>
@@ -983,6 +983,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
+                style={{fontWeight: 600}}
               >
                 NET AMOUNT
               </Col>
