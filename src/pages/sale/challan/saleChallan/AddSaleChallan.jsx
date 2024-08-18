@@ -264,9 +264,7 @@ const AddSaleChallan = () => {
         }  else {
           new_challan_number = `CH-${Number(challan_number[1]) + 1}` ; 
         }
-        
         setValue('challan_no', new_challan_number) ; 
-        // return res?.data?.data ; 
 
       }
     }, 

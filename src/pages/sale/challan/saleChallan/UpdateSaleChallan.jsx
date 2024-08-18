@@ -26,7 +26,6 @@ import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import {
@@ -35,6 +34,7 @@ import {
 } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
+import { getSaleLastChallanNumberRequest } from "../../../../api/requests/sale/challan/challan";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -267,8 +267,38 @@ const UpdateSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id, type, quality_id } =
+  const { supplier_name, gray_order_id, company_id, supplier_id, type, quality_id, is_gray } =
     watch();
+
+  // Get last challan number for cash order 
+  const {data: lastChallanNumber, isLoading: lastChallanNumberLoading} = useQuery({
+    queryKey: [
+      "sale", 
+      "challan", 
+      "last-invoice-no", 
+      {company_id: companyId, is_grey: is_gray}
+    ], 
+    queryFn: async () => {
+      if (is_gray == "false"){
+        const res = await getSaleLastChallanNumberRequest({
+          params: {company_id :companyId, is_gray: "0"}
+        }); 
+
+        let challan_number = res?.data?.data?.saleChallan?.challan_no || "CH-1"; 
+        challan_number = challan_number.split("-") ; 
+        let new_challan_number = 0 ; 
+
+        if (challan_number?.length == 1){
+          new_challan_number = `CH-${Number(challan_number[0]) + 1}`; 
+        }  else {
+          new_challan_number = `CH-${Number(challan_number[1]) + 1}` ; 
+        }
+        setValue('challan_no', new_challan_number) ; 
+
+      }
+    }, 
+    enabled: Boolean(companyId && is_gray)
+  })
 
   // Vehicle user dropdown list 
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -624,7 +654,10 @@ const UpdateSaleChallan = () => {
               control={control}
               name="challan_no"
               render={({ field }) => (
-                <Input {...field} placeholder="CH123456" />
+                <Input {...field} 
+                  placeholder="CH123456" 
+                  readOnly = {is_gray == "false"?true:false}  
+                />
               )}
             />
           </Form.Item>
