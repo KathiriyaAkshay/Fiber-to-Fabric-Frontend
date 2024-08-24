@@ -1,11 +1,7 @@
-import React from 'react'
+// import React from 'react'
 
-const QueryChart = (props) => {
-    return (
-        <div className='query-chart-wrapper'>
-            {props.children}
-        </div>
-    )
-}
+const QueryChart = ({ children }) => {
+  return <div className="query-chart-wrapper">{children}</div>;
+};
 
-export default QueryChart
+export default QueryChart;

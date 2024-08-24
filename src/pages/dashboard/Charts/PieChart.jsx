@@ -1,19 +1,4 @@
-import React from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  RadialBar,
-  RadialBarChart,
-} from "recharts";
+import { Tooltip, PieChart, Pie, Cell } from "recharts";
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
 
@@ -27,7 +12,7 @@ const PieCharts = (props) => {
 
   return (
     <PieChart
-      width={props.isModalOpen ? 550 : 350}
+      width={props.isModalOpen ? 550 : 300}
       height={props.isModalOpen ? 400 : 200}
     >
       <Pie

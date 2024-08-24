@@ -1,122 +1,165 @@
-import { Card, Col, Flex, Row, Statistic } from "antd";
-import React from "react";
+import { Card, Col, Divider, Row, Statistic } from "antd";
 import QueryChart from "./Charts/QueryChart";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  RadialBar,
-  RadialBarChart,
-} from "recharts";
-import { BarChart, Bar, Pie, Cell } from "recharts";
+// import {
+//   LineChart,
+//   Line,
+//   XAxis,
+//   YAxis,
+//   CartesianGrid,
+//   Tooltip,
+//   Legend,
+//   ResponsiveContainer,
+//   PieChart,
+//   RadialBar,
+//   RadialBarChart,
+// } from "recharts";
+// import { BarChart, Bar, Pie, Cell } from "recharts";
 import { ChartWrapper } from "./Chart Wrapper/ChartWrapper";
-import ApexCharts from "apexcharts";
+import { useContext } from "react";
+import { GlobalContext } from "../../contexts/GlobalContext";
+// import ApexCharts from "apexcharts";
 
 const Dashboard = () => {
+  const { companyId } = useContext(GlobalContext);
+
   return (
     <div className="dashboard-wrapper">
-      <Row
-        gutter={0}
-        justify={"space-between"}
-        align={"center"}
-        className="mt-2 w-100"
-      >
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Avg. Yarn" value={112893} precision={2} />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Avg. Weight" value={112893} suffix="kg" />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Yarn Cost" value={112893} suffix="Rs." />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Avg. Making Cost" value={112893} suffix="Rs." />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Making Cost" value={112893} suffix="Rs." />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Avg. Sales" value={112893} suffix="Rs." />
-          </QueryChart>
-        </Col>
-        <Col span={3}>
-          <QueryChart>
-            <Statistic title="Total Sales Meter" value={112893} suffix="T" />
-          </QueryChart>
+      <Row>
+        <Col span={24}>
+          <div className="dashboard-advertisement">
+            <p>
+              Yesterday Target :- 2564 Achieved :- 0 Short :- 2563.66 (100%)
+              Monthly Estimated :- 4067.48
+            </p>
+          </div>
         </Col>
       </Row>
-
-      <Row justify={"space-evenly"} align={"start"} className="mt-3 w-100">
+      <Row gutter={6} className="mt-2 w-100">
+        {/* part 1 */}
         <Col span={4}>
-          <Card bordered={false} className="w-100">
-            <Statistic title="Sales Order" value={-1204} />
-
-            <Statistic title="Schedule Meter" value={0} />
-          </Card>
-          <Card bordered={false} className="w-100 mt-1">
-            <Statistic title="Yarn Purchase Order" value={4.38} />
-            <Statistic title="Trading Meter" value={5.38} />
-            <Statistic title="Trading Meter" value={1.548} />
-          </Card>
-          <Card bordered={false} className="w-100 mt-1">
-            <Statistic title="Yarn Purchase Order" value={4.38} />
-
-            <Statistic title="Trading Meter" value={5.38} />
-            <Statistic title="Trading Meter" value={1.548} />
-          </Card>
+          <Row justify={"flex-start"} align={"flex-start"}>
+            <Col span={24}>
+              <Card className="w-100 chart-wrapper side-row-card">
+                <Statistic title="Sales Order" value={-1204} />
+                <Divider />
+                <Statistic title="Schedule Meter" value={0} />
+              </Card>
+            </Col>
+            <Col span={24}>
+              <Card className="w-100 mt-1 chart-wrapper side-row-card">
+                <Statistic title="Yarn Purchase Order" value={4.38} />
+                <Divider />
+                <Statistic title="Trading Meter" value={5.38} />
+                <Divider />
+                <Statistic title="Trading Meter" value={1.548} />
+              </Card>
+            </Col>
+            <Col span={24}>
+              <Card className="w-100 mt-1 chart-wrapper side-row-card">
+                <Statistic title="Yarn Purchase Order" value={4.38} />
+                <Divider />
+                <Statistic title="Trading Meter" value={5.38} />
+                <Divider />
+                <Statistic title="Trading Meter" value={1.548} />
+              </Card>
+            </Col>
+          </Row>
         </Col>
+
+        {/* part 2 */}
         <Col span={20}>
-          <Row justify="" className="w-100">
-            <Col span={8}>
+          {/* number box */}
+          <Row justify={"space-between"} align={"flex-end"}>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic title="Avg. Yarn" value={112893} precision={2} />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic title="Avg. Weight" value={112893} suffix="kg" />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic title="Yarn Cost" value={112893} suffix="Rs." />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic
+                  title="Avg. Making Cost"
+                  value={112893}
+                  suffix="Rs."
+                />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic title="Making Cost" value={112893} suffix="Rs." />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic title="Avg. Sales" value={112893} suffix="Rs." />
+              </QueryChart>
+            </Col>
+            <Col span={3}>
+              <QueryChart>
+                <Statistic
+                  title="Total Sales Meter"
+                  value={112893}
+                  suffix="T"
+                />
+              </QueryChart>
+            </Col>
+          </Row>
+
+          <Row gutter={6} className="mt-6 w-100">
+            <Col span={10}>
               <ChartWrapper
                 chart="LINE"
                 header="Monthly Production"
+                companyId={companyId}
               ></ChartWrapper>
             </Col>
             <Col span={8}>
-              <ChartWrapper chart="BAR" header="Cost Summary"></ChartWrapper>
+              <ChartWrapper
+                chart="BAR"
+                header="Cost Summary"
+                companyId={companyId}
+              ></ChartWrapper>
             </Col>
-            <Col span={8}>
+            <Col span={6}>
               <ChartWrapper
                 chart="PIE"
                 header="Days Payable Outstanding"
+                companyId={companyId}
               ></ChartWrapper>
             </Col>
             <Col span={8}>
               <ChartWrapper
                 chart="RADICAL"
                 header="Total Sales/Stock"
+                companyId={companyId}
               ></ChartWrapper>
             </Col>
             <Col span={8}>
-              <ChartWrapper chart="TREE"></ChartWrapper>
+              <ChartWrapper chart="TREE" companyId={companyId}></ChartWrapper>
             </Col>
             <Col span={8}>
               <ChartWrapper
                 chart="BAR"
                 header="Days Receivable Aging"
+                companyId={companyId}
               ></ChartWrapper>
             </Col>
             <Col span={24}>
-              <ChartWrapper chart="TABLE" header="Data"></ChartWrapper>
+              <ChartWrapper
+                chart="TABLE"
+                header="Data"
+                companyId={companyId}
+              ></ChartWrapper>
             </Col>
             {/*
             <Col span={8}>

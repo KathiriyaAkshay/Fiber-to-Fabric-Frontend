@@ -1,7 +1,7 @@
 import { ArrowsAltOutlined } from "@ant-design/icons";
 import { Button, Flex, Modal } from "antd";
-import React, { useState } from "react";
-import { BarChart, ResponsiveContainer, Treemap } from "recharts";
+import { useState } from "react";
+import { ResponsiveContainer } from "recharts";
 import LineCharts from "../Charts/LineCharts";
 import BarCharts from "../Charts/BarCharts";
 import "./style.css";
@@ -9,30 +9,33 @@ import PieCharts from "../Charts/PieChart";
 import RadicalCharts from "../Charts/RadicalCharts";
 import TreeMap from "../Charts/TreeMap";
 import DataTable from "../Charts/DataTable";
-export const ChartWrapper = (props) => {
+
+export const ChartWrapper = ({ header, chart, companyId }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const handleCancel = () => {
     setModalOpen(false);
   };
+
   const renderChart = (modal) => {
-    if (props.chart === "LINE") {
-      return <LineCharts isModalOpen={modal} />;
-    } else if (props.chart === "BAR") {
-      return <BarCharts isModalOpen={modal} />;
-    } else if (props.chart === "PIE") {
-      return <PieCharts isModalOpen={modal} />;
-    } else if (props.chart === "RADICAL") {
-      return <RadicalCharts isModalOpen={modal} />;
-    } else if (props.chart === "TREE") {
-      return <TreeMap isModalOpen={modal} />;
-    } else if (props.chart === "TABLE") {
-      return <DataTable isModalOpen={modal} />;
+    if (chart === "LINE") {
+      return <LineCharts isModalOpen={modal} companyId={companyId} />;
+    } else if (chart === "BAR") {
+      return <BarCharts isModalOpen={modal} companyId={companyId} />;
+    } else if (chart === "PIE") {
+      return <PieCharts isModalOpen={modal} companyId={companyId} />;
+    } else if (chart === "RADICAL") {
+      return <RadicalCharts isModalOpen={modal} companyId={companyId} />;
+    } else if (chart === "TREE") {
+      return <TreeMap isModalOpen={modal} companyId={companyId} />;
+    } else if (chart === "TABLE") {
+      return <DataTable isModalOpen={modal} companyId={companyId} />;
     }
   };
+
   return (
     <div className="chart-wrapper">
       <Flex justify="space-between" align="center" className="mb-2">
-        <div>{props.header}</div>
+        <div className="title">{header}</div>
         <div>
           <Button
             onClick={() => setModalOpen(true)}

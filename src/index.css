@@ -16,11 +16,12 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
+  --secondary-color: rgba(41, 101, 143, 0.2);
   --table-border-color: #ababab;
   --scrollbar-background-color: #f1f1f1;
   --scrollbar-hover-background-color: #bdbdbd;
-  --index-column-bakcground-color: #e2e2e2 ; 
-  --index-column-text-color : #000000 ; 
+  --index-column-bakcground-color: #e2e2e2;
+  --index-column-text-color: #000000;
 }
 
 body {
@@ -95,7 +96,7 @@ body {
   font-weight: 600;
 }
 
-.total-info-td-cell{
+.total-info-td-cell {
   text-align: center;
   font-weight: 600;
   background-color: var(--index-column-bakcground-color);
@@ -598,68 +599,152 @@ input:read-only {
   padding-left: 1rem;
   padding-top: 0.3rem;
   align-items: center;
-  background-color: #fff;
+  /* background-color: #fff; */
+
+  background: rgb(255, 255, 255);
+  background: linear-gradient(
+    40deg,
+    rgba(255, 255, 255, 1) 80%,
+    rgba(41, 100, 143, 0.2) 90%
+  );
 }
 
 .chart-wrapper {
   border: 1px solid rgb(208, 208, 208);
   border-radius: 0.4rem;
   margin-bottom: 0.4rem;
-  min-height: 14rem;
-  width: 1005;
+  /* min-height: 14rem; */
+  /* width: 100%; */
   padding: 0.4rem;
   background-color: #fff;
+}
+.chart-wrapper .title {
+  color: rgba(0, 0, 0, 0.45);
+  text-transform: uppercase;
+  font-size: 16px;
 }
 
 .dashboard-wrapper {
   background-color: #fafafa;
+  padding: 12px 6px;
+  border: 1px solid var(--secondary-color);
+  margin: 12px 6px;
+  border-radius: 0.4rem;
   height: 100%;
-  overflow-x: hidden;
-  min-height: 92vh;
 }
-.card-wrapper{
-  border:1px solid black;
+.side-row-card .ant-card-body {
+  padding: 12px;
+}
+.side-row-card .ant-divider {
+  margin: 12px 0px;
 }
 
-
-.wrapper-view-challan td, .wrapper-view-challan tr{
+.card-wrapper {
   border: 1px solid black;
 }
 
-.sale-challan-font{
+.wrapper-view-challan td,
+.wrapper-view-challan tr {
+  border: 1px solid black;
+}
+
+.sale-challan-font {
   color: #000000;
   font-weight: 500;
   margin-top: auto;
   margin-bottom: auto;
 }
 
-.sale-challan-data p{
+.sale-challan-data p {
   margin-top: 0px !important;
 }
 
-.sale-challan-taka-info{
+.sale-challan-taka-info {
   width: 100%;
 }
 
-.sale-challan-taka-info td{
+.sale-challan-taka-info td {
   padding: 0 !important;
   width: 25%;
 }
 
-.sale-challan-taka-info-table-border{
+.sale-challan-taka-info-table-border {
   border-left: 1px solid;
 }
 
-.sale-challan-option-selection .ant-select-selector{
+.sale-challan-option-selection .ant-select-selector {
   background-color: transparent !important;
   border: 0px !important;
   padding-left: 0px !important;
 }
 
-.sale-challan-option-selection .ant-select-arrow{
+.sale-challan-option-selection .ant-select-arrow {
   display: none !important;
 }
 
-.sale-challan-option-selection .ant-select-selection-item{
+.sale-challan-option-selection .ant-select-selection-item {
   font-weight: 500;
+}
+
+/* ------------------------------------------------------------------------ */
+
+.monthly-production-line-chart-skeleton {
+  width: 100% !important;
+  height: 200px !important;
+}
+.monthly-production-line-chart-skeleton .ant-skeleton-image {
+  height: 200px !important;
+}
+
+.dashboard-advertisement {
+  background-color: var(--secondary-color);
+  padding: 6px 10px;
+  border-radius: 0.4rem;
+  /* color: var(--menu-item-hover-color); */
+  color: #000000;
+  overflow: hidden;
+}
+.dashboard-advertisement p {
+  margin: 0;
+  /* animation properties */
+  -moz-transform: translateX(100%);
+  -webkit-transform: translateX(100%);
+  transform: translateX(100%);
+
+  -moz-animation: my-animation 15s linear infinite;
+  -webkit-animation: my-animation 15s linear infinite;
+  animation: my-animation 15s linear infinite;
+}
+
+/* for Firefox */
+@-moz-keyframes my-animation {
+  from {
+    -moz-transform: translateX(100%);
+  }
+  to {
+    -moz-transform: translateX(-100%);
+  }
+}
+
+/* for Chrome */
+@-webkit-keyframes my-animation {
+  from {
+    -webkit-transform: translateX(100%);
+  }
+  to {
+    -webkit-transform: translateX(-100%);
+  }
+}
+
+@keyframes my-animation {
+  from {
+    -moz-transform: translateX(100%);
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+  to {
+    -moz-transform: translateX(-100%);
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+  }
 }
