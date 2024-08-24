@@ -1,463 +1,255 @@
-import { CreditCardOutlined, EyeOutlined, PlusCircleOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Radio, Space, Table, Row, Col, Form, Select, DatePicker, Modal, Descriptions, Flex } from 'antd'
-import React from 'react'
-import { useState } from 'react'
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Radio,
+  Space,
+  Table,
+  Select,
+  DatePicker,
+  Flex,
+  Typography,
+  Spin,
+} from "antd";
+import { useContext, useState } from "react";
+import { getDropdownSupplierListRequest } from "../../api/requests/users";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import PaymentVoucherDetails from "../../components/accounts/payment/PaymentVoucherDetails";
+import ChequeBookModal from "../../components/accounts/payment/ChequeBookModal";
+import { PAYMENT_OPTIONS } from "../../constants/account";
+import { getPassbookListRequest } from "../../api/requests/accounts/payment";
+import { usePagination } from "../../hooks/usePagination";
+import dayjs from "dayjs";
+import { useNavigate } from "react-router-dom";
+
+const paymentOptions = [
+  { label: "Bill", value: "bill" },
+  { label: "Passbook Update", value: "passbook_update" },
+  { label: "Cashbook Update", value: "cashbook_update" },
+  { label: "Journal", value: "journal" },
+];
 
 const Payment = () => {
-    const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const [paymentFilter, setPaymentFilter] = useState("bill");
+  const { companyId } = useContext(GlobalContext);
+  const [supplier, setSupplier] = useState(null);
+  const [chequeDate, setChequeDate] = useState(null);
+  const [voucherDate, setVoucherDate] = useState(null);
 
-    const formItemLayout = {
-        labelAlign: "left",
-        labelCol: { span: 24 },
-        wrapperCol: { span: 20 }
-    };
-    const handleChange = (value) => {
-        console.log(`selected ${value}`);
-    };
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-    //DATE PICKER
-    const onChange = (date, dateString) => {
-        console.log(date, dateString);
-    };
+  const changePaymentFilterHandler = ({ target: { value } }) => {
+    setPaymentFilter(value);
+  };
 
-    const [PaymentFilter, setPaymentFilter] = useState('Bill');
+  const navigateToAdd = () => {
+    navigate("add");
+  };
 
-    const onChange1 = ({ target: { value } }) => {
-        setPaymentFilter(value);
-    };
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
 
-    const plainOptions = ['Bill', 'Passbook Update', 'Cashbook Update'];
+  const { data: paymentList, isLoading: isLoadingPaymentList } = useQuery({
+    queryKey: [
+      "get",
+      "payment",
+      "list",
+      { company_id: companyId, paymentFilter },
+    ],
+    queryFn: async () => {
+      let response;
+      let params = { company_id: companyId, page, pageSize };
+      switch (paymentFilter) {
+        case PAYMENT_OPTIONS.bill:
+          console.log(PAYMENT_OPTIONS.bill);
+          return response;
 
-    const columns = [
-        {
-            title: 'No.',
-            dataIndex: 'no',
-            key: 'no',
-        },
-        {
-            title: 'Supplier Name',
-            dataIndex: 'supplier_name',
-            key: 'supplier_name',
-        },
-        {
-            title: 'Account Name',
-            dataIndex: 'account_name',
-            key: 'account_name',
-        },
-        {
-            title: 'Company Name',
-            dataIndex: 'company_name',
-            key: 'company_name',
-        },
-        {
-            title: 'Amount',
-            dataIndex: 'amount',
-            key: 'amount',
-        },
-        {
-            title: 'Voucher No.',
-            dataIndex: 'voucher_no',
-            key: 'voucher_no',
-        },
-        {
-            title: 'Voucher Date.',
-            dataIndex: 'voucher_date',
-            key: 'voucher_date',
-        },
-        {
-            title: 'Cheque No.',
-            dataIndex: 'cheque_no',
-            key: 'cheque_no',
-        },
-        {
-            title: 'Cheque Date',
-            dataIndex: 'cheque_date',
-            key: 'cheque_date',
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            render: (_, record) => (
-                <Space size="middle">
-                    <Button icon={<EyeOutlined />} onClick={() => showModal()} />
-                    <Button icon={<CreditCardOutlined />} onClick={()=>showChequeBookModal()} />
-                </Space>
-            ),
-        },
+        case PAYMENT_OPTIONS.passbook_update:
+          response = await getPassbookListRequest({ params });
+          return response.data.data;
 
-    ];
+        case PAYMENT_OPTIONS.cashbook_update:
+          console.log(PAYMENT_OPTIONS.cashbook_update);
+          return response;
 
-    const dataSource = [
-        {
-            no: "1",
-        },
+        case PAYMENT_OPTIONS.journal:
+          console.log(PAYMENT_OPTIONS.journal);
+          return response;
 
-    ]
+        default:
+          break;
+      }
+    },
+    enabled: Boolean(companyId),
+    placeholderData: keepPreviousData,
+  });
 
-    function renderTable() {
-        // if (isLoading) {
-        //   return (
-        //     <Spin tip="Loading" size="large">
-        //       <div className="p-14" />
-        //     </Spin>
-        //   );
-        // }
+  const columns = [
+    {
+      title: "No.",
+      dataIndex: "no",
+      key: "no",
+      render: (_, record, index) => index + 1,
+    },
+    {
+      title: "Supplier Name",
+      dataIndex: "supplier_name",
+      key: "supplier_name",
+      render: (text) => text || "-",
+    },
+    {
+      title: "Account Name",
+      dataIndex: "account_name",
+      key: "account_name",
+      render: (text) => text || "-",
+    },
+    {
+      title: "Company Name",
+      dataIndex: "company_name",
+      key: "company_name",
+    },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+    },
+    {
+      title: "Voucher No.",
+      dataIndex: "voucher_no",
+      key: "voucher_no",
+    },
+    {
+      title: "Voucher Date.",
+      dataIndex: "voucher_date",
+      key: "voucher_date",
+      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
+    },
+    {
+      title: "Cheque No.",
+      dataIndex: "cheque_no",
+      key: "cheque_no",
+    },
+    {
+      title: "Cheque Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => dayjs(text).format("DD-MM-YYYY"),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (details) => (
+        <Space>
+          <PaymentVoucherDetails details={details} />
+          <ChequeBookModal details={details} />
+        </Space>
+      ),
+    },
+  ];
 
-        return (
-            <Table
-                dataSource={dataSource || []}
-                columns={columns}
-                rowKey={"id"}
-                scroll={{ y: 330 }}
-                pagination={{
-                    total: 0,
-                    showSizeChanger: true,
-                    //   onShowSizeChange: onShowSizeChange,
-                    //   onChange: onPageChange,
-                }}
-            />
-        );
+  function renderTable() {
+    if (isLoadingPaymentList) {
+      return (
+        <Spin tip="Loading" size="large">
+          <div className="p-14" />
+        </Spin>
+      );
     }
-
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const showModal = () => {
-        setIsModalOpen(true);
-    };
-    const handleOk = () => {
-        setIsModalOpen(false);
-    };
-    const handleCancel = () => {
-        setIsModalOpen(false);
-    };
-
-    const [ChequeBookModal, setChequeBookModalOpen] = useState(false);
-    const showChequeBookModal = () => {
-        setChequeBookModalOpen(true);
-    };
-    const handleChequeBookOk = () => {
-        setChequeBookModalOpen(false);
-    };
-    const handleChequeBookCancel = () => {
-        setChequeBookModalOpen(false);
-    };
-
-    const dataSourcePayment = [
-        {
-            no: "1",
-        },
-
-    ]
-
-    const columnsPayment = [
-        {
-            title: 'No.',
-            dataIndex: 'no',
-            key: 'no',
-        },
-        {
-            title: 'Bill no',
-            dataIndex: 'bill_no',
-            key: 'bill_no',
-        },
-        {
-            title: 'Type',
-            dataIndex: 'type',
-            key: 'type',
-        },
-        {
-            title: 'Bill Amount',
-            dataIndex: 'bill_amount',
-            key: 'bill_amount',
-        },
-        {
-            title: 'Net Amount',
-            dataIndex: 'net_amount',
-            key: 'net_amount',
-        },
-        {
-            title: 'Bill Date',
-            dataIndex: 'bill_date',
-            key: 'bill_date',
-        },
-        {
-            title: 'Due Days',
-            dataIndex: 'due_days',
-            key: 'due_days',
-        },
-        {
-            title: 'Less',
-            dataIndex: 'less',
-            key: 'less',
-        },
-        {
-            title: 'Plus',
-            dataIndex: 'plus',
-            key: 'plus',
-        },
-
-    ];
-
-
-
-
-    function renderPaymentTable() {
-        // if (isLoading) {
-        //   return (
-        //     <Spin tip="Loading" size="large">
-        //       <div className="p-14" />
-        //     </Spin>
-        //   );
-        // }
-
-        return (
-            <Table
-                dataSource={dataSourcePayment || []}
-                columns={columnsPayment}
-                rowKey={"id"}
-                className='mt-3'
-                scroll={{ y: 330 }}
-                pagination={{
-                    total: 0,
-                    showSizeChanger: true,
-                    //   onShowSizeChange: onShowSizeChange,
-                    //   onChange: onPageChange,
-                }}
-                summary={(tableData) => {
-
-
-
-                    return (
-                        <Table.Summary.Row>
-                            <Table.Summary.Cell index={0}>
-                                <b>Total</b>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}><b>1</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-                            <Table.Summary.Cell index={0}><b>1123</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}><b>1124513</b></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-                            <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-                            <Table.Summary.Cell index={1}>
-                            </Table.Summary.Cell>
-                            <Table.Summary.Cell index={1}>
-                            </Table.Summary.Cell>
-
-                        </Table.Summary.Row>
-                    );
-                }}
-            />
-        );
-    }
-
-
 
     return (
-        <div className="flex flex-col gap-2 p-4">
-            <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+      <Table
+        dataSource={paymentList?.passbookAudit || []}
+        columns={columns}
+        rowKey={"id"}
+        scroll={{ y: 330 }}
+        pagination={{
+          total: paymentList?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
+      />
+    );
+  }
 
-                <div className="flex items-center gap-5">
-                    <h3 className="m-0 text-primary">Payments</h3>
-                    <Button onClick={""} icon={<PlusCircleOutlined />} />
-                </div>
-                <div>
-                    <Radio.Group options={plainOptions} onChange={onChange1} value={PaymentFilter} />
-
-                </div>
-
-            </div>
-            <div>
-                <Form
-                    form={form}
-                    style={{ maxWidth: "100%" }}
-                    layout='vertical'
-                // style={{
-                //     maxWidth: formLayout === 'inline' ? 'none' : 600,
-                // }}
-                >
-
-                    <Row className='w-100' justify={"start"}>
-                        <Col span={4}>
-                            <Form.Item label="Company" {...formItemLayout}>
-                                <Select
-                                    defaultValue="looms"
-                                    style={{
-                                        width: "100%",
-                                    }}
-                                    onChange={handleChange}
-                                    options={[
-                                        {
-                                            value: 'looms',
-                                            label: 'Looms',
-                                        },
-                                        {
-                                            value: 'jacquard',
-                                            label: 'Jacquard',
-                                        },
-
-                                    ]}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                            <Form.Item label="Bank" {...formItemLayout}>
-                                <Select
-                                    defaultValue="looms"
-                                    style={{
-                                        width: "100%",
-                                    }}
-                                    onChange={handleChange}
-                                    options={[
-                                        {
-                                            value: 'looms',
-                                            label: 'Looms',
-                                        },
-                                        {
-                                            value: 'jacquard',
-                                            label: 'Jacquard',
-                                        },
-
-                                    ]}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                            <Form.Item label="Supplier" {...formItemLayout}>
-                                <Select
-                                    defaultValue="looms"
-                                    style={{
-                                        width: "100%",
-                                    }}
-                                    onChange={handleChange}
-                                    options={[
-                                        {
-                                            value: 'looms',
-                                            label: 'Looms',
-                                        },
-                                        {
-                                            value: 'jacquard',
-                                            label: 'Jacquard',
-                                        },
-
-                                    ]}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                            <Form.Item label="Cheque Date" {...formItemLayout}>
-                                <DatePicker />
-
-                            </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                            <Form.Item label="Voucher Date" {...formItemLayout}>
-                                <DatePicker />
-                            </Form.Item>
-                        </Col>
-                        <Col span={4}>
-                            <Form.Item {...formItemLayout}>
-                                <Button icon={<SearchOutlined />} type="primary" />
-                            </Form.Item>
-                        </Col>
-
-
-                    </Row>
-
-                </Form>
-            </div>
-            {renderTable()}
-
-            <Modal open={isModalOpen} onOk={handleOk} onCancel={handleCancel} width={"100%"}>
-
-                <div className='font-semibold text-lg mb-3'>
-                    Payment Voucher Details
-                </div>
-                <Row>
-                    <Col span={6}>
-                        <Flex justify='center'>
-                            <div className="w-1/2 text-left font-semibold">Voucher Name</div>
-                            <div className="w-1/2 text-left">v-06</div>
-                        </Flex>
-
-                    </Col>
-                    <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Cheque No</div>
-                            <div className="w-1/2 text-left">100</div>
-                        </Flex>
-
-                    </Col> <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Supplier Name</div>
-                            <div className="w-1/2 text-left">Power</div>
-                        </Flex>
-
-                    </Col> <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Company Name</div>
-                            <div className="w-1/2 text-left">Sonu Textiles</div>
-                        </Flex>
-                    </Col>
-                </Row>
-                <Row className='mt-2'>
-                    <Col span={6}>
-                        <Flex justify='center'>
-                            <div className="w-1/2 text-left font-semibold">Voucher Date</div>
-                            <div className="w-1/2 text-left">26/02/23</div>
-                        </Flex>
-
-                    </Col>
-                    <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Cheque Date</div>
-                            <div className="w-1/2 text-left">26/02/23</div>
-                        </Flex>
-
-                    </Col> <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Account Name</div>
-                            <div className="w-1/2 text-left">Power</div>
-                        </Flex>
-
-                    </Col> <Col span={6}>
-                        <Flex justify='space-evenly'>
-                            <div className="w-1/2 text-left font-semibold">Bank Name</div>
-                            <div className="w-1/2 text-left">Sonu Textiles</div>
-                        </Flex>
-                    </Col>
-                </Row>
-                <Row className='mt-2'>
-                    <Col span={6}>
-                        <Flex justify='center'>
-                            <div className="w-1/2 text-left font-semibold">Amount</div>
-                            <div className="w-1/2 text-left">45325.32</div>
-                        </Flex>
-
-                    </Col>
-
-                </Row>
-                {renderPaymentTable()}
-            </Modal>
-
-            <Modal open={ChequeBookModal} onOk={handleChequeBookOk} onCancel={handleChequeBookCancel} width={"70%"} footer={[]}>
-            <div className='font-semibold text-lg mb-3'>
-                    Cheque
-                </div>
-
-                <img src={"https://placehold.co/1000x400"}/>
-
-                <Flex justify='flex-end' className='gap-1'>
-
-                <Button>Print</Button>
-                <Button danger onClick={handleChequeBookCancel}>Close</Button>
-
-                </Flex>
-
-            </Modal>
+  return (
+    <div className="flex flex-col gap-2 p-4">
+      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+        <div className="flex items-center gap-2">
+          <h3 className="m-0 text-primary">Payment Voucher List</h3>
+          <Button
+            onClick={navigateToAdd}
+            icon={<PlusCircleOutlined />}
+            type="text"
+          />
         </div>
-    )
-}
+        <div>
+          <Radio.Group
+            options={paymentOptions}
+            onChange={changePaymentFilterHandler}
+            value={paymentFilter}
+          />
+        </div>
+      </div>
+      <Flex align="center" justify="flex-end" gap={10}>
+        <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">
+            Supplier
+          </Typography.Text>
+          <Select
+            allowClear
+            placeholder="Select Party"
+            dropdownStyle={{
+              textTransform: "capitalize",
+            }}
+            style={{
+              textTransform: "capitalize",
+            }}
+            className="min-w-40"
+            loading={isLoadingDropdownSupplierList}
+            options={dropdownSupplierListRes?.map((supervisor) => ({
+              label: supervisor?.supplier_name,
+              value: supervisor?.supplier_name,
+            }))}
+            value={supplier}
+            onChange={setSupplier}
+          />
+        </Flex>
+        <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">
+            Cheque Date
+          </Typography.Text>
+          <DatePicker value={chequeDate} onChange={setChequeDate} />
+        </Flex>
+        <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">
+            Voucher Date
+          </Typography.Text>
+          <DatePicker value={voucherDate} onChange={setVoucherDate} />
+        </Flex>
+        <Button
+          icon={<FilePdfOutlined />}
+          type="primary"
+          //   disabled={!saleChallanReturnList?.rows?.length}
+          //   onClick={downloadPdf}
+          className="flex-none"
+        />
+      </Flex>
+      {renderTable()}
+    </div>
+  );
+};
 
-export default Payment
+export default Payment;

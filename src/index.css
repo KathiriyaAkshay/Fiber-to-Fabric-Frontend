@@ -748,3 +748,18 @@ input:read-only {
     transform: translateX(-100%);
   }
 }
+
+.payment-options .ant-radio-wrapper {
+  padding: 6px 12px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+}
+
+.payment-options .ant-radio-wrapper:hover {
+  background-color: rgba(173, 216, 230, 0.2);
+  border: 1px solid rgb(25 74 109);
+}
+.payment-options .ant-radio-wrapper-checked {
+  background-color: rgba(173, 216, 230, 0.2);
+  border: 1px solid rgb(25 74 109);
+}

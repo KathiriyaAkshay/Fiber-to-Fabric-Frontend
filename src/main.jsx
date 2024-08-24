@@ -145,6 +145,7 @@ import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 import BeamSentReport from "./pages/job/reports/beamSentReport";
 import UpdatePurchaseTaka from "./pages/purchase/purchaseTaka/updatePurchaseTaka";
 import OpeningProductionStock from "./pages/production/OpeningProductionStock";
+import NewPaymentVoucher from "./pages/accounts/NewPaymentVoucher";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -687,12 +688,6 @@ const router = createBrowserRouter([
       orderMasterRoutes,
       {
         path: "/account",
-        element: (
-          <div>
-            <div>account</div>
-            <Outlet />
-          </div>
-        ),
         children: [
           { index: true, element: <div>account</div> },
           {
@@ -701,7 +696,10 @@ const router = createBrowserRouter([
           },
           {
             path: "payment",
-            element: <Payment />,
+            children: [
+              { index: true, element: <Payment /> },
+              { path: "add", element: <NewPaymentVoucher /> },
+            ],
           },
           {
             path: "balance-sheet",
