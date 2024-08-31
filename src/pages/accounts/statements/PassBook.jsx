@@ -40,6 +40,7 @@ import VerifyPassBookEntry from "../../../components/accounts/statement/passbook
 import DeletePassBookEntry from "../../../components/accounts/statement/passbook/DeletePassBookEntry";
 import RevertPassBookEntry from "../../../components/accounts/statement/passbook/RevertPassBookEntry";
 import EditPassBookVoucherDate from "../../../components/accounts/statement/passbook/EditPassBookVoucherDate";
+import useDebounce from "../../../hooks/useDebounce";
 
 const PassBook = () => {
   const navigate = useNavigate();
@@ -51,8 +52,13 @@ const PassBook = () => {
   const [search, setSearch] = useState(null);
   const [particular, setParticular] = useState(null);
   const [bank, setBank] = useState(null);
-  const [particularOptions, setParticularOptions] = useState([]);
 
+  const debounceMonth = useDebounce(month, 500);
+  const debounceSearch = useDebounce(search, 500);
+  const debounceParticular = useDebounce(particular, 500);
+  const debounceBank = useDebounce(bank, 500);
+
+  const [particularOptions, setParticularOptions] = useState([]);
   const [selectedRow, setSelectedRow] = useState(null);
   const [isOpenEditEntry, setIsOpenEditEntry] = useState(false);
   const [isOpenVerifyEntry, setIsOpenVerifyEntry] = useState(false);
@@ -74,9 +80,10 @@ const PassBook = () => {
     queryFn: async () => {
       let params = {
         company_id: companyId,
-        search,
-        company_bank_id: bank,
+        search: debounceSearch,
+        company_bank_id: debounceBank,
         passbook_entry: 1,
+        from: dayjs(debounceMonth).format("YYYY-MM"),
       };
       const response = await getPassbookListRequest({ params });
       return response.data.data;
@@ -188,7 +195,11 @@ const PassBook = () => {
             />
           </Flex>
           <Flex align="center" gap={10}>
-            <Input value={search} onChange={setSearch} placeholder="Search" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search"
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Select
@@ -355,7 +366,11 @@ const PassBook = () => {
                   return (
                     <tr
                       key={index + "_verified"}
-                      className={row?.is_withdrawals ? "red" : "green"}
+                      className={
+                        !row?.is_withdrawals || row.is_reverted
+                          ? "green"
+                          : "red"
+                      }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
@@ -386,7 +401,9 @@ const PassBook = () => {
                       <td>
                         <Space>
                           {/* revert action */}
-                          <RevertPassBookEntry details={row} />
+                          {row.able_to_revert ? (
+                            <RevertPassBookEntry details={row} />
+                          ) : null}
                           {/* edit action */}
                           <Button
                             style={{
