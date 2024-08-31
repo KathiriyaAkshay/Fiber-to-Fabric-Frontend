@@ -17,7 +17,10 @@ import { GlobalContext } from "../../contexts/GlobalContext";
 import PaymentVoucherDetails from "../../components/accounts/payment/PaymentVoucherDetails";
 import ChequeBookModal from "../../components/accounts/payment/ChequeBookModal";
 import { PAYMENT_OPTIONS } from "../../constants/account";
-import { getPassbookListRequest } from "../../api/requests/accounts/payment";
+import {
+  getCashbookListRequest,
+  getPassbookListRequest,
+} from "../../api/requests/accounts/payment";
 import { usePagination } from "../../hooks/usePagination";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
@@ -66,14 +69,13 @@ const Payment = () => {
       "get",
       "payment",
       "list",
-      { company_id: companyId, paymentFilter },
+      { company_id: companyId, page, pageSize, paymentFilter },
     ],
     queryFn: async () => {
       let response;
       let params = { company_id: companyId, page, pageSize };
       switch (paymentFilter) {
         case PAYMENT_OPTIONS.bill:
-          console.log(PAYMENT_OPTIONS.bill);
           return response;
 
         case PAYMENT_OPTIONS.passbook_update:
@@ -81,11 +83,10 @@ const Payment = () => {
           return response.data.data;
 
         case PAYMENT_OPTIONS.cashbook_update:
-          console.log(PAYMENT_OPTIONS.cashbook_update);
-          return response;
+          response = await getCashbookListRequest({ params });
+          return response.data.data;
 
         case PAYMENT_OPTIONS.journal:
-          console.log(PAYMENT_OPTIONS.journal);
           return response;
 
         default:
@@ -95,6 +96,10 @@ const Payment = () => {
     enabled: Boolean(companyId),
     placeholderData: keepPreviousData,
   });
+
+  const downloadPdf = () => {
+    alert("downloadPdf");
+  };
 
   const columns = [
     {
@@ -143,8 +148,8 @@ const Payment = () => {
     },
     {
       title: "Cheque Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
+      dataIndex: "cheque_date",
+      key: "cheque_date",
       render: (text) => dayjs(text).format("DD-MM-YYYY"),
     },
     {
@@ -170,7 +175,7 @@ const Payment = () => {
 
     return (
       <Table
-        dataSource={paymentList?.passbookAudit || []}
+        dataSource={paymentList?.rows || []}
         columns={columns}
         rowKey={"id"}
         scroll={{ y: 330 }}
@@ -179,6 +184,26 @@ const Payment = () => {
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
+        }}
+        summary={() => {
+          return (
+            <Table.Summary>
+              <Table.Summary.Row>
+                <Table.Summary.Cell>Total</Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {paymentList?.totalAmount}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
+              </Table.Summary.Row>
+            </Table.Summary>
+          );
         }}
       />
     );
@@ -242,8 +267,8 @@ const Payment = () => {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          //   disabled={!saleChallanReturnList?.rows?.length}
-          //   onClick={downloadPdf}
+          disabled={!paymentList?.rows?.length}
+          onClick={downloadPdf}
           className="flex-none"
         />
       </Flex>

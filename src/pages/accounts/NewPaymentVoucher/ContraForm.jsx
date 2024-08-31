@@ -6,6 +6,7 @@ import {
   Flex,
   Form,
   Input,
+  message,
   Radio,
   Row,
   Select,
@@ -14,6 +15,12 @@ import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { CheckOutlined } from "@ant-design/icons";
+import { useMutation } from "@tanstack/react-query";
+import { addPartnerRequest } from "../../../api/requests/accounts/partner";
+import { addContractRequest } from "../../../api/requests/accounts/payment";
 
 const { TextArea } = Input;
 
@@ -21,7 +28,7 @@ const addContraValidationSchema = yupResolver(
   yup.object().shape({
     from_company: yup.string().required("Please select from company."),
     to_company: yup.string().required("Please select to company."),
-    form_bank: yup.string().required("Please select from bank."),
+    from_bank: yup.string().required("Please select from bank."),
     to_bank: yup.string().required("Please select to bank."),
     available_balance_1: yup
       .string()
@@ -29,27 +36,106 @@ const addContraValidationSchema = yupResolver(
     available_balance_2: yup
       .string()
       .required("Please enter available balance."),
-    from_remark: yup.date().required("Please enter from remark."),
+    from_remark: yup.string().required("Please enter from remark."),
     to_remark: yup.string().required("Please enter to remark."),
     amount: yup.string().required("Please enter amount."),
     date: yup.date().required("Please enter date."),
-    selection: yup.string().required("Required."),
+    is_transfer_to_company: yup.string().required("Required."),
   })
 );
 
 const ContraForm = () => {
-  const onSubmit = () => {
-    console.log("Form submitted");
+  const { companyListRes, companyId } = useContext(GlobalContext);
+  const [partnerOptions, setPartnerOptions] = useState([]);
+  const [partnerName, setPartnerName] = useState("");
+
+  // create new particular API
+  const { mutateAsync: addNewPartner, isPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await addPartnerRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["add", "particular", "new"],
+    onSuccess: (res) => {
+      // queryClient.invalidateQueries([
+      //   "dropdown/passbook_particular_type/list",
+      //   { company_id: companyId },
+      // ]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  const { mutateAsync: addContractEntry, isPending: isPendingContract } =
+    useMutation({
+      mutationFn: async (data) => {
+        const res = await addContractRequest({
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data;
+      },
+      mutationKey: ["add", "contract", "new"],
+      onSuccess: (res) => {
+        reset();
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message || error.message;
+        message.error(errorMessage);
+      },
+    });
+
+  const onSubmit = async (data) => {
+    const payload = {
+      company_id: +data?.from_company,
+      bank_id: +data?.from_bank,
+      bank_balance: +data?.available_balance_1,
+      from_remark: data?.from_remark,
+      is_transfer_to_company:
+        data?.is_transfer_to_company === "true" ? true : false,
+      sent_amount: +data.amount,
+      to_remark: data?.to_remark,
+    };
+
+    if (data.is_transfer_to_company) {
+      payload["to_company_id"] = +data.to_company;
+      payload["to_bank_id"] = +data.to_bank;
+      payload["to_bank_balance"] = +data.available_balance_2;
+    } else {
+      payload["company_partner_id"] = +data.to_partner;
+    }
+
+    await addContractEntry(payload);
   };
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    watch,
+    reset,
+    setValue,
   } = useForm({
     defaultValues: {
       from_company: null,
-      form_bank: null,
+      from_bank: null,
       to_company: null,
       to_bank: null,
       available_balance_1: "",
@@ -58,10 +144,81 @@ const ContraForm = () => {
       to_remark: "",
       amount: "",
       date: dayjs(),
-      selection: "to_company",
+      is_transfer_to_company: true,
+
+      to_partner: null,
     },
     resolver: addContraValidationSchema,
   });
+
+  const {
+    from_company,
+    to_company,
+    is_transfer_to_company,
+    to_partner,
+    from_bank,
+    to_bank,
+  } = watch();
+
+  const fromBankOption = useMemo(() => {
+    // resetField("from_bank");
+    if (from_company && companyListRes) {
+      const selectedCompany = companyListRes.rows.find(
+        ({ id }) => id === from_company
+      );
+      if (selectedCompany && selectedCompany?.company_bank_details.length) {
+        const bankOption = selectedCompany?.company_bank_details
+          ?.filter(({ id }) => id !== to_bank)
+          ?.map(({ bank_name, id, balance }) => {
+            return { label: bank_name, value: id, balance };
+          });
+
+        return bankOption;
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
+  }, [companyListRes, from_company, to_bank]);
+
+  const toBankOption = useMemo(() => {
+    // resetField("to_bank");
+    if (to_company && companyListRes) {
+      const selectedCompany = companyListRes.rows.find(
+        ({ id }) => id === to_company
+      );
+      if (selectedCompany && selectedCompany?.company_bank_details.length) {
+        const bankOption = selectedCompany?.company_bank_details
+          ?.filter(({ id }) => id !== from_bank)
+          ?.map(({ bank_name, id, balance }) => {
+            return { label: bank_name, value: id, balance };
+          });
+
+        return bankOption;
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
+  }, [companyListRes, from_bank, to_company]);
+
+  const AddPartnerHandler = async () => {
+    if (!partnerName) {
+      message.error("All fields are required.");
+      return;
+    }
+
+    const payload = {
+      first_name: partnerName,
+    };
+    await addNewPartner(payload);
+  };
+
+  useEffect(() => {
+    setPartnerOptions([{ label: "Other", value: "other" }]);
+  }, []);
 
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
@@ -93,8 +250,12 @@ const ContraForm = () => {
                       {...field}
                       showSearch
                       placeholder="Select Company"
-                      labelInValue
                       allowClear
+                      options={companyListRes?.rows?.map(
+                        ({ company_name, id }) => {
+                          return { label: company_name, value: id };
+                        }
+                      )}
                     />
                   );
                 }}
@@ -104,22 +265,32 @@ const ContraForm = () => {
           <Col span={12}>
             <Form.Item
               label={"From Bank"}
-              name="form_bank"
-              validateStatus={errors.form_bank ? "error" : ""}
-              help={errors.form_bank && errors.form_bank.message}
+              name="from_bank"
+              validateStatus={errors.from_bank ? "error" : ""}
+              help={errors.from_bank && errors.from_bank.message}
               wrapperCol={{ sm: 24 }}
             >
               <Controller
                 control={control}
-                name="form_bank"
+                name="from_bank"
                 render={({ field }) => {
                   return (
                     <Select
                       {...field}
                       showSearch
                       placeholder="Select Bank"
-                      labelInValue
                       allowClear
+                      options={fromBankOption}
+                      onChange={(selectedValue) => {
+                        field.onChange(selectedValue);
+                        const selectedBank = fromBankOption.find(
+                          ({ value }) => value === selectedValue
+                        );
+                        setValue(
+                          "available_balance_1",
+                          selectedBank?.balance || 0
+                        );
+                      }}
                     />
                   );
                 }}
@@ -144,7 +315,7 @@ const ContraForm = () => {
                 control={control}
                 name="available_balance_1"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="0" readOnly />;
+                  return <Input {...field} readOnly placeholder="0" />;
                 }}
               />
             </Form.Item>
@@ -165,32 +336,8 @@ const ContraForm = () => {
                 control={control}
                 name="from_remark"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="Hello test..." />;
-                }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row>
-          <Col span={24}>
-            <Form.Item
-              // label={"Remark (Printed on cheque)"}
-              name="selection"
-              validateStatus={errors.selection ? "error" : ""}
-              help={errors.selection && errors.selection.message}
-              wrapperCol={{ sm: 24 }}
-              required
-            >
-              <Controller
-                control={control}
-                name="selection"
-                render={({ field }) => {
                   return (
-                    <Radio.Group {...field}>
-                      <Radio value="to_company">To Company</Radio>
-                      <Radio value="to_partner">To Partner</Radio>
-                    </Radio.Group>
+                    <TextArea {...field} rows={1} placeholder="For test" />
                   );
                 }}
               />
@@ -198,81 +345,191 @@ const ContraForm = () => {
           </Col>
         </Row>
 
-        <Row gutter={12}>
-          <Col span={12}>
-            <Form.Item
-              label={"To Company"}
-              name="to_company"
-              validateStatus={errors.to_company ? "error" : ""}
-              help={errors.to_company && errors.to_company.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="to_company"
-                render={({ field }) => {
-                  return (
-                    <Select
-                      {...field}
-                      showSearch
-                      placeholder="Select Company"
-                      labelInValue
-                      allowClear
+        <Flex
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "6px",
+            justifyContent: "center",
+          }}
+        >
+          <Form.Item
+            // label={"Remark (Printed on cheque)"}
+            name="is_transfer_to_company"
+            validateStatus={errors.is_transfer_to_company ? "error" : ""}
+            help={
+              errors.is_transfer_to_company &&
+              errors.is_transfer_to_company.message
+            }
+            wrapperCol={{ sm: 24 }}
+            style={{ margin: "12px 0px" }}
+            required
+          >
+            <Controller
+              control={control}
+              name="is_transfer_to_company"
+              render={({ field }) => {
+                return (
+                  <Radio.Group {...field}>
+                    <Radio value={true}>To Company</Radio>
+                    <Radio value={false}>To Partner</Radio>
+                  </Radio.Group>
+                );
+              }}
+            />
+          </Form.Item>
+        </Flex>
+
+        {is_transfer_to_company ? (
+          <>
+            <Row style={{ padding: "12px 0px" }} gutter={12}>
+              <Col span={12}>
+                <Form.Item
+                  label={"To Company"}
+                  name="to_company"
+                  validateStatus={errors.to_company ? "error" : ""}
+                  help={errors.to_company && errors.to_company.message}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="to_company"
+                    render={({ field }) => {
+                      return (
+                        <Select
+                          {...field}
+                          showSearch
+                          placeholder="Select Company"
+                          allowClear
+                          options={companyListRes?.rows?.map(
+                            ({ company_name, id }) => {
+                              return { label: company_name, value: id };
+                            }
+                          )}
+                        />
+                      );
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  label={"To Bank"}
+                  name="to_bank"
+                  validateStatus={errors.to_bank ? "error" : ""}
+                  help={errors.to_bank && errors.to_bank.message}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="to_bank"
+                    render={({ field }) => {
+                      return (
+                        <Select
+                          {...field}
+                          showSearch
+                          placeholder="Select Bank"
+                          allowClear
+                          options={toBankOption}
+                          onChange={(selectedValue) => {
+                            field.onChange(selectedValue);
+                            const selectedBank = toBankOption.find(
+                              ({ value }) => value === selectedValue
+                            );
+                            setValue(
+                              "available_balance_2",
+                              selectedBank?.balance || 0
+                            );
+                          }}
+                        />
+                      );
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={12}>
+              <Col span={24}>
+                <Form.Item
+                  label={"Available Balance"}
+                  name="available_balance_2"
+                  validateStatus={errors.available_balance_2 ? "error" : ""}
+                  help={
+                    errors.available_balance_2 &&
+                    errors.available_balance_2.message
+                  }
+                  wrapperCol={{ sm: 24 }}
+                  required
+                >
+                  <Controller
+                    control={control}
+                    name="available_balance_2"
+                    render={({ field }) => {
+                      return <Input {...field} readOnly placeholder="0" />;
+                    }}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row style={{ padding: "12px 0px" }} gutter={12}>
+              <Col span={24}>
+                <Form.Item
+                  label={"To Partner"}
+                  name="to_partner"
+                  validateStatus={errors.to_partner ? "error" : ""}
+                  help={errors.to_partner && errors.to_partner.message}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Flex gap={6}>
+                    <Controller
+                      control={control}
+                      name="to_partner"
+                      render={({ field }) => {
+                        return (
+                          <Select
+                            {...field}
+                            showSearch
+                            placeholder="Select Partner"
+                            allowClear
+                            // loading={isLoadingParticular}
+                            options={partnerOptions}
+                          ></Select>
+                        );
+                      }}
                     />
-                  );
-                }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              label={"To Bank"}
-              name="to_bank"
-              validateStatus={errors.to_bank ? "error" : ""}
-              help={errors.to_bank && errors.to_bank.message}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="to_bank"
-                render={({ field }) => {
-                  return (
-                    <Select
-                      {...field}
-                      showSearch
-                      placeholder="Select Bank"
-                      labelInValue
-                      allowClear
-                    />
-                  );
-                }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+                  </Flex>
+                </Form.Item>
+              </Col>
+            </Row>
 
-        <Row gutter={12}>
-          <Col span={24}>
-            <Form.Item
-              label={"Available Balance"}
-              name="available_balance_2"
-              validateStatus={errors.available_balance_2 ? "error" : ""}
-              help={
-                errors.available_balance_2 && errors.available_balance_2.message
-              }
-              wrapperCol={{ sm: 24 }}
-              required
-            >
-              <Controller
-                control={control}
-                name="available_balance_2"
-                render={({ field }) => {
-                  return <Input {...field} placeholder="0" readOnly />;
-                }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
+            {to_partner && to_partner?.toLowerCase() === "other" && (
+              <Row gutter={10} style={{ justifyContent: "flex-start" }}>
+                <Col span={22}>
+                  <Form.Item name="other_particular" wrapperCol={{ sm: 24 }}>
+                    <Input
+                      name="partner_name"
+                      placeholder="Partner name"
+                      value={partnerName}
+                      onChange={(e) => setPartnerName(e.target.value)}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={2}>
+                  <Button
+                    type="primary"
+                    onClick={AddPartnerHandler}
+                    loading={isPending}
+                  >
+                    {isPending ? null : <CheckOutlined />}
+                  </Button>
+                </Col>
+              </Row>
+            )}
+          </>
+        )}
 
         <Row gutter={12}>
           <Col span={12}>
@@ -288,7 +545,7 @@ const ContraForm = () => {
                 control={control}
                 name="amount"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="0" readOnly />;
+                  return <Input {...field} placeholder="0" />;
                 }}
               />
             </Form.Item>
@@ -328,7 +585,7 @@ const ContraForm = () => {
                 name="to_remark"
                 render={({ field }) => {
                   return (
-                    <TextArea {...field} rows={3} placeholder="For test" />
+                    <TextArea {...field} rows={1} placeholder="For test" />
                   );
                 }}
               />
@@ -339,7 +596,7 @@ const ContraForm = () => {
           {/* <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button> */}
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPendingContract}>
             Create
           </Button>
         </Flex>

@@ -9,6 +9,8 @@ import PassBookForm from "./PassBookForm";
 import CashBookForm from "./CashBookForm";
 import JournalForm from "./JournalForm";
 import OpeningCurrentForm from "./OpeningCurrentForm";
+import { localStorageHandler } from "../../../utils/mutationUtils";
+import { PAYMENT_TYPE } from "../../../constants/localStorage";
 
 const paymentOptions = [
   { label: "Bill", value: "bill" },
@@ -21,7 +23,9 @@ const paymentOptions = [
 
 const NewPaymentVoucher = () => {
   const navigate = useNavigate();
-  const [selectedPayment, setSelectedPayment] = useState("bill");
+
+  const paymentType = localStorageHandler("GET", PAYMENT_TYPE);
+  const [selectedPayment, setSelectedPayment] = useState(paymentType || "bill");
 
   function goBack() {
     navigate(-1);
@@ -58,7 +62,7 @@ const NewPaymentVoucher = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Add New Quality</h3>
+        <h3 className="m-0 text-primary">Create New Payment Voucher</h3>
 
         <Flex style={{ marginLeft: "auto" }} gap={10}>
           <Radio.Group

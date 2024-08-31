@@ -16,7 +16,7 @@
 
   /* Custom properties */
   --menu-item-hover-color: rgb(41, 100, 143);
-  --secondary-color: rgba(41, 101, 143, 0.2);
+  --secondary-color: rgba(173, 216, 230, 0.2);
   --table-border-color: #ababab;
   --scrollbar-background-color: #f1f1f1;
   --scrollbar-hover-background-color: #bdbdbd;
@@ -638,6 +638,15 @@ input:read-only {
 .side-row-card .ant-divider {
   margin: 12px 0px;
 }
+.bank-balance-card .ant-card-body {
+  padding: 0px;
+}
+.bank-balance-card .ant-divider {
+  margin: 12px 0px;
+}
+.bank-balance-card .ant-collapse-content-box {
+  padding: 6px !important;
+}
 
 .card-wrapper {
   border: 1px solid black;
@@ -753,13 +762,55 @@ input:read-only {
   padding: 6px 12px;
   border-radius: 5px;
   border: 1px solid transparent;
+  transition: 0.5s all;
 }
 
 .payment-options .ant-radio-wrapper:hover {
-  background-color: rgba(173, 216, 230, 0.2);
+  /* background-color: rgba(173, 216, 230, 0.2); */
+  background-color: var(--secondary-color);
   border: 1px solid rgb(25 74 109);
 }
 .payment-options .ant-radio-wrapper-checked {
-  background-color: rgba(173, 216, 230, 0.2);
+  background-color: var(--secondary-color);
   border: 1px solid rgb(25 74 109);
+}
+
+/* account module css */
+
+.statement-passbook-table {
+  width: 100%;
+  text-align: center;
+  border-collapse: collapse;
+}
+
+.statement-passbook-table thead {
+  background-color: rgb(25 74 109);
+  color: white;
+  font-weight: 600;
+}
+
+.statement-passbook-table thead tr td {
+  padding: 6px 6px 6px 12px !important;
+  text-align: left;
+}
+
+.statement-passbook-table tbody tr td {
+  padding: 6px 6px 6px 12px !important;
+  text-align: left;
+}
+
+.statement-passbook-table thead tr td,
+.statement-passbook-table tbody tr td {
+  border: 1px solid #d3d3d3; /* Change #3498db to your desired color */
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.statement-passbook-table tbody tr.red {
+  /* background-color: rgba(255, 0, 0, 0.411); */
+  background-color: #ffe9e9;
+}
+.statement-passbook-table tbody tr.green {
+  /* background-color: rgba(0, 128, 0, 0.5); */
+  background-color: #eff5e9;
 }
