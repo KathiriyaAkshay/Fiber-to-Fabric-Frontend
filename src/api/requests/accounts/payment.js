@@ -27,7 +27,7 @@ export function addPassbookRequest({ data, params }) {
 }
 
 export function deleteRevertPassbookRequest({ id, params }) {
-  return api.patch(`/account/statement/passbook/revert/${id}`, { params });
+  return api.patch(`/account/statement/passbook/revert/${id}`, null, { params });
 }
 
 // Cashbook services------------------------------------------------------------------------

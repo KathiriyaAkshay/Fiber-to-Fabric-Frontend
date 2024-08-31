@@ -13,6 +13,7 @@ const RevertPassBookEntry = ({ details }) => {
   const { companyId } = useContext(GlobalContext);
 
   const { mutateAsync: deletePassBookEntry } = useMutation({
+    mutationKey: ["passbook", "delete"],
     mutationFn: async ({ id }) => {
       const res = await deleteRevertPassbookRequest({
         id,
@@ -23,18 +24,17 @@ const RevertPassBookEntry = ({ details }) => {
       });
       return res?.data;
     },
-    mutationKey: ["passbook", "delete"],
     onSuccess: (res) => {
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
-      }
       queryClient.invalidateQueries([
         "get",
         "passBook",
         "list",
         { company_id: companyId },
       ]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
