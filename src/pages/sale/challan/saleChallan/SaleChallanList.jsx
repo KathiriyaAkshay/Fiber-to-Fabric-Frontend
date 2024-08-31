@@ -39,7 +39,7 @@ const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
 
-  const [rowSelection, setRowSelection] = useState([]) ; 
+  const [rowSelection, setRowSelection] = useState([]);
   const [state, setState] = useState("gray");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -342,14 +342,16 @@ const SaleChallanList = () => {
       dataIndex: "sale_challan_types",
       key: "sale_challan_types",
       render: (text) => {
-        return(
-          <div style={{
-            fontWeight: 600
-          }}>
+        return (
+          <div
+            style={{
+              fontWeight: 600,
+            }}
+          >
             {text.map(({ sale_challan_type }) => sale_challan_type).join(", ")}
           </div>
-        )
-      }
+        );
+      },
     },
     {
       title: "Bill Status",
@@ -386,23 +388,22 @@ const SaleChallanList = () => {
     {
       title: "Action",
       render: (details) => {
-        let is_return_option = 0 ; 
+        let is_return_option = 0;
 
         details?.sale_challan_details?.map((element) => {
-          if (element?.is_returned){
-            is_return_option = 1 ;
+          if (element?.is_returned) {
+            is_return_option = 1;
           } else {
-            is_return_option = 0 ; 
+            is_return_option = 0;
           }
-        })
+        });
 
         return (
           <Space>
-            <ViewChallan details={[details]}/>
+            <ViewChallan details={[details]} />
 
             {details?.sale_bill == null && (
               <>
-              
                 <Button
                   onClick={() => {
                     navigateToUpdate(details.id);
@@ -446,17 +447,17 @@ const SaleChallanList = () => {
   const rowSelectionHandler = {
     rowSelection,
     onChange: (selectedRowKeys, selectedRows) => {
-      setRowSelection(selectedRowKeys) ; 
-      setMultipleData(selectedRows)
-    } ,
+      setRowSelection(selectedRowKeys);
+      setMultipleData(selectedRows);
+    },
   };
 
-  const [multipleModelOpen, setMultipleModelOpen] = useState(false) ; 
-  const [multipleData, setMultipleData] = useState([]) ; 
+  const [multipleModelOpen, setMultipleModelOpen] = useState(false);
+  const [multipleData, setMultipleData] = useState([]);
 
   const MutlipleChallanPressHandler = () => {
-    setMultipleModelOpen(true) ; 
-  }
+    setMultipleModelOpen(true);
+  };
 
   function renderTable() {
     if (isLoading) {
@@ -513,7 +514,6 @@ const SaleChallanList = () => {
       />
     );
   }
-
 
   return (
     <div className="flex flex-col p-4">
@@ -624,10 +624,14 @@ const SaleChallanList = () => {
 
       <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-2">
         <Flex align="center" gap={10}>
-
           {rowSelection?.length > 0 && (
             <Flex align="center" gap={10}>
-              <Button type="primary" onClick={() => {MutlipleChallanPressHandler()}}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  MutlipleChallanPressHandler();
+                }}
+              >
                 MULTIPLE PRINT
               </Button>
             </Flex>
@@ -726,10 +730,7 @@ const SaleChallanList = () => {
       )}
 
       {multipleModelOpen && (
-        <ViewChallan
-          details={multipleData}
-          isMutliple={true}
-        />
+        <ViewChallan details={multipleData} isMutliple={true} />
       )}
     </div>
   );

@@ -17,7 +17,7 @@ export const ChartWrapper = ({ header, chart, companyId }) => {
   };
 
   const renderChart = (modal) => {
-    if (chart === "LINE") {
+    if (chart === "monthly_production") {
       return <LineCharts isModalOpen={modal} companyId={companyId} />;
     } else if (chart === "BAR") {
       return <BarCharts isModalOpen={modal} companyId={companyId} />;

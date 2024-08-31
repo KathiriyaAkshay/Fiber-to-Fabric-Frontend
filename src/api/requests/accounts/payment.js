@@ -1,0 +1,44 @@
+import { api } from "../..";
+
+// Get Last Voucher No------------------------------------------------------------------------
+export function getLastVoucherNoRequest({ params }) {
+  return api.get(`/account/statement/last/voucher`, { params });
+}
+
+// Bill services------------------------------------------------------------------------
+
+// Contract services------------------------------------------------------------------------
+
+export function addContractRequest({ data, params }) {
+  return api.post(`/account/statement/contract/create`, data, { params });
+}
+
+// PASSBOOK SERVICES------------------------------------------------------------------------
+export function getPassbookListRequest({ params }) {
+  return api.get(`/account/statement/passbook/list`, { params });
+}
+
+export function updatePassbookRequest({ id, data, params }) {
+  return api.patch(`/account/statement/passbook/update/${id}`, data, { params });
+}
+
+export function addPassbookRequest({ data, params }) {
+  return api.post(`/account/statement/passbook/create`, data, { params });
+}
+
+export function deleteRevertPassbookRequest({ id, params }) {
+  return api.patch(`/account/statement/passbook/revert/${id}`, { params });
+}
+
+// Cashbook services------------------------------------------------------------------------
+export function getCashbookListRequest({ params }) {
+  return api.get(`/account/statement/cashbook/list`, { params });
+}
+
+export function updateCashbookRequest({ id, data, params }) {
+  return api.patch(`/account/statement/cashbook/update/${id}`, data, { params });
+}
+
+export function addCashbookRequest({ data, params }) {
+  return api.post(`/account/statement/cashbook/create`, data, { params });
+}

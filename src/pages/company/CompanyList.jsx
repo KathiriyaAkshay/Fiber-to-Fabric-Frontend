@@ -13,6 +13,7 @@ import { usePagination } from "../../hooks/usePagination";
 import CompanyBankList from "./CompanyBankList";
 import BankDetailModal from "./BankDetailModal";
 import { useState } from "react";
+import OpeningBalance from "./OpeningBalance";
 
 const initialBankDetailModal = {
   open: false,
@@ -46,7 +47,7 @@ function CompanyList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Company Name",
@@ -71,7 +72,7 @@ function CompanyList() {
     {
       title: "Company Types",
       render: ({ company_types = [] }) => {
-        return company_types.map((ct) => ct?.company_type).join(", ");
+        return company_types?.map((ct) => ct?.company_type).join(", ");
       },
       key: "company_types",
     },
@@ -122,7 +123,9 @@ function CompanyList() {
                 { title: "Company Contact", value: company_contact },
                 {
                   title: "Company Type",
-                  value: company_types.map((ct) => ct?.company_type).join(", "),
+                  value: company_types
+                    ?.map((ct) => ct?.company_type)
+                    .join(", "),
                 },
                 { title: "Account Type", value: account_type },
               ]}
@@ -168,10 +171,8 @@ function CompanyList() {
       <div className="flex items-center gap-5">
         <h3 className="m-0 text-primary">Company List</h3>
         <Button onClick={navigateToAddCompany} icon={<PlusCircleOutlined />} />
-        <div style={{marginLeft: "auto"}}>
-          <Button type="primary" onClick={navigateToAddCompany}>
-            Opening Balance
-          </Button>
+        <div style={{ marginLeft: "auto" }}>
+          <OpeningBalance />
         </div>
       </div>
       <Table

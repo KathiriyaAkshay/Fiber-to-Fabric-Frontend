@@ -10,7 +10,6 @@ export function mutationOnErrorHandler({ error, message }) {
   }
 }
 
-
 export function capitalizeFirstCharacter(str) {
   if (typeof str !== 'string' || str.length === 0) {
     throw new Error("Input must be a non-empty string");
@@ -31,4 +30,23 @@ export function calculateTimeDifference(futureDate) {
   const minutes = Math.floor((differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
 
   return { days, hours, minutes };
+}
+
+export const localStorageHandler = (key, name, payload) => {
+  switch (key) {
+    case "GET":
+      return JSON.parse(localStorage.getItem(name));
+
+    case "STORE":
+      localStorage.setItem(name, JSON.stringify(payload));
+      break;
+
+    case "REMOVE":
+      localStorage.removeItem(name);
+      break;
+
+    default:
+      break;
+  }
+
 }

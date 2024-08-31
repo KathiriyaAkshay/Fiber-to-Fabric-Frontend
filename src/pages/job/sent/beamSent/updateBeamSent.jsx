@@ -261,7 +261,6 @@ const UpdateBeamSent = () => {
     }
   }, [dropDownQualityListRes, quality_id]);
 
-
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
       setInhouseWarpIds((prev) => {
@@ -339,8 +338,8 @@ const UpdateBeamSent = () => {
         return job_beam_sent_details.map(({ beam_load_id }) => beam_load_id);
       });
 
-      let temp_total_meter = 0 ; 
-      let temp_total_weight = 0 ; 
+      let temp_total_meter = 0;
+      let temp_total_weight = 0;
 
       setBeamTypeList(
         job_beam_sent_details?.map((item) => {
@@ -348,8 +347,8 @@ const UpdateBeamSent = () => {
             item.loaded_beam.non_pasarela_beam_detail ||
             item.loaded_beam.recieve_size_beam_detail ||
             item.loaded_beam.job_beam_receive_detail;
-          temp_total_meter = temp_total_meter + Number(obj.meters || obj.meter) ; 
-          temp_total_weight = temp_total_weight + Number(obj?.net_weight || 0) ; 
+          temp_total_meter = temp_total_meter + Number(obj.meters || obj.meter);
+          temp_total_weight = temp_total_weight + Number(obj?.net_weight || 0);
           return {
             beam_load_id: item.beam_load_id,
             beam_no: obj.beam_no,

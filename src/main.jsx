@@ -145,6 +145,9 @@ import SaleReturnList from "./pages/sale/challan/saleReturn/SaleReturnList";
 import BeamSentReport from "./pages/job/reports/beamSentReport";
 import UpdatePurchaseTaka from "./pages/purchase/purchaseTaka/updatePurchaseTaka";
 import OpeningProductionStock from "./pages/production/OpeningProductionStock";
+import NewPaymentVoucher from "./pages/accounts/NewPaymentVoucher";
+import PassBook from "./pages/accounts/statements/PassBook";
+import CashBook from "./pages/accounts/statements/CashBook";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -687,12 +690,6 @@ const router = createBrowserRouter([
       orderMasterRoutes,
       {
         path: "/account",
-        element: (
-          <div>
-            <div>account</div>
-            <Outlet />
-          </div>
-        ),
         children: [
           { index: true, element: <div>account</div> },
           {
@@ -701,7 +698,10 @@ const router = createBrowserRouter([
           },
           {
             path: "payment",
-            element: <Payment />,
+            children: [
+              { index: true, element: <Payment /> },
+              { path: "add", element: <NewPaymentVoucher /> },
+            ],
           },
           {
             path: "balance-sheet",
@@ -713,21 +713,15 @@ const router = createBrowserRouter([
           },
           {
             path: "statement",
-            element: (
-              <div>
-                <div>statement</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>statement</div> },
+              { index: true, element: <PassBook /> },
               {
                 path: "passbook",
-                element: <div>passbook</div>,
+                element: <PassBook />,
               },
               {
                 path: "cashbook",
-                element: <div>cashbook</div>,
+                element: <CashBook />,
               },
               {
                 path: "emi-loan",
