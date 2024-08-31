@@ -4,7 +4,7 @@ export function createCompanyRequest(data) {
   return api.post("/company/create", data);
 }
 
-export function createOpeningBalanceRequest(data, params) {
+export function createOpeningBalanceRequest({ data, params }) {
   return api.post("/company/opening/balance", data, { params });
 }
 
