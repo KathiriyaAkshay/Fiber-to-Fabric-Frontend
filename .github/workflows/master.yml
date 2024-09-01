@@ -20,6 +20,5 @@ jobs:
         script: |
           cd /root/staging_code/FtoF-FE
           git pull origin master
-          source ~/.bashrc
           npm install
           pm2 reload staging
