@@ -33,7 +33,7 @@ const addYarnOrderSchemaResolver = yupResolver(
       .string()
       .required("Please select yarn stock company"),
     yarn_stock_company_id: yup.string().required("Please select denier"),
-    supplier_id: yup.string().required("Please select supplier"),
+    supplier_name: yup.string().required("Please select supplier"),
     lot_no: yup.string().required("Please enter lot no"),
     rate: yup.string().required("Please enter rate"),
     freight: yup.string().required("Please enter freight"),
@@ -120,7 +120,6 @@ function AddYarnOrder() {
   async function onSubmit(data) {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
-    data.supplier_name = data.supplier_id;
     await createYarnOrder(data);
   }
 
@@ -385,7 +384,7 @@ function AddYarnOrder() {
           <Col span={6} className="flex items-end gap-2">
             <Form.Item
               label="Supplier"
-              name="supplier_id"
+              name="supplier_name"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
               required={true}
@@ -394,7 +393,7 @@ function AddYarnOrder() {
             >
               <Controller
                 control={control}
-                name="supplier_id"
+                name="supplier_name"
                 render={({ field }) => (
                   <Select
                     {...field}
