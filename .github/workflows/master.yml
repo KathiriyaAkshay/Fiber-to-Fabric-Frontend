@@ -14,11 +14,11 @@ jobs:
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
-        username: ubuntu
-        key: ${{ secrets.DEPLOY_KEY }}
+        username: root
+        password: ${{ secrets.SSH_PASSWORD }}
         port: 22
         script: |
-          cd /home/ubuntu/FtoF-FE
+          cd /root/staging_code/FtoF-FE
           git pull origin master
           npm install
-          sudo pm2 reload FE
+          pm2 reload staging
