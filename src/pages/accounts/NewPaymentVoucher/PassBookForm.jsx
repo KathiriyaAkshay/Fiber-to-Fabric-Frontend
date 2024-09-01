@@ -16,7 +16,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
-import { CheckOutlined, EditOutlined } from "@ant-design/icons";
+import { CheckOutlined } from "@ant-design/icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   ENTRY_TYPE_OPTIONS,
@@ -33,6 +33,7 @@ import {
   addPassbookRequest,
   getLastVoucherNoRequest,
 } from "../../../api/requests/accounts/payment";
+import EditPassBookParticular from "../../../components/accounts/payment/EditPassBookParticular";
 
 const { TextArea } = Input;
 
@@ -319,9 +320,10 @@ const PassBookForm = () => {
                         );
                       }}
                     />
-                    <Button type="primary">
+                    {/* <Button type="primary">
                       <EditOutlined />
-                    </Button>
+                    </Button> */}
+                    <EditPassBookParticular />
                   </Flex>
                   <Typography.Text style={{ color: "green" }}>
                     {selectedHeadName}
@@ -335,7 +337,7 @@ const PassBookForm = () => {
                 <Col span={11}>
                   <Form.Item name="other_particular" wrapperCol={{ sm: 24 }}>
                     <Input
-                      name="head"
+                      name="other_particular"
                       placeholder="Type name"
                       value={particularName}
                       onChange={(e) => setParticularName(e.target.value)}

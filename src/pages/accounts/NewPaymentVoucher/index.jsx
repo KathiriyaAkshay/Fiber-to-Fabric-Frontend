@@ -1,6 +1,6 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { Button, Divider, Flex, Radio } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BillForm from "./BillForm";
 import { PAYMENT_OPTIONS } from "../../../constants/account";
@@ -55,6 +55,12 @@ const NewPaymentVoucher = () => {
         break;
     }
   }, [selectedPayment]);
+
+  useEffect(() => {
+    return () => {
+      localStorageHandler("REMOVE", PAYMENT_TYPE);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col p-4">

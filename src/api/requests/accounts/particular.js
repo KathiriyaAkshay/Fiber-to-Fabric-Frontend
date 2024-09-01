@@ -4,7 +4,7 @@ export function getParticularListRequest({ params }) {
   return api.get(`/dropdown/passbook_particular_type/list`, { params });
 }
 
-export function updateParticularRequest({ id, data, params }) {
+export function updateParticularRequest({ data, params }) {
   return api.patch(`/dropdown/passbook_particular_type/update`, data, { params });
 }
 
