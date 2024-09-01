@@ -6,6 +6,7 @@ import {
   Flex,
   Form,
   Input,
+  message,
   Row,
   Select,
 } from "antd";
@@ -13,12 +14,21 @@ import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import dayjs from "dayjs";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  addJournalRequest,
+  getLastVoucherNoRequest,
+} from "../../../api/requests/accounts/payment";
+import { useContext, useEffect, useState } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { getParticularListRequest } from "../../../api/requests/accounts/particular";
+import { PARTICULAR_OPTIONS } from "../../../constants/account";
 
 const { TextArea } = Input;
 
 const addContraValidationSchema = yupResolver(
   yup.object().shape({
-    company: yup.string().required("Please select company."),
+    // company: yup.string().required("Please select company."),
     from_particular: yup.string().required("Please select from particular."),
     to_particular: yup.string().required("Please select To particular."),
     remark: yup.string().required("Please enter remark."),
@@ -29,17 +39,87 @@ const addContraValidationSchema = yupResolver(
 );
 
 const JournalForm = () => {
-  const onSubmit = () => {
-    console.log("Form submitted");
+  const { companyId } = useContext(GlobalContext);
+  const queryClient = useQueryClient();
+
+  const [particularOptions, setParticularOptions] = useState([]);
+
+  // get last voucher no API
+  const { data: lastVoucherNo } = useQuery({
+    queryKey: ["account/statement/last/voucher", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getLastVoucherNoRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  // get particular list API
+  const { data: particularRes, isLoading: isLoadingParticular } = useQuery({
+    queryKey: [
+      "dropdown/passbook_particular_type/list",
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getParticularListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { mutateAsync: addNewJournalEntry, isPending: isPendingJournalAdd } =
+    useMutation({
+      mutationFn: async (data) => {
+        const res = await addJournalRequest({
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data;
+      },
+      mutationKey: ["add", "journal", "new"],
+      onSuccess: (res) => {
+        queryClient.invalidateQueries([
+          "account/statement/last/voucher",
+          { company_id: companyId },
+        ]);
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
+        reset();
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message || error.message;
+        message.error(errorMessage);
+      },
+    });
+
+  const onSubmit = async (data) => {
+    console.log("Form submitted", data);
+    const payload = {
+      ...data,
+      createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+      amount: +data.amount,
+    };
+    delete payload.date;
+    await addNewJournalEntry(payload);
   };
 
   const {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
+    reset,
   } = useForm({
     defaultValues: {
-      company: null,
+      // company: null,
       from_particular: null,
       to_particular: null,
       remark: "",
@@ -50,10 +130,41 @@ const JournalForm = () => {
     resolver: addContraValidationSchema,
   });
 
+  useEffect(() => {
+    if (lastVoucherNo && lastVoucherNo.length) {
+      setValue("voucher_no", lastVoucherNo);
+    } else {
+      setValue("voucher_no", `V-1`);
+    }
+  }, [lastVoucherNo, setValue]);
+
+  useEffect(() => {
+    if (particularRes) {
+      const otherOption = {
+        label: "OTHER",
+        value: "other",
+        is_cost_per_meter: false,
+        color: "black",
+      };
+
+      const data = particularRes.rows.map(
+        ({ particular_name, is_cost_per_meter, head }) => {
+          return {
+            label: particular_name,
+            value: particular_name,
+            color: "#000",
+            is_cost_per_meter,
+            head,
+          };
+        }
+      );
+
+      setParticularOptions([...PARTICULAR_OPTIONS, ...data, otherOption]);
+    }
+  }, [particularRes]);
+
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-      {/* <Row gutter={12} style={{ padding: "12px" }}> */}
-      {/* <Col span={12}> */}
       <Card
         style={{
           borderColor: "#194A6D",
@@ -63,7 +174,7 @@ const JournalForm = () => {
         }}
       >
         <Row gutter={12}>
-          <Col span={8}>
+          {/* <Col span={8}>
             <Form.Item
               label={"Company"}
               name="company"
@@ -87,8 +198,8 @@ const JournalForm = () => {
                 }}
               />
             </Form.Item>
-          </Col>
-          <Col span={8}>
+          </Col> */}
+          <Col span={12}>
             <Form.Item
               label={"From Particular"}
               name="from_particular"
@@ -105,15 +216,16 @@ const JournalForm = () => {
                       {...field}
                       showSearch
                       placeholder="Select Type"
-                      labelInValue
                       allowClear
+                      options={particularOptions}
+                      loading={isLoadingParticular}
                     />
                   );
                 }}
               />
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={12}>
             <Form.Item
               label={"To Particular"}
               name="to_particular"
@@ -130,8 +242,9 @@ const JournalForm = () => {
                       {...field}
                       showSearch
                       placeholder="Select Type"
-                      labelInValue
                       allowClear
+                      options={particularOptions}
+                      loading={isLoadingParticular}
                     />
                   );
                 }}
@@ -220,17 +333,15 @@ const JournalForm = () => {
           </Col>
         </Row>
         <Flex gap={10} justify="flex-end">
-          {/* <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button> */}
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isPendingJournalAdd}
+          >
             Create
           </Button>
         </Flex>
       </Card>
-      {/* </Col> */}
-
-      {/* </Row> */}
     </Form>
   );
 };

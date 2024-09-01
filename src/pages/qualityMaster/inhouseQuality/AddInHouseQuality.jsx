@@ -208,6 +208,16 @@ const AddInHouseQuality = () => {
       production_type.push("job");
     }
 
+    let weightFrom = 0;
+    let weightTo = 0;
+    if (qualityDetailWeightFix) {
+      weightFrom = data.checked_weight;
+      weightTo = data.checked_weight;
+    } else {
+      weightFrom = data.checked_weight;
+      weightTo = data.weight_to;
+    }
+
     const newData = {
       quality_detail: {
         quality_name: quality.quality_name,
@@ -218,8 +228,8 @@ const AddInHouseQuality = () => {
         vat_hsn_no: data.vat_hsn_no,
         licence_meter: parseFloat(data.licence_meter),
         yarn_type: data.yarn_type,
-        weight_from: parseFloat(data.weight_from),
-        weight_to: parseFloat(data.weight_to),
+        weight_from: parseFloat(weightFrom),
+        weight_to: parseFloat(weightTo),
         production_rate: parseFloat(data.production_rate),
         max_taka: parseFloat(data.max_taka),
         tpm_z: parseFloat(data.tpm_z),
@@ -284,6 +294,7 @@ const AddInHouseQuality = () => {
       vat_hsn_no: "",
       licence_meter: "",
       yarn_type: null,
+      checked_weight: "",
       weight_from: "",
       weight_to: "",
       production_rate: 0,
@@ -1144,8 +1155,8 @@ const AddInHouseQuality = () => {
               padding: "12px",
             }}
           >
-            <Col span={8}>
-              <Flex className="flex-row justify-between items-center w-full">
+            {qualityDetailWeightFix ? (
+              <Col span={8}>
                 <Form.Item
                   label={
                     <span>
@@ -1159,40 +1170,72 @@ const AddInHouseQuality = () => {
                       Fix
                     </span>
                   }
-                  name="weight_from"
-                  validateStatus={errors.weight_from ? "error" : ""}
-                  help={errors.weight_from && errors.weight_from.message}
+                  name="checked_weight"
+                  validateStatus={errors.checked_weight ? "error" : ""}
+                  help={errors.checked_weight && errors.checked_weight.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
                   <Controller
                     control={control}
+                    name="checked_weight"
+                    render={({ field }) => (
+                      <Input type="number" {...field} placeholder="6.7000" />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+            ) : (
+              <Col span={8}>
+                <Flex className="flex-row justify-between items-center w-full">
+                  <Form.Item
+                    label={
+                      <span>
+                        Weight of 100 Mtr &nbsp;
+                        <Checkbox
+                          checked={qualityDetailWeightFix}
+                          onChange={(e) =>
+                            setQualityDetailWeightFix(e.target.checked)
+                          }
+                        />{" "}
+                        Fix
+                      </span>
+                    }
                     name="weight_from"
-                    render={({ field }) => (
-                      <Input type="number" {...field} placeholder="1.7" />
-                    )}
-                  />
-                </Form.Item>
-                To
-                <Form.Item
-                  label=" "
-                  name="weight_to"
-                  validateStatus={errors.weight_to ? "error" : ""}
-                  help={errors.weight_to && errors.weight_to.message}
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                  style={{ marginTop: "0px" }}
-                >
-                  <Controller
-                    control={control}
+                    validateStatus={errors.weight_from ? "error" : ""}
+                    help={errors.weight_from && errors.weight_from.message}
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name="weight_from"
+                      render={({ field }) => (
+                        <Input type="number" {...field} placeholder="1.7" />
+                      )}
+                    />
+                  </Form.Item>
+                  To
+                  <Form.Item
+                    label=" "
                     name="weight_to"
-                    render={({ field }) => (
-                      <Input type="number" {...field} placeholder="6.700" />
-                    )}
-                  />
-                </Form.Item>
-              </Flex>
-            </Col>
+                    validateStatus={errors.weight_to ? "error" : ""}
+                    help={errors.weight_to && errors.weight_to.message}
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                    style={{ marginTop: "0px" }}
+                  >
+                    <Controller
+                      control={control}
+                      name="weight_to"
+                      render={({ field }) => (
+                        <Input type="number" {...field} placeholder="6.700" />
+                      )}
+                    />
+                  </Form.Item>
+                </Flex>
+              </Col>
+            )}
 
             <Col span={8}>
               <Form.Item
@@ -1665,17 +1708,16 @@ const AddInHouseQuality = () => {
                         </Col>
                       )}
                     </Row>
-
-                    <div>
-                      <Typography>
-                        Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
-                        {(tana + wana).toFixed(3)}
-                      </Typography>
-                    </div>
                   </>
                 );
               })
             : null}
+          <div>
+            <Typography>
+              Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
+              {(tana + wana).toFixed(3)}
+            </Typography>
+          </div>
         </Card>
 
         {/* Weft Detail[Wana]  */}
@@ -1976,17 +2018,15 @@ const AddInHouseQuality = () => {
                         </Col>
                       )}
                     </Row>
-
-                    <div>
-                      <Typography>
-                        Total Weight [ Tana + Wana ] = {tana} + {wana} ={" "}
-                        {tana + wana}
-                      </Typography>
-                    </div>
                   </>
                 );
               })
             : null}
+          <div>
+            <Typography>
+              Total Weight [ Tana + Wana ] = {tana} + {wana} = {tana + wana}
+            </Typography>
+          </div>
         </Card>
 
         {/* Require Ready Beam */}

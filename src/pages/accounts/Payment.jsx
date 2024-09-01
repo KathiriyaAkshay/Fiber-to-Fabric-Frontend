@@ -10,7 +10,7 @@ import {
   Typography,
   Spin,
 } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../api/requests/users";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -19,11 +19,17 @@ import ChequeBookModal from "../../components/accounts/payment/ChequeBookModal";
 import { PAYMENT_OPTIONS } from "../../constants/account";
 import {
   getCashbookListRequest,
+  getJournalListRequest,
   getPassbookListRequest,
 } from "../../api/requests/accounts/payment";
 import { usePagination } from "../../hooks/usePagination";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
+import DeleteJournalModal from "../../components/accounts/payment/DeleteJournalModal";
+import BillList from "./PaymentVoucherList/BillList";
+import PassBookList from "./PaymentVoucherList/PassBookList";
+import CashBookList from "./PaymentVoucherList/CashBookList";
+import JournalList from "./PaymentVoucherList/JournalList";
 
 const paymentOptions = [
   { label: "Bill", value: "bill" },
@@ -35,6 +41,7 @@ const paymentOptions = [
 const Payment = () => {
   const navigate = useNavigate();
   const [paymentFilter, setPaymentFilter] = useState("bill");
+
   const { companyId } = useContext(GlobalContext);
   const [supplier, setSupplier] = useState(null);
   const [chequeDate, setChequeDate] = useState(null);
@@ -87,7 +94,8 @@ const Payment = () => {
           return response.data.data;
 
         case PAYMENT_OPTIONS.journal:
-          return response;
+          response = await getJournalListRequest({ params });
+          return response.data.data;
 
         default:
           break;
@@ -158,7 +166,13 @@ const Payment = () => {
       render: (details) => (
         <Space>
           <PaymentVoucherDetails details={details} />
-          <ChequeBookModal details={details} />
+          {paymentFilter === "journal" ? (
+            <DeleteJournalModal key={"delete_journal"} details={details} />
+          ) : null}
+
+          {paymentFilter === "bill" ? (
+            <ChequeBookModal details={details} />
+          ) : null}
         </Space>
       ),
     },
@@ -209,6 +223,18 @@ const Payment = () => {
     );
   }
 
+  const renderList = useMemo(() => {
+    if (paymentFilter === "bill") {
+      return <BillList />;
+    } else if (paymentFilter === "passbook_update") {
+      return <PassBookList />;
+    } else if (paymentFilter === "cashbook_update") {
+      return <CashBookList />;
+    } else if (paymentFilter === "journal") {
+      return <JournalList />;
+    }
+  }, [paymentFilter]);
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -228,6 +254,7 @@ const Payment = () => {
           />
         </div>
       </div>
+      {/* {renderList} */}
       <Flex align="center" justify="flex-end" gap={10}>
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
