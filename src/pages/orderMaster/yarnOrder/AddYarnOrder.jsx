@@ -288,32 +288,35 @@ function AddYarnOrder() {
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
-              <Controller
-                control={control}
-                name="yarn_company_name"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select Yarn Stock Company"
-                    loading={isLoadingYSCDList}
-                    options={yscdListRes?.yarnCompanyList?.map(
-                      ({ yarn_company_name = "" }) => {
-                        return {
-                          label: yarn_company_name,
-                          value: yarn_company_name,
-                        };
-                      }
-                    )}
-                  />
-                )}
-              />
+              <Input.Group compact>
+                <Controller
+                  control={control}
+                  name="yarn_company_name"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select Yarn Stock Company"
+                      loading={isLoadingYSCDList}
+                      options={yscdListRes?.yarnCompanyList?.map(
+                        ({ yarn_company_name = "" }) => {
+                          return {
+                            label: yarn_company_name,
+                            value: yarn_company_name,
+                          };
+                        }
+                      )}
+                      style={{ width: "calc(100% - 32px)" }}
+                    />
+                  )}
+                />
+                <Button
+                  icon={<PlusCircleOutlined />}
+                  onClick={goToAddYarnStockCompany}
+                  type="primary"
+                  style={{ display: "inline-flex" }}
+                />
+              </Input.Group>
             </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddYarnStockCompany}
-              className="flex-none mb-6"
-              type="primary"
-            />
           </Col>
 
           <Col span={6}>
@@ -378,8 +381,15 @@ function AddYarnOrder() {
               />
             </Form.Item>
           </Col>
+        </Row>
 
-          <Col span={6} className="flex items-end gap-2">
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+          }}
+        >
+          <Col span={6}>
             <Form.Item
               label="Supplier"
               name="supplier_id"
@@ -389,28 +399,31 @@ function AddYarnOrder() {
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
-              <Controller
-                control={control}
-                name="supplier_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    placeholder="Select supplier"
-                    loading={isLoadingSupplierList}
-                    options={supplierListRes?.rows?.map((supervisor) => ({
-                      label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
-                      value: supervisor?.id,
-                    }))}
-                  />
-                )}
-              />
+              <Input.Group compact>
+                <Controller
+                  control={control}
+                  name="supplier_id"
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      placeholder="Select supplier"
+                      loading={isLoadingSupplierList}
+                      options={supplierListRes?.rows?.map((supervisor) => ({
+                        label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
+                        value: supervisor?.id,
+                      }))}
+                      style={{ width: "calc(100% - 32px)" }} // Adjust width to accommodate button
+                    />
+                  )}
+                />
+                <Button
+                  icon={<PlusCircleOutlined />}
+                  onClick={goToAddSupplier}
+                  type="primary"
+                  style={{ display: "inline-flex" }}
+                />
+              </Input.Group>
             </Form.Item>
-            <Button
-              icon={<PlusCircleOutlined />}
-              onClick={goToAddSupplier}
-              className="flex-none mb-6"
-              type="primary"
-            />
           </Col>
 
           <Col span={6}>

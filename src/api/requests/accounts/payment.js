@@ -42,3 +42,16 @@ export function updateCashbookRequest({ id, data, params }) {
 export function addCashbookRequest({ data, params }) {
   return api.post(`/account/statement/cashbook/create`, data, { params });
 }
+
+// Journal services------------------------------------------------------------------------
+export function getJournalListRequest({ params }) {
+  return api.get(`/account/statement/journal/voucher/list`, { params });
+}
+
+export function deleteJournalRequest({ id, params }) {
+  return api.delete(`/account/statement/journal/voucher/delete/${id}`, { params });
+}
+
+export function addJournalRequest({ data, params }) {
+  return api.post(`/account/statement/journal/voucher/create`, data, { params });
+}

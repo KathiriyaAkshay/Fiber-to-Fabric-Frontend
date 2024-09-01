@@ -16,7 +16,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
-import { CheckOutlined } from "@ant-design/icons";
+import { CheckOutlined, EditOutlined } from "@ant-design/icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   ENTRY_TYPE_OPTIONS,
