@@ -110,11 +110,11 @@ export const UpdateTradingQuality = () => {
     // }
 
     const newData = {
-      production_type: "purchase/trading",
-      quality_name: data.quality_name,
-      quality_weight: data.quality_weight,
+      // production_type: "purchase/trading",
+      // quality_name: data.quality_name,
+      // quality_weight: data.quality_weight,
       quality_group: data.quality_group,
-      machine_name: data.machine_name,
+      // machine_name: data.machine_name,
       vat_hsn_no: data.vat_hsn_no,
     };
     await updateTradingQuality(newData);

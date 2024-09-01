@@ -46,9 +46,9 @@ const addSupplierSchemaResolver = yupResolver(
       .required("Please enter email address")
       .email("Please enter valid email address"),
     address: yup.string(),
-    gst_no: yup.string().required("Please enter GST"),
+    // gst_no: yup.string().required("Please enter GST"),
     // .matches(GSTRegex, "Enter valid GST number"),
-    pancard_no: yup.string().required("Please enter pan number"),
+    // pancard_no: yup.string().required("Please enter pan number"),
     // .matches(PANRegex, "Enter valid PAN number"),
     username: yup.string().required(),
     supplier_company: yup.string().required(),

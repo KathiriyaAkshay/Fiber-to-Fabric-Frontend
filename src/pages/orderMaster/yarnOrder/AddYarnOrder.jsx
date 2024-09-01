@@ -23,6 +23,8 @@ import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
+import { disabledFutureDate } from "../../../utils/date";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -76,10 +78,10 @@ function AddYarnOrder() {
   });
 
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryKey: ["supplier", "list", { company_id: companyId, supplier_type: "yarn" }],
     queryFn: async () => {
-      const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId, supplier_type: "yarn" },
       });
       return res.data?.data?.supplierList;
     },
@@ -118,6 +120,7 @@ function AddYarnOrder() {
   async function onSubmit(data) {
     // delete fields that are not allowed in API
     delete data?.yarn_company_name;
+    data.supplier_name = data.supplier_id;
     await createYarnOrder(data);
   }
 
@@ -397,9 +400,9 @@ function AddYarnOrder() {
                     {...field}
                     placeholder="Select supplier"
                     loading={isLoadingSupplierList}
-                    options={supplierListRes?.rows?.map((supervisor) => ({
-                      label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
-                      value: supervisor?.id,
+                    options={supplierListRes?.map((supervisor) => ({
+                      label: `${supervisor?.supplier_name}`,
+                      value: supervisor?.supplier_name,
                     }))}
                   />
                 )}
@@ -432,6 +435,7 @@ function AddYarnOrder() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />

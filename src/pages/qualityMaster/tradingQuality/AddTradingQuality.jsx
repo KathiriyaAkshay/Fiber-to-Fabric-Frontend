@@ -242,12 +242,6 @@ const AddTradingQuality = () => {
                         searchQualityName(value);
                       }}
                       options={options}
-                      //   filterOption={(inputValue, option) =>
-                      //     // option.value
-                      //     //     .toUpperCase()
-                      //     //     .indexOf(inputValue.toUpperCase()) !== -1
-                      //     option.value === inputValue
-                      //   }
                     />
                   );
                 }}
@@ -350,7 +344,7 @@ const AddTradingQuality = () => {
                     control={control}
                     name="other_quality_name"
                     render={({ field }) => (
-                      <Input {...field} placeholder="60 GRAM" type="text" />
+                      <Input {...field} placeholder="Quality Name" type="text" />
                     )}
                   />
                 </Form.Item>
