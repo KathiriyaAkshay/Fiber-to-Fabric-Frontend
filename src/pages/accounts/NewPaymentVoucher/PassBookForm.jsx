@@ -33,6 +33,7 @@ import {
   addPassbookRequest,
   getLastVoucherNoRequest,
 } from "../../../api/requests/accounts/payment";
+import EditPassBookParticular from "../../../components/accounts/payment/EditPassBookParticular";
 
 const { TextArea } = Input;
 
@@ -319,9 +320,10 @@ const PassBookForm = () => {
                         );
                       }}
                     />
-                    <Button type="primary">
+                    {/* <Button type="primary">
                       <EditOutlined />
-                    </Button>
+                    </Button> */}
+                    <EditPassBookParticular />
                   </Flex>
                   <Typography.Text style={{ color: "green" }}>
                     {selectedHeadName}
@@ -335,7 +337,7 @@ const PassBookForm = () => {
                 <Col span={11}>
                   <Form.Item name="other_particular" wrapperCol={{ sm: 24 }}>
                     <Input
-                      name="head"
+                      name="other_particular"
                       placeholder="Type name"
                       value={particularName}
                       onChange={(e) => setParticularName(e.target.value)}
