@@ -25,6 +25,7 @@ import SizeBeamOrderDetail from "../../../components/orderMaster/sizeBeamOrder/S
 import { initialOrderDetail } from "../../../constants/orderMaster";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 import moment from "moment/moment";
+import { getCompanyMachineListRequest } from "../../../api/requests/machine";
 
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
@@ -77,6 +78,21 @@ function AddSizeBeamOrder() {
     },
     enabled: Boolean(companyId),
   });
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: {
+          company_id: companyId
+        },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+  
 
   const {
     data: dropdownSupplierListRes,
@@ -166,7 +182,7 @@ function AddSizeBeamOrder() {
     resolver: yupResolver(addSizeBeamOrderSchema),
     defaultValues: {
       order_date: dayjs(),
-      machine_type: "Looms",
+      machine_type: null,
       order_details: [initialOrderDetail],
     },
   });
@@ -290,12 +306,11 @@ function AddSizeBeamOrder() {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    options={[
-                      {
-                        label: "Looms",
-                        value: "Looms",
-                      },
-                    ]}
+                    loading = {isLoadingMachineList}
+                    options={machineListRes?.rows?.map((machine) => ({
+                      label: machine?.machine_name,
+                      value: machine?.machine_name,
+                    }))}
                     style={{
                       textTransform: "capitalize",
                     }}

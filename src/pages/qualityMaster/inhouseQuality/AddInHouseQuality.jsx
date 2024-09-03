@@ -934,7 +934,7 @@ const AddInHouseQuality = () => {
                       control={control}
                       name="other_quality_name"
                       render={({ field }) => (
-                        <Input {...field} placeholder="60 GRAM" type="text" />
+                        <Input {...field} placeholder="Quality name" type="text" />
                       )}
                     />
                   </Form.Item>
@@ -1032,7 +1032,7 @@ const AddInHouseQuality = () => {
           >
             <Col span={8}>
               <Form.Item
-                label="VAT HSN No."
+                label="HSN No."
                 name="vat_hsn_no"
                 validateStatus={errors.vat_hsn_no ? "error" : ""}
                 help={errors.vat_hsn_no && errors.vat_hsn_no.message}

@@ -23,6 +23,8 @@ import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
+import { disabledFutureDate } from "../../../utils/date";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -31,7 +33,7 @@ const addYarnOrderSchemaResolver = yupResolver(
       .string()
       .required("Please select yarn stock company"),
     yarn_stock_company_id: yup.string().required("Please select denier"),
-    supplier_id: yup.string().required("Please select supplier"),
+    supplier_name: yup.string().required("Please select supplier"),
     lot_no: yup.string().required("Please enter lot no"),
     rate: yup.string().required("Please enter rate"),
     freight: yup.string().required("Please enter freight"),
@@ -76,10 +78,10 @@ function AddYarnOrder() {
   });
 
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
-    queryKey: ["supplier", "list", { company_id: companyId }],
+    queryKey: ["supplier", "list", { company_id: companyId, supplier_type: "yarn" }],
     queryFn: async () => {
-      const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId, supplier_type: "yarn" },
       });
       return res.data?.data?.supplierList;
     },
@@ -392,37 +394,28 @@ function AddYarnOrder() {
           <Col span={6}>
             <Form.Item
               label="Supplier"
-              name="supplier_id"
+              name="supplier_name"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
               required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
-              <Input.Group compact>
-                <Controller
-                  control={control}
-                  name="supplier_id"
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      placeholder="Select supplier"
-                      loading={isLoadingSupplierList}
-                      options={supplierListRes?.rows?.map((supervisor) => ({
-                        label: `${supervisor?.first_name} ${supervisor?.last_name} | ( ${supervisor?.username} )`,
-                        value: supervisor?.id,
-                      }))}
-                      style={{ width: "calc(100% - 32px)" }} // Adjust width to accommodate button
-                    />
-                  )}
-                />
-                <Button
-                  icon={<PlusCircleOutlined />}
-                  onClick={goToAddSupplier}
-                  type="primary"
-                  style={{ display: "inline-flex" }}
-                />
-              </Input.Group>
+              <Controller
+                control={control}
+                name="supplier_name"
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Select supplier"
+                    loading={isLoadingSupplierList}
+                    options={supplierListRes?.map((supervisor) => ({
+                      label: `${supervisor?.supplier_name}`,
+                      value: supervisor?.supplier_name,
+                    }))}
+                  />
+                )}
+              />
             </Form.Item>
           </Col>
 
@@ -445,6 +438,7 @@ function AddYarnOrder() {
                       width: "100%",
                     }}
                     format="DD/MM/YYYY"
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />

@@ -106,6 +106,9 @@ function AddBroker() {
     reset,
   } = useForm({
     resolver: addBrokerSchemaResolver,
+    defaultValues:{
+      party_ids: []
+    }
   });
 
   return (

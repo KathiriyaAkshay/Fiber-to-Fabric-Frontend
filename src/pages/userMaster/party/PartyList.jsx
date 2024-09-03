@@ -200,12 +200,10 @@ function PartyList() {
       title: "Overdue Days",
       dataIndex: ["party", "due_day_limit_active"],
       render: (text, record) => {
-        let is_active = record?.party?.due_day_limit_active;
         let id = record?.id;
         return (
           <Switch
-            loading={updatingUser && variables?.userId === id}
-            defaultChecked={is_active}
+            defaultChecked={record?.party?.due_day_limit_active}
             onChange={(is_active) => {
               updateUser({
                 userId: id,
