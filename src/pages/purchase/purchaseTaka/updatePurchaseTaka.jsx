@@ -490,7 +490,7 @@ const UpdatePurchaseTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -573,7 +573,7 @@ const UpdatePurchaseTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -603,6 +603,7 @@ const UpdatePurchaseTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -665,7 +666,7 @@ const UpdatePurchaseTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -729,6 +730,7 @@ const UpdatePurchaseTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    disabled
                   />
                 )}
               />
@@ -793,11 +795,11 @@ const UpdatePurchaseTaka = () => {
           </Col>
         </Row>
 
-        {pendingMeter && pendingTaka ? (
+        {gray_order_id ? (
           <Row
             gutter={18}
             style={{
-              padding: "12px",
+              padding: "0px 12px",
             }}
           >
             <Col span={6}></Col>
@@ -807,15 +809,21 @@ const UpdatePurchaseTaka = () => {
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
+              <Typography style={{ color: "red" }}>
+                {pendingMeter || 0}
+              </Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
+              <Typography style={{ color: "red" }}>
+                {pendingWeight || 0}
+              </Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
+              <Typography style={{ color: "red" }}>
+                {pendingTaka || 0}
+              </Typography>
             </Col>
           </Row>
         ) : null}

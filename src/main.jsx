@@ -601,7 +601,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "taka-receive",
-                element: <div>taka-receive</div>,
+                element: <Navigate to={"/job/job-taka/add"} />,
               },
             ],
           },

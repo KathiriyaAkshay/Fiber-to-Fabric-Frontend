@@ -423,7 +423,7 @@ const AddJobTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "12px 12px 0px 12px",
           }}
         >
           {/* <Col span={6}>
@@ -508,8 +508,7 @@ const AddJobTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
-            marginTop: "-30px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -592,8 +591,7 @@ const AddJobTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
-            marginTop: "-30px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -707,8 +705,7 @@ const AddJobTaka = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
-            marginTop: "-30px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6}>
@@ -840,8 +837,7 @@ const AddJobTaka = () => {
           <Row
             gutter={18}
             style={{
-              padding: "12px",
-              marginTop: "-30px",
+              padding: "0px 12px",
             }}
           >
             <Col span={6}></Col>

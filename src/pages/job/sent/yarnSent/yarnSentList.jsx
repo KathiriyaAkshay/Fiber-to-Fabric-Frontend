@@ -98,7 +98,13 @@ const YarnSentList = () => {
       queryKey: [
         "inhouse-quality",
         "list",
-        { company_id: companyId, page: 0, pageSize: 99999, is_active: 1 },
+        {
+          company_id: companyId,
+          page: 0,
+          pageSize: 99999,
+          is_active: 1,
+          type: "job",
+        },
       ],
       queryFn: async () => {
         const res = await getInHouseQualityListRequest({
@@ -107,6 +113,7 @@ const YarnSentList = () => {
             page: 0,
             pageSize: 99999,
             is_active: 1,
+            type: "job",
           },
         });
         return res.data?.data;

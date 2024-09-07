@@ -2,8 +2,18 @@ import { useState } from "react";
 import { Button, Col, Descriptions, Modal, Row, Typography } from "antd";
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 
-const GridInformationModel = ({ title = "", details = [] }) => {
+const GridInformationModel = ({
+  title = "",
+  details = [],
+  isScroll = false,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  let scrollStyle = {};
+  if (isScroll) {
+    scrollStyle.maxHeight = "calc(100vh - 100px)";
+    scrollStyle.overflow = "auto";
+  }
 
   return (
     <>
@@ -43,6 +53,7 @@ const GridInformationModel = ({ title = "", details = [] }) => {
           },
           body: {
             padding: "10px 16px",
+            ...scrollStyle,
           },
         }}
       >

@@ -93,6 +93,25 @@ const UpdateMyOrder = () => {
   });
 
   async function onSubmit(data) {
+    if (data.order_type === "taka(inhouse)") {
+      if (!data.party_id) {
+        setError("party_id", {
+          type: "manual",
+          message: "Please select party.",
+        });
+        return;
+      }
+    }
+    if (data.order_type === "job" || data.order_type === "purchase/trading") {
+      if (!data.supplier_name) {
+        setError("supplier_name", {
+          type: "manual",
+          message: "Please select supplier.",
+        });
+        return;
+      }
+    }
+
     const newData = {
       machine_name: data.machine_name,
       order_type: data.order_type,
@@ -117,7 +136,13 @@ const UpdateMyOrder = () => {
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
-    console.log({ newData });
+
+    if (data.order_type === "taka(inhouse)") {
+      newData.party_id = parseInt(data.party_id);
+    }
+    if (data.order_type === "job" || data.order_type === "purchase/trading") {
+      newData.supplier_name = data.supplier_name;
+    }
     await updateMyOrder(newData);
   }
 
@@ -128,6 +153,7 @@ const UpdateMyOrder = () => {
     reset,
     watch,
     setValue,
+    setError,
   } = useForm({
     defaultValues: {
       machine_name: null,
@@ -250,19 +276,20 @@ const UpdateMyOrder = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, order_type }],
     queryFn: async () => {
-      const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.supplierList;
+      if (order_type === "job" || order_type === "purchase/trading") {
+        const res = await getDropdownSupplierListRequest({
+          params: { company_id: companyId, type: order_type },
+        });
+        return res.data?.data?.supplierList;
+      }
     },
     enabled: Boolean(companyId),
   });
 
   useEffect(() => {
     if (orderDetails) {
-      console.log({ orderDetails });
       const {
         machine_name,
         broker_id,
