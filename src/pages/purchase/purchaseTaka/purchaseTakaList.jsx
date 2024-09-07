@@ -123,6 +123,7 @@ const PurchaseTakaList = () => {
         to: debouncedToDate,
         quality_id: debouncedQuality,
         challan_no: debouncedChallanNo,
+        supplier_name: debouncedSupplier,
         supplier_id: debouncedSupplierCompany,
         toka_no: debouncedTakaNo,
         in_stock: debouncedType === "in_stock" ? true : false,
@@ -139,6 +140,7 @@ const PurchaseTakaList = () => {
           quality_id: debouncedQuality,
           challan_no: debouncedChallanNo,
           toka_no: debouncedTakaNo,
+          supplier_name: debouncedSupplier,
           supplier_id: debouncedSupplierCompany,
           in_stock: debouncedType === "in_stock" ? true : false,
         },
@@ -200,25 +202,6 @@ const PurchaseTakaList = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Purchase Challan No",
-    //       "Quality",
-    //       "Taka No.",
-    //       "Meter",
-    //       "weight",
-    //       "Average",
-    //       "Date",
-    //       "Status",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Purchase Production List",
-    // });
     window.open("/print");
   }
 

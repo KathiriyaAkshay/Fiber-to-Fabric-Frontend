@@ -4,12 +4,12 @@ import { useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
-import { GlobalContext } from "../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
-const ViewJobTakaInfo = ({ details }) => {
+const ViewGrayPurchaseBill = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -35,13 +35,13 @@ const ViewJobTakaInfo = ({ details }) => {
     let tempTotal1 = 0;
     let tempTotal2 = 0;
 
-    TakaArray?.map((element, index) => {
+    TakaArray?.map((_, index) => {
       tempTotal1 =
         Number(tempTotal1) +
-        Number(details?.job_challan_details[index]?.meter || 0);
+        Number(details?.purchase_challan_details[index]?.meter || 0);
       tempTotal2 =
         Number(tempTotal2) +
-        Number(details?.job_challan_details[index + 12]?.meter || 0);
+        Number(details?.purchase_challan_details[index + 12]?.meter || 0);
     });
 
     let total = Number(tempTotal1) + Number(tempTotal2);
@@ -74,7 +74,7 @@ const ViewJobTakaInfo = ({ details }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Challan
+            Gray Purchase Bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -203,15 +203,14 @@ const ViewJobTakaInfo = ({ details }) => {
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description of Goods:</Col>
-            <Col span={6} style={{ textAlign: "left" }}>
+            <Col span={6}>Description:</Col>
+            <Col span={6}>
               {details?.inhouse_quality?.quality_name} (
-              {details?.inhouse_quality?.quality_weight}KG)
+              {details?.inhouse_quality?.quality_weight}
+              KG)
             </Col>
             <Col span={6}>Date:</Col>
-            <Col span={6}>
-              {dayjs(details?.created_at).format("DD-MM-YYYY")}
-            </Col>
+            <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
           </Row>
           <Row
             className="p-4 border-0 border-b border-solid !m-0"
@@ -224,7 +223,7 @@ const ViewJobTakaInfo = ({ details }) => {
               <strong>Quality</strong>
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
-              <strong>Taka No</strong>
+              <strong>TAKA NO</strong>
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
@@ -254,41 +253,42 @@ const ViewJobTakaInfo = ({ details }) => {
                   {index + 1}
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {index < details?.job_challan_details?.length
+                  {index < details?.purchase_challan_details?.length
                     ? details?.inhouse_quality?.quality_name
                     : ""}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index]?.taka_no}
+                  {details?.purchase_challan_details[index]?.taka_no}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index]?.meter}
+                  {details?.purchase_challan_details[index]?.meter}
                 </Col>
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
                 <Col span={5} style={{ textAlign: "center" }}>
-                  {index + 13 < details?.job_challan_details?.length
+                  {index + 13 < details?.purchase_challan_details?.length
                     ? details?.inhouse_quality?.quality_name
                     : ""}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index + 12]?.taka_no}
+                  {details?.purchase_challan_details[index + 12]?.taka_no}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
-                  {details?.job_challan_details[index + 12]?.meter}
+                  {details?.purchase_challan_details[index + 12]?.meter}
                 </Col>
               </Row>
             );
           })}
 
           <Row className="p-3 border-0" style={{ borderTop: 0 }}>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
+            <Col span={1} style={{ textAlign: "center" }}></Col>
             <Col span={5} style={{ textAlign: "center" }}></Col>
             <Col span={5} style={{ textAlign: "center" }}>
               <strong>{totalTaka1}</strong>
             </Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
+
+            <Col span={1} style={{ textAlign: "center" }}></Col>
             <Col span={5} style={{ textAlign: "center" }}></Col>
             <Col span={5} style={{ textAlign: "center" }}>
               <strong>{totalTaka2}</strong>
@@ -303,7 +303,7 @@ const ViewJobTakaInfo = ({ details }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.job_challan_details?.length}
+              {details?.purchase_challan_details?.length}
             </Col>
             <Col span={4} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>
@@ -318,4 +318,4 @@ const ViewJobTakaInfo = ({ details }) => {
   );
 };
 
-export default ViewJobTakaInfo;
+export default ViewGrayPurchaseBill;

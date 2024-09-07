@@ -122,26 +122,31 @@ const JobTakaList = () => {
         to: debouncedToDate,
         quality_id: debouncedQuality,
         challan_no: debouncedChallanNo,
+        supplier_name: debouncedSupplier,
         supplier_id: debouncedSupplierCompany,
         taka_no: debouncedTakaNo,
         in_stock: debouncedType === "in_stock" ? 1 : 0,
       },
     ],
     queryFn: async () => {
-      const res = await getJobTakaDetailListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          from: debouncedFromDate,
-          to: debouncedToDate,
-          quality_id: debouncedQuality,
-          challan_no: debouncedChallanNo,
-          supplier_id: debouncedSupplierCompany,
-          taka_no: debouncedTakaNo,
-          in_stock: debouncedType === "in_stock" ? 1 : 0,
-        },
-      });
+      const params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        quality_id: debouncedQuality,
+        challan_no: debouncedChallanNo,
+        supplier_name: debouncedSupplier,
+        supplier_id: debouncedSupplierCompany,
+        taka_no: debouncedTakaNo,
+        in_stock: debouncedType === "in_stock" ? 1 : 0,
+      };
+      if (debouncedFromDate) {
+        params.from = dayjs(debouncedFromDate).format("YYYY-MM-DD");
+      }
+      if (debouncedToDate) {
+        params.to = dayjs(debouncedToDate).format("YYYY-MM-DD");
+      }
+      const res = await getJobTakaDetailListRequest({ params });
       return res.data?.data;
     },
     enabled: Boolean(companyId),

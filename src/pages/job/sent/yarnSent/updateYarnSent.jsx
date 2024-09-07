@@ -97,6 +97,7 @@ const UpdateYarnSent = () => {
       message.error(errorMessage);
     },
   });
+  console.log({ yarnSentDetails, fieldArray });
 
   async function onSubmit(data) {
     const newData = {
@@ -878,6 +879,9 @@ const UpdateYarnSent = () => {
                 getValues={getValues}
                 clearErrors={clearErrors}
                 editDenierOption={editDenierOption}
+                isDisableField={
+                  field < yarnSentDetails?.job_yarn_sent_details.length
+                }
               />
             );
           })
@@ -914,7 +918,10 @@ const RenderDynamicFields = ({
   setError,
   clearErrors,
   editDenierOption,
+  isDisableField,
 }) => {
+  console.log({ isDisableField });
+
   const [denierOptions, setDenierOptions] = useState(editDenierOption || []);
 
   const createDenierOption = (companyName) => {
@@ -997,6 +1004,7 @@ const RenderDynamicFields = ({
                   field.onChange(value);
                   createDenierOption(value);
                 }}
+                disabled={isDisableField}
               />
             )}
           />
@@ -1053,6 +1061,7 @@ const RenderDynamicFields = ({
                 //     setValue(`current_stock_${field}`, obj.current_stock);
                 //   });
                 // }}
+                disabled={isDisableField}
               />
             )}
           />
@@ -1074,7 +1083,9 @@ const RenderDynamicFields = ({
           <Controller
             control={control}
             name={`current_stock_${field}`}
-            render={({ field }) => <Input {...field} disabled />}
+            render={({ field }) => (
+              <Input {...field} readOnly={isDisableField} />
+            )}
           />
         </Form.Item>
       </Col>
@@ -1093,7 +1104,9 @@ const RenderDynamicFields = ({
           <Controller
             control={control}
             name={`cartoon_${field}`}
-            render={({ field }) => <Input {...field} placeholder="23" />}
+            render={({ field }) => (
+              <Input {...field} placeholder="23" readOnly={isDisableField} />
+            )}
           />
         </Form.Item>
       </Col>
@@ -1115,6 +1128,7 @@ const RenderDynamicFields = ({
                 <Input
                   {...fields}
                   placeholder="23"
+                  readOnly={isDisableField}
                   onChange={(e) => {
                     setValue(`kg_${field}`, e.target.value);
                     if (
@@ -1160,7 +1174,9 @@ const RenderDynamicFields = ({
           <Controller
             control={control}
             name={`remaining_stock_${field}`}
-            render={({ field }) => <Input {...field} disabled />}
+            render={({ field }) => (
+              <Input {...field} readOnly={isDisableField} />
+            )}
           />
         </Form.Item>
       </Col>

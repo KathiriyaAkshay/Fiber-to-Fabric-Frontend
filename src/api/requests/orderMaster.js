@@ -21,6 +21,9 @@ export function deleteMyOrderRequest({ id, params }) {
   return api.delete(`/order-master/gray-order/delete/${id}`, { params });
 }
 
+export function getMyOrderQualityMeterRequest({ id, params }) {
+  return api.get(`/order-master/gray-order/quality/meters/${id}`, { params });
+}
 
 // yarn order
 export function createYarnOrderRequest({ data, params }) {
@@ -61,16 +64,16 @@ export function createSizeBeamOrderRequest({ data, params }) {
   return api.post(`/order-master/size-beam-order/create`, data, { params });
 }
 
-export function getSizeBeamOrderNumberRequest({params}){
-  return api.get(`/order-master/size-beam-order/last-order-no`, {params}) ; 
+export function getSizeBeamOrderNumberRequest({ params }) {
+  return api.get(`/order-master/size-beam-order/last-order-no`, { params });
 }
 
 export function getSizeBeamOrderByIdRequest({ id, params }) {
   return api.get(`/order-master/size-beam-order/get/${id}`, { params });
 }
 
-export function getLastBeamNumberRequest({params}){
-  return api.get(`/order-master/recive-size-beam/last-beam-no`, {params}) ; 
+export function getLastBeamNumberRequest({ params }) {
+  return api.get(`/order-master/recive-size-beam/last-beam-no`, { params });
 }
 
 export function getSizeBeamOrderListRequest({ params }) {

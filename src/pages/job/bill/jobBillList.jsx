@@ -82,20 +82,25 @@ const JobBillList = () => {
       },
     ],
     queryFn: async () => {
+      const params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        quality_id: debouncedQuality,
+        bill_no: debouncedBillNo,
+        order_no: debouncedOrderNo,
+        is_paid: debouncedIsPaid,
+        supplier_name: debouncedSupplier,
+        bill_status: "received",
+      };
+      if (debouncedFromDate) {
+        params.from = dayjs(debouncedFromDate).format("YYYY-MM-DD");
+      }
+      if (debouncedToDate) {
+        params.to = dayjs(debouncedToDate).format("YYYY-MM-DD");
+      }
       const res = await getJobTakaListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          from: debouncedFromDate,
-          to: debouncedToDate,
-          quality_id: debouncedQuality,
-          bill_no: debouncedBillNo,
-          order_no: debouncedOrderNo,
-          is_paid: debouncedIsPaid,
-          supplier_name: debouncedSupplier,
-          bill_status: "received",
-        },
+        params,
       });
       return res.data?.data;
     },

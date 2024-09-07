@@ -70,7 +70,7 @@ const FieldTable = ({
     (value, fieldNumber) => {
       checkUniqueTakaHandler(value, fieldNumber);
     },
-    500
+    300
   );
 
   const calculateTotal = () => {

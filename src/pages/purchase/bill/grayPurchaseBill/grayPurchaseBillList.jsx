@@ -21,9 +21,10 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getPurchaseTakaListRequest } from "../../../../api/requests/purchase/purchaseTaka";
 import dayjs from "dayjs";
-import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
+// import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import moment from "moment";
+import ViewGrayPurchaseBill from "../../../../components/purchase/grayPurchaseBill/ViewGrayPurchaseBill";
 
 const GrayPurchaseBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -150,6 +151,7 @@ const GrayPurchaseBillList = () => {
           order_no: debouncedOrderNo,
           supplier_name: debouncedSupplier,
           payment_status: debouncedPayment,
+          bill_status: "received",
           //   in_stock: debouncedType === "in_stock" ? true : false,
         },
       });
@@ -208,27 +210,6 @@ const GrayPurchaseBillList = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Bill NO",
-    //       "Supplier Name",
-    //       "Bill Date",
-    //       "Order No",
-    //       "Quality",
-    //       "Total Taka",
-    //       "Total Meter",
-    //       "Rate",
-    //       "Amount",
-    //       "Net Amount",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Purchase Bill List",
-    // });
     window.open("/print");
   }
 
@@ -296,13 +277,13 @@ const GrayPurchaseBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["purchase_taka_bill", "due_date"],
-      render: (text) => <div>-</div>,
+      render: (text) => text || "-",
     },
     {
       title: "Due Days",
       dataIndex: ["purchase_taka_bill", "due_days"],
       key: "due_days",
-      render: (text, record) => <div>-</div>,
+      render: (text) => text || "-",
     },
     {
       title: "Bill Status",
@@ -331,7 +312,8 @@ const GrayPurchaseBillList = () => {
       render: (details) => {
         return (
           <Space>
-            <DeletePurchaseTaka details={details} />
+            {/* <DeletePurchaseTaka details={details} /> */}
+            <ViewGrayPurchaseBill details={details} />
             <Button
               onClick={() => {
                 let MODE;
@@ -382,18 +364,19 @@ const GrayPurchaseBillList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        summary={() => {
+        summary={(pageData) => {
           let totalGrandMeter = 0;
           let totalRate = 0;
           let totalAmount = 0;
           let totalNetAmount = 0;
+          console.log({ pageData });
 
-          // pageData.forEach(({ total_meter, purchase_taka_bill }) => {
-          //   totalGrandMeter += +total_meter;
-          //   totalRate += +purchase_taka_bill.rate || 0;
-          //   totalAmount += +purchase_taka_bill.amount;
-          //   totalNetAmount += +purchase_taka_bill.net_amount;
-          // });
+          pageData.forEach(({ total_meter, purchase_taka_bill }) => {
+            totalGrandMeter += +total_meter;
+            totalRate += +purchase_taka_bill?.rate || 0;
+            totalAmount += +purchase_taka_bill?.amount || 0;
+            totalNetAmount += +purchase_taka_bill?.net_amount || 0;
+          });
           return (
             <>
               <Table.Summary.Row className="font-semibold">
