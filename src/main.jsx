@@ -150,6 +150,7 @@ import PassBook from "./pages/accounts/statements/PassBook";
 import CashBook from "./pages/accounts/statements/CashBook";
 import CreditNotes from "./pages/accounts/Notes/CreditNotes";
 import DebitNote from "./components/purchase/purchaseReturn/DebitNote";
+import DebitNotes from "./pages/accounts/Notes/DebitNotes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -814,7 +815,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "debit-notes",
-                element:<DebitNote/>,
+                element:<DebitNotes/>,
               },
             ],
           },
