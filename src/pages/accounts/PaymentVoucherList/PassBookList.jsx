@@ -157,10 +157,10 @@ const PassBookList = () => {
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
                   {passBookList?.totalAmount}
                 </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>

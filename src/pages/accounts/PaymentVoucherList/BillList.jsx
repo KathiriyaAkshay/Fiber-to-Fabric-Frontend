@@ -44,7 +44,7 @@ const BillList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: paymentList, isLoading: isLoadingPaymentList } = useQuery({
+  const { data: paymentBillList, isLoading: isLoadingPaymentList } = useQuery({
     queryKey: [
       "get",
       "payment",
@@ -59,6 +59,7 @@ const BillList = () => {
     enabled: Boolean(companyId),
     placeholderData: keepPreviousData,
   });
+  console.log({ paymentBillList });
 
   const downloadPdf = () => {
     alert("downloadPdf");
@@ -90,8 +91,8 @@ const BillList = () => {
     // },
     {
       title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
+      dataIndex: "total_amount",
+      key: "total_amount",
     },
     {
       title: "Voucher No.",
@@ -141,12 +142,12 @@ const BillList = () => {
 
     return (
       <Table
-        dataSource={paymentList?.rows || []}
+        dataSource={paymentBillList?.billPaymentDetails?.rows || []}
         columns={columns}
         rowKey={"id"}
         scroll={{ y: 330 }}
         pagination={{
-          total: paymentList?.count || 0,
+          total: paymentBillList?.billPaymentDetails?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
@@ -158,10 +159,10 @@ const BillList = () => {
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  {paymentList?.totalAmount}
+                  {paymentBillList?.total_amount?.total_amount}
                 </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
@@ -216,7 +217,7 @@ const BillList = () => {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!paymentList?.rows?.length}
+          disabled={!paymentBillList?.rows?.length}
           onClick={downloadPdf}
           className="flex-none"
         />

@@ -117,7 +117,6 @@ const BillForm = () => {
         return item;
       }),
     };
-    console.log("Form submitted", payload);
 
     await addBillEntry({ company_id: data.company_id, data: payload });
   };
@@ -261,24 +260,43 @@ const BillForm = () => {
   const calculateAmount = useCallback(() => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
-      totalAmount += bill.paid_amount;
+      let netAmount = bill.net_amount;
+
+      let finalTotalAmount = netAmount;
+      finalTotalAmount += bill?.part_payment || 0;
+      finalTotalAmount += bill?.plus_percentage || 0;
+      finalTotalAmount -= bill?.less_percentage || 0;
+
+      totalAmount += finalTotalAmount;
     });
 
     setValue("amount", totalAmount);
+    setValue("remark", selectedBills.map((bill) => bill.bill_no).join(", "));
   }, [selectedBills, setValue]);
 
   useEffect(() => {
     if (selectedBills && selectedBills.length) {
       calculateAmount();
+    } else {
+      setValue("amount", 0);
+      setValue("remark", "");
     }
-  }, [calculateAmount, selectedBills]);
+  }, [calculateAmount, selectedBills, setValue]);
 
   const selectBillHandler = (e, bill) => {
     if (e.target.checked) {
       setSelectedBills((prev) => {
         return [
           ...prev,
-          { ...bill, paid_amount: bill.net_amount, is_paid: true },
+          {
+            ...bill,
+            // paid_amount: bill.net_amount,
+            paid_amount: 0,
+            is_paid: true,
+            part_payment: bill.part_payment || 0,
+            less_percentage: bill.less_percentage || 0,
+            plus_percentage: bill.plus_percentage || 0,
+          },
         ];
       });
     } else {
@@ -286,6 +304,20 @@ const BillForm = () => {
         return prev.filter((item) => item?.bill_id !== bill?.bill_id);
       });
     }
+  };
+
+  const onChangeSelectedBillHandler = (e, bill) => {
+    let copyBill = { ...bill };
+    copyBill[e.target.name] = +e.target.value;
+    const updatedSelectedBills = selectedBills.map((bill) => {
+      if (bill.bill_id === copyBill.bill_id) {
+        return copyBill;
+      } else {
+        return bill;
+      }
+    });
+
+    setSelectedBills(updatedSelectedBills);
   };
 
   return (
@@ -648,10 +680,17 @@ const BillForm = () => {
           <tbody>
             {unPaidBillData && unPaidBillData.length ? (
               unPaidBillData?.map((bill, index) => {
+                const isBillSelected = selectedBills.find(
+                  ({ bill_id }) => bill_id === bill.bill_id
+                );
+
                 return (
                   <tr key={index + "_un_paid_bill"}>
                     <td style={{ textAlign: "center" }}>
-                      <Checkbox onChange={(e) => selectBillHandler(e, bill)} />
+                      <Checkbox
+                        checked={isBillSelected}
+                        onChange={(e) => selectBillHandler(e, bill)}
+                      />
                     </td>
                     <td style={{ textAlign: "center" }}>{bill.bill_no}</td>
                     <td style={{ textAlign: "center" }}>Job</td>
@@ -661,15 +700,42 @@ const BillForm = () => {
                       {dayjs(bill.bill_date).format("DD-MM-YYYY")}
                     </td>
                     <td style={{ textAlign: "center" }}>4</td>
-                    <td style={{ textAlign: "center" }}>
-                      {bill.part_payment || 0}
+                    <td style={{ textAlign: "center", width: "200px" }}>
+                      <Input
+                        type="number"
+                        name="part_payment"
+                        style={{ width: "100%" }}
+                        disabled={!isBillSelected}
+                        value={
+                          isBillSelected ? isBillSelected?.part_payment : ""
+                        }
+                        onChange={(e) =>
+                          onChangeSelectedBillHandler(e, isBillSelected)
+                        }
+                      />
                     </td>
                     <td style={{ textAlign: "center" }}>{bill.tds || 0}</td>
-                    <td style={{ textAlign: "center" }}>
-                      {bill.less_percentage || 0}
+                    <td style={{ textAlign: "center", width: "200px" }}>
+                      <Input
+                        type="number"
+                        name="less_percentage"
+                        style={{ width: "100%" }}
+                        disabled={!isBillSelected}
+                        onChange={(e) =>
+                          onChangeSelectedBillHandler(e, isBillSelected)
+                        }
+                      />
                     </td>
-                    <td style={{ textAlign: "center" }}>
-                      {bill.plus_percentage || 0}
+                    <td style={{ textAlign: "center", width: "200px" }}>
+                      <Input
+                        type="number"
+                        name="plus_percentage"
+                        style={{ width: "100%" }}
+                        disabled={!isBillSelected}
+                        onChange={(e) =>
+                          onChangeSelectedBillHandler(e, isBillSelected)
+                        }
+                      />
                     </td>
                   </tr>
                 );

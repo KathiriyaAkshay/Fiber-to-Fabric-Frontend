@@ -158,10 +158,10 @@ const CashBookList = () => {
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
                   {paymentList?.totalAmount}
                 </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
