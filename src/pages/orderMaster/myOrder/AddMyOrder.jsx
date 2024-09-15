@@ -37,7 +37,10 @@ import {
 } from "../../../api/requests/users";
 // import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
-import { createMyOrderRequest } from "../../../api/requests/orderMaster";
+import {
+  createMyOrderRequest,
+  getMyOrderQualityMeterRequest,
+} from "../../../api/requests/orderMaster";
 import { disableBeforeDate } from "../../../utils/date";
 
 const ORDER_TYPE = [
@@ -129,8 +132,8 @@ const AddMyOrder = () => {
       machine_name: data.machine_name,
       order_type: data.order_type,
       broker_id: parseInt(data.broker_id),
-      party_id: parseInt(data.party_id),
-      supplier_name: data.supplier_name,
+      // party_id: parseInt(data.party_id),
+      // supplier_name: data.supplier_name,
       quality_id: parseInt(data.quality_id),
       order_date: dayjs(data.order_date).format("YYYY-MM-DD"),
       notes: data.notes,
@@ -149,6 +152,13 @@ const AddMyOrder = () => {
       pending_taka: parseFloat(data.pending_taka),
       pending_meter: parseFloat(data.pending_meter),
     };
+
+    if (data.order_type === "taka(inhouse)") {
+      newData.party_id = parseInt(data.party_id);
+    }
+    if (data.order_type === "job" || data.order_type === "purchase/trading") {
+      newData.supplier_name = data.supplier_name;
+    }
     await addMyOrder(newData);
   }
 
@@ -241,25 +251,25 @@ const AddMyOrder = () => {
       enabled: Boolean(companyId),
     });
 
-  const selectedQualityDetail = useMemo(() => {
-    if (quality_id && dropDownQualityListRes) {
-      const quality = dropDownQualityListRes.rows.find(
-        ({ id }) => id === quality_id
-      );
-      console.log({ quality });
+  // const selectedQualityDetail = useMemo(() => {
+  //   if (quality_id && dropDownQualityListRes) {
+  //     const quality = dropDownQualityListRes.rows.find(
+  //       ({ id }) => id === quality_id
+  //     );
+  //     console.log({ quality });
 
-      return [
-        {
-          label: "Inhouse Stock",
-          value: "",
-        },
-        { label: "Purchase/Job Stock", value: "" },
-        { label: "Next Production Meter", value: "" },
-        { label: "Total", value: "" },
-        { label: "(-) Total Scheduled Delivery", value: "" },
-      ];
-    }
-  }, [dropDownQualityListRes, quality_id]);
+  //     return [
+  //       {
+  //         label: "Inhouse Stock",
+  //         value: "",
+  //       },
+  //       { label: "Purchase/Job Stock", value: "" },
+  //       { label: "Next Production Meter", value: "" },
+  //       { label: "Total", value: "" },
+  //       { label: "(-) Total Scheduled Delivery", value: "" },
+  //     ];
+  //   }
+  // }, [dropDownQualityListRes, quality_id]);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -316,12 +326,14 @@ const AddMyOrder = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, order_type }],
     queryFn: async () => {
-      const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.supplierList;
+      if (order_type === "job" || order_type === "purchase/trading") {
+        const res = await getDropdownSupplierListRequest({
+          params: { company_id: companyId, type: order_type },
+        });
+        return res.data?.data?.supplierList;
+      }
     },
     enabled: Boolean(companyId),
   });
@@ -566,7 +578,7 @@ const AddMyOrder = () => {
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "0px 12px",
           }}
         >
           <Col span={6} className="flex items-end gap-2">
@@ -603,7 +615,8 @@ const AddMyOrder = () => {
             {quality_id && (
               <QualityDetailModel
                 key={"quality_detail_modal"}
-                details={selectedQualityDetail}
+                qualityId={quality_id}
+                companyId={companyId}
               />
             )}
             <Button
@@ -637,7 +650,7 @@ const AddMyOrder = () => {
             </Form.Item>
           </Col>
 
-          <Col span={5}>
+          <Col span={6}>
             <Form.Item
               label="Notes"
               name="notes"
@@ -654,7 +667,7 @@ const AddMyOrder = () => {
             </Form.Item>
           </Col>
 
-          <Col span={5}>
+          <Col span={6}>
             <Form.Item
               label="Party Notes"
               name="party_notes"
@@ -672,12 +685,11 @@ const AddMyOrder = () => {
           </Col>
         </Row>
 
-        <Divider />
-
         <Row
           gutter={18}
           style={{
-            padding: "12px",
+            padding: "0px 12px",
+            marginTop: "2rem",
           }}
         >
           <Col span={12}>
@@ -686,7 +698,7 @@ const AddMyOrder = () => {
               <Row
                 gutter={18}
                 style={{
-                  padding: "12px",
+                  paddingTop: "12px",
                 }}
               >
                 <Col span={12}>
@@ -1096,8 +1108,32 @@ const AddMyOrder = () => {
 
 export default AddMyOrder;
 
-const QualityDetailModel = ({ details = [] }) => {
+const QualityDetailModel = ({ qualityId = null, companyId }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data: qualityDetails } = useQuery({
+    queryKey: ["quality", "data", { company_id: companyId, qualityId }],
+    queryFn: async () => {
+      const res = await getMyOrderQualityMeterRequest({
+        id: qualityId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+  console.log({ qualityDetails });
+
+  // [
+  //       {
+  //         label: "Inhouse Stock",
+  //         value: "",
+  //       },
+  //       { label: "Purchase/Job Stock", value: "" },
+  //       { label: "Next Production Meter", value: "" },
+  //       { label: "Total", value: "" },
+  //       { label: "(-) Total Scheduled Delivery", value: "" },
+  //     ];
 
   return (
     <>
@@ -1140,7 +1176,7 @@ const QualityDetailModel = ({ details = [] }) => {
               bordered
               className="grid-information-model"
             >
-              {details && details.length
+              {/* {details && details.length
                 ? details?.map((element, index) => {
                     return (
                       <Descriptions.Item key={index} label={element?.label}>
@@ -1148,7 +1184,26 @@ const QualityDetailModel = ({ details = [] }) => {
                       </Descriptions.Item>
                     );
                   })
-                : null}
+                : null} */}
+
+              <Descriptions.Item label={"Inhouse Stock"}>
+                {qualityDetails?.production_meters}
+              </Descriptions.Item>
+              <Descriptions.Item label={"Next 7 Days Production"}>
+                {qualityDetails?.next_week_production_meters}
+              </Descriptions.Item>
+              <Descriptions.Item label={"Job Stock"}>
+                {qualityDetails?.job_meters}
+              </Descriptions.Item>
+              <Descriptions.Item label={"Purchase Stock"}>
+                {qualityDetails?.purchase_meters}
+              </Descriptions.Item>
+              <Descriptions.Item label={"Total"}>
+                {qualityDetails?.production_meters +
+                  qualityDetails?.next_week_production_meters +
+                  qualityDetails?.job_meters +
+                  qualityDetails?.purchase_meters}
+              </Descriptions.Item>
             </Descriptions>
           </Col>
         </Row>

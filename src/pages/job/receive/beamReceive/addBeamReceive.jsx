@@ -27,7 +27,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -37,6 +37,7 @@ import {
   addJobBeamReceiveRequest,
   getLastJobBeamReceiveNoRequest,
 } from "../../../../api/requests/job/receive/beamReceive";
+import { disabledFutureDate } from "../../../../utils/date";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -90,52 +91,51 @@ const AddBeamReceive = () => {
   });
 
   async function onSubmit(data) {
-
-    let hasError = 0 ; 
+    let hasError = 0;
 
     fieldArray.forEach((item, index) => {
-      if (!getValues(`supplier_beam_no_${index}`)){
+      if (!getValues(`supplier_beam_no_${index}`)) {
         setError(`supplier_beam_no_${index}`, {
           type: "manual",
           message: "Please, Provide Supplier beam number",
         });
-        hasError = 1
+        hasError = 1;
       }
 
-      if (!getValues(`tars_${index}`)){
+      if (!getValues(`tars_${index}`)) {
         setError(`tars_${index}`, {
           type: "manual",
           message: "Please enter tars",
         });
-        hasError = 1
+        hasError = 1;
       }
 
-      if (!getValues(`pano_${index}`)){
+      if (!getValues(`pano_${index}`)) {
         setError(`pano_${index}`, {
           type: "manual",
           message: "Please enter pano",
         });
-        hasError = 1
+        hasError = 1;
       }
 
-      if (!getValues(`taka_${index}`)){
+      if (!getValues(`taka_${index}`)) {
         setError(`taka_${index}`, {
           type: "manual",
           message: "Please enter taka",
         });
-        hasError = 1
+        hasError = 1;
       }
 
-      if (!getValues(`meter_${index}`)){
+      if (!getValues(`meter_${index}`)) {
         setError(`meter_${index}`, {
           type: "manual",
           message: "Please enter meter",
         });
-        hasError = 1
+        hasError = 1;
       }
-    })
+    });
 
-    if (hasError == 0){
+    if (hasError == 0) {
       const newData = {
         machine_name: data.machine_name,
         quality_id: data.quality_id,
@@ -197,13 +197,16 @@ const AddBeamReceive = () => {
     ],
     queryFn: async () => {
       if (challan_beam_type) {
-        let beam_type = null ;
-        let pasarela_beam_type = ["pasarela (primary)", "non pasarela (primary)"] ; 
-        
-        if (pasarela_beam_type.includes(challan_beam_type)){
-          beam_type = "pasarela (primary)"
+        let beam_type = null;
+        let pasarela_beam_type = [
+          "pasarela (primary)",
+          "non pasarela (primary)",
+        ];
+
+        if (pasarela_beam_type.includes(challan_beam_type)) {
+          beam_type = "pasarela (primary)";
         } else {
-          beam_type = challan_beam_type ; 
+          beam_type = challan_beam_type;
         }
 
         const res = await getLastJobBeamReceiveNoRequest({
@@ -212,7 +215,7 @@ const AddBeamReceive = () => {
         });
         const regex = /-(\d+)/;
         const match = res?.data?.data.match(regex);
-        
+
         const number = match ? parseInt(match[1], 10) : 0;
         return number;
       }
@@ -354,25 +357,24 @@ const AddBeamReceive = () => {
         return [...prev, nextValue];
       });
 
-      let beam_number = null ;
+      let beam_number = null;
 
-      if (challan_beam_type == "non pasarela (secondary)"){
-        beam_number = `SJBN-${Number(lastBeamNo) + (nextValue + 1)}`
+      if (challan_beam_type == "non pasarela (secondary)") {
+        beam_number = `SJBN-${Number(lastBeamNo) + (nextValue + 1)}`;
       } else {
-        beam_number = `JBN-${Number(lastBeamNo) + (nextValue + 1)}`
+        beam_number = `JBN-${Number(lastBeamNo) + (nextValue + 1)}`;
       }
 
-      let previous_beam_tars = getValues(`tars_${nextValue-1}`) ; 
-      let previous_beam_pano = getValues(`pano_${nextValue - 1}`) ; 
-      let previous_beam_taka = getValues(`taka_${nextValue - 1}`) ; 
-      let previous_beam_meter = getValues(`meter_${nextValue - 1}`) ; 
+      let previous_beam_tars = getValues(`tars_${nextValue - 1}`);
+      let previous_beam_pano = getValues(`pano_${nextValue - 1}`);
+      let previous_beam_taka = getValues(`taka_${nextValue - 1}`);
+      let previous_beam_meter = getValues(`meter_${nextValue - 1}`);
 
-      setValue(`tars_${nextValue}`, previous_beam_tars) ; 
-      setValue(`pano_${nextValue}`, previous_beam_pano) ; 
-      setValue(`taka_${nextValue}`, previous_beam_taka) ; 
-      setValue(`meter_${nextValue}`, previous_beam_meter) ;
-      setValue(`beam_no_${nextValue}`, beam_number) ; 
-    
+      setValue(`tars_${nextValue}`, previous_beam_tars);
+      setValue(`pano_${nextValue}`, previous_beam_pano);
+      setValue(`taka_${nextValue}`, previous_beam_taka);
+      setValue(`meter_${nextValue}`, previous_beam_meter);
+      setValue(`beam_no_${nextValue}`, beam_number);
     }
   };
 
@@ -623,6 +625,7 @@ const AddBeamReceive = () => {
                     {...field}
                     format={"DD-MM-YYYY"}
                     style={{ width: "100%" }}
+                    disabledDate={disabledFutureDate}
                   />
                 )}
               />
@@ -649,175 +652,185 @@ const AddBeamReceive = () => {
           </Col>
         </Row>
 
-        {challan_beam_type != undefined && lastBeamNo !== undefined && fieldArray.map((fieldNumber, index) => {
-          return (
-            <Row
-              key={index + "_add_beam_receive"}
-              gutter={18}
-              style={{
-                padding: "12px",
-              }}
-            >
-              <Col span={3}>
-                <Form.Item
-                  label="Beam No"
-                  name={`beam_no_${fieldNumber}`}
-                  validateStatus={
-                    errors[`beam_no_${fieldNumber}`] ? "error" : ""
-                  }
-                  help={
-                    errors[`beam_no_${fieldNumber}`] &&
-                    errors[`beam_no_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Typography.Text style={{ fontWeight: "bold" }}>
-                    {lastBeamNo
-                      ? challan_beam_type === "non pasarela (secondary)"
-                        ? "SJBN-" + (lastBeamNo + (index + 1))
-                        : "JBN-" + (lastBeamNo + (index + 1))
-                      : 0}
-                  </Typography.Text>
-                </Form.Item>
-              </Col>
+        {challan_beam_type != undefined &&
+          lastBeamNo !== undefined &&
+          fieldArray.map((fieldNumber, index) => {
+            return (
+              <Row
+                key={index + "_add_beam_receive"}
+                gutter={18}
+                style={{
+                  padding: "12px",
+                }}
+              >
+                <Col span={3}>
+                  <Form.Item
+                    label="Beam No"
+                    name={`beam_no_${fieldNumber}`}
+                    validateStatus={
+                      errors[`beam_no_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`beam_no_${fieldNumber}`] &&
+                      errors[`beam_no_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Typography.Text style={{ fontWeight: "bold" }}>
+                      {lastBeamNo
+                        ? challan_beam_type === "non pasarela (secondary)"
+                          ? "SJBN-" + (lastBeamNo + (index + 1))
+                          : "JBN-" + (lastBeamNo + (index + 1))
+                        : 0}
+                    </Typography.Text>
+                  </Form.Item>
+                </Col>
 
-              <Col span={3}>
-                <Form.Item
-                  label="Supplier Beam No"
-                  name={`supplier_beam_no_${fieldNumber}`}
-                  validateStatus={
-                    errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
-                  }
-                  help={
-                    errors[`supplier_beam_no_${fieldNumber}`] &&
-                    errors[`supplier_beam_no_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
+                <Col span={3}>
+                  <Form.Item
+                    label="Supplier Beam No"
                     name={`supplier_beam_no_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={3}>
-                <Form.Item
-                  label="Taar/Ends"
-                  name={`tars_${fieldNumber}`}
-                  validateStatus={errors[`tars_${fieldNumber}`] ? "error" : ""}
-                  help={
-                    errors[`tars_${fieldNumber}`] &&
-                    errors[`tars_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
+                    validateStatus={
+                      errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`supplier_beam_no_${fieldNumber}`] &&
+                      errors[`supplier_beam_no_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`supplier_beam_no_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={3}>
+                  <Form.Item
+                    label="Taar/Ends"
                     name={`tars_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={2}>
-                <Form.Item
-                  label="Pano"
-                  name={`pano_${fieldNumber}`}
-                  validateStatus={errors[`pano_${fieldNumber}`] ? "error" : ""}
-                  help={
-                    errors[`pano_${fieldNumber}`] &&
-                    errors[`pano_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
+                    validateStatus={
+                      errors[`tars_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`tars_${fieldNumber}`] &&
+                      errors[`tars_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`tars_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={2}>
+                  <Form.Item
+                    label="Pano"
                     name={`pano_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
+                    validateStatus={
+                      errors[`pano_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`pano_${fieldNumber}`] &&
+                      errors[`pano_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`pano_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
 
-              <Col span={2}>
-                <Form.Item
-                  label="Taka"
-                  name={`taka_${fieldNumber}`}
-                  validateStatus={errors[`taka_${fieldNumber}`] ? "error" : ""}
-                  help={
-                    errors[`taka_${fieldNumber}`] &&
-                    errors[`taka_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
+                <Col span={2}>
+                  <Form.Item
+                    label="Taka"
                     name={`taka_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
+                    validateStatus={
+                      errors[`taka_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`taka_${fieldNumber}`] &&
+                      errors[`taka_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`taka_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
+                </Col>
 
-              <Col span={2}>
-                <Form.Item
-                  label="Meter"
-                  name={`meter_${fieldNumber}`}
-                  validateStatus={errors[`meter_${fieldNumber}`] ? "error" : ""}
-                  help={
-                    errors[`meter_${fieldNumber}`] &&
-                    errors[`meter_${fieldNumber}`].message
-                  }
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
+                <Col span={2}>
+                  <Form.Item
+                    label="Meter"
                     name={`meter_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
-                </Form.Item>
-              </Col>
-
-              {fieldArray.length > 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<DeleteOutlined />}
-                    type="primary"
-                    onClick={deleteFieldRow.bind(null, fieldNumber)}
-                    className="flex-none"
-                  />
+                    validateStatus={
+                      errors[`meter_${fieldNumber}`] ? "error" : ""
+                    }
+                    help={
+                      errors[`meter_${fieldNumber}`] &&
+                      errors[`meter_${fieldNumber}`].message
+                    }
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name={`meter_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
                 </Col>
-              )}
 
-              {index === fieldArray.length - 1 && (
-                <Col span={1}>
-                  <Button
-                    style={{ marginTop: "1.9rem" }}
-                    icon={<PlusOutlined />}
-                    type="primary"
-                    onClick={addNewFieldRow.bind(null, index)}
-                    className="flex-none"
-                  />
-                </Col>
-              )}
-            </Row>
-          );
-        })}
+                {fieldArray.length > 1 && (
+                  <Col span={1}>
+                    <Button
+                      style={{ marginTop: "1.9rem" }}
+                      icon={<DeleteOutlined />}
+                      type="primary"
+                      onClick={deleteFieldRow.bind(null, fieldNumber)}
+                      className="flex-none"
+                    />
+                  </Col>
+                )}
+
+                {index === fieldArray.length - 1 && (
+                  <Col span={1}>
+                    <Button
+                      style={{ marginTop: "1.9rem" }}
+                      icon={<PlusOutlined />}
+                      type="primary"
+                      onClick={addNewFieldRow.bind(null, index)}
+                      className="flex-none"
+                    />
+                  </Col>
+                )}
+              </Row>
+            );
+          })}
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

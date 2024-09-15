@@ -416,7 +416,7 @@ const AddPurchaseTaka = () => {
         <Row
           gutter={18}
           style={{
-            paddingTop: "12px",
+            padding: "12px",
           }}
         >
           {/* <Col span={6}>
@@ -500,9 +500,9 @@ const AddPurchaseTaka = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+          style={{
+            padding: "0px 12px",
+          }}
         >
           <Col span={6}>
             <Form.Item
@@ -583,9 +583,9 @@ const AddPurchaseTaka = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+          style={{
+            padding: "0px 12px",
+          }}
         >
           <Col span={6}>
             <Form.Item
@@ -678,9 +678,9 @@ const AddPurchaseTaka = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+          style={{
+            padding: "0px 12px",
+          }}
         >
           <Col span={6}>
             <Form.Item
@@ -810,9 +810,9 @@ const AddPurchaseTaka = () => {
         {pendingMeter && pendingTaka ? (
           <Row
             gutter={18}
-            // style={{
-            //   padding: "12px",
-            // }}
+            style={{
+              padding: "0px 12px",
+            }}
           >
             <Col span={6}></Col>
 

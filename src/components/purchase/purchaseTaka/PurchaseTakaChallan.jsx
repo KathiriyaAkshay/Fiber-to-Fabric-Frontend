@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -87,7 +87,10 @@ const PurchaseTakaChallanModal = ({
   console.log("Details information ");
   console.log(details);
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
+
+  const [companyInfo, setCompanyInfo] = useState({});
+  console.log({ companyInfo });
 
   const { data: purchaseTakasBillDetail = null } = useQuery({
     queryKey: ["/purchase/taka/bill/get", MODE, { id: details.id }],
@@ -351,9 +354,16 @@ const PurchaseTakaChallanModal = ({
     } else {
       setValue("SGST_value", "2.5");
       setValue("CGST_value", "2.5");
-
     }
   }, [purchaseTakasBillDetail, setValue]);
+
+  useEffect(() => {
+    companyListRes?.rows?.map((element) => {
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
+      }
+    });
+  }, [details, companyListRes]);
 
   return (
     <>
@@ -397,20 +407,23 @@ const PurchaseTakaChallanModal = ({
       >
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Flex className="flex-col border border-b-0 border-solid">
-            <Row className="p-2 border-0 border-b border-solid">
+            <Row className="border-0 border-b border-solid">
               <Col span={12} className="p-3 border-right">
                 <Row>
                   <Col span={24}>
                     <Text strong>To,</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>{details?.supplier?.supplier_name}({details?.supplier?.supplier_company})</Text>
+                    <Text>
+                      {details?.supplier?.supplier_name}(
+                      {details?.supplier?.supplier_company})
+                    </Text>
                   </Col>
                   <Col span={24} className="mt-1">
                     <Text strong>Gst In</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>24ABHPP6021C1Z4</Text>
+                    <Text>{details?.supplier?.user?.gst_no}</Text>
                   </Col>
                   <Col span={24} className="mt-2">
                     <Text strong>Invoice No</Text>
@@ -443,13 +456,13 @@ const PurchaseTakaChallanModal = ({
                     <Text strong>From,</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>SONU TEXTILES</Text>
+                    <Text>{companyInfo?.company_name || ""}</Text>
                   </Col>
                   <Col span={24} className="mt-1">
                     <Text strong>Gst In</Text>
                   </Col>
                   <Col span={24}>
-                    <Text>24ABHPP6021C1Z4</Text>
+                    <Text>{companyInfo?.gst_no}</Text>
                   </Col>
                   <Col span={24} className="mt-2">
                     <Text strong>Bill Date</Text>
@@ -909,7 +922,10 @@ const PurchaseTakaChallanModal = ({
             </Row>
             <Row className="border-0 border-b border-solid">
               <Col span={24} className="p-2 font-medium border-0 border-r">
-                RS. (IN WORDS) {currentValues?.net_amount !== ""?toWords.convert(currentValues?.net_amount):""}
+                RS. (IN WORDS){" "}
+                {currentValues?.net_amount !== ""
+                  ? toWords.convert(currentValues?.net_amount)
+                  : ""}
               </Col>
             </Row>
           </Flex>

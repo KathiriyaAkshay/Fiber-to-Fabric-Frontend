@@ -57,6 +57,7 @@ const UpdateJobTaka = () => {
   const [activeField, setActiveField] = useState(1);
   // const [fieldArray, setFieldArray] = useState([0]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  console.log({ selectedOrder });
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 

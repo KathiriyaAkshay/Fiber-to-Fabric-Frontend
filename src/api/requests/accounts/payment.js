@@ -55,3 +55,16 @@ export function deleteJournalRequest({ id, params }) {
 export function addJournalRequest({ data, params }) {
   return api.post(`/account/statement/journal/voucher/create`, data, { params });
 }
+
+// Bill services------------------------------------------------------------------------
+export function getPaymentBillListRequest({ params }) {
+  return api.get(`/account/bill/statements/list`, { params });
+}
+
+export function getUnPaidPaymentBillListRequest({ params }) {
+  return api.get(`/account/bill/list`, { params });
+}
+
+export function addPaymentBillRequest({ data, params }) {
+  return api.post(`/account/bill/create`, data, { params });
+}

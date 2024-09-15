@@ -10,7 +10,7 @@ import {
   Row,
   Select,
   Typography,
-  message
+  message,
 } from "antd";
 import { CloseOutlined, EditOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
@@ -84,7 +84,7 @@ const toWords = new ToWords({
 });
 
 const UpdateYarnChallanModel = ({ details }) => {
-  const queryClient = useQueryClient() ; 
+  const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [supplierName, setSupplierName] = useState("");
@@ -92,9 +92,9 @@ const UpdateYarnChallanModel = ({ details }) => {
   const [totalQuantity, setTotalQuantity] = useState(0);
   const [totalCartoon, setTotalCartoon] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [loading, setLoading] = useState(false) ; 
+  const [loading, setLoading] = useState(false);
 
-  // Get Supplier dropdown information 
+  // Get Supplier dropdown information
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -112,7 +112,7 @@ const UpdateYarnChallanModel = ({ details }) => {
         params: {
           company_id: companyId,
           // supplier_type: "yarn",
-          supplier_name: details?.supplier?.supplier?.supplier_name
+          supplier_name: details?.supplier?.supplier?.supplier_name,
         },
       });
       return res.data?.data?.supplierList;
@@ -166,8 +166,8 @@ const UpdateYarnChallanModel = ({ details }) => {
       TCS_value: details?.TCS_value,
       net_amount: details?.net_amount,
       SGST_amount: details?.SGST_amount,
-      IGST_amount: details?.IGST_amount, 
-      CGST_amount: details?.CGST_amount
+      IGST_amount: details?.IGST_amount,
+      CGST_amount: details?.CGST_amount,
     },
   });
 
@@ -197,35 +197,36 @@ const UpdateYarnChallanModel = ({ details }) => {
 
   const [discountValue, setDiscountValue] = useState(0);
   useEffect(() => {
-
     if (isModalOpen) {
-      // Quantity rate 
+      // Quantity rate
       let rate = quantity_rate;
       rate = Number(rate);
 
-      // Handle Quantity amount 
+      // Handle Quantity amount
       let total_amount = Number(totalQuantity) * Number(rate);
       setValue("quantity_amount", total_amount.toFixed(2));
 
-      // Handle freight amount 
+      // Handle freight amount
       let temp_freight_amount;
       if (freight_value !== "" && freight_value !== undefined) {
         temp_freight_amount = Number(freight_value) * Number(totalQuantity);
         setValue("freight_amount", temp_freight_amount.toFixed(2));
       }
 
-      // Handle discount amount 
+      // Handle discount amount
       if (
         is_discount &&
         discount_brokerage_value !== "" &&
         discount_brokerage_value !== undefined
       ) {
-
-        let discountAmount = Number(total_amount) * Number(discount_brokerage_value) / 100;
+        let discountAmount =
+          (Number(total_amount) * Number(discount_brokerage_value)) / 100;
         setDiscountValue(discountAmount);
-        discountAmount = (Number(total_amount) - Number(discountAmount)) + Number(temp_freight_amount);
+        discountAmount =
+          Number(total_amount) -
+          Number(discountAmount) +
+          Number(temp_freight_amount);
         setValue("discount_brokerage_amount", discountAmount);
-
       } else {
         const discount_brokrage_amount =
           Number(total_amount) +
@@ -236,7 +237,6 @@ const UpdateYarnChallanModel = ({ details }) => {
           discount_brokrage_amount.toFixed(2)
         );
       }
-      
     }
   }, [
     totalQuantity,
@@ -246,11 +246,10 @@ const UpdateYarnChallanModel = ({ details }) => {
     details,
     freight_value,
     discount_brokerage_value,
-    isModalOpen
+    isModalOpen,
   ]);
-  
-  useEffect(() => {
 
+  useEffect(() => {
     if (SGST_value !== "" && SGST_value !== undefined) {
       const SGST_amount =
         (Number(discount_brokerage_amount) * Number(SGST_value)) / 100;
@@ -268,18 +267,16 @@ const UpdateYarnChallanModel = ({ details }) => {
         (Number(discount_brokerage_amount) * Number(IGST_value)) / 100;
       setValue("IGST_amount", parseFloat(IGST_amount).toFixed(2));
     }
-
   }, [
-    discount_brokerage_amount, 
-    SGST_value, 
-    CGST_value, 
-    IGST_value, 
-    details, 
-    setValue
-  ])
+    discount_brokerage_amount,
+    SGST_value,
+    CGST_value,
+    IGST_value,
+    details,
+    setValue,
+  ]);
 
   useEffect(() => {
-
     if (TCS_value !== "" && TCS_value !== undefined) {
       const amountWithTax =
         Number(discount_brokerage_amount) +
@@ -291,17 +288,16 @@ const UpdateYarnChallanModel = ({ details }) => {
     }
 
     const net_amount =
-    Number(discount_brokerage_amount) +
-    Number(SGST_amount) +
-    Number(CGST_amount) +
-    Number(IGST_amount) +
-    Number(TCS_amount);
+      Number(discount_brokerage_amount) +
+      Number(SGST_amount) +
+      Number(CGST_amount) +
+      Number(IGST_amount) +
+      Number(TCS_amount);
 
-    let roundOffAmount = Math.round(net_amount) - Number(net_amount) ; 
-    setValue("round_off_amount", roundOffAmount.toFixed(2)) ; 
+    let roundOffAmount = Math.round(net_amount) - Number(net_amount);
+    setValue("round_off_amount", roundOffAmount.toFixed(2));
 
     setValue("net_amount", Math.round(net_amount).toFixed(2));
-
   }, [
     CGST_amount,
     IGST_amount,
@@ -309,15 +305,13 @@ const UpdateYarnChallanModel = ({ details }) => {
     TCS_amount,
     discount_brokerage_amount,
     setValue,
-  ]) ;
-  
+  ]);
+
   useEffect(() => {
     const currentTDSAmount = TDS_amount;
     const after_TDS_amount = Number(net_amount) - Number(currentTDSAmount);
     setValue("after_TDS_amount", parseFloat(after_TDS_amount).toFixed(2));
-  }, [net_amount, TDS_amount])
-
-
+  }, [net_amount, TDS_amount]);
 
   const disablePastDates = (current) => {
     return current && current > new Date().setHours(0, 0, 0, 0);
@@ -325,7 +319,7 @@ const UpdateYarnChallanModel = ({ details }) => {
 
   const { mutateAsync: createYarnReceive } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true) ; 
+      setLoading(true);
       const res = await createYarnReceiveBillRequest({
         data,
         params: { company_id: companyId, bill_id: details?.id },
@@ -334,7 +328,7 @@ const UpdateYarnChallanModel = ({ details }) => {
     },
     mutationKey: ["yarn-stock/yarn-receive-challan/create"],
     onSuccess: (res) => {
-      setLoading(false) ; 
+      setLoading(false);
       queryClient.invalidateQueries([
         "yarn-stock/yarn-receive-challan/list",
         { company_id: companyId },
@@ -342,15 +336,14 @@ const UpdateYarnChallanModel = ({ details }) => {
       const successMessage = res?.message;
       if (successMessage) {
         message.success("Yarn bill updated successfully");
-        setIsModalOpen(false) ; 
+        setIsModalOpen(false);
       }
     },
     onError: (error) => {
-      setLoading(false) ; 
+      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
-
 
   const onSubmit = async (data) => {
     delete data.yarn_company_name;
@@ -358,49 +351,52 @@ const UpdateYarnChallanModel = ({ details }) => {
 
     console.log(details);
 
-    // Total quantity 
+    // Total quantity
     let totalQuantity = 0;
-    let multiple_challans = [] ; 
+    let multiple_challans = [];
     if (details) {
-      details?.yarn_bill_details?.length > 0 && details?.yarn_bill_details.map((element, index) => {
-        totalQuantity = totalQuantity + Number(element?.yarn_receive_challan?.receive_quantity);
-        console.log(element);
-        multiple_challans.push({
-          "yarn_challan_id": element?.yarn_challan_id, 
-          "quantity_rate": data?.quantity_rate, 
-          "quantity_amount": data?.quantity_amount
-        })
-      })
+      details?.yarn_bill_details?.length > 0 &&
+        details?.yarn_bill_details.map((element, index) => {
+          totalQuantity =
+            totalQuantity +
+            Number(element?.yarn_receive_challan?.receive_quantity);
+          console.log(element);
+          multiple_challans.push({
+            yarn_challan_id: element?.yarn_challan_id,
+            quantity_rate: data?.quantity_rate,
+            quantity_amount: data?.quantity_amount,
+          });
+        });
     }
 
     let requestData = {
-      "order_id": details?.order_id,
-      "receive_quantity": totalQuantity,
-      "supplier_company_id": data?.supplier_company_id,
-      "invoice_no": data?.invoice_no,
-      "bill_date": dayjs(data?.bill_date).format("YYYY-MM-DD"),
-      "due_date": dayjs(data?.due_date).format("YYYY-MM-DD"),
-      "freight_value": data?.freight_value,
-      "freight_amount": data?.freight_amount,
-      "is_discount": data?.is_discount,
-      "discount_brokerage_value": data?.discount_brokerage_value,
-      "discount_brokerage_amount": data?.discount_brokerage_amount,
-      "SGST_value": data?.SGST_value,
-      "SGST_amount": data?.SGST_amount,
-      "CGST_value": data?.CGST_value,
-      "CGST_amount": data?.CGST_amount,
-      "TCS_value": data?.TCS_value,
-      "TCS_amount": data?.TCS_amount,
-      "IGST_value": data?.IGST_value,
-      "IGST_amount": data?.IGST_amount,
-      "round_off_amount": data?.round_off_amount,
-      "net_amount": data?.net_amount,
-      "TDS_amount": data?.TDS_amount,
-      "after_TDS_amount": data?.after_TDS_amount,
-      "multiple_challans": multiple_challans, 
-    }; 
+      order_id: details?.order_id,
+      receive_quantity: totalQuantity,
+      supplier_company_id: data?.supplier_company_id,
+      invoice_no: data?.invoice_no,
+      bill_date: dayjs(data?.bill_date).format("YYYY-MM-DD"),
+      due_date: dayjs(data?.due_date).format("YYYY-MM-DD"),
+      freight_value: data?.freight_value,
+      freight_amount: data?.freight_amount,
+      is_discount: data?.is_discount,
+      discount_brokerage_value: data?.discount_brokerage_value,
+      discount_brokerage_amount: data?.discount_brokerage_amount,
+      SGST_value: data?.SGST_value,
+      SGST_amount: data?.SGST_amount,
+      CGST_value: data?.CGST_value,
+      CGST_amount: data?.CGST_amount,
+      TCS_value: data?.TCS_value,
+      TCS_amount: data?.TCS_amount,
+      IGST_value: data?.IGST_value,
+      IGST_amount: data?.IGST_amount,
+      round_off_amount: data?.round_off_amount,
+      net_amount: data?.net_amount,
+      TDS_amount: data?.TDS_amount,
+      after_TDS_amount: data?.after_TDS_amount,
+      multiple_challans: multiple_challans,
+    };
 
-    await createYarnReceive(requestData) ; 
+    await createYarnReceive(requestData);
   };
 
   return (
@@ -551,7 +547,7 @@ const UpdateYarnChallanModel = ({ details }) => {
                   help={errors.bill_date && errors.bill_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -679,7 +675,9 @@ const UpdateYarnChallanModel = ({ details }) => {
                 {quantity_amount}
                 <div
                   style={{ color: "green", textAlign: "center", marginTop: 4 }}
-                >Dis - {discountValue}</div>
+                >
+                  Dis - {discountValue}
+                </div>
               </Col>
             </Row>
 
@@ -1143,9 +1141,7 @@ const UpdateYarnChallanModel = ({ details }) => {
                 Rs.(IN WORDS):
               </Col>
               <Col span={20} className="p-2 font-semibold">
-                {Number(net_amount)
-                  ? toWords.convert(net_amount)
-                  : ""}
+                {Number(net_amount) ? toWords.convert(net_amount) : ""}
               </Col>
             </Row>
 
@@ -1202,7 +1198,7 @@ const UpdateYarnChallanModel = ({ details }) => {
               style={{ marginLeft: "auto" }}
               type="primary"
               htmlType="submit"
-              loading = {loading}
+              loading={loading}
             >
               Update
             </Button>

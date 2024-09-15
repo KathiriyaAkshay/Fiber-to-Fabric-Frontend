@@ -212,28 +212,6 @@ const PurchaseChallanList = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Bill No",
-    //       "Challan NO",
-    //       "Order No",
-    //       "Challan Date",
-    //       "Supplier Name",
-    //       "Supplier Company GST",
-    //       "Quality",
-    //       "Total Taka",
-    //       "Total Meter",
-    //       "Bill Status",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Purchase Challan List",
-    // });
-
     window.open("/print");
   }
 

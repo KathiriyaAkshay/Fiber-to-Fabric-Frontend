@@ -3,8 +3,6 @@ import { Button, Flex, Modal } from "antd";
 import { useState } from "react";
 
 const ChequeBookModal = ({ details }) => {
-  // console.log("ChequeBookModal", details);
-
   const [ChequeBookModal, setChequeBookModalOpen] = useState(false);
   const showChequeBookModal = () => {
     setChequeBookModalOpen(true);
@@ -19,7 +17,7 @@ const ChequeBookModal = ({ details }) => {
   return (
     <>
       <Button onClick={() => showChequeBookModal()}>
-        <CreditCardOutlined />
+        <CreditCardOutlined style={{ color: "green" }} />
       </Button>
       <Modal
         open={ChequeBookModal}

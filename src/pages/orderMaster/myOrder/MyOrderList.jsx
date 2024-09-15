@@ -209,26 +209,6 @@ const MyOrderList = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Order No",
-    //       "Order Date",
-    //       "Company Name",
-    //       "Quality",
-    //       "Pending Taka",
-    //       "Deliver Taka",
-    //       "Pending Meter",
-    //       "Deliver Meter",
-    //       "Status",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Order List",
-    // });
     window.open("/print");
   }
 

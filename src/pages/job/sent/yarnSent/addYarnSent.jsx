@@ -30,7 +30,7 @@ import {
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import {
   addYarnSentRequest,
-  GetJobYarnSentLastChallanRequest,
+  // GetJobYarnSentLastChallanRequest,
   getYarnSentLastChallanNoRequest,
 } from "../../../../api/requests/job/sent/yarnSent";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
@@ -220,6 +220,7 @@ const AddYarnSent = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          type: "job",
         },
       ],
       queryFn: async () => {
@@ -229,6 +230,7 @@ const AddYarnSent = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            type: "job",
           },
         });
         return res.data?.data;
@@ -321,19 +323,19 @@ const AddYarnSent = () => {
   //   });
   // }, [yscdListRes?.yarnCompanyList]);
 
-  const { data: lastChallanNumber } = useQuery({
-    queryKey: [
-      "/sale/challan/yarn-sale/last-challan-no",
-      { company_id: companyId },
-    ],
-    queryFn: async () => {
-      const res = await GetJobYarnSentLastChallanRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.supplierList;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: lastChallanNumber } = useQuery({
+  //   queryKey: [
+  //     "/sale/challan/yarn-sale/last-challan-no",
+  //     { company_id: companyId },
+  //   ],
+  //   queryFn: async () => {
+  //     const res = await GetJobYarnSentLastChallanRequest({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data?.supplierList;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   return (
     <div className="flex flex-col p-4">
