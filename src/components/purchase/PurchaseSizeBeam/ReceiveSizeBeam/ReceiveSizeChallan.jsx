@@ -15,7 +15,7 @@ import { CloseOutlined, FileTextOutlined } from "@ant-design/icons";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ToWords } from "to-words";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useCompanyList } from "../../../../api/hooks/company";
@@ -63,6 +63,7 @@ const addSizeBeamReceive = yup.object().shape({
 });
 
 const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
+  const queryClient = useQueryClient();
   const {
     control,
     handleSubmit,
@@ -207,6 +208,8 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
     onSuccess: (res) => {
       const successMessage = res?.message;
       setLoading(false);
+      setIsModalOpen(false);
+      queryClient.invalidateQueries(["order-master/recive-size-beam/list"]);
       if (successMessage) {
         message.success(successMessage);
       }

@@ -1,5 +1,6 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Flex, Modal, Row, Table } from "antd";
+import dayjs from "dayjs";
 import { useState } from "react";
 
 const dataSourcePayment = [
@@ -57,7 +58,6 @@ const columnsPayment = [
 ];
 
 const PaymentVoucherDetails = ({ details }) => {
-  // console.log("PaymentVoucherDetails", details);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -70,14 +70,6 @@ const PaymentVoucherDetails = ({ details }) => {
   };
 
   function renderPaymentTable() {
-    // if (isLoading) {
-    //   return (
-    //     <Spin tip="Loading" size="large">
-    //       <div className="p-14" />
-    //     </Spin>
-    //   );
-    // }
-
     return (
       <Table
         dataSource={dataSourcePayment || []}
@@ -130,28 +122,30 @@ const PaymentVoucherDetails = ({ details }) => {
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        width={"100%"}
+        width={"85%"}
       >
         <div className="font-semibold text-lg mb-3">
           Payment Voucher Details
         </div>
-        <Row>
+        <Row gutter={6}>
           <Col span={6}>
             <Flex justify="center">
-              <div className="w-1/2 text-left font-semibold">Voucher Name</div>
-              <div className="w-1/2 text-left">v-06</div>
+              <div className="w-1/2 text-left font-semibold">Voucher No</div>
+              <div className="w-1/2 text-left">{details?.voucher_no}</div>
             </Flex>
           </Col>
           <Col span={6}>
             <Flex justify="space-evenly">
               <div className="w-1/2 text-left font-semibold">Cheque No</div>
-              <div className="w-1/2 text-left">100</div>
+              <div className="w-1/2 text-left">{details?.cheque_no}</div>
             </Flex>
           </Col>{" "}
           <Col span={6}>
             <Flex justify="space-evenly">
               <div className="w-1/2 text-left font-semibold">Supplier Name</div>
-              <div className="w-1/2 text-left">Power</div>
+              <div className="w-1/2 text-left">
+                {details?.supplier?.supplier_name}
+              </div>
             </Flex>
           </Col>{" "}
           <Col span={6}>
@@ -161,29 +155,35 @@ const PaymentVoucherDetails = ({ details }) => {
             </Flex>
           </Col>
         </Row>
-        <Row className="mt-2">
+        <Row className="mt-2" gutter={6}>
           <Col span={6}>
             <Flex justify="center">
               <div className="w-1/2 text-left font-semibold">Voucher Date</div>
-              <div className="w-1/2 text-left">26/02/23</div>
+              <div className="w-1/2 text-left">
+                {dayjs(details?.voucher_date).format("DD-MM-YYYY")}
+              </div>
             </Flex>
           </Col>
           <Col span={6}>
             <Flex justify="space-evenly">
               <div className="w-1/2 text-left font-semibold">Cheque Date</div>
-              <div className="w-1/2 text-left">26/02/23</div>
+              <div className="w-1/2 text-left">
+                {dayjs(details?.cheque_date).format("DD-MM-YYYY")}
+              </div>
             </Flex>
           </Col>{" "}
           <Col span={6}>
             <Flex justify="space-evenly">
               <div className="w-1/2 text-left font-semibold">Account Name</div>
-              <div className="w-1/2 text-left">Power</div>
+              <div className="w-1/2 text-left">***</div>
             </Flex>
           </Col>{" "}
           <Col span={6}>
             <Flex justify="space-evenly">
               <div className="w-1/2 text-left font-semibold">Bank Name</div>
-              <div className="w-1/2 text-left">Sonu Textiles</div>
+              <div className="w-1/2 text-left">
+                {details?.company_bank_detail?.bank_name}
+              </div>
             </Flex>
           </Col>
         </Row>
@@ -191,7 +191,13 @@ const PaymentVoucherDetails = ({ details }) => {
           <Col span={6}>
             <Flex justify="center">
               <div className="w-1/2 text-left font-semibold">Amount</div>
-              <div className="w-1/2 text-left">45325.32</div>
+              <div className="w-1/2 text-left">{details?.total_amount}</div>
+            </Flex>
+          </Col>
+          <Col span={18}>
+            <Flex justify="center">
+              <div className="w-1/2 text-left font-semibold">Remark</div>
+              <div className="w-1/2 text-left">{details?.remark}</div>
             </Flex>
           </Col>
         </Row>
