@@ -4,9 +4,9 @@ import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import DeleteConfirmationDialog from "../../common/modal/DeleteConfirmationDialog";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { deleteJournalRequest } from "../../../api/requests/accounts/payment";
+import { deleteRevertPassbookRequest } from "../../../api/requests/accounts/payment";
 
-const DeleteJournalModal = ({ details }) => {
+const DeletePassBookEntryModal = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
@@ -14,15 +14,16 @@ const DeleteJournalModal = ({ details }) => {
 
   const { mutateAsync: deleteJournal } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteJournalRequest({
+      const res = await deleteRevertPassbookRequest({
         id,
         params: {
           company_id: companyId,
+          is_delete: 1,
         },
       });
       return res?.data;
     },
-    mutationKey: ["payment", "journal", "delete"],
+    mutationKey: ["payment", "pass-book", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
@@ -30,7 +31,7 @@ const DeleteJournalModal = ({ details }) => {
       }
       queryClient.invalidateQueries([
         "get",
-        "payment-journal",
+        "payment-pass-book",
         "list",
         { company_id: companyId },
       ]);
@@ -76,4 +77,4 @@ const DeleteJournalModal = ({ details }) => {
   );
 };
 
-export default DeleteJournalModal;
+export default DeletePassBookEntryModal;

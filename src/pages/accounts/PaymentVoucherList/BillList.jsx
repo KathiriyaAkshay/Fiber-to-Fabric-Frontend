@@ -9,26 +9,47 @@ import {
   Typography,
   Spin,
 } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import PaymentVoucherDetails from "../../../components/accounts/payment/PaymentVoucherDetails";
 import ChequeBookModal from "../../../components/accounts/payment/ChequeBookModal";
 
 import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
-import DeleteJournalModal from "../../../components/accounts/payment/DeleteJournalModal";
 import { getPaymentBillListRequest } from "../../../api/requests/accounts/payment";
 
 const BillList = () => {
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
 
+  const [bank, setBank] = useState(null);
   const [supplier, setSupplier] = useState(null);
   const [chequeDate, setChequeDate] = useState(null);
   const [voucherDate, setVoucherDate] = useState(null);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const bankOption = useMemo(() => {
+    if (companyId && companyListRes) {
+      const selectedCompany = companyListRes.rows.find(
+        ({ id }) => id === companyId
+      );
+      if (selectedCompany && selectedCompany?.company_bank_details.length) {
+        const bankOption = selectedCompany?.company_bank_details?.map(
+          ({ bank_name, id, balance }) => {
+            return { label: bank_name, value: id, balance };
+          }
+        );
+
+        return bankOption;
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
+  }, [companyId, companyListRes]);
 
   const {
     data: dropdownSupplierListRes,
@@ -47,19 +68,37 @@ const BillList = () => {
   const { data: paymentBillList, isLoading: isLoadingPaymentList } = useQuery({
     queryKey: [
       "get",
-      "payment",
+      "payment-bill",
       "list",
-      { company_id: companyId, page, pageSize },
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        bank_id: bank,
+        supplier_name: supplier,
+        cheque_date: chequeDate,
+        voucher_date: voucherDate,
+      },
     ],
     queryFn: async () => {
-      const params = { company_id: companyId, page, pageSize };
+      const params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        bank_id: bank,
+        supplier_name: supplier,
+      };
+      if (chequeDate) {
+        params.cheque_date = dayjs(chequeDate).format("YYYY-MM-DD");
+      }
+      if (voucherDate) {
+        params.voucher_date = dayjs(voucherDate).format("YYYY-MM-DD");
+      }
       const response = await getPaymentBillListRequest({ params });
       return response.data.data;
     },
     enabled: Boolean(companyId),
-    placeholderData: keepPreviousData,
   });
-  console.log({ paymentBillList });
 
   const downloadPdf = () => {
     alert("downloadPdf");
@@ -122,9 +161,6 @@ const BillList = () => {
       render: (details) => (
         <Space>
           <PaymentVoucherDetails details={details} />
-
-          <DeleteJournalModal key={"delete_journal"} details={details} />
-
           <ChequeBookModal details={details} />
         </Space>
       ),
@@ -180,6 +216,24 @@ const BillList = () => {
     <>
       <Flex align="center" justify="flex-end" gap={10}>
         <Flex align="center" gap={10}>
+          <Typography.Text className="whitespace-nowrap">Bank</Typography.Text>
+          <Select
+            allowClear
+            placeholder="Select Party"
+            dropdownStyle={{
+              textTransform: "capitalize",
+            }}
+            style={{
+              textTransform: "capitalize",
+            }}
+            className="min-w-40"
+            loading={isLoadingDropdownSupplierList}
+            options={bankOption}
+            value={bank}
+            onChange={setBank}
+          />
+        </Flex>
+        <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Supplier
           </Typography.Text>
@@ -217,7 +271,7 @@ const BillList = () => {
         <Button
           icon={<FilePdfOutlined />}
           type="primary"
-          disabled={!paymentBillList?.rows?.length}
+          disabled={!paymentBillList?.billPaymentDetails?.rows?.length}
           onClick={downloadPdf}
           className="flex-none"
         />

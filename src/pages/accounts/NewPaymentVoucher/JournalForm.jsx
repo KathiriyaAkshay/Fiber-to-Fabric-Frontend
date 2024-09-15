@@ -101,7 +101,6 @@ const JournalForm = () => {
     });
 
   const onSubmit = async (data) => {
-    console.log("Form submitted", data);
     const payload = {
       ...data,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),

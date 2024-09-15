@@ -8,17 +8,16 @@ import {
   Flex,
   Typography,
   Spin,
+  Tag,
 } from "antd";
 import { useContext, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import PaymentVoucherDetails from "../../../components/accounts/payment/PaymentVoucherDetails";
 import ChequeBookModal from "../../../components/accounts/payment/ChequeBookModal";
-
 import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
-import DeleteJournalModal from "../../../components/accounts/payment/DeleteJournalModal";
 import { getCashbookListRequest } from "../../../api/requests/accounts/payment";
 
 const CashBookList = () => {
@@ -47,17 +46,34 @@ const CashBookList = () => {
   const { data: paymentList, isLoading: isLoadingPaymentList } = useQuery({
     queryKey: [
       "get",
-      "payment",
+      "payment-cash-book",
       "list",
-      { company_id: companyId, page, pageSize },
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        supplier_name: supplier,
+        cheque_date: chequeDate,
+        voucher_date: voucherDate,
+      },
     ],
     queryFn: async () => {
-      const params = { company_id: companyId, page, pageSize };
+      const params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        supplier_name: supplier,
+      };
+      if (chequeDate) {
+        params.cheque_date = dayjs(chequeDate).format("YYYY-MM-DD");
+      }
+      if (voucherDate) {
+        params.voucher_date = dayjs(voucherDate).format("YYYY-MM-DD");
+      }
       const response = await getCashbookListRequest({ params });
       return response.data.data;
     },
     enabled: Boolean(companyId),
-    placeholderData: keepPreviousData,
   });
 
   const downloadPdf = () => {
@@ -92,6 +108,14 @@ const CashBookList = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
+      render: (text, { is_withdraw }) => {
+        return (
+          <span>
+            {text} <br />
+            <Tag color="blue">{is_withdraw ? "Withdrawals" : "Deposite"}</Tag>
+          </span>
+        );
+      },
     },
     {
       title: "Voucher No.",
@@ -121,9 +145,6 @@ const CashBookList = () => {
       render: (details) => (
         <Space>
           <PaymentVoucherDetails details={details} />
-
-          <DeleteJournalModal key={"delete_journal"} details={details} />
-
           <ChequeBookModal details={details} />
         </Space>
       ),
