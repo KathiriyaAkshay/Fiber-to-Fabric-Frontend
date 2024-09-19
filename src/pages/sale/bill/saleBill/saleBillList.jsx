@@ -147,7 +147,6 @@ const SaleBillList = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ SaleBillList });
 
   function navigateToAdd() {
     navigate("/sales/bill/sales-bill-list/add");

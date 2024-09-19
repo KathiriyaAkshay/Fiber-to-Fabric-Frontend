@@ -151,6 +151,8 @@ import CashBook from "./pages/accounts/statements/CashBook";
 import CreditNotes from "./pages/accounts/Notes/CreditNotes";
 import DebitNote from "./components/purchase/purchaseReturn/DebitNote";
 import DebitNotes from "./pages/accounts/Notes/DebitNotes";
+import EmiList from "./pages/accounts/statements/emi/EmiList";
+import AddEmi from "./pages/accounts/statements/emi/AddEmi";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -728,7 +730,10 @@ const router = createBrowserRouter([
               },
               {
                 path: "emi-loan",
-                element: <div>emi-loan</div>,
+                children: [
+                  { index: true, element: <EmiList /> },
+                  { path: "add", element: <AddEmi /> },
+                ],
               },
               {
                 path: "bank-reconciliation",
@@ -811,11 +816,11 @@ const router = createBrowserRouter([
               { index: true, element: "/" },
               {
                 path: "credit-notes",
-                element: <CreditNotes/>,
+                element: <CreditNotes />,
               },
               {
                 path: "debit-notes",
-                element:<DebitNotes/>,
+                element: <DebitNotes />,
               },
             ],
           },

@@ -1,41 +1,71 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import {
   Button,
   Radio,
-  Form,
   Input,
   Select,
-  Row,
-  Col,
   DatePicker,
-  Checkbox,
   Flex,
-  message,
   Typography,
   Table,
   Space,
+  Spin,
 } from "antd";
-const { RangePicker } = DatePicker;
-
-import { Controller, useForm } from "react-hook-form";
-
-import {
-  ArrowLeftOutlined,
-  EyeOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-  TruckOutlined,
-} from "@ant-design/icons";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import AddCreditNotes from "../../../components/accounts/notes/CreditNotes/AddCreditNotes";
 import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
 import ActionView from "../../../components/accounts/notes/CreditNotes/ActionView";
 import ActionFile from "../../../components/accounts/notes/CreditNotes/ActionFile";
+import { usePagination } from "../../../hooks/usePagination";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { useQuery } from "@tanstack/react-query";
+import { getCreditNotesListRequest } from "../../../api/requests/accounts/notes";
+
+const CREDIT_NOTE_TYPES = [
+  { label: "Sale Return", value: "sale_return" },
+  { label: "Late Payment", value: "late_payment" },
+  { label: "Claim Note", value: "claim_note" },
+  { label: "Discount Note", value: "discount_note" },
+  { label: "Other", value: "other" },
+];
 
 const CreditNotes = () => {
+  const { companyId } = useContext(GlobalContext);
 
-  const [isAddModalOpen,setIsAddModalOpen]=useState(false);
+  const [creditNoteTypes, setCreditNoteTypes] = useState("sale_return");
+  const [party, setParty] = useState(null);
+  const [quality, setQuality] = useState(null);
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const [saleReturnNo, setSaleReturnNo] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const { data: creditNotesList, isLoading: isLoadingCreditNoteList } =
+    useQuery({
+      queryKey: [
+        "get",
+        "credit-notes",
+        "list",
+        {
+          company_id: companyId,
+          page,
+          pageSize,
+        },
+      ],
+      queryFn: async () => {
+        const params = {
+          company_id: companyId,
+          page,
+          pageSize,
+        };
+        const response = await getCreditNotesListRequest({ params });
+        return response.data.data;
+      },
+      enabled: Boolean(companyId),
+    });
+
   const columns = [
     {
       title: "No",
@@ -96,69 +126,38 @@ const CreditNotes = () => {
 
     {
       title: "Action",
-      render: (details) => {
+      render: () => {
         return (
           <Space>
-           <ActionView/>
-           <ActionFile/>
-           <Invoice/>
+            <ActionView />
+            <ActionFile />
+            <Invoice />
           </Space>
         );
       },
     },
   ];
 
-  const data = [
-    {
-      no: 1,
-      returnDate: "23-07-2024",
-      creditNo: "CNS-10",
-      "Challan/Bill": "1230023",
-      quality_denier: "33P PALLU PATTERN (ABCDABCD) - (8KG)",
-      firm_name: "SONU TEXTILES",
-      party_name: "BABAJI SILK FABRIC / HM SILK FABRIC",
-      meter: 300,
-      amount: "60,000.00",
-      net_amount: "56,700.00",
-      type: "Sale return",
-      invoice_date: "18-08-2024",
-    },
-    {
-      No: 2,
-      returnDate: "23-07-2024",
-      creditNo: "CNS-10",
-      "Challan/Bill": "1230023",
-      quality_denier: "33P PALLU PATTERN (ABCDABCD) - (8KG)",
-      firm_name: "SONU TEXTILES",
-      party_name: "BABAJI SILK FABRIC / HM SILK FABRIC",
-      meter: 300,
-      amount: "60,000.00",
-      net_amount: "56,700.00",
-      type: "Sale return",
-      invoice_date: "18-08-2024",
-    },
-  ];
-
   function renderTable() {
-    // if (isLoading) {
-    // return (
-    //   <Spin tip="Loading" size="large">
-    //     <div className="p-14" />
-    //   </Spin>
-    // );
-    // }
+    if (isLoadingCreditNoteList) {
+      return (
+        <Spin tip="Loading" size="large">
+          <div className="p-14" />
+        </Spin>
+      );
+    }
 
     return (
       <Table
-        dataSource={data || []}
+        dataSource={creditNotesList?.creditNotes?.rows || []}
         columns={columns}
         rowKey={"id"}
-        // pagination={{
-        //   total: purchaseReturnList?.rows?.count || 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
+        pagination={{
+          total: creditNotesList?.creditNotes?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
         summary={() => {
           return (
             <Table.Summary.Row>
@@ -172,14 +171,14 @@ const CreditNotes = () => {
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>4218</b>
+                <b>{creditNotesList?.total_meter}</b>
               </Table.Summary.Cell>
 
               <Table.Summary.Cell index={1}>
-                <b>244518</b>
+                <b>{creditNotesList?.total_amount || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1}>
-                <b>11432</b>
+                <b>{creditNotesList?.total_amount || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
@@ -194,205 +193,111 @@ const CreditNotes = () => {
   }
 
   return (
-    <Form
-      // form={form}
-      // layout="vertical"
-      style={{ marginTop: "1rem" }}
-      onFinish={() => {}}
-    >
-      <div className="flex flex-col gap-2 p-4 pt-2">
+    <>
+      <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-          <div className="flex items-center gap-5">
-            {/* <Button onClick={() => navigate(-1)}>
-              <ArrowLeftOutlined />
-            </Button> */}
+          <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Credit Notes</h3>
-            <Button
-              onClick={() => {setIsAddModalOpen(true)}}
-              icon={<PlusCircleOutlined />}
-              type="text"
-            />
+            {creditNoteTypes !== "late_payment" ? (
+              <Button
+                onClick={() => {
+                  setIsAddModalOpen(true);
+                }}
+                icon={<PlusCircleOutlined />}
+                type="text"
+              />
+            ) : null}
           </div>
           <div style={{ marginLeft: "auto" }}>
-            {/* <Controller
-              control={control}
-              name="production_filter"
-              render={({ field }) => ( */}
             <Radio.Group
-              // {...field}
               name="production_filter"
-              onChange={(e) => {
-                // field.onChange(e);
-                // changeProductionFilter(e.target.value);
-              }}
+              value={creditNoteTypes}
+              onChange={(e) => setCreditNoteTypes(e.target.value)}
             >
-              <Radio value={"sale_return"}>Sale Return</Radio>
-              <Radio value={"late_payment"}>Late Payment</Radio>
-              <Radio value={"claim_note"}>Claim Note</Radio>
-              <Radio value={"discount_note"}>Discount Note</Radio>
-              <Radio value={"other"}>other</Radio>
+              {CREDIT_NOTE_TYPES.map(({ label, value }) => {
+                return (
+                  <Radio key={value} value={value}>
+                    {label}
+                  </Radio>
+                );
+              })}
             </Radio.Group>
-            {/* )} */}
-            {/* /> */}
           </div>
-          <div style={{ marginLeft: "auto" }}>
-            {/* <Controller
-              control={control}
-              name="production_filter"
-              render={({ field }) => ( */}
-            <Radio.Group
-              // {...field}
-              name="production_filter"
-              onChange={(e) => {
-                // field.onChange(e);
-                // changeProductionFilter(e.target.value);
-              }}
-            >
+          {/* <div style={{ marginLeft: "auto" }}>
+            <Radio.Group name="production_filter">
               <Radio value={"current"}>Current</Radio>
               <Radio value={"previous"}>Previous</Radio>
             </Radio.Group>
-            {/* )} */}
-            {/* /> */}
-          </div>
+          </div> */}
         </div>
-        <Row style={{ gap: "12px", marginTop: "20px" }}>
-          <Col span={6}>
-            <Form.Item
-              label="Company"
-              name={`company`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
-              style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+
+        <Flex align="center" justify="flex-end" gap={10}>
+          {/* <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Company
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select Party"
+              dropdownStyle={{
+                textTransform: "capitalize",
               }}
-            >
-              <Select
-                // {...field}
-                placeholder="Select Company"
-                // loading={isLoadingMachineList}
-                // options={machineListRes?.rows?.map((machine) => ({
-                //   label: machine?.machine_name,
-                //   value: machine?.machine_name,
-                // }))}
-                options={[
-                  {
-                    label: "Company 1",
-                    value: "Company_1",
-                  },
-                ]}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={(value) => {
-                  // field.onChange(value);
-                  // resetField("quality_id");
-                }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item
-              label="Party"
-              name={`party`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
               style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+                textTransform: "capitalize",
               }}
-            >
-              <Select
-                // {...field}
-                placeholder="Select Party"
-                // loading={isLoadingMachineList}
-                // options={machineListRes?.rows?.map((machine) => ({
-                //   label: machine?.machine_name,
-                //   value: machine?.machine_name,
-                // }))}
-                options={[
-                  {
-                    label: "Party 1",
-                    value: "Party_1",
-                  },
-                ]}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={(value) => {
-                  // field.onChange(value);
-                  // resetField("quality_id");
-                }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item
-              label="Quantity"
-              name={`quantity`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
+              className="min-w-40"
+            />
+          </Flex> */}
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Party
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select Party"
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
               style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+                textTransform: "capitalize",
               }}
-            >
-              <Select
-                // {...field}
-                placeholder="Select Quantity"
-                // loading={isLoadingMachineList}
-                // options={machineListRes?.rows?.map((machine) => ({
-                //   label: machine?.machine_name,
-                //   value: machine?.machine_name,
-                // }))}
-                options={[
-                  {
-                    label: "Quantity 1",
-                    value: "Quantity_1",
-                  },
-                ]}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={(value) => {
-                  // field.onChange(value);
-                  // resetField("quality_id");
-                }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={5}>
-            <Form.Item
-              label="From-To"
-              name={`from-to`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
+              className="min-w-40"
+              value={party}
+              onChange={setParty}
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Quality
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select Party"
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
               style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+                textTransform: "capitalize",
               }}
-            >
-              <RangePicker />
-            </Form.Item>
-          </Col>
-        </Row>
+              className="min-w-40"
+              value={quality}
+              onChange={setQuality}
+            />
+          </Flex>
+
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              From
+            </Typography.Text>
+            <DatePicker value={fromDate} onChange={setFromDate} />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+            <DatePicker value={toDate} onChange={setToDate} />
+          </Flex>
+        </Flex>
+
         <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-4  ">
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
@@ -401,27 +306,30 @@ const CreditNotes = () => {
               </Typography.Text>
               <Input
                 placeholder="Challan NO"
-                // value={challanNo}
-                // onChange={(e) => setChallanNo(e.target.value)}
-                style={{ width: "200px" }}
+                value={saleReturnNo}
+                onChange={(e) => setSaleReturnNo(e.target.value)}
               />
 
-              <Button>
-                <SearchOutlined />
-              </Button>
-              <Button>
-                <FileExcelOutlined />
-              </Button>
-              <Button>
-                <FilePdfOutlined />
-              </Button>
+              <Button
+                icon={<FilePdfOutlined />}
+                type="primary"
+                // disabled={!paymentBillList?.billPaymentDetails?.rows?.length}
+                // onClick={downloadPdf}
+                className="flex-none"
+              />
             </Flex>
           </Flex>
         </div>
         {renderTable()}
       </div>
-      <AddCreditNotes isAddModalOpen={isAddModalOpen} setIsAddModalOpen={setIsAddModalOpen}/>
-    </Form>
+
+      {isAddModalOpen && (
+        <AddCreditNotes
+          isAddModalOpen={isAddModalOpen}
+          setIsAddModalOpen={setIsAddModalOpen}
+        />
+      )}
+    </>
   );
 };
 

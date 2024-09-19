@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 // import useDebounce from "../../../hooks/useDebounce";
 import dayjs from "dayjs";
