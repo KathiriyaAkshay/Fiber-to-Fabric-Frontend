@@ -18,7 +18,7 @@ const AddDebitNotes = (props) => {
         open={props.isAddModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
-        width={"70%"}
+        width={"75%"}
       >
         <div className="credit-note-container">
           <Flex style={{ marginLeft: "auto" }} justify="center">
@@ -37,10 +37,9 @@ const AddDebitNotes = (props) => {
               }}
             >
               <Radio value={"purchase_return"}>Purchase Return</Radio>
-              <Radio value={"claim_note"}>Claim Note</Radio>
               <Radio value={"discount_note"}>Discount Note</Radio>
+              <Radio value={"claim_note"}>Claim Note</Radio>
               <Radio value={"other"}>other</Radio>
-              <Radio value={"all"}>all</Radio>
             </Radio.Group>
             {/* )} */}
             {/* /> */}
@@ -49,7 +48,8 @@ const AddDebitNotes = (props) => {
           <table className="credit-note-table">
             {selectedOption === "purchase_return" && (
               <>
-=                <tbody>
+                {" "}
+                <tbody>
                   <tr>
                     <td colSpan={8}>
                       <h2>Debit Note</h2>
@@ -58,7 +58,7 @@ const AddDebitNotes = (props) => {
                   <tr>
                     <td colSpan={2} width={"33.33%"}>
                       <div className="year-toggle">
-                        Credit Note No.
+                        Debit Note No.
                         <div>1</div>
                       </div>
                     </td>
@@ -80,7 +80,7 @@ const AddDebitNotes = (props) => {
                         <Select
                           // {...field}
                           className="width-100"
-                          placeholder="Select Company"
+                          placeholder="Select Purchase Challan no."
                           // loading={isLoadingMachineList}
                           // options={machineListRes?.rows?.map((machine) => ({
                           //   label: machine?.machine_name,
@@ -109,7 +109,7 @@ const AddDebitNotes = (props) => {
                 </tbody>
               </>
             )}
-            {selectedOption === "claim_note" && (
+            {selectedOption === "discount_note" && (
               <>
                 <tbody>
                   <tr>
@@ -127,8 +127,33 @@ const AddDebitNotes = (props) => {
                     </td>
                     <td colSpan={2} width={"25%"}>
                       <div className="year-toggle">
-                        <div>Return Date:</div>
-                        <DatePicker className="width-100" />
+                        <div>Company</div>
+                        <Select
+                          // {...field}
+                          className="width-100"
+                          placeholder="Select Company"
+                          // loading={isLoadingMachineList}
+                          // options={machineListRes?.rows?.map((machine) => ({
+                          //   label: machine?.machine_name,
+                          //   value: machine?.machine_name,
+                          // }))}
+                          options={[
+                            {
+                              label: "Company 1",
+                              value: "Company_1",
+                            },
+                          ]}
+                          style={{
+                            textTransform: "capitalize",
+                          }}
+                          dropdownStyle={{
+                            textTransform: "capitalize",
+                          }}
+                          onChange={(value) => {
+                            // field.onChange(value);
+                            // resetField("quality_id");
+                          }}
+                        />
                       </div>
                     </td>
                     <td colSpan={2} width={"25%"}>
@@ -203,10 +228,10 @@ const AddDebitNotes = (props) => {
                       <div>Email:</div>
                     </td>
                     <td colSpan={4}>
-                      <div>Party:</div>
+                      <div>Supplier:</div>
                       <div>GSTIN/UIN:</div>
-                      <div>Order No:</div>
-                      <div>Quality Name:</div>
+                      <div>PAN/IT No :</div>
+                      <div>State Name:</div>
                     </td>
                   </tr>
                   <tr>
@@ -293,6 +318,433 @@ const AddDebitNotes = (props) => {
                   </tr>
                 </tbody>
               </>
+            )}
+            {selectedOption === "claim_note" && (
+              <>
+                <tbody>
+                  <tr>
+                    <td colSpan={8} className="text-center">
+                      <h2>Claim Note</h2>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={3} width={"33.33%"}>
+                      <div className="year-toggle">
+                        Credit Note No.
+                        <div>1</div>
+                      </div>
+                    </td>
+                    <td colSpan={3} width={"33.33%"}>
+                      <div className="year-toggle">
+                        <div>Date:</div>
+                        <DatePicker className="width-100" />
+                      </div>
+                    </td>
+                    <td colSpan={3} width={"33.33%"}>
+                      <div className="year-toggle">
+                        <label>
+                          <input type="radio" name="year" defaultChecked />{" "}
+                          Previous Year
+                        </label>
+                        <label>
+                          <input type="radio" name="year" /> Current Year
+                        </label>
+                        <Select
+                          // {...field}
+                          className="width-100"
+                          placeholder="Select Purchase Challan no."
+                          // loading={isLoadingMachineList}
+                          // options={machineListRes?.rows?.map((machine) => ({
+                          //   label: machine?.machine_name,
+                          //   value: machine?.machine_name,
+                          // }))}
+                          options={[
+                            {
+                              label: "Company 1",
+                              value: "Company_1",
+                            },
+                          ]}
+                          style={{
+                            textTransform: "capitalize",
+                          }}
+                          dropdownStyle={{
+                            textTransform: "capitalize",
+                          }}
+                          onChange={(value) => {
+                            // field.onChange(value);
+                            // resetField("quality_id");
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                  <tr width="50%">
+                    <td colSpan={4}>
+                      <div>GSTIN/UIN:</div>
+                      <div>State Name:</div>
+                      <div>PinCode:</div>
+                      <div>Contact:</div>
+                      <div>Email:</div>
+                    </td>
+                    <td colSpan={4}>
+                      <div>Party:</div>
+                      <div>GSTIN/UIN:</div>
+                      <div>PAN/IT No :</div>
+                      <div>State Name:</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>SL No.</td>
+                    <td colSpan={3}>Particulars</td>
+                    <td>Quantity</td>
+                    <td>Rate</td>
+                    <td>Per</td>
+                    <td>Amount</td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td colSpan={3}></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td colSpan={3}>Claim On Purchase</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                      <Input />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td colSpan={3}>
+                      <div>SGST @ 0 %</div>
+                      <div>CGST @ 0 %</div>
+                      <div>CGST @ 0%</div>
+                      <div>Round Off</div>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                      <div>0</div>
+                      <div>0</div>
+                      <div>0</div>
+                      <div>0</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td colSpan={3}>Total</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>00.00</td>
+                  </tr>
+                  <tr>
+                    <td colSpan={8}>
+                      <Flex
+                        justify="space-between"
+                        style={{ width: "100%" }}
+                        className="mt-3"
+                      >
+                        <div>
+                          <div>Amount Chargable(in words)</div>
+                          <div>Xero Only</div>
+                          <div>Remarks:</div>
+                        </div>
+                        <div>E & O.E</div>
+                      </Flex>
+                      <Flex
+                        justify="space-between"
+                        style={{ width: "100%" }}
+                        className="mt-3"
+                      >
+                        <div></div>
+                        <div>
+                          <div>For,</div>
+                          <div>
+                            .................................................
+                          </div>
+                          <div>Authorized Signatory</div>
+                        </div>
+                      </Flex>
+                    </td>
+                  </tr>
+                </tbody>
+              </>
+            )}
+            {selectedOption === "other" && (
+              <tbody>
+                <tr>
+                  <td colSpan={8} className="text-center">
+                    <h2>Debit Note</h2>
+                    <h5>
+                      Debit Note No:
+                      <Input style={{ width: "100px", marginLeft: "10px" }} />
+                    </h5>
+                  </td>
+                </tr>
+                <tr>
+                  <td colSpan={2} width={"20%"}>
+                    <div className="year-toggle">
+                      <div>Date:</div>
+                      <DatePicker className="width-100" />
+                    </div>
+                  </td>
+                  <td colSpan={2} width={"25%"}>
+                    <div className="year-toggle">
+                      <div className="year-toggle">
+                        <div>Company</div>
+                        <Select
+                          // {...field}
+                          className="width-100"
+                          placeholder="Select Company"
+                          // loading={isLoadingMachineList}
+                          // options={machineListRes?.rows?.map((machine) => ({
+                          //   label: machine?.machine_name,
+                          //   value: machine?.machine_name,
+                          // }))}
+                          options={[
+                            {
+                              label: "Company 1",
+                              value: "Company_1",
+                            },
+                          ]}
+                          style={{
+                            textTransform: "capitalize",
+                          }}
+                          dropdownStyle={{
+                            textTransform: "capitalize",
+                          }}
+                          onChange={(value) => {
+                            // field.onChange(value);
+                            // resetField("quality_id");
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td colSpan={2} width={"25%"}>
+                    <div className="year-toggle">
+                      <div>Party Company</div>
+                      <Select
+                        // {...field}
+                        className="width-100"
+                        placeholder="Select Party Company"
+                        // loading={isLoadingMachineList}
+                        // options={machineListRes?.rows?.map((machine) => ({
+                        //   label: machine?.machine_name,
+                        //   value: machine?.machine_name,
+                        // }))}
+                        options={[
+                          {
+                            label: "Company 1",
+                            value: "Company_1",
+                          },
+                        ]}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                        onChange={(value) => {
+                          // field.onChange(value);
+                          // resetField("quality_id");
+                        }}
+                      />
+                    </div>
+                  </td>
+                  <td colSpan={2} width={"30%"}>
+                    <div className="year-toggle">
+                      <label>
+                        <input type="radio" name="year" defaultChecked />{" "}
+                        Previous Year
+                      </label>
+                      <label>
+                        <input type="radio" name="year" /> Current Year
+                      </label>
+                      <Select
+                        // {...field}
+                        className="width-100"
+                        placeholder="Select Purchase Challan no."
+                        // loading={isLoadingMachineList}
+                        // options={machineListRes?.rows?.map((machine) => ({
+                        //   label: machine?.machine_name,
+                        //   value: machine?.machine_name,
+                        // }))}
+                        options={[
+                          {
+                            label: "Company 1",
+                            value: "Company_1",
+                          },
+                        ]}
+                        style={{
+                          textTransform: "capitalize",
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                        onChange={(value) => {
+                          // field.onChange(value);
+                          // resetField("quality_id");
+                        }}
+                      />
+                    </div>
+                  </td>
+                </tr>
+                <tr width="50%">
+                  <td colSpan={4}>
+                    <div>GSTIN/UIN:</div>
+                    <div>State Name:</div>
+                    <div>PinCode:</div>
+                    <div>Contact:</div>
+                    <div>Email:</div>
+                  </td>
+                  <td colSpan={4}>
+                    <div>Party:</div>
+                    <div>GSTIN/UIN:</div>
+                    <div>State Name :</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>SL No.</td>
+                  <td colSpan={3}>Particulars</td>
+                  <td>HSN Code</td>
+                  <td>Rate</td>
+                  <td>Per</td>
+                  <td>Amount</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={3}></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={3}>
+                    <Input placeholder="Debit note" />
+                  </td>
+                  <td>
+                    {" "}
+                    <Input placeholder="234512" />{" "}
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    <Input placeholder="300" />
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={3}>
+                    <div>
+                      SGST @ <Input placeholder="3" style={{width:"100px"}}/>%
+                    </div>
+                    <div>
+                      CGST @ <Input placeholder="3" style={{width:"100px"}}/>%
+                    </div>
+                    <div>
+                      CGST @ <Input placeholder="3" style={{width:"100px"}}/>%
+                    </div>
+                    <div>Round Off</div>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    <div>0</div>
+                    <div>0</div>
+                    <div>0</div>
+                    <div>0</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={3}>
+                  <div>
+                  <Select
+                        // {...field}
+                        className="width-100"
+                        placeholder="Select"
+                        // loading={isLoadingMachineList}
+                        // options={machineListRes?.rows?.map((machine) => ({
+                        //   label: machine?.machine_name,
+                        //   value: machine?.machine_name,
+                        // }))}
+                        options={[
+                          {
+                            label: "TDS",
+                            value: "tds",
+                          },
+                        ]}
+                        style={{
+                          textTransform: "capitalize",
+                          width:"140px"
+                        }}
+                        dropdownStyle={{
+                          textTransform: "capitalize",
+                        }}
+                        onChange={(value) => {
+                          // field.onChange(value);
+                          // resetField("quality_id");
+                        }}
+                      />
+                      <Input placeholder="3" style={{width:"50px"}}/>%
+                    </div>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>00.00</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={3}>Total</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>00.00</td>
+                </tr>
+                <tr>
+                  <td colSpan={8}>
+                    <Flex
+                      justify="space-between"
+                      style={{ width: "100%" }}
+                      className="mt-3"
+                    >
+                      <div>
+                        <div>Amount Chargable(in words)</div>
+                        <div>Xero Only</div>
+                        <div>Remarks:</div>
+                      </div>
+                      <div>E & O.E</div>
+                    </Flex>
+                    <Flex
+                      justify="space-between"
+                      style={{ width: "100%" }}
+                      className="mt-3"
+                    >
+                      <div></div>
+                      <div>
+                        <div>For,</div>
+                        <div>
+                          .................................................
+                        </div>
+                        <div>Authorized Signatory</div>
+                      </div>
+                    </Flex>
+                  </td>
+                </tr>
+              </tbody>
             )}
           </table>
 
