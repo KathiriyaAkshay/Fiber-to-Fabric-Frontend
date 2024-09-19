@@ -131,7 +131,6 @@ const ViewSaleChallan = ({ details, companyId }) => {
     await AddSaleChallanReturn(payload);
   };
 
-
   return (
     <>
       <Button
@@ -161,7 +160,11 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 gap: "1rem",
               }}
             >
-              <Button type="primary" onClick={submitHandler} loading = {isPending}>
+              <Button
+                type="primary"
+                onClick={submitHandler}
+                loading={isPending}
+              >
                 Sales Return
               </Button>
               <Button
@@ -201,7 +204,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
             paddingBottom: 10,
             paddingRight: 10,
             backgroundColor: "#efefef",
-            paddingTop: 2
+            paddingTop: 2,
           },
         }}
         width={"70vw"}
@@ -213,29 +216,56 @@ const ViewSaleChallan = ({ details, companyId }) => {
           <table>
             <thead>
               <tr className="p-2">
-                <th className="text-center" colspan="4" style={{ borderBottom: "1px solid" }}>
-                  <h1 className="text-2xl font-bold">{company?.company_name}</h1>
+                <th
+                  className="text-center"
+                  colSpan="4"
+                  style={{ borderBottom: "1px solid" }}
+                >
+                  <h1 className="text-2xl font-bold">
+                    {company?.company_name}
+                  </h1>
                 </th>
               </tr>
             </thead>
             <tbody className="text-center">
-              <tr style={{ borderBottom: "1px solid" }} >
-                <td colspan="4" class="pt-2 pb-2 text-center sale-challan-font" style={{ borderBottom: "1px solid" }}>
-                  {company?.address_line_1} {company?.address_line_2} , {company?.city}
+              <tr style={{ borderBottom: "1px solid" }}>
+                <td
+                  colSpan="4"
+                  className="pt-2 pb-2 text-center sale-challan-font"
+                  style={{ borderBottom: "1px solid" }}
+                >
+                  {company?.address_line_1} {company?.address_line_2} ,{" "}
+                  {company?.city}
                 </td>
               </tr>
 
               <tr className="pt-2 pb-2">
-                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                <td
+                  colSpan="1"
+                  className="sale-challan-font"
+                  style={{ borderBottom: "1px solid" }}
+                >
                   PHONE NO: {company?.company_contact}
                 </td>
-                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                <td
+                  colSpan="1"
+                  className="sale-challan-font"
+                  style={{ borderBottom: "1px solid" }}
+                >
                   PAYMENT: -
                 </td>
-                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                <td
+                  colSpan="1"
+                  className="sale-challan-font"
+                  style={{ borderBottom: "1px solid" }}
+                >
                   GST NO: {company?.gst_no}
                 </td>
-                <td colspan="1" class="sale-challan-font" style={{ borderBottom: "1px solid" }}>
+                <td
+                  colSpan="1"
+                  className="sale-challan-font"
+                  style={{ borderBottom: "1px solid" }}
+                >
                   PAN NO: {company?.pancard_no}
                 </td>
               </tr>
@@ -277,8 +307,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
               <Row style={{ padding: "6px 0px" }}>
                 <Col span={24}>
                   <Text className="font-bold">E-Way bill no:</Text>
-                  <Text className="block">
-                  </Text>
+                  <Text className="block"></Text>
                 </Col>
               </Row>
             </Col>
@@ -316,8 +345,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
                     {details?.broker?.first_name} {details?.broker?.last_name}
                   </Text>
                 </Col>
-                <Col span={24}>
-                </Col>
+                <Col span={24}></Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
                 <Col span={8}>
@@ -391,13 +419,13 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {details?.sale_challan_details[index]?.is_returned ===
                     false && (
-                      <Checkbox
-                        checked={selectedSaleChallan.includes(
-                          details?.sale_challan_details[index]?.id
-                        )}
-                        onChange={(e) => handleSelectSaleChallan(e, index)}
-                      />
-                    )}
+                    <Checkbox
+                      checked={selectedSaleChallan.includes(
+                        details?.sale_challan_details[index]?.id
+                      )}
+                      onChange={(e) => handleSelectSaleChallan(e, index)}
+                    />
+                  )}
                 </Col>
                 <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 1}
@@ -411,13 +439,13 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {details?.sale_challan_details[index + 12]?.is_returned ===
                     false && (
-                      <Checkbox
-                        checked={selectedSaleChallan.includes(
-                          details?.sale_challan_details[index + 12]?.id
-                        )}
-                        onChange={(e) => handleSelectSaleChallan(e, index + 12)}
-                      />
-                    )}
+                    <Checkbox
+                      checked={selectedSaleChallan.includes(
+                        details?.sale_challan_details[index + 12]?.id
+                      )}
+                      onChange={(e) => handleSelectSaleChallan(e, index + 12)}
+                    />
+                  )}
                 </Col>
                 <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 13}
@@ -466,7 +494,11 @@ const ViewSaleChallan = ({ details, companyId }) => {
               <strong>Return Date:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              <DatePicker value={returnDate} disabledDate={disabledFutureDate} onChange={setReturnDate} />
+              <DatePicker
+                value={returnDate}
+                disabledDate={disabledFutureDate}
+                onChange={setReturnDate}
+              />
             </Col>
           </Row>
 
@@ -485,7 +517,6 @@ const ViewSaleChallan = ({ details, companyId }) => {
             </Col>
           </Row>
         </Flex>
-
       </Modal>
     </>
   );

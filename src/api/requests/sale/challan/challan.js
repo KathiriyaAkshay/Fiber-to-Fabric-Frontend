@@ -30,8 +30,8 @@ export function saleYarnChallanListRequest({ params }) {
     });
 }
 
-export function returnYarnSaleChallanRequest({ data, params}){
-    return api.post(`/sale/challan/yarn-sale/return/create`, data,  {
+export function returnYarnSaleChallanRequest({ data, params }) {
+    return api.post(`/sale/challan/yarn-sale/return/create`, data, {
         params
     })
 }
@@ -112,8 +112,8 @@ export function createSaleChallanRequest({ data, params }) {
     });
 }
 
-export function getSaleLastChallanNumberRequest({params}){
-    return api.get(`sale/challan/last-invoice-no`, {params}) ;
+export function getSaleLastChallanNumberRequest({ params }) {
+    return api.get(`sale/challan/last-invoice-no`, { params });
 }
 
 export function updateSaleChallanRequest({ id, data, params }) {

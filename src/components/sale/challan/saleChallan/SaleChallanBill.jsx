@@ -65,13 +65,12 @@ const addSaleBillSchema = yup.object().shape({
   rate: yup.string().required("Please enter rate"),
   amount: yup.string().required("Please enter amount"),
 
-  e_way_bill_no: yup.string().required("Please, Enter bill number")
+  e_way_bill_no: yup.string().required("Please, Enter bill number"),
 });
 
 const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   console.log("Details information =============================");
   console.log(details);
-
 
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -235,10 +234,10 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     const finalNetAmount = parseFloat(
       // +currentValues.discount_amount +
       +currentValues.total_amount +
-      +currentValues.SGST_amount +
-      +currentValues.CGST_amount +
-      +currentValues.IGST_amount +
-      +currentValues.TCS_amount
+        +currentValues.SGST_amount +
+        +currentValues.CGST_amount +
+        +currentValues.IGST_amount +
+        +currentValues.TCS_amount
     ).toFixed(2);
     const roundedNetAmount = Math.round(finalNetAmount);
     const roundOffValue = (roundedNetAmount - finalNetAmount).toFixed(2);
@@ -302,7 +301,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const [averageAmount, setAverageAmount] = useState(0);
 
   useEffect(() => {
-    let total_taka = details?.sale_challan_details?.length ; 
+    let total_taka = details?.sale_challan_details?.length;
     let tempAverage = Number(currentValues?.net_amount) / total_taka;
     setAverageAmount(tempAverage.toFixed(2));
   }, [currentValues?.net_amount]);
@@ -338,10 +337,10 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
             padding: "16px 32px",
           },
           footer: {
-            paddingRight: "10px", 
-            paddingBottom :"20px", 
-            backgroundColor: "#efefef"
-          }
+            paddingRight: "10px",
+            paddingBottom: "20px",
+            backgroundColor: "#efefef",
+          },
         }}
         footer={() => {
           return (
@@ -403,11 +402,13 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="flex items-center justify-center border"
               >
                 <Typography.Text className="font-semibold text-center">
-                  {`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
-                    ? ""
-                    : companyInfo?.address_line_2
-                    }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
-                    }, ${companyInfo?.country}`}
+                  {`${companyInfo?.address_line_1} ${
+                    companyInfo?.address_line_2 == null
+                      ? ""
+                      : companyInfo?.address_line_2
+                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
+                    companyInfo?.pincode
+                  }, ${companyInfo?.country}`}
                   <br />
                   MOBILE NO: {companyInfo?.company_contact}, PAYMENT:{" "}
                   {companyInfo?.account_number}
@@ -647,7 +648,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.discount_value ? "error" : ""}
                   help={errors.discount_value && errors.discount_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -731,7 +732,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -785,7 +786,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.CGST_value ? "error" : ""}
                   help={errors.CGST_value && errors.CGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -838,7 +839,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -891,7 +892,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   validateStatus={errors.TCS_value ? "error" : ""}
                   help={errors.TCS_value && errors.TCS_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -983,7 +984,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{fontWeight: 600}}
+                style={{ fontWeight: 600 }}
               >
                 NET AMOUNT
               </Col>
