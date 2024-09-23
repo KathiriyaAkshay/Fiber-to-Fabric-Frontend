@@ -1,7 +1,7 @@
 import { TruckOutlined } from "@ant-design/icons";
 import { Modal, Radio } from "antd";
-import React, { useState } from "react";
-import { Button, Checkbox, Form, Input } from "antd";
+import { useState } from "react";
+import { Button, Form, Input } from "antd";
 
 const onFinish = (values) => {
   console.log("Success:", values);
@@ -41,9 +41,9 @@ const Invoice = () => {
           wrapperCol={{
             span: 24,
           }}
-        //   style={{
-        //     maxWidth: 600,
-        //   }}
+          //   style={{
+          //     maxWidth: 600,
+          //   }}
           initialValues={{
             remember: true,
           }}
@@ -56,10 +56,10 @@ const Invoice = () => {
             // {...field}
             className="mt-2"
             name="production_filter"
-            onChange={(e) => {
-              // field.onChange(e);
-              // changeProductionFilter(e.target.value);
-            }}
+            // onChange={(e) => {
+            // field.onChange(e);
+            // changeProductionFilter(e.target.value);
+            // }}
           >
             <Radio value={"e_way"}>E-Way Bill</Radio>
             <Radio value={"e_invoice"}>E-Invoice Bill</Radio>

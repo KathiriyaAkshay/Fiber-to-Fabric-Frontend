@@ -20,6 +20,8 @@ import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getCreditNotesListRequest } from "../../../api/requests/accounts/notes";
+import { getPartyListRequest } from "../../../api/requests/users";
+import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -41,6 +43,45 @@ const CreditNotes = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  // Partylist dropdown
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getPartyListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  // InHouse Quality dropdown
+  const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
+    useQuery({
+      queryKey: [
+        "dropDownQualityListRes",
+        "list",
+        {
+          company_id: companyId,
+          page: 0,
+          pageSize: 9999,
+          is_active: 1,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            page: 0,
+            pageSize: 9999,
+            is_active: 1,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
+    });
 
   const { data: creditNotesList, isLoading: isLoadingCreditNoteList } =
     useQuery({
@@ -71,22 +112,25 @@ const CreditNotes = () => {
       title: "No",
       dataIndex: "no",
       key: "no",
+      render: (_, record, index) => index + 1,
     },
     {
       title: "Return Date",
-      dataIndex: "returnDate",
-      key: "returnDate",
+      dataIndex: "createdAt",
+      key: "createdAt",
     },
     {
       title: "Credit No",
-      dataIndex: "creditNo",
-      key: "creditNo",
+      dataIndex: "credit_note_number",
+      key: "credit_note_number",
     },
-
     {
       title: "Quality/Denier",
-      dataIndex: "quality_denier",
-      key: "quality_denier",
+      dataIndex: "inhouse_quality",
+      key: "inhouse_quality",
+      render: (text) => {
+        return `${text.quality_name} (${text.quality_weight}KG)`;
+      },
     },
     {
       title: "Firm Name",
@@ -95,13 +139,13 @@ const CreditNotes = () => {
     },
     {
       title: "Party Name",
-      dataIndex: "party_name",
-      key: "party_name",
+      dataIndex: ["party", "checker_name"],
+      key: ["party", "checker_name"],
     },
     {
       title: "Meter",
-      dataIndex: "meter",
-      key: "meter",
+      dataIndex: "total_meter",
+      key: "total_meter",
     },
     {
       title: "Amount",
@@ -115,8 +159,8 @@ const CreditNotes = () => {
     },
     {
       title: "Type",
-      dataIndex: "type",
-      key: "type",
+      dataIndex: "credit_note_type",
+      key: "credit_note_type",
     },
     {
       title: "Invoice Date",
@@ -265,6 +309,16 @@ const CreditNotes = () => {
               className="min-w-40"
               value={party}
               onChange={setParty}
+              loading={isLoadingPartyList}
+              options={partyUserListRes?.partyList?.rows?.map((party) => ({
+                label:
+                  party.first_name +
+                  " " +
+                  party.last_name +
+                  " " +
+                  `| ( ${party?.username})`,
+                value: party.id,
+              }))}
             />
           </Flex>
           <Flex align="center" gap={10}>
@@ -283,6 +337,14 @@ const CreditNotes = () => {
               className="min-w-40"
               value={quality}
               onChange={setQuality}
+              loading={dropDownQualityLoading}
+              options={
+                dropDownQualityListRes &&
+                dropDownQualityListRes?.rows?.map((item) => ({
+                  value: item.id,
+                  label: item.quality_name,
+                }))
+              }
             />
           </Flex>
 
@@ -327,6 +389,7 @@ const CreditNotes = () => {
         <AddCreditNotes
           isAddModalOpen={isAddModalOpen}
           setIsAddModalOpen={setIsAddModalOpen}
+          creditNoteTypes={creditNoteTypes}
         />
       )}
     </>
