@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -86,7 +86,6 @@ const addYarnReceiveSchema = yup.object().shape({
 });
 
 const YarnReceiveChallanModal = ({ details = [] }) => {
-
   const {
     id: yarn_challan_id = 0,
     yarn_stock_company = {},
@@ -94,15 +93,15 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     yarn_stock_company_id = 0,
   } = details;
 
-  const {
-    yarn_company_name = "",
-  } = yarn_stock_company;
+  const { yarn_company_name = "" } = yarn_stock_company;
 
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [supplierName, setSupplierName] = useState();
-  const { data: companyListRes, isLoading: isLoadingCompanyList } = useCompanyList();
+
+  const { data: companyListRes, isLoading: isLoadingCompanyList } =
+    useCompanyList();
 
   const { data: yarnOrderListRes, isLoading: isLoadingYarnOrderList } =
     useQuery({
@@ -124,7 +123,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       "dropdown/supplier/list",
       {
         company_id: companyId,
-        supplier_name: supplierName,
+        // supplier_name: supplierName,
         // supplier_type: "yarn",
       },
     ],
@@ -137,9 +136,8 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       });
       return res.data?.data?.supplierList;
     },
-    enabled: Boolean(companyId && supplierName),
+    enabled: Boolean(companyId),
   });
-
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -151,10 +149,10 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
   // Create challan bill handler start ======================================================
 
-  const [loading, setLoading] = useState(false) ; 
+  const [loading, setLoading] = useState(false);
   const { mutateAsync: createYarnReceive } = useMutation({
     mutationFn: async (data) => {
-      setLoading(true) ; 
+      setLoading(true);
       const res = await createYarnReceiveBillRequest({
         data,
         params: { company_id: companyId },
@@ -163,7 +161,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     },
     mutationKey: ["yarn-stock/yarn-receive-challan/create"],
     onSuccess: (res) => {
-      setLoading(false) ; 
+      setLoading(false);
       queryClient.invalidateQueries([
         "yarn-stock/yarn-receive-challan/list",
         { company_id: companyId },
@@ -175,7 +173,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       handleCancel();
     },
     onError: (error) => {
-      setLoading(false) ; 
+      setLoading(false);
       mutationOnErrorHandler({ error, message });
     },
   });
@@ -189,7 +187,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     reset,
     watch,
     setValue,
-    getValues
+    getValues,
   } = useForm({
     resolver: yupResolver(addYarnReceiveSchema),
     defaultValues: {
@@ -200,10 +198,10 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       yarn_challan_id: yarn_challan_id,
       yarn_stock_company_id: yarn_stock_company_id,
       CGST_value: 6,
-      IGST_value: 6, 
-      SGST_value: 6, 
-      TCS_value: 6, 
-      round_off_amount: 0
+      IGST_value: 6,
+      SGST_value: 6,
+      TCS_value: 6,
+      round_off_amount: 0,
     },
   });
 
@@ -211,58 +209,59 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     delete data.yarn_company_name;
     delete data.company_id;
 
-    // Total quantity 
+    // Total quantity
     let totalQuantity = 0;
-    let multiple_challans = [] ; 
+    let multiple_challans = [];
     if (details) {
-      details?.length > 0 && details?.map((element, index) => {
-        totalQuantity = totalQuantity + Number(element?.receive_quantity);
-        multiple_challans.push({
-          "yarn_challan_id": element?.id, 
-          "quantity_rate": data?.quantity_rate, 
-          "quantity_amount": data[`quantity_amount_${index}`]
-        })
-      })
+      details?.length > 0 &&
+        details?.map((element, index) => {
+          totalQuantity = totalQuantity + Number(element?.receive_quantity);
+          multiple_challans.push({
+            yarn_challan_id: element?.id,
+            quantity_rate: data?.quantity_rate,
+            quantity_amount: data[`quantity_amount_${index}`],
+          });
+        });
     }
 
     let requestData = {
-      "order_id": data?.order_id,
-      "receive_quantity": totalQuantity,
-      "supplier_company_id": data?.supplier_company_id,
-      "invoice_no": data?.invoice_no,
-      "yarn_stock_company_id": data?.yarn_stock_company_id,
-      "bill_date": dayjs(data?.bill_date).format("YYYY-MM-DD"),
-      "due_date": dayjs(data?.due_date).format("YYYY-MM-DD"),
-      "freight_value": data?.freight_value,
-      "freight_amount": data?.freight_amount,
-      "is_discount": data?.is_discount,
-      "discount_brokerage_value": data?.discount_brokerage_value,
-      "discount_brokerage_amount": data?.discount_brokerage_amount,
-      "SGST_value": data?.SGST_value,
-      "SGST_amount": data?.SGST_amount,
-      "CGST_value": data?.CGST_value,
-      "CGST_amount": data?.CGST_amount,
-      "TCS_value": data?.TCS_value,
-      "TCS_amount": data?.TCS_amount,
-      "IGST_value": data?.IGST_value,
-      "IGST_amount": data?.IGST_amount,
-      "round_off_amount": data?.round_off_amount,
-      "net_amount": data?.net_amount,
-      "TDS_amount": data?.TDS_amount,
-      "after_TDS_amount": data?.after_TDS_amount,
-      "multiple_challans": multiple_challans
-    }
+      order_id: data?.order_id,
+      receive_quantity: totalQuantity,
+      supplier_company_id: data?.supplier_company_id,
+      invoice_no: data?.invoice_no,
+      yarn_stock_company_id: data?.yarn_stock_company_id,
+      bill_date: dayjs(data?.bill_date).format("YYYY-MM-DD"),
+      due_date: dayjs(data?.due_date).format("YYYY-MM-DD"),
+      freight_value: data?.freight_value,
+      freight_amount: data?.freight_amount,
+      is_discount: data?.is_discount,
+      discount_brokerage_value: data?.discount_brokerage_value,
+      discount_brokerage_amount: data?.discount_brokerage_amount,
+      SGST_value: data?.SGST_value,
+      SGST_amount: data?.SGST_amount,
+      CGST_value: data?.CGST_value,
+      CGST_amount: data?.CGST_amount,
+      TCS_value: data?.TCS_value,
+      TCS_amount: data?.TCS_amount,
+      IGST_value: data?.IGST_value,
+      IGST_amount: data?.IGST_amount,
+      round_off_amount: data?.round_off_amount,
+      net_amount: data?.net_amount,
+      TDS_amount: data?.TDS_amount,
+      after_TDS_amount: data?.after_TDS_amount,
+      multiple_challans: multiple_challans,
+    };
     await createYarnReceive(requestData);
   }
 
   // Bill SGST, IGST calculation start ===============================================================
 
   const {
-    order_id = 0,
+    order_id,
     discount_brokerage_amount = 0,
     quantity_amount = 0,
     freight_amount = 0,
-    freight_value, 
+    freight_value,
     discount_brokerage_value = 0,
     is_discount = false,
     CGST_amount = 0,
@@ -275,8 +274,8 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
     TCS_amount = 0,
     net_amount = 0,
     after_TDS_amount = 0,
-    quantity_rate, 
-    round_off_amount = 0 
+    quantity_rate,
+    round_off_amount = 0,
   } = watch();
 
   // Set amount information product quantity wise =======================================================
@@ -284,65 +283,98 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
   useEffect(() => {
     yarnOrderListRes?.rows?.forEach((yOrder) => {
       if (yOrder?.id === order_id) {
-        const { rate = 0, freight = 0, user = {} } = yOrder;
+        const { rate = 0, freight = 0 /*user = {}*/ } = yOrder;
         setValue("quantity_rate", parseFloat(rate).toFixed(2));
         setValue("freight_value", parseFloat(freight).toFixed(2));
 
         let freight_amount = 0;
 
         details?.map((element, index) => {
-          const quantity_amount = Number(rate) * Number(element?.receive_quantity);
+          const quantity_amount =
+            Number(rate) * Number(element?.receive_quantity);
           setValue(`quantity_amount_${index}`, quantity_amount);
-          freight_amount = Number(freight_amount) + (Number(freight_value) * Number(element?.receive_quantity));
-        })
+          freight_amount =
+            Number(freight_amount) +
+            Number(freight_value) * Number(element?.receive_quantity);
+        });
         setValue("freight_amount", parseFloat(freight_amount).toFixed(2));
 
-        const { supplier = {} } = user;
-        const { supplier_name = "" } = supplier;
-        setSupplierName(supplier_name);
+        // const { supplier = {} } = user;
+        // const { supplier_name = "" } = supplier;
+        setSupplierName(yOrder?.supplier_name);
       }
     });
-  }, [order_id, setValue, yarnOrderListRes?.rows]);
+  }, [details, freight_value, order_id, setValue, yarnOrderListRes]);
+
+  const supplierDropDownOptions = useMemo(() => {
+    if (supplierName && dropdownSupplierListRes) {
+      const selectedSupplier = dropdownSupplierListRes.find(
+        ({ supplier_name }) => supplier_name === supplierName
+      );
+
+      if (selectedSupplier && Object.keys(selectedSupplier).length) {
+        return selectedSupplier?.supplier_company?.map((item) => {
+          return { label: item.supplier_company, value: item.supplier_id };
+        });
+      }
+      return [];
+    }
+  }, [dropdownSupplierListRes, supplierName]);
 
   // Set Freight amount information =======================================================
 
-  const [discountValue, setDiscountValue] = useState(0) ; 
+  const [discountValue, setDiscountValue] = useState(0);
   useEffect(() => {
-
-    // Total quantity 
+    // Total quantity
     let totalQuantity = 0;
     if (details) {
-      details?.length > 0 && details?.map((element, index) => {
-        totalQuantity = totalQuantity + Number(element?.receive_quantity);
-        let temp_quantity_amount = 0 ; 
-        temp_quantity_amount = Number(element?.receive_quantity)*Number(quantity_rate) ; 
-        setValue(`quantity_amount_${index}`, temp_quantity_amount) ; 
-      })
+      details?.length > 0 &&
+        details?.map((element, index) => {
+          totalQuantity = totalQuantity + Number(element?.receive_quantity);
+          let temp_quantity_amount = 0;
+          temp_quantity_amount =
+            Number(element?.receive_quantity) * Number(quantity_rate);
+          setValue(`quantity_amount_${index}`, temp_quantity_amount);
+        });
     }
 
-    // Total amount 
+    // Total amount
     let quantity_amount = 0;
-    details?.length > 0 && details?.map((element, index) => {
-      if (getValues(`quantity_amount_${index}`) !== undefined && getValues(`quantity_amount_${index}`) !== "") {
-        quantity_amount = Number(quantity_amount) + Number(getValues(`quantity_amount_${index}`));
-      }
-    })
+    details?.length > 0 &&
+      details?.map((element, index) => {
+        if (
+          getValues(`quantity_amount_${index}`) !== undefined &&
+          getValues(`quantity_amount_${index}`) !== ""
+        ) {
+          quantity_amount =
+            Number(quantity_amount) +
+            Number(getValues(`quantity_amount_${index}`));
+        }
+      });
 
-    // Calculate freight amount 
+    // Calculate freight amount
 
-    let temp_freight_amount = Number(totalQuantity) * Number(freight_value); 
-    setValue("freight_amount", temp_freight_amount) ; 
+    let temp_freight_amount = Number(totalQuantity) * Number(freight_value);
+    setValue("freight_amount", temp_freight_amount);
 
     if (is_discount) {
-      let discountAmount = Number(quantity_amount) * Number(discount_brokerage_value) / 100;
-      setDiscountValue(discountAmount) ; 
-      discountAmount = (Number(quantity_amount) - Number(discountAmount)) + Number(temp_freight_amount) ; 
+      let discountAmount =
+        (Number(quantity_amount) * Number(discount_brokerage_value)) / 100;
+      setDiscountValue(discountAmount);
+      discountAmount =
+        Number(quantity_amount) -
+        Number(discountAmount) +
+        Number(temp_freight_amount);
       setValue("discount_brokerage_amount", discountAmount);
-
     } else {
-      const discount_brokrage_amount = Number(quantity_amount) + Number(temp_freight_amount) -
-        (Number(discount_brokerage_value) * Number(totalQuantity));
-      setValue("discount_brokerage_amount", discount_brokrage_amount.toFixed(2));
+      const discount_brokrage_amount =
+        Number(quantity_amount) +
+        Number(temp_freight_amount) -
+        Number(discount_brokerage_value) * Number(totalQuantity);
+      setValue(
+        "discount_brokerage_amount",
+        discount_brokrage_amount.toFixed(2)
+      );
     }
   }, [
     details,
@@ -380,7 +412,6 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
   // Net amount handler ==================================================================================
 
-
   useEffect(() => {
     let net_amount =
       Number(discount_brokerage_amount) +
@@ -388,9 +419,9 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       Number(CGST_amount) +
       Number(IGST_amount) +
       Number(TCS_amount);
-    let roundOffAmount = Math.round(net_amount) - Number(net_amount) ; 
-    setValue("round_off_amount", roundOffAmount.toFixed(2)) ; 
-      
+    let roundOffAmount = Math.round(net_amount) - Number(net_amount);
+    setValue("round_off_amount", roundOffAmount.toFixed(2));
+
     setValue("net_amount", Math.round(net_amount).toFixed(2));
   }, [
     CGST_amount,
@@ -402,7 +433,6 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
   ]);
 
   // Bill SGST, IGST calculation end ========================================================================
-
 
   return (
     <>
@@ -506,14 +536,15 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                         {...field}
                         placeholder="Select supplier Company"
                         loading={isLoadingDropdownSupplierList}
-                        options={dropdownSupplierListRes?.[0]?.supplier_company?.map(
-                          ({ supplier_company = "", supplier_id = "" }) => {
-                            return {
-                              label: supplier_company,
-                              value: supplier_id,
-                            };
-                          }
-                        )}
+                        // options={dropdownSupplierListRes?.[0]?.supplier_company?.map(
+                        //   ({ supplier_company = "", supplier_id = "" }) => {
+                        //     return {
+                        //       label: supplier_company,
+                        //       value: supplier_id,
+                        //     };
+                        //   }
+                        // )}
+                        options={supplierDropDownOptions}
                       />
                     )}
                   />
@@ -528,7 +559,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   help={errors.company_id && errors.company_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -560,7 +591,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.invoice_no ? "error" : ""}
                   help={errors.invoice_no && errors.invoice_no.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -599,7 +630,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   help={errors.bill_date && errors.bill_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -625,7 +656,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   help={errors.due_date && errors.due_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -687,90 +718,55 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
               </Col>
             </Row>
 
-            {details?.length > 0 && details?.map((element, index) => (
-              <Row>
+            {details?.length > 0 &&
+              details?.map((element, index) => (
+                <Row key={index}>
+                  <Col span={4} className="p-2 border-0 border-r border-solid">
+                    {element?.challan_no}
+                  </Col>
 
-                <Col span={4} className="p-2 border-0 border-r border-solid">
-                  {element?.challan_no}
-                </Col>
+                  <Col span={4} className="p-2 border-0 border-r border-solid">
+                    {`${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F (${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.luster_type} - ${element?.yarn_stock_company?.yarn_color})`}
+                  </Col>
 
-                <Col span={4} className="p-2 border-0 border-r border-solid">
-                  {`${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F (${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.luster_type} - ${element?.yarn_stock_company?.yarn_color})`}
-                </Col>
+                  <Col span={2} className="p-2 border-0 border-r border-solid">
+                    {element?.yarn_stock_company?.hsn_no}
+                  </Col>
 
-                <Col span={2} className="p-2 border-0 border-r border-solid">
-                  {element?.yarn_stock_company?.hsn_no}
-                </Col>
+                  <Col span={2} className="p-2 border-0 border-r border-solid">
+                    {element?.receive_quantity}
+                  </Col>
 
-                <Col span={2} className="p-2 border-0 border-r border-solid">
-                  {element?.receive_quantity}
-                </Col>
+                  <Col span={4} className="p-2 border-0 border-r border-solid">
+                    {element?.receive_cartoon_pallet}
+                  </Col>
 
-                <Col span={4} className="p-2 border-0 border-r border-solid">
-                  {element?.receive_cartoon_pallet}
-                </Col>
-
-                <Col span={4} className="p-2 border-0 border-r border-solid">
-                  <Form.Item
-                    name="quantity_rate"
-                    validateStatus={errors.quantity_rate ? "error" : ""}
-                    help={errors.quantity_rate && errors.quantity_rate.message}
-                    required={true}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={4} className="p-2 border-0 border-r border-solid">
+                    <Form.Item
                       name="quantity_rate"
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            const currentQRate = e.target.value;
-                            if (currentQRate) {
-                              // set amount on rate change
-                              const quantity_amount =
-                                Number(currentQRate) * Number(receive_quantity);
-                              setValue(
-                                "quantity_amount",
-                                parseFloat(quantity_amount).toFixed(2)
-                              );
-                            }
-                          }}
-                          placeholder="0"
-                          type="number"
-                          min={0}
-                          step={0.01}
-                        />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={4} className="p-2">
-                  <Form.Item
-                    name={`quantity_amount_${index}`}
-                    validateStatus={
-                      errors[`quantity_amount_${index}`] ? "error" : "success"}
-                    required={true}
-                  >
-                    <Controller
-                      control={control}
-                      name={`quantity_amount_${index}`}
-                      render={({ field }) => (
-                        <>
+                      validateStatus={errors.quantity_rate ? "error" : ""}
+                      help={
+                        errors.quantity_rate && errors.quantity_rate.message
+                      }
+                      required={true}
+                    >
+                      <Controller
+                        control={control}
+                        name="quantity_rate"
+                        render={({ field }) => (
                           <Input
                             {...field}
-                            
                             onChange={(e) => {
                               field.onChange(e);
-                              const currentQAmount = e.target.value;
-                              if (currentQAmount && receive_quantity) {
-                                // set rate on amount change
-                                const quantity_rate =
-                                  Number(currentQAmount) / Number(receive_quantity);
+                              const currentQRate = e.target.value;
+                              if (currentQRate) {
+                                // set amount on rate change
+                                const quantity_amount =
+                                  Number(currentQRate) *
+                                  Number(receive_quantity);
                                 setValue(
-                                  "quantity_rate",
-                                  parseFloat(quantity_rate).toFixed(2)
+                                  "quantity_amount",
+                                  parseFloat(quantity_amount).toFixed(2)
                                 );
                               }
                             }}
@@ -779,19 +775,63 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                             min={0}
                             step={0.01}
                           />
-                          {is_discount && (
-                            <div 
-                              style={{color: "green",textAlign: "center", marginTop: 4}}
-                            >Dis - {discountValue}</div>
-                          )}
-                        </>
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
 
-              </Row>
-            ))}
+                  <Col span={4} className="p-2">
+                    <Form.Item
+                      name={`quantity_amount_${index}`}
+                      validateStatus={
+                        errors[`quantity_amount_${index}`] ? "error" : "success"
+                      }
+                      required={true}
+                    >
+                      <Controller
+                        control={control}
+                        name={`quantity_amount_${index}`}
+                        render={({ field }) => (
+                          <>
+                            <Input
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e);
+                                const currentQAmount = e.target.value;
+                                if (currentQAmount && receive_quantity) {
+                                  // set rate on amount change
+                                  const quantity_rate =
+                                    Number(currentQAmount) /
+                                    Number(receive_quantity);
+                                  setValue(
+                                    "quantity_rate",
+                                    parseFloat(quantity_rate).toFixed(2)
+                                  );
+                                }
+                              }}
+                              placeholder="0"
+                              type="number"
+                              min={0}
+                              step={0.01}
+                            />
+                            {is_discount && (
+                              <div
+                                style={{
+                                  color: "green",
+                                  textAlign: "center",
+                                  marginTop: 4,
+                                }}
+                              >
+                                Dis - {discountValue}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              ))}
 
             <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid" />
@@ -810,7 +850,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.freight_value ? "error" : ""}
                   help={errors.freight_value && errors.freight_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -846,7 +886,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.freight_amount ? "error" : ""}
                   help={errors.freight_amount && errors.freight_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -905,7 +945,6 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                     )}
                   />
                 </Form.Item>
-
               </Col>
 
               <Col span={4} className="p-2 border-0 border-r border-solid">
@@ -963,7 +1002,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.SGST_value ? "error" : ""}
                   help={errors.SGST_value && errors.SGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -998,7 +1037,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.SGST_amount ? "error" : ""}
                   help={errors.SGST_amount && errors.SGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1049,7 +1088,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.CGST_value ? "error" : ""}
                   help={errors.CGST_value && errors.CGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1084,7 +1123,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.CGST_amount ? "error" : ""}
                   help={errors.CGST_amount && errors.CGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1135,7 +1174,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.IGST_value ? "error" : ""}
                   help={errors.IGST_value && errors.IGST_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1170,7 +1209,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.IGST_amount ? "error" : ""}
                   help={errors.IGST_amount && errors.IGST_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1221,7 +1260,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.TCS_value ? "error" : ""}
                   help={errors.TCS_value && errors.TCS_value.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1260,7 +1299,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   validateStatus={errors.TCS_amount ? "error" : ""}
                   help={errors.TCS_amount && errors.TCS_amount.message}
                   required={true}
-                // className="mb-0"
+                  // className="mb-0"
                 >
                   <Controller
                     control={control}
@@ -1343,7 +1382,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
               <Col span={20} className="p-2 font-semibold">
                 {Number(net_amount)
                   ? // ? toWords.convert(Math.ceil(net_amount))
-                  toWords.convert(net_amount)
+                    toWords.convert(net_amount)
                   : ""}
               </Col>
             </Row>
@@ -1359,7 +1398,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                 validateStatus={errors.TDS_amount ? "error" : ""}
                 help={errors.TDS_amount && errors.TDS_amount.message}
                 required={true}
-              // className="mb-0"
+                // className="mb-0"
               >
                 <Controller
                   control={control}
@@ -1400,7 +1439,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
             <Button htmlType="button" onClick={() => reset()}>
               Reset
             </Button>
-            <Button type="primary" htmlType="submit" loading = {loading}>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Receive Bill
             </Button>
           </Flex>
