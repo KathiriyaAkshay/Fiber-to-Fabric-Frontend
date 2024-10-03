@@ -266,8 +266,6 @@ const DebitNotes = () => {
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
             <DatePicker value={toDate} onChange={setToDate} />
           </Flex>
-        </Flex>
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-4  ">
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
@@ -278,17 +276,16 @@ const DebitNotes = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-
-              <Button
-                icon={<FilePdfOutlined />}
-                type="primary"
-                disabled={!debitNotesList?.debitNotes?.rows?.length}
-                // onClick={downloadPdf}
-                className="flex-none"
-              />
             </Flex>
           </Flex>
-        </div>
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!debitNotesList?.debitNotes?.rows?.length}
+            // onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
         {renderTable()}
       </div>
 

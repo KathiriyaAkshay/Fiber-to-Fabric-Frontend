@@ -37,7 +37,6 @@ const PurchaseReturnForm = () => {
     resolver: yupResolver(validationSchema),
   });
   const currentValue = watch();
-  console.log({ currentValue });
 
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [

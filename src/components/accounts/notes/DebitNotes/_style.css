@@ -54,3 +54,14 @@ h2 {
 .width-100 {
   width: 100%;
 }
+
+.remove-input-box {
+  background-color: #f9f9f9 !important;
+  border: none;
+  text-align: center;
+}
+.remove-input-box:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
