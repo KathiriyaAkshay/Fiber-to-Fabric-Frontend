@@ -28,7 +28,10 @@ import {
 } from "../../../../api/requests/users";
 import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
-import { createSaleChallanRequest, getSaleLastChallanNumberRequest } from "../../../../api/requests/sale/challan/challan";
+import {
+  createSaleChallanRequest,
+  getSaleLastChallanNumberRequest,
+} from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
 import { disabledFutureDate } from "../../../../utils/date";
@@ -76,7 +79,7 @@ const AddSaleChallan = () => {
     navigate(-1);
   }
 
-  // Add sale challan request handler 
+  // Add sale challan request handler
   const { mutateAsync: AddSaleChallan, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createSaleChallanRequest({
@@ -154,47 +157,45 @@ const AddSaleChallan = () => {
       }
     });
 
-    if (sale_challan_detail?.length == 0){
-      message.error("Required at least one taka") ; 
-    } else{
+    if (sale_challan_detail?.length == 0) {
+      message.error("Required at least one taka");
+    } else {
+      const newData = {
+        party_id: selectedOrder.party_id,
+        customer_gst_state: data.gst_state_2,
+        is_gray: data.is_gray === "true" ? true : false,
+        challan_type: data.challan_type,
+        challan_no: data.challan_no,
+        createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
+        company_gst_state: data.gst_state,
+        delivery_address: data.delivery_address,
+        gray_order_id: +data.gray_order_id,
+        broker_id: +data.broker_id,
+        quality_id: +data.quality_id,
+        vehicle_id: +data.vehicle_id,
+        supplier_id: +data.supplier_id,
+        delivery_note: data.delivery_note,
 
-        const newData = {
-          party_id: selectedOrder.party_id,
-          customer_gst_state: data.gst_state_2,
-          is_gray: data.is_gray === "true" ? true : false,
-          challan_type: data.challan_type,
-          challan_no: data.challan_no,
-          createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-          company_gst_state: data.gst_state,
-          delivery_address: data.delivery_address,
-          gray_order_id: +data.gray_order_id,
-          broker_id: +data.broker_id,
-          quality_id: +data.quality_id,
-          vehicle_id: +data.vehicle_id,
-          supplier_id: +data.supplier_id,
-          delivery_note: data.delivery_note,
-    
-          pending_meter: +pendingMeter,
-          pending_weight: +pendingWeight,
-          pending_taka: +pendingTaka,
-    
-          total_taka: +totalTaka,
-          total_meter: +totalMeter,
-          total_weight: +totalWeight,
-    
-          sale_challan_types: saleChallanTypes.map((type) => {
-            return {
-              sale_challan_type: type,
-            };
-          }),
-          sale_challan_details: sale_challan_detail,
-        };
-    
-        if (hasError === 0) {
-          await AddSaleChallan(newData);
-        }
+        pending_meter: +pendingMeter,
+        pending_weight: +pendingWeight,
+        pending_taka: +pendingTaka,
+
+        total_taka: +totalTaka,
+        total_meter: +totalMeter,
+        total_weight: +totalWeight,
+
+        sale_challan_types: saleChallanTypes.map((type) => {
+          return {
+            sale_challan_type: type,
+          };
+        }),
+        sale_challan_details: sale_challan_detail,
+      };
+
+      if (hasError === 0) {
+        await AddSaleChallan(newData);
+      }
     }
-
   }
 
   const {
@@ -239,40 +240,47 @@ const AddSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id, type, is_gray, quality_id } = watch();
+  const {
+    supplier_name,
+    gray_order_id,
+    supplier_id,
+    type,
+    is_gray,
+    quality_id,
+  } = watch();
 
-  // Get last challan number for cash order 
-  const {data: lastChallanNumber, isLoading: lastChallanNumberLoading} = useQuery({
-    queryKey: [
-      "sale", 
-      "challan", 
-      "last-invoice-no", 
-      {company_id: companyId, is_grey: is_gray}
-    ], 
-    queryFn: async () => {
-      if (is_gray == "false"){
-        const res = await getSaleLastChallanNumberRequest({
-          params: {company_id :companyId, is_gray: "0"}
-        }); 
+  // Get last challan number for cash order
+  const { data: lastChallanNumber, isLoading: lastChallanNumberLoading } =
+    useQuery({
+      queryKey: [
+        "sale",
+        "challan",
+        "last-invoice-no",
+        { company_id: companyId, is_grey: is_gray },
+      ],
+      queryFn: async () => {
+        if (is_gray == "false") {
+          const res = await getSaleLastChallanNumberRequest({
+            params: { company_id: companyId, is_gray: "0" },
+          });
 
-        let challan_number = res?.data?.data?.saleChallan?.challan_no || "CH-1"; 
-        challan_number = challan_number.split("-") ; 
-        let new_challan_number = 0 ; 
+          let challan_number =
+            res?.data?.data?.saleChallan?.challan_no || "CH-1";
+          challan_number = challan_number.split("-");
+          let new_challan_number = 0;
 
-        if (challan_number?.length == 1){
-          new_challan_number = `CH-${Number(challan_number[0]) + 1}`; 
-        }  else {
-          new_challan_number = `CH-${Number(challan_number[1]) + 1}` ; 
+          if (challan_number?.length == 1) {
+            new_challan_number = `CH-${Number(challan_number[0]) + 1}`;
+          } else {
+            new_challan_number = `CH-${Number(challan_number[1]) + 1}`;
+          }
+          setValue("challan_no", new_challan_number);
         }
-        setValue('challan_no', new_challan_number) ; 
+      },
+      enabled: Boolean(companyId && is_gray),
+    });
 
-      }
-    }, 
-    enabled: Boolean(companyId && is_gray)
-  })
-  
-
-  // Dropdown vechicle list 
+  // Dropdown vechicle list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -288,7 +296,7 @@ const AddSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  // Dropdown quality list 
+  // Dropdown quality list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -313,9 +321,9 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
-  // Dropdown greyorder list 
+  // Dropdown greyorder list
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
@@ -330,7 +338,7 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Dropdown supplier list
   const {
@@ -495,7 +503,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={{
           paddingTop: "12px",
-          marginTop: "-15px"
+          marginTop: "-15px",
         }}
       >
         <Col span={6}>
@@ -543,10 +551,10 @@ const AddSaleChallan = () => {
               control={control}
               name="challan_no"
               render={({ field }) => (
-                <Input 
-                  {...field} 
-                  placeholder="CH123456" 
-                  readOnly = {is_gray == "false"?true:false}  
+                <Input
+                  {...field}
+                  placeholder="CH123456"
+                  readOnly={is_gray == "false" ? true : false}
                 />
               )}
             />
@@ -581,7 +589,7 @@ const AddSaleChallan = () => {
       <Row
         gutter={18}
         style={{
-          marginTop: "-15px"
+          marginTop: "-15px",
         }}
       >
         <Col span={6}>
@@ -646,11 +654,9 @@ const AddSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            marginTop: "-15px"
-          }
-        }
+        style={{
+          marginTop: "-15px",
+        }}
       >
         <Col span={6}>
           <Form.Item
@@ -784,11 +790,9 @@ const AddSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={
-          {
-            marginTop: "-15px"
-          }
-        }
+        style={{
+          marginTop: "-15px",
+        }}
       >
         <Col span={6}>
           <Form.Item
@@ -916,10 +920,13 @@ const AddSaleChallan = () => {
       </Row>
 
       {gray_order_id ? (
-        <Row gutter={18} style={{
-          marginTop: "-15px", 
-          marginBottom: "10px"
-        }}>
+        <Row
+          gutter={18}
+          style={{
+            marginTop: "-15px",
+            marginBottom: "10px",
+          }}
+        >
           <Col span={6}></Col>
 
           <Col span={6} style={{ textAlign: "end" }}>
@@ -927,15 +934,21 @@ const AddSaleChallan = () => {
           </Col>
 
           <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingMeter}</Typography>
+            <Typography style={{ color: "red", fontWeight: 600 }}>
+              {pendingMeter}
+            </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingWeight}</Typography>
+            <Typography style={{ color: "red", fontWeight: 600 }}>
+              {pendingWeight}
+            </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>{pendingTaka}</Typography>
+            <Typography style={{ color: "red", fontWeight: 600 }}>
+              {pendingTaka}
+            </Typography>
           </Col>
         </Row>
       ) : null}
@@ -944,7 +957,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
-          marginTop: "-15px"
+          marginTop: "-15px",
         }}
       >
         <Col span={6}>
@@ -978,7 +991,9 @@ const AddSaleChallan = () => {
             <Controller
               control={control}
               name="gst_in_2"
-              render={({ field }) => <Input {...field} readOnly placeholder="GST In" />}
+              render={({ field }) => (
+                <Input {...field} readOnly placeholder="GST In" />
+              )}
             />
           </Form.Item>
         </Col>
@@ -1009,7 +1024,7 @@ const AddSaleChallan = () => {
         gutter={18}
         style={{
           padding: "12px",
-          marginTop: "-25px"
+          marginTop: "-25px",
         }}
       >
         <Col span={12}>
@@ -1032,10 +1047,12 @@ const AddSaleChallan = () => {
                       { label: "Taka(In House)", value: "taka(inhouse)" },
                       { label: "Purchase/Trading", value: "purchase/trading" },
                       { label: "Job", value: "job" },
-                      { label: "Sale Multiple Production", value: "sale_multiple_production"},
+                      {
+                        label: "Sale Multiple Production",
+                        value: "sale_multiple_production",
+                      },
                     ]}
-                  >
-                  </Checkbox.Group>
+                  ></Checkbox.Group>
                 );
               }}
             />
@@ -1043,10 +1060,9 @@ const AddSaleChallan = () => {
         </Col>
       </Row>
 
-      <Divider style={{marginTop: "-15px"}} />
+      <Divider style={{ marginTop: "-15px" }} />
 
       {quality_id !== undefined && quality_id !== null && (
-
         <SaleChallanFieldTable
           errors={errors}
           control={control}
@@ -1067,7 +1083,6 @@ const AddSaleChallan = () => {
           quality_id={quality_id}
         />
       )}
-
 
       <Row style={{ marginTop: "20px" }} gutter={20}>
         <Col span={6}>

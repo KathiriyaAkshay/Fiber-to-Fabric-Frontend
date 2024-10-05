@@ -1,41 +1,78 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import {
   Button,
   Radio,
-  Form,
   Input,
-  Select,
-  Row,
-  Col,
   DatePicker,
-  Checkbox,
   Flex,
-  message,
   Typography,
   Table,
   Space,
+  Spin,
 } from "antd";
-const { RangePicker } = DatePicker;
-
-import { Controller, useForm } from "react-hook-form";
-
-import {
-  ArrowLeftOutlined,
-  EyeOutlined,
-  FileExcelOutlined,
-  FilePdfOutlined,
-  PlusCircleOutlined,
-  SearchOutlined,
-  TruckOutlined,
-} from "@ant-design/icons";
-import AddCreditNotes from "../../../components/accounts/notes/CreditNotes/AddCreditNotes";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
 import ActionView from "../../../components/accounts/notes/CreditNotes/ActionView";
 import ActionFile from "../../../components/accounts/notes/CreditNotes/ActionFile";
 import AddDebitNotes from "../../../components/accounts/notes/DebitNotes/AddDebitNotes";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { useQuery } from "@tanstack/react-query";
+import { usePagination } from "../../../hooks/usePagination";
+import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
+import dayjs from "dayjs";
 
-const   DebitNotes = () => {
+const DEBIT_NOTE_TYPES = [
+  { label: "Purchase Return", value: "purchase_return" },
+  { label: "Discount Note", value: "discount_note" },
+  { label: "Claim Note", value: "claim_note" },
+  { label: "Other", value: "other" },
+  { label: "All", value: "all" },
+];
+
+const DebitNotes = () => {
+  const { companyId } = useContext(GlobalContext);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const [debitNoteType, setDebitNoteType] = useState("purchase_return");
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const [search, setSearch] = useState("");
+
+  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const { data: debitNotesList, isLoading: isLoadingDebitNoteList } = useQuery({
+    queryKey: [
+      "get",
+      "debit-notes",
+      "list",
+      {
+        company_id: companyId,
+        page,
+        pageSize,
+        debit_note_type: debitNoteType,
+        fromDate: fromDate,
+        toDate: toDate,
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        debit_note_type: debitNoteType,
+      };
+      if (fromDate) {
+        params.fromDate = dayjs(fromDate).format("YYYY-MM-DD");
+      }
+      if (toDate) {
+        params.toDate = dayjs(toDate).format("YYYY-MM-DD");
+      }
+      const response = await getDebitNotesListRequest({ params });
+      return response.data.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
   const columns = [
     {
       title: "No",
@@ -55,23 +92,31 @@ const   DebitNotes = () => {
 
     {
       title: "Quality/Denier",
-      dataIndex: "quality_denier",
-      key: "quality_denier",
+      dataIndex: "inhouse_quality",
+      key: "inhouse_quality",
+      render: (text) => {
+        return `${text?.quality_name || ""} ${
+          text?.quality_weight ? "(" + text?.quality_weight + "KG)" : ""
+        }`;
+      },
     },
-    {
-      title: "Firm Name",
-      dataIndex: "firm_name",
-      key: "firm_name",
-    },
+    // {
+    //   title: "Firm Name",
+    //   dataIndex: "firm_name",
+    //   key: "firm_name",
+    // },
     {
       title: "Party Name",
-      dataIndex: "party_name",
-      key: "party_name",
+      dataIndex: "party",
+      key: "party",
+      render: (text) => {
+        return `${text?.first_name || ""} ${text?.last_name || ""}`;
+      },
     },
     {
       title: "Meter",
-      dataIndex: "meter",
-      key: "meter",
+      dataIndex: "total_meter",
+      key: "total_meter",
     },
     {
       title: "Amount",
@@ -96,7 +141,7 @@ const   DebitNotes = () => {
 
     {
       title: "Action",
-      render: (details) => {
+      render: () => {
         return (
           <Space>
             <ActionView />
@@ -108,57 +153,26 @@ const   DebitNotes = () => {
     },
   ];
 
-  const data = [
-    {
-      no: 1,
-      returnDate: "23-07-2024",
-      creditNo: "CNS-10",
-      "Challan/Bill": "1230023",
-      quality_denier: "33P PALLU PATTERN (ABCDABCD) - (8KG)",
-      firm_name: "SONU TEXTILES",
-      party_name: "BABAJI SILK FABRIC / HM SILK FABRIC",
-      meter: 300,
-      amount: "60,000.00",
-      net_amount: "56,700.00",
-      type: "Sale return",
-      invoice_date: "18-08-2024",
-    },
-    {
-      No: 2,
-      returnDate: "23-07-2024",
-      creditNo: "CNS-10",
-      "Challan/Bill": "1230023",
-      quality_denier: "33P PALLU PATTERN (ABCDABCD) - (8KG)",
-      firm_name: "SONU TEXTILES",
-      party_name: "BABAJI SILK FABRIC / HM SILK FABRIC",
-      meter: 300,
-      amount: "60,000.00",
-      net_amount: "56,700.00",
-      type: "Sale return",
-      invoice_date: "18-08-2024",
-    },
-  ];
-
   function renderTable() {
-    // if (isLoading) {
-    // return (
-    //   <Spin tip="Loading" size="large">
-    //     <div className="p-14" />
-    //   </Spin>
-    // );
-    // }
+    if (isLoadingDebitNoteList) {
+      return (
+        <Spin tip="Loading" size="large">
+          <div className="p-14" />
+        </Spin>
+      );
+    }
 
     return (
       <Table
-        dataSource={data || []}
+        dataSource={debitNotesList?.debitNotes?.rows || []}
         columns={columns}
         rowKey={"id"}
-        // pagination={{
-        //   total: purchaseReturnList?.rows?.count || 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
+        pagination={{
+          total: debitNotesList?.debitNotes?.count || 0,
+          showSizeChanger: true,
+          onShowSizeChange: onShowSizeChange,
+          onChange: onPageChange,
+        }}
         summary={() => {
           return (
             <Table.Summary.Row>
@@ -194,18 +208,10 @@ const   DebitNotes = () => {
   }
 
   return (
-    <Form
-      // form={form}
-      // layout="vertical"
-      style={{ marginTop: "1rem" }}
-      onFinish={() => {}}
-    >
-      <div className="flex flex-col gap-2 p-4 pt-2">
+    <>
+      <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-5">
-            {/* <Button onClick={() => navigate(-1)}>
-              <ArrowLeftOutlined />
-            </Button> */}
             <h3 className="m-0 text-primary">Debit Notes</h3>
             <Button
               onClick={() => {
@@ -215,141 +221,82 @@ const   DebitNotes = () => {
               type="text"
             />
           </div>
-
           <div style={{ marginLeft: "auto" }}>
-            {/* <Controller
-              control={control}
-              name="production_filter"
-              render={({ field }) => ( */}
             <Radio.Group
-              // {...field}
               name="production_filter"
-              onChange={(e) => {
-                // field.onChange(e);
-                // changeProductionFilter(e.target.value);
-              }}
+              value={debitNoteType}
+              onChange={(e) => setDebitNoteType(e.target.value)}
             >
-              <Radio value={"current"}>Current</Radio>
-              <Radio value={"previous"}>Previous</Radio>
+              {DEBIT_NOTE_TYPES.map(({ label, value }) => {
+                return (
+                  <Radio key={value} value={value}>
+                    {label}
+                  </Radio>
+                );
+              })}
             </Radio.Group>
-            {/* )} */}
-            {/* /> */}
           </div>
         </div>
-        <Row style={{ gap: "25px", marginTop: "20px" }}>
-            <Col span={12}>
-            <div style={{ marginLeft: "auto" }}>
-            {/* <Controller
-              control={control}
-              name="production_filter"
-              render={({ field }) => ( */}
-            <Radio.Group
-              // {...field}
-              name="production_filter"
-              onChange={(e) => {
-                // field.onChange(e);
-                // changeProductionFilter(e.target.value);
-              }}
-            >
-              <Radio value={"purchase_return"}>Purchase Return</Radio>
-              <Radio value={"claim_note"}>Claim Note</Radio>
-              <Radio value={"discount_note"}>Discount Note</Radio>
-              <Radio value={"other"}>other</Radio>
-              <Radio value={"all"}>all</Radio>
-            </Radio.Group>
-            {/* )} */}
-            {/* /> */}
-          </div>    
-            </Col>
-          <Col span={5}>
-            <Form.Item
-              label="Quantity"
-              name={`quantity`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
+        {/* Filters Start */}
+        <Flex align="center" justify="flex-end" gap={10}>
+          {/* <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Company
+            </Typography.Text>
+            <Select
+              placeholder="Select Company"
+              options={companyListRes?.rows?.map((item) => {
+                return { label: item.company_name, value: item?.id };
+              })}
               style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+                textTransform: "capitalize",
               }}
-            >
-              <Select
-                // {...field}
-                placeholder="Select Company"
-                // loading={isLoadingMachineList}
-                // options={machineListRes?.rows?.map((machine) => ({
-                //   label: machine?.machine_name,
-                //   value: machine?.machine_name,
-                // }))}
-                options={[
-                  {
-                    label: "Company 1",
-                    value: "Company_1",
-                  },
-                ]}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={(value) => {
-                  // field.onChange(value);
-                  // resetField("quality_id");
-                }}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={6}>
-            <Form.Item
-              label="From-To"
-              name={`from-to`}
-              // validateStatus={errors.pis ? "error" : ""}
-              // help={errors.pis && errors.pis.message}
-              // required={true}
-              wrapperCol={{ sm: 24 }}
-              style={{
-                marginBottom: "0px",
-                border: "0px solid !important",
+              dropdownStyle={{
+                textTransform: "capitalize",
               }}
-            >
-              <RangePicker />
-            </Form.Item>
-          </Col>
-        </Row>
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-4  ">
+            />
+          </Flex> */}
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              From
+            </Typography.Text>
+            <DatePicker value={fromDate} onChange={setFromDate} />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+            <DatePicker value={toDate} onChange={setToDate} />
+          </Flex>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
-                Sales Return No
+                Search
               </Typography.Text>
               <Input
-                placeholder="Challan NO"
-                // value={challanNo}
-                // onChange={(e) => setChallanNo(e.target.value)}
-                style={{ width: "200px" }}
+                placeholder=""
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
-
-              <Button>
-                <SearchOutlined />
-              </Button>
-              <Button>
-                <FileExcelOutlined />
-              </Button>
-              <Button>
-                <FilePdfOutlined />
-              </Button>
             </Flex>
           </Flex>
-        </div>
+          <Button
+            icon={<FilePdfOutlined />}
+            type="primary"
+            disabled={!debitNotesList?.debitNotes?.rows?.length}
+            // onClick={downloadPdf}
+            className="flex-none"
+          />
+        </Flex>
         {renderTable()}
       </div>
-      <AddDebitNotes
-        isAddModalOpen={isAddModalOpen}
-        setIsAddModalOpen={setIsAddModalOpen}
-      />
-    </Form>
+
+      {isAddModalOpen && (
+        <AddDebitNotes
+          isAddModalOpen={isAddModalOpen}
+          setIsAddModalOpen={setIsAddModalOpen}
+          defaultDebitNoteType={debitNoteType}
+        />
+      )}
+    </>
   );
 };
 

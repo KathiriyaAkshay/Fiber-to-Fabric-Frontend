@@ -17,3 +17,25 @@ export function getLastCreditNoteNumberRequest({ params }) {
 export function createCreditNoteRequest({ data, params }) {
   return api.post(`/account/credit-notes/create`, data, { params });
 }
+
+// Debit notes services---------------------------------------------------
+
+export function getDebitNotesListRequest({ params }) {
+  return api.get(`/account/debit-notes/list`, { params });
+}
+
+export function getDebitNoteBillDropDownRequest({ params }) {
+  return api.get(`/account/debit-notes/bill/get`, { params });
+}
+
+export function getDebitNoteChallanNoDropDownRequest({ params }) {
+  return api.get(`/account/debit-notes/challan-no/drop-down/get`, { params });
+}
+
+export function getLastDebitNoteNumberRequest({ params }) {
+  return api.get(`/account/debit-notes/last-number`, { params });
+}
+
+export function createDebitNoteRequest({ data, params }) {
+  return api.post(`/account/debit-notes/create`, data, { params });
+}
