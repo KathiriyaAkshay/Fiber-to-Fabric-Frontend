@@ -45,8 +45,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
   });
 
   const onSubmit = async (data) => {
-    console.log("onSubmit", data);
-
     const payload = {
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
@@ -89,7 +87,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
         };
       }),
     };
-    console.log({ payload });
 
     await addDebitClaimNOte({ data: payload, companyId: data.company_id });
   };
