@@ -153,6 +153,7 @@ import DebitNote from "./components/purchase/purchaseReturn/DebitNote";
 import DebitNotes from "./pages/accounts/Notes/DebitNotes";
 import EmiList from "./pages/accounts/statements/emi/EmiList";
 import AddEmi from "./pages/accounts/statements/emi/AddEmi";
+import PassbookCashBookReport from "./pages/accounts/reports/PassbookCashBookReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -789,7 +790,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "passbook-cashbook-balance",
-                element: <div>passbook-cashbook-balance</div>,
+                element: <PassbookCashBookReport />,
               },
               {
                 path: "turnover",
