@@ -153,6 +153,8 @@ import DebitNote from "./components/purchase/purchaseReturn/DebitNote";
 import DebitNotes from "./pages/accounts/Notes/DebitNotes";
 import EmiList from "./pages/accounts/statements/emi/EmiList";
 import AddEmi from "./pages/accounts/statements/emi/AddEmi";
+import Material from "./pages/material";
+import PassbookCashbookBalance from "./pages/accounts/Reports/PassbookCashbookBalance";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -747,12 +749,6 @@ const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: (
-              <div>
-                <div>reports</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>reports</div> },
               {
@@ -789,7 +785,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "passbook-cashbook-balance",
-                element: <div>passbook-cashbook-balance</div>,
+                element: <PassbookCashbookBalance />,
               },
               {
                 path: "turnover",
@@ -885,7 +881,7 @@ const router = createBrowserRouter([
       },
       {
         path: "material",
-        element: <div>material</div>,
+        element: <Material />,
       },
       {
         path: "yarn-stock-company",
