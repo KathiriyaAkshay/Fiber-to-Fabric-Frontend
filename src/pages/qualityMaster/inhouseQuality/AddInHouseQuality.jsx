@@ -70,6 +70,7 @@ const AddInHouseQuality = () => {
   const [qualityDetailWeightFix, setQualityDetailWeightFix] = useState(false);
   const [show_to_party_broker, set_show_to_party_broker] = useState(false);
   const [need_weight_in_challan, set_need_weight_in_challan] = useState(false);
+  console.log({ need_weight_in_challan });
 
   const [isTaarPasariaRate, setIsTaarPasariaRate] = useState(false);
   const [isMeterBeamMakerPrimary, setIsMeterBeamMakerPrimary] = useState(false);
@@ -214,7 +215,7 @@ const AddInHouseQuality = () => {
       weightFrom = data.checked_weight;
       weightTo = data.checked_weight;
     } else {
-      weightFrom = data.checked_weight;
+      weightFrom = data.weight_from;
       weightTo = data.weight_to;
     }
 
@@ -743,10 +744,14 @@ const AddInHouseQuality = () => {
         <h3 className="m-0 text-primary">Add New Quality</h3>
 
         <Flex style={{ marginLeft: "auto" }} gap={10}>
-          <Checkbox onChange={set_need_weight_in_challan}>
+          <Checkbox
+            onChange={(e) => set_need_weight_in_challan(e.target.checked)}
+          >
             Show Quality Weight in Challan & Bill
           </Checkbox>
-          <Checkbox onChange={set_show_to_party_broker}>
+          <Checkbox
+            onChange={(e) => set_show_to_party_broker(e.target.checked)}
+          >
             Show Quality Party & Broker
           </Checkbox>
         </Flex>
@@ -934,7 +939,11 @@ const AddInHouseQuality = () => {
                       control={control}
                       name="other_quality_name"
                       render={({ field }) => (
-                        <Input {...field} placeholder="Quality name" type="text" />
+                        <Input
+                          {...field}
+                          placeholder="Quality name"
+                          type="text"
+                        />
                       )}
                     />
                   </Form.Item>
