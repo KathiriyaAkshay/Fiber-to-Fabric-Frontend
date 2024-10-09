@@ -154,6 +154,7 @@ import DebitNotes from "./pages/accounts/Notes/DebitNotes";
 import EmiList from "./pages/accounts/statements/emi/EmiList";
 import AddEmi from "./pages/accounts/statements/emi/AddEmi";
 import PassbookCashBookReport from "./pages/accounts/reports/PassbookCashBookReport";
+import Material from "./pages/material";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -880,7 +881,7 @@ const router = createBrowserRouter([
       },
       {
         path: "material",
-        element: <div>material</div>,
+        element: <Material />,
       },
       {
         path: "yarn-stock-company",
