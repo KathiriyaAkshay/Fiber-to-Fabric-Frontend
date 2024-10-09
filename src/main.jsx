@@ -748,12 +748,6 @@ const router = createBrowserRouter([
           },
           {
             path: "reports",
-            element: (
-              <div>
-                <div>reports</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>reports</div> },
               {
