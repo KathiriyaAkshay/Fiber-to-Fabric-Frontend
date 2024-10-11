@@ -51,7 +51,6 @@ const MillgineReport = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ millgineReportData });
 
   const columns = [
     // {

@@ -34,6 +34,6 @@ export function updateMaterialStoreRequest({ data, params }) {
   return api.patch(`/more/material/store/update`, data, { params });
 }
 
-// export function deleteMachineRequest({ id, params }) {
-//   return api.delete(`/machine/delete/${id}`, { params });
-// }
+export function deleteMaterialStoreRequest({ id, params }) {
+  return api.delete(`/more/material/millgine/delete/${id}`, { params });
+}
