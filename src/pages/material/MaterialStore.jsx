@@ -4,7 +4,12 @@ import {
   getMaterialStoreListRequest,
   updateMaterialStoreRequest,
 } from "../../api/requests/material";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import { useContext, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -58,11 +63,11 @@ const MaterialStore = () => {
     await updateMaterialStore(payload);
   };
 
-  const { control, handleSubmit, setValue, getValues } = useForm({
+  const { control, handleSubmit, setValue, getValues, resetField } = useForm({
     defaultValues: {},
   });
 
-  const { data: materialStoreList, isFetching } = useQuery({
+  const { data: materialStoreList, isLoading } = useQuery({
     queryKey: [
       "get",
       "millgine-report",
@@ -80,24 +85,41 @@ const MaterialStore = () => {
       return res.data?.data;
     },
     enabled: Boolean(companyId),
+    placeholderData: keepPreviousData,
   });
 
   useEffect(() => {
-    if (materialStoreList && materialStoreList?.materialList?.length) {
-      const numOfFields = Array.from(
-        { length: materialStoreList?.materialList?.length || 0 },
-        (_, i) => i + 1
-      );
-      setNumOfFields(numOfFields);
+    if (!isLoading) {
+      if (materialStoreList && materialStoreList?.materialList?.length) {
+        const numOfFields = Array.from(
+          { length: materialStoreList?.materialList?.length || 0 },
+          (_, i) => i
+        );
 
-      materialStoreList?.materialList?.forEach((item, index) => {
-        setValue(`particular_name_${index + 1}`, item.particular_name);
-        setValue(`total_${index + 1}`, item.total);
-        setValue(`in_use_${index + 1}`, item.in_use);
-        setValue(`empty_${index + 1}`, item.empty);
-      });
+        setNumOfFields(numOfFields);
+        materialStoreList?.materialList?.forEach((item, index) => {
+          setValue(`id_${index}`, item.id);
+          setValue(`particular_name_${index}`, item.particular_name);
+          setValue(`total_${index}`, item.total);
+          setValue(`in_use_${index}`, item.in_use);
+          setValue(`empty_${index}`, item.empty);
+        });
+      } else {
+        setNumOfFields([0, 1]);
+
+        // setValue(`id_${index}`, 0);
+        setValue(`particular_name_${0}`, "Primary Beam Pipe");
+        setValue(`total_${0}`, 0);
+        setValue(`in_use_${0}`, 0);
+        setValue(`empty_${0}`, 0);
+
+        setValue(`particular_name_${1}`, "Secondary Beam Pipe");
+        setValue(`total_${1}`, 0);
+        setValue(`in_use_${1}`, 0);
+        setValue(`empty_${1}`, 0);
+      }
     }
-  }, [materialStoreList, setValue]);
+  }, [isLoading, materialStoreList, setValue]);
 
   const calculateEmpty = (fieldNo) => {
     const total = getValues(`total_${fieldNo}`) || 0;
@@ -107,14 +129,38 @@ const MaterialStore = () => {
     setValue(`empty_${fieldNo}`, empty);
   };
 
-  const deleteEntry = (fieldNo) => {
-    const numOfFieldsCopy = [...numOfFields.filter((item) => item !== fieldNo)];
-    setNumOfFields([...numOfFieldsCopy]);
+  const resetEntry = (fieldNo) => {
+    resetField(`id_${fieldNo}`, "");
+    resetField(`particular_name_${fieldNo}`, "");
+    resetField(`total_${fieldNo}`, "");
+    resetField(`in_use_${fieldNo}`, "");
+    resetField(`empty_${fieldNo}`, "");
+  };
+
+  const deleteEntry = async (fieldNo) => {
+    const id = getValues(`id_${fieldNo}`);
+    const data = materialStoreList?.materialList?.filter(
+      (item) => item.id !== id
+    );
+    const payload = data.map((item) => {
+      return {
+        particular_name: item.particular_name,
+        total: item.total,
+        in_use: item.in_use,
+        empty: item.empty,
+      };
+    });
+
+    await updateMaterialStore(payload);
+    resetEntry(fieldNo);
   };
 
   const addNewEntry = () => {
-    const lastNo = numOfFields[numOfFields.length - 1];
-    setNumOfFields([...numOfFields, lastNo + 1]);
+    let nextNo = numOfFields.length;
+    setNumOfFields((prev) => {
+      return [...prev, nextNo];
+    });
+    resetEntry(nextNo);
   };
 
   return (
@@ -137,7 +183,7 @@ const MaterialStore = () => {
       </div>
 
       <br />
-      {isFetching ? (
+      {isLoading ? (
         <Flex align="center">
           <Spin />
         </Flex>
@@ -154,15 +200,25 @@ const MaterialStore = () => {
           </thead>
           <tbody>
             {numOfFields && numOfFields.length ? (
-              numOfFields?.map((item, index) => {
+              numOfFields?.map((item) => {
+                const pname = getValues(`particular_name_${item}`)
+                  ? getValues(`particular_name_${item}`).toLowerCase()
+                  : "";
+                const isDisable =
+                  pname.includes("primary") || pname.includes("secondary");
+
                 return (
-                  <tr key={index + "_material_list"}>
+                  <tr key={item + "_material_list"}>
                     <td>
                       <Controller
                         control={control}
                         name={`particular_name_${item}`}
                         render={({ field }) => (
-                          <Input {...field} placeholder="Particular name" />
+                          <Input
+                            {...field}
+                            placeholder="Particular name"
+                            disabled={isDisable}
+                          />
                         )}
                       />
                     </td>
@@ -174,10 +230,12 @@ const MaterialStore = () => {
                           <Input
                             {...field}
                             placeholder="100"
+                            type="number"
                             onChange={(e) => {
                               field.onChange(e);
                               calculateEmpty(item);
                             }}
+                            disabled={isDisable}
                           />
                         )}
                       />
@@ -189,11 +247,13 @@ const MaterialStore = () => {
                         render={({ field }) => (
                           <Input
                             {...field}
+                            type="number"
                             placeholder="100"
                             onChange={(e) => {
                               field.onChange(e);
                               calculateEmpty(item);
                             }}
+                            disabled={isDisable}
                           />
                         )}
                       />
@@ -203,20 +263,45 @@ const MaterialStore = () => {
                         control={control}
                         name={`empty_${item}`}
                         render={({ field }) => (
-                          <Input {...field} placeholder="100" readOnly />
+                          <Input
+                            {...field}
+                            placeholder="100"
+                            readOnly
+                            disabled={isDisable}
+                          />
                         )}
                       />
                     </td>
-                    <td style={{ textAlign: "center" }}>
-                      <Button danger onClick={() => deleteEntry(item)}>
-                        <DeleteOutlined />
-                      </Button>
+                    <td style={{ textAlign: "center", width: "60px" }}>
+                      <Controller
+                        control={control}
+                        name={`id_${item}`}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            type="hidden"
+                            style={{ width: "20px" }}
+                            disabled={isDisable}
+                          />
+                        )}
+                      />
+                      {!isDisable && (
+                        <Button
+                          danger
+                          style={{ width: "100%" }}
+                          onClick={() => deleteEntry(item)}
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 );
               })
             ) : (
-              <p>No data</p>
+              <tr>
+                <td>No Data Found</td>
+              </tr>
             )}
           </tbody>
         </table>

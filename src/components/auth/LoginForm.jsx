@@ -56,9 +56,7 @@ const LoginForm = () => {
   });
 
   async function onSubmit(data) {
-    console.log(data); // Handle form submission
-    const res = await login(data);
-    console.log("res----->", res);
+    await login(data);
   }
 
   return (

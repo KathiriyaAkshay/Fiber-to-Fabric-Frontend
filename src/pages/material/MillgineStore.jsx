@@ -52,7 +52,6 @@ const ForMachine = ({ companyId }) => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ millgineReportData });
 
   // For Machine.............................................................
   const columnsOfMachine = [
@@ -144,7 +143,6 @@ const ForOther = ({ companyId }) => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ millgineReportData });
 
   // For Other.............................................................
 
