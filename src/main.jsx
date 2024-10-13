@@ -155,6 +155,8 @@ import EmiList from "./pages/accounts/statements/emi/EmiList";
 import AddEmi from "./pages/accounts/statements/emi/AddEmi";
 import PassbookCashBookReport from "./pages/accounts/reports/PassbookCashBookReport";
 import Material from "./pages/material";
+import MonthlyTransactionReport from "./pages/accounts/reports/monthlyTransactionReport";
+import Turnover from "./pages/accounts/reports/turnover";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -789,7 +791,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "turnover",
-                element: <div>turnover</div>,
+                element: <Turnover />,
               },
               {
                 path: "live-stock-report",
@@ -797,7 +799,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "monthly-transaction-report",
-                element: <div>monthly-transaction-report</div>,
+                element: <MonthlyTransactionReport />,
               },
             ],
           },
