@@ -30,8 +30,16 @@ export function getMaterialStoreListRequest({ params }) {
   return api.get(`/more/material/store/list`, { params });
 }
 
+export const createMillgineStoreRequest = ({ data, params }) => {
+  return api.post(`/more/material/millgine/store/create`, data, { params });
+}
+
 export function updateMaterialStoreRequest({ data, params }) {
   return api.patch(`/more/material/store/update`, data, { params });
+}
+
+export function updateMellgineStoreUpdateRequest({ code, data, params }) {
+  return api.patch(`/more/material/millgine/update/${code}`, data, { params });
 }
 
 export function deleteMaterialStoreRequest({ id, params }) {
