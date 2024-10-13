@@ -11,7 +11,12 @@ const MillgineReport = () => {
   const { companyId } = useContext(GlobalContext);
 
   const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+
   const debounceSearch = useDebounce(search, 500);
+  const debounceFromDate = useDebounce(fromDate, 500);
+  const debounceToDate = useDebounce(toDate, 500);
 
   const { data: millgineReportData, isLoading } = useQuery({
     queryKey: [
@@ -21,6 +26,8 @@ const MillgineReport = () => {
       {
         company_id: companyId,
         search: debounceSearch,
+        from: debounceFromDate,
+        to: debounceToDate,
       },
     ],
     queryFn: async () => {
@@ -28,6 +35,8 @@ const MillgineReport = () => {
         params: {
           company_id: companyId,
           search: debounceSearch,
+          from: dayjs(debounceFromDate).format("YYYY-MM-DD"),
+          to: dayjs(debounceToDate).format("YYYY-MM-DD"),
         },
       });
       return res.data?.data;
@@ -120,9 +129,6 @@ const MillgineReport = () => {
       key: "action",
       render: (details) => (
         <Space>
-          {/* <Button danger>
-            <DeleteOutlined />
-          </Button> */}
           <DeleteMillgineReportModal
             key={"delete_millgine_report_modal"}
             details={details}
@@ -147,12 +153,6 @@ const MillgineReport = () => {
         columns={columns}
         rowKey={"id"}
         scroll={{ y: 330 }}
-        // pagination={{
-        //   total: 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
         pagination={false}
         summary={(pageData) => {
           let totalAmountTotal = 0;
@@ -188,14 +188,19 @@ const MillgineReport = () => {
       <div className="flex items-center justify-end gap-5 mx-3 mb-3">
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">Date</Typography.Text>
-          <DatePicker />
+          <DatePicker value={fromDate} onChange={(date) => setFromDate(date)} />
         </Flex>
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-          <DatePicker />
+          <DatePicker value={toDate} onChange={(date) => setToDate(date)} />
         </Flex>
         <Flex align="center" gap={10}>
-          <Input placeholder="Search" value={search} onChange={setSearch} />
+          <Input
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            allowClear
+          />
         </Flex>
       </div>
 
