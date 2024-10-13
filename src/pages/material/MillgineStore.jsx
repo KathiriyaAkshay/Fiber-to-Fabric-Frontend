@@ -11,13 +11,8 @@ import {
   Table,
   Typography,
 } from "antd";
-// import { usePagination } from "../../hooks/usePagination";
 import { useContext, useState } from "react";
-import {
-  EditOutlined,
-  QrcodeOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { BarcodeOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMillgineListRequest,
@@ -25,10 +20,12 @@ import {
 } from "../../api/requests/material";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import useDebounce from "../../hooks/useDebounce";
+import MillgineStoreSettingModal from "../../components/material/MillgineStoreSettingModal";
+import dayjs from "dayjs";
+import MillgineStoreQrModal from "../../components/material/MillgineStoreQrModal";
+import MillgineStoreUpdateModal from "../../components/material/MillgineStoreUpdateModal";
 
-const ForMachine = ({ companyId }) => {
-  // const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
+const ForMachine = ({ companyId, fromDate, toDate }) => {
   const { data: millgineReportData, isLoading } = useQuery({
     queryKey: [
       "get",
@@ -36,16 +33,16 @@ const ForMachine = ({ companyId }) => {
       "list",
       {
         company_id: companyId,
-        // page,
-        // pageSize,
+        from: dayjs(fromDate).format("YYYY-MM-DD"),
+        to: dayjs(toDate).format("YYYY-MM-DD"),
       },
     ],
     queryFn: async () => {
       const res = await getMillgineReportListRequest({
         params: {
           company_id: companyId,
-          // page,
-          // pageSize,
+          from: dayjs(fromDate).format("YYYY-MM-DD"),
+          to: dayjs(toDate).format("YYYY-MM-DD"),
         },
       });
       return res.data?.data;
@@ -62,12 +59,20 @@ const ForMachine = ({ companyId }) => {
     },
     {
       title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text) => text || "-",
     },
     {
       title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
     },
     {
       title: "Machine No",
+      dataIndex: "machine_no",
+      key: "machine_no",
+      render: (text) => text || "-",
     },
   ];
 
@@ -82,22 +87,21 @@ const ForMachine = ({ companyId }) => {
 
     return (
       <Table
-        dataSource={[]}
+        dataSource={millgineReportData?.machineWiseAudit || []}
         columns={columnsOfMachine}
         rowKey={"id"}
-        scroll={{ y: 330 }}
-        // pagination={{
-        //   total: 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
-        summary={() => {
+        // scroll={{ y: 330 }}
+        pagination={false}
+        summary={(pageData) => {
+          let totalAmount = 0;
+          pageData.forEach((item) => {
+            totalAmount += +item.amount || 0;
+          });
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell>Total</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalAmount}</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
             </Table.Summary.Row>
           );
@@ -117,9 +121,7 @@ const ForMachine = ({ companyId }) => {
   );
 };
 
-const ForOther = ({ companyId }) => {
-  // const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
+const ForOther = ({ companyId, fromDate, toDate }) => {
   const { data: millgineReportData, isLoading } = useQuery({
     queryKey: [
       "get",
@@ -127,16 +129,16 @@ const ForOther = ({ companyId }) => {
       "list",
       {
         company_id: companyId,
-        // page,
-        // pageSize,
+        from: dayjs(fromDate).format("YYYY-MM-DD"),
+        to: dayjs(toDate).format("YYYY-MM-DD"),
       },
     ],
     queryFn: async () => {
       const res = await getMillgineReportListRequest({
         params: {
           company_id: companyId,
-          // page,
-          // pageSize,
+          from: dayjs(fromDate).format("YYYY-MM-DD"),
+          to: dayjs(toDate).format("YYYY-MM-DD"),
         },
       });
       return res.data?.data;
@@ -154,12 +156,19 @@ const ForOther = ({ companyId }) => {
     },
     {
       title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text) => text || "-",
     },
     {
       title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
     },
     {
       title: "Remark",
+      dataIndex: "remark",
+      key: "remark",
     },
   ];
 
@@ -174,22 +183,22 @@ const ForOther = ({ companyId }) => {
 
     return (
       <Table
-        dataSource={[]}
+        dataSource={millgineReportData?.allAudit || []}
         columns={columnsOfOther}
         rowKey={"id"}
-        scroll={{ y: 330 }}
-        // pagination={{
-        //   total: 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
-        summary={() => {
+        // scroll={{ y: 330 }}
+        pagination={false}
+        summary={(pageData) => {
+          let totalAmount = 0;
+          pageData.forEach((item) => {
+            totalAmount += +item.amount || 0;
+          });
+
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell>Total</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
+              <Table.Summary.Cell>{totalAmount}</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
             </Table.Summary.Row>
           );
@@ -210,11 +219,20 @@ const ForOther = ({ companyId }) => {
 
 const MillgineStore = () => {
   const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const showQrModal = () => {
+    setIsQrModalOpen(true);
+  };
+  const [qrDetails, setQrDetails] = useState([]);
 
   const debounceSearch = useDebounce(search, 500);
+  const debounceFromDate = useDebounce(fromDate, 500);
+  const debounceToDate = useDebounce(toDate, 500);
 
   const { companyId } = useContext(GlobalContext);
-  // const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: millgineListData, isLoading } = useQuery({
     queryKey: [
@@ -223,8 +241,6 @@ const MillgineStore = () => {
       "list",
       {
         company_id: companyId,
-        // page,
-        // pageSize,
         search: debounceSearch,
       },
     ],
@@ -232,8 +248,6 @@ const MillgineStore = () => {
       const res = await getMillgineListRequest({
         params: {
           company_id: companyId,
-          // page,
-          // pageSize,
           search: debounceSearch,
         },
       });
@@ -243,12 +257,6 @@ const MillgineStore = () => {
   });
 
   const columns = [
-    // {
-    //   title: "No.",
-    //   dataIndex: "no",
-    //   key: "no",
-    //   render: (_, record, index) => index + 1,
-    // },
     {
       title: "Code",
       dataIndex: "code",
@@ -305,19 +313,27 @@ const MillgineStore = () => {
     {
       title: "Action",
       key: "action",
-      render: () => (
-        <Space>
-          <Button type="primary">
-            <QrcodeOutlined />
-          </Button>
-          <Button>
-            <SettingOutlined />
-          </Button>
-          <Button>
-            <EditOutlined />
-          </Button>
-        </Space>
-      ),
+      render: (details) => {
+        return (
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => {
+                setQrDetails([
+                  {
+                    ...details,
+                  },
+                ]);
+                showQrModal();
+              }}
+            >
+              <BarcodeOutlined />
+            </Button>
+            <MillgineStoreSettingModal details={details} />
+            <MillgineStoreUpdateModal details={details} />
+          </Space>
+        );
+      },
     },
   ];
 
@@ -335,13 +351,8 @@ const MillgineStore = () => {
         dataSource={millgineListData?.millgineList || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
-        // pagination={{
-        //   total: 0,
-        //   showSizeChanger: true,
-        //   onShowSizeChange: onShowSizeChange,
-        //   onChange: onPageChange,
-        // }}
+        // scroll={{ y: 330 }}
+        pagination={false}
       />
     );
   }
@@ -353,7 +364,8 @@ const MillgineStore = () => {
           name="search"
           placeholder="Search"
           value={search}
-          onChange={setSearch}
+          onChange={(e) => setSearch(e.target.value)}
+          allowClear
         />
       </Flex>
       {renderTable()}
@@ -367,26 +379,43 @@ const MillgineStore = () => {
       <div className="flex items-center justify-end gap-5 mx-3 mb-3">
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">Date</Typography.Text>
-          <DatePicker />
+          <DatePicker value={fromDate} onChange={(date) => setFromDate(date)} />
         </Flex>
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-          <DatePicker />
+          <DatePicker value={toDate} onChange={(date) => setToDate(date)} />
         </Flex>
       </div>
 
       <Row gutter={12}>
         <Col span={12}>
           <Card>
-            <ForMachine companyId={companyId} />
+            <ForMachine
+              companyId={companyId}
+              fromDate={debounceFromDate}
+              toDate={debounceToDate}
+            />
           </Card>
         </Col>
         <Col span={12}>
           <Card>
-            <ForOther companyId={companyId} />
+            <ForOther
+              companyId={companyId}
+              fromDate={debounceFromDate}
+              toDate={debounceToDate}
+            />
           </Card>
         </Col>
       </Row>
+
+      {isQrModalOpen && (
+        <MillgineStoreQrModal
+          key={"qr_details"}
+          open={isQrModalOpen}
+          handleClose={() => setIsQrModalOpen(false)}
+          details={qrDetails}
+        />
+      )}
     </>
   );
 };
