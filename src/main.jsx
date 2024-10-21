@@ -157,6 +157,8 @@ import PassbookCashBookReport from "./pages/accounts/reports/PassbookCashBookRep
 import Material from "./pages/material";
 import MonthlyTransactionReport from "./pages/accounts/reports/monthlyTransactionReport";
 import Turnover from "./pages/accounts/reports/turnover";
+import Gstr1 from "./pages/accounts/reports/gstr1";
+import Gstr2 from "./pages/accounts/reports/gstr2";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -775,11 +777,11 @@ const router = createBrowserRouter([
               },
               {
                 path: "gstr-1-report",
-                element: <div>gstr-1-report</div>,
+                element: <Gstr1/>,
               },
               {
                 path: "gstr-2-report",
-                element: <div>gstr-2-report</div>,
+                element: <Gstr2/>,
               },
               {
                 path: "gstr-3b-report",
