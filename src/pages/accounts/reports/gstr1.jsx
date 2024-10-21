@@ -134,8 +134,8 @@ const Gstr1 = () => {
       <div className="container mx-auto  gstr-table">
         <div className="border p-4 rounded-lg shadow">
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold">SONU TEXTILES</h2>
-            <p className="text-gray-400 w-56 m-auto text-center">
+            <h2 className="text-xl font-bold">SONU TEXTILES</h2>
+            <p className="text-gray-400 w-56 m-auto text-center text-sm">
               PLOT NO. 78,, JAYVEER INDU. ESTATE,, GUJARAT HOUSING BOARD ROAD,
               PANDESARA,, SURAT, GUJARAT,394221 PANDESARA SURAT-394221
             </p>
@@ -152,7 +152,7 @@ const Gstr1 = () => {
             <div>Particulars</div>
             <div>Vouchers Count</div>
           </Flex>
-          <hr />
+          <hr className="border-x-gray-100"/>
           {/* content */}
           <Flex justify="space-between" className="text-sm">
             <div>Total Vouchers</div>
