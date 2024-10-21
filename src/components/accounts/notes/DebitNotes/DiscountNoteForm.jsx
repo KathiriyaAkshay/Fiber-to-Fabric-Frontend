@@ -165,6 +165,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     },
     enabled: Boolean(company_id && supplier_id),
   });
+  console.log({ billList });
 
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [
@@ -662,6 +663,7 @@ const SingleBillRender = ({
               // value={billData?.receive_quantity || 0}
               placeholder="3"
               className="remove-input-box"
+              readOnly
             />
           )}
         />
@@ -700,6 +702,7 @@ const SingleBillRender = ({
               // value={billData?.quantity_rate || 0}
               placeholder="3"
               className="remove-input-box"
+              readOnly
             />
           )}
         />

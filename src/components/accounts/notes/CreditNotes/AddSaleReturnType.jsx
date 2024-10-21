@@ -51,6 +51,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     mutationKey: ["sale", "challan", "return", "add"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["get", "credit-notes", "list", companyId]);
+      queryClient.invalidateQueries(["get", "credit-notes", "list"]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -196,37 +197,12 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   return (
     <Modal
       open={isAddModalOpen}
-      width={"70%"}
+      width={"75%"}
       onCancel={() => {
         setIsAddModalOpen(false);
         setSelectedSaleChallan([]);
       }}
-      footer={() => {
-        return (
-          <Flex
-            style={{
-              marginTop: "1rem",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "flex-end",
-              gap: "1rem",
-            }}
-          >
-            <Button type="primary" onClick={submitHandler} loading={isPending}>
-              Sales Return
-            </Button>
-            <Button
-              type="default"
-              onClick={() => {
-                setIsAddModalOpen(false);
-                setSelectedSaleChallan([]);
-              }}
-            >
-              Close
-            </Button>
-          </Flex>
-        );
-      }}
+      footer={false}
     >
       <div className="credit-note-container">
         <h2>Credit Note</h2>
@@ -454,6 +430,29 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             </tbody>
           </table>
         </div>
+
+        <Flex
+          style={{
+            marginTop: "1rem",
+            alignItems: "center",
+            width: "100%",
+            justifyContent: "flex-end",
+            gap: "1rem",
+          }}
+        >
+          <Button type="primary" onClick={submitHandler} loading={isPending}>
+            Sales Return
+          </Button>
+          <Button
+            type="default"
+            onClick={() => {
+              setIsAddModalOpen(false);
+              setSelectedSaleChallan([]);
+            }}
+          >
+            Close
+          </Button>
+        </Flex>
       </div>
     </Modal>
   );
