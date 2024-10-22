@@ -6,6 +6,7 @@ import {
 import {
   Button,
   DatePicker,
+  Drawer,
   Flex,
   Input,
   Select,
@@ -14,11 +15,18 @@ import {
 } from "antd";
 import React from "react";
 import "./_style.css";
+import { gstr2_dialog_columns, gstr2_dialog_data } from "./utils";
 
 const Gstr2 = () => {
+  const [isParticularOpen,setIsParticularOpen]=React.useState("");
   const columns = [
     { title: "Sl No.", dataIndex: "slNo", key: "slNo" },
-    { title: "Particulars", dataIndex: "particulars", key: "particulars" },
+    {
+      title: "Particulars",
+      dataIndex: "particulars",
+      key: "particulars",
+      render: (text) => <a onClick={()=>setIsParticularOpen(text)}>{text}</a>,
+    },
     { title: "Voucher Count", dataIndex: "voucherCount", key: "voucherCount" },
     {
       title: "Taxable Amount",
@@ -165,10 +173,9 @@ const Gstr2 = () => {
               * Challan number found as bill status is pending to be received
               which are as follows:
             </p>
-           
           </div>
           <div className="text-sm">
-          <div>
+            <div>
               {" "}
               Grey purchase : 1009, 1000, 162002, 670076, 2422, 67, 10000, 12
             </div>
@@ -179,6 +186,19 @@ const Gstr2 = () => {
           </div>
         </div>
       </div>
+      <Drawer
+        title={isParticularOpen}
+        onClose={() => setIsParticularOpen("")}
+        open={isParticularOpen !== "" ? true : false}
+        width={"1000"}
+        className="gstr-table"
+      >
+        <Table
+              columns={gstr2_dialog_columns}
+              dataSource={gstr2_dialog_data }
+              pagination={false}
+            />
+      </Drawer>
       {/* {renderTable()} */}
     </div>
   );

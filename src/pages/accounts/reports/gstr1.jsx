@@ -6,6 +6,7 @@ import {
 import {
   Button,
   DatePicker,
+  Drawer,
   Flex,
   Input,
   Select,
@@ -14,11 +15,18 @@ import {
 } from "antd";
 import React from "react";
 import "./_style.css";
+import { gstr1_dialog_columns,gstr1_dialog_data } from "./utils";
 
 const Gstr1 = () => {
+  const [isParticularOpen, setIsParticularOpen] = React.useState("");
   const columns = [
     { title: "Sl No.", dataIndex: "slNo", key: "slNo" },
-    { title: "Particulars", dataIndex: "particulars", key: "particulars" },
+    {
+      title: "Particulars",
+      dataIndex: "particulars",
+      key: "particulars",
+      render: (text) => <a onClick={() => setIsParticularOpen(text)}>{text}</a>,
+    },
     { title: "Voucher Count", dataIndex: "voucherCount", key: "voucherCount" },
     {
       title: "Taxable Amount",
@@ -143,7 +151,9 @@ const Gstr1 = () => {
             <p>01-04-2024 to 21-10-2024</p>
           </div>
           <Flex justify="space-between">
-            <div><span className="font-semibold">GSTIN/UIN:</span> 24ABHPP6021C1Z4</div>
+            <div>
+              <span className="font-semibold">GSTIN/UIN:</span> 24ABHPP6021C1Z4
+            </div>
             <div>01-10-2024 to 21-10-2024</div>
           </Flex>
           <hr />
@@ -152,7 +162,7 @@ const Gstr1 = () => {
             <div>Particulars</div>
             <div>Vouchers Count</div>
           </Flex>
-          <hr className="border-x-gray-100"/>
+          <hr className="border-x-gray-100" />
           {/* content */}
           <Flex justify="space-between" className="text-sm">
             <div>Total Vouchers</div>
@@ -205,6 +215,19 @@ const Gstr1 = () => {
           </div>
         </div>
       </div>
+      <Drawer
+        title={isParticularOpen}
+        onClose={() => setIsParticularOpen("")}
+        open={isParticularOpen !== "" ? true : false}
+        width={"1000"}
+        className="gstr-table"
+      >
+        <Table
+              columns={gstr1_dialog_columns}
+              dataSource={gstr1_dialog_data}
+              pagination={false}
+            />
+      </Drawer>
       {/* {renderTable()} */}
     </div>
   );
