@@ -1,6 +1,7 @@
 import {
   FilePdfOutlined,
   PlusCircleOutlined,
+  PrinterOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -192,6 +193,11 @@ const Gstr2 = () => {
         open={isParticularOpen !== "" ? true : false}
         width={"1000"}
         className="gstr-table"
+        extra={
+          <Button icon={<PrinterOutlined/>}>
+            Print
+          </Button>
+        }
       >
         <Table
               columns={gstr2_dialog_columns}
