@@ -26,7 +26,7 @@ const DEBIT_NOTE_TYPES = [
   { label: "Discount Note", value: "discount_note" },
   { label: "Claim Note", value: "claim_note" },
   { label: "Other", value: "other" },
-  { label: "All", value: "all" },
+  // { label: "All", value: "all" },
 ];
 
 const DebitNotes = () => {
@@ -78,27 +78,36 @@ const DebitNotes = () => {
       title: "No",
       dataIndex: "no",
       key: "no",
+      render: (_, record, index) => index + 1,
     },
     {
-      title: "Return Date",
-      dataIndex: "returnDate",
-      key: "returnDate",
+      title: "Debit Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
     },
     {
-      title: "Credit No",
-      dataIndex: "creditNo",
-      key: "creditNo",
+      title: "Debit No",
+      dataIndex: "debit_note_number",
+      key: "debit_note_number",
     },
-
     {
-      title: "Quality/Denier",
-      dataIndex: "inhouse_quality",
-      key: "inhouse_quality",
-      render: (text) => {
-        return `${text?.quality_name || ""} ${
-          text?.quality_weight ? "(" + text?.quality_weight + "KG)" : ""
-        }`;
-      },
+      title: "Challan/Bill Type",
+      dataIndex: "debit_note_details",
+      key: "debit_note_details",
+      render: (text) => text[0]?.model || "-",
+    },
+    {
+      title: "Meter",
+      dataIndex: "total_meter",
+      key: "total_meter",
+      render: (text) => text || "-",
+    },
+    {
+      title: "KG",
+      dataIndex: "kg",
+      key: "kg",
+      render: (text) => text?.checker_name || 0,
     },
     // {
     //   title: "Firm Name",
@@ -109,36 +118,37 @@ const DebitNotes = () => {
       title: "Party Name",
       dataIndex: "party",
       key: "party",
-      render: (text) => {
-        return `${text?.first_name || ""} ${text?.last_name || ""}`;
-      },
+      // render: (text) => {
+      //   return `${text?.first_name || ""} ${text?.last_name || ""}`;
+      // },
+      render: (text) => text?.checker_name || "-",
     },
     {
-      title: "Meter",
-      dataIndex: "total_meter",
-      key: "total_meter",
+      title: "Int./return Amt",
+      dataIndex: "net_amount",
+      key: "net_amount",
+      render: (text) => text || "-",
     },
     {
-      title: "Amount",
+      title: "Int. Payment Date",
       dataIndex: "amount",
       key: "amount",
     },
-    {
-      title: "Net Amount",
-      dataIndex: "net_amount",
-      key: "net_amount",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-    },
-    {
-      title: "Invoice Date",
-      dataIndex: "invoice_date",
-      key: "invoice_date",
-    },
-
+    // {
+    //   title: "Net Amount",
+    //   dataIndex: "net_amount",
+    //   key: "net_amount",
+    // },
+    // {
+    //   title: "Type",
+    //   dataIndex: "type",
+    //   key: "type",
+    // },
+    // {
+    //   title: "Invoice Date",
+    //   dataIndex: "invoice_date",
+    //   key: "invoice_date",
+    // },
     {
       title: "Action",
       render: () => {
@@ -173,33 +183,28 @@ const DebitNotes = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        summary={() => {
+        summary={(pageData) => {
+          let totalReturnAmount = 0;
+          pageData?.forEach((item) => {
+            totalReturnAmount += +item.net_amount || 0;
+          });
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>
                 <b>Total</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-              <Table.Summary.Cell index={0}>
-                <b>4218</b>
-              </Table.Summary.Cell>
-
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
               <Table.Summary.Cell index={1}>
-                <b>244518</b>
+                <b>{totalReturnAmount}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}>
-                <b>11432</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
-
-              <Table.Summary.Cell index={0}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1} />
+              <Table.Summary.Cell index={0} />
+              <Table.Summary.Cell index={0} />
             </Table.Summary.Row>
           );
         }}
@@ -226,6 +231,7 @@ const DebitNotes = () => {
               name="production_filter"
               value={debitNoteType}
               onChange={(e) => setDebitNoteType(e.target.value)}
+              className="payment-options"
             >
               {DEBIT_NOTE_TYPES.map(({ label, value }) => {
                 return (

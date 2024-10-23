@@ -66,7 +66,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
 
   const onSubmit = async (data) => {
     const selectedBillData = billList?.result?.find(
-      (item) => item.bill_id === data?.bill_id
+      (item) => item.bill_id + "_" + item.model === data?.bill_id
     );
 
     const payload = {
@@ -99,7 +99,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       debit_note_details: [
         {
-          bill_id: data.bill_id,
+          bill_id: selectedBillData.bill_id,
           model: selectedBillData?.model,
           rate: +data.rate,
           per: 1.0,
@@ -228,15 +228,21 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     queryFn: async () => {
       let response;
       const selectedBillData = billList?.result?.find(
-        (item) => item.bill_id === bill_id
+        (item) => item.bill_id + "_" + item.model === bill_id
       );
+
       switch (selectedBillData.model) {
         case "yarn_bills":
           response = await getYarnReceiveBillByIdRequest({
             id: selectedBillData.bill_id,
             params: { company_id: companyId },
           });
-          return response?.data?.data;
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.yarnReciveBill,
+          };
+          delete response.yarnReciveBill;
+          return response;
 
         case "job_taka_bills":
           response = await getJobTakaBillByIdRequest({
@@ -245,7 +251,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
               bill_id: selectedBillData.bill_id,
             },
           });
-          return response?.data?.data;
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.jobBill,
+          };
+          delete response.jobBill;
+          return response;
 
         case "receive_size_beam_bill":
           response = await getReceiveSizeBeamBillByIdRequest({
@@ -254,14 +265,24 @@ const ClaimNoteForm = ({ type, handleClose }) => {
               company_id: companyId,
             },
           });
-          return response?.data?.data?.receive;
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.receive,
+          };
+          delete response.receive;
+          return response;
 
         case "general_purchase_entries":
           response = await getGeneralPurchaseByIdRequest({
             id: selectedBillData.bill_id,
             params: { company_id: companyId },
           });
-          return response?.data?.data;
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.generalPurchaseEntry,
+          };
+          delete response.generalPurchaseEntry;
+          return response;
 
         case "purchase_taka_bills":
           response = await getPurchaseTakaBillByIdRequest({
@@ -270,7 +291,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
               challan_id: selectedBillData.bill_id,
             },
           });
-          return response?.data?.data;
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.purchaseBill,
+          };
+          delete response.purchaseBill;
+          return response;
 
         case "job_rework_bill":
           response = await getReworkChallanByIdRequest({
@@ -374,7 +400,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                             ? billList?.result?.map((item) => {
                                 return {
                                   label: item?.bill_no,
-                                  value: item.bill_id,
+                                  value: item.bill_id + "_" + item.model,
                                 };
                               })
                             : []

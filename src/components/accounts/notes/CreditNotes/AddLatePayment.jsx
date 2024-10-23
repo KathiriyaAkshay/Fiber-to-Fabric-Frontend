@@ -6,7 +6,6 @@ import {
   Input,
   message,
   Modal,
-  Radio,
   Select,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -21,31 +20,11 @@ import { Controller, useForm } from "react-hook-form";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
+import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
 
-const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
+const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
-  const { companyId, companyListRes } = useContext(GlobalContext);
-
-  const { data: creditNoteLastNumber } = useQuery({
-    queryKey: [
-      "get",
-      "credit-notes",
-      "last-number",
-      {
-        company_id: companyId,
-      },
-    ],
-    queryFn: async () => {
-      const params = {
-        company_id: companyId,
-      };
-      const response = await getLastCreditNoteNumberRequest({ params });
-      return response.data.data;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  // ----------------------------------------------------------------------------------------------------------------------
+  const { companyListRes } = useContext(GlobalContext);
 
   const { mutateAsync: addCreditNote, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
@@ -57,7 +36,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       });
       return res.data;
     },
-    mutationKey: ["add", "credit", "other-note"],
+    mutationKey: ["add", "credit", "late-payment"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["get", "credit-notes", "last-number"]);
       queryClient.invalidateQueries(["get", "credit-notes", "list"]);
@@ -79,8 +58,8 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       party_id: data?.party_id,
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
-      credit_note_number: data?.credit_note_no || "",
-      credit_note_type: "other",
+      credit_note_number: creditNoteLastNumber?.debitNoteNumber || "",
+      credit_note_type: "late",
       // sale_challan_id: 456,
       // quality_id: data?.quality_id,
       // gray_order_id: 321,
@@ -98,7 +77,6 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       IGST_amount: +data.IGST_amount,
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
-      hsn_no: data.hsn_no,
       // net_rate: 6.67,
       // tcs_value: 0.75,
       // tcs_amount: 11.25,
@@ -111,7 +89,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
           // bill_id: data.bill_id,
           // model: selectedBillData?.model,
           // rate: +data.rate,
-          per: 1.0,
+          // per: 1.0,
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
           // quality: billData?.inhouse_quality?.quality_weight,
@@ -119,6 +97,8 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
         },
       ],
     };
+    console.log({ payload });
+
     await addCreditNote({ data: payload, companyId: data.company_id });
   };
 
@@ -132,7 +112,8 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      credit_note_no: "",
+      particular: "Late Payment",
+      // credit_note_no: "",
       company_id: null,
 
       is_current: 1,
@@ -181,6 +162,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     extra_tex_amount,
     amount,
     net_amount,
+    bill_id,
   } = watch();
 
   useEffect(() => {
@@ -223,6 +205,49 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     setValue,
   ]);
 
+  const { data: creditNoteLastNumber } = useQuery({
+    queryKey: [
+      "get",
+      "credit-notes",
+      "last-number",
+      {
+        company_id: company_id,
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: company_id,
+      };
+      const response = await getLastCreditNoteNumberRequest({ params });
+      return response.data.data;
+    },
+    enabled: Boolean(company_id),
+  });
+
+  // ----------------------------------------------------------------------------------------------------------------------
+
+  const { data: saleBillList, isLoadingSaleBillList } = useQuery({
+    queryKey: [
+      "saleBill",
+      "list",
+      {
+        company_id: company_id,
+        party_id: party_id,
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        page: 0,
+        pageSize: 99999,
+        company_id: company_id,
+        // party_id: party_id,
+      };
+      const res = await getSaleBillListRequest({ params });
+      return res.data?.data;
+    },
+    enabled: Boolean(company_id),
+  });
+
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: company_id }],
     queryFn: async () => {
@@ -248,6 +273,23 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
 
+  useEffect(() => {
+    if (
+      bill_id &&
+      bill_id?.length &&
+      saleBillList &&
+      saleBillList?.SaleBill?.length
+    ) {
+      let totalAmount = 0;
+
+      bill_id.forEach((id) => {
+        const data = saleBillList?.SaleBill?.find((item) => item.id === id);
+        totalAmount += +data.amount;
+      });
+      setValue("amount", totalAmount);
+    }
+  }, [bill_id, saleBillList, setValue]);
+
   return (
     <>
       <Modal
@@ -259,294 +301,64 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
         footer={false}
       >
         <div className="credit-note-container">
-          {/* <h2>Credit Note</h2>
-          <Flex
-            gap={12}
-            style={{
-              marginBottom: "12px",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <span>Credit Note No.</span>
-            <Input style={{ width: "100px" }} />
-          </Flex>
-
-          <table className="credit-note-table">
-            <tbody>
-              <tr>
-                <td colSpan={2} width={"25%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <label>Date:</label>
-                    <DatePicker
-                      value={date}
-                      onChange={(selectedDate) => setDate(selectedDate)}
-                      className="width-100"
-                    />
-                  </div>
-                </td>
-                <td colSpan={2} width={"25%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <label>Company:</label>
-                    <Select
-                      className="width-100 mt-2"
-                      placeholder="Select company"
-                      style={{
-                        textTransform: "capitalize",
-                      }}
-                      dropdownStyle={{
-                        textTransform: "capitalize",
-                      }}
-                      options={companyListRes?.rows.map(
-                        ({ id, company_name }) => {
-                          return { label: company_name, value: id };
-                        }
-                      )}
-                    />
-                  </div>
-                </td>
-                <td colSpan={2} width={"25%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <label>Party Company:</label>
-                    <Select
-                      className="width-100 mt-2"
-                      placeholder="Select party company"
-                      style={{
-                        textTransform: "capitalize",
-                      }}
-                      dropdownStyle={{
-                        textTransform: "capitalize",
-                      }}
-                    />
-                  </div>
-                </td>
-                <td colSpan={2} width={"25%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <Radio.Group
-                    // value={yearValue}
-                    // onChange={(e) => setYearValue(e.target.value)}
-                    >
-                      <Flex>
-                        <Radio style={{ fontSize: "12px" }} value={"current"}>
-                          Current Year
-                        </Radio>
-                        <Radio style={{ fontSize: "12px" }} value={"previous"}>
-                          Previous Year
-                        </Radio>
-                      </Flex>
-                    </Radio.Group>
-                    <Input
-                      className="width-100 mt-2"
-                      placeholder="Invoice number"
-                    />
-                  </div>
-                </td>
-              </tr>
-              <tr width="50%">
-                <td colSpan={4}>
-                  <div>GSTIN/UIN:</div>
-                  <div>State Name:</div>
-                  <div>Code:</div>
-                  <div>Contact:</div>
-                  <div>Email:</div>
-                </td>
-                <td colSpan={4}>
-                  <div>Party:</div>
-                  <div>GSTIN/UIN :</div>
-                  <div>PAN/IT No:</div>
-                  <div>State Name:</div>
-                </td>
-              </tr>
-              <tr>
-                <td style={{ width: "100px" }}>SL No.</td>
-                <td colSpan={2}>Particulars</td>
-                <td>Quantity</td>
-                <td>Rate</td>
-                <td>Per</td>
-                <td>Amount</td>
-              </tr>
-              <tr style={{ height: "50px" }}>
-                <td style={{ width: "100px" }}></td>
-                <td colSpan={2}></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={2}>Discount On Purchase</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  <Input />
-                </td>
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={2}>
-                  <div>SGST @ 0 %</div>
-                  <div>CGST @ 0 %</div>
-                  <div>CGST @ 0%</div>
-                  <div>Round Off</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  <div>0</div>
-                  <div>0</div>
-                  <div>0</div>
-                  <div>0</div>
-                </td>
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={2}>Total</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>00.00</td>
-              </tr>
-              <tr>
-                <td colSpan={8}>
-                  <Flex
-                    justify="space-between"
-                    style={{ width: "100%" }}
-                    className="mt-3"
-                  >
-                    <div>
-                      <div>Amount Chargable(in words)</div>
-                      <div>Xero Only</div>
-                      <div>Remarks:</div>
-                    </div>
-                    <div>E & O.E</div>
-                  </Flex>
-                  <Flex
-                    justify="space-between"
-                    style={{ width: "100%" }}
-                    className="mt-3"
-                  >
-                    <div></div>
-                    <div>
-                      <div>For,</div>
-                      <div>
-                        .................................................
-                      </div>
-                      <div>Authorized Signatory</div>
-                    </div>
-                  </Flex>
-                </td>
-              </tr>
-            </tbody>
-          </table> */}
           <table className="credit-note-table">
             <tbody>
               <tr>
                 <td colSpan={8} className="text-center">
-                  <h2>Credit Note</h2>
-                  <h5 style={{ marginBottom: "6px" }}>
-                    Credit Note No:
-                    <Form.Item
-                      label=""
-                      name="credit_note_no"
-                      validateStatus={errors.credit_note_no ? "error" : ""}
-                      help={
-                        errors.credit_note_no && errors.credit_note_no.message
-                      }
-                      required={true}
-                      wrapperCol={{ sm: 24 }}
-                    >
-                      <Controller
-                        control={control}
-                        name="credit_note_no"
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            style={{ width: "100px", marginLeft: "10px" }}
-                          />
-                        )}
-                      />
-                    </Form.Item>
-                  </h5>
-                  <span
-                    style={{
-                      color: "green",
-                      fontWeight: "600",
-                      marginTop: "-5px",
-                    }}
-                  >
-                    {creditNoteLastNumber?.debitNoteNumber}
-                  </span>
+                  <h2>Credit Note (Late Payment)</h2>
                 </td>
               </tr>
               <tr>
-                <td colSpan={2} width={"20%"}>
+                <td colSpan={2} width={"35%"}>
                   <div className="year-toggle">
-                    <div>Date:</div>
+                    <div>Company</div>
                     <Form.Item
                       label=""
-                      name="party_id"
-                      validateStatus={errors.date ? "error" : ""}
-                      help={errors.date && errors.date.message}
+                      name="company_id"
+                      validateStatus={errors.company_id ? "error" : ""}
+                      help={errors.company_id && errors.company_id.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
                     >
                       <Controller
                         control={control}
-                        name="date"
+                        name="company_id"
                         render={({ field }) => (
-                          <DatePicker
+                          <Select
                             {...field}
-                            name="date"
                             className="width-100"
+                            placeholder="Select Company"
+                            style={{
+                              textTransform: "capitalize",
+                            }}
+                            dropdownStyle={{
+                              textTransform: "capitalize",
+                            }}
+                            options={companyListRes.rows.map((company) => {
+                              return {
+                                label: company?.company_name,
+                                value: company?.id,
+                              };
+                            })}
                           />
                         )}
                       />
                     </Form.Item>
                   </div>
+                  <p>
+                    Credit Note No.
+                    <span
+                      style={{
+                        color: "green",
+                        fontWeight: "600",
+                        marginTop: "-5px",
+                      }}
+                    >
+                      {creditNoteLastNumber?.debitNoteNumber}
+                    </span>
+                  </p>
                 </td>
-                <td colSpan={2} width={"25%"}>
-                  <div className="year-toggle">
-                    <div className="year-toggle">
-                      <div>Company</div>
-                      <Form.Item
-                        label=""
-                        name="company_id"
-                        validateStatus={errors.company_id ? "error" : ""}
-                        help={errors.company_id && errors.company_id.message}
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name="company_id"
-                          render={({ field }) => (
-                            <Select
-                              {...field}
-                              className="width-100"
-                              placeholder="Select Company"
-                              style={{
-                                textTransform: "capitalize",
-                              }}
-                              dropdownStyle={{
-                                textTransform: "capitalize",
-                              }}
-                              options={companyListRes.rows.map((company) => {
-                                return {
-                                  label: company?.company_name,
-                                  value: company?.id,
-                                };
-                              })}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </div>
-                  </div>
-                </td>
-                <td colSpan={2} width={"25%"}>
+                <td colSpan={2} width={"35%"}>
                   <div className="year-toggle">
                     <div>Party Company</div>
                     <Form.Item
@@ -588,36 +400,62 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       />
                     </Form.Item>
                   </div>
-                </td>
-                <td colSpan={2} width={"30%"}>
                   <div className="year-toggle">
-                    <Form.Item label="" name="is_current">
-                      <Controller
-                        control={control}
-                        name="is_current"
-                        render={({ field }) => (
-                          <Radio.Group {...field}>
-                            <Radio value={1}>Current Year</Radio>
-                            <Radio value={0}>Previous Year</Radio>
-                          </Radio.Group>
-                        )}
-                      />
-                    </Form.Item>
+                    <div>Date:</div>
                     <Form.Item
                       label=""
-                      name="invoice_number"
-                      validateStatus={errors.invoice_number ? "error" : ""}
-                      help={
-                        errors.invoice_number && errors.invoice_number.message
-                      }
+                      name="party_id"
+                      validateStatus={errors.date ? "error" : ""}
+                      help={errors.date && errors.date.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
                     >
                       <Controller
                         control={control}
-                        name="invoice_number"
+                        name="date"
                         render={({ field }) => (
-                          <Input {...field} placeholder="Invoice Number" />
+                          <DatePicker
+                            {...field}
+                            name="date"
+                            className="width-100"
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </div>
+                </td>
+                <td colSpan={2} width={"30%"}>
+                  <div className="year-toggle">
+                    <Form.Item
+                      label=""
+                      name="bill_id"
+                      // validateStatus={errors.challan_type ? "error" : ""}
+                      // help={errors.challan_type && errors.challan_type.message}
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name="bill_id"
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            placeholder="Select Bill"
+                            mode="multiple"
+                            loading={isLoadingSaleBillList}
+                            options={saleBillList?.SaleBill?.map((item) => {
+                              return {
+                                label: item.e_way_bill_no,
+                                value: item.id,
+                              };
+                            })}
+                            style={{
+                              textTransform: "capitalize",
+                            }}
+                            dropdownStyle={{
+                              textTransform: "capitalize",
+                            }}
+                          />
                         )}
                       />
                     </Form.Item>
@@ -658,7 +496,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               <tr>
                 <td>SL No.</td>
                 <td colSpan={3}>Particulars</td>
-                <td>HSN Code</td>
+                <td style={{ width: "150px" }}>Quantity</td>
                 <td style={{ width: "50px" }}>Rate</td>
                 <td style={{ width: "50px" }}>Per</td>
                 <td style={{ width: "120px" }}>Amount</td>
@@ -685,24 +523,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     />
                   </Form.Item>
                 </td>
-                <td>
-                  <Form.Item
-                    label=""
-                    name="hsn_no"
-                    validateStatus={errors.hsn_no ? "error" : ""}
-                    help={errors.hsn_no && errors.hsn_no.message}
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="hsn_no"
-                      render={({ field }) => (
-                        <Input {...field} placeholder="234512" />
-                      )}
-                    />
-                  </Form.Item>
-                </td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td>
@@ -879,4 +700,4 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
   );
 };
 
-export default AddOther;
+export default AddLatePayment;
