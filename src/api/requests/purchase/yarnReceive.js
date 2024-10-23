@@ -6,7 +6,7 @@ export function createYarnReceiveRequest({ data, params }) {
   });
 }
 
-export function createYarnReturnRequest ({data, params}) {
+export function createYarnReturnRequest({ data, params }) {
   return api.post(`/yarn-stock/yarn-receive-challan/return/create`, data, {
     params
   })
@@ -34,19 +34,19 @@ export function deleteYarnReceiveRequest({ id, params }) {
   });
 }
 
-export function deleteReceiveSizeBeamOrderRequest({id, params}) {
+export function deleteReceiveSizeBeamOrderRequest({ id, params }) {
   return api.delete(`/order-master/recive-size-beam/delete/${id}`, {
     params
   })
 }
 
-export function createMultipleChallanYarnReceiveRequest({id, data, params}){
+export function createMultipleChallanYarnReceiveRequest({ id, data, params }) {
   return api.post(`/yarn-stock/yarn-receive-challan/multiple/create/${id}`, data, {
     params
-  }) ; 
+  });
 }
 
-export function getReceiveSizeBeamOrderRequest({id, params}) {
+export function getReceiveSizeBeamOrderRequest({ id, params }) {
   return api.get(`order-master/recive-size-beam/get/${id}`, {
     params
   })

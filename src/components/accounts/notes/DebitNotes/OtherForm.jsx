@@ -34,7 +34,7 @@ const OtherForm = ({ type, handleClose }) => {
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
 
-  const { mutateAsync: addDebitClaimNOte, isPending } = useMutation({
+  const { mutateAsync: addDebitOtherNOte, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
       const res = await createDebitNoteRequest({
         data,
@@ -44,7 +44,7 @@ const OtherForm = ({ type, handleClose }) => {
       });
       return res.data;
     },
-    mutationKey: ["add", "debit", "claim-note"],
+    mutationKey: ["add", "debit", "other-note"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["get", "debit-notes", "last-number"]);
       const successMessage = res?.message;
@@ -104,7 +104,7 @@ const OtherForm = ({ type, handleClose }) => {
         },
       ],
     };
-    await addDebitClaimNOte({ data: payload, companyId: data.company_id });
+    await addDebitOtherNOte({ data: payload, companyId: data.company_id });
   };
 
   const {

@@ -3,13 +3,13 @@ import AddSaleReturnType from "./AddSaleReturnType";
 import AddClaimNoteType from "./AddClaimNoteType";
 import AddDiscountNote from "./AddDiscountNote";
 import AddOther from "./AddOther";
+import AddLatePayment from "./AddLatePayment";
 
 const AddCreditNotes = ({
   setIsAddModalOpen,
   isAddModalOpen,
   creditNoteTypes,
 }) => {
-  console.log({ creditNoteTypes });
   const renderForm = useMemo(() => {
     if (creditNoteTypes === "sale_return") {
       return (
@@ -18,14 +18,21 @@ const AddCreditNotes = ({
           isAddModalOpen={isAddModalOpen}
         />
       );
-    } else if (creditNoteTypes === "claim_note") {
+    } else if (creditNoteTypes === "late_payment") {
+      return (
+        <AddLatePayment
+          setIsAddModalOpen={setIsAddModalOpen}
+          isAddModalOpen={isAddModalOpen}
+        />
+      );
+    } else if (creditNoteTypes === "claim") {
       return (
         <AddClaimNoteType
           setIsAddModalOpen={setIsAddModalOpen}
           isAddModalOpen={isAddModalOpen}
         />
       );
-    } else if (creditNoteTypes === "discount_note") {
+    } else if (creditNoteTypes === "discount") {
       return (
         <AddDiscountNote
           setIsAddModalOpen={setIsAddModalOpen}
