@@ -56,7 +56,6 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     const selectedBillData = saleBillList?.SaleBill?.find(
       (item) => item.id === data?.bill_id
     );
-    console.log({ selectedBillData });
 
     const payload = {
       // supplier_id: data?.supplier_id,
@@ -88,12 +87,13 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       credit_note_details: [
         {
-          bill_id: selectedBillData.id,
+          bill_id: selectedBillData?.id,
+          bill_no: selectedBillData?.invoice_no,
           model: "sale_bills",
           rate: +data.rate,
           per: 1.0,
           invoice_no: data?.invoice_number,
-          particular_name: "Claim On Purchase",
+          particular_name: "Claim On Sales",
           quantity: selectedBillData?.total_meter,
           amount: +data.amount,
         },
@@ -238,139 +238,190 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   }, [billData, setValue]);
 
   return (
-    <>
-      <Modal
-        open={isAddModalOpen}
-        width={"75%"}
-        onCancel={() => {
-          setIsAddModalOpen(false);
-        }}
-        footer={false}
-      >
-        <div className="credit-note-container">
-          {/* <h2>Claim Note</h2> */}
-
-          {/* <table className="credit-note-table">
+    <Modal
+      open={isAddModalOpen}
+      width={"75%"}
+      onCancel={() => {
+        setIsAddModalOpen(false);
+      }}
+      footer={false}
+    >
+      <div className="credit-note-container">
+        <Form>
+          <table className="credit-note-table">
             <tbody>
               <tr>
-                <td colSpan={2} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
+                <td colSpan={8} className="text-center">
+                  <h2>Claim Note</h2>
+                </td>
+              </tr>
+              <tr>
+                <td colSpan={3} width={"33.33%"}>
+                  <div className="p-2">
                     Credit Note No.
-                    <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
-                  </div>
-                </td>
-                <td colSpan={2} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <label>Date:</label>
-                    <DatePicker
-                      value={returnDate}
-                      onChange={(selectedDate) => setReturnDate(selectedDate)}
-                      className="width-100"
-                    />
-                  </div>
-                </td>
-                <td colSpan={2} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <Radio.Group
-                      value={yearValue}
-                      onChange={(e) => setYearValue(e.target.value)}
-                    >
-                      <Flex>
-                        <Radio style={{ fontSize: "12px" }} value={"previous"}>
-                          Previous Year
-                        </Radio>
-                        <Radio style={{ fontSize: "12px" }} value={"current"}>
-                          Current Year
-                        </Radio>
-                      </Flex>
-                    </Radio.Group>
-                    <Select
-                      className="width-100 mt-2"
-                      placeholder="Select Sale Challan No"
-                      loading={isLoadingSaleBillList}
-                      // options={
-                      //   saleChallanList &&
-                      //   saleChallanList?.row?.map((challan) => ({
-                      //     label: challan.challan_no,
-                      //     value: challan.id,
-                      //   }))
-                      // }
+                    <span
                       style={{
-                        textTransform: "capitalize",
+                        color: "green",
+                        fontWeight: "600",
+                        marginTop: "-5px",
                       }}
-                      dropdownStyle={{
-                        textTransform: "capitalize",
-                      }}
+                    >
+                      {creditNoteLastNumber?.debitNoteNumber || "-"}
+                    </span>
+                  </div>
+                </td>
+                <td colSpan={3} width={"33.33%"}>
+                  <div className="p-2">
+                    <div>Date:</div>
+                    <Controller
+                      control={control}
+                      name="date"
+                      render={({ field }) => (
+                        <DatePicker
+                          {...field}
+                          name="date"
+                          className="width-100"
+                        />
+                      )}
                     />
+                  </div>
+                </td>
+                <td colSpan={3} width={"33.33%"}>
+                  <div className="p-2">
+                    <Form.Item label="" name="is_current">
+                      <Controller
+                        control={control}
+                        name="is_current"
+                        render={({ field }) => (
+                          <Radio.Group {...field}>
+                            <Radio value={1}>Current Year</Radio>
+                            <Radio value={0}>Previous Year</Radio>
+                          </Radio.Group>
+                        )}
+                      />
+                    </Form.Item>
+                    <Form.Item
+                      label=""
+                      name="bill_id"
+                      // validateStatus={errors.challan_type ? "error" : ""}
+                      // help={errors.challan_type && errors.challan_type.message}
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name="bill_id"
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            placeholder="Select Bill"
+                            loading={isLoadingSaleBillList}
+                            options={saleBillList?.SaleBill?.map((item) => {
+                              return {
+                                label: item.invoice_no,
+                                value: item.id,
+                              };
+                            })}
+                            style={{
+                              textTransform: "capitalize",
+                            }}
+                            dropdownStyle={{
+                              textTransform: "capitalize",
+                            }}
+                          />
+                        )}
+                      />
+                    </Form.Item>
                   </div>
                 </td>
               </tr>
               <tr width="50%">
                 <td colSpan={4}>
-                  <div>GSTIN/UIN:</div>
-                  <div>State Name:</div>
-                  <div>Code:</div>
-                  <div>Contact:</div>
-                  <div>Email:</div>
+                  <div>GSTIN/UIN: {company?.gst_no || ""}</div>
+                  <div>State Name: {company?.state || ""}</div>
+                  <div>PinCode: {company?.pincode || ""}</div>
+                  <div>Contact: {company?.company_contact || ""}</div>
+                  <div>Email: {company?.company_email || ""}</div>
                 </td>
                 <td colSpan={4}>
-                  <div>Party:</div>
-                  <div>GSTIN/UIN :</div>
-                  <div>PAN/IT No:</div>
+                  <div>
+                    Party:{" "}
+                    <b>
+                      {`${billData?.party?.first_name} ${billData?.party?.last_name}` ||
+                        ""}
+                      {billData?.party?.address || ""}
+                    </b>
+                  </div>
+                  <div>GSTIN/UIN: {billData?.party?.gst_no || ""}</div>
+                  <div>PAN/IT No : {billData?.party?.pancard_no}</div>
                   <div>State Name:</div>
                 </td>
               </tr>
+            </tbody>
+          </table>
+          <table className="credit-note-table">
+            <thead>
               <tr>
-                <td style={{ width: "100px" }}>SL No.</td>
-                <td colSpan={1}>Particulars</td>
-                <td>Quantity</td>
-                <td>Rate</td>
-                <td>Per</td>
-                <td>Amount</td>
+                <th style={{ width: "50px" }}>SL No.</th>
+                <th colSpan={2}>Particulars</th>
+                <th>Quantity</th>
+                <th>Rate</th>
+                <th>Per</th>
+                <th style={{ width: "100px" }}>Amount</th>
               </tr>
+            </thead>
+            <tbody>
+              {/* <tr style={{ height: "50px" }}>
+            <td></td>
+            <td colSpan={2}></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr> */}
               <tr>
-                <td style={{ width: "100px" }}></td>
-                <td colSpan={1}></td>
                 <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={1}>Discount On Purchase</td>
+                <td colSpan={2}>Claim On Sales</td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td>
-                  <Input />
+                  <Controller
+                    control={control}
+                    name="amount"
+                    render={({ field }) => (
+                      <Input {...field} placeholder="12" />
+                    )}
+                  />
                 </td>
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={1}>
-                  <div>SGST @ 0 %</div>
-                  <div>CGST @ 0 %</div>
-                  <div>CGST @ 0%</div>
+                <td colSpan={2}>
+                  <div>SGST @ {SGST_value} %</div>
+                  <div>CGST @ {CGST_value} %</div>
+                  <div>IGST @ {IGST_value}%</div>
                   <div>Round Off</div>
                 </td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td>
-                  <div>0</div>
-                  <div>0</div>
-                  <div>0</div>
-                  <div>0</div>
+                  <div>{SGST_amount}</div>
+                  <div>{CGST_amount}</div>
+                  <div>{IGST_amount}</div>
+                  <div>{round_off_amount}</div>
                 </td>
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={1}>Total</td>
+                <td colSpan={2}>
+                  <b>Total</b>
+                </td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>00.00</td>
+                <td>{net_amount}</td>
               </tr>
               <tr>
                 <td colSpan={8}>
@@ -403,219 +454,21 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
               </tr>
             </tbody>
-          </table> */}
-          <Form>
-            <table className="credit-note-table">
-              <tbody>
-                <tr>
-                  <td colSpan={8} className="text-center">
-                    <h2>Claim Note</h2>
-                  </td>
-                </tr>
-                <tr>
-                  <td colSpan={3} width={"33.33%"}>
-                    <div className="p-2">
-                      Credit Note No.
-                      <div>{creditNoteLastNumber?.debitNoteNumber || "-"}</div>
-                    </div>
-                  </td>
-                  <td colSpan={3} width={"33.33%"}>
-                    <div className="p-2">
-                      <div>Date:</div>
-                      <Controller
-                        control={control}
-                        name="date"
-                        render={({ field }) => (
-                          <DatePicker
-                            {...field}
-                            name="date"
-                            className="width-100"
-                          />
-                        )}
-                      />
-                    </div>
-                  </td>
-                  <td colSpan={3} width={"33.33%"}>
-                    <div className="p-2">
-                      <Form.Item label="" name="is_current">
-                        <Controller
-                          control={control}
-                          name="is_current"
-                          render={({ field }) => (
-                            <Radio.Group {...field}>
-                              <Radio value={1}>Current Year</Radio>
-                              <Radio value={0}>Previous Year</Radio>
-                            </Radio.Group>
-                          )}
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label=""
-                        name="bill_id"
-                        // validateStatus={errors.challan_type ? "error" : ""}
-                        // help={errors.challan_type && errors.challan_type.message}
-                        required={true}
-                        wrapperCol={{ sm: 24 }}
-                      >
-                        <Controller
-                          control={control}
-                          name="bill_id"
-                          render={({ field }) => (
-                            <Select
-                              {...field}
-                              placeholder="Select Bill"
-                              loading={isLoadingSaleBillList}
-                              options={saleBillList?.SaleBill?.map((item) => {
-                                return {
-                                  label: item.e_way_bill_no,
-                                  value: item.id,
-                                };
-                              })}
-                              style={{
-                                textTransform: "capitalize",
-                              }}
-                              dropdownStyle={{
-                                textTransform: "capitalize",
-                              }}
-                            />
-                          )}
-                        />
-                      </Form.Item>
-                    </div>
-                  </td>
-                </tr>
-                <tr width="50%">
-                  <td colSpan={4}>
-                    <div>GSTIN/UIN: {company?.gst_no || ""}</div>
-                    <div>State Name: {company?.state || ""}</div>
-                    <div>PinCode: {company?.pincode || ""}</div>
-                    <div>Contact: {company?.company_contact || ""}</div>
-                    <div>Email: {company?.company_email || ""}</div>
-                  </td>
-                  <td colSpan={4}>
-                    <div>Party: {billData?.supplier?.supplier_name || ""}</div>
-                    <div>
-                      GSTIN/UIN: {billData?.supplier?.user?.gst_no || ""}
-                    </div>
-                    <div>
-                      PAN/IT No : {billData?.supplier?.user?.pancard_no}
-                    </div>
-                    <div>State Name:</div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table className="credit-note-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "50px" }}>SL No.</th>
-                  <th colSpan={2}>Particulars</th>
-                  <th>Quantity</th>
-                  <th>Rate</th>
-                  <th>Per</th>
-                  <th style={{ width: "100px" }}>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* <tr style={{ height: "50px" }}>
-            <td></td>
-            <td colSpan={2}></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr> */}
-                <tr>
-                  <td></td>
-                  <td colSpan={2}>Claim On Purchase</td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    <Controller
-                      control={control}
-                      name="amount"
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td colSpan={2}>
-                    <div>SGST @ {SGST_value} %</div>
-                    <div>CGST @ {CGST_value} %</div>
-                    <div>IGST @ {IGST_value}%</div>
-                    <div>Round Off</div>
-                  </td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>
-                    <div>{SGST_amount}</div>
-                    <div>{CGST_amount}</div>
-                    <div>{IGST_amount}</div>
-                    <div>{round_off_amount}</div>
-                  </td>
-                </tr>
-                <tr>
-                  <td></td>
-                  <td colSpan={2}>
-                    <b>Total</b>
-                  </td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td>{net_amount}</td>
-                </tr>
-                <tr>
-                  <td colSpan={8}>
-                    <Flex
-                      justify="space-between"
-                      style={{ width: "100%" }}
-                      className="mt-3"
-                    >
-                      <div>
-                        <div>Amount Chargable(in words)</div>
-                        <div>Xero Only</div>
-                        <div>Remarks:</div>
-                      </div>
-                      <div>E & O.E</div>
-                    </Flex>
-                    <Flex
-                      justify="space-between"
-                      style={{ width: "100%" }}
-                      className="mt-3"
-                    >
-                      <div></div>
-                      <div>
-                        <div>For,</div>
-                        <div>
-                          .................................................
-                        </div>
-                        <div>Authorized Signatory</div>
-                      </div>
-                    </Flex>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          </table>
 
-            <Flex gap={12} justify="flex-end">
-              <Button
-                type="primary"
-                onClick={handleSubmit(onSubmit)}
-                loading={isPending}
-              >
-                Generate
-              </Button>
-              <Button onClick={() => setIsAddModalOpen(false)}>Close</Button>
-            </Flex>
-          </Form>
-        </div>
-      </Modal>
-    </>
+          <Flex gap={12} justify="flex-end">
+            <Button
+              type="primary"
+              onClick={handleSubmit(onSubmit)}
+              loading={isPending}
+            >
+              Generate
+            </Button>
+            <Button onClick={() => setIsAddModalOpen(false)}>Close</Button>
+          </Flex>
+        </Form>
+      </div>
+    </Modal>
   );
 };
 

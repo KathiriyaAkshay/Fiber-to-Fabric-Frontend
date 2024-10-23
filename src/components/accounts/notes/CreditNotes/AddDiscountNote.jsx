@@ -201,6 +201,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       );
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
+  console.log({ selectedPartyCompany });
 
   const calculateTaxAmount = () => {
     let totalAmount = 0;
@@ -435,8 +436,10 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
                 <td colSpan={4}>
                   <div>
-                    Supplier:
-                    {selectedPartyCompany?.supplier?.supplier_company || "-"}
+                    Party:
+                    <b>{selectedPartyCompany?.party?.company_name || "-"}</b>
+                    <br />
+                    {selectedPartyCompany?.address || "-"}
                   </div>
                   <div>GSTIN/UIN: {selectedPartyCompany?.gst_no || "-"}</div>
                   <div>
