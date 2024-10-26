@@ -159,6 +159,7 @@ import MonthlyTransactionReport from "./pages/accounts/reports/monthlyTransactio
 import Turnover from "./pages/accounts/reports/turnover";
 import Gstr1 from "./pages/accounts/reports/gstr1";
 import Gstr2 from "./pages/accounts/reports/gstr2";
+import GstrPrint from "./pages/accounts/reports/gstrPrint";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -776,12 +777,16 @@ const router = createBrowserRouter([
                 element: <div>particular-ledger-report</div>,
               },
               {
+                path: "gstr-report/print/:key",
+                element: <GstrPrint />,
+              },
+              {
                 path: "gstr-1-report",
-                element: <Gstr1/>,
+                element: <Gstr1 />,
               },
               {
                 path: "gstr-2-report",
-                element: <Gstr2/>,
+                element: <Gstr2 />,
               },
               {
                 path: "gstr-3b-report",
