@@ -1,0 +1,5 @@
+.gstr-table .ant-table-wrapper .ant-table-thead >tr>th{
+    background-color: transparent;
+    color:black;
+    font-weight: 700;
+}
