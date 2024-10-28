@@ -298,7 +298,7 @@ td {
 }
 
 input:read-only {
-  background-color: #efefef !important;
+  background-color: #efefef;
 }
 
 /* Menu item related css  */
@@ -813,4 +813,19 @@ input:read-only {
 .statement-passbook-table tbody tr.green {
   /* background-color: rgba(0, 128, 0, 0.5); */
   background-color: #eff5e9;
+}
+
+.remove-input-style {
+  background-color: #ffffff !important;
+  border: none !important;
+}
+
+.remove-input-style:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.remove-input-style:hover {
+  box-shadow: none;
+  border-color: transparent;
 }
