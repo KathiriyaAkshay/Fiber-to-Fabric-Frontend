@@ -160,6 +160,7 @@ import Turnover from "./pages/accounts/reports/turnover";
 import Gstr1 from "./pages/accounts/reports/gstr1";
 import Gstr2 from "./pages/accounts/reports/gstr2";
 import GstrPrint from "./pages/accounts/reports/gstrPrint";
+import LiveStockReport from "./pages/accounts/reports/liveStockReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -802,7 +803,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "live-stock-report",
-                element: <div>live-stock-report</div>,
+                element: <LiveStockReport />,
               },
               {
                 path: "monthly-transaction-report",

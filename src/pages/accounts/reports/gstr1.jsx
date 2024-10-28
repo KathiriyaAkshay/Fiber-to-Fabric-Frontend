@@ -18,46 +18,6 @@ import { getGstr1ReportService } from "../../../api/requests/accounts/reports";
 import { useQuery } from "@tanstack/react-query";
 import ConfirmGstModal from "./confirmGstModal";
 
-// Define the data for the table
-// const data1 = [
-//   {
-//     key: "1",
-//     slNo: "1",
-//     particulars: "B2B Invoices - 4A,4B,4C,6B,6C",
-//     voucherCount: 46,
-//     taxableAmount: 872146,
-//     centralTax: 14521,
-//     stateTax: 14842,
-//     integratedTax: 31687,
-//     taxAmount: 61050,
-//     invoiceAmount: 933197,
-//   },
-//   {
-//     key: "2",
-//     slNo: "2",
-//     particulars: "Credit/Debit Notes(Registered)-9B",
-//     voucherCount: 29,
-//     taxableAmount: -708558,
-//     centralTax: -3920,
-//     stateTax: -4132,
-//     integratedTax: -31737,
-//     taxAmount: -39789,
-//     invoiceAmount: -678831,
-//   },
-//   {
-//     key: "3",
-//     slNo: "3",
-//     particulars: "HSN-wise Summary of Outward Suppliers-12",
-//     voucherCount: 17,
-//     taxableAmount: 163588,
-//     centralTax: 10601,
-//     stateTax: 10710,
-//     integratedTax: -50,
-//     taxAmount: 21261,
-//     invoiceAmount: 254366,
-//   },
-// ];
-
 const Gstr1 = () => {
   const { companyListRes } = useContext(GlobalContext);
 
