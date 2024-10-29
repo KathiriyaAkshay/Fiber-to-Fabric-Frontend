@@ -42,10 +42,14 @@ const CurrentStock = () => {
   const { companyListRes } = useContext(GlobalContext);
 
   const [date, setDate] = useState(dayjs());
+  const [rightDate, setRightDate] = useState();
   const [company, setCompany] = useState(null);
   const [numOfFields, setNumOfFields] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalMeters, setTotalMeters] = useState(0);
+
+  const [rightTotalAmount, setRightTotalAmount] = useState(0);
+  const [rightTotalMeters, setRightTotalMeters] = useState(0);
 
   const { mutateAsync: saveCurrentStock, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -93,7 +97,7 @@ const CurrentStock = () => {
     defaultValues: {},
   });
 
-  const { data: currentStockData, isFetching: isLoadingOpeningStock } =
+  const { data: currentStockData, isFetching: isLoadingCurrentStock } =
     useQuery({
       queryKey: ["current-stock", "report", "data", { company, date }],
       queryFn: async () => {
@@ -108,8 +112,44 @@ const CurrentStock = () => {
       enabled: Boolean(company && date),
     });
 
+  const {
+    data: rightCurrentStockData,
+    isFetching: isLoadingRightCurrentStock,
+  } = useQuery({
+    queryKey: ["right-current-stock", "report", "data", { company, rightDate }],
+    queryFn: async () => {
+      const res = await getCurrentStockReportService({
+        params: {
+          company_id: company,
+          date: getTZformatDate(rightDate),
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(company && rightDate),
+  });
+
   useEffect(() => {
-    if (!isLoadingOpeningStock) {
+    if (!isLoadingRightCurrentStock) {
+      let totalAmount = 0;
+      let totalMeters = 0;
+      if (
+        rightCurrentStockData &&
+        rightCurrentStockData?.stockOpeningReport?.length
+      ) {
+        rightCurrentStockData?.stockOpeningReport?.forEach((item) => {
+          totalAmount += +item.amount;
+          totalMeters += +item.meters;
+        });
+
+        setRightTotalAmount(totalAmount);
+        setRightTotalMeters(totalMeters);
+      }
+    }
+  }, [rightCurrentStockData, isLoadingRightCurrentStock, setValue]);
+
+  useEffect(() => {
+    if (!isLoadingCurrentStock) {
       let totalAmount = 0;
       let totalMeters = 0;
       if (currentStockData && currentStockData?.stockOpeningReport?.length) {
@@ -146,7 +186,7 @@ const CurrentStock = () => {
       setTotalAmount(totalAmount);
       setTotalMeters(totalMeters);
     }
-  }, [currentStockData, isLoadingOpeningStock, setValue]);
+  }, [currentStockData, isLoadingCurrentStock, setValue]);
 
   // ***********************************************************************
 
@@ -184,6 +224,7 @@ const CurrentStock = () => {
 
   return (
     <Row gutter={12}>
+      {/* Left Part */}
       <Col span={12}>
         <Card
           style={{
@@ -246,120 +287,131 @@ const CurrentStock = () => {
                 Select company to see current stocks..
               </Typography.Text>
             </Flex>
-          ) : isLoadingOpeningStock ? (
+          ) : isLoadingCurrentStock ? (
             <Flex justify="center">
               <Spin />
             </Flex>
           ) : (
-            <table className="custom-table" style={{ textAlign: "left" }}>
-              <thead>
-                <tr>
-                  <th>Particular</th>
-                  <th>KG/Meter</th>
-                  <th>Amount</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {numOfFields && numOfFields.length ? (
-                  numOfFields?.map((item) => {
-                    const pname = getValues(`particular_name_${item}`);
-                    const isDisable = DEFAULT_PARTICULARS.includes(pname);
-
-                    return (
-                      <tr key={item + "_current_stock_list"}>
-                        <td>
-                          <Controller
-                            control={control}
-                            name={`particular_name_${item}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                placeholder="Particular name"
-                                className="remove-input-style"
-                                disabled={isDisable}
-                              />
-                            )}
-                          />
-                        </td>
-                        <td>
-                          <Controller
-                            control={control}
-                            name={`meters_${item}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                placeholder="100"
-                                type="number"
-                                onChange={(e) => {
-                                  field.onChange(+e.target.value);
-                                }}
-                                className="remove-input-style"
-                                // disabled={isDisable}
-                              />
-                            )}
-                          />
-                        </td>
-                        <td>
-                          <Controller
-                            control={control}
-                            name={`amount_${item}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                placeholder="100"
-                                type="number"
-                                onChange={(e) => {
-                                  field.onChange(+e.target.value);
-                                }}
-                                className="remove-input-style"
-                                // disabled={isDisable}
-                              />
-                            )}
-                          />
-                        </td>
-
-                        <td style={{ textAlign: "center", width: "60px" }}>
-                          <Controller
-                            control={control}
-                            name={`id_${item}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                type="hidden"
-                                style={{ width: "20px" }}
-                                disabled={isDisable}
-                              />
-                            )}
-                          />
-                          {!isDisable && (
-                            <Button
-                              danger
-                              style={{ width: "100%" }}
-                              onClick={() => deleteEntry(item)}
-                            >
-                              <DeleteOutlined />
-                            </Button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
+            <div
+              style={{ maxHeight: "calc(100vh - 352px)", overflowY: "auto" }}
+            >
+              <table className="custom-table" style={{ textAlign: "left" }}>
+                <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
                   <tr>
-                    <td colSpan={4} style={{ textAlign: "center" }}>
-                      No Data Found
-                    </td>
+                    <th>Particular</th>
+                    <th>KG/Meter</th>
+                    <th>Amount</th>
+                    <th></th>
                   </tr>
-                )}
-                <tr>
-                  <td>Total</td>
-                  <td>{totalMeters}</td>
-                  <td>{totalAmount}</td>
-                  <td></td>
-                </tr>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {numOfFields && numOfFields.length ? (
+                    numOfFields?.map((item) => {
+                      const pname = getValues(`particular_name_${item}`);
+                      const isDisable = DEFAULT_PARTICULARS.includes(pname);
+
+                      return (
+                        <tr key={item + "_current_stock_list"}>
+                          <td>
+                            <Controller
+                              control={control}
+                              name={`particular_name_${item}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="Particular name"
+                                  className="remove-input-style"
+                                  disabled={isDisable}
+                                />
+                              )}
+                            />
+                          </td>
+                          <td>
+                            <Controller
+                              control={control}
+                              name={`meters_${item}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="100"
+                                  type="number"
+                                  onChange={(e) => {
+                                    field.onChange(+e.target.value);
+                                  }}
+                                  className="remove-input-style"
+                                  // disabled={isDisable}
+                                />
+                              )}
+                            />
+                          </td>
+                          <td>
+                            <Controller
+                              control={control}
+                              name={`amount_${item}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  placeholder="100"
+                                  type="number"
+                                  onChange={(e) => {
+                                    field.onChange(+e.target.value);
+                                  }}
+                                  className="remove-input-style"
+                                  // disabled={isDisable}
+                                />
+                              )}
+                            />
+                          </td>
+
+                          <td style={{ textAlign: "center", width: "60px" }}>
+                            <Controller
+                              control={control}
+                              name={`id_${item}`}
+                              render={({ field }) => (
+                                <Input
+                                  {...field}
+                                  type="hidden"
+                                  style={{ width: "20px" }}
+                                  disabled={isDisable}
+                                />
+                              )}
+                            />
+                            {!isDisable && (
+                              <Button
+                                danger
+                                style={{ width: "100%" }}
+                                onClick={() => deleteEntry(item)}
+                              >
+                                <DeleteOutlined />
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={4} style={{ textAlign: "center" }}>
+                        No Data Found
+                      </td>
+                    </tr>
+                  )}
+                  <tr
+                    style={{
+                      position: "sticky",
+                      bottom: -1,
+                      zIndex: 1,
+                      backgroundColor: "#f0f0f0",
+                    }}
+                  >
+                    <td>Total</td>
+                    <td>{totalMeters}</td>
+                    <td>{totalAmount}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           )}
 
           {!currentStockData ? null : (
@@ -384,6 +436,8 @@ const CurrentStock = () => {
           )}
         </Card>
       </Col>
+
+      {/* Right Part */}
       <Col span={12}>
         <Card
           style={{
@@ -400,48 +454,67 @@ const CurrentStock = () => {
               <Typography.Text className="whitespace-nowrap font-semibold">
                 Stock Date:
               </Typography.Text>
-              <Select
-                allowClear
-                placeholder="Select Stock Date"
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-                // value={company}
-                // onChange={setCompany}
-                options={[]}
+              <DatePicker
+                value={rightDate}
+                format={"DD-MM-YYYY"}
+                onChange={(selectedDate) => setRightDate(selectedDate)}
               />
             </Flex>
           </Flex>
 
           <Divider />
 
-          <table className="custom-table" style={{ textAlign: "left" }}>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Particular</th>
-                <th>KG/Meter</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>12/12/2024</td>
-                <td>Particular</td>
-                <td>34</td>
-                <td>46</td>
-              </tr>
-              <tr>
-                <td colSpan={2}>Total</td>
-                <td>0</td>
-                <td>0</td>
-              </tr>
-            </tbody>
-          </table>
+          <div style={{ maxHeight: "calc(100vh - 300px)", overflowY: "auto" }}>
+            <table className="custom-table" style={{ textAlign: "left" }}>
+              <thead style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                <tr>
+                  <th>Date</th>
+                  <th>Particular</th>
+                  <th>KG/Meter</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoadingRightCurrentStock ? (
+                  <Flex justify="center">
+                    <Spin />
+                  </Flex>
+                ) : rightCurrentStockData &&
+                  rightCurrentStockData?.stockOpeningReport?.length ? (
+                  rightCurrentStockData?.stockOpeningReport?.map(
+                    (item, index) => {
+                      return (
+                        <tr key={index + "_right_current_stock"}>
+                          <td>{dayjs(item?.createdAt).format("DD-MM-YYYY")}</td>
+                          <td>{item?.particular_name}</td>
+                          <td>{item?.meters}</td>
+                          <td>{item?.amount}</td>
+                        </tr>
+                      );
+                    }
+                  )
+                ) : (
+                  <tr>
+                    <td style={{ textAlign: "center" }} colSpan={4}>
+                      No data found
+                    </td>
+                  </tr>
+                )}
+                <tr
+                  style={{
+                    position: "sticky",
+                    bottom: -1,
+                    zIndex: 1,
+                    backgroundColor: "#f0f0f0",
+                  }}
+                >
+                  <td colSpan={2}>Total</td>
+                  <td>{rightTotalMeters}</td>
+                  <td>{rightTotalAmount}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </Card>
       </Col>
     </Row>
