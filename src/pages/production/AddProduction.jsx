@@ -197,7 +197,7 @@ const AddProduction = () => {
         companyId,
         params: { company_id: companyId },
       });
-      setValue("last_taka_no", +res.data?.data?.taka_no);
+      setValue("last_taka_no", isNaN(res.data?.data?.taka_no)?1:+res.data?.data?.taka_no);
       setValue("last_taka_no_date", dayjs(res.data?.data?.createdAt));
       return res.data?.data;
     },

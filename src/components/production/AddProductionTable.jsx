@@ -282,7 +282,7 @@ const AddProductionTable = ({
                   width={80}
                 >
                   {fieldNumber <= activeField
-                    ? lastProductionTaka?.taka_no + fieldNumber
+                    ? isNaN(lastProductionTaka?.taka_no)?1:lastProductionTaka?.taka_no + fieldNumber
                     : ""}
                 </td>
 
