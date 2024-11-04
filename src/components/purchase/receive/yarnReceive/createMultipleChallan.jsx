@@ -34,10 +34,6 @@ const MultipleChallanCreateButton = ({ details }) => {
     });
 
     useEffect(() => {
-
-    }, [])
-
-    useEffect(() => {
         let temp = [];
         let temp_challan_no = `${details?.challan_no}`;
         temp.push(`${temp_challan_no}~0`);

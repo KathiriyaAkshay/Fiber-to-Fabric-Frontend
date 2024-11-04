@@ -615,7 +615,11 @@ const AddPurchaseTaka = () => {
                       textTransform: "capitalize",
                     }}
                     onChange={(selectedValue) =>
+                    {
+                      console.log("Run this function");
+                      
                       orderChangeHandler(field, selectedValue)
+                    }
                     }
                   />
                 )}
