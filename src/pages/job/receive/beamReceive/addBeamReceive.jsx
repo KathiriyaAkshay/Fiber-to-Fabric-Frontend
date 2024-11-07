@@ -138,8 +138,8 @@ const AddBeamReceive = () => {
     if (hasError == 0) {
       const newData = {
         machine_name: data.machine_name,
-        quality_id: data.quality_id,
-        supplier_id: data.supplier_id,
+        quality_id: +data.quality_id,
+        supplier_id: +data.supplier_id,
         challan_beam_type: data.challan_beam_type,
         challan_no: data.challan_no,
         receive_date: dayjs(data.date).format("YYYY-MM-DD"),
@@ -149,7 +149,9 @@ const AddBeamReceive = () => {
               ? challan_beam_type === "non pasarela (secondary)"
                 ? "SJBN-" + (lastBeamNo + (index + 1))
                 : "JBN-" + (lastBeamNo + (index + 1))
-              : 0,
+              : challan_beam_type === "non pasarela (secondary)"
+              ? "SJBN-" + 1
+              : "JBN-" + 1,
             supplier_beam_no: data[`supplier_beam_no_${field}`],
             tars: parseInt(data[`tars_${field}`]),
             pano: parseInt(data[`pano_${field}`]),
@@ -186,6 +188,7 @@ const AddBeamReceive = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const { machine_name, supplier_name, challan_beam_type } = watch();
+  console.table("🧑‍💻 || challan_beam_type:", challan_beam_type);
 
   // ------------------------------------------------------------------------------------------
 
@@ -653,7 +656,7 @@ const AddBeamReceive = () => {
         </Row>
 
         {challan_beam_type != undefined &&
-          lastBeamNo !== undefined &&
+          // lastBeamNo !== undefined &&
           fieldArray.map((fieldNumber, index) => {
             return (
               <Row
@@ -682,7 +685,9 @@ const AddBeamReceive = () => {
                         ? challan_beam_type === "non pasarela (secondary)"
                           ? "SJBN-" + (lastBeamNo + (index + 1))
                           : "JBN-" + (lastBeamNo + (index + 1))
-                        : 0}
+                        : challan_beam_type === "non pasarela (secondary)"
+                        ? "SJBN-" + 1
+                        : "JBN-" + 1}
                     </Typography.Text>
                   </Form.Item>
                 </Col>
