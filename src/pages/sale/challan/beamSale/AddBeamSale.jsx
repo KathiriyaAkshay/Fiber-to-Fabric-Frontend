@@ -6,6 +6,7 @@ import {
   Col,
   DatePicker,
   Divider,
+  Empty,
   Flex,
   Form,
   Input,
@@ -123,6 +124,10 @@ const AddBeamSale = () => {
       message.error("At least one beam should be selected.");
       return;
     }
+    if (inhouseWarpIds.length == 0 ){
+      message.warning("Please, Select inhouse wraper") ; 
+      return ; 
+    }
 
     const payload = {
       supplier_id: +data.supplier_id,
@@ -141,7 +146,6 @@ const AddBeamSale = () => {
       beam_load_ids: beamLoadIds,
     };
     delete payload.challan_date;
-
     await addBeamSaleChallan(payload);
   }
 
@@ -320,7 +324,7 @@ const AddBeamSale = () => {
               return {
                 beam_load_id: item.id,
                 beam_no: obj.beam_no,
-                ends_or_tars: obj.ends_or_tars,
+                ends_or_tars: obj.ends_or_tars || obj.tars,
                 pano: obj.pano,
                 taka: obj.taka,
                 meters: obj.meter,
@@ -594,6 +598,7 @@ const AddBeamSale = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={6}>
@@ -779,6 +784,7 @@ const AddBeamSale = () => {
                       taka,
                       meters,
                       weight,
+                      tars
                     },
                     index
                   ) => {
@@ -800,7 +806,7 @@ const AddBeamSale = () => {
                         <td width={150} style={{ textAlign: "center" }}>
                           {beam_no}
                         </td>
-                        <td style={{ textAlign: "center" }}>{ends_or_tars}</td>
+                        <td style={{ textAlign: "center" }}>{ends_or_tars || tars}</td>
                         <td style={{ textAlign: "center" }}>{pano}</td>
                         <td style={{ textAlign: "center" }}>{taka}</td>
                         <td style={{ textAlign: "center" }}>{meters}</td>
@@ -809,14 +815,16 @@ const AddBeamSale = () => {
                   }
                 )
               ) : (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: "center" }}>
-                    Not found
-                  </td>
-                </tr>
+                null
               )}
             </tbody>
           </table>
+        )}
+
+        {beamTypeList && beamTypeList?.length == 0 && (
+          <Empty
+            description = "Not Found any Beam"
+          />
         )}
 
         <br />
@@ -882,6 +890,7 @@ const AddBeamSale = () => {
               <Controller
                 control={control}
                 name="delivery_charge"
+                render={({ field }) => (
                 render={({ field }) => (
                   <Input
                     {...field}

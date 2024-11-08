@@ -29,7 +29,7 @@ function AddMachine() {
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: addMachine } = useMutation({
+  const { mutateAsync: addMachine, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addMachineRequest({
         data,
@@ -146,7 +146,7 @@ function AddMachine() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

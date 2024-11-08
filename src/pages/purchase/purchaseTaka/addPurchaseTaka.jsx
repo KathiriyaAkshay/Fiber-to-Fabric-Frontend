@@ -410,7 +410,7 @@ const AddPurchaseTaka = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Create Purchase Challan</h3>
+        <h3 className="m-0 text-primary">Create Purchase Challan | GST No: {getValues("gst_in_1")}</h3>
       </div>
       <Form layout="vertical">
         <Row
@@ -502,6 +502,7 @@ const AddPurchaseTaka = () => {
           gutter={18}
           style={{
             padding: "0px 12px",
+            marginTop: -20
           }}
         >
           <Col span={6}>
@@ -523,7 +524,7 @@ const AddPurchaseTaka = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Gst In"
               name="gst_in_1"
@@ -540,7 +541,7 @@ const AddPurchaseTaka = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -579,14 +580,7 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row
-          gutter={18}
-          style={{
-            padding: "0px 12px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Order"
@@ -626,6 +620,15 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
+          
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "0px 12px",
+          }}
+        >
 
           <Col span={6}>
             <Form.Item
@@ -678,14 +681,7 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row
-          gutter={18}
-          style={{
-            padding: "0px 12px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Select Supplier"
@@ -752,6 +748,15 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
+          
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "0px 12px",
+          }}
+        >
 
           <Col span={3}>
             <Form.Item
@@ -815,14 +820,10 @@ const AddPurchaseTaka = () => {
           <Row
             gutter={18}
             style={{
-              padding: "0px 12px",
+              paddingBottom: 10, 
+              marginTop: -10
             }}
           >
-            <Col span={6}></Col>
-
-            <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red" }}>Pending</Typography>
-            </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
               <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
@@ -838,7 +839,7 @@ const AddPurchaseTaka = () => {
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop:0}} />
 
         <FieldTable
           errors={errors}

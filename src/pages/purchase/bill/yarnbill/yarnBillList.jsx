@@ -181,7 +181,7 @@ const YarnBillList = () => {
     },
     {
       title: "Total Amount",
-      dataIndex: "discount_brokerage_amount",
+      dataIndex: "freight_amount",
     },
     {
       title: "Amt incl. gst.",
@@ -391,7 +391,6 @@ const YarnBillList = () => {
         dataSource={yarnBillData?.row || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
         pagination={{
           total: yarnBillData?.count || 0,
           showSizeChanger: true,
@@ -426,10 +425,10 @@ const YarnBillList = () => {
               <Table.Summary.Cell />
               <Table.Summary.Cell />
               <Table.Summary.Cell>
-                <Typography.Text>{amount_include_gst}</Typography.Text>
+                <Typography.Text>{parseFloat(total_amount).toFixed(2)}</Typography.Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell>
-                <Typography.Text>{total_amount}</Typography.Text>
+                <Typography.Text>{parseFloat(amount_include_gst).toFixed(2)}</Typography.Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell />
               <Table.Summary.Cell />

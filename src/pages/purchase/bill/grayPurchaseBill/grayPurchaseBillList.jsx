@@ -229,7 +229,7 @@ const GrayPurchaseBillList = () => {
     },
     {
       title: "Order No",
-      dataIndex: [" ", "order_no"],
+      dataIndex: ["gray_order", "order_no"],
       key: "order_no",
     },
     {
@@ -274,17 +274,17 @@ const GrayPurchaseBillList = () => {
       dataIndex: ["purchase_taka_bill", "net_amount"],
       key: "net_amount",
     },
-    {
-      title: "Due Date",
-      dataIndex: ["purchase_taka_bill", "due_date"],
-      render: (text) => text || "-",
-    },
-    {
-      title: "Due Days",
-      dataIndex: ["purchase_taka_bill", "due_days"],
-      key: "due_days",
-      render: (text) => text || "-",
-    },
+    // {
+    //   title: "Due Date",
+    //   dataIndex: ["purchase_taka_bill", "due_date"],
+    //   render: (text) => text || "-",
+    // },
+    // {
+    //   title: "Due Days",
+    //   dataIndex: ["purchase_taka_bill", "due_days"],
+    //   key: "due_days",
+    //   render: (text) => text || "-",
+    // },
     {
       title: "Bill Status",
       dataIndex: "bill_status",
@@ -365,18 +365,6 @@ const GrayPurchaseBillList = () => {
           onChange: onPageChange,
         }}
         summary={(pageData) => {
-          let totalGrandMeter = 0;
-          let totalRate = 0;
-          let totalAmount = 0;
-          let totalNetAmount = 0;
-          console.log({ pageData });
-
-          pageData.forEach(({ total_meter, purchase_taka_bill }) => {
-            totalGrandMeter += +total_meter;
-            totalRate += +purchase_taka_bill?.rate || 0;
-            totalAmount += +purchase_taka_bill?.amount || 0;
-            totalNetAmount += +purchase_taka_bill?.net_amount || 0;
-          });
           return (
             <>
               <Table.Summary.Row className="font-semibold">
@@ -386,18 +374,18 @@ const GrayPurchaseBillList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{parseFloat(grayPurchaseBillList?.total_taka || 0).toFixed(2)}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{parseFloat(grayPurchaseBillList?.total_meter || 0).toFixed(2)}</Typography.Text>
+                </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalGrandMeter}</Typography.Text>
+                  <Typography.Text>{}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalRate}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalAmount}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalNetAmount}</Typography.Text>
+                  <Typography.Text>{}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />

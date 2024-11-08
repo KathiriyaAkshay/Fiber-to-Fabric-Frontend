@@ -575,7 +575,7 @@ const AddYarnSent = () => {
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{marginTop: 5}} />
 
         {fieldArray.map((field, index) => {
           return (
@@ -667,6 +667,7 @@ const RenderDynamicFields = ({
       gutter={18}
       style={{
         padding: "12px",
+        marginTop: -20
       }}
       key={`${field}_add_yarn_sent`}
     >

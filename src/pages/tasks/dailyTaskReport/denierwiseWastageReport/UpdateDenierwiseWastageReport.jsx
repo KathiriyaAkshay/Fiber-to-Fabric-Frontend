@@ -67,7 +67,7 @@ function UpdateDenierwiseWastageReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: updateDenierwiseWastageReport } = useMutation({
+  const { mutateAsync: updateDenierwiseWastageReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateDenierwiseWastageReportRequest({
         id,
@@ -370,7 +370,7 @@ function UpdateDenierwiseWastageReport() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Update
           </Button>
         </Flex>

@@ -3,7 +3,7 @@ import { Button, Flex, Modal, Typography } from "antd";
 import { BarcodeOutlined, CloseOutlined } from "@ant-design/icons";
 import ReactToPrint from "react-to-print";
 
-const BeamCardInformationModel = ({ data }) => {
+const BeamCardInformationModel = ({ data, title }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const ComponentRef = useRef();
 
@@ -31,7 +31,7 @@ const BeamCardInformationModel = ({ data }) => {
         open={isModalOpen}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Beam card information
+            {title == undefined?"Beam card information":title}
           </Typography.Text>
         }
         centered={true}

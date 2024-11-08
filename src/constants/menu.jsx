@@ -357,18 +357,18 @@ export const menubarOptionsList = [
           </Link>
         ),
         children: [
-          {
-            path: "grey-sale",
-            key: "Grey Sale",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="sales/challan/grey-sale"
-              >
-                Grey Sale
-              </Link>
-            ),
-          },
+          // {
+          //   path: "grey-sale",
+          //   key: "Grey Sale",
+          //   label: (
+          //     <Link
+          //       className="text-current no-underline hover:text-current"
+          //       to="sales/challan/grey-sale"
+          //     >
+          //       Grey Sale
+          //     </Link>
+          //   ),
+          // },
           {
             path: "yarn-sale",
             key: "Yarn Sale",
@@ -444,18 +444,6 @@ export const menubarOptionsList = [
         ),
         children: [
           {
-            path: "sales-bill-list",
-            key: "Sales Bill List",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="sales/bill/sales-bill-list"
-              >
-                Sales Bill List
-              </Link>
-            ),
-          },
-          {
             path: "yarn-sales-bill-list",
             key: "Yarn Sales Bill List",
             label: (
@@ -464,6 +452,30 @@ export const menubarOptionsList = [
                 to="sales/bill/yarn-sales-bill-list"
               >
                 Yarn Sales Bill List
+              </Link>
+            ),
+          },
+          {
+            path: "job-work-bill-list",
+            key: "Job Work Bill List",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/bill/job-work-bill-list"
+              >
+                Job Work Bill List
+              </Link>
+            ),
+          },
+          {
+            path: "sales-bill-list",
+            key: "Sales Bill List",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/bill/sales-bill-list"
+              >
+                Sales Bill List
               </Link>
             ),
           },
@@ -488,18 +500,6 @@ export const menubarOptionsList = [
                 to="sales/bill/job-grey-sales-bill-list"
               >
                 Job Grey Sales Bill List
-              </Link>
-            ),
-          },
-          {
-            path: "job-work-bill-list",
-            key: "Job Work Bill List",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="sales/bill/job-work-bill-list"
-              >
-                Job Work Bill List
               </Link>
             ),
           },
@@ -567,6 +567,18 @@ export const menubarOptionsList = [
               </Link>
             ),
           },
+          {
+            path: "yarn-bills",
+            key: "Yarn Bills",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="purchase/bill/yarn-bills"
+              >
+                Yarn Bills
+              </Link>
+            ),
+          },
         ],
       },
       {
@@ -582,18 +594,6 @@ export const menubarOptionsList = [
         ),
         children: [
           {
-            path: "bills-of-size-beam",
-            key: "Bills Of Size Beam",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="purchase/purchase-size-beam/bills-of-size-beam"
-              >
-                Bills Of Size Beam
-              </Link>
-            ),
-          },
-          {
             path: "receive-size-beam",
             key: "Receive Size Beam",
             label: (
@@ -602,6 +602,18 @@ export const menubarOptionsList = [
                 to="purchase/purchase-size-beam/receive-size-beam"
               >
                 Receive Size Beam
+              </Link>
+            ),
+          },
+          {
+            path: "bills-of-size-beam",
+            key: "Bills Of Size Beam",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="purchase/purchase-size-beam/bills-of-size-beam"
+              >
+                Bills Of Size Beam
               </Link>
             ),
           },
@@ -631,6 +643,19 @@ export const menubarOptionsList = [
               </Link>
             ),
           },
+
+          {
+            path: "grey-purchased-bill",
+            key: "Gre Purchased Bill",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="purchase/bill/grey-purchased-bill"
+              >
+                Purchased Bill
+              </Link>
+            ),
+          },
           {
             path: "purchased-return",
             key: "Purchased Return",
@@ -657,44 +682,32 @@ export const menubarOptionsList = [
           },
         ],
       },
-      {
-        path: "bill",
-        key: "Purchase Bill",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="purchase/bill"
-          >
-            Bill
-          </Link>
-        ),
-        children: [
-          {
-            path: "grey-purchased-bill",
-            key: "Grey Purchased Bill",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="purchase/bill/grey-purchased-bill"
-              >
-                Grey Purchased Bill
-              </Link>
-            ),
-          },
-          {
-            path: "yarn-bills",
-            key: "Yarn Bills",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="purchase/bill/yarn-bills"
-              >
-                Yarn Bills
-              </Link>
-            ),
-          },
-        ],
-      },
+      // {
+      //   path: "bill",
+      //   key: "Purchase Bill",
+      //   label: (
+      //     <Link
+      //       className="text-current no-underline hover:text-current"
+      //       to="purchase/bill"
+      //     >
+      //       Bill
+      //     </Link>
+      //   ),
+      //   children: [
+      //     {
+      //       path: "grey-purchased-bill",
+      //       key: "Grey Purchased Bill",
+      //       label: (
+      //         <Link
+      //           className="text-current no-underline hover:text-current"
+      //           to="purchase/bill/grey-purchased-bill"
+      //         >
+      //           Grey Purchased Bill
+      //         </Link>
+      //       ),
+      //     },
+      //   ],
+      // },
     ],
   },
   {
@@ -706,18 +719,6 @@ export const menubarOptionsList = [
       </Link>
     ),
     children: [
-      // {
-      //   path: "taka",
-      //   key: "Taka",
-      //   label: (
-      //     <Link
-      //       className="text-current no-underline hover:text-current"
-      //       to="job/taka"
-      //     >
-      //       Taka
-      //     </Link>
-      //   ),
-      // },
       {
         path: "job-taka",
         key: "Job Taka",
@@ -917,6 +918,18 @@ export const menubarOptionsList = [
             ),
           },
           {
+            path: "job-bill",
+            key: "Job Bill",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="job/bill/job-bill"
+              >
+                Job Bill
+              </Link>
+            ),
+          },
+          {
             path: "sale-job-taka",
             key: "Sale Job Taka",
             label: (
@@ -928,6 +941,20 @@ export const menubarOptionsList = [
               </Link>
             ),
           },
+        ],
+      },
+      {
+        path: "Rework",
+        key: "Rework",
+        label: (
+          <Link
+            className="text-current no-underline hover:text-current"
+            to="job/challan"
+          >
+            Rework
+          </Link>
+        ),
+        children: [
           {
             path: "rework-challan",
             key: "Rework Challan",
@@ -949,32 +976,6 @@ export const menubarOptionsList = [
                 to="job/challan/receive-rework-taka"
               >
                 Receive Rework Taka
-              </Link>
-            ),
-          },
-        ],
-      },
-      {
-        path: "bill",
-        key: "Bill",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="job/bill"
-          >
-            Bill
-          </Link>
-        ),
-        children: [
-          {
-            path: "job-bill",
-            key: "Job Bill",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="job/bill/job-bill"
-              >
-                Job Bill
               </Link>
             ),
           },

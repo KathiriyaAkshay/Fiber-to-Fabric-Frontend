@@ -719,209 +719,214 @@ const UpdateBeamReceive = () => {
             </Form.Item>
           </Col>
         </Row>
+        
+        <div style={{
+          marginTop: -20
+        }}>
+          {beamReceiveDetails &&
+            fieldArray.map((fieldNumber, index) => {
+              return (
+                <Row
+                  key={index + "_add_beam_receive"}
+                  gutter={18}
+                  style={{
+                    padding: "12px",
+                  }}
+                >
+                  <Col span={3}>
+                    <Form.Item
+                      label="Beam No"
+                      name={`beam_no_${fieldNumber}`}
+                      validateStatus={
+                        errors[`beam_no_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`beam_no_${fieldNumber}`] &&
+                        errors[`beam_no_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Typography.Text style={{ fontWeight: "bold" }}>
+                        {/* {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
+                          ?.beam_no ||
+                          (lastBeamNo
+                            ? challan_beam_type === "non pasarela (secondary)"
+                              ? "SJBN-" + (lastBeamNo + index)
+                              : "JBN-" + (lastBeamNo + index)
+                            : 0)} */}
+                        {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
+                          ?.beam_no ||getValues(`beam_no_${fieldNumber}`)}
+                      </Typography.Text>
+                    </Form.Item>
+                  </Col>
 
-        {beamReceiveDetails &&
-          fieldArray.map((fieldNumber, index) => {
-            return (
-              <Row
-                key={index + "_add_beam_receive"}
-                gutter={18}
-                style={{
-                  padding: "12px",
-                }}
-              >
-                <Col span={3}>
-                  <Form.Item
-                    label="Beam No"
-                    name={`beam_no_${fieldNumber}`}
-                    validateStatus={
-                      errors[`beam_no_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`beam_no_${fieldNumber}`] &&
-                      errors[`beam_no_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Typography.Text style={{ fontWeight: "bold" }}>
-                      {/* {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
-                        ?.beam_no ||
-                        (lastBeamNo
-                          ? challan_beam_type === "non pasarela (secondary)"
-                            ? "SJBN-" + (lastBeamNo + index)
-                            : "JBN-" + (lastBeamNo + index)
-                          : 0)} */}
-                      {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
-                        ?.beam_no ||getValues(`beam_no_${fieldNumber}`)}
-                    </Typography.Text>
-                  </Form.Item>
-                </Col>
-
-                <Col span={3}>
-                  {/* Hidden Field Start */}
-                  <Controller
-                    control={control}
-                    name={`id_${fieldNumber}`}
-                    render={({ field }) => (
-                      <Input {...field} type="hidden" placeholder="12" />
-                    )}
-                  />
-                  {/* Hidden Field End */}
-                  <Form.Item
-                    label="Supplier Beam No"
-                    name={`supplier_beam_no_${fieldNumber}`}
-                    validateStatus={
-                      errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`supplier_beam_no_${fieldNumber}`] &&
-                      errors[`supplier_beam_no_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
+                  <Col span={3}>
+                    {/* Hidden Field Start */}
                     <Controller
                       control={control}
+                      name={`id_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Input {...field} type="hidden" placeholder="12" />
+                      )}
+                    />
+                    {/* Hidden Field End */}
+                    <Form.Item
+                      label="Supplier Beam No"
                       name={`supplier_beam_no_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="12"
-                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
-                        />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={3}>
-                  <Form.Item
-                    label="Taar/Ends"
-                    name={`tars_${fieldNumber}`}
-                    validateStatus={
-                      errors[`tars_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`tars_${fieldNumber}`] &&
-                      errors[`tars_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                      validateStatus={
+                        errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`supplier_beam_no_${fieldNumber}`] &&
+                        errors[`supplier_beam_no_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`supplier_beam_no_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="12"
+                            readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={3}>
+                    <Form.Item
+                      label="Taar/Ends"
                       name={`tars_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          placeholder="12"
-                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
-                        />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={2}>
-                  <Form.Item
-                    label="Pano"
-                    name={`pano_${fieldNumber}`}
-                    validateStatus={
-                      errors[`pano_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`pano_${fieldNumber}`] &&
-                      errors[`pano_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                      validateStatus={
+                        errors[`tars_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`tars_${fieldNumber}`] &&
+                        errors[`tars_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`tars_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input
+                            {...field}
+                            placeholder="12"
+                            readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <Form.Item
+                      label="Pano"
                       name={`pano_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} 
-                          placeholder="12" 
-                          readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
-                        />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                      validateStatus={
+                        errors[`pano_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`pano_${fieldNumber}`] &&
+                        errors[`pano_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`pano_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} 
+                            placeholder="12" 
+                            readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}
+                          />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
 
-                <Col span={2}>
-                  <Form.Item
-                    label="Taka"
-                    name={`taka_${fieldNumber}`}
-                    validateStatus={
-                      errors[`taka_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`taka_${fieldNumber}`] &&
-                      errors[`taka_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={2}>
+                    <Form.Item
+                      label="Taka"
                       name={`taka_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}/>
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                      validateStatus={
+                        errors[`taka_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`taka_${fieldNumber}`] &&
+                        errors[`taka_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`taka_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false}/>
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
 
-                <Col span={2}>
-                  <Form.Item
-                    label="Meter"
-                    name={`meter_${fieldNumber}`}
-                    validateStatus={
-                      errors[`meter_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`meter_${fieldNumber}`] &&
-                      errors[`meter_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={2}>
+                    <Form.Item
+                      label="Meter"
                       name={`meter_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false} />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {fieldArray.length > 1 && (getValues(`is_running_${fieldNumber}`) == false) && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<DeleteOutlined />}
-                      type="primary"
-                      onClick={deleteFieldRow.bind(null, fieldNumber)}
-                      className="flex-none"
-                    />
+                      validateStatus={
+                        errors[`meter_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`meter_${fieldNumber}`] &&
+                        errors[`meter_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`meter_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" readOnly = {getValues(`is_running_${fieldNumber}`)?true:false} />
+                        )}
+                      />
+                    </Form.Item>
                   </Col>
-                )}
 
-                {index === fieldArray.length - 1 && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<PlusOutlined />}
-                      type="primary"
-                      onClick={addNewFieldRow.bind(null, index)}
-                      className="flex-none"
-                    />
-                  </Col>
-                )}
-              </Row>
-            );
+                  {fieldArray.length > 1 && (getValues(`is_running_${fieldNumber}`) == false) && (
+                    <Col span={1}>
+                      <Button
+                        style={{ marginTop: "1.9rem" }}
+                        icon={<DeleteOutlined />}
+                        type="primary"
+                        danger
+                        onClick={deleteFieldRow.bind(null, fieldNumber)}
+                        className="flex-none"
+                      />
+                    </Col>
+                  )}
+
+                  {index === fieldArray.length - 1 && (
+                    <Col span={1}>
+                      <Button
+                        style={{ marginTop: "1.9rem" }}
+                        icon={<PlusOutlined />}
+                        type="primary"
+                        onClick={addNewFieldRow.bind(null, index)}
+                        className="flex-none"
+                      />
+                    </Col>
+                  )}
+                </Row>
+              );
           })}
+        </div>
 
         <Flex gap={10} justify="flex-end">
             <Button type="primary" htmlType="submit" loading={isPending}>

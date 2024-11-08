@@ -22,6 +22,11 @@ const AddProductionTable = ({
   dropDownQualityListRes,
 }) => {
 
+  useEffect(() => {
+    console.log(activeField);
+    
+  }, [activeField])
+
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
@@ -152,6 +157,8 @@ const AddProductionTable = ({
       if (production_filter === "multi_quality_wise") {
         setValue(`quality_${fieldNumber}`, null);
       }
+
+      calculateTotals() ; 
     }
   };
 

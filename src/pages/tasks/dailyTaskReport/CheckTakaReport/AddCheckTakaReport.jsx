@@ -94,7 +94,7 @@ function AddCheckTakaReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createCheckTakaReport } = useMutation({
+  const { mutateAsync: createCheckTakaReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createCheckTakaReportRequest({
         data,
@@ -433,7 +433,7 @@ function AddCheckTakaReport() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

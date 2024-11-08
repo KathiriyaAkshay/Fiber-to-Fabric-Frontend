@@ -179,8 +179,8 @@ const StockPurchaseTaka = () => {
     },
     {
       title: "Sale Ch. No.",
-      dataIndex: "-",
-      render: (text, record) => `-`,
+      dataIndex: "saleChNo",  // Update this to match the actual data field name, or remove if unused
+      render: (_, record) => <div>-</div>,  // Only include `record` if you need it
     },
     {
       title: "Status",

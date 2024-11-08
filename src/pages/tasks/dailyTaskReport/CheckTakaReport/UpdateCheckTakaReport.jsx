@@ -99,7 +99,7 @@ function UpdateCheckTakaReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: updateCheckTakaReport } = useMutation({
+  const { mutateAsync: updateCheckTakaReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateCheckTakaReportRequest({
         id,
@@ -451,7 +451,7 @@ function UpdateCheckTakaReport() {
           </Row>
 
           <Flex gap={10} justify="flex-end">
-            <Button type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit" loading = {isPending}>
               Update
             </Button>
           </Flex>
