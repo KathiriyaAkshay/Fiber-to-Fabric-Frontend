@@ -755,12 +755,13 @@ const RenderDynamicFields = ({
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => Number(yarn_company_id) == Number(selectedValue)
                     );
-                    console.log(obj);
-                    
-                    setValue(
-                      `current_stock_${field}`,
-                      obj ? obj.current_stock : 0
-                    );
+                    if (obj) {
+                      setValue(
+                        `current_stock_${field}`,
+                        obj ? obj.current_stock : 0
+                      );
+                      return;
+                    }
                   });
                 }}
                 // onSelect={(selectedValue) => {
