@@ -747,9 +747,16 @@ const RenderDynamicFields = ({
                 onChange={(selectedValue) => {
                   fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
+
+                    console.log(selectedValue);
+                    console.log(yarn_details);
+                    
+                    
                     const obj = yarn_details.find(
-                      ({ yarn_company_id }) => yarn_company_id === selectedValue
+                      ({ yarn_company_id }) => Number(yarn_company_id) == Number(selectedValue)
                     );
+                    console.log(obj);
+                    
                     setValue(
                       `current_stock_${field}`,
                       obj ? obj.current_stock : 0

@@ -285,7 +285,7 @@ const BeamSentList = () => {
     },
     {
       title: "Delivery Charge",
-      dataIndex: "delivery_charge",
+      dataIndex: "  ",
       key: "delivery_charge",
     },
     {

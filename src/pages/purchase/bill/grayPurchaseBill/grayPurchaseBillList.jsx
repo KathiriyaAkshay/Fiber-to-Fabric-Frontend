@@ -229,7 +229,7 @@ const GrayPurchaseBillList = () => {
     },
     {
       title: "Order No",
-      dataIndex: ["gray_order", "order_no"],
+      dataIndex: [" ", "order_no"],
       key: "order_no",
     },
     {

@@ -121,6 +121,8 @@ const AddBeamSent = () => {
   });
 
   async function onSubmit(data) {
+    console.log(data);
+    
     if (!beamLoadIds.length) {
       message.error("At least one beam should be selected.");
       return;
@@ -139,6 +141,8 @@ const AddBeamSent = () => {
       power_cost_per_meter: +(+data.power_cost_per_meter).toFixed(2),
       inhouse_warp_ids: inhouseWarpIds,
       beam_load_ids: beamLoadIds,
+      total_meter: +data.total_meter, 
+      total_weight: +data.total_weight
     };
     delete payload.challan_date;
 
