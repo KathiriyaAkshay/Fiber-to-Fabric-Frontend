@@ -169,19 +169,19 @@ const FinishBeamCardModal = ({ details = {}, companyId, beamTypeDropDown }) => {
           "Are you sure to Move this beam to Running?"
         ) : (
           <>
-            <Row className="beam-card-info-title-div beam-card-main-div">
+            <Row className="beam-details-information-div" style={{marginTop: 10}}>
               <Col span={6} className=" beam-card-info-title"> Beam No </Col>
               <Col span={6}>
                 {beamNumber}
               </Col>
             </Row>
 
-            <Row className="beam-card-info-title-div">
+            <Row className="beam-details-information-div beam-details-other-div">
               <Col span={6} className="beam-card-info-title"> Machine No </Col>
               <Col span={6}>{details?.machine_no} ({capitalizeFirstCharacter(details?.machine_name)})</Col>
             </Row>
 
-            <Divider />
+            <Divider style={{marginTop: 10}} />
             <Radio.Group
               name="finish"
               value={finishValue}

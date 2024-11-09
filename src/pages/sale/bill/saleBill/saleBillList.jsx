@@ -419,7 +419,6 @@ const SaleBillList = () => {
               </Table.Summary.Cell>
               <Table.Summary.Cell index={8}>
                 <b>{avgRate}</b> <br />
-                (Avg Rate)
               </Table.Summary.Cell>
               <Table.Summary.Cell index={9}>
                 <b>{totalAmount}</b>

@@ -468,6 +468,18 @@ export const menubarOptionsList = [
             ),
           },
           {
+            path: "beam-sales-bill-list",
+            key: "Beam Sales Bill List",
+            label: (
+              <Link
+                className="text-current no-underline hover:text-current"
+                to="sales/bill/beam-sales-bill-list"
+                >
+                Beam Sales Bill List
+              </Link>
+            ),
+          },
+          {
             path: "sales-bill-list",
             key: "Sales Bill List",
             label: (
@@ -476,18 +488,6 @@ export const menubarOptionsList = [
                 to="sales/bill/sales-bill-list"
               >
                 Sales Bill List
-              </Link>
-            ),
-          },
-          {
-            path: "beam-sales-bill-list",
-            key: "Beam Sales Bill List",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="sales/bill/beam-sales-bill-list"
-              >
-                Beam Sales Bill List
               </Link>
             ),
           },

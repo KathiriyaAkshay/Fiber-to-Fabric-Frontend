@@ -21,10 +21,6 @@ import {
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
 import { useQuery } from "@tanstack/react-query";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -33,16 +29,20 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { useNavigate } from "react-router-dom";
 import { ORDER_TYPE } from "../../../../constants/orderMaster";
 import dayjs from "dayjs";
-
 import JobGrayBillComp from "../../../../components/sale/bill/jobGrayBillComp";
 import { getJobGraySaleBillListRequest } from "../../../../api/requests/sale/bill/jobGraySaleBill";
 import DeleteJobGrayBill from "../../../../components/sale/bill/DeleteJobGrayBill";
 import moment from "moment";
+import JobGrayBillMultiplePrint from "../../../../components/sale/bill/jobGrayBillMultiplePrint";
 
 const JobGrayList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
+
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf("day");
+  }
 
   const [jobGraySaleBillChallanModel, setJobGraySaleBillChallanModel] =
     useState({
@@ -59,7 +59,8 @@ const JobGrayList = () => {
     }));
   };
 
-  const [state, setState] = useState("current");
+  const [rowSelection, setRowSelection] = useState([]);
+  const [multipleData, setMultipleData] = useState([]);
   const [type, setType] = useState();
   const [companyValue, setCompanyValue] = useState();
   const [party, setParty] = useState();
@@ -382,6 +383,15 @@ const JobGrayList = () => {
     },
   ];
 
+  const [mutlipleChallanLayout, setMultipleChallanLayout] = useState(false) ; 
+  const rowSelectionHandler = {
+    rowSelection,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setRowSelection(selectedRowKeys);
+      setMultipleData(selectedRows);
+    },
+  };
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -396,6 +406,7 @@ const JobGrayList = () => {
         dataSource={JobGrayBillList?.jobGraySaleBill || []}
         columns={columns}
         rowKey={"id"}
+        rowSelection={rowSelectionHandler}
         pagination={{
           total: JobGrayBillList?.jobGraySaleBill?.count || 0,
           showSizeChanger: true,
@@ -423,17 +434,17 @@ const JobGrayList = () => {
                 <b>Total</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1}></Table.Summary.Cell>
+              <Table.Summary.Cell index={1}></Table.Summary.Cell>
               <Table.Summary.Cell index={2}></Table.Summary.Cell>
               <Table.Summary.Cell index={3}></Table.Summary.Cell>
               <Table.Summary.Cell index={4}></Table.Summary.Cell>
               <Table.Summary.Cell index={5}></Table.Summary.Cell>
               <Table.Summary.Cell index={6}></Table.Summary.Cell>
               <Table.Summary.Cell index={7}>
-                <b>{totalMeter}</b>
+                <b>{ }</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={8}>
                 <b>{avgRate}</b> <br />
-                (Avg Rate)
               </Table.Summary.Cell>
               <Table.Summary.Cell index={9}>
                 <b>{totalAmount}</b>
@@ -455,25 +466,7 @@ const JobGrayList = () => {
     <>
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-          <Select
-            allowClear
-            placeholder="Select Invoice FIlter"
-            options={[
-              { label: "E invoice pending", value: "E-invoice-pending" },
-              { label: "E way bill pending", value: "E-way-bill-pending" },
-              { label: "E invoice cancelled", value: "E-invoice-cancelled" },
-            ]}
-            dropdownStyle={{
-              textTransform: "capitalize",
-            }}
-            value={invoiceFilter}
-            onChange={setInvoiceFilter}
-            style={{
-              textTransform: "capitalize",
-            }}
-            className="min-w-40"
-          />
-          <Radio.Group
+          {/* <Radio.Group
             name="filter"
             value={state}
             onChange={(e) => setState(e.target.value)}
@@ -482,7 +475,7 @@ const JobGrayList = () => {
               <Radio value={"current"}> Current</Radio>
               <Radio value={"previous"}> Previous </Radio>
             </Flex>
-          </Radio.Group>
+          </Radio.Group> */}
         </div>
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -496,6 +489,11 @@ const JobGrayList = () => {
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
+              {rowSelection?.length > 0 && (
+                <Flex align="center" gap={10}>
+                  <Button type="primary" onClick={() => {setMultipleChallanLayout(true)}}>MULTIPLE PRINT</Button>
+                </Flex>
+              )}
               <Radio.Group
                 name="filter"
                 value={isGrayValue}
@@ -503,29 +501,28 @@ const JobGrayList = () => {
               >
                 <Flex align="center" gap={10}>
                   <Radio value={"cash"}> Cash</Radio>
-                  <Radio value={"grey"}> Grey </Radio>
+                  {/* <Radio value={"grey"}> Grey </Radio> */}
                 </Flex>
               </Radio.Group>
 
-              <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  Company
-                </Typography.Text>
-                <Select
-                  placeholder="Select Company"
-                  value={companyValue}
-                  onChange={setCompanyValue}
-                  options={companyListRes?.rows?.map(
-                    ({ company_name = "", id = "" }) => ({
-                      label: company_name,
-                      value: id,
-                    })
-                  )}
-                  style={{
-                    width: "100%",
-                  }}
-                />
-              </Flex>
+              <Select
+                allowClear
+                placeholder="Select Invoice FIlter"
+                options={[
+                  { label: "E invoice pending", value: "E-invoice-pending" },
+                  { label: "E way bill pending", value: "E-way-bill-pending" },
+                  { label: "E invoice cancelled", value: "E-invoice-cancelled" },
+                ]}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                value={invoiceFilter}
+                onChange={setInvoiceFilter}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+              />
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Type
@@ -620,6 +617,7 @@ const JobGrayList = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -632,6 +630,7 @@ const JobGrayList = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -699,6 +698,14 @@ const JobGrayList = () => {
           handleCloseModal={handleCloseModal}
           details={jobGraySaleBillChallanModel.details}
           MODE={jobGraySaleBillChallanModel.mode}
+        />
+      )}
+
+      {mutlipleChallanLayout && (
+        <JobGrayBillMultiplePrint
+          details={multipleData}
+          isModelOpen={mutlipleChallanLayout}
+          handleCloseModal={() => {setMultipleChallanLayout(false)}}
         />
       )}
     </>

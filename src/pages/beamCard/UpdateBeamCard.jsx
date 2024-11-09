@@ -524,6 +524,7 @@ const UpdateBeamCard = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={12}>
@@ -586,6 +587,7 @@ const UpdateBeamCard = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={6}>
@@ -669,6 +671,7 @@ const UpdateBeamCard = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={6}>

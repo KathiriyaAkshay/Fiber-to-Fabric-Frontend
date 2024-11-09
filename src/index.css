@@ -829,3 +829,17 @@ input:read-only {
   box-shadow: none;
   border-color: transparent;
 }
+
+
+.beam-details-information-div{
+  background-color: #f7f7f7;
+  padding: 10px;
+}
+
+.beam-details-other-div{
+  background-color: #ffffff !important;
+}
+
+.beam-details-highlight-div{
+  background-color: #ffe9e9 !important;
+}
