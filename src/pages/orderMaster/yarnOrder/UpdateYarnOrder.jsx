@@ -175,7 +175,7 @@ function UpdateYarnOrder() {
         pending_cartoon: yarnOrder?.pending_cartoon,
         credit_days: yarnOrder?.credit_days,
         order_date: dayjs(yarnOrder?.order_date),
-        supplier_id: yarnOrder?.user?.id,
+        supplier_name: yarnOrder?.supplier_name,
         yarn_stock_company_id: yarnOrder?.yarn_stock_company_id,
         yarn_company_name: yarnOrder?.yarn_stock_company?.yarn_company_name,
         order_no: yarnOrder?.order_no,
@@ -397,16 +397,16 @@ function UpdateYarnOrder() {
           <Col span={6} className="flex items-end gap-2">
             <Form.Item
               label="Supplier"
-              name="supplier_id"
-              validateStatus={errors.supplier_id ? "error" : ""}
-              help={errors.supplier_id && errors.supplier_id.message}
+              name="supplier_name"
+              validateStatus={errors.supplier_name ? "error" : ""}
+              help={errors.supplier_name && errors.supplier_name.message}
               required={true}
               wrapperCol={{ sm: 24 }}
               className="flex-grow"
             >
               <Controller
                 control={control}
-                name="supplier_id"
+                name="supplier_name"
                 disabled
                 render={({ field }) => (
                   <Select
