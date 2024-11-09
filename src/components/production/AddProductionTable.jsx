@@ -21,12 +21,6 @@ const AddProductionTable = ({
   setWeightPlaceholder,
   dropDownQualityListRes,
 }) => {
-
-  useEffect(() => {
-    console.log(activeField);
-    
-  }, [activeField])
-
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
@@ -38,122 +32,142 @@ const AddProductionTable = ({
       return Array.from({ length: 15 }, (_, i) => i + 1);
     }
   }, [production_filter]);
-  useEffect(() => { 
-    if (production_filter == "machine_wise"){
+
+  useEffect(() => {
+    if (production_filter == "machine_wise") {
       const obj =
         beamCardList?.rows[0]?.non_pasarela_beam_detail ||
         beamCardList?.rows[0]?.recieve_size_beam_detail ||
         beamCardList?.rows[0]?.job_beam_receive_detail;
 
-      if (obj !== undefined){
-        setValue(`machine_no_1`, beamCardList?.rows[0]?.machine_no) ; 
-        setValue(`beam_no_1`, obj?.beam_no); 
-        setValue(`production_meter_1`, beamCardList?.rows[0]?.pending_meter) ; 
-        setValue("quality_id", beamCardList?.rows[0]?.inhouse_quality?.id)
-        
+      if (obj !== undefined) {
+        setValue(`machine_no_1`, beamCardList?.rows[0]?.machine_no);
+        setValue(`beam_no_1`, obj?.beam_no);
+        setValue(`production_meter_1`, beamCardList?.rows[0]?.pending_meter);
+        setValue("quality_id", beamCardList?.rows[0]?.inhouse_quality?.id);
       } else {
-        setValue(`machine_no_1`, undefined) ; 
-        setValue(`beam_no_1`, undefined); 
-        setValue(`production_meter_1`, undefined) ; 
-        setValue("quality_id", undefined)
+        setValue(`machine_no_1`, undefined);
+        setValue(`beam_no_1`, undefined);
+        setValue(`production_meter_1`, undefined);
+        setValue("quality_id", undefined);
       }
-      
-        
-      
     }
-  }, [production_filter, beamCardList])
+  }, [production_filter, beamCardList]);
+
   const activeNextField = (event, fieldNumber) => {
-    
     if (event.keyCode === 13) {
-      let meters = getValues(`meter_${fieldNumber}`) ; 
-      let production_meter = getValues(`production_meter_${fieldNumber}`) ; 
-      let machine_number = getValues(`machine_no_${fieldNumber}`) ; 
-      let weight = getValues(`weight_${fieldNumber}`) ; 
-      let average = getValues(`average_${fieldNumber}`) ; 
+      let meters = getValues(`meter_${fieldNumber}`);
+      let production_meter = getValues(`production_meter_${fieldNumber}`) || 0;
+      console.table("🧑‍💻 || meters:", meters);
+      let machine_number = getValues(`machine_no_${fieldNumber}`);
+      let weight = getValues(`weight_${fieldNumber}`);
+      let average = getValues(`average_${fieldNumber}`);
 
-      if (meters == "" || meters == undefined){
-        message.error("Please, Enter taka meter") ; 
-        return ; 
-      } else if (machine_number == "" || machine_number == undefined){
-        message.error("Please, Select machine number") ; 
-        return ; 
-      } else if (weight == "" || weight == undefined){
-        message.error("Please, Enter taka weight") ; 
-        return ; 
-      } else if (average == "" || average == undefined){
-        message.error("Please, Enter proper taka weight") ; 
-        return ; 
-      } else if (meters  > production_meter){
-        message.error("Please, Enter valid meter") ; 
-        return ; 
-      }   else {
-        let pending_meter = Number(production_meter) - Number(meters) ; 
-        setValue(`pending_meter_${fieldNumber}`, pending_meter) ; 
+      if (meters == "" || meters == undefined) {
+        message.error("Please, Enter taka meter");
+        return;
+      } else if (machine_number == "" || machine_number == undefined) {
+        message.error("Please, Select machine number");
+        return;
+      } else if (weight == "" || weight == undefined) {
+        message.error("Please, Enter taka weight");
+        return;
+      } else if (average == "" || average == undefined) {
+        message.error("Please, Enter proper taka weight");
+        return;
+      } else if (meters > production_meter) {
+        message.error("Please, Enter valid meter");
+        return;
+      } else {
+        let pending_meter = Number(production_meter) - Number(meters);
+        setValue(`pending_meter_${fieldNumber}`, pending_meter);
 
-        let pending_precentage = (Number(pending_meter) * 100) / Number(production_meter) ; 
-        setValue(`pending_percentage_${fieldNumber}`, pending_precentage.toFixed(2)) ; 
-  
+        let pending_precentage =
+          (Number(pending_meter) * 100) / Number(production_meter);
+        setValue(
+          `pending_percentage_${fieldNumber}`,
+          pending_precentage.toFixed(2)
+        );
+
         setActiveField((prev) => prev + 1);
         setTimeout(() => {
           setFocus(`meter_${fieldNumber + 1}`);
         }, 0);
-
       }
-
     }
   };
 
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
-      let delete_taka_production_meter = getValues(`production_meter_${fieldNumber}`);
-      let delete_taka_machine_number = getValues(`machine_no_${fieldNumber}`) ; 
-      let delete_taka_fieldNumber = fieldNumber + 1 ; 
+      let delete_taka_production_meter = getValues(
+        `production_meter_${fieldNumber}`
+      );
+      let delete_taka_machine_number = getValues(`machine_no_${fieldNumber}`);
+      let delete_taka_fieldNumber = fieldNumber + 1;
 
       numOfFields.map((element, index) => {
-        if ((index + 1) > delete_taka_fieldNumber){
-          let current_taka_meter =  getValues(`meter_${index}`);
+        if (index + 1 > delete_taka_fieldNumber) {
+          let current_taka_meter = getValues(`meter_${index}`);
           let current_taka_weight = getValues(`weight_${index}`);
-          let current_taka_machine =  getValues(`machine_no_${index}`);
-          let current_taka_average = getValues(`average_${index}`) ; 
-          let current_beam_no = getValues(`beam_no_${index}`) ; 
-          let current_taka_production_meter = getValues(`production_meter_${index}`) ; 
-          let current_taka_pending_meter = getValues(`pending_meter_${index}`) ; 
-          let current_taka_pending_precentage = getValues(`pending_percentage_${index}`) ; 
-          if (delete_taka_machine_number != current_taka_machine){
-            setValue(`meter_${index-1}`, current_taka_meter);
-            setValue(`weight_${index-1}`, current_taka_weight);
-            setValue(`machine_no_${index-1}`, current_taka_machine);
-            setValue(`average_${index-1}`, current_taka_average);
-            setValue(`beam_no_${index-1}`, current_beam_no);
-            setValue(`production_meter_${index-1}`, current_taka_production_meter);
-            setValue(`pending_meter_${index-1}`, current_taka_pending_meter);
-            setValue(`pending_percentage_${index-1}`, current_taka_pending_precentage);
+          let current_taka_machine = getValues(`machine_no_${index}`);
+          let current_taka_average = getValues(`average_${index}`);
+          let current_beam_no = getValues(`beam_no_${index}`);
+          let current_taka_production_meter = getValues(
+            `production_meter_${index}`
+          );
+          let current_taka_pending_meter = getValues(`pending_meter_${index}`);
+          let current_taka_pending_precentage = getValues(
+            `pending_percentage_${index}`
+          );
+          if (delete_taka_machine_number != current_taka_machine) {
+            setValue(`meter_${index - 1}`, current_taka_meter);
+            setValue(`weight_${index - 1}`, current_taka_weight);
+            setValue(`machine_no_${index - 1}`, current_taka_machine);
+            setValue(`average_${index - 1}`, current_taka_average);
+            setValue(`beam_no_${index - 1}`, current_beam_no);
+            setValue(
+              `production_meter_${index - 1}`,
+              current_taka_production_meter
+            );
+            setValue(`pending_meter_${index - 1}`, current_taka_pending_meter);
+            setValue(
+              `pending_percentage_${index - 1}`,
+              current_taka_pending_precentage
+            );
           } else {
-            setValue(`meter_${index-1}`, current_taka_meter);
-            setValue(`weight_${index-1}`, current_taka_weight);
-            setValue(`machine_no_${index-1}`, current_taka_machine);
-            setValue(`average_${index-1}`, current_taka_average);
-            setValue(`beam_no_${index-1}`, current_beam_no);
-            setValue(`production_meter_${index-1}`, delete_taka_production_meter) ; 
-            setValue(`pending_meter_${index-1}`, (Number(delete_taka_production_meter) - current_taka_meter)) ; 
+            setValue(`meter_${index - 1}`, current_taka_meter);
+            setValue(`weight_${index - 1}`, current_taka_weight);
+            setValue(`machine_no_${index - 1}`, current_taka_machine);
+            setValue(`average_${index - 1}`, current_taka_average);
+            setValue(`beam_no_${index - 1}`, current_beam_no);
+            setValue(
+              `production_meter_${index - 1}`,
+              delete_taka_production_meter
+            );
+            setValue(
+              `pending_meter_${index - 1}`,
+              Number(delete_taka_production_meter) - current_taka_meter
+            );
 
-            let pending_precentage = ((Number(delete_taka_production_meter) - current_taka_meter)*100) / Number(delete_taka_production_meter) ; 
-            setValue(`pending_percentage_${index-1}`, pending_precentage) ; 
-            delete_taka_production_meter = (Number(delete_taka_production_meter) - current_taka_meter) ; 
+            let pending_precentage =
+              ((Number(delete_taka_production_meter) - current_taka_meter) *
+                100) /
+              Number(delete_taka_production_meter);
+            setValue(`pending_percentage_${index - 1}`, pending_precentage);
+            delete_taka_production_meter =
+              Number(delete_taka_production_meter) - current_taka_meter;
           }
-        } 
+        }
+      });
 
-
-      })
-
-      if (activeField < 2){
+      if (activeField < 2) {
         setActiveField(1);
       } else {
         setActiveField((prev) => prev - 1);
       }
 
       total();
-  
+
       if (production_filter === "multi_quality_wise") {
         setValue(`quality_${fieldNumber}`, null);
       }
@@ -166,38 +180,74 @@ const AddProductionTable = ({
     const beamCard = beamCardList.rows.find(({ machine_no }) => {
       return machine_no === value;
     });
-    let lastPendingMeter = undefined ; 
+    let lastPendingMeter = undefined;
 
     numOfFields.map((element, index) => {
-      let tempPendingMeter = getValues(`pending_meter_${index}`) ; 
-      let machineNumber = getValues(`machine_no_${index}`) ; 
-    
-      if (machineNumber !== undefined && machineNumber !== "" && machineNumber == value){
-        if (tempPendingMeter !== undefined && tempPendingMeter !== ""){
-          lastPendingMeter = tempPendingMeter ; 
+      let tempPendingMeter = getValues(`pending_meter_${index}`);
+      let machineNumber = getValues(`machine_no_${index}`);
+
+      if (
+        machineNumber !== undefined &&
+        machineNumber !== "" &&
+        machineNumber == value
+      ) {
+        if (tempPendingMeter !== undefined && tempPendingMeter !== "") {
+          lastPendingMeter = tempPendingMeter;
         }
       }
-    })
+    });
 
     const obj =
       beamCard.non_pasarela_beam_detail ||
       beamCard.recieve_size_beam_detail ||
       beamCard.job_beam_receive_detail;
-    
+
     setValue(`beam_no_${fieldNumber}`, obj.beam_no);
-    
-    if (lastPendingMeter == undefined){
-      setValue(`production_meter_${fieldNumber}`, beamCard?.pending_meter);
+
+    if (lastPendingMeter == undefined) {
+      setValue(`production_meter_${fieldNumber}`, beamCard?.pending_meter || 0);
     } else {
-      setValue(`production_meter_${fieldNumber}`, lastPendingMeter);
+      setValue(`production_meter_${fieldNumber}`, lastPendingMeter || 0);
     }
-    
+
     if (production_filter === "multi_quality_wise") {
       setValue(`quality_${fieldNumber}`, beamCard.inhouse_quality.id);
+      calculateWeight2(fieldNumber);
     }
   };
 
   const calculateWeight = (meterValue) => {
+    console.log("calculateWeight1", meterValue);
+    const weightFrom = ((avgWeight.weight_from / 100) * meterValue).toFixed(3);
+    const weightTo = ((avgWeight.weight_to / 100) * meterValue).toFixed(3);
+
+    setWeightPlaceholder({
+      weightFrom: +weightFrom,
+      weightTo: +weightTo,
+    });
+  };
+
+  const calculateWeight2 = (fieldNumber) => {
+    const meterValue = +getValues(`meter_${fieldNumber}`) || 0;
+    const quality_id = getValues(`quality_${fieldNumber}`);
+    let avgWeight = {};
+
+    if (
+      quality_id &&
+      dropDownQualityListRes &&
+      dropDownQualityListRes?.rows?.length
+    ) {
+      const quality = dropDownQualityListRes?.rows?.find(
+        ({ id }) => quality_id === id
+      );
+      avgWeight = {
+        weight_from: quality.weight_from || 0,
+        weight_to: quality.weight_to || 0,
+      };
+    } else {
+      avgWeight = { weight_from: 0, weight_to: 0 };
+    }
+
     const weightFrom = ((avgWeight.weight_from / 100) * meterValue).toFixed(3);
     const weightTo = ((avgWeight.weight_to / 100) * meterValue).toFixed(3);
 
@@ -213,13 +263,12 @@ const AddProductionTable = ({
       +value <= weightPlaceholder.weightTo
     ) {
       trigger(`weight_${fieldNumber}`);
-      // Calculate average weight information 
-      let meters = getValues(`meter_${fieldNumber}`) ; 
-      
-      if (meters !== undefined && meters !== ""){
-  
-        let average_weight = (Number(value)*100) / Number(meters) ; 
-        setValue(`average_${fieldNumber}`, average_weight.toFixed(2)) ; 
+      // Calculate average weight information
+      let meters = getValues(`meter_${fieldNumber}`);
+
+      if (meters !== undefined && meters !== "") {
+        let average_weight = (Number(value) * 100) / Number(meters);
+        setValue(`average_${fieldNumber}`, average_weight.toFixed(2));
       }
     } else {
       setError(`weight_${fieldNumber}`, {
@@ -282,7 +331,6 @@ const AddProductionTable = ({
           {numOfFields.map((fieldNumber) => {
             return (
               <tr key={fieldNumber}>
-                
                 <td
                   style={{ textAlign: "center" }}
                   className="job-challan-taka-index-column"
@@ -325,7 +373,9 @@ const AddProductionTable = ({
                           disabled={fieldNumber !== activeField}
                           onChange={(e) => {
                             field.onChange(+e.target.value);
-                            calculateWeight(+e.target.value);
+                            if (production_filter !== "multi_quality_wise") {
+                              calculateWeight(+e.target.value);
+                            }
                             total();
                           }}
                         />
@@ -359,7 +409,10 @@ const AddProductionTable = ({
                           style={{
                             width: "100%",
                           }}
-                          disabled={fieldNumber !== activeField || production_filter === "machine_wise"}
+                          disabled={
+                            fieldNumber !== activeField ||
+                            production_filter === "machine_wise"
+                          }
                           options={
                             beamCardList &&
                             beamCardList?.rows?.map(({ machine_no }) => ({
@@ -608,7 +661,7 @@ const AddProductionTable = ({
                     />
                   </Form.Item>
                 </td>
-              
+
                 <td width={150}>
                   <Form.Item
                     name={`pending_percentage_${fieldNumber}`}
@@ -654,7 +707,6 @@ const AddProductionTable = ({
                     onClick={() => removeCurrentField(fieldNumber)}
                   ></Button>
                 </td>
-              
               </tr>
             );
           })}
