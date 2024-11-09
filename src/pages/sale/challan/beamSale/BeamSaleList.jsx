@@ -242,8 +242,8 @@ const BeamSaleList = () => {
       key: "status",
       render: (text) => {
         if (text.toLowerCase() === "pending")
-          return <Tag color="red">{text}</Tag>;
-        else return <Tag color="green">{text}</Tag>;
+          return <Tag color="red">{String(text).toUpperCase()}</Tag>;
+        else return <Tag color="green">{String(text).toUpperCase()}</Tag>;
       },
     },
     {

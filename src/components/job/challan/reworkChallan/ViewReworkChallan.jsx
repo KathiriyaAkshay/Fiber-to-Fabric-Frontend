@@ -111,7 +111,7 @@ const ViewReworkChallanInfo = ({ details }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Challan
+            Rework Challan
           </Typography.Text>
         }
         open={isModelOpen}

@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import { usePagination } from "../../../../hooks/usePagination";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
@@ -36,6 +36,7 @@ import dayjs from "dayjs";
 import DeleteBeamSent from "../../../../components/job/beamSent/DeleteBeamSent";
 import moment from "moment";
 import ReactToPrint from "react-to-print";
+import { render } from "react-dom";
 const { Title, Text } = Typography;
 
 const BeamSentList = () => {
@@ -285,7 +286,7 @@ const BeamSentList = () => {
     },
     {
       title: "Delivery Charge",
-      dataIndex: "  ",
+      dataIndex: "delivery_charge",
       key: "delivery_charge",
     },
     {
@@ -353,8 +354,12 @@ const BeamSentList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell />
-                <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  {beamSentListData?.total_meter || 0 }
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {parseFloat(beamSentListData?.total_weight).toFixed(2) || 0}
+                </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -525,23 +530,50 @@ const BeamSentViewDetailModal = ({
     adjustHeight.overflowY = "scroll";
   }
 
-  const dataSource = [
-    {
-      key: "1",
-      no: "1",
-      bno: "PBN-67",
-      taar: "100",
-      pano: "100",
-      meter: "100",
-      weight: "17.33",
-    },
-  ];
+  const [dataSource, setDataSource] = useState([]);
+  const [totalMeter, setTotalMeter] = useState(0) ; 
+
+  const getTakaDetailsObject = (details) => {
+    if (details) {
+      let object =
+        details.non_pasarela_beam_detail ||
+        details.recieve_size_beam_detail ||
+        details.job_beam_receive_detail;
+  
+      return object === null || object === undefined
+        ? null
+        : { ...object, meter: object?.meters || object?.meter };
+    }
+  };
+
+  useEffect(() => {
+    let temp = [] ; 
+    let temp_total_meter = 0;
+    if (details?.job_beam_sent_details != undefined){
+      details?.job_beam_sent_details?.map((element) => {
+        let object = getTakaDetailsObject(element?.loaded_beam) ; 
+        temp.push({
+          bno: object?.beam_no,
+          tars: object?.ends_or_tars || object?.tars, 
+          pano: object?.pano,
+          meter: object?.meters || object?.meter,
+          weight: object?.net_weight || 0
+        })
+        temp_total_meter += +object?.meters || +object?.meter
+      })
+      setTotalMeter(temp_total_meter) ; 
+      setDataSource(temp);
+    }
+  }, [details])
 
   const ModalColumns = [
     {
       title: "No",
       dataIndex: "no",
       key: "no",
+      render: (text, record, index) => (
+        index + 1
+      )
     },
     {
       title: "B no.",
@@ -550,7 +582,7 @@ const BeamSentViewDetailModal = ({
     },
     {
       title: "taar/ends",
-      dataIndex: "taar",
+      dataIndex: "tars",
       key: "taar",
     },
     {
@@ -750,7 +782,7 @@ const BeamSentViewDetailModal = ({
                       <Table.Summary.Cell />
                       <Table.Summary.Cell />
                       <Table.Summary.Cell>
-                        <Typography.Text>0</Typography.Text>
+                        <Typography.Text>{totalMeter}</Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
                         <Typography.Text>0</Typography.Text>

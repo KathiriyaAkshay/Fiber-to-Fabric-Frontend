@@ -224,7 +224,7 @@ function YarnOrderList() {
     },
     {
       title: "Party/Supplier Name",
-      dataIndex: ["user", "first_name"],
+      dataIndex: "supplier_name",
       key: "user.first_name",
     },
     {
@@ -286,9 +286,9 @@ function YarnOrderList() {
       dataIndex: "status",
       key: "status",
       render: (text) =>
-        text == "PENDING" ? (
+        text == "FINISHED" ? (
           <>
-            <Tag color="green">PENDING</Tag>
+            <Tag color="green">FINISHED</Tag>
           </>
         ) : (
           <>

@@ -69,7 +69,7 @@ function AddYarnReceive() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createYarnReceive } = useMutation({
+  const { mutateAsync: createYarnReceive, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createYarnReceiveRequest({
         data,
@@ -519,7 +519,7 @@ function AddYarnReceive() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

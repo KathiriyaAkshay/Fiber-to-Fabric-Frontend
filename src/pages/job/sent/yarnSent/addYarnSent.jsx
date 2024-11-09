@@ -139,7 +139,7 @@ const AddYarnSent = () => {
       const res = await getYarnSentLastChallanNoRequest({
         params: { company_id: companyId },
       });
-      setValue("challan_no", +res.data?.data + 1);
+      setValue("challan_no", isNaN(res.data?.data)?1: +res.data?.data + 1);
     },
     enabled: Boolean(companyId),
   });
@@ -575,7 +575,7 @@ const AddYarnSent = () => {
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{marginTop: 5}} />
 
         {fieldArray.map((field, index) => {
           return (
@@ -667,6 +667,7 @@ const RenderDynamicFields = ({
       gutter={18}
       style={{
         padding: "12px",
+        marginTop: -20
       }}
       key={`${field}_add_yarn_sent`}
     >
@@ -747,11 +748,6 @@ const RenderDynamicFields = ({
                 onChange={(selectedValue) => {
                   fields.onChange(selectedValue);
                   yscdListRes.yarnCompanyList.forEach(({ yarn_details }) => {
-
-                    console.log(selectedValue);
-                    console.log(yarn_details);
-                    
-                    
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => Number(yarn_company_id) == Number(selectedValue)
                     );

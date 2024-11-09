@@ -27,7 +27,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -150,8 +150,8 @@ const AddBeamReceive = () => {
                 ? "SJBN-" + (lastBeamNo + (index + 1))
                 : "JBN-" + (lastBeamNo + (index + 1))
               : challan_beam_type === "non pasarela (secondary)"
-              ? "SJBN-" + 1
-              : "JBN-" + 1,
+                ? "SJBN-" + 1
+                : "JBN-" + 1,
             supplier_beam_no: data[`supplier_beam_no_${field}`],
             tars: parseInt(data[`tars_${field}`]),
             pano: parseInt(data[`pano_${field}`]),
@@ -216,16 +216,24 @@ const AddBeamReceive = () => {
           companyId,
           params: { company_id: companyId, beam_type: beam_type },
         });
-        const regex = /-(\d+)/;
-        const match = res?.data?.data.match(regex);
-
-        const number = match ? parseInt(match[1], 10) : 0;
-        return number;
+        if (res?.data?.data == null){
+          return 0 ;
+        } else {
+          const regex = /-(\d+)/;
+          const match = res?.data?.data.match(regex);
+          const number = match ? parseInt(match[1], 10) : 0;
+          return number;
+        }
       }
     },
     placeholderData: keepPreviousData,
     enabled: Boolean(companyId),
   });
+
+  useEffect(() => {
+    console.log("Last beam number", lastBeamNo);
+    
+  }, [lastBeamNo])
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -654,188 +662,188 @@ const AddBeamReceive = () => {
             </Form.Item>
           </Col>
         </Row>
+        
+        <div style={{marginTop: -20}}>
+          {challan_beam_type != undefined &&
+            fieldArray.map((fieldNumber, index) => {
+              console.log(index);
+              
+              return (
+                <Row
+                  key={index + "_add_beam_receive"}
+                  gutter={18}
+                  style={{
+                    padding: "12px",
+                  }}
+                >
+                  <Col span={3}>
+                    <Form.Item
+                      label="Beam No"
+                      name={`beam_no_${fieldNumber}`}
+                      validateStatus={
+                        errors[`beam_no_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`beam_no_${fieldNumber}`] &&
+                        errors[`beam_no_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Typography.Text style={{ fontWeight: "bold" }}>
+                        {challan_beam_type === "non pasarela (secondary)"
+                            ? "SJBN-" + (lastBeamNo + (index + 1))
+                            : "JBN-" + (lastBeamNo + (index + 1))}
+                      </Typography.Text>
+                    </Form.Item>
+                  </Col>
 
-        {challan_beam_type != undefined &&
-          // lastBeamNo !== undefined &&
-          fieldArray.map((fieldNumber, index) => {
-            return (
-              <Row
-                key={index + "_add_beam_receive"}
-                gutter={18}
-                style={{
-                  padding: "12px",
-                }}
-              >
-                <Col span={3}>
-                  <Form.Item
-                    label="Beam No"
-                    name={`beam_no_${fieldNumber}`}
-                    validateStatus={
-                      errors[`beam_no_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`beam_no_${fieldNumber}`] &&
-                      errors[`beam_no_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Typography.Text style={{ fontWeight: "bold" }}>
-                      {lastBeamNo
-                        ? challan_beam_type === "non pasarela (secondary)"
-                          ? "SJBN-" + (lastBeamNo + (index + 1))
-                          : "JBN-" + (lastBeamNo + (index + 1))
-                        : challan_beam_type === "non pasarela (secondary)"
-                        ? "SJBN-" + 1
-                        : "JBN-" + 1}
-                    </Typography.Text>
-                  </Form.Item>
-                </Col>
-
-                <Col span={3}>
-                  <Form.Item
-                    label="Supplier Beam No"
-                    name={`supplier_beam_no_${fieldNumber}`}
-                    validateStatus={
-                      errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`supplier_beam_no_${fieldNumber}`] &&
-                      errors[`supplier_beam_no_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={3}>
+                    <Form.Item
+                      label="Supplier Beam No"
                       name={`supplier_beam_no_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={3}>
-                  <Form.Item
-                    label="Taar/Ends"
-                    name={`tars_${fieldNumber}`}
-                    validateStatus={
-                      errors[`tars_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`tars_${fieldNumber}`] &&
-                      errors[`tars_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                      validateStatus={
+                        errors[`supplier_beam_no_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`supplier_beam_no_${fieldNumber}`] &&
+                        errors[`supplier_beam_no_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`supplier_beam_no_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={3}>
+                    <Form.Item
+                      label="Taar/Ends"
                       name={`tars_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={2}>
-                  <Form.Item
-                    label="Pano"
-                    name={`pano_${fieldNumber}`}
-                    validateStatus={
-                      errors[`pano_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`pano_${fieldNumber}`] &&
-                      errors[`pano_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                      validateStatus={
+                        errors[`tars_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`tars_${fieldNumber}`] &&
+                        errors[`tars_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`tars_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={2}>
+                    <Form.Item
+                      label="Pano"
                       name={`pano_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                      validateStatus={
+                        errors[`pano_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`pano_${fieldNumber}`] &&
+                        errors[`pano_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`pano_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
 
-                <Col span={2}>
-                  <Form.Item
-                    label="Taka"
-                    name={`taka_${fieldNumber}`}
-                    validateStatus={
-                      errors[`taka_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`taka_${fieldNumber}`] &&
-                      errors[`taka_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={2}>
+                    <Form.Item
+                      label="Taka"
                       name={`taka_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
+                      validateStatus={
+                        errors[`taka_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`taka_${fieldNumber}`] &&
+                        errors[`taka_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`taka_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" />
+                        )}
+                      />
+                    </Form.Item>
+                  </Col>
 
-                <Col span={2}>
-                  <Form.Item
-                    label="Meter"
-                    name={`meter_${fieldNumber}`}
-                    validateStatus={
-                      errors[`meter_${fieldNumber}`] ? "error" : ""
-                    }
-                    help={
-                      errors[`meter_${fieldNumber}`] &&
-                      errors[`meter_${fieldNumber}`].message
-                    }
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
+                  <Col span={2}>
+                    <Form.Item
+                      label="Meter"
                       name={`meter_${fieldNumber}`}
-                      render={({ field }) => (
-                        <Input {...field} placeholder="12" />
-                      )}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {fieldArray.length > 1 && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<DeleteOutlined />}
-                      type="primary"
-                      onClick={deleteFieldRow.bind(null, fieldNumber)}
-                      className="flex-none"
-                    />
+                      validateStatus={
+                        errors[`meter_${fieldNumber}`] ? "error" : ""
+                      }
+                      help={
+                        errors[`meter_${fieldNumber}`] &&
+                        errors[`meter_${fieldNumber}`].message
+                      }
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                    >
+                      <Controller
+                        control={control}
+                        name={`meter_${fieldNumber}`}
+                        render={({ field }) => (
+                          <Input {...field} placeholder="12" />
+                        )}
+                      />
+                    </Form.Item>
                   </Col>
-                )}
 
-                {index === fieldArray.length - 1 && (
-                  <Col span={1}>
-                    <Button
-                      style={{ marginTop: "1.9rem" }}
-                      icon={<PlusOutlined />}
-                      type="primary"
-                      onClick={addNewFieldRow.bind(null, index)}
-                      className="flex-none"
-                    />
-                  </Col>
-                )}
-              </Row>
-            );
+                  {fieldArray.length > 1 && (
+                    <Col span={1}>
+                      <Button
+                        style={{ marginTop: "1.9rem" }}
+                        icon={<DeleteOutlined />}
+                        type="primary"
+                        danger
+                        onClick={deleteFieldRow.bind(null, fieldNumber)}
+                        className="flex-none"
+                      />
+                    </Col>
+                  )}
+
+                  {index === fieldArray.length - 1 && (
+                    <Col span={1}>
+                      <Button
+                        style={{ marginTop: "1.9rem" }}
+                        icon={<PlusOutlined />}
+                        type="primary"
+                        onClick={addNewFieldRow.bind(null, index)}
+                        className="flex-none"
+                      />
+                    </Col>
+                  )}
+                </Row>
+              );
           })}
+        </div>
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

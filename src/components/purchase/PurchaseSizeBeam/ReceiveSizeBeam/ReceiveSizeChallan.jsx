@@ -84,8 +84,8 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
       amount: 0,
       net_amount: 0,
       IGST_value: 0,
-      SGST_value: 0,
-      CGST_value: 0,
+      SGST_value: 6,
+      CGST_value: 6,
       SGST_amount: 0,
       CGST_amount: 0,
       IGST_amount: 0,
@@ -195,7 +195,7 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
 
   // Create Beam bill handler ===============================================================================
 
-  const { mutateAsync: createSizeBeamBill } = useMutation({
+  const { mutateAsync: createSizeBeamBill, isPending } = useMutation({
     mutationFn: async (data) => {
       setLoading(true);
       const res = await createReceiveSizeBeamBillRequest({
@@ -223,7 +223,7 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
   const onSubmit = async (values) => {
     let requestData = values;
     requestData["bill_date"] = moment(values?.bill_date).format("YYYY-MM-DD");
-    requestData["due_date"] = moment(values?.bill_date).format("YYYY-MM-DD");
+    requestData["due_date"] = moment(values?.due_date).format("YYYY-MM-DD");
     requestData["SGST_amount"] = parseFloat(values?.SGST_amount).toFixed(2);
     requestData["receive_size_beam_id"] = details?.id;
     requestData["total_kg"] = totalKG;
@@ -317,7 +317,7 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
               <Col span={12} className="flex flex-col self-center mb-6">
                 <Row gutter={12} className="flex-grow w-full">
                   <Col span={8} className="font-medium">
-                    Supplier Name : 000
+                    Supplier Name : 
                   </Col>
                   <Col
                     span={16}
@@ -763,10 +763,9 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
               ></Col>
               <Col span={7} className="p-2 border-0 border-r border-solid">
                 <Form.Item
-                  // label="BILL Date"
-                  name="bill_date"
+                  name="due_date"
                   validateStatus={errors.due_date ? "error" : ""}
-                  help={errors.bill_date && errors.due_date.message}
+                  help={errors.due_date && errors.due_date.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
@@ -814,7 +813,7 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
                   Reset
                 </Button>
 
-                <Button type="primary" htmlType="submit" loading={loading}>
+                <Button type="primary" htmlType="submit" loading={isPending}>
                   Receive Bill
                 </Button>
               </>

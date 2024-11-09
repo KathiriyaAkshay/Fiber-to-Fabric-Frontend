@@ -385,7 +385,7 @@ const BeamCardList = () => {
       dataIndex: "shortage",
       key: "shortage",
       render: (text, record) => {
-        let pending_meter = record?.pending_meter;
+        let pending_meter = record?.pending_meter || 0;
         const obj =
           record.non_pasarela_beam_detail ||
           record.recieve_size_beam_detail ||
@@ -394,11 +394,10 @@ const BeamCardList = () => {
         if (obj != null) {
           total_meter = obj?.meters || obj.meter || 0;
         }
-
-        let shortage = (Number(pending_meter) * 100) / Number(total_meter);
+        let shortage = ((parseFloat(total_meter) - parseFloat(pending_meter)) * 100) / parseFloat(total_meter);
         let shortage_status = ["finished", "cut"];
 
-        if (pending_meter < 0) {
+        if (pending_meter > 0) {
           shortage = `-${shortage.toFixed(2)}`;
         } else {
           shortage = shortage.toFixed(2);
@@ -652,7 +651,7 @@ const BeamCardList = () => {
           >
             <Flex align="center" gap={10}>
               <Radio value={"primary"}> Primary Beam</Radio>
-              <Radio value={"secondary"}> Secondary Beam </Radio>
+              {/* <Radio value={"secondary"}> Secondary Beam </Radio> */}
             </Flex>
           </Radio.Group>
           <Input
@@ -810,7 +809,7 @@ const BeamCardList = () => {
 
 export default BeamCardList;
 
-// Beam card information model
+// ==================== Beam card information model ========================== // 
 const BeamCardViewDetailModal = ({
   title = "-",
   isScroll = false,
@@ -852,7 +851,7 @@ const BeamCardViewDetailModal = ({
         classNames={{
           header: "text-center",
         }}
-        width={"60%"}
+        width={"70%"}
         styles={{
           content: {
             padding: 0,
@@ -863,11 +862,15 @@ const BeamCardViewDetailModal = ({
           },
           body: {
             padding: "10px 16px",
-            ...adjustHeight,
+            maxHeight: "75vh",
+            overflowY: "auto"
           },
         }}
       >
         <Flex className="flex-col gap-1">
+
+          {/* Quality name, Beam no, Beam created date related information  */}
+
           <Row
             gutter={12}
             className="flex-grow"
@@ -875,9 +878,11 @@ const BeamCardViewDetailModal = ({
             key={title}
           >
             <Col span={12}>
+
+              {/* Quality name information  */}
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
                 <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -888,23 +893,27 @@ const BeamCardViewDetailModal = ({
                 <Col span={12}>
                   <Typography.Text>{`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}</Typography.Text>
                 </Col>
+
               </Row>
 
-              <Row id="row" className="beam-card-info-title-div">
+              {/* Beam load by related information  */}
+              <Row id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
                 <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Beam Load By
+                    Beam Load By :
                   </Typography.Text>
                 </Col>
                 <Col span={12}>
-                  <Typography.Text>Beam Type</Typography.Text>
+                  <Typography.Text>{String(details?.createdBy?.first_name).toUpperCase()} {details?.createdBy?.last_name}</Typography.Text>
                 </Col>
               </Row>
 
               {item?.supplier_beam_no !== undefined && (
                 <Row
                   id="row"
-                  className="beam-card-info-title-div beam-card-main-div"
+                  className="beam-details-information-div beam-details-highlight-div"
                 >
                   <Col span={8}>
                     <Typography.Text className="font-medium beam-card-info-title">
@@ -916,26 +925,48 @@ const BeamCardViewDetailModal = ({
                   </Col>
                 </Row>
               )}
+
+              <Row
+                id="row"
+                className="beam-details-information-div"
+              >
+                <Col span={6}>
+                  <Typography.Text className="font-medium beam-card-info-title">
+                    Machine :
+                  </Typography.Text>
+                </Col>
+
+                <Col span={12}>
+                  <Tag color="#108ee9">
+                    {details.machine_name}
+                  </Tag>
+                </Col>
+
+              </Row>
             </Col>
 
             <Col span={12}>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
-                <Col span={6}>
+                <Col span={8}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Beam no.
+                    Beam no :
                   </Typography.Text>
                 </Col>
                 <Col span={12}>
-                  <Typography.Text>{item?.beam_no}</Typography.Text>
+                  <Tag color="#108ee9">
+                    {item?.beam_no}
+                  </Tag>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div">
+              <Row id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
                 <Col span={8}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Beam create date
+                    Beam create date :
                   </Typography.Text>
                 </Col>
                 <Col span={12}>
@@ -945,20 +976,22 @@ const BeamCardViewDetailModal = ({
                 </Col>
               </Row>
             </Col>
+
+
           </Row>
 
-          <Divider />
+          <Divider style={{ marginTop: 10 }} />
 
           <Row
             gutter={12}
             className="flex-grow"
-            style={{ marginTop: "0.40rem" }}
+            style={{ marginTop: "-10px" }}
             key={title}
           >
             <Col span={12}>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -970,9 +1003,11 @@ const BeamCardViewDetailModal = ({
                 </Col>
               </Row>
 
-              <Row id="row" className="beam-card-info-title-div">
+              <Row id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
                 <Col span={12}>
-                  <Typography.Text className="font-medium beam-card-info-title">
+                  <Typography.Text className="font-medium beam-card-info-title" >
                     Warper Employee Name (S)
                   </Typography.Text>
                 </Col>
@@ -983,7 +1018,7 @@ const BeamCardViewDetailModal = ({
 
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -999,7 +1034,7 @@ const BeamCardViewDetailModal = ({
             <Col span={12}>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -1010,7 +1045,9 @@ const BeamCardViewDetailModal = ({
                   <Typography.Text>-</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div">
+              <Row id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
                     Non Pasarela Date (S)
@@ -1022,7 +1059,7 @@ const BeamCardViewDetailModal = ({
               </Row>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -1036,32 +1073,35 @@ const BeamCardViewDetailModal = ({
             </Col>
           </Row>
 
-          <Divider />
+          <Divider style={{ marginTop: 10 }} />
 
           <Row
             gutter={12}
             className="flex-grow"
-            style={{ marginTop: "0.40rem" }}
+            style={{ marginTop: "-5px" }}
             key={title}
           >
             <Col span={12}>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
-                <Col span={12}>
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Taar
+                    Taar :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{item?.ends_or_tars}</Typography.Text>
+                  <Typography.Text>{item?.ends_or_tars || item?.tars}</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div">
-                <Col span={12}>
+              <Row
+                id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Pano
+                    Pano :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
@@ -1070,36 +1110,38 @@ const BeamCardViewDetailModal = ({
               </Row>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
-                <Col span={12}>
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Peak
+                    Peak :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{details.peak}</Typography.Text>
+                  <Typography.Text>{details.peak || "-"}</Typography.Text>
                 </Col>
               </Row>
             </Col>
             <Col span={12}>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
-                <Col span={12}>
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Taka
+                    Taka :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
                   <Typography.Text>{item?.taka}</Typography.Text>
                 </Col>
               </Row>
-              <Row id="row" className="beam-card-info-title-div">
-                <Col span={12}>
+              <Row id="row"
+                className="beam-details-information-div beam-details-other-div"
+              >
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Meter
+                    Meter :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
@@ -1108,15 +1150,15 @@ const BeamCardViewDetailModal = ({
               </Row>
               <Row
                 id="row"
-                className="beam-card-info-title-div beam-card-main-div"
+                className="beam-details-information-div"
               >
-                <Col span={12}>
+                <Col span={6}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Read
+                    Read :
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>{details.read}</Typography.Text>
+                  <Typography.Text>{details.read || "-"}</Typography.Text>
                 </Col>
               </Row>
             </Col>

@@ -319,7 +319,7 @@ const AddJobGrayBill = () => {
             padding: "12px",
           }}
         >
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Year Type"
               name="year_type"
@@ -341,7 +341,7 @@ const AddJobGrayBill = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
           <Col span={4}>
             <Form.Item
               label="Party Company"
@@ -580,27 +580,32 @@ const AddJobGrayBill = () => {
             </Col>
           </Row> */}
 
-        {fieldArray.map((fieldNumber, index) => {
-          return (
-            <FormRow
-              key={index + "_form_row"}
-              index={index}
-              errors={errors}
-              control={control}
-              fieldNumber={fieldNumber}
-              isLoadingMachineList={isLoadingMachineList}
-              machineListRes={machineListRes}
-              dropDownQualityLoading={dropDownQualityLoading}
-              dropDownQualityListRes={dropDownQualityListRes}
-              addNewFieldRow={addNewFieldRow}
-              deleteFieldRow={deleteFieldRow}
-              fieldArray={fieldArray}
-              setValue={setValue}
-              companyId={companyId}
-              getValues={getValues}
-            />
-          );
-        })}
+        <div style={{
+          marginTop: -20
+        }}>
+          {fieldArray.map((fieldNumber, index) => {
+            return (
+              <FormRow
+                key={index + "_form_row"}
+                index={index}
+                errors={errors}
+                control={control}
+                fieldNumber={fieldNumber}
+                isLoadingMachineList={isLoadingMachineList}
+                machineListRes={machineListRes}
+                dropDownQualityLoading={dropDownQualityLoading}
+                dropDownQualityListRes={dropDownQualityListRes}
+                addNewFieldRow={addNewFieldRow}
+                deleteFieldRow={deleteFieldRow}
+                fieldArray={fieldArray}
+                setValue={setValue}
+                companyId={companyId}
+                getValues={getValues}
+              />
+            );
+          })}
+        </div>
+
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
@@ -754,7 +759,7 @@ const FormRow = ({
           </Form.Item>
         </Col>
 
-        <Col span={4}>
+        <Col span={3}>
           <Form.Item
             label="Select Quality"
             name={`quality_id_${fieldNumber}`}
@@ -941,7 +946,7 @@ const FormRow = ({
             <Button
               style={{ marginTop: "1.9rem" }}
               icon={<DeleteOutlined />}
-              type="primary"
+              danger
               onClick={deleteFieldRow.bind(null, fieldNumber)}
               className="flex-none"
             />

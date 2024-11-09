@@ -64,7 +64,7 @@ function UpdateYarnReceive() {
     return current && current > moment().endOf('day');
   };
 
-  const { mutateAsync: updateYarnReceive } = useMutation({
+  const { mutateAsync: updateYarnReceive, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateYarnReceiveRequest({
         id,
@@ -378,7 +378,7 @@ function UpdateYarnReceive() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Update
           </Button>
         </Flex>

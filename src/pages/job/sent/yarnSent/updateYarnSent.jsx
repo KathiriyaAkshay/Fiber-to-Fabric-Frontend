@@ -36,11 +36,11 @@ import dayjs from "dayjs";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
-    sent_date: yup.string().required("Please select date."),
-    quality_id: yup.string().required("Please select quality"),
-    party_id: yup.string().required("Please select party."),
+    // sent_date: yup.string().required("Please select date."),
+    // quality_id: yup.string().required("Please select quality"),
+    // party_id: yup.string().required("Please select party."),
     vehicle_id: yup.string().required("Please select vehicle."),
-    challan_no: yup.string().required("Please enter vehicle."),
+    // challan_no: yup.string().required("Please enter vehicle."),
     delivery_charge: yup.string().required("Please enter delivery charge."),
     power_cost: yup.string().required("Please enter power cost."),
   })
@@ -72,6 +72,7 @@ const UpdateYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
+  // ******** Update yarn sent related functionality ************** //
   const { mutateAsync: updateYarnSent, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateYarnSentRequest({
@@ -97,13 +98,12 @@ const UpdateYarnSent = () => {
       message.error(errorMessage);
     },
   });
-  console.log({ yarnSentDetails, fieldArray });
 
   async function onSubmit(data) {
     const newData = {
       sent_date: dayjs(data.sent_date).format("YYYY-MM-DD"),
       quality_id: data.quality_id,
-      party_id: data.party_id,
+      supplier_id: data.supplier_id,
       vehicle_id: data.vehicle_id,
       delivery_charge: parseFloat(data.delivery_charge),
       power_cost: parseFloat(data.power_cost),
@@ -1046,10 +1046,13 @@ const RenderDynamicFields = ({
                     const obj = yarn_details.find(
                       ({ yarn_company_id }) => yarn_company_id === selectedValue
                     );
-                    setValue(
-                      `current_stock_${field}`,
-                      obj ? obj.current_stock : 0
-                    );
+                    if (obj) {
+                      setValue(
+                        `current_stock_${field}`,
+                        obj ? obj.current_stock : 0
+                      );
+                      return;
+                    }
                   });
                 }}
                 // onSelect={(selectedValue) => {
@@ -1084,7 +1087,7 @@ const RenderDynamicFields = ({
             control={control}
             name={`current_stock_${field}`}
             render={({ field }) => (
-              <Input {...field} readOnly={isDisableField} />
+              <Input {...field} readOnly={true} />
             )}
           />
         </Form.Item>
@@ -1175,7 +1178,7 @@ const RenderDynamicFields = ({
             control={control}
             name={`remaining_stock_${field}`}
             render={({ field }) => (
-              <Input {...field} readOnly={isDisableField} />
+              <Input {...field} readOnly={true} />
             )}
           />
         </Form.Item>

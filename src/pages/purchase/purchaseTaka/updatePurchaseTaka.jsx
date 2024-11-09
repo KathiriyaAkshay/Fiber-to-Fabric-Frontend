@@ -402,6 +402,7 @@ const UpdatePurchaseTaka = () => {
         <h3 className="m-0 text-primary">Edit Purchase Challan</h3>
       </div>
       <Form layout="vertical">
+
         <Row
           gutter={18}
           style={{
@@ -491,6 +492,7 @@ const UpdatePurchaseTaka = () => {
           gutter={18}
           style={{
             padding: "0px 12px",
+            marginTop: -20
           }}
         >
           <Col span={6}>
@@ -512,7 +514,7 @@ const UpdatePurchaseTaka = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          {/* <Col span={6}>
             <Form.Item
               label="Gst In"
               name="gst_in_1"
@@ -529,7 +531,7 @@ const UpdatePurchaseTaka = () => {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={6}>
             <Form.Item
@@ -568,14 +570,7 @@ const UpdatePurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row
-          gutter={18}
-          style={{
-            padding: "0px 12px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Order"
@@ -609,6 +604,15 @@ const UpdatePurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
+
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "0px 12px",
+          }}
+        >
 
           <Col span={6}>
             <Form.Item
@@ -661,14 +665,7 @@ const UpdatePurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
 
-        <Row
-          gutter={18}
-          style={{
-            padding: "0px 12px",
-          }}
-        >
           <Col span={6}>
             <Form.Item
               label="Select Supplier"
@@ -737,6 +734,15 @@ const UpdatePurchaseTaka = () => {
             </Form.Item>
           </Col>
 
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "0px 12px",
+          }}
+        >
+
           <Col span={3}>
             <Form.Item
               label="Total Meter"
@@ -795,40 +801,30 @@ const UpdatePurchaseTaka = () => {
           </Col>
         </Row>
 
-        {gray_order_id ? (
+        {pendingMeter && pendingTaka ? (
           <Row
             gutter={18}
             style={{
-              padding: "0px 12px",
+              paddingBottom: 10, 
+              marginTop: -10
             }}
           >
-            <Col span={6}></Col>
 
-            <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red" }}>Pending</Typography>
+            <Col span={3} style={{ textAlign: "center" }}>
+              <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>
-                {pendingMeter || 0}
-              </Typography>
+              <Typography style={{ color: "red" }}>{pendingWeight}</Typography>
             </Col>
 
             <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>
-                {pendingWeight || 0}
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "center" }}>
-              <Typography style={{ color: "red" }}>
-                {pendingTaka || 0}
-              </Typography>
+              <Typography style={{ color: "red" }}>{pendingTaka}</Typography>
             </Col>
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop: 0}} />
 
         <FieldTable
           errors={errors}

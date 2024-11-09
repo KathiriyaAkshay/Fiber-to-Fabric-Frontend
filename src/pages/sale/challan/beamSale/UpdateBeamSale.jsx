@@ -438,10 +438,10 @@ const UpdateBeamSent = () => {
           return {
             beam_load_id: item.beam_load_id,
             beam_no: obj.beam_no,
-            ends_or_tars: obj.ends_or_tars,
+            ends_or_tars: obj.ends_or_tars || obj.tars,
             pano: obj.pano,
             taka: obj.taka,
-            meters: obj.meters,
+            meters: obj.meters || obj.meter,
             weight: obj.net_weight,
           };
         })
@@ -469,7 +469,7 @@ const UpdateBeamSent = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Edit Sale Challan</h3>
+        <h3 className="m-0 text-primary">Edit Beam Sale Challan</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         {weftDenierDetails && weftDenierDetails.length ? (
@@ -511,6 +511,7 @@ const UpdateBeamSent = () => {
           style={{
             padding: "12px",
             justifyContent: "flex-end",
+            marginTop: -20
           }}
         >
           <Col span={6}>
@@ -634,6 +635,7 @@ const UpdateBeamSent = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={4}>

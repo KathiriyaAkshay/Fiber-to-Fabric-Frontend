@@ -1,11 +1,36 @@
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
 import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
 import moment from "moment";
 const { Paragraph } = Typography;
+import ReactToPrint from "react-to-print";
+import { useContext } from "react";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const PrintBeamSaleChallan = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
+  const componentRef = useRef() ; 
+  const {companyListRes} = useContext(GlobalContext) ; 
+  const [companyInfo, setCompanyInfo] = useState({});
+
+  useEffect(() => {
+    companyListRes?.rows?.map((element) => {
+        if (element?.id == details?.company_id){
+            setCompanyInfo(element) ; 
+        }
+    })
+  },[details, companyListRes]) ; 
+  
+  const pageStyle = `
+  @media print {
+       .print-instructions {
+          display: none;
+      }
+      .printable-content {
+          padding: 20px; /* Add padding for print */
+          width: 100%;
+      }
+  `;
 
   return (
     <>
@@ -26,7 +51,21 @@ const PrintBeamSaleChallan = ({ details }) => {
           </Typography.Text>
         }
         open={isModelOpen}
-        footer={null}
+        footer={() => {
+          return(
+              <>
+                  <ReactToPrint
+                      trigger={() => <Flex>
+                          <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
+                              PRINT
+                          </Button>
+                      </Flex>}
+                      content={() => componentRef.current}
+                      pageStyle={pageStyle}
+                  />
+              </>
+          )
+        }}
         onCancel={() => {
           setIsModalOpen(false);
         }}
@@ -45,14 +84,20 @@ const PrintBeamSaleChallan = ({ details }) => {
           body: {
             padding: "16px 32px",
           },
+
+          footer:{
+            paddingBottom: 10, 
+            paddingRight: 10, 
+            backgroundColor: "#efefef"
+        }
         }}
         width={"70vw"}
       >
-        <Flex className="flex-col ">
+        <Flex className="flex-col" ref={componentRef}>
           <Row className="p-2 ">
             <Col span={24} className="flex items-center justify-center border">
               <Typography.Text className="font-semibold text-center">
-                <h3>SONU TEXTILES</h3>
+                <h3>{companyInfo?.company_name}</h3>
               </Typography.Text>
             </Col>
           </Row>
@@ -67,22 +112,9 @@ const PrintBeamSaleChallan = ({ details }) => {
             }}
           >
             <Col span={24} style={{ textAlign: "center" }}>
-              <p style={{ marginTop: 0, marginBottom: 0 }}>
-                <strong>
-                  PLOT NO. 78,, JAYVEER INDU. ESTATE,, GUJARAT HOUSING BOARD
-                  ROAD, PANDESARA,, SURAT, GUJARAT, 394221 PANDESARA
-                </strong>
-              </p>
-              <p style={{ marginTop: 3, marginBottom: 0 }}>
-                At: Surat DIST-Surat
-              </p>
-              <p style={{ marginTop: 3, marginBottom: 0 }}>
-                Phone no: 6353207671 &nbsp;&nbsp;&nbsp; PAYMENT: 6353207671
-              </p>
-              <p style={{ marginTop: 3, marginBottom: 0 }}>
-                GST NO: 24ABHPP6021C1Z4 &nbsp;&nbsp;&nbsp;&nbsp; PAN NO:
-                ABHPP6021C
-              </p>
+              <p style={{ marginTop: 0, marginBottom: 0 }}><strong>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</strong></p>
+              <p style={{ marginTop: 3, marginBottom: 0 }}>Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp; PAYMENT: {companyInfo?.account_number}</p>
+              <p style={{ marginTop: 3, marginBottom: 0 }}>GST NO: {companyInfo?.gst_no} &nbsp;&nbsp;&nbsp;&nbsp; PAN NO: {companyInfo?.pancard_no}</p>
             </Col>
           </Row>
           <Row
@@ -92,30 +124,15 @@ const PrintBeamSaleChallan = ({ details }) => {
             }}
           >
             <Col span={12}>
-              <p>
-                <strong>M/S :</strong> {details?.supplier?.supplier_company}(
-                {details?.supplier?.supplier_name})
-              </p>
-              <p>ADDRESS OF SUPPLIER OF SUPPLIER NAME 123</p>
-              <p>
-                <strong>GST :</strong> 24ABHPP6021C1Z4
-              </p>
-              <p>
-                <strong>E-Way Bill No :</strong>
-              </p>
+              <p><strong>M/S :</strong> {details?.supplier?.supplier_company}({details?.supplier?.supplier_name})</p>
+              <p>{details?.supplier?.user?.address}</p>
+              <p><strong>GST :</strong> {details?.supplier?.user?.gst_no}</p>
+              <p><strong>E-Way Bill No :</strong></p>
             </Col>
-            <Col span={12} style={{ textAlign: "right" }}>
-              <p>
-                <strong>CHALLAN NO :</strong> {details?.challan_no}
-              </p>
-              <p>
-                <strong>DATE :</strong>{" "}
-                {moment(details?.createdAt).format("DD-MM-YYYY")}
-              </p>
-              <p>
-                <strong>VEHICLE NO :</strong>
-                {details?.vehicle?.vehicle?.vehicleNo}
-              </p>
+            <Col span={12} style={{ textAlign: 'right' }}>
+                <p><strong>CHALLAN NO :</strong> {details?.challan_no}</p>
+                <p><strong>DATE :</strong> {moment(details?.createdAt).format("DD-MM-YYYY")}</p>
+                <p><strong>VEHICLE NO :</strong>{details?.vehicle?.vehicle?.vehicleNo}</p>
             </Col>
           </Row>
 
@@ -181,10 +198,10 @@ const PrintBeamSaleChallan = ({ details }) => {
                 >
                   <Col span={3}>{index + 1}</Col>
                   <Col span={3}>{obj?.beam_no || 0}</Col>
-                  <Col span={3}>{obj?.ends_or_tars || 0}</Col>
+                  <Col span={3}>{obj?.ends_or_tars || obj.tars || 0}</Col>
                   <Col span={3}>{obj?.pano || 0}</Col>
                   <Col span={4}>{obj?.taka || 0}</Col>
-                  <Col span={4}>{obj?.meters || 0}</Col>
+                  <Col span={4}>{obj?.meters || obj.meter || 0}</Col>
                   <Col span={4}>{obj?.net_weight || 0}</Col>
                 </Row>
               );
@@ -267,7 +284,7 @@ const PrintBeamSaleChallan = ({ details }) => {
           </Row>
           <Row style={{ marginTop: "40px" }}>
             <Col span={24} style={{ textAlign: "right" }}>
-              <Paragraph>For, SONU TEXTILES</Paragraph>
+              <Paragraph>For, {companyInfo?.company_name}</Paragraph>
             </Col>
           </Row>
           <Row style={{ marginTop: "70px" }}>
@@ -279,11 +296,11 @@ const PrintBeamSaleChallan = ({ details }) => {
             </Col>
           </Row>
         </Flex>
-        <Flex>
+        {/* <Flex>
           <Button type="primary" style={{ marginLeft: "auto", marginTop: 15 }}>
             PRINT
           </Button>
-        </Flex>
+        </Flex> */}
       </Modal>
     </>
   );

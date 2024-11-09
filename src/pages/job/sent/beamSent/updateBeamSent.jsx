@@ -385,7 +385,7 @@ const UpdateBeamSent = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Edit Selected Beam To Send</h3>
+        <h3 className="m-0 text-primary">Edit Beam Send</h3>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Row
@@ -476,35 +476,37 @@ const UpdateBeamSent = () => {
 
         {weftDenierDetails && weftDenierDetails.length ? (
           <>
-            <h3> Select Warp Denier</h3>
-            <Row
-              gutter={18}
-              style={{
-                padding: "12px",
-              }}
-            >
-              {weftDenierDetails.map(
-                ({ id, weft_weight, yarn_stock_company }, index) => {
-                  const { yarn_denier, filament, luster_type, yarn_color } =
-                    yarn_stock_company;
+            <div style={{marginTop: -30}}>
+              <h3> Select Warp Denier</h3>
+              <Row
+                gutter={18}
+                style={{
+                  padding: "12px",
+                }}
+              >
+                {weftDenierDetails.map(
+                  ({ id, weft_weight, yarn_stock_company }, index) => {
+                    const { yarn_denier, filament, luster_type, yarn_color } =
+                      yarn_stock_company;
 
-                  return (
-                    <Col key={index} span={5}>
-                      <Checkbox
-                        checked={inhouseWarpIds?.includes(id)}
-                        onChange={(e) =>
-                          handleInhouseWarpIdHandler(e.target.checked, id)
-                        }
-                      >
-                        <Tag color="green">[{weft_weight}]</Tag>
-                        {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
-                      </Checkbox>
-                    </Col>
-                  );
-                }
-              )}
-            </Row>
-            <Divider />
+                    return (
+                      <Col key={index} span={5}>
+                        <Checkbox
+                          checked={inhouseWarpIds?.includes(id)}
+                          onChange={(e) =>
+                            handleInhouseWarpIdHandler(e.target.checked, id)
+                          }
+                        >
+                          <Tag color="green">[{weft_weight}]</Tag>
+                          {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                        </Checkbox>
+                      </Col>
+                    );
+                  }
+                )}
+              </Row>
+              <Divider style={{marginTop: 5}} />
+            </div>
           </>
         ) : null}
 
@@ -512,6 +514,7 @@ const UpdateBeamSent = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={4}>

@@ -54,7 +54,7 @@ const MultipleChallanCreateButton = ({ details }) => {
 
     }, [details, setValue]);
 
-    const { mutateAsync: createYarnMultipleChallan } = useMutation({
+    const { mutateAsync: createYarnMultipleChallan, isPending } = useMutation({
         mutationFn: async (data) => {
             const res = await createMultipleChallanYarnReceiveRequest({
                 id: details?.id,
@@ -282,7 +282,7 @@ const MultipleChallanCreateButton = ({ details }) => {
                             parseInt(details?.receive_cartoon_pallet) === parseInt(totalCartoon) &&
                             quantityRow == cartoonRow && (
 
-                                <Button type="primary" htmlType="submit" style={{ marginTop: 20 }}>Save</Button>
+                                <Button type="primary" htmlType="submit" style={{ marginTop: 20 }} loading = {isPending}>Save</Button>
                             )}
                     </Form.Item>
 

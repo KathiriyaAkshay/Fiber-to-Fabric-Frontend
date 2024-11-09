@@ -121,11 +121,14 @@ const AddBeamSent = () => {
   });
 
   async function onSubmit(data) {
-    console.log(data);
-    
     if (!beamLoadIds.length) {
       message.error("At least one beam should be selected.");
       return;
+    }
+
+    if (inhouseWarpIds?.length == 0){
+      message.warning("Please, Select Wrap Dennier"); 
+      return ; 
     }
 
     const payload = {
@@ -145,7 +148,6 @@ const AddBeamSent = () => {
       total_weight: +data.total_weight
     };
     delete payload.challan_date;
-
     await addBeamSent(payload);
   }
 
@@ -326,7 +328,7 @@ const AddBeamSent = () => {
                 ends_or_tars: obj.ends_or_tars || obj?.tars,
                 pano: obj.pano,
                 taka: obj.taka,
-                meters: obj.meter,
+                meters: obj.meter || obj.meters,
                 weight: obj.net_weight,
               };
             })
@@ -487,33 +489,35 @@ const AddBeamSent = () => {
 
         {weftDenierDetails && weftDenierDetails.length ? (
           <>
-            <h3> Select Warp Denier</h3>
-            <Row
-              gutter={18}
-              style={{
-                padding: "12px",
-              }}
-            >
-              {weftDenierDetails.map(
-                ({ id, weft_weight, yarn_stock_company }, index) => {
-                  const { yarn_denier, filament, luster_type, yarn_color } =
-                    yarn_stock_company;
-                  return (
-                    <Col key={index} span={5}>
-                      <Checkbox
-                        onChange={(e) =>
-                          handleInhouseWarpIdHandler(e.target.checked, id)
-                        }
-                      >
-                        <Tag color="green">[{weft_weight}]</Tag>
-                        {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
-                      </Checkbox>
-                    </Col>
-                  );
-                }
-              )}
-            </Row>
-            <Divider />
+            <div style={{marginTop: -30}}>
+              <h3> Select Warp Denier</h3>
+              <Row
+                gutter={18}
+                style={{
+                  padding: "12px",
+                }}
+              >
+                {weftDenierDetails.map(
+                  ({ id, weft_weight, yarn_stock_company }, index) => {
+                    const { yarn_denier, filament, luster_type, yarn_color } =
+                      yarn_stock_company;
+                    return (
+                      <Col key={index} span={5}>
+                        <Checkbox
+                          onChange={(e) =>
+                            handleInhouseWarpIdHandler(e.target.checked, id)
+                          }
+                        >
+                          <Tag color="green">[{weft_weight}]</Tag>
+                          {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                        </Checkbox>
+                      </Col>
+                    );
+                  }
+                )}
+              </Row>
+            </div>
+            <Divider style={{marginTop: 5}} />
           </>
         ) : null}
 
@@ -521,6 +525,7 @@ const AddBeamSent = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -20
           }}
         >
           <Col span={4}>
