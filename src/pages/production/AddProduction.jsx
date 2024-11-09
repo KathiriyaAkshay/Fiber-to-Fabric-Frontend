@@ -314,7 +314,12 @@ const AddProduction = () => {
       const quality = dropDownQualityListRes?.rows?.find(
         ({ id }) => quality_id === id
       );
-      return { weight_from: quality.weight_from, weight_to: quality.weight_to };
+      return {
+        weight_from: quality.weight_from || 0,
+        weight_to: quality.weight_to || 0,
+      };
+    } else {
+      return { weight_from: 0, weight_to: 0 };
     }
   }, [dropDownQualityListRes, quality_id]);
 
