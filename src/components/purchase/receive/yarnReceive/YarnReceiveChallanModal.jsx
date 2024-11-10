@@ -108,7 +108,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       queryKey: ["order-master/yarn-order/list", { company_id: companyId }],
       queryFn: async () => {
         const res = await getYarnOrderListRequest({
-          params: { company_id: companyId },
+          params: { company_id: companyId, order_status : "PENDING" },
         });
         return res.data?.data?.yarnOrderList;
       },
