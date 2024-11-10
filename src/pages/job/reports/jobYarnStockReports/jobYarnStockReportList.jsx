@@ -9,6 +9,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getJobYarnStockReportListRequest } from "../../../../api/requests/job/reports/jobYarnStockReport";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import dayjs from "dayjs";
+import { render } from "react-dom";
 
 const JobYarnStockReportList = () => {
   const [supplier, setSupplier] = useState();
@@ -97,11 +98,13 @@ const JobYarnStockReportList = () => {
       title: "Mtr in Process",
       dataIndex: "production_type",
       key: "production_type",
+      render: (text, record) => ("-")
     },
     {
       title: "Yarn Process",
       dataIndex: "production_type",
       key: "production_type",
+      render: (text, record) => ("-")
     },
   ];
 

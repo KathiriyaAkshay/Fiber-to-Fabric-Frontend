@@ -177,7 +177,7 @@ const ReworkChallanBill = () => {
     },
     {
       title: "Bill No",
-      dataIndex: "bill_no",
+      dataIndex: ["job_rework_bill", "invoice_no"],
       key: "bill_no",
       sorter: (a, b) => a.bill_no - b.bill_no,
     },
@@ -228,6 +228,24 @@ const ReworkChallanBill = () => {
       title: "Due Days",
       dataIndex: "due_days",
       key: "due_days",
+      render: (text, record) => {
+        let due_date = record?.job_rework_bill?.due_date;
+        due_date = new Date(due_date);
+
+        let today = new Date();
+
+        let timeDifference = due_date.getTime() - today.getTime();
+        let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+        if (daysDifference < 0) {
+          daysDifference = 0;
+        }
+        return(
+          <div>
+            {daysDifference}
+          </div>
+        )
+      }
     },
     {
       title: "Status",

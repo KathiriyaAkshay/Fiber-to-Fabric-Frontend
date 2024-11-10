@@ -390,7 +390,7 @@ const BeamReceiveList = () => {
               <EditOutlined />
             </Button>
 
-            <BeamCardInformationModel data={beam_info_list} />
+            <BeamCardInformationModel data={beam_info_list} title = "Beam Info" />
           </Space>
         );
       },

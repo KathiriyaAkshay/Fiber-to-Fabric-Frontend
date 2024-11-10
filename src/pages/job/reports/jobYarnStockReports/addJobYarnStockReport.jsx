@@ -41,7 +41,7 @@ const AddJobYarnStockReport = () => {
     navigate(-1);
   }
 
-  const { mutateAsync: addJobYarnStockReport } = useMutation({
+  const { mutateAsync: addJobYarnStockReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addJobYarnStockReportRequest({
         data,
@@ -292,6 +292,7 @@ const AddJobYarnStockReport = () => {
               validateStatus={errors.quality_id ? "error" : ""}
               help={errors.quality_id && errors.quality_id.message}
               wrapperCol={{ sm: 24 }}
+              required = {true}
             >
               <Controller
                 control={control}
@@ -324,6 +325,7 @@ const AddJobYarnStockReport = () => {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -10
           }}
         >
           <Col span={6}>
@@ -420,7 +422,7 @@ const AddJobYarnStockReport = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

@@ -34,7 +34,7 @@ function UpdateMachine() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateMachine } = useMutation({
+  const { mutateAsync: updateMachine, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateMachineRequest({
         id,
@@ -167,7 +167,7 @@ function UpdateMachine() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Update
           </Button>
         </Flex>

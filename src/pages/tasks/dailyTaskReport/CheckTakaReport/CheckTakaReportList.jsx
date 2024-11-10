@@ -26,6 +26,7 @@ import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/checkTakaReport";
 import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
 import { formatDate } from "../../../../constants/time";
+import moment from "moment";
 
 function CheckTakaReportList() {
   const [search, setSearch] = useState("");
@@ -44,6 +45,11 @@ function CheckTakaReportList() {
   const { companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf("day");
+  }
 
   const { data: reportListRes, isLoading: isLoadingReportList } = useQuery({
     queryKey: [
@@ -271,6 +277,7 @@ function CheckTakaReportList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -284,6 +291,7 @@ function CheckTakaReportList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 

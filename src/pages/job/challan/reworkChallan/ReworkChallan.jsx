@@ -283,7 +283,7 @@ const ReworkChallan = () => {
         let total_meter = Number(record?.total_meter);
         let shoratge_precentage =
           ((total_meter - received_meter) * 100) / total_meter;
-        return <div>{shoratge_precentage.toFixed(2)}</div>;
+        return <div>{shoratge_precentage.toFixed(2)}%</div>;
       },
     },
     {

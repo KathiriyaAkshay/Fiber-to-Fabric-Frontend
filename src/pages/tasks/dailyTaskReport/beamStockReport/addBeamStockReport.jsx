@@ -9,6 +9,7 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Empty,
   Flex,
   Form,
   Input,
@@ -135,6 +136,17 @@ const AddBeamStockReport = () => {
     },
   });
 
+  function hasDuplicateBeamNo(beamDetails) {
+    const seenBeams = new Set();
+    for (const beam of beamDetails) {
+        if (seenBeams.has(beam.beam_no)) {
+            return true; // Duplicate found
+        }
+        seenBeams.add(beam.beam_no);
+    }
+    return false; // No duplicates
+  }
+
   async function onSubmit(data) {
 
     if (data.beam_type === "non pasarela (primary)") {
@@ -215,7 +227,14 @@ const AddBeamStockReport = () => {
             };
           });
         }
-        await addBeamStockReport(newData); 
+
+        const hasDuplicate = hasDuplicateBeamNo(newData?.beam_details) ; 
+
+        if (hasDuplicate){
+          message.warning("Please enter a unique beam number.");
+        } else{
+          await addBeamStockReport(newData); 
+        }
       }
       
     }
@@ -743,7 +762,13 @@ const AddBeamStockReport = () => {
                 currentWorkingIndex = {currentWorkingIndex}
               />
             );
-          })}
+        })}
+
+        {beam_type == "non pasarela (primary)" && fieldArray?.length == 0 && (
+          <Empty
+            description = "No Beam found"
+          />
+        )}
 
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
@@ -769,7 +794,15 @@ const AddBeamStockReport = () => {
                 />
               );
             }
-          })}
+        })}
+
+        {beam_type == "pasarela (primary)" && nonPasarelaList?.length == 0 && (
+          <Empty
+            description = "No Beam found"
+          />
+        )}
+
+        
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>

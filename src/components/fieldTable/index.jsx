@@ -41,20 +41,9 @@ const FieldTable = ({
 
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
-      // setActiveField((prev) => prev - 1);
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
       }
-
-      // const takaNo = getValues(`taka_no_${fieldNumber}`);
-      // const meter = +getValues(`meter_${fieldNumber}`);
-      // const weight = +getValues(`weight_${fieldNumber}`);
-
-      // if (takaNo && meter && weight) {
-      //   setTotalTaka((prev) => (prev === 0 ? prev : prev - 1));
-      //   setTotalMeter((prev) => (prev === 0 ? prev : prev - meter));
-      //   setTotalWeight((prev) => (prev === 0 ? prev : prev - weight));
-      // }
 
       setValue(`taka_no_${fieldNumber}`, "");
       setValue(`meter_${fieldNumber}`, "");
@@ -63,7 +52,9 @@ const FieldTable = ({
       clearErrors(`taka_no_${fieldNumber}`);
       clearErrors(`meter_${fieldNumber}`);
       clearErrors(`weight_${fieldNumber}`);
+
     }
+    calculateTotalHandler() ; 
   };
 
   const debouncedCheckUniqueTakaHandler = useDebounceCallback(

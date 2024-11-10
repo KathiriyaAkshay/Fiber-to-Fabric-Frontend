@@ -84,8 +84,6 @@ const PurchaseTakaChallanModal = ({
   handleCloseModal,
   MODE,
 }) => {
-  console.log("Details information ");
-  console.log(details);
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
@@ -213,14 +211,6 @@ const PurchaseTakaChallanModal = ({
 
   const currentValues = watch();
 
-  //   const disablePastDates = (current) => {
-  //     return current && current < new Date().setHours(0, 0, 0, 0);
-  //   };
-
-  //   const disableFutureDates = (current) => {
-  //     return current && current > new Date().setHours(0, 0, 0, 0);
-  //   };
-
   //  CALCULATION START----------------------------------------------
 
   function calculateDiscount(value = 0) {
@@ -251,7 +241,6 @@ const PurchaseTakaChallanModal = ({
   }
 
   function calculatePercent(value, setName) {
-    // return (amount * percentage) / 100;
     const finalValue = parseFloat(
       (+getValues("discount_amount") * +value) / 100
     ).toFixed(2);
@@ -276,6 +265,12 @@ const PurchaseTakaChallanModal = ({
     );
     setValue("after_TDS_amount", afterTDS);
   };
+
+  useEffect(() => {
+    if (currentValues?.TDS_value !== undefined && currentValues?.TDS_value !== ""){
+      calculateAfterTDSAmount(currentValues?.TDS_value)
+    }
+  }, [currentValues?.net_amount, setValue, currentValues?.TDS_value])
 
   useEffect(() => {
     const finalNetAmount = parseFloat(

@@ -128,6 +128,7 @@ const ViewPurchaseChallanInfo = ({ details }) => {
       >
         <Flex
           className="flex-col border border-b-0 border-solid"
+          style={{marginRight: 1}}
           ref={componentRef}
         >
           <Row

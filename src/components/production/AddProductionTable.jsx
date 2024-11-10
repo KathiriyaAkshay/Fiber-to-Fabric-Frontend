@@ -171,6 +171,8 @@ const AddProductionTable = ({
       if (production_filter === "multi_quality_wise") {
         setValue(`quality_${fieldNumber}`, null);
       }
+
+      calculateTotals() ; 
     }
   };
 

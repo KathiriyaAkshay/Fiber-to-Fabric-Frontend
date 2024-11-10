@@ -63,7 +63,7 @@ function AddDenierwiseWastageReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createDenierwiseWastageReport } = useMutation({
+  const { mutateAsync: createDenierwiseWastageReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createDenierwiseWastageReportRequest({
         data,
@@ -347,7 +347,7 @@ function AddDenierwiseWastageReport() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

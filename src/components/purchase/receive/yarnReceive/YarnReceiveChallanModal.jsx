@@ -86,6 +86,9 @@ const addYarnReceiveSchema = yup.object().shape({
 });
 
 const YarnReceiveChallanModal = ({ details = [] }) => {
+
+  console.log(details);
+  
   const {
     id: yarn_challan_id = 0,
     yarn_stock_company = {},
@@ -536,14 +539,6 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                         {...field}
                         placeholder="Select supplier Company"
                         loading={isLoadingDropdownSupplierList}
-                        // options={dropdownSupplierListRes?.[0]?.supplier_company?.map(
-                        //   ({ supplier_company = "", supplier_id = "" }) => {
-                        //     return {
-                        //       label: supplier_company,
-                        //       value: supplier_id,
-                        //     };
-                        //   }
-                        // )}
                         options={supplierDropDownOptions}
                       />
                     )}
@@ -616,10 +611,10 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
                   <Col span={16}>{supplierName}</Col>
                 </Row>
                 <Row gutter={12} className="flex-grow w-full">
-                  <Col span={8} className="font-medium">
+                  <Col span={8} className="font-medium" style={{marginTop: 5}}>
                     Company Name
                   </Col>
-                  <Col span={16}>{yarn_company_name}</Col>
+                  <Col span={16}>{details[0]?.yarn_stock_company?.yarn_company_name}</Col>
                 </Row>
               </Col>
               <Col span={6}>
@@ -980,7 +975,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
 
               <Col span={4} className="p-2">
                 <div className="flex items-center justify-center p-1 mb-6">
-                  {discount_brokerage_amount}
+                  {isNaN(discount_brokerage_amount)?0:discount_brokerage_amount}
                 </div>
               </Col>
             </Row>
@@ -1350,7 +1345,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
               <Col span={4} className="p-2 border-0 border-r border-solid" />
               <Col span={4} className="p-2">
                 <div className="flex items-center justify-center p-1">
-                  {round_off_amount}
+                  {isNaN(round_off_amount)?0:round_off_amount}
                 </div>
               </Col>
             </Row>
@@ -1370,8 +1365,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
               </Col>
               <Col span={4} className="p-2">
                 <div className="flex items-center justify-center p-1">
-                  {/* {Math.ceil(net_amount)} */}
-                  {net_amount}
+                  {isNaN(net_amount)?0:net_amount}
                 </div>
               </Col>
             </Row>

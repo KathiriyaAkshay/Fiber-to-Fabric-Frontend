@@ -244,11 +244,23 @@ const PurchaseTakaList = () => {
       title: "Average",
       dataIndex: "total_meter",
       key: "total_meter",
+      render: (text, record) => {
+        let weight = +record?.weight; 
+        let meter = +record?.meter ; 
+        let average = (weight/meter) * 100 ; 
+        return(
+          <div>{parseFloat(average).toFixed(2)}</div>
+        )
+      }
     },
     {
       title: "Sale Ch.No.",
       dataIndex: "total_taka",
-      key: "total_taka",
+      render: (text, record) => {
+        return(
+          <div>-</div>
+        )
+      }
     },
     {
       title: "Status",
@@ -507,7 +519,7 @@ const PurchaseTakaList = () => {
         <Flex align="center" gap={10}>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
-              Supplier
+              Supplier 
             </Typography.Text>
             <Select
               placeholder="Select supplier"
@@ -525,6 +537,7 @@ const PurchaseTakaList = () => {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear
             />
           </Flex>
           <Flex align="center" gap={10}>
@@ -543,6 +556,7 @@ const PurchaseTakaList = () => {
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              allowClear
             />
           </Flex>
           <Flex align="center" gap={10}>

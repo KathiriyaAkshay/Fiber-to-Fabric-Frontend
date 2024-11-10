@@ -439,7 +439,6 @@ function UpdateJobWorkChallan(){
                                             textTransform: "capitalize",
                                         }}
                                         onChange={(value, option) => {
-                                            console.log(option);
                                             setValue("yarn_company_id", value)
                                             setValue("current_stock", option?.current_stock)
                                         }}
