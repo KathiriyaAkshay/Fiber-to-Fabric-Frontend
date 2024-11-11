@@ -433,24 +433,25 @@ const JobGrayList = () => {
               <Table.Summary.Cell index={0}>
                 <b>Total</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}></Table.Summary.Cell>
+              <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={1}></Table.Summary.Cell>
               <Table.Summary.Cell index={2}></Table.Summary.Cell>
               <Table.Summary.Cell index={3}></Table.Summary.Cell>
               <Table.Summary.Cell index={4}></Table.Summary.Cell>
               <Table.Summary.Cell index={5}></Table.Summary.Cell>
-              <Table.Summary.Cell index={6}></Table.Summary.Cell>
+              <Table.Summary.Cell index={6}>
+                <b>{JobGrayBillList?.total_takas}</b>
+              </Table.Summary.Cell>
               <Table.Summary.Cell index={7}>
-                <b>{ }</b>
+                <b>{JobGrayBillList?.total_meters}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={8}>
-                <b>{avgRate}</b> <br />
               </Table.Summary.Cell>
               <Table.Summary.Cell index={9}>
-                <b>{totalAmount}</b>
+                <b>{JobGrayBillList?.total_amounts}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={10}>
-                <b>{totalNetAmount}</b>
+                <b>{JobGrayBillList?.total_net_amounts}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={11}></Table.Summary.Cell>
               <Table.Summary.Cell index={12}></Table.Summary.Cell>
