@@ -331,12 +331,12 @@ const ReworkChallanBill = () => {
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>{reworkChallanBillData?.total_taka}</Table.Summary.Cell>
+              <Table.Summary.Cell>{reworkChallanBillData?.total_meter}</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>{reworkChallanBillData?.total_amounts}</Table.Summary.Cell>
+              <Table.Summary.Cell>{reworkChallanBillData?.total_net_amounts}</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
-              <Table.Summary.Cell>0</Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
