@@ -413,18 +413,19 @@ const SaleBillList = () => {
               <Table.Summary.Cell index={3}></Table.Summary.Cell>
               <Table.Summary.Cell index={4}></Table.Summary.Cell>
               <Table.Summary.Cell index={5}></Table.Summary.Cell>
-              <Table.Summary.Cell index={6}></Table.Summary.Cell>
+              <Table.Summary.Cell index={6}>
+                <b>{SaleBillList.total_takas}</b>
+              </Table.Summary.Cell>
               <Table.Summary.Cell index={7}>
-                <b>{totalMeter}</b>
+                <b>{SaleBillList?.total_meters}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={8}>
-                <b>{avgRate}</b> <br />
               </Table.Summary.Cell>
               <Table.Summary.Cell index={9}>
-                <b>{totalAmount}</b>
+                <b>{SaleBillList?.total_amounts}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={10}>
-                <b>{totalNetAmount}</b>
+                <b>{SaleBillList?.total_net_amounts}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={11}></Table.Summary.Cell>
               <Table.Summary.Cell index={12}></Table.Summary.Cell>
