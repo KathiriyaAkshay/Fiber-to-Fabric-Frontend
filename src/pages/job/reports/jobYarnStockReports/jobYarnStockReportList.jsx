@@ -150,13 +150,13 @@ const JobYarnStockReportList = () => {
               </Table.Summary.Cell>
               <Table.Summary.Cell index={2}></Table.Summary.Cell>
               <Table.Summary.Cell index={3}>
-                <b>{totalGreyStockMeter}</b>
+                <b>{jobYarnStockReportList?.total_stock_meter || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={4}>
-                <b>{totalYarnStock}</b>
+                <b>{jobYarnStockReportList?.total_yarn_stock_kgs || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={5}>
-                <b>{totalBeamStock}</b>
+                <b>{jobYarnStockReportList?.total_beam_stocks || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={6}></Table.Summary.Cell>
               <Table.Summary.Cell index={6}></Table.Summary.Cell>
