@@ -41,3 +41,9 @@ export function getCurrentStockReportService({ params }) {
 export function createCurrentStockRequest({ data, params }) {
   return api.post(`/account/report/live-stock/current/report/create`, data, { params });
 }
+
+// PURCHASE REPORT---------------------------
+
+export function getAccountPurchaseReportService({ params }) {
+  return api.get(`/account/reports/purchase/report`, { params });
+}
