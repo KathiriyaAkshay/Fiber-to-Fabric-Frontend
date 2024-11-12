@@ -161,6 +161,7 @@ import Gstr1 from "./pages/accounts/reports/gstr1";
 import Gstr2 from "./pages/accounts/reports/gstr2";
 import GstrPrint from "./pages/accounts/reports/gstrPrint";
 import LiveStockReport from "./pages/accounts/reports/liveStockReport";
+import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -767,7 +768,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "purchase-report",
-                element: <div>purchase-report</div>,
+                element: <PurchaseReport />,
               },
               {
                 path: "ledger-report",
