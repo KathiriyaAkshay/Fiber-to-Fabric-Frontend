@@ -115,14 +115,17 @@ const JournalList = () => {
     },
     {
       title: "Voucher Date.",
-      dataIndex: "voucher_date",
-      key: "voucher_date",
+      dataIndex: "createdAt",
+      key: "createdAt",
       render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "Cheque No.",
       dataIndex: "cheque_no",
       key: "cheque_no",
+      render: (text, record) => (
+        <div>-</div>
+      )
     },
     {
       title: "Cheque Date",
@@ -156,7 +159,6 @@ const JournalList = () => {
         dataSource={paymentList?.rows || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
         pagination={{
           total: paymentList?.count || 0,
           showSizeChanger: true,

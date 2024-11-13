@@ -165,7 +165,6 @@ const CashBookList = () => {
         dataSource={paymentList?.rows || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
         pagination={{
           total: paymentList?.count || 0,
           showSizeChanger: true,
