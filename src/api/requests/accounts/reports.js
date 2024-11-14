@@ -47,3 +47,9 @@ export function createCurrentStockRequest({ data, params }) {
 export function getAccountPurchaseReportService({ params }) {
   return api.get(`/account/reports/purchase/report`, { params });
 }
+
+// SALES REPORT---------------------------
+
+export function getAccountSalesReportService({ params }) {
+  return api.get(`/account/reports/sale/report`, { params });
+}

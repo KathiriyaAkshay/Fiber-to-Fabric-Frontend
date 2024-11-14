@@ -255,12 +255,15 @@ const PurchaseReport = () => {
               allowClear
               value={companyId}
               onChange={(selectedValue) => setCompanyId(selectedValue)}
-              options={companyListRes.rows.map((company) => {
-                return {
-                  label: company?.company_name,
-                  value: company?.id,
-                };
-              })}
+              options={
+                companyListRes &&
+                companyListRes?.rows?.map((company) => {
+                  return {
+                    label: company?.company_name,
+                    value: company?.id,
+                  };
+                })
+              }
             />
           </Flex>
 
