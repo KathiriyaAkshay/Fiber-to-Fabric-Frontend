@@ -162,6 +162,7 @@ import Gstr2 from "./pages/accounts/reports/gstr2";
 import GstrPrint from "./pages/accounts/reports/gstrPrint";
 import LiveStockReport from "./pages/accounts/reports/liveStockReport";
 import PurchaseReport from "./pages/accounts/reports/purchaseReport";
+import SalesReport from "./pages/accounts/reports/salesReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -760,7 +761,7 @@ const router = createBrowserRouter([
               { index: true, element: <div>reports</div> },
               {
                 path: "sales-report",
-                element: <div>sales-report</div>,
+                element: <SalesReport />,
               },
               {
                 path: "cost-and-profit-report",
