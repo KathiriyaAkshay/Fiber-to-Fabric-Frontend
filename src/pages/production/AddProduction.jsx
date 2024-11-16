@@ -341,9 +341,9 @@ const AddProduction = () => {
           return Array.from({ length: noOfMachine }, (_, index) => index + 1);
         }
       },
-      enabled: Boolean(companyId),
-      initialData: [],
-    });
+    enabled: Boolean(companyId),
+    initialData: [],
+  });
 
   const changeProductionFilter = (value) => {
     if (value) {

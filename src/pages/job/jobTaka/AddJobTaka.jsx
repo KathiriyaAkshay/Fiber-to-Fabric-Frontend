@@ -188,7 +188,6 @@ const AddJobTaka = () => {
     resetField,
   } = useForm({
     defaultValues: {
-      // company_id: null,
       challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
