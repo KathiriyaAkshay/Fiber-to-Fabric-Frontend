@@ -355,7 +355,7 @@ const AddMyOrder = () => {
     let total_meter = getValues("total_meter");
 
     if (total_meter !== "" && total_meter !== undefined) {
-      setValue("pending_meter", total_meter);
+      setValue("pending_meter", 0);
       if (rate !== "" && rate !== undefined) {
         let total_amount = Number(total_meter) * Number(rate);
         setValue("total_amount", total_amount);
@@ -364,7 +364,7 @@ const AddMyOrder = () => {
 
     let total_taka = getValues("total_taka");
     if (total_taka !== undefined && total_taka !== "") {
-      setValue("pending_taka", total_taka);
+      setValue("pending_taka", 0);
     }
   };
 
@@ -689,7 +689,7 @@ const AddMyOrder = () => {
           gutter={18}
           style={{
             padding: "0px 12px",
-            marginTop: "2rem",
+            marginTop: "0.3rem",
           }}
         >
           <Col span={12}>
@@ -1135,9 +1135,12 @@ const AddMyOrder = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
-          </Button>
+          {(  +getValues("delivered_taka") > +getValues("pending_taka")) 
+              && (+getValues("delivered_meter") > +getValues("pending_meter")) && (
+                <Button type="primary" htmlType="submit" loading={isPending}>
+                  Create
+                </Button>
+              )}
         </Flex>
       </Form>
     </div>
@@ -1160,8 +1163,6 @@ const QualityDetailModel = ({ qualityId = null, companyId }) => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ qualityDetails });
-
   // [
   //       {
   //         label: "Inhouse Stock",

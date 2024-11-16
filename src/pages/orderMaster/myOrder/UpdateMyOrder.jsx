@@ -647,12 +647,11 @@ const UpdateMyOrder = () => {
           </Col>
         </Row>
 
-        <Divider />
-
         <Row
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -10
           }}
         >
           <Col span={12}>
@@ -801,7 +800,7 @@ const UpdateMyOrder = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={6}>
+                {/* <Col span={6}>
                   <Form.Item
                     label="Final Rate"
                     name="amount"
@@ -812,6 +811,26 @@ const UpdateMyOrder = () => {
                     <Controller
                       control={control}
                       name="amount"
+                      render={({ field }) => {
+                        return (
+                          <Input type="number" {...field} placeholder="12" />
+                        );
+                      }}
+                    />
+                  </Form.Item>
+                </Col> */}
+
+                <Col span={6}>
+                  <Form.Item
+                    label="Credit Days"
+                    name="credit_days"
+                    validateStatus={errors.credit_days ? "error" : ""}
+                    help={errors.credit_days && errors.credit_days.message}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name="credit_days"
                       render={({ field }) => {
                         return (
                           <Input type="number" {...field} placeholder="12" />
@@ -841,25 +860,6 @@ const UpdateMyOrder = () => {
                             placeholder="12"
                             disabled
                           />
-                        );
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    label="Credit Days"
-                    name="credit_days"
-                    validateStatus={errors.credit_days ? "error" : ""}
-                    help={errors.credit_days && errors.credit_days.message}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="credit_days"
-                      render={({ field }) => {
-                        return (
-                          <Input type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
@@ -926,7 +926,8 @@ const UpdateMyOrder = () => {
                   </Form.Item>
                 </Col>
               </Flex>
-              <Divider />
+
+              <Divider style={{marginTop: 0}} />
 
               <Flex justify="space-between">
                 <Col span={6}>
@@ -979,7 +980,7 @@ const UpdateMyOrder = () => {
                 </Col>
               </Flex>
 
-              <Flex justify="space-between">
+              {/* <Flex justify="space-between">
                 <Col span={6}>
                   <Form.Item
                     label="Return Taka"
@@ -1047,7 +1048,7 @@ const UpdateMyOrder = () => {
                     />
                   </Form.Item>
                 </Col>
-              </Flex>
+              </Flex> */}
             </Card>
           </Col>
         </Row>
