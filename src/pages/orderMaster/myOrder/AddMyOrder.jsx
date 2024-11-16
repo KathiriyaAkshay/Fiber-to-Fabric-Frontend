@@ -355,7 +355,7 @@ const AddMyOrder = () => {
     let total_meter = getValues("total_meter");
 
     if (total_meter !== "" && total_meter !== undefined) {
-      setValue("pending_meter", 0);
+      setValue("pending_meter", total_meter);
       if (rate !== "" && rate !== undefined) {
         let total_amount = Number(total_meter) * Number(rate);
         setValue("total_amount", total_amount);
@@ -364,7 +364,7 @@ const AddMyOrder = () => {
 
     let total_taka = getValues("total_taka");
     if (total_taka !== undefined && total_taka !== "") {
-      setValue("pending_taka", 0);
+      setValue("pending_taka", total_taka);
     }
   };
 
@@ -1135,8 +1135,8 @@ const AddMyOrder = () => {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          {(  +getValues("delivered_taka") > +getValues("pending_taka")) 
-              && (+getValues("delivered_meter") > +getValues("pending_meter")) && (
+          {(  +getValues("total_taka") > +getValues("delivered_taka")) 
+              && (+getValues("total_meter") > +getValues("delivered_meter")) && (
                 <Button type="primary" htmlType="submit" loading={isPending}>
                   Create
                 </Button>
