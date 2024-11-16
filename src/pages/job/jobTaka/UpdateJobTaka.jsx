@@ -306,22 +306,22 @@ const UpdateJobTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order?.total_meter);
-      setValue("total_taka", order?.total_taka);
-      setValue("total_weight", order?.weight);
-      setValue(
-        "broker_name",
-        `${order?.broker?.first_name} ${order?.broker?.last_name}`
-      );
-      setValue("broker_id", order?.broker.id);
-      setValue("quality_id", order?.inhouse_quality.id);
-      // setValue("supplier_name", order?.supplier_name);
-      setValue("pending_meter", order?.pending_meter);
-
-      setPendingMeter(order?.pending_meter || 0);
-      setPendingTaka(order?.pending_taka || 0);
-      setPendingWeight(order?.pending_weight || 0);
+      if (order){
+        setSelectedOrder(order);
+        setValue("total_meter", order?.total_meter);
+        setValue("total_taka", order?.total_taka);
+        setValue("total_weight", order?.weight);
+        setValue(
+          "broker_name",
+          `${order?.broker?.first_name} ${order?.broker?.last_name}`
+        );
+        setValue("broker_id", order?.broker.id);
+        setValue("quality_id", order?.inhouse_quality.id);
+        setValue("pending_meter", order?.pending_meter);
+        setPendingMeter(order?.pending_meter || 0);
+        setPendingTaka(order?.pending_taka || 0);
+        setPendingWeight(order?.pending_weight || 0);
+      }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -348,7 +348,6 @@ const UpdateJobTaka = () => {
   useEffect(() => {
     if (jobTakaDetails) {
       const {
-        // company_id,
         challan_no,
         delivery_address,
         gst_in,
@@ -369,17 +368,23 @@ const UpdateJobTaka = () => {
 
       setActiveField(job_challan_details.length + 1);
       let jobChallanDetails = {};
+      let totalMeter = 0; 
+      let totalWeight = 0
       job_challan_details.forEach((item, index) => {
         jobChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         jobChallanDetails[`meter_${index + 1}`] = item.meter;
         jobChallanDetails[`weight_${index + 1}`] = item.weight;
-
+        totalMeter += +item?.meter ; 
+        totalWeight += +item?.weight; 
         setTotalTaka(job_challan_details.length);
-        setTotalMeter((prev) => prev + +item.meter);
-        setTotalWeight((prev) => prev + +item.weight);
       });
+      setTotalMeter(totalMeter) ; 
+      setTotalWeight(totalWeight) ;
+      setPendingMeter(+total_meter - totalMeter) ; 
+      setPendingWeight(+total_weight - totalWeight) ; 
+      setPendingTaka(+total_taka - job_challan_details?.length) ; 
+      
       reset({
-        // company_id,
         challan_no,
         delivery_address,
         gst_in_1: gst_in,
@@ -393,9 +398,6 @@ const UpdateJobTaka = () => {
         total_meter,
         total_taka,
         total_weight,
-        // pending_meter: gray_order.pending_meter,
-        // pending_taka: gray_order.pending_taka,
-        // pending_weight: gray_order.pending_weight,
         is_grey,
         supplier_name: supplier.supplier_name,
         challan_date: dayjs(createdAt),
@@ -403,6 +405,16 @@ const UpdateJobTaka = () => {
       });
     }
   }, [jobTakaDetails, reset]);
+
+  useEffect(() => {
+    setPendingMeter((prev) => prev - totalMeter) ; 
+    setPendingTaka((prev) => prev - totalTaka) ; 
+    setPendingWeight((prev) => prev - totalWeight) ;  
+  }, [
+    totalMeter, 
+    totalTaka, 
+    totalWeight, 
+  ])
 
   return (
     <div className="flex flex-col p-4">
@@ -419,40 +431,6 @@ const UpdateJobTaka = () => {
             padding: "12px",
           }}
         >
-          {/* <Col span={6}>
-            <Form.Item
-              label="Company"
-              name="company_id"
-              validateStatus={errors.company_id ? "error" : ""}
-              help={errors.company_id && errors.company_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingGrayOrderList}
-                    placeholder="Select Company"
-                    options={companyListRes?.rows?.map((company) => ({
-                      label: company.company_name,
-                      value: company.id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                    disabled
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={6}>
             <Form.Item
               label="Challan Date"
