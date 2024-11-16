@@ -23,10 +23,6 @@ const FieldTable = ({
   clearErrors,
   isUpdate
 }) => {
-
-  console.log("");
-  
-
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
       if (isTakaExist) {
@@ -175,10 +171,6 @@ const FieldTable = ({
                       validateStatus={
                         errors[`meter_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`meter_${fieldNumber}`] &&
-                      //   errors[`meter_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
@@ -224,10 +216,6 @@ const FieldTable = ({
                       validateStatus={
                         errors[`weight_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`weight_${fieldNumber}`] &&
-                      //   errors[`weight_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{

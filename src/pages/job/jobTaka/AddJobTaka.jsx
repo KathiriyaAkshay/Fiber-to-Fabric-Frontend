@@ -304,13 +304,13 @@ const AddJobTaka = () => {
     }
   }, [gray_order_id]);
 
+  // ======= Calculate Pending Meter, Pending Taka, Pending Weight information ========== //
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
+      setPendingMeter(+order.pending_meter);
+      setPendingTaka(+order.pending_taka);
+      setPendingWeight(+order.pending_weight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -334,15 +334,6 @@ const AddJobTaka = () => {
       setPendingTaka(order.pending_taka);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
-
-  // useEffect(() => {
-  //   if (company_id) {
-  //     const selectedCompany = companyListRes?.rows?.find(
-  //       ({ id }) => id === company_id
-  //     );
-  //     setValue("gst_in_1", selectedCompany.gst_no);
-  //   }
-  // }, [companyListRes, company_id, setValue]);
 
   useEffect(() => {
     if (companyId) {
@@ -866,7 +857,7 @@ const AddJobTaka = () => {
           </Row>
         ) : null}
 
-        <Divider style={{marginTop: 0}} />
+        <Divider style={{marginTop: 5}} />
 
         <FieldTable
           errors={errors}

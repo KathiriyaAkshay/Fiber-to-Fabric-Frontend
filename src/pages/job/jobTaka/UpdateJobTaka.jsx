@@ -218,17 +218,6 @@ const UpdateJobTaka = () => {
       enabled: Boolean(companyId),
     });
 
-  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-  //   queryKey: ["broker", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getBrokerListRequest({
-  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: ["party", "list", { company_id: companyId }],
@@ -264,9 +253,6 @@ const UpdateJobTaka = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      // return obj?.supplier_company?.map((item) => {
-      //   return { label: item.supplier_company, value: item.supplier_id };
-      // });
       return obj?.supplier_company;
     } else {
       return [];
@@ -310,9 +296,9 @@ const UpdateJobTaka = () => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
       if (order) {
-        setPendingMeter(+order.pending_meter - +totalMeter);
-        setPendingTaka(+order.pending_taka - +totalTaka);
-        setPendingWeight(+order.pending_weight - +totalWeight);
+        setPendingMeter(+order.pending_meter);
+        setPendingTaka(+order.pending_taka );
+        setPendingWeight(+order.pending_weight);
       }
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);

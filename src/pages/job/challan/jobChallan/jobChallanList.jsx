@@ -34,6 +34,7 @@ import JobTakaChallanModal from "../../../../components/job/jobTaka/JobTakaChall
 import dayjs from "dayjs";
 import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
 import ViewJobTakaInfo from "../../../../components/job/jobTaka/viewJobTakaInfo";
+import moment from "moment";
 
 const JobChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -278,7 +279,7 @@ const JobChallanList = () => {
     {
       title: "Order No",
       render: (details) => {
-        return details.challan_no;
+        return details.gray_order_id;
       },
     },
     {
@@ -299,17 +300,6 @@ const JobChallanList = () => {
       title: "Weight",
       dataIndex: "total_weight",
       key: "total_weight",
-    },
-
-    {
-      title: "Average",
-      dataIndex: "total_meter",
-      key: "total_meter",
-    },
-    {
-      title: "Sale Ch.No.",
-      dataIndex: "total_taka",
-      key: "total_taka",
     },
     {
       title: "Bill Status",
@@ -371,6 +361,11 @@ const JobChallanList = () => {
     },
   ];
 
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf("day");
+  }
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -418,9 +413,7 @@ const JobChallanList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell />
-                <Table.Summary.Cell />
-              </Table.Summary.Row>
+              </Table.Summary.Row>  
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>
                   Grand <br />
@@ -441,8 +434,6 @@ const JobChallanList = () => {
                     {jobChallanList?.total_meter}
                   </Typography.Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell />
-                <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -527,6 +518,7 @@ const JobChallanList = () => {
                   onChange={setFromDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
 
@@ -539,6 +531,7 @@ const JobChallanList = () => {
                   onChange={setToDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
             </Flex>
