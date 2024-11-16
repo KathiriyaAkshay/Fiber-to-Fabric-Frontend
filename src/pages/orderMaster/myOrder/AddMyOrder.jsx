@@ -778,11 +778,11 @@ const AddMyOrder = () => {
 
                               let total_taka = total_lot * Number(12);
                               setValue("total_taka", total_taka);
-                              setValue("delivered_taka", total_taka) ; 
+                              setValue("delivered_taka", 0) ; 
 
                               let total_meter = Number(total_taka) * 110;
                               setValue("total_meter", total_meter);
-                              setValue("delivered_meter", total_meter);
+                              setValue("delivered_meter", 0);
 
                               CalculateRate();
                             }}
@@ -819,9 +819,9 @@ const AddMyOrder = () => {
                               let total_lot = total_taka / 12;
                               let total_meter = total_taka * Number(110);
                               setValue("total_lot", Math.round(total_lot));
-                              setValue("delivered_taka", total_taka ) ; 
+                              setValue("delivered_taka", 0 ) ; 
                               setValue("total_meter", total_meter);
-                              setValue("delivered_meter", total_meter);
+                              setValue("delivered_meter", 0);
 
                               CalculateRate();
                             }}
@@ -855,11 +855,11 @@ const AddMyOrder = () => {
 
                               let total_taka = total_meter / 110;
                               setValue("total_taka", Math.round(total_taka));
-                              setValue("delivered_taka", Math.round(total_taka)) ; 
+                              setValue("delivered_taka", Math.round(0)) ; 
 
                               let total_lot = Number(total_taka) / 12;
                               setValue("total_lot", Math.round(total_lot));
-                              setValue("delivered_meter", total_meter);
+                              setValue("delivered_meter", 0);
 
                               CalculateRate();
                             }}
