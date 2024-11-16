@@ -310,7 +310,7 @@ const AddJobTaka = () => {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
       setPendingMeter(+order.pending_meter);
       setPendingTaka(+order.pending_taka);
-      setPendingWeight(+order.pending_weight);
+      setPendingWeight(+order.pending_weight || +order?.weight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -380,6 +380,16 @@ const AddJobTaka = () => {
   const onCancelHandler = () => {
     setIsAlertOpen(false);
   };
+
+  useEffect(() => {
+    setPendingMeter((prev) => prev - totalMeter) ; 
+    setPendingTaka((prev) => prev - totalTaka) ; 
+    setPendingWeight((prev) => prev - totalWeight) ;  
+  }, [
+    totalMeter, 
+    totalTaka, 
+    totalWeight, 
+  ])
 
   const onConfirmHandler = () => {
     const purchaseChallanDetailArr = Array.from(
