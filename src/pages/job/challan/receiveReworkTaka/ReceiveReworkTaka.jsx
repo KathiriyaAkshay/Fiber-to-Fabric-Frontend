@@ -9,6 +9,7 @@ import {
   Typography,
   Spin,
   Space,
+  Tag,
 } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +23,7 @@ import { getReceiveReworkTakaListRequest } from "../../../../api/requests/job/ch
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import dayjs from "dayjs";
 import DeleteReceiveReworkTaka from "../../../../components/job/challan/receiveReworkTaka/DeleteReceiveReworkTaka";
+import moment from "moment/moment";
 
 const ReceiveReworkTaka = () => {
   const navigate = useNavigate();
@@ -123,9 +125,10 @@ const ReceiveReworkTaka = () => {
     navigate("/job/challan/receive-rework-taka/add");
   }
 
-  //   function navigateToUpdate(id) {
-  //     navigate(`/job/challan/receive-rework-taka/update/${id}`);
-  //   }
+  function disabledFutureDate(current) {
+    // Disable dates after today
+    return current && current > moment().endOf("day");
+  }
 
   const columns = [
     {
@@ -139,6 +142,22 @@ const ReceiveReworkTaka = () => {
         },
       },
     },
+    {
+      title: "Date",
+      render: (text, record) => {
+        return (
+          moment(record?.createdAt).format("DD-MM-YYYY")
+        );
+      }
+    }, 
+    {
+      title: "Rework Challan No", 
+      render: (text, record) => {
+        return(
+          <div>{record.rework_challan_id || "-"}</div>
+        )
+      }
+    },  
     {
       title: "Taka No",
       dataIndex: "taka_no",
@@ -156,22 +175,42 @@ const ReceiveReworkTaka = () => {
       key: "received_meter",
     },
     {
+      title: "Total Rec. Weight",
+      dataIndex: "received_weight",
+    },
+    {
       title: "Short(%)",
       dataIndex: "short",
       key: "short",
     },
     {
       title: "Wastage",
-      //   dataIndex: "wastageInKg",
-      //   key: "wastageInKg",
+      dataIndex: "wastageInKg",
+      render: (text, record) => {
+        let total_received_weight = +record?.received_weight;
+        let short_value = +record?.short; 
+        let wastage = (total_received_weight *short_value) / 100 ; 
+        return(
+          <div>
+            {parseFloat(wastage).toFixed(2)}
+          </div>
+        )
+      }
     },
-
+    {
+      title: "TP",
+      dataIndex: "tp"
+    },
+    {
+      title: "Piece", 
+      dataIndex: "pis"
+    },
     {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
       key: ["inhouse_quality"],
       render: (quality) =>
-        `${quality.quality_name} (${quality.quality_weight})`,
+        <Tag color="green">{`${quality.quality_name} (${quality.quality_weight})`}</Tag>
     },
     {
       title: "Supplier Name",
@@ -236,6 +275,11 @@ const ReceiveReworkTaka = () => {
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell>Grand Total</Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
@@ -346,6 +390,7 @@ const ReceiveReworkTaka = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -358,6 +403,7 @@ const ReceiveReworkTaka = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
           </Flex>
