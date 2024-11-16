@@ -778,9 +778,11 @@ const AddMyOrder = () => {
 
                               let total_taka = total_lot * Number(12);
                               setValue("total_taka", total_taka);
+                              setValue("delivered_taka", total_taka) ; 
 
                               let total_meter = Number(total_taka) * 110;
                               setValue("total_meter", total_meter);
+                              setValue("delivered_meter", total_meter);
 
                               CalculateRate();
                             }}
@@ -817,7 +819,9 @@ const AddMyOrder = () => {
                               let total_lot = total_taka / 12;
                               let total_meter = total_taka * Number(110);
                               setValue("total_lot", Math.round(total_lot));
+                              setValue("delivered_taka", total_taka ) ; 
                               setValue("total_meter", total_meter);
+                              setValue("delivered_meter", total_meter);
 
                               CalculateRate();
                             }}
@@ -851,9 +855,11 @@ const AddMyOrder = () => {
 
                               let total_taka = total_meter / 110;
                               setValue("total_taka", Math.round(total_taka));
+                              setValue("delivered_taka", Math.round(total_taka)) ; 
 
                               let total_lot = Number(total_taka) / 12;
                               setValue("total_lot", Math.round(total_lot));
+                              setValue("delivered_meter", total_meter);
 
                               CalculateRate();
                             }}
@@ -902,7 +908,7 @@ const AddMyOrder = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={6}>
+                {/* <Col span={6}>
                   <Form.Item
                     label="Final Rate"
                     name="amount"
@@ -914,6 +920,25 @@ const AddMyOrder = () => {
                       control={control}
                       name="amount"
                       disabled
+                      render={({ field }) => {
+                        return (
+                          <Input type="number" {...field} placeholder="12" />
+                        );
+                      }}
+                    />
+                  </Form.Item>
+                </Col> */}
+                <Col span={6}>
+                  <Form.Item
+                    label="Credit Days"
+                    name="credit_days"
+                    validateStatus={errors.credit_days ? "error" : ""}
+                    help={errors.credit_days && errors.credit_days.message}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name="credit_days"
                       render={({ field }) => {
                         return (
                           <Input type="number" {...field} placeholder="12" />
@@ -943,25 +968,6 @@ const AddMyOrder = () => {
                             {...field}
                             placeholder="12"
                           />
-                        );
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    label="Credit Days"
-                    name="credit_days"
-                    validateStatus={errors.credit_days ? "error" : ""}
-                    help={errors.credit_days && errors.credit_days.message}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="credit_days"
-                      render={({ field }) => {
-                        return (
-                          <Input type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
@@ -1044,7 +1050,23 @@ const AddMyOrder = () => {
                       name="pending_taka"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            placeholder="12" 
+                            onChange={(e) => {
+                              let Pending_taka = e.target.value ; 
+                              setValue("pending_taka", Pending_taka) ; 
+                              let total_taka =  +getValues("total_taka");
+                              if (Pending_taka !== "" && 
+                                  Pending_taka !== undefined && 
+                                  total_taka !== "" && 
+                                  total_taka !== undefined){
+                                let delivered_taka = total_taka - +Pending_taka;
+                                setValue("delivered_taka", delivered_taka) ;
+                              }
+                            }}
+                          />
                         );
                       }}
                     />
@@ -1063,7 +1085,23 @@ const AddMyOrder = () => {
                       name="pending_meter"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} placeholder="12" 
+                            onChange={(e) => {
+                              let pending_meter = e.target.value; 
+                              setValue("pending_meter", pending_meter) ; 
+                              let total_meter =  +getValues("total_meter");
+                              if (pending_meter !== "" && 
+                                pending_meter !== undefined && 
+                                total_meter !== "" && 
+                                total_meter !== undefined){
+                              let delivered_meter = total_meter - +pending_meter;
+                              setValue("delivered_meter", delivered_meter) ;
+                            }
+
+                            }}  
+                          />
                         );
                       }}
                     />
