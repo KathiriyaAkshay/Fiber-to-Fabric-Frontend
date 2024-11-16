@@ -871,7 +871,7 @@ const UpdateJobTaka = () => {
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop:-5}}/>
 
         <FieldTable
           errors={errors}
@@ -887,6 +887,7 @@ const UpdateJobTaka = () => {
           setTotalTaka={setTotalTaka}
           getValues={getValues}
           clearErrors={clearErrors}
+          isUpdate = {true}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>

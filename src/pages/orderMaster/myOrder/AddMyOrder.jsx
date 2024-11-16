@@ -1056,8 +1056,13 @@ const AddMyOrder = () => {
                             placeholder="12" 
                             onChange={(e) => {
                               let Pending_taka = e.target.value ; 
-                              setValue("pending_taka", Pending_taka) ; 
                               let total_taka =  +getValues("total_taka");
+                              if (Pending_taka > total_taka){
+                                setValue("pending_taka", 0) ;   
+                              } else {
+                                setValue("pending_taka", Pending_taka) ; 
+                              }
+                              
                               if (Pending_taka !== "" && 
                                   Pending_taka !== undefined && 
                                   total_taka !== "" && 
@@ -1090,8 +1095,14 @@ const AddMyOrder = () => {
                             {...field} placeholder="12" 
                             onChange={(e) => {
                               let pending_meter = e.target.value; 
-                              setValue("pending_meter", pending_meter) ; 
                               let total_meter =  +getValues("total_meter");
+
+                              if (pending_meter > total_meter){
+                                setValue("pending_meter", 0) ;
+                              } else {
+                                setValue("pending_meter", pending_meter);
+                              }
+                              setValue("pending_meter", pending_meter) ; 
                               if (pending_meter !== "" && 
                                 pending_meter !== undefined && 
                                 total_meter !== "" && 

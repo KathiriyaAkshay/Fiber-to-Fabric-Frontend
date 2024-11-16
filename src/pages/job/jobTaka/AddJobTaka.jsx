@@ -866,7 +866,7 @@ const AddJobTaka = () => {
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop: 0}} />
 
         <FieldTable
           errors={errors}
