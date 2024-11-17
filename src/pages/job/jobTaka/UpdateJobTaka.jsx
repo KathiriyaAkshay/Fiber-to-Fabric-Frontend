@@ -190,7 +190,7 @@ const UpdateJobTaka = () => {
     resolver: addJobTakaSchemaResolver,
   });
   // const { supplier_name } = watch();
-  const { supplier_name, gray_order_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id, total_meter, total_weight, total_taka } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -406,15 +406,27 @@ const UpdateJobTaka = () => {
     }
   }, [jobTakaDetails, reset]);
 
+  // Update Pending Meter, Pending Taka, Pending Weight related handler // 
   useEffect(() => {
-    setPendingMeter((prev) => prev - totalMeter) ; 
-    setPendingTaka((prev) => prev - totalTaka) ; 
-    setPendingWeight((prev) => prev - totalWeight) ;  
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+    
   }, [
-    totalMeter, 
+    total_meter, 
+    total_weight, 
+    total_taka, 
     totalTaka, 
     totalWeight, 
-  ])
+    totalMeter
+  ]) 
 
   return (
     <div className="flex flex-col p-4">
