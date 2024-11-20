@@ -60,6 +60,7 @@ const TakaTpCutting = () => {
     },
     enabled: Boolean(companyId),
   });
+  console.log({ tpCuttingData });
 
   function navigateToAdd() {
     navigate("add");
@@ -158,21 +159,21 @@ const TakaTpCutting = () => {
 
     return (
       <Table
-        dataSource={tpCuttingData || []}
+        dataSource={tpCuttingData?.row || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
-          total: 0,
+          total: tpCuttingData?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
         summary={(tableData) => {
-          let totalMeter = 0;
+          // let totalMeter = 0;
           let totalCutPis = 0;
 
-          tableData.forEach(({ total_meter, is_cut }) => {
-            totalMeter += +total_meter;
+          tableData.forEach(({ /*total_meter,*/ is_cut }) => {
+            // totalMeter += +total_meter;
             if (is_cut) totalCutPis++;
           });
 
@@ -188,7 +189,7 @@ const TakaTpCutting = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalMeter.toFixed(2)}</b>
+                  <b>{tpCuttingData?.total_meter?.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
                   <b>{totalCutPis}</b>
