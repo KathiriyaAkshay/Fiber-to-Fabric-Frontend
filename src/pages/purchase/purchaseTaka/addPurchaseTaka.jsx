@@ -631,8 +631,6 @@ const AddPurchaseTaka = () => {
                     }}
                     onChange={(selectedValue) =>
                     {
-                      console.log("Run this function");
-                      
                       orderChangeHandler(field, selectedValue)
                     }
                     }

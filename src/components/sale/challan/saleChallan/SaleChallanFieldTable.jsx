@@ -24,11 +24,6 @@ const SaleChallanFieldTable = ({
   quality_id
 }) => {
 
-  console.log("Sale challan type information ==============================");
-  console.log(type);
-
-
-
   const getModelFromTakaNo = async (taka_no) => {
     try {
       const data = {

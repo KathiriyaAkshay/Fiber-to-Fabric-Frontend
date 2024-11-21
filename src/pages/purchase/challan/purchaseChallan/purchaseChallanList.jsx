@@ -286,8 +286,9 @@ const PurchaseChallanList = () => {
       title: "Action",
       render: (details) => {
         let isShowReturn = false;
-        details.purchase_challan_details.forEach((is_returned) => {
-          if (is_returned === false) {
+        details.purchase_challan_details.forEach((element) => {
+          
+          if (element?.is_returned === false) {
             isShowReturn = true;
             return;
           }
