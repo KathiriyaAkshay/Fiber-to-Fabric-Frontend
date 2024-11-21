@@ -323,8 +323,11 @@ const BillForm = () => {
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
       <Row gutter={12} style={{ padding: "12px" }}>
+
+        {/* Company selection related option layout  */}
         <Col span={6}>
           <Card
+            className="bill-option-card"
             style={{
               borderColor: "#194A6D",
               height: "100%",
@@ -362,6 +365,7 @@ const BillForm = () => {
                 }}
               />
             </Form.Item>
+
             <Form.Item
               label={"Supplier Type"}
               name="supplier_type"
@@ -447,8 +451,11 @@ const BillForm = () => {
                 }}
               />
             </Form.Item>
+
           </Card>
         </Col>
+        
+        {/* Bank selection option layout  */}
         <Col span={12}>
           <Card
             style={{
@@ -548,6 +555,8 @@ const BillForm = () => {
             </Row>
           </Card>
         </Col>
+        
+        {/* Vocher number and other information */}
         <Col span={6}>
           <Card
             style={{
@@ -656,10 +665,23 @@ const BillForm = () => {
             </Flex>
           </Card>
         </Col>
+      
       </Row>
 
       {isLoadingUnPaidBillList ? (
-        <Spin />
+        <div style={{
+          display: "flex", 
+          width: "100%", 
+          paddingTop: "20px", 
+          paddingBottom: "10px"
+        }}>
+          <div style={{
+            marginLeft:"auto", 
+            marginRight: "auto"
+          }}>
+            <Spin />
+          </div>
+        </div>
       ) : (
         <table className="custom-table">
           <thead>

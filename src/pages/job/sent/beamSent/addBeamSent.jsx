@@ -279,14 +279,14 @@ const AddBeamSent = () => {
       enabled: Boolean(companyId),
     });
 
-  const weftDenierDetails = useMemo(() => {
-    if (quality_id && dropDownQualityListRes.rows.length) {
-      const selectedQuality = dropDownQualityListRes.rows.find(
-        ({ id }) => id === quality_id
-      );
-      return selectedQuality.inhouse_weft_details;
-    }
-  }, [dropDownQualityListRes, quality_id]);
+    const weftDenierDetails = useMemo(() => {
+      if (quality_id && dropDownQualityListRes.rows.length) {
+        const selectedQuality = dropDownQualityListRes.rows.find(
+          ({ id }) => id === quality_id
+        );
+        return selectedQuality.inhouse_weft_details;
+      }
+    }, [dropDownQualityListRes, quality_id]);
 
   useQuery({
     queryKey: [

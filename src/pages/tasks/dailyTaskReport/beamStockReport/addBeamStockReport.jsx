@@ -1,4 +1,4 @@
-  import {
+    import {
   ArrowLeftOutlined,
   DeleteOutlined,
   PlusOutlined,

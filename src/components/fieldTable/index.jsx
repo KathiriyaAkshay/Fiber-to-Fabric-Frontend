@@ -21,6 +21,7 @@ const FieldTable = ({
   setTotalTaka,
   getValues,
   clearErrors,
+  isUpdate
 }) => {
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
@@ -119,10 +120,6 @@ const FieldTable = ({
                       validateStatus={
                         errors[`taka_no_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`taka_no_${fieldNumber}`] &&
-                      //   errors[`taka_no_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
@@ -152,7 +149,7 @@ const FieldTable = ({
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               if (checkUniqueTaka) {
@@ -174,10 +171,6 @@ const FieldTable = ({
                       validateStatus={
                         errors[`meter_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`meter_${fieldNumber}`] &&
-                      //   errors[`meter_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
@@ -207,7 +200,7 @@ const FieldTable = ({
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
+                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();
@@ -223,10 +216,6 @@ const FieldTable = ({
                       validateStatus={
                         errors[`weight_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`weight_${fieldNumber}`] &&
-                      //   errors[`weight_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
@@ -256,17 +245,7 @@ const FieldTable = ({
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField}
-                            // onChange={(e) => {
-                            //   console.log("space bar click", e);
-                            //   if (e.key === " ") {
-                            //     e.stopPropagation();
-                            //   }
-                            //   setValue(
-                            //     `weight_${fieldNumber}`,
-                            //     e.target.value
-                            //   );
-                            // }}
+                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();

@@ -129,19 +129,19 @@ const UpdateSaleChallan = () => {
       let meter = data[`meter_${field}`];
       let weight = data[`weight_${field}`];
 
-      if (takaNo == undefined){
+      if (takaNo == undefined) {
         takaNo = ""
       }
 
-      if (meter == undefined){
+      if (meter == undefined) {
         meter = "";
       }
 
-      if (weight == undefined){
+      if (weight == undefined) {
         weight = ""
       }
 
-      if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "" ) {
+      if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "") {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
@@ -149,7 +149,7 @@ const UpdateSaleChallan = () => {
         });
         hasError = 1;
       }
-      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "" ) {
+      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -182,10 +182,10 @@ const UpdateSaleChallan = () => {
 
     });
 
-    if (sale_challan_detail?.length == 0){
-      message.error("Required at least one taka") ; 
+    if (sale_challan_detail?.length == 0) {
+      message.error("Required at least one taka");
     } else {
-      
+
       const newData = {
         party_id: saleChallanDetail?.saleChallan?.party_id,
         customer_gst_state: data.gst_state_2,
@@ -201,15 +201,15 @@ const UpdateSaleChallan = () => {
         vehicle_id: +data.vehicle_id,
         supplier_id: +data.supplier_id,
         delivery_note: data.delivery_note,
-  
+
         pending_meter: +pendingMeter,
         pending_weight: +pendingWeight,
         pending_taka: +pendingTaka,
-  
+
         total_taka: +totalTaka,
         total_meter: +totalMeter,
         total_weight: +totalWeight,
-  
+
         sale_challan_types: data.type.map((type) => {
           return {
             sale_challan_type: type,
@@ -271,32 +271,32 @@ const UpdateSaleChallan = () => {
     watch();
 
   // Get last challan number for cash order 
-  const {data: lastChallanNumber, isLoading: lastChallanNumberLoading} = useQuery({
+  const { data: lastChallanNumber, isLoading: lastChallanNumberLoading } = useQuery({
     queryKey: [
-      "sale", 
-      "challan", 
-      "last-invoice-no", 
-      {company_id: companyId, is_grey: is_gray}
-    ], 
+      "sale",
+      "challan",
+      "last-invoice-no",
+      { company_id: companyId, is_grey: is_gray }
+    ],
     queryFn: async () => {
-      if (is_gray == "false"){
+      if (is_gray == "false") {
         const res = await getSaleLastChallanNumberRequest({
-          params: {company_id :companyId, is_gray: "0"}
-        }); 
+          params: { company_id: companyId, is_gray: "0" }
+        });
 
-        let challan_number = res?.data?.data?.saleChallan?.challan_no || "CH-1"; 
-        challan_number = challan_number.split("-") ; 
-        let new_challan_number = 0 ; 
+        let challan_number = res?.data?.data?.saleChallan?.challan_no || "CH-1";
+        challan_number = challan_number.split("-");
+        let new_challan_number = 0;
 
-        if (challan_number?.length == 1){
-          new_challan_number = `CH-${Number(challan_number[0]) + 1}`; 
-        }  else {
-          new_challan_number = `CH-${Number(challan_number[1]) + 1}` ; 
+        if (challan_number?.length == 1) {
+          new_challan_number = `CH-${Number(challan_number[0]) + 1}`;
+        } else {
+          new_challan_number = `CH-${Number(challan_number[1]) + 1}`;
         }
-        setValue('challan_no', new_challan_number) ; 
+        setValue('challan_no', new_challan_number);
 
       }
-    }, 
+    },
     enabled: Boolean(companyId && is_gray)
   })
 
@@ -467,22 +467,22 @@ const UpdateSaleChallan = () => {
 
       setActiveField(sale_challan_details.length + 1);
 
-      let total_meter = saleChallanDetail?.saleChallan?.gray_order?.total_meter ; 
-      let total_taka =  saleChallanDetail?.saleChallan?.gray_order?.total_taka
-      let total_weight = saleChallanDetail?.saleChallan?.gray_order?.weight ; 
+      let total_meter = saleChallanDetail?.saleChallan?.gray_order?.total_meter;
+      let total_taka = saleChallanDetail?.saleChallan?.gray_order?.total_taka
+      let total_weight = saleChallanDetail?.saleChallan?.gray_order?.weight;
 
-      let received_meter = 0; 
-      let received_taka = 0 ; 
-      let received_weight = 0 ; 
+      let received_meter = 0;
+      let received_taka = 0;
+      let received_weight = 0;
 
-      saleChallanDetail?.saleChallan?.sale_challan_details?.map((element) =>{
-        received_taka += 1; 
-        received_meter = received_meter + Number(element?.meter) ;
-        received_weight = received_weight + Number(element?.weight) ; 
-      }); 
-      setPendingMeter(total_meter - received_meter) ;
-      setPendingTaka(total_taka - received_taka) ; 
-      setPendingWeight(total_weight  - received_weight) ; 
+      saleChallanDetail?.saleChallan?.sale_challan_details?.map((element) => {
+        received_taka += 1;
+        received_meter = received_meter + Number(element?.meter);
+        received_weight = received_weight + Number(element?.weight);
+      });
+      setPendingMeter(total_meter - received_meter);
+      setPendingTaka(total_taka - received_taka);
+      setPendingWeight(total_weight - received_weight);
 
       let saleChallanDetails = {};
       sale_challan_details.forEach((item, index) => {
@@ -494,7 +494,7 @@ const UpdateSaleChallan = () => {
         setTotalMeter((prev) => prev + +item.meter);
         setTotalWeight((prev) => prev + +item.weight);
       });
-      
+
       reset({
         gst_state: saleChallanDetail?.saleChallan?.company_gst_state,
         challan_type,
@@ -654,9 +654,9 @@ const UpdateSaleChallan = () => {
               control={control}
               name="challan_no"
               render={({ field }) => (
-                <Input {...field} 
-                  placeholder="CH123456" 
-                  readOnly = {is_gray == "false"?true:false}  
+                <Input {...field}
+                  placeholder="CH123456"
+                  readOnly={is_gray == "false" ? true : false}
                 />
               )}
             />
@@ -689,7 +689,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={{marginTop: "-15px"}}
+        style={{ marginTop: "-15px" }}
       >
         <Col span={6}>
           <Form.Item
@@ -753,7 +753,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={{marginTop: "-15px"}}
+        style={{ marginTop: "-15px" }}
       >
         <Col span={6}>
           <Form.Item
@@ -888,7 +888,7 @@ const UpdateSaleChallan = () => {
 
       <Row
         gutter={18}
-        style={{marginTop: "-15px"}}
+        style={{ marginTop: "-15px" }}
       >
         <Col span={6}>
           <Form.Item
@@ -1016,7 +1016,7 @@ const UpdateSaleChallan = () => {
       </Row>
 
       {gray_order_id ? (
-        <Row gutter={18} style={{marginTop: "-10px"}}>
+        <Row gutter={18} style={{ marginTop: "-10px" }}>
           <Col span={6}></Col>
 
           <Col span={6} style={{ textAlign: "end" }}>
@@ -1057,7 +1057,7 @@ const UpdateSaleChallan = () => {
               control={control}
               name="gst_state_2"
               render={({ field }) => (
-                <Input {...field}  placeholder="GST State" />
+                <Input {...field} placeholder="GST State" />
               )}
             />
           </Form.Item>
@@ -1143,7 +1143,7 @@ const UpdateSaleChallan = () => {
         </Col>
       </Row>
 
-      <Divider style={{marginTop: "-15px"}} />
+      <Divider style={{ marginTop: "-15px" }} />
 
       {quality_id !== undefined && quality_id !== null && (
 

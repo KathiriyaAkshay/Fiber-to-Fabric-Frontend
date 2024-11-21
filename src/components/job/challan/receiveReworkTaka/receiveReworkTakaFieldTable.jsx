@@ -33,8 +33,6 @@ const ReceiveReworkTakaFieldTable = ({
     if (event.keyCode === 13) {
       setTotalFieldRow((prev) => prev + 1);
       setActiveField((prev) => prev + 1);
-      console.log("Field number", fieldNumber);
-
       setValue(`taka_no_${fieldNumber + 1}`, undefined);
       setValue(`meter_${fieldNumber + 1}`, undefined);
       setValue(`received_meter_${fieldNumber + 1}`, null);

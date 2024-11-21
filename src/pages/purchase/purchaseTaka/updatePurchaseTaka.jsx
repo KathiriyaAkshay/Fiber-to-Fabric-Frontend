@@ -185,7 +185,7 @@ const UpdatePurchaseTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id, total_meter, total_taka, total_weight } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -289,35 +289,37 @@ const UpdatePurchaseTaka = () => {
     }
   }, [gray_order_id]);
 
+  // useEffect(() => {
+  //   if (grayOrderListRes && gray_order_id) {
+  //     const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+
+  //     setPendingMeter(+order.pending_meter - +totalMeter);
+  //     setPendingTaka(+order.pending_taka - +totalTaka);
+  //     setPendingWeight(+order.pending_weight - +totalWeight);
+  //   }
+  // }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+      if (order){
+        setSelectedOrder(order);
+        setValue("total_meter", order.total_meter);
+        setValue("total_taka", order.total_taka);
+        setValue("total_weight", order.weight);
+        setValue(
+          "broker_name",
+          `${order.broker.first_name} ${order.broker.last_name}`
+        );
+        setValue("broker_id", order.broker.id);
+        setValue("quality_id", order.inhouse_quality.id);
+        setValue("supplier_name", order.supplier_name);
+        setValue("pending_meter", order.pending_meter);
+      }
 
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
-    }
-  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
-
-  useEffect(() => {
-    if (grayOrderListRes && gray_order_id) {
-      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("broker_id", order.broker.id);
-      setValue("quality_id", order.inhouse_quality.id);
-      setValue("supplier_name", order.supplier_name);
-      setValue("pending_meter", order.pending_meter);
-
-      setPendingMeter(order.pending_meter || 0);
-      setPendingTaka(order.pending_taka || 0);
-      setPendingWeight(order.pending_weight || 0);
+      // setPendingMeter(order.pending_meter || 0);
+      // setPendingTaka(order.pending_taka || 0);
+      // setPendingWeight(order.pending_weight || 0);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -362,15 +364,23 @@ const UpdatePurchaseTaka = () => {
 
       setActiveField(purchase_challan_details.length + 1);
       let purchaseChallanDetails = {};
+      let totalMeter = 0 ; 
+      let totalWeight = 0 ; 
       purchase_challan_details.forEach((item, index) => {
         purchaseChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         purchaseChallanDetails[`meter_${index + 1}`] = item.meter;
         purchaseChallanDetails[`weight_${index + 1}`] = item.weight;
-
-        setTotalTaka(purchase_challan_details.length);
-        setTotalMeter((prev) => prev + +item.meter);
-        setTotalWeight((prev) => prev + +item.weight);
+        totalMeter += +item?.meter; 
+        totalWeight += +item?.weight ; 
       });
+      
+      setTotalTaka(purchase_challan_details.length);
+      setTotalMeter(totalMeter) ; 
+      setTotalWeight(totalWeight) ;
+      // setPendingMeter(+total_meter - totalMeter) ; 
+      // setPendingWeight(+total_weight - totalWeight) ; 
+      // setPendingTaka(+total_taka - purchase_challan_details?.length) ;
+
       reset({
         //   company_id,
         challan_no,
@@ -392,6 +402,26 @@ const UpdatePurchaseTaka = () => {
       });
     }
   }, [purchaseDetails, reset]);
+
+  // Update Pending Meter, Pending Taka, Pending Weight related handler // 
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+  }, [
+    total_meter, 
+    total_weight, 
+    total_taka, 
+    totalTaka, 
+    totalWeight, 
+    totalMeter
+  ]) 
 
   return (
     <div className="flex flex-col p-4">
@@ -841,6 +871,7 @@ const UpdatePurchaseTaka = () => {
           setTotalTaka={setTotalTaka}
           getValues={getValues}
           clearErrors={clearErrors}
+          isUpdate={true}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>

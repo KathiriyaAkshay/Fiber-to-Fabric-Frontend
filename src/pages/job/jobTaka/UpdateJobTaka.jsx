@@ -145,10 +145,10 @@ const UpdateJobTaka = () => {
       broker_id: parseInt(data.broker_id),
       quality_id: parseInt(data.quality_id),
       total_meter: parseInt(data.total_meter),
-      total_weight: parseInt(data.total_weight),
-      pending_meter: parseInt(data.pending_meter),
-      pending_weight: parseInt(data.pending_weight),
-      pending_taka: parseInt(data.pending_taka),
+      total_weight: parseInt(data.total_weight || 0),
+      pending_meter: parseInt(data.pending_meter || 0),
+      pending_weight: parseInt(data.pending_weight || 0),
+      pending_taka: parseInt(data.pending_taka || 0),
       total_taka: parseInt(data.total_taka),
       is_grey: true,
       job_challan_detail: job_challan_detail,
@@ -190,7 +190,7 @@ const UpdateJobTaka = () => {
     resolver: addJobTakaSchemaResolver,
   });
   // const { supplier_name } = watch();
-  const { supplier_name, gray_order_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id, total_meter, total_weight, total_taka } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -217,17 +217,6 @@ const UpdateJobTaka = () => {
       },
       enabled: Boolean(companyId),
     });
-
-  // const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-  //   queryKey: ["broker", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getBrokerListRequest({
-  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
 
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
@@ -264,9 +253,6 @@ const UpdateJobTaka = () => {
       const obj = dropdownSupplierListRes.find((item) => {
         return item.supplier_name === supplier_name;
       });
-      // return obj?.supplier_company?.map((item) => {
-      //   return { label: item.supplier_company, value: item.supplier_id };
-      // });
       return obj?.supplier_company;
     } else {
       return [];
@@ -310,9 +296,9 @@ const UpdateJobTaka = () => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
       if (order) {
-        setPendingMeter(+order.pending_meter - +totalMeter);
-        setPendingTaka(+order.pending_taka - +totalTaka);
-        setPendingWeight(+order.pending_weight - +totalWeight);
+        setPendingMeter(+order.pending_meter);
+        setPendingTaka(+order.pending_taka );
+        setPendingWeight(+order.pending_weight);
       }
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
@@ -320,22 +306,22 @@ const UpdateJobTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order?.total_meter);
-      setValue("total_taka", order?.total_taka);
-      setValue("total_weight", order?.weight);
-      setValue(
-        "broker_name",
-        `${order?.broker?.first_name} ${order?.broker?.last_name}`
-      );
-      setValue("broker_id", order?.broker.id);
-      setValue("quality_id", order?.inhouse_quality.id);
-      // setValue("supplier_name", order?.supplier_name);
-      setValue("pending_meter", order?.pending_meter);
-
-      setPendingMeter(order?.pending_meter || 0);
-      setPendingTaka(order?.pending_taka || 0);
-      setPendingWeight(order?.pending_weight || 0);
+      if (order){
+        setSelectedOrder(order);
+        setValue("total_meter", order?.total_meter);
+        setValue("total_taka", order?.total_taka);
+        setValue("total_weight", order?.weight);
+        setValue(
+          "broker_name",
+          `${order?.broker?.first_name} ${order?.broker?.last_name}`
+        );
+        setValue("broker_id", order?.broker.id);
+        setValue("quality_id", order?.inhouse_quality.id);
+        setValue("pending_meter", order?.pending_meter);
+        setPendingMeter(order?.pending_meter || 0);
+        setPendingTaka(order?.pending_taka || 0);
+        setPendingWeight(order?.pending_weight || 0);
+      }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -362,7 +348,6 @@ const UpdateJobTaka = () => {
   useEffect(() => {
     if (jobTakaDetails) {
       const {
-        // company_id,
         challan_no,
         delivery_address,
         gst_in,
@@ -383,17 +368,23 @@ const UpdateJobTaka = () => {
 
       setActiveField(job_challan_details.length + 1);
       let jobChallanDetails = {};
+      let totalMeter = 0; 
+      let totalWeight = 0
       job_challan_details.forEach((item, index) => {
         jobChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         jobChallanDetails[`meter_${index + 1}`] = item.meter;
         jobChallanDetails[`weight_${index + 1}`] = item.weight;
-
+        totalMeter += +item?.meter ; 
+        totalWeight += +item?.weight; 
         setTotalTaka(job_challan_details.length);
-        setTotalMeter((prev) => prev + +item.meter);
-        setTotalWeight((prev) => prev + +item.weight);
       });
+      setTotalMeter(totalMeter) ; 
+      setTotalWeight(totalWeight) ;
+      setPendingMeter(+total_meter - totalMeter) ; 
+      setPendingWeight(+total_weight - totalWeight) ; 
+      setPendingTaka(+total_taka - job_challan_details?.length) ; 
+      
       reset({
-        // company_id,
         challan_no,
         delivery_address,
         gst_in_1: gst_in,
@@ -407,9 +398,6 @@ const UpdateJobTaka = () => {
         total_meter,
         total_taka,
         total_weight,
-        // pending_meter: gray_order.pending_meter,
-        // pending_taka: gray_order.pending_taka,
-        // pending_weight: gray_order.pending_weight,
         is_grey,
         supplier_name: supplier.supplier_name,
         challan_date: dayjs(createdAt),
@@ -417,6 +405,28 @@ const UpdateJobTaka = () => {
       });
     }
   }, [jobTakaDetails, reset]);
+
+  // Update Pending Meter, Pending Taka, Pending Weight related handler // 
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+    
+  }, [
+    total_meter, 
+    total_weight, 
+    total_taka, 
+    totalTaka, 
+    totalWeight, 
+    totalMeter
+  ]) 
 
   return (
     <div className="flex flex-col p-4">
@@ -433,40 +443,6 @@ const UpdateJobTaka = () => {
             padding: "12px",
           }}
         >
-          {/* <Col span={6}>
-            <Form.Item
-              label="Company"
-              name="company_id"
-              validateStatus={errors.company_id ? "error" : ""}
-              help={errors.company_id && errors.company_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingGrayOrderList}
-                    placeholder="Select Company"
-                    options={companyListRes?.rows?.map((company) => ({
-                      label: company.company_name,
-                      value: company.id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                    disabled
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={6}>
             <Form.Item
               label="Challan Date"
@@ -871,7 +847,7 @@ const UpdateJobTaka = () => {
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop:-5}}/>
 
         <FieldTable
           errors={errors}
@@ -887,6 +863,7 @@ const UpdateJobTaka = () => {
           setTotalTaka={setTotalTaka}
           getValues={getValues}
           clearErrors={clearErrors}
+          isUpdate = {true}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>
