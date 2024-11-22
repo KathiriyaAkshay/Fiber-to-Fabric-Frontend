@@ -163,6 +163,8 @@ import GstrPrint from "./pages/accounts/reports/gstrPrint";
 import LiveStockReport from "./pages/accounts/reports/liveStockReport";
 import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 import SalesReport from "./pages/accounts/reports/salesReport";
+import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
+import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -834,21 +836,15 @@ const router = createBrowserRouter([
           },
           {
             path: "group-wise-outstanding",
-            element: (
-              <div>
-                <div>group-wise-outstanding</div>
-                <Outlet />
-              </div>
-            ),
             children: [
-              { index: true, element: <div>group-wise-outstanding</div> },
+              { index: true, element: <SundryDebitor /> },
               {
                 path: "sundry-debtors",
-                element: <div>sundry-debtors</div>,
+                element: <SundryDebitor />,
               },
               {
                 path: "sundry-creditors",
-                element: <div>sundry-creditors</div>,
+                element: <SundryCreditor />,
               },
             ],
           },

@@ -204,7 +204,7 @@ const DebitNotes = () => {
               </Table.Summary.Cell>
               <Table.Summary.Cell index={1} />
               <Table.Summary.Cell index={0} />
-              <Table.Summary.Cell index={0} />
+              {/* <Table.Summary.Cell index={0} /> */}
             </Table.Summary.Row>
           );
         }}
