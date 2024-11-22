@@ -1122,7 +1122,6 @@ const QualityDetailModel = ({ qualityId = null, companyId }) => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ qualityDetails });
 
   // [
   //       {
