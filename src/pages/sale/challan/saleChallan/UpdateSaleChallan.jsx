@@ -124,6 +124,16 @@ const UpdateSaleChallan = () => {
 
     const sale_challan_detail = [];
     let hasError = 0;
+
+    // Purchase taka details
+    let purchased_taka_number = [] ; 
+ 
+    // Job taka details
+    let job_taka_number = [] ; 
+
+    // Sale taka details
+    let sale_taka_number = [] ; 
+
     saleChallanDetailArr.forEach((field, index) => {
       let takaNo = data[`taka_no_${field}`];
       let meter = data[`meter_${field}`];
@@ -148,6 +158,7 @@ const UpdateSaleChallan = () => {
           message: "Taka No required.",
         });
         hasError = 1;
+        return ; 
       }
       if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -156,6 +167,7 @@ const UpdateSaleChallan = () => {
           message: "Meter required.",
         });
         hasError = 1;
+        return ; 
       }
       if ((isNaN(weight) || weight === "") && meter !== "" && takaNo !== "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -164,6 +176,7 @@ const UpdateSaleChallan = () => {
           message: "Weight required.",
         });
         hasError = 1;
+        return ; 
       }
 
       if (
@@ -171,12 +184,23 @@ const UpdateSaleChallan = () => {
         meter != "" &&
         weight != ""
       ) {
+        let model = data[`model_${field}`];
+        let taka_number = data[`taka_no_${field}`] ; 
+
+        if (model == "purchase/trading"){
+          purchased_taka_number.push(taka_number) ;
+        } else if (model == "taka(inhouse)"){
+          sale_taka_number.push(taka_number)
+        } else {
+          job_taka_number.push(taka_number) ; 
+        }
+
         sale_challan_detail.push({
           index: index + 1,
-          taka_no: data[`taka_no_${field}`],
+          taka_no: taka_number,
           meter: parseInt(data[`meter_${field}`]),
           weight: parseInt(data[`weight_${field}`]),
-          model: data[`model_${field}`],
+          model: model,
         });
       }
 
@@ -202,9 +226,9 @@ const UpdateSaleChallan = () => {
         supplier_id: +data.supplier_id,
         delivery_note: data.delivery_note,
 
-        pending_meter: +pendingMeter,
-        pending_weight: +pendingWeight,
-        pending_taka: +pendingTaka,
+        // pending_meter: +pendingMeter,
+        // pending_weight: +pendingWeight,
+        // pending_taka: +pendingTaka,
 
         total_taka: +totalTaka,
         total_meter: +totalMeter,
@@ -217,6 +241,24 @@ const UpdateSaleChallan = () => {
         }),
         sale_challan_details: sale_challan_detail,
       };
+
+      if (purchased_taka_number?.length !== [...new Set(purchased_taka_number)]?.length){
+        message.error("Please provide a unique taka number of PURCHASE to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
+
+      if (sale_taka_number?.length !== [...new Set(sale_taka_number)]?.length){
+        message.error("Please provide a unique taka number of SALE to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
+
+      if (job_taka_number?.length !== [...new Set(job_taka_number)]?.length){
+        message.error("Please provide a unique taka number of JOB to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
 
       if (hasError === 0) {
         await UpdateSaleChallan(newData);
@@ -267,7 +309,17 @@ const UpdateSaleChallan = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, company_id, supplier_id, type, quality_id, is_gray } =
+  const { supplier_name, 
+    gray_order_id, 
+    company_id, 
+    supplier_id, 
+    type, 
+    quality_id, 
+    is_gray, 
+    total_meter, 
+    total_taka,
+    total_weight 
+  } =
     watch();
 
   // Get last challan number for cash order 
@@ -489,6 +541,7 @@ const UpdateSaleChallan = () => {
         saleChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         saleChallanDetails[`meter_${index + 1}`] = item.meter;
         saleChallanDetails[`weight_${index + 1}`] = item.weight;
+        saleChallanDetails[`model_${index + 1}`] = item.model;
 
         setTotalTaka(sale_challan_details.length);
         setTotalMeter((prev) => prev + +item.meter);
@@ -570,6 +623,26 @@ const UpdateSaleChallan = () => {
     setTotalMeter(0);
     setTotalWeight(0);
   };
+
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+  }, [
+    total_meter, 
+    total_taka, 
+    total_weight, 
+    totalTaka, 
+    totalMeter,
+    totalWeight
+  ])
 
   return (
     <div className="flex flex-col p-4">

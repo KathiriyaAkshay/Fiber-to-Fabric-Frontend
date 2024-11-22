@@ -383,7 +383,8 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 1}
                 </Col>
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index]?.taka_no}
                 </Col>
                 <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>

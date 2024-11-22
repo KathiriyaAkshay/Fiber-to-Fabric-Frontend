@@ -674,7 +674,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="purchase/challan/sale-purchased-taka"
+                to="sales/challan/sale-challan"
               >
                 Sale Purchased Taka
               </Link>
@@ -935,7 +935,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/challan/sale-job-taka"
+                to="sales/challan/sale-challan"
               >
                 Sale Job Taka
               </Link>

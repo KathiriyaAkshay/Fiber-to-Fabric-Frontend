@@ -137,6 +137,7 @@ const ViewSaleChallan = ({ details, companyId }) => {
         onClick={() => {
           setIsModalOpen(true);
         }}
+        danger
       >
         <UndoOutlined />
       </Button>
@@ -430,10 +431,14 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 1}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.sale_challan_details[index]?.is_returned?"red":"black" 
+                 }}>
                   {details?.sale_challan_details[index]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.sale_challan_details[index]?.is_returned?"red":"black" 
+                 }}>
                   {details?.sale_challan_details[index]?.meter}
                 </Col>
                 <Col span={1} style={{ textAlign: "center" }}>
@@ -450,10 +455,14 @@ const ViewSaleChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 13}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.sale_challan_details[index]?.is_returned?"red":"black" 
+                 }}>
                   {details?.sale_challan_details[index + 12]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.sale_challan_details[index]?.is_returned?"red":"black" 
+                 }}>
                   {details?.sale_challan_details[index + 12]?.meter}
                 </Col>
               </Row>
