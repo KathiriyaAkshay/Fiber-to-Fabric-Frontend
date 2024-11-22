@@ -280,6 +280,10 @@ const PurchaseTakaList = () => {
         const purchaseCompany = companyListRes.rows.find(
           ({ id }) => id === details.purchase_taka_challan.company_id
         );
+
+        let weight = +details?.weight; 
+        let meter = +details?.meter ; 
+        let average = (weight/meter) * 100 ; 
         return (
           <Space>
             <GridInformationModel
@@ -301,7 +305,7 @@ const PurchaseTakaList = () => {
                   label: "Order Type",
                   value: details?.purchase_taka_challan?.gray_order?.order_type,
                 },
-                { label: "Average", value: details?.total_weight },
+                { label: "Average", value: parseFloat(average).toFixed(2) },
                 {
                   label: "Purchase Challan No",
                   value: details?.purchase_taka_challan?.challan_no,

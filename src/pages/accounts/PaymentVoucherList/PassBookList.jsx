@@ -158,6 +158,11 @@ const PassBookList = () => {
       title: "Cheque No.",
       dataIndex: "cheque_no",
       key: "cheque_no",
+      render: (text, record) => {
+        return(
+          <div>{text || "-"}</div>
+        )
+      }
     },
     {
       title: "Cheque Date",
@@ -196,7 +201,6 @@ const PassBookList = () => {
         dataSource={passBookList?.rows || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
         pagination={{
           total: passBookList?.count || 0,
           showSizeChanger: true,

@@ -113,13 +113,13 @@ const BillList = () => {
     },
     {
       title: "Supplier Name",
-      dataIndex: "supplier_name",
+      dataIndex: ["supplier","supplier_name"],
       key: "supplier_name",
       render: (text) => text || "-",
     },
     {
       title: "Account Name",
-      dataIndex: "account_name",
+      dataIndex: ["supplier","supplier_company"],
       key: "account_name",
       render: (text) => text || "-",
     },
@@ -181,7 +181,6 @@ const BillList = () => {
         dataSource={paymentBillList?.billPaymentDetails?.rows || []}
         columns={columns}
         rowKey={"id"}
-        scroll={{ y: 330 }}
         pagination={{
           total: paymentBillList?.billPaymentDetails?.count || 0,
           showSizeChanger: true,

@@ -280,7 +280,7 @@ function ReceiveSizeBeamList() {
                   value: details?.supplier?.supplier?.supplier_name,
                 },
                 {
-                  label: "Supplier Address	",
+                  label: "Supplier Address",
                   value: details?.supplier?.address,
                 },
                 { label: "Supplier GST	", value: details?.supplier?.gst_no },

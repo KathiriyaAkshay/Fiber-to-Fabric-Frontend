@@ -542,8 +542,8 @@ const JobBillList = () => {
                 placeholder="Select Type"
                 value={isPaid}
                 options={[
-                  { label: "Un-Paid", value: false },
-                  { label: "Paid", value: true },
+                  { label: "Un-Paid", value: 0 },
+                  { label: "Paid", value: 1 },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",

@@ -17,7 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
@@ -146,6 +146,7 @@ const UpdateMyOrder = () => {
     await updateMyOrder(newData);
   }
 
+  const [is_order_used, set_is_order_used] = useState(false) ; 
   const {
     control,
     handleSubmit,
@@ -183,8 +184,8 @@ const UpdateMyOrder = () => {
     resolver: addYSCSchemaResolver,
   });
 
+  const {order_count_in} = watch();
   const { machine_name, credit_days, order_type } = watch();
-
   useEffect(() => {
     if (credit_days) {
       setValue("remarks", `payment due in ${credit_days} days`);
@@ -299,9 +300,7 @@ const UpdateMyOrder = () => {
         party_notes,
         order_date,
         order_type,
-
         supplier_name,
-
         weight,
         total_taka,
         rate,
@@ -314,8 +313,8 @@ const UpdateMyOrder = () => {
         delivered_taka,
         pending_meter,
         pending_taka,
+        order_count_in
       } = orderDetails.order;
-
       reset({
         machine_name,
         broker_id,
@@ -325,9 +324,7 @@ const UpdateMyOrder = () => {
         party_notes,
         order_date: dayjs(order_date),
         order_type,
-
         supplier_name,
-
         weight,
         total_taka,
         rate,
@@ -341,7 +338,9 @@ const UpdateMyOrder = () => {
         pending_meter,
         pending_taka,
         remarks: `payment due in ${credit_days} days`,
+        order_count_in: order_count_in
       });
+      set_is_order_used( orderDetails?.is_order_used)
     }
   }, [orderDetails, reset]);
 
@@ -647,50 +646,16 @@ const UpdateMyOrder = () => {
           </Col>
         </Row>
 
-        <Divider />
-
         <Row
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: -10
           }}
         >
           <Col span={12}>
             <Card>
               <h3 className="m-0 text-primary">Order Data</h3>
-              {/* <Row
-                gutter={18}
-                style={{
-                  padding: "12px",
-                }}
-              >
-                <Col span={12}>
-                  <Form.Item
-                    label=""
-                    name="order_count_in"
-                    validateStatus={errors.order_count_in ? "error" : ""}
-                    help={
-                      errors.order_count_in && errors.order_count_in.message
-                    }
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="order_count_in"
-                      render={({ field }) => {
-                        return (
-                          <Radio.Group {...field}>
-                            <Radio value={"taka"}>Taka</Radio>
-                            <Radio value={"meter"}>Meter</Radio>
-                            <Radio value={"lot"}>Lot</Radio>
-                          </Radio.Group>
-                        );
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row> */}
-
               <Flex justify="space-between">
                 <Col span={6}>
                   <Form.Item
@@ -705,7 +670,11 @@ const UpdateMyOrder = () => {
                       name="weight"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            placeholder="12" 
+                          />
                         );
                       }}
                     />
@@ -724,7 +693,12 @@ const UpdateMyOrder = () => {
                       name="total_lot"
                       render={({ field }) => {
                         return (
-                          <Input type="number" {...field} placeholder="12" />
+                          <Input 
+                            type="number" 
+                            {...field} 
+                            placeholder="12" 
+                            readOnly={order_count_in != "lot" ?true:is_order_used?true:false}
+                          />
                         );
                       }}
                     />
@@ -749,7 +723,8 @@ const UpdateMyOrder = () => {
                             type="number"
                             {...field}
                             placeholder="12"
-                            disabled
+                            readOnly={order_count_in == "taka"? 
+                              is_order_used?true:false:true}
                           />
                         );
                       }}
@@ -773,7 +748,7 @@ const UpdateMyOrder = () => {
                             type="number"
                             {...field}
                             placeholder="12"
-                            disabled
+                            readOnly={order_count_in != "meter" ?true :is_order_used?true:false}
                           />
                         );
                       }}
@@ -803,15 +778,15 @@ const UpdateMyOrder = () => {
                 </Col>
                 <Col span={6}>
                   <Form.Item
-                    label="Final Rate"
-                    name="amount"
-                    validateStatus={errors.amount ? "error" : ""}
-                    help={errors.amount && errors.amount.message}
+                    label="Credit Days"
+                    name="credit_days"
+                    validateStatus={errors.credit_days ? "error" : ""}
+                    help={errors.credit_days && errors.credit_days.message}
                     wrapperCol={{ sm: 24 }}
                   >
                     <Controller
                       control={control}
-                      name="amount"
+                      name="credit_days"
                       render={({ field }) => {
                         return (
                           <Input type="number" {...field} placeholder="12" />
@@ -841,25 +816,6 @@ const UpdateMyOrder = () => {
                             placeholder="12"
                             disabled
                           />
-                        );
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item
-                    label="Credit Days"
-                    name="credit_days"
-                    validateStatus={errors.credit_days ? "error" : ""}
-                    help={errors.credit_days && errors.credit_days.message}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="credit_days"
-                      render={({ field }) => {
-                        return (
-                          <Input type="number" {...field} placeholder="12" />
                         );
                       }}
                     />
@@ -926,7 +882,8 @@ const UpdateMyOrder = () => {
                   </Form.Item>
                 </Col>
               </Flex>
-              <Divider />
+
+              <Divider style={{marginTop: 0}} />
 
               <Flex justify="space-between">
                 <Col span={6}>
@@ -979,7 +936,7 @@ const UpdateMyOrder = () => {
                 </Col>
               </Flex>
 
-              <Flex justify="space-between">
+              {/* <Flex justify="space-between">
                 <Col span={6}>
                   <Form.Item
                     label="Return Taka"
@@ -1047,7 +1004,7 @@ const UpdateMyOrder = () => {
                     />
                   </Form.Item>
                 </Col>
-              </Flex>
+              </Flex> */}
             </Card>
           </Col>
         </Row>

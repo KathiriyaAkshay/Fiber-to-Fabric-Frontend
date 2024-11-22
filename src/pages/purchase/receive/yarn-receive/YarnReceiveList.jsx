@@ -143,7 +143,7 @@ function YarnReceiveList() {
       title: "Order No",
       dataIndex: "order_no",
       key: "order_no",
-      render: (text, record) => <div>{record?.yarn_order?.id || "-"}</div>,
+      render: (text, record) => <div>{record?.yarn_order?.order_id || "-"}</div>,
     },
     {
       title: "Challan Date",

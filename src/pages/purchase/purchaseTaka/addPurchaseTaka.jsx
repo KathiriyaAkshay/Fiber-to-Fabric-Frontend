@@ -207,7 +207,7 @@ const AddPurchaseTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id, total_meter, total_weight, total_taka } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -311,15 +311,15 @@ const AddPurchaseTaka = () => {
     }
   }, [gray_order_id]);
 
-  useEffect(() => {
-    if (grayOrderListRes && gray_order_id) {
-      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+  // useEffect(() => {
+  //   if (grayOrderListRes && gray_order_id) {
+  //     const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
 
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
-    }
-  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+  //     setPendingMeter(+order.pending_meter - +totalMeter);
+  //     setPendingTaka(+order.pending_taka - +totalTaka);
+  //     setPendingWeight(+order.pending_weight - +totalWeight);
+  //   }
+  // }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
@@ -337,9 +337,9 @@ const AddPurchaseTaka = () => {
       setValue("supplier_name", order.supplier_name);
       setValue("pending_meter", order.pending_meter);
 
-      setPendingMeter(order.pending_meter || 0);
-      setPendingTaka(order.pending_taka || 0);
-      setPendingWeight(order.pending_weight || 0);
+      // setPendingMeter(order.pending_meter || 0);
+      // setPendingTaka(order.pending_taka || 0);
+      // setPendingWeight(order.pending_weight || 0);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -403,6 +403,27 @@ const AddPurchaseTaka = () => {
     setTotalMeter(0);
     setTotalWeight(0);
   };
+
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+    
+  }, [
+    total_meter, 
+    total_weight, 
+    total_taka, 
+    totalTaka, 
+    totalWeight, 
+    totalMeter
+  ])
 
   return (
     <div className="flex flex-col p-4">
@@ -610,8 +631,6 @@ const AddPurchaseTaka = () => {
                     }}
                     onChange={(selectedValue) =>
                     {
-                      console.log("Run this function");
-                      
                       orderChangeHandler(field, selectedValue)
                     }
                     }

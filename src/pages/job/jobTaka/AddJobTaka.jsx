@@ -188,7 +188,6 @@ const AddJobTaka = () => {
     resetField,
   } = useForm({
     defaultValues: {
-      // company_id: null,
       challan_date: dayjs(),
       delivery_address: "",
       gst_state: "",
@@ -208,7 +207,7 @@ const AddJobTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id } = watch();
+  const { supplier_name, gray_order_id, supplier_id, total_weight, total_meter, total_taka } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -305,13 +304,13 @@ const AddJobTaka = () => {
     }
   }, [gray_order_id]);
 
+  // ======= Calculate Pending Meter, Pending Taka, Pending Weight information ========== //
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
+      setPendingMeter(+order.pending_meter);
+      setPendingTaka(+order.pending_taka);
+      setPendingWeight(+order.pending_weight || +order?.weight);
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -335,15 +334,6 @@ const AddJobTaka = () => {
       setPendingTaka(order.pending_taka);
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
-
-  // useEffect(() => {
-  //   if (company_id) {
-  //     const selectedCompany = companyListRes?.rows?.find(
-  //       ({ id }) => id === company_id
-  //     );
-  //     setValue("gst_in_1", selectedCompany.gst_no);
-  //   }
-  // }, [companyListRes, company_id, setValue]);
 
   useEffect(() => {
     if (companyId) {
@@ -390,6 +380,27 @@ const AddJobTaka = () => {
   const onCancelHandler = () => {
     setIsAlertOpen(false);
   };
+
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+    
+  }, [
+    total_meter, 
+    total_weight, 
+    total_taka, 
+    totalTaka, 
+    totalWeight, 
+    totalMeter
+  ])
 
   const onConfirmHandler = () => {
     const purchaseChallanDetailArr = Array.from(
@@ -867,7 +878,7 @@ const AddJobTaka = () => {
           </Row>
         ) : null}
 
-        <Divider />
+        <Divider style={{marginTop: 5}} />
 
         <FieldTable
           errors={errors}

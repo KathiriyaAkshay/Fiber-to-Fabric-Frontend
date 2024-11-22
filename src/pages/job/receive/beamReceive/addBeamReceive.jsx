@@ -230,11 +230,6 @@ const AddBeamReceive = () => {
     enabled: Boolean(companyId),
   });
 
-  useEffect(() => {
-    console.log("Last beam number", lastBeamNo);
-    
-  }, [lastBeamNo])
-
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {

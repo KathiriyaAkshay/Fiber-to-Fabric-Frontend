@@ -843,3 +843,13 @@ input:read-only {
 .beam-details-highlight-div{
   background-color: #ffe9e9 !important;
 }
+
+.bill-option-card{
+  .ant-card-body{
+    padding: 0px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    padding-top: 15px !important;
+    padding-bottom: 15px !important;
+  }
+}
