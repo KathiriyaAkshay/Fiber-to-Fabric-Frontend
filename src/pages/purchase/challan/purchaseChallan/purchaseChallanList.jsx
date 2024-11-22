@@ -28,6 +28,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 //   getPDFTitleContent,
 // } from "../../../../lib/pdf/userPdf";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
+import moment from "moment";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
@@ -63,6 +64,11 @@ const PurchaseChallanList = () => {
   const debouncedSupplier = useDebounce(supplier, 500);
   //   const debouncedSupplierCompany = useDebounce(supplierCompany, 500);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
 
   const [purchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
     isModalOpen: false,
@@ -519,6 +525,7 @@ const PurchaseChallanList = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -531,6 +538,7 @@ const PurchaseChallanList = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 

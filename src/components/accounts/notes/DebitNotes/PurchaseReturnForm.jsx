@@ -264,7 +264,6 @@ const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
   const queryClient = useQueryClient();
 
   function disabledFutureDate(current) {
-    // Disable dates after today
     return current && current > moment().endOf("day");
   }
 
