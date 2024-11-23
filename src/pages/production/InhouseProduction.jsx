@@ -35,12 +35,11 @@ import ViewProductionDetailModal from "../../components/production/ViewProductio
 import DeleteProduction from "../../components/production/DeleteProduction";
 import ProductionQrModal from "../../components/production/ProductionQrModal";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-// import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../api/hooks/auth";
 import useDebounce from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
 import { getCurrentFinancialYearDates } from "../../utils/date";
 import dayjs from "dayjs";
+import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
@@ -201,7 +200,6 @@ const InhouseProduction = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ productionList });
 
   function navigateToAdd() {
     navigate("/production/add-new-production");

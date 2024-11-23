@@ -34,6 +34,7 @@ import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
 import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
 import { disabledFutureDate } from "../../utils/date";
 import AlertModal from "../../components/common/modal/alertModal";
+import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
 
 const OpenProduction = () => {
   const [form] = Form.useForm();
@@ -263,6 +264,28 @@ const OpenProduction = () => {
     party_id,
     quality_id,
   } = watch();
+
+  const { data: loadedMachineList, isLoading: isLoadingLoadedMachineNo } =
+    useQuery({
+      queryKey: [
+        "loaded",
+        "machine",
+        "list",
+        { company_id: companyId, machine_name },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getLoadedMachineListRequest({
+            params: { company_id: companyId, machine_name },
+          });
+
+          const noOfMachine = res.data?.data?.machineDetail?.no_of_machines;
+          return Array.from({ length: noOfMachine }, (_, index) => index + 1);
+        }
+      },
+    enabled: Boolean(companyId),
+    initialData: [],
+  });
 
   // Fetch last production taka number fetch
   const { data: productionLastTaka } = useQuery({
@@ -1231,6 +1254,7 @@ const OpenProduction = () => {
               setTotalWeight={setTotalWeight}
               totalTaka={totalTaka}
               setTotalTaka={setTotalTaka}
+              loadedMachineList = {loadedMachineList}
             />
           )}
         </div>
