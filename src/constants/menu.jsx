@@ -244,7 +244,7 @@ export const menubarOptionsList = [
             className="text-current no-underline hover:text-current"
             to="production/inhouse-production"
           >
-            Inhouse Production
+            In-House Production
           </Link>
         ),
       },

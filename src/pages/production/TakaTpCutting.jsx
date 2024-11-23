@@ -8,6 +8,7 @@ import {
   Space,
   Spin,
   Typography,
+  Tag,
 } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { usePagination } from "../../hooks/usePagination";
@@ -79,7 +80,7 @@ const TakaTpCutting = () => {
     },
     {
       title: "Sr.No",
-      dataIndex: "sr_no",
+      dataIndex: "sr_number",
       key: "sr_no",
     },
     {
@@ -98,11 +99,31 @@ const TakaTpCutting = () => {
       title: "From Taka",
       dataIndex: "from_taka",
       key: "from_taka",
+      render: (text, record) => {
+        return(
+          <div>
+            <div style = {{
+              fontWeight: 600
+            }}><Tag color="purple">{text}</Tag></div>
+            <div>( {record?.from_taka_meter} - {record?.total_meter} ) = {+record?.from_taka_meter - +record?.total_meter}</div>
+          </div>
+        )
+      }
     },
     {
       title: "To Taka",
       dataIndex: "to_taka",
       key: "to_taka",
+      render: (text, record) => {
+        return(
+          <div>
+            <div style = {{
+              fontWeight: 600
+            }}><Tag color="cyan">{text}</Tag></div>
+            <div>( {record?.to_taka_meter} + {record?.total_meter} ) = {+record?.to_taka_meter + +record?.total_meter}</div>
+          </div>
+        )
+      }
     },
     {
       title: "Meter (Pis)",
