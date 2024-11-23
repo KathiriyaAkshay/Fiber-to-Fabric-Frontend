@@ -19,6 +19,7 @@ import { getTakaCuttingListRequest } from "../../api/requests/production/takaTpC
 import DeleteTakaTpCutting from "../../components/production/DeleteTakaTpCutting";
 import useDebounce from "../../hooks/useDebounce";
 import dayjs from "dayjs";
+import { CUT_TAG_COLOR, SAMPLE_CUTTING_TAG_COLOR, TAKA_IP_TAG_COLOR } from "../../constants/tag";
 
 const TakaTpCutting = () => {
   const navigate = useNavigate();
@@ -147,6 +148,25 @@ const TakaTpCutting = () => {
       key: "remark",
     },
     {
+      title: "Status", 
+      dataIndex: "", 
+      render: (text, record) => {
+        if (record?.is_taka_tp){
+          return(
+            <Tag color={TAKA_IP_TAG_COLOR}>TAKA I/P</Tag>
+          )
+        } else if (record?.is_sample_cutting){
+          return(
+            <Tag color={SAMPLE_CUTTING_TAG_COLOR}>Sample Cutting</Tag>
+          )
+        } else {
+          return(
+            <Tag color={CUT_TAG_COLOR}>Cut</Tag>
+          )
+        }
+      }
+    },
+    {
       title: "Action",
       render: (details) => {
         return (
@@ -215,6 +235,7 @@ const TakaTpCutting = () => {
                 <Table.Summary.Cell index={0} align="left">
                   <b>{totalCutPis}</b>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
