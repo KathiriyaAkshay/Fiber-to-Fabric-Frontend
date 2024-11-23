@@ -26,6 +26,7 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import { getPurchaseTakaDetailListRequest } from "../../../api/requests/purchase/purchaseTaka";
 import { disabledFutureDate } from "../../../utils/date";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
+import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../constants/tag";
 
 const PurchaseTakaList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -257,21 +258,27 @@ const PurchaseTakaList = () => {
       title: "Sale Ch.No.",
       dataIndex: "total_taka",
       render: (text, record) => {
-        return(
-          <div>-</div>
-        )
-      }
-    },
+        if (record?.sale_challan?.challan_no !== undefined) {
+          return(
+            <Tag color = {SALE_CHALLAN_INFO_TAG_COLOR}>
+                Sale Chal - {record?.sale_challan?.challan_no || "-"}
+            </Tag>
+          ) 
+        }
+        return <div>-</div>; 
+      },
+    }
+    ,
     {
       title: "Status",
       render: (details) => {
-        return details.is_returned ? (
-          <Tag color="red">Returned</Tag>
-        ) : details.in_stock ? (
-          <Tag color="green">In Stock</Tag>
-        ) : (
+        return details.sale_challan_id != null ? (
           <Tag color="red">Sold</Tag>
-        );
+        ) :  details.is_returned ?(
+          <Tag color="red">Returned</Tag>
+        ) : details.in_stock ?(
+          <Tag color="green">In-Stock</Tag>
+        ):null;
       },
     },
     {
@@ -309,6 +316,10 @@ const PurchaseTakaList = () => {
                 {
                   label: "Purchase Challan No",
                   value: details?.purchase_taka_challan?.challan_no,
+                },
+                {
+                  label: "Sale Challan No", 
+                  value: details?.sale_challan?.challan_no || "-"
                 },
                 {
                   label: "Supplier Name",

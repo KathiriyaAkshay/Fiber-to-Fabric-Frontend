@@ -190,7 +190,13 @@ const StockPurchaseTaka = () => {
           <>
             <Tag color="green">In Stock</Tag>
           </>
-        ) : (
+        ) : record?.sale_challan_id !== null?
+          (
+            <>
+              <Tag color="red">Sale</Tag>
+            </>
+          )
+        :(
           <>
             <Tag color="red">Sale</Tag>
           </>
