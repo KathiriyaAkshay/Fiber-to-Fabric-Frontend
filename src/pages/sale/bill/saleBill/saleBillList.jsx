@@ -64,7 +64,6 @@ const SaleBillList = () => {
   const [isGrayValue, setIsGrayValue] = useState("cash");
   const [invoiceFilter, setInvoiceFilter] = useState();
   const [quality, setQuality] = useState();
-
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [payment, setPayment] = useState();
@@ -72,14 +71,13 @@ const SaleBillList = () => {
   const [toBill, setToBill] = useState("");
   const [orderNo, setOrderNo] = useState("");
 
-  // company_id, is_paid,
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncePayment = useDebounce(payment, 500);
 
+  
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
