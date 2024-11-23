@@ -40,7 +40,6 @@ import useDebounce from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
 import { getCurrentFinancialYearDates } from "../../utils/date";
 import dayjs from "dayjs";
-import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
@@ -642,7 +641,7 @@ const InhouseProduction = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
-              // disabledDate={disabledFutureDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 

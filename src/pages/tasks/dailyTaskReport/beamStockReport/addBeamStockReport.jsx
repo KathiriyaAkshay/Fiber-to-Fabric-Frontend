@@ -241,16 +241,27 @@ const AddBeamStockReport = () => {
 
     if (data.beam_type === "pasarela (primary)") {
       const formData = [];
+      const secondary_beam_ids = [] ; 
+      const hasError = false ; 
+
       selectedNonPasarela.forEach((index) => {
         const secondaryBeamNo = data[`secondary_beam_no_${index}`];
-
+        secondary_beam_ids.push(secondaryBeamNo) ; 
         formData.push({
           beam_load_id: nonPasarelaList[index].id,
           secondary_loaded_beam_id: secondaryBeamNo,
         });
       });
+    
+      if (secondary_beam_ids?.length !== [...new Set(secondary_beam_ids)]?.length){
+        message.error("Please select a different secondary beam for each primary beam") ; 
+        hasError = true; 
+        return ; 
+      }
 
-      await addPasarelaBeamStockReport(formData);
+      if (!hasError){
+        await addPasarelaBeamStockReport(formData);
+      }
     }
   
   }
@@ -773,11 +784,6 @@ const AddBeamStockReport = () => {
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
             const item = getTakaDetailsObject(row);
-            console.log("Beam object information");
-            console.log(item);
-            console.log(item?.supplier_beam_no  );
-            
-            
             if (item !== null) {
               return (
                 <PasarelaFormRow
@@ -982,6 +988,7 @@ const FormRow = ({
               type="primary"
               onClick={deleteFieldRow.bind(null, fieldNumber)}
               className="flex-none"
+              danger
             />
           </Col>
         )}
