@@ -19,6 +19,7 @@ import { getSundryDebtorsService } from "../../../api/requests/accounts/sundryDe
 import { Link } from "react-router-dom";
 import useDebounce from "../../../hooks/useDebounce";
 import DebitorNotesModal from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/DebitorNotesModal";
+import ViewDebitorBill from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/ViewDebitorBill";
 
 const selectionOption = [
   { label: "Show all bills", value: "show_all_bills" },
@@ -374,6 +375,19 @@ const TableWithAccordion = ({ data, company }) => {
     });
   };
 
+  const [debitorBillModal, setDebitorBillModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+  });
+  const handleCloseModal = () => {
+    setDebitorBillModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
+  };
+
   const TOTAL = useMemo(() => {
     if (data && data?.bills && data?.bills?.length) {
       let meter = 0;
@@ -440,7 +454,18 @@ const TableWithAccordion = ({ data, company }) => {
                 <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td>
                 {/* <td>0</td> */}
                 <td>
-                  <Button type="primary" icon={<EyeOutlined />} />
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      setDebitorBillModal({
+                        isModalOpen: true,
+                        details: null,
+                        mode: "VIEW",
+                      });
+                    }}
+                  >
+                    <EyeOutlined />
+                  </Button>
                 </td>
                 <td>{/* Receive payment field */}</td>
                 <td>{/* Cash int field */}</td>
@@ -478,6 +503,15 @@ const TableWithAccordion = ({ data, company }) => {
         <td></td>
         <td></td>
       </tr>
+
+      {debitorBillModal?.isModalOpen && (
+        <ViewDebitorBill
+          MODE={"VIEW"}
+          details={debitorBillModal?.details}
+          handleCloseModal={handleCloseModal}
+          isModelOpen={debitorBillModal?.isModalOpen}
+        />
+      )}
     </>
   );
 };
