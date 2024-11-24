@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Table,
   Select,
@@ -9,6 +9,7 @@ import {
   Typography,
   Spin,
   Space,
+  Tag
 } from "antd";
 import { EditOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,8 @@ import { getPruchaseReturnListRequest } from "../../../../api/requests/purchase/
 import ViewPurchaseReturnChallanInfo from "../../../../components/purchase/purchaseReturn/ViewPurchaseReturnChallan";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import DebitNote from "../../../../components/purchase/purchaseReturn/DebitNote";
+import moment from "moment/moment";
+import ParticularPurchaseReturnInfo from "../../../../components/purchase/purchaseReturn/particularPurchaseReturnInfo";
 
 const PurchaseReturnList = () => {
   const navigate = useNavigate();
@@ -36,6 +39,7 @@ const PurchaseReturnList = () => {
   const [challanNo, setChallanNo] = useState("");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [data, setData] = useState([]) ; 
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
@@ -121,6 +125,41 @@ const PurchaseReturnList = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  useEffect(() => {
+    if (purchaseReturnList){
+      
+      const generateColor = (index) => {
+        const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9']; // Example color array
+        return colors[index % colors.length];
+      };
+
+      const result = purchaseReturnList.rows?.flatMap((item, itemIndex) => {
+        const groupedDetails = {};
+        const details = item.purchase_taka_challan.purchase_challan_details;
+      
+        // Grouping the details by purchased_return_id
+        details.forEach(detail => {
+          const prId = detail.purchased_return_id;
+          if (!groupedDetails[prId]) {
+            groupedDetails[prId] = [];
+          }
+          groupedDetails[prId].push(detail);
+        });
+      
+        return Object.entries(groupedDetails).map(([prId, prDetails], index) => {
+          const newItem = JSON.parse(JSON.stringify(item));
+          newItem.new_challan_details = prDetails;
+          newItem.color = generateColor(itemIndex);
+          return newItem;
+        });
+      });
+
+      setData(result);
+      // onShowSizeChange(0, result?.length +1);
+      
+    }
+  }, [purchaseReturnList])
 
   function navigateToUpdate(id) {
     navigate(`/job/challan/rework-challan/update/${id}`);
@@ -219,6 +258,11 @@ const PurchaseReturnList = () => {
       title: "Challan No",
       dataIndex: ["purchase_taka_challan", "challan_no"],
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <Tag color = {record?.color}>{text}</Tag>
+        )
+      }
     },
     {
       title: "Quality",
@@ -244,11 +288,27 @@ const PurchaseReturnList = () => {
     },
     {
       title: "Return Meter",
-      render: (details) => details?.purchase_taka_challan?.total_meter,
+      render: (text, record) => {
+        let data = record?.new_challan_details ; 
+        let return_meter = 0 ;
+        data?.map((element) => {
+          return_meter += +element?.meter ; 
+        })
+        return(
+          <div style={{
+            color: "red", 
+            fontWeight: 600
+          }}>{return_meter}</div>
+        )
+      },
     },
     {
       title: "Total Taka",
       render: (details) => details?.purchase_taka_challan?.total_taka,
+    },
+    {
+      title: "Total Meter",
+      render: (details) => details?.purchase_taka_challan?.total_meter 
     },
     {
       title: "Return Date",
@@ -260,7 +320,7 @@ const PurchaseReturnList = () => {
       render: (details) => {
         return (
           <Space>
-            <ViewPurchaseReturnChallanInfo details={details} />
+            <ParticularPurchaseReturnInfo details={details} />
 
             <Button
               onClick={() => {
@@ -291,7 +351,7 @@ const PurchaseReturnList = () => {
 
     return (
       <Table
-        dataSource={purchaseReturnList?.rows || []}
+        dataSource={data || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
