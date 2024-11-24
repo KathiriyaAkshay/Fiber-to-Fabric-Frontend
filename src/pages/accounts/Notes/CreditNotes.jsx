@@ -39,7 +39,6 @@ const CREDIT_NOTE_TYPES = [
 const CreditNotes = () => {
   const { companyId } = useContext(GlobalContext);
 
-
   const [creditNoteTypes, setCreditNoteTypes] = useState("sale_return");
   const [party, setParty] = useState(null);
   const [quality, setQuality] = useState(null);
@@ -362,11 +361,19 @@ const CreditNotes = () => {
             <Typography.Text className="whitespace-nowrap">
               From
             </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={fromDate}
+              onChange={setFromDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={toDate}
+              onChange={setToDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
         </Flex>
 

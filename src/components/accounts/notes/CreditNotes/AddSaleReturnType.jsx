@@ -134,6 +134,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     },
     enabled: Boolean(companyId),
   });
+  console.log({ saleChallanList });
 
   const { data: saleChallanData } = useQuery({
     queryKey: [
@@ -207,7 +208,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       open={isAddModalOpen}
       closeIcon={<CloseOutlined className="text-white" />}
       width={"75%"}
-      title = "Credit Note - Sale Return"
+      title="Credit Note - Sale Return"
       onCancel={() => {
         setIsAddModalOpen(false);
         setSelectedSaleChallan([]);
@@ -240,18 +241,21 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             <tr>
               <td colSpan={2} width={"33.33%"}>
                 <div className="year-toggle">
-                  <Typography.Text style={{fontSize: 20}}>
+                  <Typography.Text style={{ fontSize: 20 }}>
                     Credit Note No.
                   </Typography.Text>
                   <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
                 </div>
               </td>
 
-              <td colSpan={2} width={"33.33%"} >
-                <div className="year-toggle" style={{
-                paddingLeft: 10,
-                paddingRight: 10
-              }}>
+              <td colSpan={2} width={"33.33%"}>
+                <div
+                  className="year-toggle"
+                  style={{
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                  }}
+                >
                   <label style={{ textAlign: "left" }}>Return Date:</label>
                   <DatePicker
                     value={returnDate}
@@ -263,10 +267,13 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </td>
 
               <td colSpan={2} width={"33.33%"}>
-                <div className="year-toggle" style = {{
-                  paddingLeft: 10, 
-                  paddingRight: 10
-                }}>
+                <div
+                  className="year-toggle"
+                  style={{
+                    paddingLeft: 10,
+                    paddingRight: 10,
+                  }}
+                >
                   <Radio.Group
                     value={yearValue}
                     onChange={(e) => setYearValue(e.target.value)}
@@ -302,38 +309,71 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   />
                 </div>
               </td>
-
             </tr>
             <tr width="50%">
               <td colSpan={3}>
-                <div className="credit-note-info-title">GSTIN/UIN:</div>
-                <div className="credit-note-info-title">State Name:</div>
-                <div className="credit-note-info-title">PinCode:</div>
-                <div className="credit-note-info-title">Contact:</div>
-                <div className="credit-note-info-title">Email:</div>
+                <div className="credit-note-info-title">
+                  <span>GSTIN/UIN:</span>
+                </div>
+                <div className="credit-note-info-title">
+                  <span>State Name:</span>
+                </div>
+                <div className="credit-note-info-title">
+                  <span>PinCode:</span>
+                </div>
+                <div className="credit-note-info-title">
+                  <span>Contact:</span>
+                </div>
+                <div className="credit-note-info-title">
+                  <span>Email:</span>
+                </div>
               </td>
               <td colSpan={3}>
-                <div className="credit-note-info-title">Party: <span style={{
-                  fontWeight: 400, 
-                  marginLeft:10
-                }}>{String(`${saleChallanData?.saleChallan?.party?.first_name} ${saleChallanData?.saleChallan?.party?.last_name}`).toUpperCase()}</span></div>
-                <div className="credit-note-info-title">GSTIN/UIN: 
-                  <span style={{fontWeight: 400, marginLeft: 10}}>
-                    {saleChallanData?.saleChallan?.party?.party?.company_gst_number}
+                <div className="credit-note-info-title">
+                  <span>Party:</span>{" "}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      marginLeft: 10,
+                    }}
+                  >
+                    {String(
+                      `${saleChallanData?.saleChallan?.party?.first_name} ${saleChallanData?.saleChallan?.party?.last_name}`
+                    ).toUpperCase()}
                   </span>
                 </div>
-                <div className="credit-note-info-title">Order No: 
-                  <span style={{fontWeight: 400, marginLeft: 10}}>
-                  {saleChallanData?.saleChallan?.gray_order?.order_no}
+                <div className="credit-note-info-title">
+                  <span>GSTIN/UIN:</span>
+                  <span style={{ fontWeight: 400, marginLeft: 10 }}>
+                    {
+                      saleChallanData?.saleChallan?.party?.party
+                        ?.company_gst_number
+                    }
                   </span>
                 </div>
-                <div className="credit-note-info-title">Quality Name:
-                  <span style={{
-                    fontWeight: 400, 
-                    marginLeft: 10
-                  }}>
-                    {saleChallanData?.saleChallan?.inhouse_quality?.quality_name} (
-                      {saleChallanData?.saleChallan?.inhouse_quality?.quality_weight}
+                <div className="credit-note-info-title">
+                  <span>Order No:</span>
+                  <span style={{ fontWeight: 400, marginLeft: 10 }}>
+                    {saleChallanData?.saleChallan?.gray_order?.order_no}
+                  </span>
+                </div>
+                <div className="credit-note-info-title">
+                  <span>Quality Name:</span>
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      marginLeft: 10,
+                    }}
+                  >
+                    {
+                      saleChallanData?.saleChallan?.inhouse_quality
+                        ?.quality_name
+                    }{" "}
+                    (
+                    {
+                      saleChallanData?.saleChallan?.inhouse_quality
+                        ?.quality_weight
+                    }
                     )
                   </span>
                 </div>
@@ -344,15 +384,16 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
 
         {saleChallanData ? (
           <>
-            <div style={{
-              paddingTop: 20, 
-              borderLeft: "1px solid #ccc", 
-              borderRight: "1px solid #ccc"
-            }}>
+            <div
+              style={{
+                paddingTop: 20,
+                borderLeft: "1px solid #ccc",
+                borderRight: "1px solid #ccc",
+              }}
+            >
               <Row
                 className="border-0 border-b border-solid !m-0"
-                style={{ borderBottom: 0,
-                }}
+                style={{ borderBottom: 0 }}
               >
                 <Col span={1} style={{ textAlign: "center" }}>
                   <strong></strong>
@@ -381,12 +422,13 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </Row>
               {TakaArray?.map((element, index) => {
                 const isReturned =
-                saleChallanData?.saleChallan?.sale_challan_details[index]?.is_returned;
-   
-                const isReturned2 =
-                saleChallanData?.saleChallan?.sale_challan_details[index + 12]
+                  saleChallanData?.saleChallan?.sale_challan_details[index]
                     ?.is_returned;
-   
+
+                const isReturned2 =
+                  saleChallanData?.saleChallan?.sale_challan_details[index + 12]
+                    ?.is_returned;
+
                 return (
                   <Row
                     key={index}
@@ -413,23 +455,37 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     >
                       {index + 1}
                     </Col>
-                    
-                    <Col span={5} style={{ textAlign: "center", color: isReturned?"red":"inherit" }}>
+
+                    <Col
+                      span={5}
+                      style={{
+                        textAlign: "center",
+                        color: isReturned ? "red" : "inherit",
+                      }}
+                    >
                       {
-                        saleChallanData?.saleChallan?.sale_challan_details[index]
-                          ?.taka_no
+                        saleChallanData?.saleChallan?.sale_challan_details[
+                          index
+                        ]?.taka_no
                       }
                       {isReturned ? "(return)" : ""}
                     </Col>
-                    
-                    <Col span={5} style={{ textAlign: "center", color: isReturned?"red":"inherit"  }}>
+
+                    <Col
+                      span={5}
+                      style={{
+                        textAlign: "center",
+                        color: isReturned ? "red" : "inherit",
+                      }}
+                    >
                       {
-                        saleChallanData?.saleChallan?.sale_challan_details[index]
-                          ?.meter
+                        saleChallanData?.saleChallan?.sale_challan_details[
+                          index
+                        ]?.meter
                       }
                     </Col>
-                    
-                    <Col span={1} style={{ textAlign: "center"}}>
+
+                    <Col span={1} style={{ textAlign: "center" }}>
                       {saleChallanData?.saleChallan?.sale_challan_details[
                         index + 12
                       ]?.is_returned === false && (
@@ -439,7 +495,9 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                               index + 12
                             ]?.id
                           )}
-                          onChange={(e) => handleSelectSaleChallan(e, index + 12)}
+                          onChange={(e) =>
+                            handleSelectSaleChallan(e, index + 12)
+                          }
                         />
                       )}
                     </Col>
@@ -449,7 +507,13 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     >
                       {index + 13}
                     </Col>
-                    <Col span={5} style={{ textAlign: "center", color: isReturned2?"red":"inherit"  }}>
+                    <Col
+                      span={5}
+                      style={{
+                        textAlign: "center",
+                        color: isReturned2 ? "red" : "inherit",
+                      }}
+                    >
                       {
                         saleChallanData?.saleChallan?.sale_challan_details[
                           index + 12
@@ -457,7 +521,13 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       }
                       {isReturned2 ? "(return)" : ""}
                     </Col>
-                    <Col span={5} style={{ textAlign: "center",  color: isReturned2?"red":"inherit" }}>
+                    <Col
+                      span={5}
+                      style={{
+                        textAlign: "center",
+                        color: isReturned2 ? "red" : "inherit",
+                      }}
+                    >
                       {
                         saleChallanData?.saleChallan?.sale_challan_details[
                           index + 12
@@ -469,12 +539,14 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               })}
             </div>
 
-            <Row className="p-3 border-0" 
-              style={{ 
-              borderTop: "1px solid #ccc", 
-              borderLeft: "1px solid #ccc", 
-              borderRight: "1px solid #ccc" 
-            }}>
+            <Row
+              className="p-3 border-0"
+              style={{
+                borderTop: "1px solid #ccc",
+                borderLeft: "1px solid #ccc",
+                borderRight: "1px solid #ccc",
+              }}
+            >
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={5} style={{ textAlign: "center" }}></Col>
@@ -498,9 +570,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               {!saleChallanData ? (
                 <tr>
                   <td colSpan={2}>
-                    <Empty
-                      description = "No Taka Found"
-                    />
+                    <Empty description="No Taka Found" />
                   </td>
                 </tr>
               ) : null}
@@ -510,12 +580,18 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   Total Taka:{" "}
                   {saleChallanData?.saleChallan?.sale_challan_details?.length}
                 </td>
-                <td className="total-information-data">Total Meter: {totalMeter}</td>
+                <td className="total-information-data">
+                  Total Meter: {totalMeter}
+                </td>
               </tr>
 
               <tr>
-                <td className="return-information-data">Return Taka: {selectedSaleChallan?.length || 0}</td>
-                <td className="return-information-data">Return Meter: {totalReturnMeter || 0}</td>
+                <td className="return-information-data">
+                  Return Taka: {selectedSaleChallan?.length || 0}
+                </td>
+                <td className="return-information-data">
+                  Return Meter: {totalReturnMeter || 0}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -528,14 +604,18 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             width: "100%",
             justifyContent: "flex-end",
             gap: "1rem",
-            marginBottom: 10, 
+            marginBottom: 10,
           }}
         >
-          <Button type="primary" onClick={submitHandler} loading={isPending} style={{marginRight: 10}}>
+          <Button
+            type="primary"
+            onClick={submitHandler}
+            loading={isPending}
+            style={{ marginRight: 10 }}
+          >
             Sales Return
           </Button>
         </Flex>
-
       </div>
     </Modal>
   );

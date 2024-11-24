@@ -12,7 +12,6 @@ function Navbar() {
       justify="space-between"
       align="center"
       className="sticky top-0 z-10 px-4 py-2 bg-primary"
-      style={{ zIndex: 9999 }}
     >
       <Flex gap={"20px"} align="center" className="w-full">
         <img src={topbarLogo} alt="logo" className="h-8" />
