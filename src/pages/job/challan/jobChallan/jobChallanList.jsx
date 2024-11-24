@@ -15,6 +15,7 @@ import {
   FilePdfOutlined,
   FileTextOutlined,
   PlusCircleOutlined,
+  RedoOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -356,6 +357,17 @@ const JobChallanList = () => {
             >
               <FileTextOutlined />
             </Button>
+            <Button
+              onClick={() => {
+                localStorage.setItem(
+                  "SALE_CHALLAN_ADD",
+                  JSON.stringify({ model: "job", id: details.id })
+                );
+                navigate("/sales/challan/sale-challan/add");
+              }}
+            >
+              <RedoOutlined />
+            </Button>
           </Space>
         );
       },
@@ -414,7 +426,7 @@ const JobChallanList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-              </Table.Summary.Row>  
+              </Table.Summary.Row>
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>
                   Grand <br />

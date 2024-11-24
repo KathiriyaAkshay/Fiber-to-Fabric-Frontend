@@ -30,11 +30,13 @@ import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import {
   createSaleChallanRequest,
-  getSaleLastChallanNumberRequest,
+  // getSaleLastChallanNumberRequest,
 } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
 import { disabledFutureDate } from "../../../../utils/date";
+import { getPurchaseTakaByIdRequest } from "../../../../api/requests/purchase/purchaseTaka";
+import { getJobTakaByIdRequest } from "../../../../api/requests/job/jobTaka";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -59,6 +61,7 @@ const addJobTakaSchemaResolver = yupResolver(
 const AddSaleChallan = () => {
   const queryClient = useQueryClient();
   // const [fieldArray, setFieldArray] = useState([0]);
+  const SALE_CHALLAN_ADD = JSON.parse(localStorage.getItem("SALE_CHALLAN_ADD"));
 
   const [saleChallanTypes, setSaleChallanTypes] = useState([]);
 
@@ -78,6 +81,7 @@ const AddSaleChallan = () => {
   //   const { data: user } = useCurrentUser();
   const { companyId, companyListRes } = useContext(GlobalContext);
   function goBack() {
+    localStorage.removeItem("SALE_CHALLAN_ADD");
     navigate(-1);
   }
 
@@ -108,7 +112,6 @@ const AddSaleChallan = () => {
   });
 
   async function onSubmit(data) {
-
     // Sale Challan details array
     const saleChallanDetailArr = Array.from(
       { length: activeField },
@@ -119,13 +122,13 @@ const AddSaleChallan = () => {
     let hasError = 0;
 
     // Purchase taka details
-    let purchased_taka_number = [] ; 
- 
+    let purchased_taka_number = [];
+
     // Job taka details
-    let job_taka_number = [] ; 
+    let job_taka_number = [];
 
     // Sale taka details
-    let sale_taka_number = [] ; 
+    let sale_taka_number = [];
 
     saleChallanDetailArr.forEach((field, index) => {
       const takaNo = data[`taka_no_${field}`];
@@ -139,8 +142,7 @@ const AddSaleChallan = () => {
           message: "Taka No required.",
         });
         hasError = 1;
-        return ;
-        
+        return;
       }
       if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -149,7 +151,7 @@ const AddSaleChallan = () => {
           message: "Meter required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
       if ((isNaN(weight) || weight === "") && meter !== "" && takaNo !== "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -158,7 +160,7 @@ const AddSaleChallan = () => {
           message: "Weight required.",
         });
         hasError = 1;
-        return ;
+        return;
       }
 
       if (
@@ -166,16 +168,15 @@ const AddSaleChallan = () => {
         data[`meter_${field}`] != "" &&
         data[`weight_${field}`] != ""
       ) {
-
         let model = data[`model_${field}`];
-        let taka_number = data[`taka_no_${field}`] ; 
+        let taka_number = data[`taka_no_${field}`];
 
-        if (model == "purchase/trading"){
-          purchased_taka_number.push(taka_number) ;
-        } else if (model == "taka(inhouse)"){
-          sale_taka_number.push(taka_number)
+        if (model == "purchase/trading") {
+          purchased_taka_number.push(taka_number);
+        } else if (model == "taka(inhouse)") {
+          sale_taka_number.push(taka_number);
         } else {
-          job_taka_number.push(taka_number) ; 
+          job_taka_number.push(taka_number);
         }
 
         sale_challan_detail.push({
@@ -223,22 +224,31 @@ const AddSaleChallan = () => {
         sale_challan_details: sale_challan_detail,
       };
 
-      if (purchased_taka_number?.length !== [...new Set(purchased_taka_number)]?.length){
-        message.error("Please provide a unique taka number of PURCHASE to proceed with the sale") ; 
-        hasError = true ; 
-        return ; 
+      if (
+        purchased_taka_number?.length !==
+        [...new Set(purchased_taka_number)]?.length
+      ) {
+        message.error(
+          "Please provide a unique taka number of PURCHASE to proceed with the sale"
+        );
+        hasError = true;
+        return;
       }
 
-      if (sale_taka_number?.length !== [...new Set(sale_taka_number)]?.length){
-        message.error("Please provide a unique taka number of SALE to proceed with the sale") ; 
-        hasError = true ; 
-        return ; 
+      if (sale_taka_number?.length !== [...new Set(sale_taka_number)]?.length) {
+        message.error(
+          "Please provide a unique taka number of SALE to proceed with the sale"
+        );
+        hasError = true;
+        return;
       }
 
-      if (job_taka_number?.length !== [...new Set(job_taka_number)]?.length){
-        message.error("Please provide a unique taka number of JOB to proceed with the sale") ; 
-        hasError = true ; 
-        return ; 
+      if (job_taka_number?.length !== [...new Set(job_taka_number)]?.length) {
+        message.error(
+          "Please provide a unique taka number of JOB to proceed with the sale"
+        );
+        hasError = true;
+        return;
       }
 
       if (hasError === 0) {
@@ -298,39 +308,39 @@ const AddSaleChallan = () => {
     quality_id,
     total_meter,
     total_weight,
-    total_taka
+    total_taka,
   } = watch();
 
   // Get last challan number for cash order
-  const { data: lastChallanNumber, isLoading: lastChallanNumberLoading } =
-    useQuery({
-      queryKey: [
-        "sale",
-        "challan",
-        "last-invoice-no",
-        { company_id: companyId, is_grey: is_gray },
-      ],
-      queryFn: async () => {
-        if (is_gray == "false") {
-          const res = await getSaleLastChallanNumberRequest({
-            params: { company_id: companyId, is_gray: "0" },
-          });
+  // const { data: lastChallanNumber, isLoading: lastChallanNumberLoading } =
+  //   useQuery({
+  //     queryKey: [
+  //       "sale",
+  //       "challan",
+  //       "last-invoice-no",
+  //       { company_id: companyId, is_grey: is_gray },
+  //     ],
+  //     queryFn: async () => {
+  //       if (is_gray == "false") {
+  //         const res = await getSaleLastChallanNumberRequest({
+  //           params: { company_id: companyId, is_gray: "0" },
+  //         });
 
-          let challan_number =
-            res?.data?.data?.saleChallan?.challan_no || "CH-1";
-          challan_number = challan_number.split("-");
-          let new_challan_number = 0;
+  //         let challan_number =
+  //           res?.data?.data?.saleChallan?.challan_no || "CH-1";
+  //         challan_number = challan_number.split("-");
+  //         let new_challan_number = 0;
 
-          if (challan_number?.length == 1) {
-            new_challan_number = `CH-${Number(challan_number[0]) + 1}`;
-          } else {
-            new_challan_number = `CH-${Number(challan_number[1]) + 1}`;
-          }
-          setValue("challan_no", new_challan_number);
-        }
-      },
-      enabled: Boolean(companyId && is_gray),
-  });
+  //         if (challan_number?.length == 1) {
+  //           new_challan_number = `CH-${Number(challan_number[0]) + 1}`;
+  //         } else {
+  //           new_challan_number = `CH-${Number(challan_number[1]) + 1}`;
+  //         }
+  //         setValue("challan_no", new_challan_number);
+  //       }
+  //     },
+  //     enabled: Boolean(companyId && is_gray),
+  //   });
 
   // Dropdown vechicle list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -373,24 +383,30 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Dropdown greyorder list
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: [
-        "party",
-        "list",
-        { company_id: companyId, order_type: "taka(inhouse)" },
-      ],
+      queryKey: ["party", "list", { company_id: companyId }],
       queryFn: async () => {
+        const params = {
+          company_id: companyId,
+        };
+        if (SALE_CHALLAN_ADD && SALE_CHALLAN_ADD?.model === "purchase") {
+          params.order_type = "purchase/trading";
+        } else if (SALE_CHALLAN_ADD && SALE_CHALLAN_ADD?.model === "job") {
+          params.order_type = "job";
+        } else {
+          params.order_type = "taka(inhouse)";
+        }
         const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "taka(inhouse)" },
+          params,
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Dropdown supplier list
   const {
@@ -424,9 +440,11 @@ const AddSaleChallan = () => {
   }, [supplier_name, dropdownSupplierListRes, resetField]);
 
   useEffect(() => {
-    if (grayOrderListRes && gray_order_id) {
-      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      if (order){
+    if (grayOrderListRes && grayOrderListRes?.row?.length && gray_order_id) {
+      const order = grayOrderListRes?.row?.find(
+        ({ id }) => gray_order_id === id
+      );
+      if (order) {
         setSelectedOrder(order);
         setValue("total_meter", order.total_meter);
         setValue("total_taka", order.total_taka);
@@ -438,12 +456,13 @@ const AddSaleChallan = () => {
         setValue("broker_id", order.broker.id);
         setValue("quality_id", order.inhouse_quality.id);
         setValue("supplier_name", order.supplier_name);
-        setValue("delivery_address", order?.party?.party?.delivery_address);
-      }
 
-      // setPendingMeter(order.pending_meter);
-      // setPendingTaka(order.pending_taka);
-      // setPendingWeight(order.pending_weight);
+        setValue("delivery_address", order?.party?.party?.delivery_address);
+
+        // setPendingMeter(order.pending_meter);
+        // setPendingTaka(order.pending_taka);
+        // setPendingWeight(order.pending_weight);
+      }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -466,12 +485,16 @@ const AddSaleChallan = () => {
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
   // useEffect(() => {
-  //   if (grayOrderListRes && gray_order_id) {
-  //     const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+  //   if (grayOrderListRes && grayOrderListRes?.row?.length && gray_order_id) {
+  //     const order = grayOrderListRes?.row?.find(
+  //       ({ id }) => gray_order_id === id
+  //     );
 
-  //     setPendingMeter(+order.pending_meter - +totalMeter);
-  //     setPendingTaka(+order.pending_taka - +totalTaka);
-  //     setPendingWeight(+order.pending_weight - +totalWeight);
+  //     if (order) {
+  //       setPendingMeter(+order.pending_meter - +totalMeter);
+  //       setPendingTaka(+order.pending_taka - +totalTaka);
+  //       setPendingWeight(+order.pending_weight - +totalWeight);
+  //     }
   //   }
   // }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -521,25 +544,188 @@ const AddSaleChallan = () => {
     setTotalWeight(0);
   };
 
+  // *******************************************************************
+  // Code for sale challan from job or purchase.
+
+  const { data: purchaseDetails } = useQuery({
+    queryKey: [
+      "purchaseDetail",
+      "get",
+      { company_id: companyId, purchaseId: SALE_CHALLAN_ADD?.id },
+    ],
+    queryFn: async () => {
+      const res = await getPurchaseTakaByIdRequest({
+        id: SALE_CHALLAN_ADD?.id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(
+      companyId &&
+        SALE_CHALLAN_ADD?.id &&
+        SALE_CHALLAN_ADD?.model === "purchase"
+    ),
+  });
+
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined){
-      setPendingMeter(+total_meter - totalMeter) ; 
+    if (purchaseDetails) {
+      const {
+        challan_no,
+        delivery_address,
+        gst_in,
+        gst_state,
+        quality_id,
+        supplier_id,
+        total_meter,
+        total_taka,
+        total_weight,
+        supplier,
+        broker_id,
+        broker,
+        gray_order_id,
+        createdAt,
+        purchase_challan_details,
+      } = purchaseDetails;
+
+      setActiveField(purchase_challan_details.length + 1);
+      let purchaseChallanDetails = {};
+      let totalMeter = 0;
+      let totalWeight = 0;
+      purchase_challan_details.forEach((item, index) => {
+        purchaseChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
+        purchaseChallanDetails[`meter_${index + 1}`] = item.meter;
+        purchaseChallanDetails[`weight_${index + 1}`] = item.weight;
+        totalMeter += +item?.meter;
+        totalWeight += +item?.weight;
+      });
+
+      setTotalTaka(purchase_challan_details.length);
+      setTotalMeter(totalMeter);
+      setTotalWeight(totalWeight);
+      // setPendingMeter(+total_meter - totalMeter) ;
+      // setPendingWeight(+total_weight - totalWeight) ;
+      // setPendingTaka(+total_taka - purchase_challan_details?.length) ;
+
+      reset({
+        //   company_id,
+        challan_no,
+        delivery_address,
+        gst_in_1: gst_in,
+        // gst_in_2: gst_in,
+        gst_state: gst_state,
+        quality_id,
+        broker_id: broker_id,
+        broker_name: `${broker.first_name} ${broker.last_name}`,
+        supplier_id,
+        gray_order_id,
+        total_meter,
+        total_taka,
+        total_weight,
+        supplier_name: supplier.supplier_name,
+        challan_date: dayjs(createdAt),
+        type: ["purchase/trading"],
+        ...purchaseChallanDetails,
+      });
     }
-    if (total_weight !== "" && total_weight !== undefined){
-      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+  }, [purchaseDetails, reset]);
+
+  const { data: jobTakaDetails } = useQuery({
+    queryKey: [
+      "yarnSentDetail",
+      "get",
+      { company_id: companyId, jobId: SALE_CHALLAN_ADD?.id },
+    ],
+    queryFn: async () => {
+      const res = await getJobTakaByIdRequest({
+        id: SALE_CHALLAN_ADD?.id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(
+      companyId && SALE_CHALLAN_ADD?.id && SALE_CHALLAN_ADD?.model === "job"
+    ),
+  });
+
+  useEffect(() => {
+    if (jobTakaDetails) {
+      const {
+        challan_no,
+        delivery_address,
+        gst_in,
+        gst_state,
+        quality_id,
+        supplier_id,
+        gray_order_id,
+        total_meter,
+        total_taka,
+        total_weight,
+        is_grey,
+        job_challan_details,
+        supplier,
+        createdAt,
+        broker_id,
+        broker,
+      } = jobTakaDetails;
+
+      setActiveField(job_challan_details.length + 1);
+      let jobChallanDetails = {};
+      let totalMeter = 0;
+      let totalWeight = 0;
+      job_challan_details.forEach((item, index) => {
+        jobChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
+        jobChallanDetails[`meter_${index + 1}`] = item.meter;
+        jobChallanDetails[`weight_${index + 1}`] = item.weight;
+        totalMeter += +item?.meter;
+        totalWeight += +item?.weight;
+        setTotalTaka(job_challan_details.length);
+      });
+      setTotalMeter(totalMeter);
+      setTotalWeight(totalWeight);
+      setPendingMeter(+total_meter - totalMeter);
+      setPendingWeight(+total_weight - totalWeight);
+      setPendingTaka(+total_taka - job_challan_details?.length);
+
+      reset({
+        challan_no,
+        delivery_address,
+        gst_in_1: gst_in,
+        gst_in_2: gst_in,
+        gst_state,
+        quality_id,
+        broker_id: broker_id,
+        broker_name: `${broker.first_name} ${broker.last_name}`,
+        supplier_id,
+        gray_order_id,
+        total_meter,
+        total_taka,
+        total_weight,
+        is_grey,
+        supplier_name: supplier.supplier_name,
+        challan_date: dayjs(createdAt),
+        ...jobChallanDetails,
+      });
+    }
+  }, [jobTakaDetails, reset]);
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined) {
+      setPendingMeter(+total_meter - totalMeter);
+    }
+    if (total_weight !== "" && total_weight !== undefined) {
+      setPendingWeight(+total_weight - (totalWeight || 0));
     }
 
-    if (total_taka !== "" && total_taka !== undefined){
-      setPendingTaka(+total_taka - totalTaka) ; 
+    if (total_taka !== "" && total_taka !== undefined) {
+      setPendingTaka(+total_taka - totalTaka);
     }
   }, [
-    total_meter, 
-    total_taka, 
-    total_weight, 
-    totalTaka, 
+    total_meter,
+    total_taka,
+    total_weight,
+    totalTaka,
     totalMeter,
-    totalWeight
-  ])
+    totalWeight,
+  ]);
 
   return (
     <div className="flex flex-col p-4">

@@ -7,7 +7,6 @@ import dayjs from "dayjs";
 
 const ViewCreditNoteModal = ({ details }) => {
   const { companyListRes } = useContext(GlobalContext);
-  console.log("ViewCreditNoteModal", details);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
