@@ -17,9 +17,6 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import AddCreditNotes from "../../../components/accounts/notes/CreditNotes/AddCreditNotes";
-// import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
-// import ActionView from "../../../components/accounts/notes/CreditNotes/ActionView";
-// import ActionFile from "../../../components/accounts/notes/CreditNotes/ActionFile";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +25,7 @@ import { getPartyListRequest } from "../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
+import moment from "moment";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -40,6 +38,7 @@ const CREDIT_NOTE_TYPES = [
 
 const CreditNotes = () => {
   const { companyId } = useContext(GlobalContext);
+
 
   const [creditNoteTypes, setCreditNoteTypes] = useState("sale_return");
   const [party, setParty] = useState(null);
@@ -62,6 +61,10 @@ const CreditNotes = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -359,11 +362,11 @@ const CreditNotes = () => {
             <Typography.Text className="whitespace-nowrap">
               From
             </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} />
+            <DatePicker value={fromDate} onChange={setFromDate} disabledDate={disabledFutureDate} />
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} />
+            <DatePicker value={toDate} onChange={setToDate} disabledDate={disabledFutureDate} />
           </Flex>
         </Flex>
 
