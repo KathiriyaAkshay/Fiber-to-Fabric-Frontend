@@ -863,3 +863,119 @@ input:read-only {
   padding-top: 15px !important;
   padding-bottom: 15px !important;
 }
+
+.credit-note-container {
+  /* max-width: 950px; */
+  /* margin: 0 auto; */
+  /* padding: 20px; */
+  /* border: 1px solid #ccc; */
+  border-radius: 8px;
+  /* background-color: #f9f9f9; */
+  width: 100%;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.credit-note-table,
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* margin-bottom: 20px; */
+}
+
+.credit-note-table td,
+.summary-table td {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.input-box {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.year-toggle {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.year-toggle label {
+  margin-right: 20px;
+}
+
+.total-summary {
+  text-align: center;
+}
+
+.summary-table td {
+  text-align: center;
+  padding: 10px;
+}
+
+.width-100 {
+  width: 100%;
+}
+
+.remove-input-box {
+  background-color: #f9f9f9 !important;
+  border: none;
+  text-align: center;
+}
+.remove-input-box:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.credit-note-info-title{
+  font-weight: 600;
+  margin-top: 5px;
+} 
+
+.total-information-data{
+  font-weight: 600;
+}
+
+.return-information-data{
+  font-weight: 600;
+  color: red;
+}
+
+.checked-bill-row{
+  background-color: #ccffdc;
+}
+
+.purchase-report-yarn-company{
+  font-size: 18px;
+}
+
+.purchase-report-table-title{
+  font-size: 16px;
+}
+
+.purchase-report-table-data-title{
+  font-size: 15px;
+  font-weight: 600;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-left: 10px;
+} 
+
+.purchase-report-table-data{
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.purchase-total-td{
+  background-color: #000000;
+}
+
+.purchase-total-font{
+  color: #fff;
+}

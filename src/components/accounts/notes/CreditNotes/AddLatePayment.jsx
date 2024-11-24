@@ -21,11 +21,15 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
 import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
+import moment from "moment";
 
 const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
   const { mutateAsync: addCreditNote, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
       const res = await createCreditNoteRequest({
@@ -417,6 +421,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             {...field}
                             name="date"
                             className="width-100"
+                            disabledDate={disabledFutureDate}
                           />
                         )}
                       />

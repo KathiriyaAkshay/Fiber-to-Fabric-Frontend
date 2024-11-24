@@ -36,6 +36,7 @@ import { ORDER_TYPE } from "../../../../constants/orderMaster";
 import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
 import dayjs from "dayjs";
 import DeleteSaleBill from "../../../../components/sale/bill/DeleteSaleBill";
+import moment from "moment";
 
 const SaleBillList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -63,7 +64,6 @@ const SaleBillList = () => {
   const [isGrayValue, setIsGrayValue] = useState("cash");
   const [invoiceFilter, setInvoiceFilter] = useState();
   const [quality, setQuality] = useState();
-
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [payment, setPayment] = useState();
@@ -71,14 +71,13 @@ const SaleBillList = () => {
   const [toBill, setToBill] = useState("");
   const [orderNo, setOrderNo] = useState("");
 
-  // company_id, is_paid,
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncePayment = useDebounce(payment, 500);
 
+  
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -368,6 +367,11 @@ const SaleBillList = () => {
     },
   ];
 
+  
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -389,50 +393,50 @@ const SaleBillList = () => {
           onChange: onPageChange,
         }}
         summary={(pageData) => {
-          let totalAmount = 0;
-          let totalNetAmount = 0;
-          let totalRate = 0;
-          let totalMeter = 0;
-
-          pageData.forEach(({ total_meter, amount, net_amount, rate }) => {
-            totalMeter += +total_meter;
-            totalAmount += +amount;
-            totalNetAmount += +net_amount;
-            totalRate += +rate;
-          });
-
-          const avgRate = totalRate / pageData.length;
-
-          return (
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={0}>
-                <b>Total</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={1}></Table.Summary.Cell>
-              <Table.Summary.Cell index={2}></Table.Summary.Cell>
-              <Table.Summary.Cell index={3}></Table.Summary.Cell>
-              <Table.Summary.Cell index={4}></Table.Summary.Cell>
-              <Table.Summary.Cell index={5}></Table.Summary.Cell>
-              <Table.Summary.Cell index={6}>
-                <b>{SaleBillList.total_takas}</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={7}>
-                <b>{SaleBillList?.total_meters}</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={8}>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={9}>
-                <b>{SaleBillList?.total_amounts}</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={10}>
-                <b>{SaleBillList?.total_net_amounts}</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={11}></Table.Summary.Cell>
-              <Table.Summary.Cell index={12}></Table.Summary.Cell>
-              <Table.Summary.Cell index={13}></Table.Summary.Cell>
-              <Table.Summary.Cell index={14}></Table.Summary.Cell>
-            </Table.Summary.Row>
-          );
+          
+          if (SaleBillList){
+            let totalAmount = 0;
+            let totalNetAmount = 0;
+            let totalRate = 0;
+            let totalMeter = 0;
+  
+            pageData.forEach(({ total_meter, amount, net_amount, rate }) => {
+              totalMeter += +total_meter;
+              totalAmount += +amount;
+              totalNetAmount += +net_amount;
+              totalRate += +rate;
+            });
+            return (
+              <Table.Summary.Row>
+                <Table.Summary.Cell index={0}>
+                  <b>Total</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={1}></Table.Summary.Cell>
+                <Table.Summary.Cell index={2}></Table.Summary.Cell>
+                <Table.Summary.Cell index={3}></Table.Summary.Cell>
+                <Table.Summary.Cell index={4}></Table.Summary.Cell>
+                <Table.Summary.Cell index={5}></Table.Summary.Cell>
+                <Table.Summary.Cell index={6}>
+                  <b>{SaleBillList.total_takas || 0}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={7}>
+                  <b>{SaleBillList?.total_meters || 0}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={8}>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={9}>
+                  <b>{SaleBillList?.total_amounts || 0}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={10}>
+                  <b>{SaleBillList?.total_net_amounts || 0}</b>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell index={11}></Table.Summary.Cell>
+                <Table.Summary.Cell index={12}></Table.Summary.Cell>
+                <Table.Summary.Cell index={13}></Table.Summary.Cell>
+                <Table.Summary.Cell index={14}></Table.Summary.Cell>
+              </Table.Summary.Row>
+            );
+          }
         }}
       />
     );
@@ -440,7 +444,7 @@ const SaleBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3">
+        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
           <Select
             allowClear
             placeholder="Select Invoice FIlter"
@@ -469,7 +473,7 @@ const SaleBillList = () => {
               <Radio value={"previous"}> Previous </Radio>
             </Flex>
           </Radio.Group>
-        </div>
+        </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
@@ -606,6 +610,7 @@ const SaleBillList = () => {
                 onChange={setFromDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -618,6 +623,7 @@ const SaleBillList = () => {
                 onChange={setToDate}
                 className="min-w-40"
                 format={"DD-MM-YYYY"}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>

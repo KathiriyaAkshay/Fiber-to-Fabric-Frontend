@@ -12,6 +12,7 @@ import {
   Row,
   Select,
   Spin,
+  Tag,
 } from "antd";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
@@ -26,9 +27,10 @@ import {
   getLastVoucherNoRequest,
   getUnPaidPaymentBillListRequest,
 } from "../../../api/requests/accounts/payment";
+import { BEAM_RECEIVE_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
+import moment from "moment";
 
 const { TextArea } = Input;
-
 const SUPPLIER_TYPES = [
   { label: "Purchase / Trading", value: "purchase/trading" },
   { label: "Job", value: "job" },
@@ -65,6 +67,10 @@ const BillForm = () => {
     totalAmount: 0,
     totalNetAmount: 0,
   });
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   const { mutateAsync: addBillEntry, isPending: isPendingBillEntry } =
     useMutation({
@@ -129,6 +135,7 @@ const BillForm = () => {
     watch,
     resetField,
     setValue,
+    getValues
   } = useForm({
     defaultValues: {
       supplier_type: null,
@@ -260,12 +267,11 @@ const BillForm = () => {
   const calculateAmount = useCallback(() => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
-      let netAmount = bill.net_amount;
-
+      let netAmount = +bill.net_amount;
       let finalTotalAmount = netAmount;
-      finalTotalAmount += bill?.part_payment || 0;
-      finalTotalAmount += bill?.plus_percentage || 0;
-      finalTotalAmount -= bill?.less_percentage || 0;
+      finalTotalAmount += +bill?.part_payment || 0;
+      finalTotalAmount += +bill?.plus_percentage || 0;
+      finalTotalAmount -= +bill?.less_percentage || 0;
 
       totalAmount += finalTotalAmount;
     });
@@ -307,17 +313,32 @@ const BillForm = () => {
   };
 
   const onChangeSelectedBillHandler = (e, bill) => {
-    let copyBill = { ...bill };
-    copyBill[e.target.name] = +e.target.value;
-    const updatedSelectedBills = selectedBills.map((bill) => {
-      if (bill.bill_id === copyBill.bill_id) {
-        return copyBill;
-      } else {
-        return bill;
-      }
-    });
+    if (e.target.value == undefined){
+      let copyBill = { ...bill };
+      copyBill[e.target] = 0;
+      const updatedSelectedBills = selectedBills.map((bill) => {
+        if (bill.bill_id === copyBill.bill_id) {
+          return copyBill;
+        } else {
+          return bill;
+        }
+      });
+  
+      setSelectedBills(updatedSelectedBills);
 
-    setSelectedBills(updatedSelectedBills);
+    } else {
+      let copyBill = { ...bill };
+      copyBill[e.target.name] = +e.target.value;
+      const updatedSelectedBills = selectedBills.map((bill) => {
+        if (bill.bill_id === copyBill.bill_id) {
+          return copyBill;
+        } else {
+          return bill;
+        }
+      });
+  
+      setSelectedBills(updatedSelectedBills);
+    }
   };
 
   return (
@@ -526,7 +547,7 @@ const BillForm = () => {
                     name="cheque_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker {...field} style={{ width: "100%" }} />
+                        <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />
                       );
                     }}
                   />
@@ -596,7 +617,7 @@ const BillForm = () => {
                     name="voucher_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker {...field} style={{ width: "100%" }} />
+                        <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate}/>
                       );
                     }}
                   />
@@ -695,8 +716,8 @@ const BillForm = () => {
               <th>Due Days</th>
               <th>Part Payment</th>
               <th>TDS (Less)</th>
-              <th>Less(%)</th>
-              <th>Plus(%)</th>
+              <th>Less Amt.</th>
+              <th>Plus Amt.</th>
             </tr>
           </thead>
           <tbody>
@@ -707,7 +728,7 @@ const BillForm = () => {
                 );
 
                 return (
-                  <tr key={index + "_un_paid_bill"}>
+                  <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
                     <td style={{ textAlign: "center" }}>
                       <Checkbox
                         checked={isBillSelected}
@@ -715,7 +736,15 @@ const BillForm = () => {
                       />
                     </td>
                     <td style={{ textAlign: "center" }}>{bill.bill_no}</td>
-                    <td style={{ textAlign: "center" }}>Job</td>
+                    <td style={{ textAlign: "center" }}>
+                      {bill?.model == "purchase_taka_bills"?
+                        <Tag color = {PURCHASE_TAG_COLOR}>PURCHASE TAKA</Tag>
+                      :bill?.model == "yarn_bills"?
+                        <Tag color = {PURCHASE_YARN_BILL_TAG_COLOR}>YARN</Tag>
+                      :bill?.model == "receive_size_beam_bill"?
+                        <Tag color = {BEAM_RECEIVE_TAG_COLOR}>BEAM PURCAHSE</Tag>
+                      :<Tag>{bill?.model}</Tag>}
+                    </td>
                     <td style={{ textAlign: "center" }}>{bill.amount}</td>
                     <td style={{ textAlign: "center" }}>{bill.net_amount}</td>
                     <td style={{ textAlign: "center" }}>
@@ -731,8 +760,14 @@ const BillForm = () => {
                         value={
                           isBillSelected ? isBillSelected?.part_payment : ""
                         }
-                        onChange={(e) =>
-                          onChangeSelectedBillHandler(e, isBillSelected)
+                        onChange={(e) =>{
+                          let net_amount = +bill.net_amount
+                          if (e.target.value > net_amount){
+                            message.warning("Please, Provide valid part amount") ; 
+                          } else {
+                            onChangeSelectedBillHandler(e, isBillSelected)
+                          }
+                        }
                         }
                       />
                     </td>
@@ -741,11 +776,19 @@ const BillForm = () => {
                       <Input
                         type="number"
                         name="less_percentage"
-                        style={{ width: "100%" }}
+                        style={{ width: "100%", color:"red", fontWeight: 600 }}
                         disabled={!isBillSelected}
-                        onChange={(e) =>
-                          onChangeSelectedBillHandler(e, isBillSelected)
+                        value={
+                          isBillSelected ? isBillSelected?.less_percentage : ""
                         }
+                        onChange={(e) =>{
+                          let net_amount = +bill.net_amount
+                          if (e.target.value > net_amount){
+                            message.warning("Please, Provide valid less amount") ; 
+                          } else {
+                            onChangeSelectedBillHandler(e, isBillSelected)
+                          }
+                        }}
                       />
                     </td>
                     <td style={{ textAlign: "center", width: "200px" }}>
@@ -754,6 +797,9 @@ const BillForm = () => {
                         name="plus_percentage"
                         style={{ width: "100%" }}
                         disabled={!isBillSelected}
+                        value={
+                          isBillSelected ? isBillSelected?.plus_percentage : ""
+                        }
                         onChange={(e) =>
                           onChangeSelectedBillHandler(e, isBillSelected)
                         }

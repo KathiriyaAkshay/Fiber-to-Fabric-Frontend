@@ -171,6 +171,7 @@ const JobChallanList = () => {
     enabled: Boolean(companyId),
   });
 
+
   function navigateToAdd() {
     navigate("/job/job-taka/add");
   }

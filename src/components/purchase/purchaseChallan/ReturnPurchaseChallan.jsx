@@ -8,6 +8,7 @@ import {
   message,
   Modal,
   Row,
+  Tooltip,
   Typography,
 } from "antd";
 import { useState } from "react";
@@ -17,6 +18,7 @@ import { useRef, useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPurchaseReturnChallanRequest } from "../../../api/requests/purchase/purchaseTaka";
+import moment from "moment";
 
 const { Text } = Typography;
 
@@ -47,6 +49,11 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
   //               width: 100%;
   //           }
   //   `;
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
 
   useEffect(() => {
     let tempTotal1 = 0;
@@ -157,14 +164,16 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
 
   return (
     <>
-      <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <UndoOutlined />
-      </Button>
-
+      <Tooltip title = "Returned Taka">
+        <Button
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+          danger
+        >
+          <UndoOutlined />
+        </Button>
+      </Tooltip>
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -374,10 +383,11 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 1}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index]?.meter}
                 </Col>
                 <Col span={1} style={{ textAlign: "center" }}>
@@ -394,10 +404,10 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index + 12]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index + 12]?.meter}
                 </Col>
               </Row>
@@ -438,7 +448,7 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
               <strong>Return Date:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              <DatePicker value={returnDate} onChange={setReturnDate} />
+              <DatePicker value={returnDate} onChange={setReturnDate} disabledDate={disabledFutureDate} />
             </Col>
           </Row>
 

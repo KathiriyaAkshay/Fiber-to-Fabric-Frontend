@@ -3,12 +3,14 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Empty,
   Flex,
   message,
   Modal,
   Radio,
   Row,
   Select,
+  Typography,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -18,15 +20,17 @@ import {
   getSaleChallanByIdRequest,
   getSaleChallanListRequest,
 } from "../../../../api/requests/sale/challan/challan";
-import "./_style.css";
+// import "./_style.css";
 import dayjs from "dayjs";
 import { getLastCreditNoteNumberRequest } from "../../../../api/requests/accounts/notes";
+import moment from "moment";
+import { CloseOutlined } from "@ant-design/icons";
 
 const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
+  const TakaArray = Array(12).fill(0);
+
   const { companyId } = useContext(GlobalContext);
   const queryClient = useQueryClient();
-
-  const TakaArray = Array(12).fill(0);
   const [returnDate, setReturnDate] = useState(dayjs());
   const [yearValue, setYearValue] = useState("previous");
   const [challanNo, setChallanNo] = useState(null);
@@ -194,40 +198,75 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     enabled: Boolean(companyId),
   });
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <Modal
       open={isAddModalOpen}
+      closeIcon={<CloseOutlined className="text-white" />}
       width={"75%"}
+      title = "Credit Note - Sale Return"
       onCancel={() => {
         setIsAddModalOpen(false);
         setSelectedSaleChallan([]);
       }}
       footer={false}
+      centered
+      className={{
+        header: "text-center",
+      }}
+      classNames={{
+        header: "text-center",
+      }}
+      styles={{
+        content: {
+          padding: 0,
+        },
+        header: {
+          padding: "16px",
+          margin: 0,
+        },
+        body: {
+          padding: "16px 32px",
+        },
+      }}
     >
       <div className="credit-note-container">
-        <h2>Credit Note</h2>
-
+        {/* <h2>Credit Note</h2> */}
         <table className="credit-note-table">
           <tbody>
             <tr>
               <td colSpan={2} width={"33.33%"}>
                 <div className="year-toggle">
-                  Credit Note No.
+                  <Typography.Text style={{fontSize: 20}}>
+                    Credit Note No.
+                  </Typography.Text>
                   <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
                 </div>
               </td>
-              <td colSpan={2} width={"33.33%"}>
-                <div className="year-toggle">
+
+              <td colSpan={2} width={"33.33%"} >
+                <div className="year-toggle" style={{
+                paddingLeft: 10,
+                paddingRight: 10
+              }}>
                   <label style={{ textAlign: "left" }}>Return Date:</label>
                   <DatePicker
                     value={returnDate}
                     onChange={(selectedDate) => setReturnDate(selectedDate)}
                     className="width-100"
+                    disabledDate={disabledFutureDate}
                   />
                 </div>
               </td>
+
               <td colSpan={2} width={"33.33%"}>
-                <div className="year-toggle">
+                <div className="year-toggle" style = {{
+                  paddingLeft: 10, 
+                  paddingRight: 10
+                }}>
                   <Radio.Group
                     value={yearValue}
                     onChange={(e) => setYearValue(e.target.value)}
@@ -242,7 +281,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     </Flex>
                   </Radio.Group>
                   <Select
-                    className="width-100 mt-2"
+                    className="width-100 mt-3"
                     placeholder="Select Sale Challan No"
                     loading={isLoadingSaleChallan}
                     options={
@@ -263,132 +302,179 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   />
                 </div>
               </td>
+
             </tr>
             <tr width="50%">
               <td colSpan={3}>
-                <div>GSTIN/UIN:</div>
-                <div>State Name:</div>
-                <div>PinCode:</div>
-                <div>Contact:</div>
-                <div>Email:</div>
+                <div className="credit-note-info-title">GSTIN/UIN:</div>
+                <div className="credit-note-info-title">State Name:</div>
+                <div className="credit-note-info-title">PinCode:</div>
+                <div className="credit-note-info-title">Contact:</div>
+                <div className="credit-note-info-title">Email:</div>
               </td>
               <td colSpan={3}>
-                <div>Party:</div>
-                <div>GSTIN/UIN:</div>
-                <div>Order No:</div>
-                <div>Quality Name:</div>
+                <div className="credit-note-info-title">Party: <span style={{
+                  fontWeight: 400, 
+                  marginLeft:10
+                }}>{String(`${saleChallanData?.saleChallan?.party?.first_name} ${saleChallanData?.saleChallan?.party?.last_name}`).toUpperCase()}</span></div>
+                <div className="credit-note-info-title">GSTIN/UIN: 
+                  <span style={{fontWeight: 400, marginLeft: 10}}>
+                    {saleChallanData?.saleChallan?.party?.party?.company_gst_number}
+                  </span>
+                </div>
+                <div className="credit-note-info-title">Order No: 
+                  <span style={{fontWeight: 400, marginLeft: 10}}>
+                  {saleChallanData?.saleChallan?.gray_order?.order_no}
+                  </span>
+                </div>
+                <div className="credit-note-info-title">Quality Name:
+                  <span style={{
+                    fontWeight: 400, 
+                    marginLeft: 10
+                  }}>
+                    {saleChallanData?.saleChallan?.inhouse_quality?.quality_name} (
+                      {saleChallanData?.saleChallan?.inhouse_quality?.quality_weight}
+                    )
+                  </span>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
+
         {saleChallanData ? (
           <>
-            <Row
-              className="p-4 border-0 border-b border-solid !m-0"
-              style={{ borderBottom: 0 }}
-            >
-              <Col span={1} style={{ textAlign: "center" }}>
-                <strong></strong>
-              </Col>
-              <Col span={1} style={{ textAlign: "center" }}>
-                <strong>No</strong>
-              </Col>
-              <Col span={5} style={{ textAlign: "center" }}>
-                <strong>TAKA NO</strong>
-              </Col>
-              <Col span={5} style={{ textAlign: "center" }}>
-                <strong>Meter</strong>
-              </Col>
-              <Col span={1} style={{ textAlign: "center" }}>
-                <strong></strong>
-              </Col>
-              <Col span={1} style={{ textAlign: "center" }}>
-                <strong>No</strong>
-              </Col>
-              <Col span={5} style={{ textAlign: "center" }}>
-                <strong>TAKA NO</strong>
-              </Col>
-              <Col span={5} style={{ textAlign: "center" }}>
-                <strong>Meter</strong>
-              </Col>
-            </Row>
-            {TakaArray?.map((element, index) => {
-              return (
-                <Row
-                  key={index}
-                  className="p-3 border-0"
-                  style={{ borderTop: 0 }}
-                >
-                  <Col span={1} style={{ textAlign: "center" }}>
-                    {saleChallanData?.saleChallan?.sale_challan_details[index]
-                      ?.is_returned === false && (
-                      <Checkbox
-                        checked={selectedSaleChallan.includes(
-                          saleChallanData?.saleChallan?.sale_challan_details[
-                            index
-                          ]?.id
-                        )}
-                        onChange={(e) => handleSelectSaleChallan(e, index)}
-                      />
-                    )}
-                  </Col>
-                  <Col
-                    span={1}
-                    style={{ textAlign: "center", fontWeight: 600 }}
+            <div style={{
+              paddingTop: 20, 
+              borderLeft: "1px solid #ccc", 
+              borderRight: "1px solid #ccc"
+            }}>
+              <Row
+                className="border-0 border-b border-solid !m-0"
+                style={{ borderBottom: 0,
+                }}
+              >
+                <Col span={1} style={{ textAlign: "center" }}>
+                  <strong></strong>
+                </Col>
+                <Col span={1} style={{ textAlign: "center" }}>
+                  <strong>No</strong>
+                </Col>
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <strong>TAKA NO</strong>
+                </Col>
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <strong>Meter</strong>
+                </Col>
+                <Col span={1} style={{ textAlign: "center" }}>
+                  <strong></strong>
+                </Col>
+                <Col span={1} style={{ textAlign: "center" }}>
+                  <strong>No</strong>
+                </Col>
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <strong>TAKA NO</strong>
+                </Col>
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <strong>Meter</strong>
+                </Col>
+              </Row>
+              {TakaArray?.map((element, index) => {
+                const isReturned =
+                saleChallanData?.saleChallan?.sale_challan_details[index]?.is_returned;
+   
+                const isReturned2 =
+                saleChallanData?.saleChallan?.sale_challan_details[index + 12]
+                    ?.is_returned;
+   
+                return (
+                  <Row
+                    key={index}
+                    className="p-3 border-0"
+                    style={{ borderTop: 0 }}
                   >
-                    {index + 1}
-                  </Col>
-                  <Col span={5} style={{ textAlign: "center" }}>
-                    {
-                      saleChallanData?.saleChallan?.sale_challan_details[index]
-                        ?.taka_no
-                    }
-                  </Col>
-                  <Col span={5} style={{ textAlign: "center" }}>
-                    {
-                      saleChallanData?.saleChallan?.sale_challan_details[index]
-                        ?.meter
-                    }
-                  </Col>
-                  <Col span={1} style={{ textAlign: "center" }}>
-                    {saleChallanData?.saleChallan?.sale_challan_details[
-                      index + 12
-                    ]?.is_returned === false && (
-                      <Checkbox
-                        checked={selectedSaleChallan.includes(
-                          saleChallanData?.saleChallan?.sale_challan_details[
-                            index + 12
-                          ]?.id
-                        )}
-                        onChange={(e) => handleSelectSaleChallan(e, index + 12)}
-                      />
-                    )}
-                  </Col>
-                  <Col
-                    span={1}
-                    style={{ textAlign: "center", fontWeight: 600 }}
-                  >
-                    {index + 13}
-                  </Col>
-                  <Col span={5} style={{ textAlign: "center" }}>
-                    {
-                      saleChallanData?.saleChallan?.sale_challan_details[
-                        index + 12
-                      ]?.taka_no
-                    }
-                  </Col>
-                  <Col span={5} style={{ textAlign: "center" }}>
-                    {
-                      saleChallanData?.saleChallan?.sale_challan_details[
-                        index + 12
-                      ]?.meter
-                    }
-                  </Col>
-                </Row>
-              );
-            })}
+                    <Col span={1} style={{ textAlign: "center" }}>
+                      {saleChallanData?.saleChallan?.sale_challan_details[index]
+                        ?.is_returned === false && (
+                        <Checkbox
+                          checked={selectedSaleChallan.includes(
+                            saleChallanData?.saleChallan?.sale_challan_details[
+                              index
+                            ]?.id
+                          )}
+                          onChange={(e) => handleSelectSaleChallan(e, index)}
+                        />
+                      )}
+                    </Col>
 
-            <Row className="p-3 border-0" style={{ borderTop: 0 }}>
+                    <Col
+                      span={1}
+                      style={{ textAlign: "center", fontWeight: 600 }}
+                    >
+                      {index + 1}
+                    </Col>
+                    
+                    <Col span={5} style={{ textAlign: "center", color: isReturned?"red":"inherit" }}>
+                      {
+                        saleChallanData?.saleChallan?.sale_challan_details[index]
+                          ?.taka_no
+                      }
+                      {isReturned ? "(return)" : ""}
+                    </Col>
+                    
+                    <Col span={5} style={{ textAlign: "center", color: isReturned?"red":"inherit"  }}>
+                      {
+                        saleChallanData?.saleChallan?.sale_challan_details[index]
+                          ?.meter
+                      }
+                    </Col>
+                    
+                    <Col span={1} style={{ textAlign: "center"}}>
+                      {saleChallanData?.saleChallan?.sale_challan_details[
+                        index + 12
+                      ]?.is_returned === false && (
+                        <Checkbox
+                          checked={selectedSaleChallan.includes(
+                            saleChallanData?.saleChallan?.sale_challan_details[
+                              index + 12
+                            ]?.id
+                          )}
+                          onChange={(e) => handleSelectSaleChallan(e, index + 12)}
+                        />
+                      )}
+                    </Col>
+                    <Col
+                      span={1}
+                      style={{ textAlign: "center", fontWeight: 600 }}
+                    >
+                      {index + 13}
+                    </Col>
+                    <Col span={5} style={{ textAlign: "center", color: isReturned2?"red":"inherit"  }}>
+                      {
+                        saleChallanData?.saleChallan?.sale_challan_details[
+                          index + 12
+                        ]?.taka_no
+                      }
+                      {isReturned2 ? "(return)" : ""}
+                    </Col>
+                    <Col span={5} style={{ textAlign: "center",  color: isReturned2?"red":"inherit" }}>
+                      {
+                        saleChallanData?.saleChallan?.sale_challan_details[
+                          index + 12
+                        ]?.meter
+                      }
+                    </Col>
+                  </Row>
+                );
+              })}
+            </div>
+
+            <Row className="p-3 border-0" 
+              style={{ 
+              borderTop: "1px solid #ccc", 
+              borderLeft: "1px solid #ccc", 
+              borderRight: "1px solid #ccc" 
+            }}>
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={5} style={{ textAlign: "center" }}></Col>
@@ -411,21 +497,25 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             <tbody>
               {!saleChallanData ? (
                 <tr>
-                  <td colSpan={2}>No taka found</td>
+                  <td colSpan={2}>
+                    <Empty
+                      description = "No Taka Found"
+                    />
+                  </td>
                 </tr>
               ) : null}
 
               <tr>
-                <td>
+                <td className="total-information-data">
                   Total Taka:{" "}
                   {saleChallanData?.saleChallan?.sale_challan_details?.length}
                 </td>
-                <td>Total Meter: {totalMeter}</td>
+                <td className="total-information-data">Total Meter: {totalMeter}</td>
               </tr>
 
               <tr>
-                <td>Return Taka: {selectedSaleChallan?.length || 0}</td>
-                <td>Return Meter: {totalReturnMeter || 0}</td>
+                <td className="return-information-data">Return Taka: {selectedSaleChallan?.length || 0}</td>
+                <td className="return-information-data">Return Meter: {totalReturnMeter || 0}</td>
               </tr>
             </tbody>
           </table>
@@ -438,21 +528,14 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             width: "100%",
             justifyContent: "flex-end",
             gap: "1rem",
+            marginBottom: 10, 
           }}
         >
-          <Button type="primary" onClick={submitHandler} loading={isPending}>
+          <Button type="primary" onClick={submitHandler} loading={isPending} style={{marginRight: 10}}>
             Sales Return
           </Button>
-          <Button
-            type="default"
-            onClick={() => {
-              setIsAddModalOpen(false);
-              setSelectedSaleChallan([]);
-            }}
-          >
-            Close
-          </Button>
         </Flex>
+
       </div>
     </Modal>
   );

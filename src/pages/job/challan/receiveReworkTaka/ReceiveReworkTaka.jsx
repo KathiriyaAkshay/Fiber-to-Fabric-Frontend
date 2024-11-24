@@ -24,6 +24,7 @@ import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal
 import dayjs from "dayjs";
 import DeleteReceiveReworkTaka from "../../../../components/job/challan/receiveReworkTaka/DeleteReceiveReworkTaka";
 import moment from "moment/moment";
+import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../../constants/tag";
 
 const ReceiveReworkTaka = () => {
   const navigate = useNavigate();
@@ -163,6 +164,19 @@ const ReceiveReworkTaka = () => {
       dataIndex: "taka_no",
       key: "taka_no",
       sorter: (a, b) => a.taka_no - b.taka_no,
+      render: (text, record) => {
+        if (record?.is_used_in_taka){
+          return(
+            <div>
+              {text} <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>Sold</Tag>
+            </div>
+          )
+        } else {
+          return(
+            <div>{text}</div>
+          )
+        }
+      }
     },
     {
       title: "Total Meter",
@@ -244,7 +258,10 @@ const ReceiveReworkTaka = () => {
                 { title: "Average", value: details.average },
               ]}
             />
-            <DeleteReceiveReworkTaka details={details} />
+
+            {!details?.is_used_in_taka && (
+              <DeleteReceiveReworkTaka details={details} />
+            )}
           </Space>
         );
       },

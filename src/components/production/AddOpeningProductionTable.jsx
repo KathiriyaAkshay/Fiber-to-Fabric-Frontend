@@ -1,5 +1,5 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { useDebounceCallback } from "../../hooks/useDebounce";
 
@@ -20,6 +20,7 @@ const AddOpeningProductionTable = ({
   setTotalWeight,
   totalTaka,
   setTotalTaka,
+  loadedMachineList
 }) => {
   // const [totalMeter, setTotalMeter] = useState(0);
   // const [totalWeight, setTotalWeight] = useState(0);
@@ -234,7 +235,7 @@ const AddOpeningProductionTable = ({
                     wrapperCol={{ sm: 24 }}
                     style={{ marginBottom: "0px" }}
                   >
-                    <Controller
+                    {/* <Controller
                       control={control}
                       name={`machine_no_${fieldNumber}`}
                       render={({ field }) => (
@@ -252,7 +253,29 @@ const AddOpeningProductionTable = ({
                           }
                         />
                       )}
+                    /> */}
+                    <Controller
+                      control={control}
+                      name={`machine_no_${fieldNumber}`}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          name={`machine_no_${fieldNumber}`}
+                          style={{
+                            width: "100%",
+                          }}
+                          showSearch
+                          disabled={fieldNumber > activeField} // Maintain disabling logic
+                          // loading={isLoadingLoadedMachineNo} // Optional: Show loading if needed
+                          options={loadedMachineList.map((item) => ({
+                            label: item, // Displayed value
+                            value: item, // Actual value
+                          }))}
+                          onKeyDown={(event) => activeNextField(event, fieldNumber)} // Keep the `onKeyDown` logic
+                        />
+                      )}
                     />
+
                   </Form.Item>
                 </td>
                 <td style={{ textAlign: "center" }}>

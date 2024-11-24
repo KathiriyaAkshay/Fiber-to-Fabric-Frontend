@@ -147,7 +147,13 @@ const AddTakaTpCutting = () => {
       const res = await getTakaCuttingSrNoRequest({
         params: { company_id: companyId },
       });
-      return res.data?.data;
+
+      if (res?.data?.data == null){
+        return 0; 
+      } else {
+        let split = +String(res?.data?.data).split("-")[1] ; 
+        return split ; 
+      }
     },
     enabled: Boolean(companyId),
   });

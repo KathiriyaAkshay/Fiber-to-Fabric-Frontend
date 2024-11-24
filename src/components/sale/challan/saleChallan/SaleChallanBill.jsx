@@ -69,9 +69,6 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
-  console.log("Details information =============================");
-  console.log(details);
-
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -343,26 +340,29 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
           },
         }}
         footer={() => {
-          return (
-            <>
-              <ReactToPrint
-                trigger={() => (
-                  <Flex>
-                    <Button
-                      type="primary"
-                      style={{ marginLeft: "auto", marginTop: 15 }}
-                      onClick={handleSubmit(onSubmit)}
-                      loading={isPending}
-                    >
-                      Create Bill
-                    </Button>
-                  </Flex>
-                )}
-                content={() => componentRef.current}
-                pageStyle={pageStyle}
-              />
-            </>
-          );
+          if (MODE !== "VIEW") {
+            return (
+              <>
+                <ReactToPrint
+                  trigger={() => (
+                    <Flex>
+                      <Button
+                        type="primary"
+                        style={{ marginLeft: "auto", marginTop: 15 }}
+                        onClick={handleSubmit(onSubmit)}
+                        loading={isPending}
+                      >
+                        Create Bill
+                      </Button>
+                    </Flex>
+                  )}
+                  content={() => componentRef.current}
+                  pageStyle={pageStyle}
+                />
+              </>
+            );
+          }
+          return null; // Return null when the condition is not met
         }}
         width={"70vw"}
       >

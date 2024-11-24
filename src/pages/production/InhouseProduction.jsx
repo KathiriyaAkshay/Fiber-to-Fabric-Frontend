@@ -19,6 +19,7 @@ import {
   BarcodeOutlined,
   DeleteOutlined,
   EditOutlined,
+  EyeFilled,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
@@ -35,8 +36,6 @@ import ViewProductionDetailModal from "../../components/production/ViewProductio
 import DeleteProduction from "../../components/production/DeleteProduction";
 import ProductionQrModal from "../../components/production/ProductionQrModal";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-// import { downloadUserPdf, getPDFTitleContent } from "../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../api/hooks/auth";
 import useDebounce from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
 import { getCurrentFinancialYearDates } from "../../utils/date";
@@ -201,7 +200,6 @@ const InhouseProduction = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ productionList });
 
   function navigateToAdd() {
     navigate("/production/add-new-production");
@@ -582,6 +580,7 @@ const InhouseProduction = () => {
               onClick={() => {
                 navigate("/purchase/purchased-taka");
               }}
+              icon = {<EyeFilled/>}
             >
               View Purchased Taka
             </Button>
@@ -593,7 +592,7 @@ const InhouseProduction = () => {
               navigate("/job/job-taka");
             }}
           >
-            <Button type="primary">View Job Taka</Button>
+            <Button type="primary" icon = {<EyeFilled/>}>View Job Taka</Button>
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
@@ -642,7 +641,7 @@ const InhouseProduction = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
-              // disabledDate={disabledFutureDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 

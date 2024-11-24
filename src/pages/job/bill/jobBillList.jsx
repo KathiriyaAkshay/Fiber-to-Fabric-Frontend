@@ -24,6 +24,7 @@ import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan"
 import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
+import moment from "moment";
 
 const JobBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -106,6 +107,11 @@ const JobBillList = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -444,6 +450,7 @@ const JobBillList = () => {
                   onChange={setFromDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
 
@@ -456,6 +463,7 @@ const JobBillList = () => {
                   onChange={setToDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
             </Flex>
