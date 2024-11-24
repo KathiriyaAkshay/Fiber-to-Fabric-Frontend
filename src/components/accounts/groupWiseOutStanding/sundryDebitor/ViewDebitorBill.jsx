@@ -69,9 +69,6 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const ViewDebitorBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
-  console.log("ViewDebtorBill =============================");
-  console.log(details);
-
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});

@@ -168,6 +168,10 @@ body {
     padding: 9px !important;
   }
 } */
+.ant-modal-wrap {
+  z-index: 99999 !important;
+}
+
 .ant-table {
   font-size: 14px !important;
 }

@@ -13,7 +13,7 @@ const PaymentModal = () => {
   };
 
   const onSubmit = () => {
-    console.log("on submit");
+    //
   };
 
   const { control, handleSubmit } = useForm({

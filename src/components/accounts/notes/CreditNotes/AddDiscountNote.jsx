@@ -201,7 +201,6 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       );
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
-  console.log({ selectedPartyCompany });
 
   const calculateTaxAmount = () => {
     let totalAmount = 0;

@@ -101,7 +101,6 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
         },
       ],
     };
-    console.log({ payload });
 
     await addCreditNote({ data: payload, companyId: data.company_id });
   };
