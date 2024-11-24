@@ -177,6 +177,11 @@ body {
   padding-bottom: 12px !important;
 }
 
+.ant-table .ant-table-thead .ant-table-column-has-sorters:hover {
+  background-color: #194a6d3b !important;
+  color: #194a6d !important;
+}
+
 .ant-table .ant-table-cell {
   padding: 9px !important;
 }
@@ -187,6 +192,10 @@ body {
 
 tbody tr td {
   text-align: left;
+}
+
+.ant-picker-dropdown .ant-picker-content td {
+  text-align: center !important;
 }
 
 /* Grid information model  */
@@ -830,26 +839,23 @@ input:read-only {
   border-color: transparent;
 }
 
-
-.beam-details-information-div{
+.beam-details-information-div {
   background-color: #f7f7f7;
   padding: 10px;
 }
 
-.beam-details-other-div{
+.beam-details-other-div {
   background-color: #ffffff !important;
 }
 
-.beam-details-highlight-div{
+.beam-details-highlight-div {
   background-color: #ffe9e9 !important;
 }
 
-.bill-option-card{
-  .ant-card-body{
-    padding: 0px !important;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
-    padding-top: 15px !important;
-    padding-bottom: 15px !important;
-  }
+.bill-option-card .ant-card-body {
+  padding: 0px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
 }
