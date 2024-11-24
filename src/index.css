@@ -946,3 +946,32 @@ h2 {
 .checked-bill-row{
   background-color: #ccffdc;
 }
+
+.purchase-report-yarn-company{
+  font-size: 18px;
+}
+
+.purchase-report-table-title{
+  font-size: 16px;
+}
+
+.purchase-report-table-data-title{
+  font-size: 15px;
+  font-weight: 600;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-left: 10px;
+} 
+
+.purchase-report-table-data{
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.purchase-total-td{
+  background-color: #000000;
+}
+
+.purchase-total-font{
+  color: #fff;
+}

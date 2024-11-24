@@ -6,6 +6,7 @@ import {
   Flex,
   Select,
   Spin,
+  Tag,
   Typography,
 } from "antd";
 import dayjs from "dayjs";
@@ -13,6 +14,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getAccountPurchaseReportService } from "../../../api/requests/accounts/reports";
+import moment from "moment";
 
 const PurchaseReport = () => {
   const [fromDate, setFromDate] = useState(null);
@@ -26,6 +28,11 @@ const PurchaseReport = () => {
       return companyListRes?.rows?.find(({ id }) => id === companyId);
     }
   }, [companyId, companyListRes]);
+
+  
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   const { data: purchaseReportData, isLoading } = useQuery({
     queryKey: [
@@ -69,8 +76,8 @@ const PurchaseReport = () => {
     {
       key: "1",
       label: (
-        <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
-          <ProfileOutlined /> &nbsp;&nbsp; Yarn Purchase Report
+        <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
+          <ProfileOutlined /> &nbsp;&nbsp; <Tag color="#108ee9">Yarn Purchase Report</Tag>
         </tr>
       ),
       children: (
@@ -85,10 +92,12 @@ const PurchaseReport = () => {
               ? purchaseReportData?.yarnReports?.map((item, index) => {
                   return (
                     <tr key={index + "_yarn_purchase_report"}>
-                      <td>Quality value</td>
-                      <td style={{ width: "20%" }}>{item?.meters || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.amount || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.avg_rate || 0}</td>
+                      <td className="purchase-report-table-data-title">
+                        {`${item?.yarn_count}C/ ${item?.filament} ${item?.yarn_company_name} ${item?.yarn_color}`}
+                      </td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.meters || 0}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.amount).toFixed(2) || 0}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
                   );
                 })
@@ -128,8 +137,8 @@ const PurchaseReport = () => {
     {
       key: "1",
       label: (
-        <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
-          <ProfileOutlined /> &nbsp;&nbsp; Grey Purchase Report
+        <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
+          <ProfileOutlined /> &nbsp;&nbsp; <Tag color="#108ee9">Grey Purchase Report</Tag>
         </tr>
       ),
       children: (
@@ -144,10 +153,10 @@ const PurchaseReport = () => {
               ? purchaseReportData?.purchase_report.map((item, index) => {
                   return (
                     <tr key={index + "_grey_purchase_report"}>
-                      <td>{item?.quality_name || ""}</td>
-                      <td style={{ width: "20%" }}>{item?.meters || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.amount || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.avg_rate || 0}</td>
+                      <td className="purchase-report-table-data-title">{item?.quality_name || ""}</td>
+                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{item?.meters || 0}</td>
+                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{item?.amount || 0}</td>
+                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
                   );
                 })
@@ -181,8 +190,8 @@ const PurchaseReport = () => {
     {
       key: "1",
       label: (
-        <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
-          <ProfileOutlined /> &nbsp;&nbsp; Job Purchase Report
+        <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
+          <ProfileOutlined /> &nbsp;&nbsp; <Tag color="#108ee9">Job Purchase Report</Tag>
         </tr>
       ),
       children: (
@@ -197,10 +206,10 @@ const PurchaseReport = () => {
               ? purchaseReportData?.job_report?.map((item, index) => {
                   return (
                     <tr key={index + "_job_purchase_report"}>
-                      <td>{item?.quality_name || ""}</td>
-                      <td style={{ width: "20%" }}>{item?.meters || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.amount || 0}</td>
-                      <td style={{ width: "20%" }}>{item?.avg_rate || 0}</td>
+                      <td className="purchase-report-table-data-title">{item?.quality_name || ""}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.meters || 0}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.amount || 0}</td>
+                      <td  className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
                   );
                 })
@@ -273,12 +282,14 @@ const PurchaseReport = () => {
               value={fromDate}
               onChange={setFromDate}
               format="DD-MM-YYYY"
+              disabledDate={disabledFutureDate}
             />
             <Typography>To</Typography>
             <DatePicker
               value={toDate}
               onChange={setToDate}
               format="DD-MM-YYYY"
+              disabledDate={disabledFutureDate}
             />
           </Flex>
           <Button
@@ -318,7 +329,7 @@ const PurchaseReport = () => {
             {/* <!-- Table Header Row --> */}
             <tr>
               <th rowSpan={1}></th>
-              <th colSpan={3}>{selectedCompany?.company_name}</th>
+              <th colSpan={3} className="purchase-report-yarn-company">{selectedCompany?.company_name}</th>
               {/* <th colSpan={3}>Company 2</th> */}
               {/* <th colSpan={3}>Total</th> */}
             </tr>
@@ -326,39 +337,42 @@ const PurchaseReport = () => {
             {/* <!-- Sub-Header Row --> */}
             <tr>
               <th>Quality</th>
-              <th style={{ width: "20%" }}>METER/KG</th>
-              <th style={{ width: "20%" }}>AMOUNT </th>
-              <th style={{ width: "20%" }}>AVG.RATE (Incl. Gst)</th>
+              <th className="purchase-report-table-title" style={{ width: "20%" }}>METER/KG</th>
+              <th className="purchase-report-table-title" style={{ width: "20%" }}>AMOUNT </th>
+              <th className="purchase-report-table-title" style={{ width: "20%" }}>AVG.RATE (Incl. Gst)</th>
             </tr>
           </thead>
 
           {/* Yarn Purchase Report Start------------------------------------------------------- */}
-          <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
+          <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
             <td colSpan={10}>
               <Collapse items={yarnPurchaseItems} />
             </td>
           </tr>
-
           <tr>
-            <td>(-Yarn Purchase Return)</td>
-            <td>{purchaseReportData?.yarnReturnReports?.meters || 0}</td>
-            <td>{purchaseReportData?.yarnReturnReports?.amount || 0}</td>
             <td>
-              {purchaseReportData?.yarnReturnReports?.amount /
-                purchaseReportData?.yarnReturnReports?.meters || 0}
+              <Tag color="red">
+                Yarn Purchase Return
+              </Tag>
+            </td>
+            <td className="purchase-report-table-data">{purchaseReportData?.yarnReturnReports?.meters || 0}</td>
+            <td className="purchase-report-table-data">{parseFloat(purchaseReportData?.yarnReturnReports?.amount).toFixed(2) || 0}</td>
+            <td className="purchase-report-table-data">
+              {parseFloat(purchaseReportData?.yarnReturnReports?.amount /
+                purchaseReportData?.yarnReturnReports?.meters || 0).toFixed(2)}
             </td>
           </tr>
 
-          <tr>
-            <td>Net Total</td>
-            <td>{yarnReturnReportNetTotal?.totalMeter}</td>
-            <td>{yarnReturnReportNetTotal?.totalAmount}</td>
-            <td>{yarnReturnReportNetTotal?.totalAvgRate}</td>
+          <tr className="purchase-total-td">
+            <td className="purchase-report-table-data-title purchase-total-font">Net Total</td>
+            <td className="purchase-report-table-data purchase-total-font">{parseFloat(yarnReturnReportNetTotal?.totalMeter).toFixed(2)}</td>
+            <td className="purchase-report-table-data purchase-total-font">{parseFloat(yarnReturnReportNetTotal?.totalAmount).toFixed(2)}</td>
+            <td className="purchase-report-table-data purchase-total-font">{parseFloat(yarnReturnReportNetTotal?.totalAvgRate).toFixed(2)}</td>
           </tr>
           {/* Yarn Purchase Report End------------------------------------------------------- */}
 
           {/* Grey Purchase Report Start------------------------------------------------------- */}
-          <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
+          <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
             <td colSpan={10}>
               <Collapse items={greyPurchaseItems} />
             </td>
@@ -377,16 +391,16 @@ const PurchaseReport = () => {
             <td>0</td> 
           </tr> */}
 
-          <tr>
-            <td>Total</td>
-            <td>{greyReturnReportNetTotal?.totalMeter}</td>
-            <td>{greyReturnReportNetTotal?.totalAmount}</td>
-            <td>{greyReturnReportNetTotal?.totalAvgRate}</td>
+          <tr className="purchase-total-td">
+            <td className="purchase-report-table-data-title purchase-total-font">Total</td>
+            <td className="purchase-report-table-data purchase-total-font">{greyReturnReportNetTotal?.totalMeter}</td>
+            <td className="purchase-report-table-data purchase-total-font">{greyReturnReportNetTotal?.totalAmount}</td>
+            <td className="purchase-report-table-data purchase-total-font">{parseFloat(greyReturnReportNetTotal?.totalAvgRate).toFixed(2)}</td>
           </tr>
           {/* Grey Purchase Report End------------------------------------------------------- */}
 
           {/* Job  Purchase Report Start------------------------------------------------------- */}
-          <tr style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}>
+          <tr style={{ cursor: "pointer", backgroundColor: "#f5f5f5" }}>
             <td colSpan={10}>
               <Collapse items={jobPurchaseItems} />
             </td>
@@ -405,30 +419,30 @@ const PurchaseReport = () => {
           <td>0</td>
         </tr> */}
 
-          <tr>
-            <td>Total</td>
-            <td>{jobReturnReportNetTotal?.totalMeter}</td>
-            <td>{jobReturnReportNetTotal?.totalAmount}</td>
-            <td>{jobReturnReportNetTotal?.totalAvgRate}</td>
+          <tr className="purchase-total-td"> 
+            <td className="purchase-report-table-data-title purchase-total-font">Total</td>
+            <td className="purchase-report-table-data purchase-total-font">{jobReturnReportNetTotal?.totalMeter}</td>
+            <td className="purchase-report-table-data purchase-total-font">{jobReturnReportNetTotal?.totalAmount}</td>
+            <tdv className="purchase-report-table-data purchase-total-font">{parseFloat(jobReturnReportNetTotal?.totalAvgRate).toFixed(2)}</tdv>
           </tr>
           {/* Job Purchase Report End------------------------------------------------------- */}
 
           <tr style={{ backgroundColor: "#ebebeb" }}>
-            <td>Net Total</td>
-            <td>
+            <td className="purchase-report-table-data-title">Net Total</td>
+            <td className="purchase-report-table-data">
               {yarnReturnReportNetTotal?.totalMeter +
                 greyReturnReportNetTotal?.totalMeter +
                 jobReturnReportNetTotal?.totalMeter}
             </td>
-            <td>
-              {yarnReturnReportNetTotal?.totalAmount +
+            <td className="purchase-report-table-data">
+              {parseFloat(yarnReturnReportNetTotal?.totalAmount +
                 greyReturnReportNetTotal?.totalAmount +
-                jobReturnReportNetTotal?.totalAmount}
+                jobReturnReportNetTotal?.totalAmount).toFixed(2)}
             </td>
-            <td>
-              {yarnReturnReportNetTotal?.totalAvgRate +
+            <td className="purchase-report-table-data">
+              {parseFloat(yarnReturnReportNetTotal?.totalAvgRate +
                 greyReturnReportNetTotal?.totalAvgRate +
-                jobReturnReportNetTotal?.totalAvgRate}
+                jobReturnReportNetTotal?.totalAvgRate).toFixed(2)}
             </td>
           </tr>
         </table>
