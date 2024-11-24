@@ -8,6 +8,7 @@ import {
   Space,
   Spin,
   Typography,
+  Tag,
 } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { usePagination } from "../../hooks/usePagination";
@@ -18,6 +19,7 @@ import { getTakaCuttingListRequest } from "../../api/requests/production/takaTpC
 import DeleteTakaTpCutting from "../../components/production/DeleteTakaTpCutting";
 import useDebounce from "../../hooks/useDebounce";
 import dayjs from "dayjs";
+import { CUT_TAG_COLOR, SAMPLE_CUTTING_TAG_COLOR, TAKA_IP_TAG_COLOR } from "../../constants/tag";
 
 const TakaTpCutting = () => {
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ const TakaTpCutting = () => {
     },
     {
       title: "Sr.No",
-      dataIndex: "sr_no",
+      dataIndex: "sr_number",
       key: "sr_no",
     },
     {
@@ -98,11 +100,31 @@ const TakaTpCutting = () => {
       title: "From Taka",
       dataIndex: "from_taka",
       key: "from_taka",
+      render: (text, record) => {
+        return(
+          <div>
+            <div style = {{
+              fontWeight: 600
+            }}><Tag color="purple">{text}</Tag></div>
+            <div>( {record?.from_taka_meter} - {record?.total_meter} ) = {+record?.from_taka_meter - +record?.total_meter}</div>
+          </div>
+        )
+      }
     },
     {
       title: "To Taka",
       dataIndex: "to_taka",
       key: "to_taka",
+      render: (text, record) => {
+        return(
+          <div>
+            <div style = {{
+              fontWeight: 600
+            }}><Tag color="cyan">{text}</Tag></div>
+            <div>( {record?.to_taka_meter} + {record?.total_meter} ) = {+record?.to_taka_meter + +record?.total_meter}</div>
+          </div>
+        )
+      }
     },
     {
       title: "Meter (Pis)",
@@ -124,6 +146,25 @@ const TakaTpCutting = () => {
       title: "Remarks",
       dataIndex: "remark",
       key: "remark",
+    },
+    {
+      title: "Status", 
+      dataIndex: "", 
+      render: (text, record) => {
+        if (record?.is_taka_tp){
+          return(
+            <Tag color={TAKA_IP_TAG_COLOR}>TAKA I/P</Tag>
+          )
+        } else if (record?.is_sample_cutting){
+          return(
+            <Tag color={SAMPLE_CUTTING_TAG_COLOR}>Sample Cutting</Tag>
+          )
+        } else {
+          return(
+            <Tag color={CUT_TAG_COLOR}>Cut</Tag>
+          )
+        }
+      }
     },
     {
       title: "Action",
@@ -194,6 +235,7 @@ const TakaTpCutting = () => {
                 <Table.Summary.Cell index={0} align="left">
                   <b>{totalCutPis}</b>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>

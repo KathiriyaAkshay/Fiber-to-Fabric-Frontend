@@ -255,14 +255,20 @@ const ViewPurchaseReturnChallanInfo = ({ details }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 1}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?"red":"black",
+                  fontWeight: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?600:0
+                }}>
                   {
-                    details?.purchase_taka_challan?.purchase_challan_details[
-                      index
-                    ]?.taka_no
+                    `${details?.purchase_taka_challan?.purchase_challan_details[index]?.taka_no ?? ""} ${
+                      details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned ? "(Returned)" : ""
+                    }`
                   }
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?"red":"black",
+                  fontWeight: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?600:0
+                 }}>
                   {
                     details?.purchase_taka_challan?.purchase_challan_details[
                       index
@@ -272,14 +278,20 @@ const ViewPurchaseReturnChallanInfo = ({ details }) => {
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                  color: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?"red":"black",
+                  fontWeight: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?600:0
+                 }}>
                   {
-                    details?.purchase_taka_challan?.purchase_challan_details[
-                      index + 12
-                    ]?.taka_no
+                    `${details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.taka_no ?? ""} ${
+                      details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.is_returned ? "(Returned)" : ""
+                    }`
                   }
                 </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center", 
+                   color: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?"red":"black",
+                   fontWeight: details?.purchase_taka_challan?.purchase_challan_details[index]?.is_returned?600:0
+                 }}>
                   {
                     details?.purchase_taka_challan?.purchase_challan_details[
                       index + 12

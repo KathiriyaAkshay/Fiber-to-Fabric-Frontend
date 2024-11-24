@@ -107,6 +107,7 @@ const AddJobTaka = () => {
 
     const job_challan_detail = [];
     let hasError = 0;
+    let all_taka_number = [] ; 
     jobChallanDetailArr.forEach((field) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
@@ -119,6 +120,7 @@ const AddJobTaka = () => {
           message: "Taka No required.",
         });
         hasError = 1;
+        return ; 
       }
       if (isNaN(meter) || meter === "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -127,6 +129,7 @@ const AddJobTaka = () => {
           message: "Meter required.",
         });
         hasError = 1;
+        return ; 
       }
       if (isNaN(weight) || weight === "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -135,6 +138,7 @@ const AddJobTaka = () => {
           message: "Weight required.",
         });
         hasError = 1;
+        return ; 
       }
 
       if (
@@ -142,6 +146,7 @@ const AddJobTaka = () => {
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
+        all_taka_number.push(data[`taka_no_${field}`])
         job_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
@@ -168,6 +173,12 @@ const AddJobTaka = () => {
       is_grey: true,
       job_challan_detail: job_challan_detail,
     };
+
+    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false){
+      message.error("Please, Enter all unique taka") ; 
+      hasError = 1;
+      return ; 
+    } 
 
     if (!hasError) {
       await AddJobTaka(newData);

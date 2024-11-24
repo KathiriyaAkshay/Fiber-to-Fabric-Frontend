@@ -126,6 +126,11 @@ const PurchaseReturnList = () => {
     navigate(`/job/challan/rework-challan/update/${id}`);
   }
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = purchaseReturnList?.rows?.map((item, index) => {
@@ -256,6 +261,7 @@ const PurchaseReturnList = () => {
         return (
           <Space>
             <ViewPurchaseReturnChallanInfo details={details} />
+
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -263,8 +269,11 @@ const PurchaseReturnList = () => {
             >
               <EditOutlined />
             </Button>
+            
             <DebitNote />
+          
             <DeleteReworkChallan details={details} />
+          
           </Space>
         );
       },
@@ -367,6 +376,7 @@ const PurchaseReturnList = () => {
                   onChange={setFromDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
 
@@ -379,6 +389,7 @@ const PurchaseReturnList = () => {
                   onChange={setToDate}
                   className="min-w-40"
                   format={"DD-MM-YYYY"}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
             </Flex>

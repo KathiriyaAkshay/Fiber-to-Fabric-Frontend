@@ -26,6 +26,7 @@ import { getSaleChallanReturnListRequest } from "../../../../api/requests/sale/c
 import { getPartyListRequest } from "../../../../api/requests/users";
 import ViewSaleReturn from "../../../../components/sale/challan/saleReturn/ViewSaleReturn";
 import SaleReturnBill from "../../../../components/sale/challan/saleReturn/SaleReturnBill";
+import moment from "moment";
 
 const SaleReturnList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -280,6 +281,10 @@ const SaleReturnList = () => {
     },
   ];
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -417,6 +422,7 @@ const SaleReturnList = () => {
               onChange={setFromDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -427,6 +433,7 @@ const SaleReturnList = () => {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
         </Flex>

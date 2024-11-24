@@ -34,6 +34,7 @@ import ViewSaleChallan from "../../../../components/sale/challan/saleChallan/Vie
 import SaleChallanBill from "../../../../components/sale/challan/saleChallan/SaleChallanBill";
 import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewChallan";
 import { disabledFutureDate } from "../../../../utils/date";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR } from "../../../../constants/tag";
 
 const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -348,11 +349,18 @@ const SaleChallanList = () => {
               fontWeight: 600,
             }}
           >
-            {text.map(({ sale_challan_type }) => sale_challan_type).join(", ")}
+            {text.map(({ sale_challan_type }) => (
+              <Tag color={sale_challan_type == "purchase/trading"?PURCHASE_TAG_COLOR:
+                sale_challan_type == "taka(inhouse)"?SALE_TAG_COLOR:JOB_TAG_COLOR
+              } key={sale_challan_type}>
+                {sale_challan_type}
+              </Tag>
+            ))}
           </div>
         );
       },
-    },
+    }
+    ,
     {
       title: "Bill Status",
       dataIndex: "bill_status",
@@ -415,15 +423,17 @@ const SaleChallanList = () => {
                 <DeleteSaleChallan details={details} />
               </>
             )}
+            
             {is_return_option == 0 && (
               <ViewSaleChallan details={details} companyId={companyId} />
             )}
+
             <Button
               onClick={() => {
                 let MODE;
-                if (details.payment_status === "paid") {
+                if (details.bill_status !== "paid") {
                   MODE = "VIEW";
-                } else if (details.payment_status === "not_paid") {
+                } else if (details.bill_status === "pending") {
                   MODE = "ADD";
                 }
                 setSaleChallanModal((prev) => {

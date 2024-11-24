@@ -34,6 +34,7 @@ import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
 import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
 import { disabledFutureDate } from "../../utils/date";
 import AlertModal from "../../components/common/modal/alertModal";
+import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
 
 const OpenProduction = () => {
   const [form] = Form.useForm();
@@ -131,9 +132,9 @@ const OpenProduction = () => {
           // pending_meter: data.pending_meter - totalMeter,
           // pending_weight: data.pending_weight - totalWeight,
           // pending_taka: data.pending_taka - totalTaka,
-          pending_meter: pendingMeter,
-          pending_weight: pendingWeight,
-          pending_taka: pendingTaka,
+          // pending_meter: pendingMeter,
+          // pending_weight: pendingWeight,
+          // pending_taka: pendingTaka,
 
           total_meter: totalMeter,
           total_weight: totalWeight,
@@ -255,14 +256,36 @@ const OpenProduction = () => {
     is_create_challan,
     last_taka_no,
     order_id,
-    // pending_meter,
-    // pending_taka,
-    // pending_weight,
     broker_id,
     machine_name,
     party_id,
     quality_id,
+    total_meter, 
+    total_taka, 
+    total_weight
   } = watch();
+
+  const { data: loadedMachineList, isLoading: isLoadingLoadedMachineNo } =
+    useQuery({
+      queryKey: [
+        "loaded",
+        "machine",
+        "list",
+        { company_id: companyId, machine_name },
+      ],
+      queryFn: async () => {
+        if (machine_name) {
+          const res = await getLoadedMachineListRequest({
+            params: { company_id: companyId, machine_name },
+          });
+
+          const noOfMachine = res.data?.data?.machineDetail?.no_of_machines;
+          return Array.from({ length: noOfMachine }, (_, index) => index + 1);
+        }
+      },
+    enabled: Boolean(companyId),
+    initialData: [],
+  });
 
   // Fetch last production taka number fetch
   const { data: productionLastTaka } = useQuery({
@@ -396,7 +419,7 @@ const OpenProduction = () => {
         }
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   // Get Vehicle dropdown list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -440,39 +463,36 @@ const OpenProduction = () => {
   useEffect(() => {
     if (order_id && grayOrderListRes) {
       const order = grayOrderListRes.row.find(({ id }) => order_id === id);
+      if (order){
+        setValue("quality_id", order.quality_id);
+        setValue(
+          "broker_name",
+          `${order.broker.first_name} ${order.broker.last_name}`
+        );
+        setValue("delivery_address", order.party.address);
+        setValue("broker_id", order.broker_id);
+        setValue("total_meter", order.total_meter);
+        setValue("total_taka", order.total_taka);
+        setValue("total_weight", order.weight);
+        setValue("machine_name", order.machine_name);
+        setValue("customer_gst_in", order?.party?.gst_no);
+        setValue("party_id", order.party.id);
+        setValue("company", order.party.id);
+        trigger("quality_id");
+        trigger("broker_name");
+        trigger("delivery_address");
+        trigger("broker_id");
+        trigger("total_meter");
+        trigger("total_taka");
+        trigger("total_weight");
+        trigger("machine_name");
+        trigger("party_id");
+        trigger("company");
+        trigger("pending_meter");
+        trigger("pending_taka");
+        trigger("pending_weight");
+      }
 
-      setValue("quality_id", order.quality_id);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("delivery_address", order.party.address);
-      setValue("broker_id", order.broker_id);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue("machine_name", order.machine_name);
-      setValue("customer_gst_in", order?.party?.gst_no);
-
-      setValue("party_id", order.party.id);
-      setValue("company", order.party.id);
-      // setValue("pending_meter", order.pending_meter);
-      // setValue("pending_taka", order.pending_taka);
-      // setValue("pending_weight", order.pending_weight);
-
-      trigger("quality_id");
-      trigger("broker_name");
-      trigger("delivery_address");
-      trigger("broker_id");
-      trigger("total_meter");
-      trigger("total_taka");
-      trigger("total_weight");
-      trigger("machine_name");
-      trigger("party_id");
-      trigger("company");
-      trigger("pending_meter");
-      trigger("pending_taka");
-      trigger("pending_weight");
     }
   }, [order_id, grayOrderListRes, setValue, trigger]);
 
@@ -522,6 +542,27 @@ const OpenProduction = () => {
     setActiveField(1);
     setIsAlertOpen(false);
   };
+
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+    
+  }, [
+    total_meter, 
+    total_weight, 
+    total_taka, 
+    totalTaka, 
+    totalWeight, 
+    totalMeter
+  ])
 
   return (
     <>
@@ -1231,6 +1272,7 @@ const OpenProduction = () => {
               setTotalWeight={setTotalWeight}
               totalTaka={totalTaka}
               setTotalTaka={setTotalTaka}
+              loadedMachineList = {loadedMachineList}
             />
           )}
         </div>

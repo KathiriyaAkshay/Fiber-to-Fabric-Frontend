@@ -1,11 +1,14 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Col, Form, Input, message, Row } from "antd";
+import { Button, Col, Form, Input, message, Row, Tag } from "antd";
 import { Controller } from "react-hook-form";
 import { createSaleChallanTakaDetailRequest } from "../../../../api/requests/sale/challan/challan";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PURCHASE_TAG_COLOR, SALE_TAG_COLOR, JOB_TAG_COLOR } from "../../../../constants/tag";
+import { array } from "yup";
 
 const numOfFields = Array.from({ length: 48 }, (_, i) => i + 1);
 const chunkSize = numOfFields.length / 4;
+
 
 const SaleChallanFieldTable = ({
   errors,
@@ -44,41 +47,47 @@ const SaleChallanFieldTable = ({
   };
 
   const [gt_total, set_gt_total] = useState({
-    "0": {total_taka: 0, total_meter: 0, total_weight: 0},
-    "1": {total_taka: 0, total_meter: 0, total_weight: 0},
-    "2": {total_taka: 0, total_meter: 0, total_weight: 0},
-    "3": {total_taka: 0, total_meter: 0, total_weight: 0}
+    "0": { total_taka: 0, total_meter: 0, total_weight: 0 },
+    "1": { total_taka: 0, total_meter: 0, total_weight: 0 },
+    "2": { total_taka: 0, total_meter: 0, total_weight: 0 },
+    "3": { total_taka: 0, total_meter: 0, total_weight: 0 }
   })
 
   const CalculateTableWiseTotal = (index) => {
     let array = Array.from({ length: 12 }, (_, index) => index + 1);
-    let total_taka = 0; 
-    let total_meter = 0 ; 
-    let total_weight = 0 ; 
+    let total_taka = 0;
+    let total_meter = 0;
+    let total_weight = 0;
 
     array?.map((element) => {
 
-      let taka_no = getValues(`taka_no_${Number(element) + index}`) ; 
-      let meter = getValues(`meter_${Number(element) + index}`) ; 
-      let weight = getValues(`weight_${Number(element) + index}`) ; 
+      let taka_no = getValues(`taka_no_${Number(element) + index}`);
+      let meter = getValues(`meter_${Number(element) + index}`);
+      let weight = getValues(`weight_${Number(element) + index}`);
 
-      if (taka_no !== undefined && taka_no !== '' && taka_no != null){
-        total_taka = total_taka + 1; 
-        total_meter = total_meter + Number(meter) ; 
-        total_weight = total_weight + Number(weight) ; 
-      } else{ 
+      if (taka_no !== undefined && taka_no !== '' && taka_no != null) {
+        total_taka = total_taka + 1;
+        total_meter = total_meter + Number(meter);
+        total_weight = total_weight + Number(weight);
+      } else {
       }
     })
 
     set_gt_total((prevState) => ({
-      ...prevState, 
+      ...prevState,
       [index]: {
-        total_taka: total_taka, 
-        total_meter: total_meter, 
+        total_taka: total_taka,
+        total_meter: total_meter,
         total_weight: total_weight
       }
     }))
   }
+
+  useEffect(() => {
+    CalculateTableWiseTotal(0);
+    CalculateTableWiseTotal(1);
+    CalculateTableWiseTotal(2);
+  }, [getValues])
 
   const activeNextField = async (event, fieldNumber, indexTable) => {
     if (event.keyCode === 13) {
@@ -101,8 +110,8 @@ const SaleChallanFieldTable = ({
         setTotalWeight((prev) => prev + +data.data.weight);
         setActiveField((prev) => prev + 1);
 
-        CalculateTableWiseTotal(indexTable) ; 
-        
+        CalculateTableWiseTotal(indexTable);
+
         setTimeout(() => {
           setFocus(`taka_no_${fieldNumber + 1}`);
         }, 10);
@@ -134,25 +143,26 @@ const SaleChallanFieldTable = ({
         setValue(`taka_no_${fieldNumber}`, "");
         setValue(`meter_${fieldNumber}`, "");
         setValue(`weight_${fieldNumber}`, "");
+        setValue(`model_${fieldNumber}`, "");
       }, 200);
 
       setTimeout(() => {
         setFocus(`taka_no_${fieldNumber + 1}`);
       }, 10);
 
-      let temp_taka = gt_total[indexColumn]?.total_taka ; 
-      let temp_meter = gt_total[indexColumn]?.total_meter ; 
-      let temp_weight = gt_total[indexColumn]?.total_weight ; 
+      let temp_taka = gt_total[indexColumn]?.total_taka;
+      let temp_meter = gt_total[indexColumn]?.total_meter;
+      let temp_weight = gt_total[indexColumn]?.total_weight;
 
-      temp_taka = temp_taka - 1 ; 
-      temp_meter = temp_meter - Number(getValues(`meter_${fieldNumber}`)) ; 
-      temp_weight = temp_weight - Number(getValues(`weight_${fieldNumber}`)) ; 
-      
+      temp_taka = temp_taka - 1;
+      temp_meter = temp_meter - Number(getValues(`meter_${fieldNumber}`));
+      temp_weight = temp_weight - Number(getValues(`weight_${fieldNumber}`));
+
       set_gt_total((prevState) => ({
-        ...prevState, 
+        ...prevState,
         [indexColumn]: {
-          total_taka: temp_taka, 
-          total_meter: temp_meter, 
+          total_taka: temp_taka,
+          total_meter: temp_meter,
           total_weight: temp_weight
         }
       }))
@@ -164,13 +174,14 @@ const SaleChallanFieldTable = ({
     <>
       <Row style={{ marginTop: "-20" }}>
 
-        <Col span={6}>
+        <Col span={8}>
           <table className="job-challan-details-table" border={1}>
             <thead>
               <th>#</th>
               <th>Taka No</th>
               <th>Meter</th>
               <th>Weight</th>
+              <th style={{ minWidth: 90 }}>Info</th>
               <th>
                 <MinusCircleOutlined />
               </th>
@@ -179,9 +190,11 @@ const SaleChallanFieldTable = ({
               {numOfFields.slice(0, chunkSize).map((fieldNumber) => {
                 return (
                   <tr key={fieldNumber}>
+
                     <td className="job-challan-taka-index-column">
                       {fieldNumber}
                     </td>
+
                     <td>
                       <Form.Item
                         name={`taka_no_${fieldNumber}`}
@@ -220,6 +233,7 @@ const SaleChallanFieldTable = ({
                         />
                       </Form.Item>
                     </td>
+
                     <td>
                       <Form.Item
                         name={`meter_${fieldNumber}`}
@@ -252,6 +266,7 @@ const SaleChallanFieldTable = ({
                         />
                       </Form.Item>
                     </td>
+
                     <td>
                       <Form.Item
                         name={`weight_${fieldNumber}`}
@@ -300,6 +315,21 @@ const SaleChallanFieldTable = ({
                         )}
                       />
                     </td>
+
+                    <td style={{ paddingLeft: 10, minWidth: 90, justifyContent: "center" }}>
+                      {getValues(`model_${fieldNumber}`) !== "" && getValues(`model_${fieldNumber}`) !== undefined && (
+                        <Tag color={getValues(`model_${fieldNumber}`) == "taka(inhouse)" ? SALE_TAG_COLOR :
+                          getValues(`model_${fieldNumber}`) == "purchase/trading" ? PURCHASE_TAG_COLOR : JOB_TAG_COLOR}>
+                          {
+                            String(
+                              getValues(`model_${fieldNumber}`)).toUpperCase() == "PURCHASE/TRADING"
+                              ? "PURCHASE"
+                              : String(getValues(`model_${fieldNumber}`)).toUpperCase() == "TAKA(INHOUSE)" ? "INHOUSE" : "JOB"
+                          }
+                        </Tag>
+                      )}
+                    </td>
+
                     <td>
                       <Button
                         className="job-challan-taka-plus-option"
@@ -316,19 +346,21 @@ const SaleChallanFieldTable = ({
                 <td className="total-info-td-cell">{gt_total["0"]?.total_taka}</td>
                 <td className="total-info-td-cell">{gt_total["0"]?.total_meter}</td>
                 <td className="total-info-td-cell">{gt_total["0"]?.total_weight}</td>
-                <td></td>
+                <td className="total-info-td-cell"></td>
+                <td className="total-info-td-cell"></td>
               </tr>
             </tbody>
           </table>
         </Col>
 
-        <Col span={6}>
+        <Col span={8}>
           <table border={1} className="job-challan-details-table">
             <thead>
               <th>#</th>
               <th>Taka No</th>
               <th>Meter</th>
               <th>Weight</th>
+              <th style={{ minWidth: 90 }}>Info</th>
               <th>
                 <MinusCircleOutlined />
               </th>
@@ -438,6 +470,20 @@ const SaleChallanFieldTable = ({
                           />
                         </Form.Item>
                       </td>
+
+                      <td style={{ paddingLeft: 10, minWidth: 90, justifyContent: "center" }}>
+                        {getValues(`model_${fieldNumber}`) !== "" && getValues(`model_${fieldNumber}`) !== undefined && (
+                          <Tag color={getValues(`model_${fieldNumber}`) == "taka(inhouse)" ? SALE_TAG_COLOR :
+                            getValues(`model_${fieldNumber}`) == "purchase/trading" ? PURCHASE_TAG_COLOR : JOB_TAG_COLOR}>
+                            {
+                              String(
+                                getValues(`model_${fieldNumber}`)).toUpperCase() == "PURCHASE/TRADING"
+                                ? "PURCHASE"
+                                : String(getValues(`model_${fieldNumber}`)).toUpperCase() == "TAKA(INHOUSE)" ? "INHOUSE" : "JOB"
+                            }
+                          </Tag>
+                        )}
+                      </td>
                       <td>
                         <Button
                           className="job-challan-taka-plus-option"
@@ -454,19 +500,21 @@ const SaleChallanFieldTable = ({
                 <td className="total-info-td-cell">{gt_total["1"]?.total_taka}</td>
                 <td className="total-info-td-cell">{gt_total["1"]?.total_meter}</td>
                 <td className="total-info-td-cell">{gt_total["1"]?.total_weight}</td>
-                <td></td>
+                <td className="total-info-td-cell"></td>
+                <td className="total-info-td-cell"></td>
               </tr>
             </tbody>
           </table>
         </Col>
 
-        <Col span={6}>
+        <Col span={8}>
           <table border={1} className="job-challan-details-table">
             <thead>
               <th>#</th>
               <th>Taka No</th>
               <th>Meter</th>
               <th>Weight</th>
+              <th style={{ minWidth: 90 }}>Info</th>
               <th>
                 <MinusCircleOutlined />
               </th>
@@ -576,6 +624,19 @@ const SaleChallanFieldTable = ({
                           />
                         </Form.Item>
                       </td>
+                      <td style={{ paddingLeft: 10, minWidth: 90, justifyContent: "center" }}>
+                        {getValues(`model_${fieldNumber}`) !== "" && getValues(`model_${fieldNumber}`) !== undefined && (
+                          <Tag color={getValues(`model_${fieldNumber}`) == "taka(inhouse)" ? SALE_TAG_COLOR :
+                            getValues(`model_${fieldNumber}`) == "purchase/trading" ? PURCHASE_TAG_COLOR : JOB_TAG_COLOR}>
+                            {
+                              String(
+                                getValues(`model_${fieldNumber}`)).toUpperCase() == "PURCHASE/TRADING"
+                                ? "PURCHASE"
+                                : String(getValues(`model_${fieldNumber}`)).toUpperCase() == "TAKA(INHOUSE)" ? "INHOUSE" : "JOB"
+                            }
+                          </Tag>
+                        )}
+                      </td>
                       <td>
                         <Button
                           className="job-challan-taka-plus-option"
@@ -592,13 +653,14 @@ const SaleChallanFieldTable = ({
                 <td className="total-info-td-cell">{gt_total["2"]?.total_taka}</td>
                 <td className="total-info-td-cell">{gt_total["2"]?.total_meter}</td>
                 <td className="total-info-td-cell">{gt_total["2"]?.total_weight}</td>
-                <td></td>
+                <td className="total-info-td-cell"></td>
+                <td className="total-info-td-cell"></td>
               </tr>
             </tbody>
           </table>
         </Col>
 
-        <Col span={6}>
+        {/* <Col span={6}>
           <table border={1} className="job-challan-details-table">
             <thead>
               <th>#</th>
@@ -734,7 +796,7 @@ const SaleChallanFieldTable = ({
               </tr>
             </tbody>
           </table>
-        </Col>
+        </Col> */}
       </Row>
     </>
   );

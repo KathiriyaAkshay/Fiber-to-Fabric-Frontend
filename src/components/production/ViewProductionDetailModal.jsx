@@ -1,10 +1,14 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Modal, Table, Typography } from "antd";
+import { Button, Descriptions, Modal, Table, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
+import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../constants/tag";
+import { render } from "react-dom";
 
 const ViewProductionDetailModal = ({ title, details }) => {
+  console.log(details);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -56,15 +60,15 @@ const ViewProductionDetailModal = ({ title, details }) => {
   ];
 
   const data = [
-    {
-      key: "1",
-      date: "11-1-11",
-      employee_name: "John",
-      meter: "",
-      taka_no: "",
-      machine_no: "",
-      beam_no: "",
-    },
+    // {
+    //   key: "1",
+    //   date: "11-1-11",
+    //   employee_name: "John",
+    //   meter: "",
+    //   taka_no: "",
+    //   machine_no: "",
+    //   beam_no: "",
+    // },
   ];
 
   const items = [
@@ -77,45 +81,75 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "2",
       label: "Order Type",
-      children: "-",
+      children: <div><Tag color = {SALE_CHALLAN_INFO_TAG_COLOR}>Sale</Tag></div>,
       span: 2,
     },
     {
       key: "3",
-      label: "Production Company Name",
-      children: "-",
-      span: 2,
-    },
-    {
-      key: "4",
-      label: "Beam status",
-      children: details.status,
-      span: 2,
-    },
-    {
-      key: "5",
       label: "Date",
       children: dayjs(details.production_date).format("DD/MM/YYYY"),
       span: 2,
     },
     {
-      key: "6",
-      label: "P Taka",
-      children: "-",
+      key: "4",
+      label: "Beam No",
+      children: `${details?.beam_no || "-"}`,
       span: 2,
     },
+    {
+      key: "5",
+      label: "Beam status",
+      children: (() => {
+        const text = details?.loaded_beam?.status || ""; // Handle undefined or null status
+        const capitalizeFirstCharacter = (str) =>
+          str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+    
+        const getStatusTag = (status) => {
+          switch (status) {
+            case "running":
+              return <Tag color="magenta">{capitalizeFirstCharacter(status)}</Tag>;
+            case "finished":
+              return <Tag color="green">{capitalizeFirstCharacter(status)}</Tag>;
+            case "cut":
+              return <Tag color="red">{capitalizeFirstCharacter(status)}</Tag>;
+            case "pasarela":
+              return <Tag color="orange">{capitalizeFirstCharacter(status)}</Tag>;
+            case "non-pasarela":
+              return <Tag color="volcano">{capitalizeFirstCharacter(status)}</Tag>;
+            case "bhidan_of_beam":
+              return <Tag color="blue">{capitalizeFirstCharacter(status)}</Tag>;
+            case "sent":
+              return <Tag color="purple">{capitalizeFirstCharacter(status)}</Tag>;
+            case "primary(advance)":
+              return <Tag color="cyan">{capitalizeFirstCharacter(status)}</Tag>;
+            default:
+              return <Tag>{capitalizeFirstCharacter(status)}</Tag>;
+          }
+        };
+    
+        return getStatusTag(text);
+      })(),
+      span: 2,
+    }
+    ,
+    // {
+    //   key: "6",
+    //   label: "P Taka",
+    //   children: "-",
+    //   span: 2,
+    // },
     {
       key: "7",
       label: "Return Sale Challan No",
       children: "-",
       span: 2,
     },
-    {
-      key: "8",
-      label: "Prod Taka",
-      children: "-",
-      span: 2,
-    },
+    // {
+    //   key: "8",
+    //   label: "Prod Taka",
+    //   children: "-",
+    //   span: 2,
+    // },
     {
       key: "9",
       label: "Taka No",
@@ -124,7 +158,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
     },
     {
       key: "10",
-      label: "Prod Mtr",
+      label: "Production Mtr",
       children: details.production_meter,
       span: 2,
     },
@@ -136,14 +170,14 @@ const ViewProductionDetailModal = ({ title, details }) => {
     },
     {
       key: "12",
-      label: "Pend mtr",
-      children: details.pending_meter,
+      label: "Pending Mtr",
+      children: <div style={{fontWeight: 600, color: "red"}}>{details.pending_meter}</div>,
       span: 2,
     },
     {
       key: "13",
       label: "Weight",
-      children: "840.09",
+      children: details?.weight || "-",
       span: 2,
     },
     {
@@ -167,9 +201,9 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "17",
       label: "Old Meter",
-      children: "-",
+      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_meter || "-"}</div>,
       span: 2,
-    },
+    },    
     {
       key: "18",
       label: "Purchase Company Name",
@@ -179,7 +213,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "19",
       label: "Old Weight",
-      children: "-",
+      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_weight || "-"}</div>,
       span: 2,
     },
     {
@@ -191,7 +225,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "21",
       label: "Old Average",
-      children: "82.12",
+      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_average || "-"}</div>,
       span: 2,
     },
     {
@@ -208,6 +242,18 @@ const ViewProductionDetailModal = ({ title, details }) => {
     },
     {
       key: "24",
+      label: "Machine Name",
+      children: (
+        <Tag color="#108ee9">
+          <strong>
+            {details?.machine_name ? `${details?.machine_name}` : "-"}
+          </strong>
+        </Tag>
+      ),
+      span: 2,
+    },
+    {
+      key: "25",
       label: "Party",
       children: "-",
       span: 2,
@@ -233,7 +279,7 @@ const ViewProductionDetailModal = ({ title, details }) => {
         classNames={{
           header: "text-center",
         }}
-        width={"80%"}
+        width={"70%"}
         styles={{
           content: {
             padding: 0,

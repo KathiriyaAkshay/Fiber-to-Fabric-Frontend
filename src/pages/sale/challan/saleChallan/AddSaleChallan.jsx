@@ -68,6 +68,8 @@ const AddSaleChallan = () => {
 
   const [activeField, setActiveField] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  // Calculation pending data related information
   const [pendingMeter, setPendingMeter] = useState(0);
   const [pendingTaka, setPendingTaka] = useState(0);
   const [pendingWeight, setPendingWeight] = useState(0);
@@ -106,6 +108,8 @@ const AddSaleChallan = () => {
   });
 
   async function onSubmit(data) {
+
+    // Sale Challan details array
     const saleChallanDetailArr = Array.from(
       { length: activeField },
       (_, i) => i + 1
@@ -113,10 +117,21 @@ const AddSaleChallan = () => {
 
     const sale_challan_detail = [];
     let hasError = 0;
+
+    // Purchase taka details
+    let purchased_taka_number = [] ; 
+ 
+    // Job taka details
+    let job_taka_number = [] ; 
+
+    // Sale taka details
+    let sale_taka_number = [] ; 
+
     saleChallanDetailArr.forEach((field, index) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
+
       if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "") {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
@@ -124,6 +139,8 @@ const AddSaleChallan = () => {
           message: "Taka No required.",
         });
         hasError = 1;
+        return ;
+        
       }
       if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -132,6 +149,7 @@ const AddSaleChallan = () => {
           message: "Meter required.",
         });
         hasError = 1;
+        return ; 
       }
       if ((isNaN(weight) || weight === "") && meter !== "" && takaNo !== "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -140,6 +158,7 @@ const AddSaleChallan = () => {
           message: "Weight required.",
         });
         hasError = 1;
+        return ;
       }
 
       if (
@@ -147,12 +166,24 @@ const AddSaleChallan = () => {
         data[`meter_${field}`] != "" &&
         data[`weight_${field}`] != ""
       ) {
+
+        let model = data[`model_${field}`];
+        let taka_number = data[`taka_no_${field}`] ; 
+
+        if (model == "purchase/trading"){
+          purchased_taka_number.push(taka_number) ;
+        } else if (model == "taka(inhouse)"){
+          sale_taka_number.push(taka_number)
+        } else {
+          job_taka_number.push(taka_number) ; 
+        }
+
         sale_challan_detail.push({
           index: index + 1,
-          taka_no: data[`taka_no_${field}`],
+          taka_no: taka_number,
           meter: parseInt(data[`meter_${field}`]),
           weight: parseInt(data[`weight_${field}`]),
-          model: data[`model_${field}`],
+          model: model,
         });
       }
     });
@@ -191,6 +222,24 @@ const AddSaleChallan = () => {
         }),
         sale_challan_details: sale_challan_detail,
       };
+
+      if (purchased_taka_number?.length !== [...new Set(purchased_taka_number)]?.length){
+        message.error("Please provide a unique taka number of PURCHASE to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
+
+      if (sale_taka_number?.length !== [...new Set(sale_taka_number)]?.length){
+        message.error("Please provide a unique taka number of SALE to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
+
+      if (job_taka_number?.length !== [...new Set(job_taka_number)]?.length){
+        message.error("Please provide a unique taka number of JOB to proceed with the sale") ; 
+        hasError = true ; 
+        return ; 
+      }
 
       if (hasError === 0) {
         await AddSaleChallan(newData);
@@ -247,6 +296,9 @@ const AddSaleChallan = () => {
     type,
     is_gray,
     quality_id,
+    total_meter,
+    total_weight,
+    total_taka
   } = watch();
 
   // Get last challan number for cash order
@@ -278,7 +330,7 @@ const AddSaleChallan = () => {
         }
       },
       enabled: Boolean(companyId && is_gray),
-    });
+  });
 
   // Dropdown vechicle list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -321,7 +373,7 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   // Dropdown greyorder list
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
@@ -338,7 +390,7 @@ const AddSaleChallan = () => {
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   // Dropdown supplier list
   const {
@@ -374,19 +426,20 @@ const AddSaleChallan = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("broker_id", order.broker.id);
-      setValue("quality_id", order.inhouse_quality.id);
-      setValue("supplier_name", order.supplier_name);
-
-      setValue("delivery_address", order?.party?.party?.delivery_address);
+      if (order){
+        setSelectedOrder(order);
+        setValue("total_meter", order.total_meter);
+        setValue("total_taka", order.total_taka);
+        setValue("total_weight", order.weight);
+        setValue(
+          "broker_name",
+          `${order.broker.first_name} ${order.broker.last_name}`
+        );
+        setValue("broker_id", order.broker.id);
+        setValue("quality_id", order.inhouse_quality.id);
+        setValue("supplier_name", order.supplier_name);
+        setValue("delivery_address", order?.party?.party?.delivery_address);
+      }
 
       // setPendingMeter(order.pending_meter);
       // setPendingTaka(order.pending_taka);
@@ -412,15 +465,15 @@ const AddSaleChallan = () => {
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
-  useEffect(() => {
-    if (grayOrderListRes && gray_order_id) {
-      const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
+  // useEffect(() => {
+  //   if (grayOrderListRes && gray_order_id) {
+  //     const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
 
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
-    }
-  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+  //     setPendingMeter(+order.pending_meter - +totalMeter);
+  //     setPendingTaka(+order.pending_taka - +totalTaka);
+  //     setPendingWeight(+order.pending_weight - +totalWeight);
+  //   }
+  // }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
   // *******************************************************************
 
@@ -467,6 +520,26 @@ const AddSaleChallan = () => {
     setTotalMeter(0);
     setTotalWeight(0);
   };
+
+  useEffect(() => {
+    if (total_meter !== "" && total_meter !== undefined){
+      setPendingMeter(+total_meter - totalMeter) ; 
+    }
+    if (total_weight !== "" && total_weight !== undefined){
+      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    }
+
+    if (total_taka !== "" && total_taka !== undefined){
+      setPendingTaka(+total_taka - totalTaka) ; 
+    }
+  }, [
+    total_meter, 
+    total_taka, 
+    total_weight, 
+    totalTaka, 
+    totalMeter,
+    totalWeight
+  ])
 
   return (
     <div className="flex flex-col p-4">
@@ -935,13 +1008,13 @@ const AddSaleChallan = () => {
 
           <Col span={3} style={{ textAlign: "left" }}>
             <Typography style={{ color: "red", fontWeight: 600 }}>
-              {pendingMeter}
+              {parseFloat(pendingMeter).toFixed(2)}
             </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "left" }}>
             <Typography style={{ color: "red", fontWeight: 600 }}>
-              {pendingWeight}
+              {parseFloat(pendingWeight).toFixed(2)}
             </Typography>
           </Col>
 

@@ -13,7 +13,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, set, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -106,18 +106,20 @@ const AddPurchaseTaka = () => {
 
     const purchase_challan_detail = [];
     let hasError = 0;
+    let all_taka_number = [] ; 
     purchaseChallanDetailArr.forEach((field) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
 
-      if (isNaN(takaNo) || takaNo === "") {
+      if ((isNaN(takaNo) || takaNo === "") && (isNaN(meter) || meter === "") && (isNaN(weight) || weight === "") ) {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
           message: "Taka No required.",
         });
         hasError = 1;
+        return ; 
       }
       if (isNaN(meter) || meter === "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -126,6 +128,7 @@ const AddPurchaseTaka = () => {
           message: "Meter required.",
         });
         hasError = 1;
+        return ; 
       }
       if (isNaN(weight) || weight === "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -134,6 +137,7 @@ const AddPurchaseTaka = () => {
           message: "Weight required.",
         });
         hasError = 1;
+        return ; 
       }
 
       if (
@@ -141,6 +145,7 @@ const AddPurchaseTaka = () => {
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
+        all_taka_number.push(data[`taka_no_${field}`])
         purchase_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
@@ -168,9 +173,17 @@ const AddPurchaseTaka = () => {
       purchase_challan_detail: purchase_challan_detail,
     };
 
+    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false){
+      message.error("Please, Enter all unique taka") ; 
+      hasError = 1;
+      return ; 
+    }
+
     if (!hasError) {
       await AddPurchaseTaka(newData);
     }
+
+
   }
 
   const {

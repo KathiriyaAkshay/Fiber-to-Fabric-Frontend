@@ -244,7 +244,7 @@ export const menubarOptionsList = [
             className="text-current no-underline hover:text-current"
             to="production/inhouse-production"
           >
-            Inhouse Production
+            In-House Production
           </Link>
         ),
       },
@@ -328,23 +328,23 @@ export const menubarOptionsList = [
     path: "sales",
     key: "Sales",
     label: (
-      <Link className="text-current no-underline hover:text-current" to="sales">
+      <Link className="text-current no-underline hover:text-current" to="sales/challan">
         Sales
       </Link>
     ),
     children: [
-      {
-        path: "taka-return-request",
-        key: "Taka Return Request",
-        label: (
-          <Link
-            className="text-current no-underline hover:text-current"
-            to="sales/taka-return-request"
-          >
-            Taka Return Request
-          </Link>
-        ),
-      },
+      // {
+      //   path: "taka-return-request",
+      //   key: "Taka Return Request",
+      //   label: (
+      //     <Link
+      //       className="text-current no-underline hover:text-current"
+      //       to="sales/taka-return-request"
+      //     >
+      //       Taka Return Request
+      //     </Link>
+      //   ),
+      // },
       {
         path: "challan",
         key: "Challan Menu",
@@ -674,7 +674,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="purchase/challan/sale-purchased-taka"
+                to="sales/challan/sale-challan"
               >
                 Sale Purchased Taka
               </Link>
@@ -935,7 +935,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/challan/sale-job-taka"
+                to="sales/challan/sale-challan"
               >
                 Sale Job Taka
               </Link>
