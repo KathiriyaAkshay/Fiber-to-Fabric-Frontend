@@ -7,6 +7,7 @@ import {
   message,
   Modal,
   Select,
+  Typography,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -20,6 +21,29 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import "./_style.css";
+import { CloseOutlined } from "@ant-design/icons";
+import { ToWords } from "to-words";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
@@ -263,31 +287,45 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
           setIsAddModalOpen(false);
         }}
         footer={false}
+        closeIcon={<CloseOutlined className="text-white" />}
+        title="Credit Note - Discount Note"
+        centered
+        className={{
+          header: "text-center",
+        }}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "16px 32px",
+          },
+        }}
       >
         <div className="credit-note-container">
           <table className="credit-note-table">
             <tbody>
               <tr>
                 <td colSpan={8} className="text-center">
-                  <h2>Discount Note</h2>
-                  <h5>
-                    Discount Note No.{" "}
-                    <span
-                      style={{
-                        color: "green",
-                        fontWeight: "600",
-                        marginTop: "-5px",
-                      }}
-                    >
-                      {creditNoteLastNumber?.debitNoteNumber || "-"}
-                    </span>
-                  </h5>
+                  <div className="year-toggle">
+                    <Typography.Text style={{ fontSize: 20 }}>
+                      Discount Note No.
+                    </Typography.Text>
+                    <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
+                  </div>
                 </td>
               </tr>
               <tr>
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
-                    <div>Date:</div>
+                    <label style={{ textAlign: "left" }}>Date:</label>
                     <Controller
                       control={control}
                       name="date"
@@ -299,7 +337,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
-                    <div>Company</div>
+                    <label style={{ textAlign: "left" }}>Company:</label>
                     <Form.Item
                       label=""
                       name="company_id"
@@ -336,7 +374,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
-                    <div>Party Company</div>
+                    <label style={{ textAlign: "left" }}>Party Company:</label>
                     <Form.Item
                       label=""
                       name="party_id"
@@ -379,7 +417,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
-                    <div>Bill</div>
+                    <label style={{ textAlign: "left" }}>Bill:</label>
                     <Form.Item
                       label=""
                       name="bill_id"
@@ -427,39 +465,57 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     {selectedCompany?.address_line_1 || ""}
                     {selectedCompany?.address_line_2 || ""}
                   </div>
-                  <div>GSTIN/UIN: {selectedCompany?.gst_no || ""}</div>
-                  <div>State Name: {selectedCompany?.state || ""}</div>
-                  <div>PinCode: {selectedCompany?.pincode || ""}</div>
-                  <div>Contact: {selectedCompany?.company_contact || ""}</div>
-                  <div>Email: {selectedCompany?.company_email || ""}</div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name:</span> {selectedCompany?.state || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>PinCode: </span> {selectedCompany?.pincode || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Contact:</span>{" "}
+                    {selectedCompany?.company_contact || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Email:</span> {selectedCompany?.company_email || ""}
+                  </div>
                 </td>
                 <td colSpan={4}>
-                  <div>
-                    Party:
-                    <b>{selectedPartyCompany?.party?.company_name || "-"}</b>
+                  <div className="credit-note-info-title">
+                    <span>Party:</span>
+                    {selectedPartyCompany?.party?.company_name || "-"}
                     <br />
                     {selectedPartyCompany?.address || "-"}
                   </div>
-                  <div>GSTIN/UIN: {selectedPartyCompany?.gst_no || "-"}</div>
-                  <div>
-                    PAN/IT No : {selectedPartyCompany?.pancard_no || "-"}
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span>{" "}
+                    {selectedPartyCompany?.gst_no || "-"}
                   </div>
-                  <div>State Name: {selectedPartyCompany?.state || "-"}</div>
+                  <div className="credit-note-info-title">
+                    <span>PAN/IT No:</span>{" "}
+                    {selectedPartyCompany?.pancard_no || "-"}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name:</span>{" "}
+                    {selectedPartyCompany?.state || "-"}
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
           <table className="credit-note-table">
-            <thead>
+            <thead style={{ fontWeight: 600 }}>
               <tr>
-                <th>SL No.</th>
-                <th colSpan={3} style={{ minWidth: "400px" }}>
+                <td>SL No.</td>
+                <td colSpan={3} style={{ minWidth: "400px" }}>
                   Particulars
-                </th>
-                <th>Quantity</th>
-                <th style={{ width: "80px" }}>Rate</th>
-                <th style={{ width: "100px" }}>Per</th>
-                <th style={{ width: "150px" }}>Amount</th>
+                </td>
+                <td>Quantity</td>
+                <td style={{ width: "80px" }}>Rate</td>
+                <td style={{ width: "100px" }}>Per</td>
+                <td style={{ width: "150px" }}>Amount</td>
               </tr>
             </thead>
             <tbody>
@@ -480,7 +536,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 : null}
               <tr>
                 <td></td>
-                <td colSpan={3}>
+                <td colSpan={3} style={{ textAlign: "right" }}>
                   <div style={{ marginBottom: "6px" }}>
                     SGST @{" "}
                     <Controller
@@ -566,9 +622,15 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     className="mt-3"
                   >
                     <div>
-                      <div>Amount Chargable(in words)</div>
-                      <div>Xero Only</div>
-                      <div>Remarks:</div>
+                      <div>
+                        <span style={{ fontWeight: "500" }}>
+                          Amount Chargable(in words):
+                        </span>{" "}
+                        {toWords.convert(net_amount || 0)}
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: "500" }}>Remarks:</span>
+                      </div>
                     </div>
                     <div>E & O.E</div>
                   </Flex>
@@ -590,7 +652,18 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
             </tbody>
           </table>
-          <Flex gap={12} justify="flex-end">
+          <Flex
+            gap={12}
+            justify="flex-end"
+            style={{
+              marginTop: "1rem",
+              alignItems: "center",
+              width: "100%",
+              justifyContent: "flex-end",
+              gap: "1rem",
+              marginBottom: 10,
+            }}
+          >
             <Button
               type="primary"
               onClick={handleSubmit(onSubmit)}

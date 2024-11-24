@@ -21,6 +21,29 @@ import { Controller, useForm } from "react-hook-form";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
+import { ToWords } from "to-words";
+import { CloseOutlined } from "@ant-design/icons";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
@@ -257,6 +280,27 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
           setIsAddModalOpen(false);
         }}
         footer={false}
+        closeIcon={<CloseOutlined className="text-white" />}
+        title="Credit Note - Other"
+        centered
+        className={{
+          header: "text-center",
+        }}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "16px 32px",
+          },
+        }}
       >
         <div className="credit-note-container">
           {/* <h2>Credit Note</h2>
@@ -445,9 +489,10 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
             <tbody>
               <tr>
                 <td colSpan={8} className="text-center">
-                  <h2>Credit Note</h2>
-                  <h5 style={{ marginBottom: "6px" }}>
-                    Credit Note No:
+                  <div className="year-toggle">
+                    <label style={{ textAlign: "left", margin: 0 }}>
+                      Credit Note No:
+                    </label>
                     <Form.Item
                       label=""
                       name="credit_note_no"
@@ -462,14 +507,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         control={control}
                         name="credit_note_no"
                         render={({ field }) => (
-                          <Input
-                            {...field}
-                            style={{ width: "100px", marginLeft: "10px" }}
-                          />
+                          <Input {...field} style={{ width: "100px" }} />
                         )}
                       />
                     </Form.Item>
-                  </h5>
+                  </div>
                   <span
                     style={{
                       color: "green",
@@ -484,7 +526,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               <tr>
                 <td colSpan={2} width={"20%"}>
                   <div className="year-toggle">
-                    <div>Date:</div>
+                    <label style={{ textAlign: "left" }}>Date:</label>
                     <Form.Item
                       label=""
                       name="party_id"
@@ -510,7 +552,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
                     <div className="year-toggle">
-                      <div>Company</div>
+                      <label style={{ textAlign: "left" }}>Company:</label>
                       <Form.Item
                         label=""
                         name="company_id"
@@ -548,7 +590,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="year-toggle">
-                    <div>Party Company</div>
+                    <label style={{ textAlign: "left" }}>Party Company:</label>
                     <Form.Item
                       label=""
                       name="party_id"
@@ -631,15 +673,26 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     {selectedCompany?.address_line_1 || ""}
                     {selectedCompany?.address_line_2 || ""}
                   </div>
-                  <div>GSTIN/UIN: {selectedCompany?.gst_no || ""}</div>
-                  <div>State Name: {selectedCompany?.state || ""}</div>
-                  <div>PinCode: {selectedCompany?.pincode || ""}</div>
-                  <div>Contact: {selectedCompany?.company_contact || ""}</div>
-                  <div>Email: {selectedCompany?.company_email || ""}</div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name:</span> {selectedCompany?.state || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Contact:</span>{" "}
+                    {selectedCompany?.company_contact || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Email:</span> {selectedCompany?.company_email || ""}
+                  </div>
                 </td>
                 <td colSpan={4}>
-                  <div>
-                    Party:{" "}
+                  <div className="credit-note-info-title">
+                    <span>Party:</span>
                     {selectedPartyCompany
                       ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
                       : ""}
@@ -647,14 +700,20 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   <div>
                     {selectedPartyCompany?.party?.delivery_address || ""}
                   </div>
-                  <div>GSTIN/UIN: {selectedPartyCompany?.gst_no || ""}</div>
-                  <div>State Name : {selectedPartyCompany?.state || ""}</div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN: </span>
+                    {selectedPartyCompany?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name: </span>{" "}
+                    {selectedPartyCompany?.state || ""}
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
           <table className="credit-note-table">
-            <thead>
+            <thead style={{ fontWeight: 600 }}>
               <tr>
                 <td>SL No.</td>
                 <td colSpan={3}>Particulars</td>
@@ -726,7 +785,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={3}>
+                <td colSpan={3} style={{ textAlign: "right" }}>
                   <div style={{ marginBottom: "6px" }}>
                     SGST @{" "}
                     <Controller
@@ -839,9 +898,13 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     className="mt-3"
                   >
                     <div>
-                      <div>Amount Chargable(in words)</div>
-                      <div>Xero Only</div>
-                      <div>Remarks:</div>
+                      <span style={{ fontWeight: "500" }}>
+                        Amount Chargable(in words):
+                      </span>{" "}
+                      {toWords.convert(net_amount || 0)}
+                      <div>
+                        <span style={{ fontWeight: "500" }}>Remarks:</span>{" "}
+                      </div>
                     </div>
                     <div>E & O.E</div>
                   </Flex>
@@ -863,7 +926,18 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
             </tbody>
           </table>
-          <Flex gap={12} justify="flex-end">
+          <Flex
+            gap={12}
+            justify="flex-end"
+            style={{
+              marginTop: "1rem",
+              alignItems: "center",
+              width: "100%",
+              justifyContent: "flex-end",
+              gap: "1rem",
+              marginBottom: 10,
+            }}
+          >
             <Button
               type="primary"
               onClick={handleSubmit(onSubmit)}
