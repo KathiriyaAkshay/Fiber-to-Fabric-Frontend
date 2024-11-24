@@ -287,7 +287,6 @@ const PurchaseChallanList = () => {
       render: (details) => {
         let isShowReturn = false;
         details.purchase_challan_details.forEach((element) => {
-          
           if (element?.is_returned === false) {
             isShowReturn = true;
             return;
@@ -331,7 +330,15 @@ const PurchaseChallanList = () => {
             {isShowReturn && (
               <ReturnPurchaseChallan details={details} companyId={companyId} />
             )}
-            <Button>
+            <Button
+              onClick={() => {
+                localStorage.setItem(
+                  "SALE_CHALLAN_ADD",
+                  JSON.stringify({ model: "purchase", id: details.id })
+                );
+                navigate("/sales/challan/sale-challan/add");
+              }}
+            >
               <RedoOutlined />
             </Button>
           </Space>

@@ -165,7 +165,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     },
     enabled: Boolean(company_id && supplier_id),
   });
-  console.log({ billList });
 
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [

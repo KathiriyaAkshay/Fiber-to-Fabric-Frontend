@@ -164,6 +164,7 @@ const SaleChallanList = () => {
   });
 
   function navigateToAdd() {
+    localStorage.removeItem("SALE_CHALLAN_ADD");
     navigate("/sales/challan/sale-challan/add");
   }
 
