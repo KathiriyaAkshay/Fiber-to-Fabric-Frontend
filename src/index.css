@@ -942,3 +942,7 @@ h2 {
   font-weight: 600;
   color: red;
 }
+
+.checked-bill-row{
+  background-color: #ccffdc;
+}
