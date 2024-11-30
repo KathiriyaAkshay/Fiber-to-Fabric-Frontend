@@ -23,6 +23,8 @@ import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleB
 import { Controller, useForm } from "react-hook-form";
 import { CloseOutlined } from "@ant-design/icons";
 import { ToWords } from "to-words";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -43,6 +45,18 @@ const toWords = new ToWords({
       },
     },
   },
+});
+
+const validationSchema = yup.object().shape({
+  company_id: yup.string().required("Please select company"),
+  // debit_note_no: yup.string().required("Please enter debit note number"),
+  // invoice_number: yup.string().required("Please enter invoice number"),
+  party_id: yup.string().required("Please select party"),
+  date: yup.string().required("Please enter date"),
+  // particular: yup.string().required("Please enter particular"),
+  // hsn_code: yup.string().required("Please enter hsn code"),
+  amount: yup.string().required("Please enter amount"),
+  bill_id: yup.string().required("Please select bill."),
 });
 
 const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
@@ -127,7 +141,14 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     await addCreditNote(payload);
   };
 
-  const { control, handleSubmit, watch, setValue, reset } = useForm({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       is_current: 1,
       date: dayjs(),
@@ -154,6 +175,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       discount_value: "",
       discount_amount: "",
     },
+    resolver: yupResolver(validationSchema),
   });
 
   const currentValue = watch();
@@ -322,24 +344,38 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="p-2">
-                    <div>Date:</div>
-                    <Controller
-                      control={control}
+                  <div className="year-toggle">
+                    <label style={{ textAlign: "left" }}>Date:</label>
+                    <Form.Item
+                      label=""
                       name="date"
-                      render={({ field }) => (
-                        <DatePicker
-                          {...field}
-                          name="date"
-                          className="width-100"
-                        />
-                      )}
-                    />
+                      validateStatus={errors?.date ? "error" : ""}
+                      help={errors?.date && errors?.date?.message}
+                      required={true}
+                      wrapperCol={{ sm: 24 }}
+                      style={{ marginBottom: 5 }}
+                    >
+                      <Controller
+                        control={control}
+                        name="date"
+                        render={({ field }) => (
+                          <DatePicker
+                            {...field}
+                            name="date"
+                            className="width-100"
+                          />
+                        )}
+                      />
+                    </Form.Item>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="p-2">
-                    <Form.Item label="" name="is_current">
+                  <div className="year-toggle">
+                    <Form.Item
+                      label=""
+                      name="is_current"
+                      style={{ marginBottom: 5 }}
+                    >
                       <Controller
                         control={control}
                         name="is_current"
@@ -354,10 +390,11 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Form.Item
                       label=""
                       name="bill_id"
-                      // validateStatus={errors.challan_type ? "error" : ""}
-                      // help={errors.challan_type && errors.challan_type.message}
+                      validateStatus={errors?.bill_id ? "error" : ""}
+                      help={errors?.bill_id && errors?.bill_id?.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
+                      style={{ marginBottom: 5 }}
                     >
                       <Controller
                         control={control}
@@ -366,6 +403,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           <Select
                             {...field}
                             placeholder="Select Bill"
+                            allowClear
                             loading={isLoadingSaleBillList}
                             options={saleBillList?.SaleBill?.map((item) => {
                               return {
@@ -444,13 +482,23 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 <td></td>
                 <td></td>
                 <td>
-                  <Controller
-                    control={control}
+                  <Form.Item
+                    label=""
                     name="amount"
-                    render={({ field }) => (
-                      <Input {...field} placeholder="12" />
-                    )}
-                  />
+                    validateStatus={errors?.amount ? "error" : ""}
+                    // help={errors?.amount && errors?.amount?.message}
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                    style={{ marginBottom: 5 }}
+                  >
+                    <Controller
+                      control={control}
+                      name="amount"
+                      render={({ field }) => (
+                        <Input {...field} placeholder="12" />
+                      )}
+                    />
+                  </Form.Item>
                 </td>
               </tr>
               <tr>

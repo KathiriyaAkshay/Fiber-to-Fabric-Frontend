@@ -246,7 +246,6 @@ const PrintPage = () => {
     let total_data = JSON.parse(localStorage.getItem("total-data"));
     setTotalCount(total_data);
   }, []);
-  console.log({ totalCount });
 
   const MyDocument = () => (
     <Document>
