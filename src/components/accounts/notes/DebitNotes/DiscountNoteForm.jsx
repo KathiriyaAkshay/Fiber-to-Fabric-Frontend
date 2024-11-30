@@ -1,4 +1,13 @@
-import { Button, DatePicker, Flex, Form, Input, message, Select } from "antd";
+import {
+  Button,
+  DatePicker,
+  Flex,
+  Form,
+  Input,
+  message,
+  Select,
+  Typography,
+} from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -13,6 +22,45 @@ import { getReceiveSizeBeamBillByIdRequest } from "../../../../api/requests/purc
 import { getJobTakaBillByIdRequest } from "../../../../api/requests/job/bill/jobBill";
 import { getYarnReceiveBillByIdRequest } from "../../../../api/requests/purchase/yarnReceive";
 import { getSupplierListRequest } from "../../../../api/requests/users";
+import { ToWords } from "to-words";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
+
+const validationSchema = yup.object().shape({
+  company_id: yup.string().required("Please select company"),
+  // debit_note_no: yup.string().required("Please enter debit note number"),
+  // invoice_number: yup.string().required("Please enter invoice number"),
+  supplier_id: yup.string().required("Please select supplier"),
+  date: yup.string().required("Please enter date"),
+  // particular: yup.string().required("Please enter particular"),
+  // hsn_code: yup.string().required("Please enter hsn code"),
+  amount: yup.string().required("Please enter amount"),
+  bill_id: yup
+    .array()
+    .min(1, "Please select bill.")
+    .required("Please select bill."),
+});
 
 const DiscountNoteForm = ({ type, handleClose }) => {
   // const queryClient = useQueryClient();
@@ -97,7 +145,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     watch,
     resetField,
     setValue,
-    // formState: { errors },
+    formState: { errors },
     getValues,
     reset,
   } = useForm({
@@ -125,6 +173,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
       // discount_value: "",
       // discount_amount: "",
     },
+    resolver: yupResolver(validationSchema),
   });
 
   const currentValue = watch();
@@ -247,33 +296,45 @@ const DiscountNoteForm = ({ type, handleClose }) => {
         <tbody>
           <tr>
             <td colSpan={8} className="text-center">
-              <h2>Discount Note</h2>
-              <h5>
-                Discount Note No. {debitNoteLastNumber?.debitNoteNumber || "-"}{" "}
-              </h5>
+              {/* <h2>Discount Note</h2> */}
+              <div className="year-toggle">
+                <Typography.Text style={{ fontSize: 20 }}>
+                  Discount Note No.
+                </Typography.Text>
+                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+              </div>
             </td>
           </tr>
           <tr>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <div>Date:</div>
-                <Controller
-                  control={control}
+                <label style={{ textAlign: "left" }}>Date:</label>
+                <Form.Item
+                  label=""
                   name="date"
-                  render={({ field }) => (
-                    <DatePicker {...field} className="width-100" />
-                  )}
-                />
+                  validateStatus={errors.date ? "error" : ""}
+                  help={errors.date && errors.date.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="date"
+                    render={({ field }) => (
+                      <DatePicker {...field} className="width-100" />
+                    )}
+                  />
+                </Form.Item>
               </div>
             </td>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <div>Company</div>
+                <label style={{ textAlign: "left" }}>Company:</label>
                 <Form.Item
                   label=""
                   name="company_id"
-                  // validateStatus={errors.challan_type ? "error" : ""}
-                  // help={errors.challan_type && errors.challan_type.message}
+                  validateStatus={errors.company_id ? "error" : ""}
+                  help={errors.company_id && errors.company_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
@@ -305,12 +366,12 @@ const DiscountNoteForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <div>Supplier Company</div>
+                <label style={{ textAlign: "left" }}>Supplier Company:</label>
                 <Form.Item
                   label=""
                   name="supplier_id"
-                  // validateStatus={errors.challan_type ? "error" : ""}
-                  // help={errors.challan_type && errors.challan_type.message}
+                  validateStatus={errors.supplier_id ? "error" : ""}
+                  help={errors.supplier_id && errors.supplier_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
@@ -343,12 +404,12 @@ const DiscountNoteForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <div>Bill</div>
+                <label style={{ textAlign: "left" }}>Bill:</label>
                 <Form.Item
                   label=""
                   name="bill_id"
-                  // validateStatus={errors.challan_type ? "error" : ""}
-                  // help={errors.challan_type && errors.challan_type.message}
+                  validateStatus={errors.bill_id ? "error" : ""}
+                  help={errors.bill_id && errors.bill_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
                 >
@@ -391,37 +452,55 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 {selectedCompany?.address_line_1 || ""}
                 {selectedCompany?.address_line_2 || ""}
               </div>
-              <div>GSTIN/UIN: {selectedCompany?.gst_no || ""}</div>
-              <div>State Name: {selectedCompany?.state || ""}</div>
-              <div>PinCode: {selectedCompany?.pincode || ""}</div>
-              <div>Contact: {selectedCompany?.company_contact || ""}</div>
-              <div>Email: {selectedCompany?.company_email || ""}</div>
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span> {selectedCompany?.state || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>PinCode: </span>
+                {selectedCompany?.pincode || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Contact: </span>
+                {selectedCompany?.company_contact || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Email: </span>
+                {selectedCompany?.company_email || ""}
+              </div>
             </td>
             <td colSpan={4}>
-              <div>
-                Supplier:
+              <div className="credit-note-info-title">
+                <span>Supplier:</span>
                 {selectedSupplierCompany?.supplier?.supplier_company || "-"}
               </div>
-              <div>GSTIN/UIN: {selectedSupplierCompany?.gst_no || "-"}</div>
-              <div>
-                PAN/IT No : {selectedSupplierCompany?.pancard_no || "-"}
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {selectedSupplierCompany?.gst_no || "-"}
               </div>
-              <div>State Name: {selectedSupplierCompany?.state || "-"}</div>
+              <div className="credit-note-info-title">
+                <span>PAN/IT No:</span>{" "}
+                {selectedSupplierCompany?.pancard_no || "-"}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span> {selectedSupplierCompany?.state || "-"}
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
       <table className="credit-note-table">
-        <thead>
+        <thead style={{ fontWeight: 600 }}>
           <tr>
-            <th>SL No.</th>
-            <th colSpan={3} style={{ minWidth: "400px" }}>
+            <td>SL No.</td>
+            <td colSpan={3} style={{ minWidth: "400px" }}>
               Particulars
-            </th>
-            <th>Quantity</th>
-            <th>Rate</th>
-            <th style={{ width: "100px" }}>Per</th>
-            <th style={{ width: "150px" }}>Amount</th>
+            </td>
+            <td>Quantity</td>
+            <td>Rate</td>
+            <td style={{ width: "100px" }}>Per</td>
+            <td style={{ width: "150px" }}>Amount</td>
           </tr>
         </thead>
         <tbody>
@@ -528,9 +607,15 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 className="mt-3"
               >
                 <div>
-                  <div>Amount Chargable(in words)</div>
-                  <div>Xero Only</div>
-                  <div>Remarks:</div>
+                  <div>
+                    <span style={{ fontWeight: "500" }}>
+                      Amount Chargable(in words):
+                    </span>{" "}
+                    {toWords.convert(net_amount || 0)}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: "500" }}>Remarks:</span>
+                  </div>
                 </div>
                 <div>E & O.E</div>
               </Flex>
@@ -550,7 +635,18 @@ const DiscountNoteForm = ({ type, handleClose }) => {
           </tr>
         </tbody>
       </table>
-      <Flex gap={12} justify="flex-end">
+      <Flex
+        gap={12}
+        justify="flex-end"
+        style={{
+          marginTop: "1rem",
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-end",
+          gap: "1rem",
+          marginBottom: 10,
+        }}
+      >
         <Button
           type="primary"
           onClick={handleSubmit(onSubmit)}

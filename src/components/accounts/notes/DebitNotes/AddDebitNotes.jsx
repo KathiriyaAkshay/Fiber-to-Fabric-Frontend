@@ -5,6 +5,7 @@ import DiscountNoteForm from "./DiscountNoteForm";
 import ClaimNoteForm from "./ClaimNoteForm";
 import OtherForm from "./OtherForm";
 import "./_style.css";
+import { CloseOutlined } from "@ant-design/icons";
 
 const AddDebitNotes = ({
   isAddModalOpen,
@@ -33,6 +34,18 @@ const AddDebitNotes = ({
     }
   }, [handleClose, selectedOption]);
 
+  const title = useMemo(() => {
+    if (selectedOption === "purchase_return") {
+      return "Purchase Return";
+    } else if (selectedOption === "discount_note") {
+      return "Discount Note";
+    } else if (selectedOption === "claim_note") {
+      return "Claim Note";
+    } else if (selectedOption === "other") {
+      return "Other";
+    }
+  }, [selectedOption]);
+
   return (
     <>
       <Modal
@@ -40,6 +53,27 @@ const AddDebitNotes = ({
         onCancel={handleClose}
         width={"75%"}
         footer={false}
+        closeIcon={<CloseOutlined className="text-white" />}
+        title={`Debit Note - ${title}`}
+        centered
+        className={{
+          header: "text-center",
+        }}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "16px 32px",
+          },
+        }}
       >
         <div className="credit-note-container">
           <Flex className="mb-2" justify="center">

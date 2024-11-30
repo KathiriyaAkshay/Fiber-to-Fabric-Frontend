@@ -7,6 +7,7 @@ import {
   message,
   Radio,
   Select,
+  Typography,
 } from "antd";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo } from "react";
@@ -18,6 +19,28 @@ import TextArea from "antd/es/input/TextArea";
 import { createDebitNoteRequest } from "../../../../api/requests/accounts/notes";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { ToWords } from "to-words";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const validationSchema = yup.object().shape({
   company_id: yup.string().required("Please enter company"),
@@ -232,35 +255,39 @@ const OtherForm = ({ type, handleClose }) => {
         <tbody>
           <tr>
             <td colSpan={8} className="text-center">
-              <h2>Debit Note</h2>
-              <h5>
-                Debit Note No:
-                <Form.Item
-                  label=""
-                  name="party_id"
-                  validateStatus={errors.debit_note_no ? "error" : ""}
-                  help={errors.debit_note_no && errors.debit_note_no.message}
-                  required={true}
-                  wrapperCol={{ sm: 24 }}
-                >
-                  <Controller
-                    control={control}
-                    name="debit_note_no"
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        style={{ width: "100px", marginLeft: "10px" }}
-                      />
-                    )}
-                  />
-                </Form.Item>
-              </h5>
+              {/* <h2>Debit Note</h2> */}
+              <div className="year-toggle">
+                <Typography.Text style={{ fontSize: 20 }}>
+                  Debit Note No:
+                </Typography.Text>
+                <div>
+                  <Form.Item
+                    label=""
+                    name="party_id"
+                    validateStatus={errors.debit_note_no ? "error" : ""}
+                    help={errors.debit_note_no && errors.debit_note_no.message}
+                    required={true}
+                    wrapperCol={{ sm: 24 }}
+                  >
+                    <Controller
+                      control={control}
+                      name="debit_note_no"
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          style={{ width: "100px", marginLeft: "10px" }}
+                        />
+                      )}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
             </td>
           </tr>
           <tr>
             <td colSpan={2} width={"20%"}>
               <div className="year-toggle">
-                <div>Date:</div>
+                <label style={{ textAlign: "left" }}>Date:</label>
                 <Form.Item
                   label=""
                   name="party_id"
@@ -286,7 +313,7 @@ const OtherForm = ({ type, handleClose }) => {
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
                 <div className="year-toggle">
-                  <div>Company</div>
+                  <label style={{ textAlign: "left" }}>Company:</label>
                   <Form.Item
                     label=""
                     name="company_id"
@@ -324,7 +351,7 @@ const OtherForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <div>Party Company</div>
+                <label style={{ textAlign: "left" }}>Party Company:</label>
                 <Form.Item
                   label=""
                   name="party_id"
@@ -367,7 +394,11 @@ const OtherForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={2} width={"30%"}>
               <div className="year-toggle">
-                <Form.Item label="" name="is_current">
+                <Form.Item
+                  label=""
+                  name="is_current"
+                  style={{ marginBottom: 5 }}
+                >
                   <Controller
                     control={control}
                     name="is_current"
@@ -386,6 +417,7 @@ const OtherForm = ({ type, handleClose }) => {
                   help={errors.invoice_number && errors.invoice_number.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
+                  style={{ marginBottom: 5 }}
                 >
                   <Controller
                     control={control}
@@ -405,24 +437,42 @@ const OtherForm = ({ type, handleClose }) => {
                 {selectedCompany?.address_line_1 || ""}
                 {selectedCompany?.address_line_2 || ""}
               </div>
-              <div>GSTIN/UIN: {selectedCompany?.gst_no || ""}</div>
-              <div>State Name: {selectedCompany?.state || ""}</div>
-              <div>PinCode: {selectedCompany?.pincode || ""}</div>
-              <div>Contact: {selectedCompany?.company_contact || ""}</div>
-              <div>Email: {selectedCompany?.company_email || ""}</div>
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span> {selectedCompany?.state || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>PinCode:</span> {selectedCompany?.pincode || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Contact:</span> {selectedCompany?.company_contact || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Email:</span> {selectedCompany?.company_email || ""}
+              </div>
             </td>
             <td colSpan={4}>
-              <div>
-                Party:{" "}
+              <div className="credit-note-info-title">
+                <span>Party:</span>
                 {selectedPartyCompany
                   ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
                   : ""}
               </div>
               <div>{selectedPartyCompany?.party?.delivery_address || ""}</div>
-              <div>GSTIN/UIN: {selectedPartyCompany?.gst_no || ""}</div>
-              <div>State Name : {selectedPartyCompany?.state || ""}</div>
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {selectedPartyCompany?.gst_no || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span> {selectedPartyCompany?.state || ""}
+              </div>
             </td>
           </tr>
+        </tbody>
+      </table>
+      <table className="credit-note-table">
+        <thead style={{ fontWeight: 600 }}>
           <tr>
             <td>SL No.</td>
             <td colSpan={3}>Particulars</td>
@@ -431,6 +481,8 @@ const OtherForm = ({ type, handleClose }) => {
             <td>Per</td>
             <td>Amount</td>
           </tr>
+        </thead>
+        <tbody>
           <tr>
             <td></td>
             <td colSpan={3}>
@@ -438,7 +490,7 @@ const OtherForm = ({ type, handleClose }) => {
                 label=""
                 name="particular"
                 validateStatus={errors.particular ? "error" : ""}
-                help={errors.particular && errors.particular.message}
+                // help={errors.particular && errors.particular.message}
                 required={true}
                 wrapperCol={{ sm: 24 }}
               >
@@ -456,7 +508,7 @@ const OtherForm = ({ type, handleClose }) => {
                 label=""
                 name="hsn_code"
                 validateStatus={errors.hsn_code ? "error" : ""}
-                help={errors.hsn_code && errors.hsn_code.message}
+                // help={errors.hsn_code && errors.hsn_code.message}
                 required={true}
                 wrapperCol={{ sm: 24 }}
               >
@@ -476,7 +528,7 @@ const OtherForm = ({ type, handleClose }) => {
                 label=""
                 name="amount"
                 validateStatus={errors.amount ? "error" : ""}
-                help={errors.amount && errors.amount.message}
+                // help={errors.amount && errors.amount.message}
                 required={true}
                 wrapperCol={{ sm: 24 }}
               >
@@ -490,7 +542,7 @@ const OtherForm = ({ type, handleClose }) => {
           </tr>
           <tr>
             <td></td>
-            <td colSpan={3}>
+            <td colSpan={3} style={{ textAlign: "right" }}>
               <div style={{ marginBottom: "6px" }}>
                 SGST @{" "}
                 <Controller
@@ -599,9 +651,16 @@ const OtherForm = ({ type, handleClose }) => {
                 className="mt-3"
               >
                 <div>
-                  <div>Amount Chargable(in words)</div>
-                  <div>Xero Only</div>
-                  <div>Remarks:</div>
+                  <div>
+                    {" "}
+                    <span style={{ fontWeight: "500" }}>
+                      Amount Chargable(in words):
+                    </span>{" "}
+                    {toWords.convert(net_amount || 0)}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: "500" }}>Remarks:</span>
+                  </div>
                 </div>
                 <div>E & O.E</div>
               </Flex>
@@ -621,7 +680,18 @@ const OtherForm = ({ type, handleClose }) => {
           </tr>
         </tbody>
       </table>
-      <Flex gap={12} justify="flex-end">
+      <Flex
+        gap={12}
+        justify="flex-end"
+        style={{
+          marginTop: "1rem",
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-end",
+          gap: "1rem",
+          marginBottom: 10,
+        }}
+      >
         <Button
           type="primary"
           onClick={handleSubmit(onSubmit)}
@@ -629,7 +699,7 @@ const OtherForm = ({ type, handleClose }) => {
         >
           Generate
         </Button>
-        <Button>Close</Button>
+        <Button onClick={handleClose}>Close</Button>
       </Flex>
     </>
   );

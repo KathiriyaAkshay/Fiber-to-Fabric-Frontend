@@ -8,6 +8,7 @@ import {
   message,
   Radio,
   Select,
+  Typography,
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -26,6 +27,45 @@ import {
 } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import { getPurchaseTakaBillByIdRequest } from "../../../../api/requests/purchase/bill";
 import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
+import { ToWords } from "to-words";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
+
+const validationSchema = yup.object().shape({
+  company_id: yup.string().required("Please select company"),
+  // debit_note_no: yup.string().required("Please enter debit note number"),
+  // invoice_number: yup.string().required("Please enter invoice number"),
+  supplier_id: yup.string().required("Please select supplier"),
+  date: yup.string().required("Please enter date"),
+  // particular: yup.string().required("Please enter particular"),
+  // hsn_code: yup.string().required("Please enter hsn code"),
+  amount: yup.string().required("Please enter amount"),
+  bill_id: yup
+    .array()
+    .min(1, "Please select bill.")
+    .required("Please select bill."),
+});
 
 const ClaimNoteForm = ({ type, handleClose }) => {
   const queryClient = useQueryClient();
@@ -114,7 +154,14 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     await addDebitClaimNOte(payload);
   };
 
-  const { control, handleSubmit, watch, setValue, reset } = useForm({
+  const {
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       is_current: 1,
       date: dayjs(),
@@ -141,6 +188,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       discount_value: "",
       discount_amount: "",
     },
+    resolver: yupResolver(validationSchema),
   });
 
   const currentValue = watch();
@@ -342,33 +390,56 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     <Form>
       <table className="credit-note-table">
         <tbody>
-          <tr>
+          {/* <tr>
             <td colSpan={8} className="text-center">
               <h2>Claim Note</h2>
             </td>
-          </tr>
+          </tr> */}
           <tr>
             <td colSpan={3} width={"33.33%"}>
-              <div className="p-2">
-                Debit Note No.
+              {/* <div className="p-2">
+                
                 <div>{debitNoteLastNumber?.debitNoteNumber || "-"}</div>
+              </div> */}
+              <div className="year-toggle">
+                <Typography.Text style={{ fontSize: 20 }}>
+                  Debit Note No.
+                </Typography.Text>
+                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
               </div>
             </td>
             <td colSpan={3} width={"33.33%"}>
-              <div className="p-2">
-                <div>Date:</div>
-                <Controller
-                  control={control}
+              <div className="year-toggle">
+                <label style={{ textAlign: "left" }}>Date:</label>
+                <Form.Item
+                  label=""
                   name="date"
-                  render={({ field }) => (
-                    <DatePicker {...field} name="date" className="width-100" />
-                  )}
-                />
+                  validateStatus={errors.date ? "error" : ""}
+                  help={errors.date && errors.date.message}
+                  required={true}
+                  wrapperCol={{ sm: 24 }}
+                >
+                  <Controller
+                    control={control}
+                    name="date"
+                    render={({ field }) => (
+                      <DatePicker
+                        {...field}
+                        name="date"
+                        className="width-100"
+                      />
+                    )}
+                  />
+                </Form.Item>
               </div>
             </td>
             <td colSpan={3} width={"33.33%"}>
-              <div className="p-2">
-                <Form.Item label="" name="is_current">
+              <div className="year-toggle">
+                <Form.Item
+                  label=""
+                  name="is_current"
+                  style={{ marginBottom: 5 }}
+                >
                   <Controller
                     control={control}
                     name="is_current"
@@ -383,10 +454,11 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                 <Form.Item
                   label=""
                   name="bill_id"
-                  // validateStatus={errors.challan_type ? "error" : ""}
-                  // help={errors.challan_type && errors.challan_type.message}
+                  validateStatus={errors.bill_id ? "error" : ""}
+                  help={errors.bill_id && errors.bill_id.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
+                  style={{ marginBottom: 5 }}
                 >
                   <Controller
                     control={control}
@@ -420,41 +492,51 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           </tr>
           <tr width="50%">
             <td colSpan={4}>
-              <div>GSTIN/UIN: {company?.gst_no || ""}</div>
-              <div>State Name: {company?.state || ""}</div>
-              <div>PinCode: {company?.pincode || ""}</div>
-              <div>Contact: {company?.company_contact || ""}</div>
-              <div>Email: {company?.company_email || ""}</div>
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {company?.gst_no || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span> {company?.state || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>PinCode: </span> {company?.pincode || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Contact:</span> {company?.company_contact || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>Email:</span> {company?.company_email || ""}
+              </div>
             </td>
             <td colSpan={4}>
-              <div>Party: {billData?.supplier?.supplier_name || ""}</div>
-              <div>GSTIN/UIN: {billData?.supplier?.user?.gst_no || ""}</div>
-              <div>PAN/IT No : {billData?.supplier?.user?.pancard_no}</div>
-              <div>State Name:</div>
+              <div className="credit-note-info-title">
+                <span>Party:</span> {billData?.supplier?.supplier_name || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>GSTIN/UIN:</span> {billData?.supplier?.user?.gst_no || ""}
+              </div>
+              <div className="credit-note-info-title">
+                <span>PAN/IT No:</span> {billData?.supplier?.user?.pancard_no}
+              </div>
+              <div className="credit-note-info-title">
+                <span>State Name:</span>{" "}
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
       <table className="credit-note-table">
-        <thead>
+        <thead style={{ fontWeight: 600 }}>
           <tr>
-            <th style={{ width: "50px" }}>SL No.</th>
-            <th colSpan={2}>Particulars</th>
-            <th>Quantity</th>
-            <th>Rate</th>
-            <th>Per</th>
-            <th style={{ width: "100px" }}>Amount</th>
+            <td style={{ width: "50px" }}>SL No.</td>
+            <td colSpan={2}>Particulars</td>
+            <td>Quantity</td>
+            <td>Rate</td>
+            <td>Per</td>
+            <td style={{ width: "100px" }}>Amount</td>
           </tr>
         </thead>
         <tbody>
-          {/* <tr style={{ height: "50px" }}>
-            <td></td>
-            <td colSpan={2}></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr> */}
           <tr>
             <td></td>
             <td colSpan={2}>Claim On Purchase</td>
@@ -462,16 +544,26 @@ const ClaimNoteForm = ({ type, handleClose }) => {
             <td></td>
             <td></td>
             <td>
-              <Controller
-                control={control}
+              <Form.Item
+                label=""
                 name="amount"
-                render={({ field }) => <Input {...field} placeholder="12" />}
-              />
+                validateStatus={errors.amount ? "error" : ""}
+                // help={errors.amount && errors.amount.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+                style={{ marginBottom: 5 }}
+              >
+                <Controller
+                  control={control}
+                  name="amount"
+                  render={({ field }) => <Input {...field} placeholder="12" />}
+                />
+              </Form.Item>
             </td>
           </tr>
           <tr>
             <td></td>
-            <td colSpan={2}>
+            <td colSpan={2} style={{ textAlign: "right" }}>
               <div>SGST @ {SGST_value} %</div>
               <div>CGST @ {CGST_value} %</div>
               <div>IGST @ {IGST_value}%</div>
@@ -505,9 +597,15 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                 className="mt-3"
               >
                 <div>
-                  <div>Amount Chargable(in words)</div>
-                  <div>Xero Only</div>
-                  <div>Remarks:</div>
+                  <div>
+                    <span style={{ fontWeight: "500" }}>
+                      Amount Chargable(in words):
+                    </span>{" "}
+                    {toWords.convert(net_amount || 0)}
+                  </div>
+                  <div>
+                    <span style={{ fontWeight: "500" }}>Remarks:</span>
+                  </div>
                 </div>
                 <div>E & O.E</div>
               </Flex>
@@ -528,7 +626,18 @@ const ClaimNoteForm = ({ type, handleClose }) => {
         </tbody>
       </table>
 
-      <Flex gap={12} justify="flex-end">
+      <Flex
+        gap={12}
+        justify="flex-end"
+        style={{
+          marginTop: "1rem",
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-end",
+          gap: "1rem",
+          marginBottom: 10,
+        }}
+      >
         <Button
           type="primary"
           onClick={handleSubmit(onSubmit)}

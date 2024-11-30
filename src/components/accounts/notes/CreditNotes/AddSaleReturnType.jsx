@@ -69,6 +69,14 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const submitHandler = async () => {
+    if (!challanNo) {
+      message.error("Challan no is required.");
+      return;
+    }
+    if (!selectedSaleChallan || !selectedSaleChallan?.length) {
+      message.error("Please select at least one sale challan.");
+      return;
+    }
     const payload = {
       sale_challan_id: saleChallanData?.saleChallan?.id,
       sale_challan_detail_ids: selectedSaleChallan,
@@ -134,7 +142,6 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ saleChallanList });
 
   const { data: saleChallanData } = useQuery({
     queryKey: [
@@ -338,7 +345,9 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     }}
                   >
                     {String(
-                      `${saleChallanData?.saleChallan?.party?.first_name} ${saleChallanData?.saleChallan?.party?.last_name}`
+                      `${
+                        saleChallanData?.saleChallan?.party?.first_name || ""
+                      } ${saleChallanData?.saleChallan?.party?.last_name || ""}`
                     ).toUpperCase()}
                   </span>
                 </div>

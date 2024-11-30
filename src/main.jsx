@@ -165,6 +165,8 @@ import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 import SalesReport from "./pages/accounts/reports/salesReport";
 import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
 import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
+import PrintCashBookStatement from "./pages/accounts/statements/PrintCashBookStatement";
+import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookStatement";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -215,6 +217,14 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/print", element: <PrintPage /> },
+      {
+        path: "/print-cashbook-statement",
+        element: <PrintCashBookStatement />,
+      },
+      {
+        path: "/print-passbook-statement",
+        element: <PrintPassBookStatement />,
+      },
       {
         path: "/quality-master",
         children: [
