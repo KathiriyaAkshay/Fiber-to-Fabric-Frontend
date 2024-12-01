@@ -26,7 +26,7 @@ function ProfileMenu() {
       key: "Change Password",
     },
     {
-      label: "Create User",
+      label: <RotuerLink to="/user-master/other-user">Create User</RotuerLink>,
       key: "Create User",
     },
     {

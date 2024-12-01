@@ -95,3 +95,9 @@ export function getVehicleUserByIdRequest({ id, params }) {
 export function getVehicleUserListRequest({ params }) {
   return api.get(`/vehicle/list`, { params });
 }
+
+// other user
+
+export function getOtherUserListRequest({ params }) {
+  return api.get(`/users/extra_users/list`, { params });
+}
