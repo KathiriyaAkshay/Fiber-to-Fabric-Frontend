@@ -167,6 +167,9 @@ import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
 import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
 import PrintCashBookStatement from "./pages/accounts/statements/PrintCashBookStatement";
 import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookStatement";
+import OtherUserList from "./pages/userMaster/otherUser/OtherUserList";
+import UpdateOtherUser from "./pages/userMaster/otherUser/UpdateOtherUser";
+import AddOtherUser from "./pages/userMaster/otherUser/AddOtherUser";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -321,6 +324,14 @@ const router = createBrowserRouter([
               { index: true, element: <VehicleUserList /> },
               { path: "add", element: <AddVehicleUser /> },
               { path: "update/:id", element: <UpdateVehicleUser /> },
+            ],
+          },
+          {
+            path: "other-user",
+            children: [
+              { index: true, element: <OtherUserList /> },
+              { path: "add", element: <AddOtherUser /> },
+              { path: "update/:id", element: <UpdateOtherUser /> },
             ],
           },
         ],
