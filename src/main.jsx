@@ -166,6 +166,11 @@ import SalesReport from "./pages/accounts/reports/salesReport";
 import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
 import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
 import AddFoldingProduction from "./pages/production/AddFoldingProduction";
+import PrintCashBookStatement from "./pages/accounts/statements/PrintCashBookStatement";
+import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookStatement";
+import OtherUserList from "./pages/userMaster/otherUser/OtherUserList";
+import UpdateOtherUser from "./pages/userMaster/otherUser/UpdateOtherUser";
+import AddOtherUser from "./pages/userMaster/otherUser/AddOtherUser";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -216,6 +221,14 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/print", element: <PrintPage /> },
+      {
+        path: "/print-cashbook-statement",
+        element: <PrintCashBookStatement />,
+      },
+      {
+        path: "/print-passbook-statement",
+        element: <PrintPassBookStatement />,
+      },
       {
         path: "/quality-master",
         children: [
@@ -314,6 +327,14 @@ const router = createBrowserRouter([
               { path: "update/:id", element: <UpdateVehicleUser /> },
             ],
           },
+          {
+            path: "other-user",
+            children: [
+              { index: true, element: <OtherUserList /> },
+              { path: "add", element: <AddOtherUser /> },
+              { path: "update/:id", element: <UpdateOtherUser /> },
+            ],
+          },
         ],
       },
       {
@@ -377,7 +398,7 @@ const router = createBrowserRouter([
               { index: true, element: <div></div> },
               {
                 path: "add-folding-production",
-                element: <AddFoldingProduction/>,
+                element: <AddFoldingProduction />,
               },
               {
                 path: "folding-production",

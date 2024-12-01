@@ -23,6 +23,8 @@ import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
 import { ToWords } from "to-words";
 import { CloseOutlined } from "@ant-design/icons";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -43,6 +45,18 @@ const toWords = new ToWords({
       },
     },
   },
+});
+
+const validationSchema = yup.object().shape({
+  company_id: yup.string().required("Please select company"),
+  credit_note_no: yup.string().required("Please enter credit note number"),
+  invoice_number: yup.string().required("Please enter invoice number"),
+  party_id: yup.string().required("Please select party"),
+  date: yup.string().required("Please enter date"),
+  // particular: yup.string().required("Please enter particular"),
+  // hsn_code: yup.string().required("Please enter hsn code"),
+  amount: yup.string().required("Please enter amount"),
+  bill_id: yup.string().required("Please select bill."),
 });
 
 const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
@@ -187,7 +201,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       extra_tex_name: "",
       extra_tex_amount: 0,
     },
-    // resolver: yupResolver(validationSchema),
+    resolver: yupResolver(validationSchema),
   });
 
   const {
@@ -502,6 +516,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       }
                       required={true}
                       wrapperCol={{ sm: 24 }}
+                      style={{ margin: 0 }}
                     >
                       <Controller
                         control={control}
@@ -529,7 +544,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <label style={{ textAlign: "left" }}>Date:</label>
                     <Form.Item
                       label=""
-                      name="party_id"
+                      name="date"
                       validateStatus={errors.date ? "error" : ""}
                       help={errors.date && errors.date.message}
                       required={true}
@@ -769,7 +784,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     label=""
                     name="amount"
                     validateStatus={errors.amount ? "error" : ""}
-                    help={errors.amount && errors.amount.message}
+                    // help={errors.amount && errors.amount.message}
                     required={true}
                     wrapperCol={{ sm: 24 }}
                   >
