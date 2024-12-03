@@ -1,5 +1,5 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
   Col,
@@ -14,14 +14,17 @@ import {
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
-import { updateUserRequest } from "../../../api/requests/users";
+import {
+  getOtherUserGetByIdRequest,
+  updateUserRequest,
+} from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
 import PhoneInput from "react-phone-number-input";
 import ForwardRefInput from "../../../components/common/ForwardRefInput";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { isValidPhoneNumber } from "react-phone-number-input";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const validationSchema = yupResolver(
@@ -31,17 +34,55 @@ const validationSchema = yupResolver(
     address: yup.string().required("Please enter address"),
     mobile: yup
       .string()
-      .required("Please enter Contact number")
+      .required("Please enter Contact number.")
       .test("Mobile Validation", "Please enter valid Contact Number", (value) =>
         value ? isValidPhoneNumber(value) : false
       ),
     email: yup
       .string()
-      .required("Please enter email address")
-      .email("Please enter valid email address"),
-    password: yup.string().required("Please enter password"),
-    username: yup.string().required("Please enter username"),
-    role_id: yup.string().required("Please select user type"),
+      .required("Please enter email address.")
+      .email("Please enter valid email address."),
+    // password: yup.string().required("Please enter password"),
+    username: yup.string().required("Please enter username."),
+    role_id: yup.mixed().required("Please select user type."),
+
+    // is_regular_per_taka: yup.string().required("Please select anyone."),
+    // regular_rate: yup.string().required("Please enter regular rate."),
+    // is_rework_per_taka: yup.string().required("Please select anyone."),
+    // rework_rate: yup.string().required("Please enter rework rate."),
+
+    // from_taka_number: yup.string().required("Please enter from taka no."),
+    // to_taka_number: yup.string().required("Please enter to taka no."),
+    is_regular_per_taka: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please select anyone."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    regular_rate: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter regular rate."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    is_rework_per_taka: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please select anyone."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    rework_rate: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter rework rate."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    from_taka_number: yup.string().when("role_id", {
+      is: USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter from taka no."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    to_taka_number: yup.string().when("role_id", {
+      is: USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter to taka no."),
+      otherwise: () => yup.string().notRequired(),
+    }),
   })
 );
 
@@ -78,6 +119,7 @@ function UpdateOtherUser() {
       if (successMessage) {
         message.success(successMessage);
       }
+      goBack();
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message;
@@ -90,8 +132,30 @@ function UpdateOtherUser() {
   async function onSubmit(data) {
     const roleId = +data?.role_id;
     const payload = {
-      ...data,
+      first_name: data?.first_name,
+      last_name: data?.last_name,
+      mobile: data?.mobile,
+      email: data?.email,
+      address: data?.address,
+      role_id: +data?.role_id,
+      password: data?.password,
+      username: data?.username,
     };
+
+    if (
+      roleId === USER_ROLES.MENDING_USER.role_id ||
+      roleId === USER_ROLES.FOLDING_USER.role_id
+    ) {
+      payload.is_regular_per_taka = data?.is_regular_per_taka;
+      payload.regular_rate = +data?.regular_rate;
+      payload.is_rework_per_taka = data?.is_rework_per_taka;
+      payload.rework_rate = +data?.rework_rate;
+    }
+
+    if (roleId === USER_ROLES.FOLDING_USER.role_id) {
+      payload.from_taka_number = +data?.from_taka_number;
+      payload.to_taka_number = +data?.to_taka_number;
+    }
 
     await updateUser({ roleId, data: payload });
   }
@@ -105,38 +169,48 @@ function UpdateOtherUser() {
   } = useForm({
     resolver: validationSchema,
   });
+  console.log({ errors });
 
   const { role_id } = watch();
+  console.table("🧑‍💻 || role_id:", role_id);
 
-  // const { data: userDetails } = useQuery({
-  //   queryKey: ["supervisor", "get", id, { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getSupervisorByIdRequest({
-  //       id,
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data?.user;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
+  const { data: userDetails } = useQuery({
+    queryKey: ["supervisor", "get", id, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getOtherUserGetByIdRequest({
+        id,
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
 
-  // useEffect(() => {
-  //   if (userDetails) {
-  //     reset({
-  //       ...userDetails,
-  //       supervisor_type: userDetails?.supervisor?.supervisor_type,
-  //       company_ids: userDetails?.supervisor_companies?.map(
-  //         (c) => c?.company_id
-  //       ),
-  //       // remove unnecessary fields
-  //       id: undefined,
-  //       deletedAt: undefined,
-  //       createdAt: undefined,
-  //       mobile: undefined,
-  //       updatedAt: undefined,
-  //     });
-  //   }
-  // }, [userDetails, reset]);
+  useEffect(() => {
+    if (userDetails) {
+      console.table("🧑‍💻 || userDetails:", userDetails);
+      const data = {
+        ...userDetails,
+        ...userDetails?.folding_mending_user_detail,
+      };
+      delete data?.folding_mending_user_detail;
+      reset({
+        first_name: data?.first_name,
+        last_name: data?.last_name,
+        address: data?.address,
+        mobile: data?.mobile,
+        email: data?.email,
+        username: data?.username,
+        role_id: data?.role_id,
+        is_regular_per_taka: data?.is_regular_per_taka,
+        regular_rate: data?.regular_rate,
+        is_rework_per_taka: data?.is_rework_per_taka,
+        rework_rate: data?.rework_rate,
+        from_taka_number: data?.from_taka_number,
+        to_taka_number: data?.to_taka_number,
+      });
+    }
+  }, [userDetails, reset]);
 
   return (
     <div className="flex flex-col p-4">
@@ -259,7 +333,7 @@ function UpdateOtherUser() {
             </Form.Item>
           </Col>
 
-          <Col span={12}>
+          {/* <Col span={12}>
             <Form.Item
               label="Password"
               name="password"
@@ -276,7 +350,7 @@ function UpdateOtherUser() {
                 )}
               />
             </Form.Item>
-          </Col>
+          </Col> */}
 
           <Col span={12}>
             <Form.Item
@@ -315,7 +389,12 @@ function UpdateOtherUser() {
                 control={control}
                 name="role_id"
                 render={({ field }) => (
-                  <Radio.Group {...field} className="payment-options">
+                  <Radio.Group
+                    {...field}
+                    onChange={(e) => field.onChange(+e.target.value)}
+                    disabled
+                    className="payment-options"
+                  >
                     <Radio value={USER_ROLES.NORMAL_USER.role_id}>Normal</Radio>
                     <Radio value={USER_ROLES.PARNTER_USER.role_id}>
                       Partner
@@ -503,11 +582,8 @@ function UpdateOtherUser() {
         ) : null}
 
         <Flex gap={10} justify="flex-end" style={{ marginTop: "1rem" }}>
-          <Button htmlType="button" onClick={() => reset()}>
-            Reset
-          </Button>
           <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
+            Update
           </Button>
         </Flex>
       </Form>

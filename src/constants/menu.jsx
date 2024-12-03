@@ -314,7 +314,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="production/folding-production/folding-production"
+                to="production/inhouse-production"
               >
                 Folding Production
               </Link>
@@ -328,7 +328,10 @@ export const menubarOptionsList = [
     path: "sales",
     key: "Sales",
     label: (
-      <Link className="text-current no-underline hover:text-current" to="sales/challan">
+      <Link
+        className="text-current no-underline hover:text-current"
+        to="sales/challan"
+      >
         Sales
       </Link>
     ),
@@ -474,7 +477,7 @@ export const menubarOptionsList = [
               <Link
                 className="text-current no-underline hover:text-current"
                 to="sales/bill/beam-sales-bill-list"
-                >
+              >
                 Beam Sales Bill List
               </Link>
             ),
