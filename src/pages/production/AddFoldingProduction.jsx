@@ -990,6 +990,7 @@ const ProductionMeterForm = ({
       const res = await getEmployeeListRequest({
         params: {
           company_id: companyId,
+          salary_type : 'Work basis'
         },
       });
       return res.data?.data?.empoloyeeList;
