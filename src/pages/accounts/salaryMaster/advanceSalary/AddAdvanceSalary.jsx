@@ -104,6 +104,7 @@ const AddAdvanceSalary = () => {
     reset,
     watch,
     setValue,
+    resetField,
   } = useForm({
     defaultValues: {
       salary_type: null,
@@ -154,7 +155,6 @@ const AddAdvanceSalary = () => {
       enabled: Boolean(companyId && user_id),
     }
   );
-  console.log({ userSalaryData });
 
   const { data: employeeList, isLoading: isLoadingEmployeeList } = useQuery({
     queryKey: [
@@ -212,7 +212,7 @@ const AddAdvanceSalary = () => {
   });
 
   useEffect(() => {
-    if (user_id) {
+    if (user_id && employeeList && employeeList?.length) {
       const emp = employeeList.find((emp) => emp.id === user_id);
       setValue("mobile_no", emp.mobile);
     } else {
@@ -344,6 +344,10 @@ const AddAdvanceSalary = () => {
                         }}
                         dropdownStyle={{
                           textTransform: "capitalize",
+                        }}
+                        onChange={(value) => {
+                          field.onChange(value);
+                          resetField("user_id");
                         }}
                       />
                     )}

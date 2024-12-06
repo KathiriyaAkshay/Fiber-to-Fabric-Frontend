@@ -35,13 +35,15 @@ const AdvanceSalaryList = () => {
 
   const [employeeName, setEmployeeName] = useState("");
   const [employeeType, setEmployeeType] = useState(USER_ROLES.EMPLOYEE.role_id);
+  const [advanceType, setAdvanceType] = useState(false);
   const [from, setFrom] = useState();
   const [to, setTo] = useState();
 
   const debounceEmployeeName = useDebounce(employeeName, 500);
   const debounceEmployeeType = useDebounce(employeeType, 500);
+  const debounceAdvanceType = useDebounce(advanceType, 500);
   const debounceFrom = useDebounce(from, 500);
-  const debounceTo = useDebounce(from, 500);
+  const debounceTo = useDebounce(to, 500);
 
   const addClickHandler = () => {
     navigate("add");
@@ -63,6 +65,7 @@ const AdvanceSalaryList = () => {
           from: debounceFrom,
           to: debounceTo,
           role_id: debounceEmployeeType,
+          is_clear: debounceAdvanceType,
         },
       ],
       queryFn: async () => {
@@ -72,6 +75,7 @@ const AdvanceSalaryList = () => {
           pageSize,
           employee_name: debounceEmployeeName,
           role_id: debounceEmployeeType,
+          is_clear: debounceAdvanceType,
         };
         if (from) {
           params.from = dayjs(debounceFrom).format("YYYY-MM-DD");
@@ -231,7 +235,28 @@ const AdvanceSalaryList = () => {
                 options={EMPLOYEE_TYPES}
               />
             </Flex>
-
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Advance Type
+              </Typography.Text>
+              <Select
+                placeholder="Select employee type"
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                style={{
+                  width: "100px",
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                value={advanceType}
+                onChange={setAdvanceType}
+                options={[
+                  { label: "Cleared", value: true },
+                  { label: "Not Cleared", value: false },
+                ]}
+              />
+            </Flex>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 From
