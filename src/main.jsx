@@ -170,6 +170,10 @@ import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookSta
 import OtherUserList from "./pages/userMaster/otherUser/OtherUserList";
 import UpdateOtherUser from "./pages/userMaster/otherUser/UpdateOtherUser";
 import AddOtherUser from "./pages/userMaster/otherUser/AddOtherUser";
+import SalaryReportList from "./pages/accounts/salaryMaster/employeeSalaryReport/SalaryReportList";
+import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/AddSalaryReport";
+import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
+import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -875,21 +879,22 @@ const router = createBrowserRouter([
           },
           {
             path: "salary-master",
-            element: (
-              <div>
-                <div>salary-master</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>salary-master</div> },
               {
                 path: "employee-salary-report",
-                element: <div>employee-salary-report</div>,
+                children: [
+                  { index: true, element: <SalaryReportList /> },
+                  { path: "add", element: <AddSalaryReport /> },
+                  { path: "update/:id", element: <AddSalaryReport /> },
+                ],
               },
               {
                 path: "employee-advance-salary",
-                element: <div>employee-advance-salary</div>,
+                children: [
+                  { index: true, element: <AdvanceSalaryList /> },
+                  { path: "add", element: <AddAdvanceSalary /> },
+                ],
               },
               {
                 path: "employee-average-report",

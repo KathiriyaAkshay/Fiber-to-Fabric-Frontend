@@ -30,6 +30,7 @@ import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import useDebounce from "../../../hooks/useDebounce";
+import { capitalizeFirstCharacter } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.EMPLOYEE.role_id;
 
@@ -169,8 +170,9 @@ function EmployeeList() {
     },
     {
       title: "Salary Type",
-      dataIndex: ["employer", "employee_type", "salary_type"],
-      key: "employee_type",
+      dataIndex: ["employer", "salary_type"],
+      key: "salary_type",
+      render: (text) => capitalizeFirstCharacter(text),
     },
     {
       title: "Contact No",

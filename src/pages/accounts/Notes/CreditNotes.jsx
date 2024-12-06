@@ -25,8 +25,8 @@ import { getPartyListRequest } from "../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
-import moment from "moment";
 import useDebounce from "../../../hooks/useDebounce";
+import { disabledFutureDate } from "../../../utils/date";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -67,10 +67,6 @@ const CreditNotes = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  function disabledFutureDate(current) {
-    return current && current > moment().endOf("day");
-  }
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
