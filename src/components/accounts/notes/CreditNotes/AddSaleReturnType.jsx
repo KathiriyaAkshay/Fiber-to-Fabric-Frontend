@@ -132,10 +132,12 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
         company_id: companyId,
         page: 0,
         pageSize: 99999,
+        endInclude : `bill_status,pending`,
         end:
           yearValue === "previous"
-            ? dayjs().get("year") - 1
-            : dayjs().get("year"),
+            ? dayjs().get("year") 
+            : dayjs().get("year") + 1,
+             
       };
       const res = await getSaleChallanListRequest({ params });
       return res.data?.data;
