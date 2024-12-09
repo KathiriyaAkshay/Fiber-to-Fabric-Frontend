@@ -67,12 +67,6 @@ const AddAdvanceSalary = () => {
     },
     mutationKey: ["add", "advance", "salary"],
     onSuccess: (res) => {
-      // queryClient.invalidateQueries([
-      //   "get",
-      //   "advance-salary",
-      //   "list",
-      //   companyId,
-      // ]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);

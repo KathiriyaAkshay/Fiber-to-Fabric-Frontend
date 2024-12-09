@@ -7,12 +7,14 @@ import {
   Flex,
   Typography,
   Input,
+  Switch,
 } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { disabledFutureDate } from "../../../../utils/date";
 import dayjs from "dayjs";
 import useDebounce from "../../../../hooks/useDebounce";
 import { SALARY_TYPES } from "../../../../constants/account";
+import { useNavigate } from "react-router-dom";
 
 const DURATION = [
   { label: "1 to 15", value: "1_15" },
@@ -21,6 +23,8 @@ const DURATION = [
 ];
 
 const SalaryReportList = () => {
+  const navigate = useNavigate();
+
   const [search, setSearch] = useState("");
   const [salaryType, setSalaryType] = useState(null);
   const [month, setMonth] = useState(dayjs());
@@ -44,7 +48,13 @@ const SalaryReportList = () => {
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Employee Salary Report</h3>
-            <Button icon={<PlusCircleOutlined />} type="text" />
+            <Button
+              icon={<PlusCircleOutlined />}
+              type="text"
+              onClick={() => {
+                navigate("add");
+              }}
+            ></Button>
           </div>
         </div>
 
@@ -113,6 +123,26 @@ const SalaryReportList = () => {
             <Button type="primary">Summary</Button>
             <Button type="primary">Save</Button>
           </Flex>
+        </Flex>
+
+        <Flex
+          justify="space-between"
+          gap={12}
+          style={{
+            padding: "12px 50px",
+            backgroundColor: "var(--secondary-color)",
+          }}
+        >
+          <Switch />
+          <Typography.Text
+            style={{
+              color: "rgb(25 74 109)",
+              fontSize: "1rem",
+              fontWeight: "bold",
+            }}
+          >
+            {dayjs(month).format("MMMM YYYY")}, Salary Report
+          </Typography.Text>
         </Flex>
         {/* {renderTable()} */}
       </div>
