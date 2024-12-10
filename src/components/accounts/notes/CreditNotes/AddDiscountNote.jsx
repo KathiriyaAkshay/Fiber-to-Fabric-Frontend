@@ -23,6 +23,7 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import "./_style.css";
 import { CloseOutlined } from "@ant-design/icons";
 import { ToWords } from "to-words";
+import moment from "moment" ; 
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -278,6 +279,10 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     enabled: Boolean(company_id),
   });
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <>
       <Modal
@@ -318,7 +323,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Typography.Text style={{ fontSize: 20 }}>
                       Discount Note No.
                     </Typography.Text>
-                    <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
+                    <div style={{color: "red"}}>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
                   </div>
                 </td>
               </tr>
@@ -330,7 +335,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       control={control}
                       name="date"
                       render={({ field }) => (
-                        <DatePicker {...field} className="width-100" />
+                        <DatePicker {...field} className="width-100" disabledDate = {disabledFutureDate} />
                       )}
                     />
                   </div>
@@ -515,7 +520,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 <td>Quantity</td>
                 <td style={{ width: "80px" }}>Rate</td>
                 <td style={{ width: "100px" }}>Per</td>
-                <td style={{ width: "150px" }}>Amount</td>
+                <td style={{ width: "150px", fontWeight: 600 }}>Amount</td>
               </tr>
             </thead>
             <tbody>
@@ -608,11 +613,11 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={3}>Total</td>
+                <td style={{fontWeight: 600}} colSpan={3}>Total</td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>{net_amount}</td>
+                <td style={{fontWeight: 600}}>{net_amount}</td>
               </tr>
               <tr>
                 <td colSpan={8}>
@@ -623,7 +628,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <div>
                       <div>
-                        <span style={{ fontWeight: "500" }}>
+                        <span style={{ fontWeight: 600 }}>
                           Amount Chargable(in words):
                         </span>{" "}
                         {toWords.convert(net_amount || 0)}

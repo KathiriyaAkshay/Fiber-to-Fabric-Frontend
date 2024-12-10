@@ -23,6 +23,7 @@ import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
 import { ToWords } from "to-words";
 import { CloseOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -102,7 +103,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       party_id: data?.party_id,
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
-      credit_note_number: data?.credit_note_no || "",
+      credit_note_number: `CNS-${data?.credit_note_no}` || "",
       credit_note_type: "other",
       // sale_challan_id: 456,
       // quality_id: data?.quality_id,
@@ -270,6 +271,10 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       );
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   return (
     <>
@@ -505,6 +510,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     >
                       <Controller
                         control={control}
+                        rules={{required: "Credit Note number is required"}}
                         name="credit_note_no"
                         render={({ field }) => (
                           <Input {...field} style={{ width: "100px" }} />
@@ -538,11 +544,13 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       <Controller
                         control={control}
                         name="date"
+                        rules={{required: "Date is required"}}
                         render={({ field }) => (
                           <DatePicker
                             {...field}
                             name="date"
                             className="width-100"
+                            disabledDate={disabledFutureDate}
                           />
                         )}
                       />
@@ -564,6 +572,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         <Controller
                           control={control}
                           name="company_id"
+                          rules={{required: "Company selection required"}}
                           render={({ field }) => (
                             <Select
                               {...field}
@@ -602,6 +611,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       <Controller
                         control={control}
                         name="party_id"
+                        rules={{required: "Party selection is required"}}
                         render={({ field }) => (
                           <Select
                             {...field}
@@ -645,24 +655,29 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         )}
                       />
                     </Form.Item>
-                    <Form.Item
-                      label=""
-                      name="invoice_number"
-                      validateStatus={errors.invoice_number ? "error" : ""}
-                      help={
-                        errors.invoice_number && errors.invoice_number.message
-                      }
-                      required={true}
-                      wrapperCol={{ sm: 24 }}
-                    >
-                      <Controller
-                        control={control}
+                    <div style={{
+                      marginTop: -10
+                    }}>
+                      <Form.Item
+                        label=""
                         name="invoice_number"
-                        render={({ field }) => (
-                          <Input {...field} placeholder="Invoice Number" />
-                        )}
-                      />
-                    </Form.Item>
+                        validateStatus={errors.invoice_number ? "error" : ""}
+                        help={
+                          errors.invoice_number && errors.invoice_number.message
+                        }
+                        required={true}
+                        wrapperCol={{ sm: 24 }}
+                      >
+                        <Controller
+                          control={control}
+                          rules={{required: "Invoice number is required"}}
+                          name="invoice_number"
+                          render={({ field }) => (
+                            <Input {...field} placeholder="Invoice Number" />
+                          )}
+                        />
+                      </Form.Item>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -738,8 +753,12 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Controller
                       control={control}
                       name="particular"
+                      rules={{required: "Debit note is required"}}
                       render={({ field }) => (
-                        <TextArea {...field} placeholder="Debit note" />
+                        <TextArea 
+                          {...field} 
+                          placeholder="Debit note" 
+                        />
                       )}
                     />
                   </Form.Item>
@@ -755,9 +774,10 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <Controller
                       control={control}
+                      rules={{required: "HSN code is required"}}
                       name="hsn_no"
                       render={({ field }) => (
-                        <Input {...field} placeholder="234512" />
+                        <Input {...field} type="number" placeholder="234512" />
                       )}
                     />
                   </Form.Item>
@@ -775,6 +795,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <Controller
                       control={control}
+                      rules={{required: "Amount is required"}}
                       name="amount"
                       render={({ field }) => (
                         <Input {...field} placeholder="300" type="number" />
@@ -853,6 +874,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Controller
                       control={control}
                       name="extra_tex_name"
+                      rules={{required: "Tax name is required"}}
                       render={({ field }) => (
                         <Input
                           {...field}
@@ -874,7 +896,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         />
                       )}
                     />
-                    %
+                    &nbsp;%
                   </div>
                 </td>
                 <td></td>
@@ -884,11 +906,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={3}>Total</td>
+                <td colSpan={3} style={{fontWeight: 600}}>Total</td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>{net_amount}</td>
+                <td style={{fontWeight: 600}}>{net_amount}</td>
               </tr>
               <tr>
                 <td colSpan={8}>
@@ -898,7 +920,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     className="mt-3"
                   >
                     <div>
-                      <span style={{ fontWeight: "500" }}>
+                      <span style={{ fontWeight: 600 }}>
                         Amount Chargable(in words):
                       </span>{" "}
                       {toWords.convert(net_amount || 0)}

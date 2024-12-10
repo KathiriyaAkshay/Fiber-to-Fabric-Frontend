@@ -7,4 +7,12 @@ export const SAMPLE_CUTTING_TAG_COLOR = "blue" ;
 export const CUT_TAG_COLOR = "orange" ; 
 export const PURCHASE_YARN_BILL_TAG_COLOR = "cyan" ; 
 export const BEAM_RECEIVE_TAG_COLOR = "#108ee9" ; 
-// export const 
+
+
+// =============== Credit note tag information ======================== // 
+
+export const CREDIT_NOTE_SALE_RETURN = "#f50" ; 
+export const CREDIT_NOTE_LATE_PAYMENT = "#2db7f5" ; 
+export const CREDIT_NOTE_CLAIM = "#87d068" ; 
+export const CREDIT_NOTE_DISCOUNT = "#108ee9" ; 
+export const CREDIT_NOTE_OTHER = "purple" ;

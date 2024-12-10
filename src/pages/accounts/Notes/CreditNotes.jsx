@@ -10,6 +10,7 @@ import {
   Table,
   Space,
   Spin,
+  Tag,
 } from "antd";
 import {
   EditOutlined,
@@ -26,6 +27,8 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
+import { render } from "react-dom";
+import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN } from "../../../constants/tag";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -139,17 +142,38 @@ const CreditNotes = () => {
       title: "Credit No",
       dataIndex: "credit_note_number",
       key: "credit_note_number",
+      render: (text, record) => (
+        <Tag color="green">{text}</Tag>
+      )
     },
     {
       title: "Challan/Bill",
       dataIndex: "challan",
       key: "challan",
+      render: (text, record) => {
+        if (creditNoteTypes == "other"){
+          return(
+            <div>
+              {record?.credit_note_details[0]?.invoice_no}
+            </div>
+          )
+        } else {
+          return(
+            <div>-</div>
+          )
+        }
+      }
     },
     {
       title: "Quality/Denier",
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
       render: (text) => {
+        if (text == undefined){
+          return(
+            <div>-</div>
+          )
+        }
         return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
       },
     },
@@ -160,8 +184,8 @@ const CreditNotes = () => {
     // },
     {
       title: "Party Name",
-      dataIndex: ["party", "checker_name"],
-      key: ["party", "checker_name"],
+      dataIndex: ["party", "company_name"],
+      key: ["party", "company_name"],
     },
     {
       title: "Meter",
@@ -173,7 +197,17 @@ const CreditNotes = () => {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (text) => text || 0,
+      render: (text, record) => {
+        if (creditNoteTypes == "other"){
+            return(
+              <div>
+                {record?.credit_note_details[0]?.amount}
+              </div>
+            )
+        } else {  
+          return(<div>-</div>) 
+        }
+      },
     },
     {
       title: "Net Amount",
@@ -184,11 +218,49 @@ const CreditNotes = () => {
       title: "Type",
       dataIndex: "credit_note_type",
       key: "credit_note_type",
+      render: (text, record) => {
+        if (text == "other"){
+          return(
+            <Tag color =  {CREDIT_NOTE_OTHER}>
+              OTHER
+            </Tag>
+          )
+        } else if (text == "sale_return"){
+          return(
+            <Tag color = {CREDIT_NOTE_SALE_RETURN}>
+              SALE RETURN
+            </Tag>
+          )
+        } else if (text == "discount"){
+          return(
+            <Tag color = {CREDIT_NOTE_DISCOUNT}>
+              DISCOUNT
+            </Tag>
+          )
+        } else if (text == "claim"){
+          return(
+            <Tag color = {CREDIT_NOTE_CLAIM}>
+              CLAIM NOTE
+            </Tag>
+          )
+        }else{
+          return(
+            <Tag>
+              {text}
+            </Tag>
+          )
+        }
+      }
     },
     {
       title: "Invoice Date",
-      dataIndex: "invoice_date",
+      dataIndex: "createdAt",
       key: "invoice_date",
+      render: (text, record) => {
+        return(
+          <div>{moment(text).format("DD-MM-YYYY")}</div>
+        )
+      }
     },
 
     {
