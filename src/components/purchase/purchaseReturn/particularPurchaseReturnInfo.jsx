@@ -9,7 +9,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
-const ParticularPurchaseReturnInfo = ({ details }) => {
+const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
