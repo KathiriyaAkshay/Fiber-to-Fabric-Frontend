@@ -217,3 +217,12 @@ export const HEAD_OPTIONS = [
   { label: "TDS PAY (Liability)", value: "TDS(Pay)" },
   { label: "TDS DEDUCT (ASSET) (Asset)", value: "TDS DEDUCT (ASSET)" },
 ];
+
+export const SALARY_TYPES = [
+  { label: "Attendance", value: "attendance" },
+  { label: "Monthly", value: "monthly" },
+  { label: "On Production", value: "on production" },
+  { label: "Work Basis", value: "work basis" },
+  { label: "Beam Pasaria", value: "BEAM pasaria" },
+  { label: "Beam Warpar", value: "BEAM warpar" },
+];

@@ -1,4 +1,8 @@
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Select,
@@ -7,9 +11,13 @@ import {
   Typography,
   Spin,
   Input,
+  Row,
+  Col,
+  Checkbox,
+  Space,
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import {
   PARTICULAR_OPTIONS,
@@ -25,21 +33,25 @@ import {
   localStorageHandler,
 } from "../../../utils/mutationUtils";
 import { PAYMENT_TYPE } from "../../../constants/localStorage";
+import useDebounce from "../../../hooks/useDebounce";
+import RevertPassBookEntry from "../../../components/accounts/statement/passbook/RevertPassBookEntry";
 
 const CashBook = () => {
   const navigate = useNavigate();
   const { companyId } = useContext(GlobalContext);
 
+  const [isDeleted, setIsDeleted] = useState(false);
   const [fromMonth, setFromMonth] = useState(null);
   const [toMonth, setToMonth] = useState(null);
-  console.log(fromMonth, toMonth);
-
   const [search, setSearch] = useState(null);
   const [particular, setParticular] = useState(null);
-  // const [bank, setBank] = useState(null);
   const [particularOptions, setParticularOptions] = useState([]);
 
-  // const [selectedRow, setSelectedRow] = useState(null);
+  const debounceIsDelete = useDebounce(isDeleted, 500);
+  const debounceFrom = useDebounce(fromMonth, 500);
+  const debounceTo = useDebounce(toMonth, 500);
+  const debounceSearch = useDebounce(search, 500);
+  const debounceParticular = useDebounce(particular, 500);
 
   const navigateToAdd = () => {
     navigate("/account/payment/add");
@@ -51,24 +63,31 @@ const CashBook = () => {
       "get",
       "cashBook",
       "list",
-      { company_id: companyId, fromMonth, toMonth, search, particular },
+      {
+        company_id: companyId,
+        from: debounceFrom,
+        to: debounceTo,
+        search: debounceSearch,
+        particular_type: debounceParticular,
+        is_delete: debounceIsDelete,
+      },
     ],
     queryFn: async () => {
       let params = {
         company_id: companyId,
-        search,
+        search: debounceSearch,
+        is_delete: debounceIsDelete,
         // company_bank_id: bank,
         // passbook_entry: 1,
       };
-      if (fromMonth) params.from = dayjs(fromMonth).format("YYYY-MM");
-      if (toMonth) params.to = dayjs(toMonth).format("YYYY-MM");
-      if (particular) params.particular_type = particular;
+      if (fromMonth) params.from = dayjs(debounceFrom).format("YYYY-MM");
+      if (toMonth) params.to = dayjs(debounceTo).format("YYYY-MM");
+      if (particular) params.particular_type = debounceParticular;
 
       const response = await getCashbookListRequest({ params });
       return response.data.data;
     },
     enabled: Boolean(companyId),
-    placeholderData: keepPreviousData,
   });
 
   // get particular list API
@@ -98,10 +117,6 @@ const CashBook = () => {
       setParticularOptions([...PARTICULAR_OPTIONS, ...data]);
     }
   }, [particularRes]);
-
-  const downloadPdf = () => {
-    alert("downloadPdf");
-  };
 
   const {
     unverifiedEntries,
@@ -135,7 +150,31 @@ const CashBook = () => {
       };
     }
   }, [cashBookList, isLoadingCashBookList]);
-  console.log(verifiedEntries, unverifiedEntries);
+
+  function downloadPdf() {
+    const body = {
+      unverifiedEntries,
+      verifiedEntries,
+      totalAmount,
+      totalDeposit,
+      closingBalance,
+    };
+
+    const tableTitle = [
+      "Date",
+      "Time",
+      "Particular",
+      "Debit amount(Rs.)",
+      "Credit amount(Rs.)",
+      "Balance(Rs.)",
+      "Remark",
+    ];
+
+    localStorage.setItem("print-array", JSON.stringify(body));
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+
+    window.open("/print-cashbook-statement");
+  }
 
   return (
     <div className="flex flex-col gap-2 p-4">
@@ -216,6 +255,18 @@ const CashBook = () => {
         </Flex>
       </div>
 
+      <Row style={{ justifyContent: "flex-end" }}>
+        <Col span={6} style={{ textAlign: "right" }}>
+          <Checkbox
+            checked={isDeleted}
+            onChange={(e) => setIsDeleted(e.target.checked)}
+            style={{ fontSize: "16px", color: "red" }}
+          >
+            Deleted
+          </Checkbox>
+        </Col>
+      </Row>
+
       {isLoadingCashBookList ? (
         <Spin />
       ) : (
@@ -254,7 +305,7 @@ const CashBook = () => {
                   return (
                     <tr
                       key={index + "_unverified"}
-                      className={row?.is_withdrawals ? "red" : "green"}
+                      className={row?.is_withdraw ? "red" : "green"}
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
@@ -282,7 +333,9 @@ const CashBook = () => {
                       </td>
                       <td>{row?.balance}</td>
                       <td width={250}>{row.remarks}</td>
-                      <td></td>
+                      <td>
+                        <Space></Space>
+                      </td>
                     </tr>
                   );
                 })
@@ -307,7 +360,7 @@ const CashBook = () => {
                   return (
                     <tr
                       key={index + "_verified"}
-                      className={row?.is_withdrawals ? "red" : "green"}
+                      className={row?.is_withdraw ? "red" : "green"}
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
@@ -319,7 +372,7 @@ const CashBook = () => {
                       </td>
                       <td>
                         <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdrawals
+                          {row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>
@@ -328,14 +381,37 @@ const CashBook = () => {
                         <Typography
                           style={{ color: "green", fontWeight: "600" }}
                         >
-                          {!row?.is_withdrawals
+                          {!row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>
                       </td>
                       <td>{row?.balance}</td>
                       <td>{row.remarks}</td>
-                      <td></td>
+                      <td>
+                        <Space>
+                          {/* revert action */}
+                          {row.able_to_revert ? (
+                            <RevertPassBookEntry details={row} />
+                          ) : null}
+
+                          {/* edit action */}
+                          <Button
+                            style={{
+                              borderColor: "var(--menu-item-hover-color)",
+                            }}
+                            // onClick={() => {
+                            //   setSelectedRow(row);
+                            //   setIsOpenEditEntry(true);
+                            //   setIsVerifyEntry(false);
+                            // }}
+                          >
+                            <EditOutlined
+                              style={{ color: "var(--menu-item-hover-color)" }}
+                            />
+                          </Button>
+                        </Space>
+                      </td>
                     </tr>
                   );
                 })

@@ -164,8 +164,8 @@ function ReceiveSizeBeamList() {
     {
       title: "Challan Date",
       key: "challan_date",
-      render: ({ challan_date }) => {
-        return dayjs(challan_date).format("DD-MM-YYYY");
+      render: ({ createdAt }) => {
+        return dayjs(createdAt).format("DD-MM-YYYY");
       },
     },
     {

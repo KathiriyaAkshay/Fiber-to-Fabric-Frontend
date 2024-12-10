@@ -24,6 +24,8 @@ import "./_style.css";
 import { CloseOutlined } from "@ant-design/icons";
 import { ToWords } from "to-words";
 import moment from "moment" ; 
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -44,6 +46,18 @@ const toWords = new ToWords({
       },
     },
   },
+});
+
+const validationSchema = yup.object().shape({
+  company_id: yup.string().required("Please select company"),
+  // debit_note_no: yup.string().required("Please enter debit note number"),
+  // invoice_number: yup.string().required("Please enter invoice number"),
+  party_id: yup.string().required("Please select party"),
+  date: yup.string().required("Please enter date"),
+  // particular: yup.string().required("Please enter particular"),
+  // hsn_code: yup.string().required("Please enter hsn code"),
+  amount: yup.string().required("Please enter amount"),
+  bill_id: yup.string().required("Please select bill."),
 });
 
 const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
@@ -132,7 +146,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     watch,
     resetField,
     setValue,
-    // formState: { errors },
+    formState: { errors },
     getValues,
     reset,
   } = useForm({
@@ -160,6 +174,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       // discount_value: "",
       // discount_amount: "",
     },
+    resolver: yupResolver(validationSchema),
   });
 
   const currentValue = watch();
@@ -346,8 +361,8 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Form.Item
                       label=""
                       name="company_id"
-                      // validateStatus={errors.challan_type ? "error" : ""}
-                      // help={errors.challan_type && errors.challan_type.message}
+                      validateStatus={errors.company_id ? "error" : ""}
+                      help={errors.company_id && errors.company_id.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
                     >
@@ -383,8 +398,8 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Form.Item
                       label=""
                       name="party_id"
-                      // validateStatus={errors.challan_type ? "error" : ""}
-                      // help={errors.challan_type && errors.challan_type.message}
+                      validateStatus={errors.party_id ? "error" : ""}
+                      help={errors.party_id && errors.party_id.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
                     >
@@ -426,8 +441,8 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Form.Item
                       label=""
                       name="bill_id"
-                      // validateStatus={errors.challan_type ? "error" : ""}
-                      // help={errors.challan_type && errors.challan_type.message}
+                      validateStatus={errors.bill_id ? "error" : ""}
+                      help={errors.bill_id && errors.bill_id.message}
                       required={true}
                       wrapperCol={{ sm: 24 }}
                     >

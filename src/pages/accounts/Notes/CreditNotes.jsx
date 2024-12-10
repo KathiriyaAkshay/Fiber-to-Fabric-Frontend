@@ -29,6 +29,8 @@ import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/
 import moment from "moment";
 import { render } from "react-dom";
 import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN } from "../../../constants/tag";
+import useDebounce from "../../../hooks/useDebounce";
+import { disabledFutureDate } from "../../../utils/date";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -50,9 +52,15 @@ const CreditNotes = () => {
   const [saleReturnNo, setSaleReturnNo] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const debounceParty = useDebounce(party, 150);
+  const debounceQuality = useDebounce(quality, 150);
+  const debounceFromDate = useDebounce(fromDate, 150);
+  const debounceToDate = useDebounce(toDate, 150);
+  const debounceSaleReturnNo = useDebounce(saleReturnNo, 150);
+
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  // Partylist dropdown
+  // Party list dropdown
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -63,10 +71,6 @@ const CreditNotes = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  function disabledFutureDate(current) {
-    return current && current > moment().endOf("day");
-  }
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -106,6 +110,11 @@ const CreditNotes = () => {
           page,
           pageSize,
           credit_note_type: creditNoteTypes,
+          party_id: debounceParty,
+          quality_id: debounceQuality,
+          from: debounceFromDate,
+          to: debounceToDate,
+          sale_return_no: debounceSaleReturnNo,
         },
       ],
       queryFn: async () => {
@@ -114,7 +123,18 @@ const CreditNotes = () => {
           page,
           pageSize,
           credit_note_type: creditNoteTypes,
+          party_id: debounceParty,
+          quality_id: debounceQuality,
         };
+        if (fromDate) {
+          params.from = dayjs(debounceFromDate).format("YYYY-MM-DD");
+        }
+        if (toDate) {
+          params.to = dayjs(debounceToDate).format("YYYY-MM-DD");
+        }
+        if (saleReturnNo) {
+          params.sale_return_no = debounceSaleReturnNo;
+        }
         const response = await getCreditNotesListRequest({ params });
         return response.data.data;
       },
@@ -456,7 +476,7 @@ const CreditNotes = () => {
                 Sales Return No
               </Typography.Text>
               <Input
-                placeholder="Challan NO"
+                placeholder="Enter sales return no."
                 value={saleReturnNo}
                 onChange={(e) => setSaleReturnNo(e.target.value)}
               />

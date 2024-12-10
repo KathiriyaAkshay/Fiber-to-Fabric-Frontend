@@ -3,6 +3,7 @@ import {
   Checkbox,
   Col,
   DatePicker,
+  Empty,
   Flex,
   Form,
   Input,
@@ -10,6 +11,7 @@ import {
   Radio,
   Row,
   Select,
+  Typography,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -142,21 +144,29 @@ const PurchaseReturnForm = ({ handleClose }) => {
     <>
       <table className="credit-note-table">
         <tbody>
-          <tr>
+          {/* <tr>
             <td colSpan={8}>
               <h2>Debit Note</h2>
             </td>
-          </tr>
+          </tr> */}
           <tr>
             <td colSpan={2} width={"33.33%"}>
-              <div className="">
-                Debit Note No.
-                <div>{debitNoteLastNumber?.debitNoteNumber || "-"}</div>
+              <div className="year-toggle">
+                <Typography.Text style={{ fontSize: 20 }}>
+                  Debit Note No.
+                </Typography.Text>
+                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
               </div>
             </td>
             <td colSpan={2} width={"33.33%"}>
-              <div className="">
-                <div>Return Date:</div>
+              <div
+                className="year-toggle"
+                style={{
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                }}
+              >
+                <label style={{ textAlign: "left" }}>Return Date:</label>
                 <Form.Item
                   label=""
                   name="return_date"
@@ -180,8 +190,18 @@ const PurchaseReturnForm = ({ handleClose }) => {
               </div>
             </td>
             <td colSpan={2} width={"33.33%"}>
-              <div className="">
-                <Form.Item label="" name="is_current">
+              <div
+                className="year-toggle"
+                style={{
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                }}
+              >
+                <Form.Item
+                  label=""
+                  name="is_current"
+                  style={{ marginBottom: "5px" }}
+                >
                   <Controller
                     control={control}
                     name="is_current"
@@ -201,6 +221,7 @@ const PurchaseReturnForm = ({ handleClose }) => {
                   help={errors.challan_no && errors.challan_no.message}
                   required={true}
                   wrapperCol={{ sm: 24 }}
+                  style={{ marginBottom: "5px" }}
                 >
                   <Controller
                     control={control}
@@ -254,11 +275,31 @@ const PurchaseReturnForm = ({ handleClose }) => {
           setError={setError}
         />
       ) : null}
+
+      <div className="total-summary">
+        <table className="summary-table">
+          <tbody>
+            {!selectedChallan ? (
+              <tr>
+                <td colSpan={2}>
+                  <Empty description="No Taka Found" />
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
+      </div>
     </>
   );
 };
 
 export default PurchaseReturnForm;
+
+const validationSchema2 = yup.object().shape({
+  return_quantity: yup.string().required("Please enter return quality."),
+  return_cartoon: yup.string().required("Please enter return cartoon."),
+  createdAt: yup.string().required("Please enter date"),
+});
 
 const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
   const queryClient = useQueryClient();
@@ -274,8 +315,8 @@ const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
     setValue,
     watch,
   } = useForm({
-    // resolver: yarnReturnResolverSchema,
     defaultValues: {},
+    resolver: yupResolver(validationSchema2),
   });
 
   useEffect(() => {
@@ -355,7 +396,7 @@ const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
       {/* MODEL: yarn_receive_challans */}
       <Form
         layout="vertical"
-        style={{ margin: "0" }}
+        style={{ marginTop: 25 }}
         // onFinish={handleSubmit(HandleSubmit)}
       >
         <Row gutter={24}>
@@ -488,7 +529,18 @@ const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
         </Row>
       </Form>
 
-      <Flex gap={12} justify="flex-end">
+      <Flex
+        gap={12}
+        justify="flex-end"
+        style={{
+          marginTop: "1rem",
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-end",
+          gap: "1rem",
+          marginBottom: 10,
+        }}
+      >
         <Button
           type="primary"
           onClick={handleSubmit(onSubmit)}
@@ -496,7 +548,7 @@ const YarnReceiveChallan = ({ companyId, details, handleClose }) => {
         >
           Generate
         </Button>
-        <Button>Close</Button>
+        <Button onClick={handleClose}>Close</Button>
       </Flex>
     </>
   );
@@ -557,6 +609,10 @@ const PurchaseTakaChallan = ({
         type: "custom",
         message: "Return date is required.",
       });
+      return;
+    }
+    if (!selectedPurchaseId || !selectedPurchaseId?.length) {
+      message.error("Please select at least one sale challan");
       return;
     }
 
@@ -722,19 +778,38 @@ const PurchaseTakaChallan = ({
             ) : null}
 
             <tr>
-              <td>Total Taka: {details?.purchase_challan_details?.length}</td>
-              <td>Total Meter: {totalMeter}</td>
+              <td className="total-information-data">
+                Total Taka: {details?.purchase_challan_details?.length}
+              </td>
+              <td className="total-information-data">
+                Total Meter: {totalMeter}
+              </td>
             </tr>
 
             <tr>
-              <td>Return Taka: {selectedPurchaseId?.length || 0}</td>
-              <td>Return Meter: {totalReturnMeter || 0}</td>
+              <td className="return-information-data">
+                Return Taka: {selectedPurchaseId?.length || 0}
+              </td>
+              <td className="return-information-data">
+                Return Meter: {totalReturnMeter || 0}
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <Flex gap={12} justify="flex-end">
+      <Flex
+        gap={12}
+        justify="flex-end"
+        style={{
+          marginTop: "1rem",
+          alignItems: "center",
+          width: "100%",
+          justifyContent: "flex-end",
+          gap: "1rem",
+          marginBottom: 10,
+        }}
+      >
         <Button
           type="primary"
           onClick={submitHandler}
@@ -742,7 +817,7 @@ const PurchaseTakaChallan = ({
         >
           Generate
         </Button>
-        <Button>Close</Button>
+        <Button onClick={handleClose}>Close</Button>
       </Flex>
     </>
   );

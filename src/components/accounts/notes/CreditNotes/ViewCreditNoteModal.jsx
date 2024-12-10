@@ -1,9 +1,31 @@
-import { Button, Flex, Modal } from "antd";
+import { Button, Flex, Modal, Typography } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import "./_style.css";
-import { EyeOutlined } from "@ant-design/icons";
+import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
 import { useContext, useMemo, useState } from "react";
 import dayjs from "dayjs";
+import { ToWords } from "to-words";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const ViewCreditNoteModal = ({ details }) => {
   const { companyListRes } = useContext(GlobalContext);
@@ -31,71 +53,112 @@ const ViewCreditNoteModal = ({ details }) => {
           setIsAddModalOpen(false);
         }}
         footer={false}
+        closeIcon={<CloseOutlined className="text-white" />}
+        title="Credit Note"
+        centered
+        className={{
+          header: "text-center",
+        }}
+        classNames={{
+          header: "text-center",
+        }}
+        styles={{
+          content: {
+            padding: 0,
+          },
+          header: {
+            padding: "16px",
+            margin: 0,
+          },
+          body: {
+            padding: "16px 32px",
+          },
+        }}
       >
         <div className="credit-note-container">
           <table className="credit-note-table">
             <tbody>
-              <tr>
+              {/* <tr>
                 <td colSpan={8} className="text-center">
                   <h2>Credit Note</h2>
                 </td>
-              </tr>
+              </tr> */}
               <tr>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="p-2">
-                    Credit Note No.
-                    <div>{details.credit_note_number || "-"}</div>
+                  <div className="year-toggle">
+                    <Typography.Text style={{ fontSize: 20 }}>
+                      Credit Note No.
+                    </Typography.Text>
+                    <div>{details.credit_note_number || ""}</div>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="p-2">
+                  <div className="year-toggle">
+                    <Typography.Text>Date.</Typography.Text>
+                    <div>{dayjs(details.createdAt).format("DD-M-YYYY")}</div>
+                  </div>
+                </td>
+                <td colSpan={3} width={"33.33%"}>
+                  <div className="year-toggle">
+                    <Typography.Text>Bill.</Typography.Text>
                     <div>
-                      Date: {dayjs(details.createdAt).format("DD-M-YYYY")}
+                      {details?.credit_note_details
+                        .map((item) => item.bill_no)
+                        .join(", ")}
                     </div>
-                  </div>
-                </td>
-                <td colSpan={3} width={"33.33%"}>
-                  <div className="p-2">Bill</div>
-                  <div>
-                    {details?.credit_note_details
-                      .map((item) => item.bill_no)
-                      .join(", ")}
                   </div>
                 </td>
               </tr>
               <tr width="50%">
                 <td colSpan={4}>
-                  <div>GSTIN/UIN: {company?.gst_no || ""}</div>
-                  <div>State Name: {company?.state || ""}</div>
-                  <div>PinCode: {company?.pincode || ""}</div>
-                  <div>Contact: {company?.company_contact || ""}</div>
-                  <div>Email: {company?.company_email || ""}</div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span> {company?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name:</span> {company?.state || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>PinCode:</span> {company?.pincode || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Contact:</span> {company?.company_contact || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Email:</span> {company?.company_email || ""}
+                  </div>
                 </td>
                 <td colSpan={4}>
-                  <div>
-                    Party:
-                    <b>{details?.party?.company_name || "-"}</b>
+                  <div className="credit-note-info-title">
+                    <span>Party:</span>
+                    {details?.party?.company_name || "-"}
                     <br />
                     {details?.address || ""}
                   </div>
-                  <div>GSTIN/UIN: {details?.party?.user?.gst_no || "-"}</div>
-                  <div>
-                    PAN/IT No : {details?.party?.user?.pancard_no || "-"}
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span>{" "}
+                    {details?.party?.user?.gst_no || "-"}
                   </div>
-                  <div>State Name: {details?.party?.user?.state || "-"}</div>
+                  <div className="credit-note-info-title">
+                    <span>PAN/IT No: </span>
+                    {details?.party?.user?.pancard_no || "-"}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name:</span>{" "}
+                    {details?.party?.user?.state || "-"}
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
           <table className="credit-note-table">
-            <thead>
+            <thead style={{ fontWeight: 600 }}>
               <tr>
-                <th style={{ width: "50px" }}>SL No.</th>
-                <th colSpan={2}>Particulars</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Per</th>
-                <th style={{ width: "100px" }}>Amount</th>
+                <td style={{ width: "50px" }}>SL No.</td>
+                <td colSpan={2}>Particulars</td>
+                <td>Quantity</td>
+                <td>Rate</td>
+                <td>Per</td>
+                <td style={{ width: "100px" }}>Amount</td>
               </tr>
             </thead>
             <tbody>
@@ -108,29 +171,29 @@ const ViewCreditNoteModal = ({ details }) => {
                 <td></td>
               </tr> */}
               <tr>
-                <td></td>
+                <td>1.</td>
                 <td colSpan={2}>{details?.particular_name || ""}</td>
+                <td>{details?.quantity || ""}</td>
+                <td>{details?.rate || ""}</td>
                 <td></td>
-                <td></td>
-                <td></td>
-                <td>{details?.amount || "-"}</td>
+                <td>{details?.amount || 0}</td>
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={2}>
-                  <div>SGST @ {details?.SGST_value || "-"} %</div>
-                  <div>CGST @ {details.CGST_value || "-"} %</div>
-                  <div>IGST @ {details.IGST_value || "-"}%</div>
+                <td colSpan={2} style={{ textAlign: "right" }}>
+                  <div>SGST @ {details?.SGST_value || 0} %</div>
+                  <div>CGST @ {details.CGST_value || 0} %</div>
+                  <div>IGST @ {details.IGST_value || 0}%</div>
                   <div>Round Off</div>
                 </td>
                 <td></td>
                 <td></td>
                 <td></td>
                 <td>
-                  <div>{details.SGST_amount || "-"}</div>
-                  <div>{details.CGST_amount || "-"}</div>
-                  <div>{details.IGST_amount || "-"}</div>
-                  <div>{details.round_off_amount || "-"}</div>
+                  <div>{details.SGST_amount || 0}</div>
+                  <div>{details.CGST_amount || 0}</div>
+                  <div>{details.IGST_amount || 0}</div>
+                  <div>{details.round_off_amount || 0}</div>
                 </td>
               </tr>
               <tr style={{ height: "50px" }}>
@@ -178,9 +241,15 @@ const ViewCreditNoteModal = ({ details }) => {
                     className="mt-3"
                   >
                     <div>
-                      <div>Amount Chargable(in words)</div>
-                      <div>Xero Only</div>
-                      <div>Remarks:</div>
+                      <div>
+                        <span style={{ fontWeight: "500" }}>
+                          Amount Chargable(in words):
+                        </span>{" "}
+                        {toWords.convert(details?.net_amount || 0)}
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: "500" }}>Remarks:</span>{" "}
+                      </div>
                     </div>
                     <div>E & O.E</div>
                   </Flex>
@@ -203,7 +272,18 @@ const ViewCreditNoteModal = ({ details }) => {
             </tbody>
           </table>
 
-          <Flex gap={12} justify="flex-end">
+          <Flex
+            gap={12}
+            justify="flex-end"
+            style={{
+              marginTop: "1rem",
+              alignItems: "center",
+              width: "100%",
+              justifyContent: "flex-end",
+              gap: "1rem",
+              marginBottom: 10,
+            }}
+          >
             <Button type="primary">Print</Button>
             <Button onClick={() => setIsAddModalOpen(false)}>Close</Button>
           </Flex>

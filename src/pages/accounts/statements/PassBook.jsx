@@ -19,7 +19,7 @@ import {
   Checkbox,
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import {
   PARTICULAR_OPTIONS,
@@ -53,6 +53,7 @@ const PassBook = () => {
   const [particular, setParticular] = useState(null);
   const [bank, setBank] = useState(null);
 
+  const debounceIsDelete = useDebounce(isDeleted, 500);
   const debounceMonth = useDebounce(month, 500);
   const debounceSearch = useDebounce(search, 500);
   const debounceParticular = useDebounce(particular, 500);
@@ -75,21 +76,31 @@ const PassBook = () => {
       "get",
       "passBook",
       "list",
-      { company_id: companyId, month, search, particular, bank },
+      {
+        company_id: companyId,
+        from: debounceMonth,
+        search: debounceSearch,
+        particular_type: debounceParticular,
+        company_bank_id: debounceBank,
+        is_delete: debounceIsDelete,
+      },
     ],
     queryFn: async () => {
       let params = {
+        passbook_entry: 1,
         company_id: companyId,
         search: debounceSearch,
         company_bank_id: debounceBank,
-        passbook_entry: 1,
-        from: dayjs(debounceMonth).format("YYYY-MM"),
+        particular_type: debounceParticular,
+        is_delete: debounceIsDelete,
       };
+      if (debounceMonth) {
+        params.from = dayjs(debounceMonth).format("YYYY-MM");
+      }
       const response = await getPassbookListRequest({ params });
       return response.data.data;
     },
     enabled: Boolean(companyId),
-    placeholderData: keepPreviousData,
   });
 
   // get particular list API
@@ -119,10 +130,6 @@ const PassBook = () => {
       setParticularOptions([...PARTICULAR_OPTIONS, ...data]);
     }
   }, [particularRes]);
-
-  const downloadPdf = () => {
-    alert("downloadPdf");
-  };
 
   const {
     unverifiedEntries,
@@ -157,6 +164,35 @@ const PassBook = () => {
     }
   }, [isLoadingPassBookList, passBookList]);
 
+  function downloadPdf() {
+    const body = {
+      unverifiedEntries,
+      verifiedEntries,
+      totalAmount,
+      totalDeposit,
+      closingBalance,
+    };
+
+    const tableTitle = [
+      "Date",
+      "Time",
+      "Cheque No",
+      "Particular",
+      "Withdrawals",
+      "Deposits",
+      "Balance",
+      "Remark",
+    ];
+
+    // Set localstorage item information
+    localStorage.setItem("print-array", JSON.stringify(body));
+    // localStorage.setItem("print-title", "PassBook Entries");
+    localStorage.setItem("print-head", JSON.stringify(tableTitle));
+    // localStorage.setItem("total-count", "0");
+
+    window.open("/print-passbook-statement");
+  }
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -170,6 +206,9 @@ const PassBook = () => {
         </div>
         <Flex align="center" justify="flex-end" gap={10}>
           <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Month
+            </Typography.Text>
             <DatePicker value={month} picker="month" onChange={setMonth} />
           </Flex>
 
@@ -283,7 +322,7 @@ const PassBook = () => {
                   return (
                     <tr
                       key={index + "_unverified"}
-                      className={row?.is_withdrawals ? "red" : "green"}
+                      className={row?.is_withdraw ? "red" : "green"}
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
@@ -295,7 +334,7 @@ const PassBook = () => {
                       </td>
                       <td>
                         <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdrawals
+                          {row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>
@@ -304,7 +343,7 @@ const PassBook = () => {
                         <Typography
                           style={{ color: "green", fontWeight: "600" }}
                         >
-                          {!row?.is_withdrawals
+                          {!row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>
@@ -367,9 +406,7 @@ const PassBook = () => {
                     <tr
                       key={index + "_verified"}
                       className={
-                        !row?.is_withdrawals || row.is_reverted
-                          ? "green"
-                          : "red"
+                        !row?.is_withdraw || row.is_reverted ? "green" : "red"
                       }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
@@ -382,7 +419,7 @@ const PassBook = () => {
                       </td>
                       <td>
                         <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdrawals
+                          {row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>
@@ -391,7 +428,7 @@ const PassBook = () => {
                         <Typography
                           style={{ color: "green", fontWeight: "600" }}
                         >
-                          {!row?.is_withdrawals
+                          {!row?.is_withdraw
                             ? row?.amount?.toFixed(2)
                             : (0).toFixed(2)}
                         </Typography>

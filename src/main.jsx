@@ -165,6 +165,15 @@ import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 import SalesReport from "./pages/accounts/reports/salesReport";
 import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
 import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
+import PrintCashBookStatement from "./pages/accounts/statements/PrintCashBookStatement";
+import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookStatement";
+import OtherUserList from "./pages/userMaster/otherUser/OtherUserList";
+import UpdateOtherUser from "./pages/userMaster/otherUser/UpdateOtherUser";
+import AddOtherUser from "./pages/userMaster/otherUser/AddOtherUser";
+import SalaryReportList from "./pages/accounts/salaryMaster/employeeSalaryReport/SalaryReportList";
+import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/AddSalaryReport";
+import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
+import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -215,6 +224,14 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/print", element: <PrintPage /> },
+      {
+        path: "/print-cashbook-statement",
+        element: <PrintCashBookStatement />,
+      },
+      {
+        path: "/print-passbook-statement",
+        element: <PrintPassBookStatement />,
+      },
       {
         path: "/quality-master",
         children: [
@@ -311,6 +328,14 @@ const router = createBrowserRouter([
               { index: true, element: <VehicleUserList /> },
               { path: "add", element: <AddVehicleUser /> },
               { path: "update/:id", element: <UpdateVehicleUser /> },
+            ],
+          },
+          {
+            path: "other-user",
+            children: [
+              { index: true, element: <OtherUserList /> },
+              { path: "add", element: <AddOtherUser /> },
+              { path: "update/:id", element: <UpdateOtherUser /> },
             ],
           },
         ],
@@ -854,21 +879,22 @@ const router = createBrowserRouter([
           },
           {
             path: "salary-master",
-            element: (
-              <div>
-                <div>salary-master</div>
-                <Outlet />
-              </div>
-            ),
             children: [
               { index: true, element: <div>salary-master</div> },
               {
                 path: "employee-salary-report",
-                element: <div>employee-salary-report</div>,
+                children: [
+                  { index: true, element: <SalaryReportList /> },
+                  { path: "add", element: <AddSalaryReport /> },
+                  { path: "update/:id", element: <AddSalaryReport /> },
+                ],
               },
               {
                 path: "employee-advance-salary",
-                element: <div>employee-advance-salary</div>,
+                children: [
+                  { index: true, element: <AdvanceSalaryList /> },
+                  { path: "add", element: <AddAdvanceSalary /> },
+                ],
               },
               {
                 path: "employee-average-report",

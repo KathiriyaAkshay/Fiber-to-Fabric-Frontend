@@ -97,6 +97,7 @@ export function getSaleJobWorkBillListRequest({ params }) {
 // sale -> challan -> sale challan
 
 export function getSaleChallanListRequest({ params }) {
+    params.endInclude = `bill_status,pending`
     return api.get(`/sale/challan/list`, {
         params,
     });
