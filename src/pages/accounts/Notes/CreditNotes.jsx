@@ -31,6 +31,7 @@ import { render } from "react-dom";
 import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
+import ViewSaleReturn from "../../../components/sale/challan/saleReturn/ViewSaleReturn";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -177,11 +178,13 @@ const CreditNotes = () => {
               {record?.credit_note_details[0]?.invoice_no}
             </div>
           )
-        } else {
+        } else if (creditNoteTypes == "sale_return")   {
           return(
-            <div>-</div>
+            <div>
+              {record?.sale_challan?.challan_no || "-"}
+            </div>
           )
-        }
+        } else null
       }
     },
     {
@@ -224,9 +227,11 @@ const CreditNotes = () => {
                 {record?.credit_note_details[0]?.amount}
               </div>
             )
-        } else {  
-          return(<div>-</div>) 
-        }
+        } else if (creditNoteTypes == "sale_return") {  
+          return(
+            <div>{record?.amount || "0.0"}</div>
+          ) 
+        } else null
       },
     },
     {
@@ -288,11 +293,21 @@ const CreditNotes = () => {
       render: (details) => {
         return (
           <Space>
+
+            {creditNoteTypes == "sale_return" && (
+              <></>
+              // <ViewSaleReturn
+              //   details={details}
+              // />
+            )}
             {/* <ActionView /> */}
             <ViewCreditNoteModal details={details} />
-            <Button>
-              <EditOutlined />
-            </Button>
+
+            {creditNoteTypes !== "sale_return" && (
+              <Button>
+                <EditOutlined />
+              </Button>
+            )}
             {/* <ActionFile /> */}
             {/* <Invoice /> */}
           </Space>
