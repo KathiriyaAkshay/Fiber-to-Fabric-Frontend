@@ -4,11 +4,8 @@ import dayjs from "dayjs";
 import { useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../constants/tag";
-import { render } from "react-dom";
 
 const ViewProductionDetailModal = ({ title, details }) => {
-  console.log(details);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -81,7 +78,11 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "2",
       label: "Order Type",
-      children: <div><Tag color = {SALE_CHALLAN_INFO_TAG_COLOR}>Sale</Tag></div>,
+      children: (
+        <div>
+          <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>Sale</Tag>
+        </div>
+      ),
       span: 2,
     },
     {
@@ -103,35 +104,44 @@ const ViewProductionDetailModal = ({ title, details }) => {
         const text = details?.loaded_beam?.status || ""; // Handle undefined or null status
         const capitalizeFirstCharacter = (str) =>
           str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-    
+
         const getStatusTag = (status) => {
           switch (status) {
             case "running":
-              return <Tag color="magenta">{capitalizeFirstCharacter(status)}</Tag>;
+              return (
+                <Tag color="magenta">{capitalizeFirstCharacter(status)}</Tag>
+              );
             case "finished":
-              return <Tag color="green">{capitalizeFirstCharacter(status)}</Tag>;
+              return (
+                <Tag color="green">{capitalizeFirstCharacter(status)}</Tag>
+              );
             case "cut":
               return <Tag color="red">{capitalizeFirstCharacter(status)}</Tag>;
             case "pasarela":
-              return <Tag color="orange">{capitalizeFirstCharacter(status)}</Tag>;
+              return (
+                <Tag color="orange">{capitalizeFirstCharacter(status)}</Tag>
+              );
             case "non-pasarela":
-              return <Tag color="volcano">{capitalizeFirstCharacter(status)}</Tag>;
+              return (
+                <Tag color="volcano">{capitalizeFirstCharacter(status)}</Tag>
+              );
             case "bhidan_of_beam":
               return <Tag color="blue">{capitalizeFirstCharacter(status)}</Tag>;
             case "sent":
-              return <Tag color="purple">{capitalizeFirstCharacter(status)}</Tag>;
+              return (
+                <Tag color="purple">{capitalizeFirstCharacter(status)}</Tag>
+              );
             case "primary(advance)":
               return <Tag color="cyan">{capitalizeFirstCharacter(status)}</Tag>;
             default:
               return <Tag>{capitalizeFirstCharacter(status)}</Tag>;
           }
         };
-    
+
         return getStatusTag(text);
       })(),
       span: 2,
-    }
-    ,
+    },
     // {
     //   key: "6",
     //   label: "P Taka",
@@ -171,7 +181,11 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "12",
       label: "Pending Mtr",
-      children: <div style={{fontWeight: 600, color: "red"}}>{details.pending_meter}</div>,
+      children: (
+        <div style={{ fontWeight: 600, color: "red" }}>
+          {details.pending_meter}
+        </div>
+      ),
       span: 2,
     },
     {
@@ -201,9 +215,13 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "17",
       label: "Old Meter",
-      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_meter || "-"}</div>,
+      children: (
+        <div style={{ fontWeight: 600, color: "red" }}>
+          {details?.old_meter || "-"}
+        </div>
+      ),
       span: 2,
-    },    
+    },
     {
       key: "18",
       label: "Purchase Company Name",
@@ -213,7 +231,11 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "19",
       label: "Old Weight",
-      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_weight || "-"}</div>,
+      children: (
+        <div style={{ fontWeight: 600, color: "red" }}>
+          {details?.old_weight || "-"}
+        </div>
+      ),
       span: 2,
     },
     {
@@ -225,7 +247,11 @@ const ViewProductionDetailModal = ({ title, details }) => {
     {
       key: "21",
       label: "Old Average",
-      children: <div style={{fontWeight: 600, color: "red"}}>{details?.old_average || "-"}</div>,
+      children: (
+        <div style={{ fontWeight: 600, color: "red" }}>
+          {details?.old_average || "-"}
+        </div>
+      ),
       span: 2,
     },
     {

@@ -172,7 +172,7 @@ const AddProductionTable = ({
         setValue(`quality_${fieldNumber}`, null);
       }
 
-      calculateTotals() ; 
+      calculateTotals();
     }
   };
 
@@ -337,7 +337,9 @@ const AddProductionTable = ({
                   width={80}
                 >
                   {fieldNumber <= activeField
-                    ? isNaN(lastProductionTaka?.taka_no)?1:lastProductionTaka?.taka_no + fieldNumber
+                    ? isNaN(lastProductionTaka?.taka_no)
+                      ? 1
+                      : lastProductionTaka?.taka_no + fieldNumber
                     : ""}
                 </td>
 

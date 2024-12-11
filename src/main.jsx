@@ -165,6 +165,7 @@ import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 import SalesReport from "./pages/accounts/reports/salesReport";
 import SundryDebitor from "./pages/accounts/groupWiseOutStanding/sundryDebitor";
 import SundryCreditor from "./pages/accounts/groupWiseOutStanding/sundryCreditor";
+import AddFoldingProduction from "./pages/production/AddFoldingProduction";
 import PrintCashBookStatement from "./pages/accounts/statements/PrintCashBookStatement";
 import PrintPassBookStatement from "./pages/accounts/statements/PrintPassBookStatement";
 import OtherUserList from "./pages/userMaster/otherUser/OtherUserList";
@@ -394,15 +395,14 @@ const router = createBrowserRouter([
             path: "folding-production",
             element: (
               <div>
-                <div>folding-production</div>
                 <Outlet />
               </div>
             ),
             children: [
-              { index: true, element: <div>folding-production</div> },
+              { index: true, element: <div></div> },
               {
                 path: "add-folding-production",
-                element: <div>add-folding-production</div>,
+                element: <AddFoldingProduction />,
               },
               {
                 path: "folding-production",

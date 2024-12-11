@@ -101,3 +101,7 @@ export function getVehicleUserListRequest({ params }) {
 export function getOtherUserListRequest({ params }) {
   return api.get(`/users/extra_users/list`, { params });
 }
+
+export function getOtherUserGetByIdRequest({ id, params }) {
+  return api.get(`/users/extra_users/get/${id}`, { params });
+}
