@@ -9,6 +9,7 @@ import {
   Radio,
   Select,
   Typography,
+  Tag
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import "./_style.css";
@@ -16,6 +17,7 @@ import { useContext, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
 import {
   createCreditNoteRequest,
+  creditNoteDropDownRequest,
   getLastCreditNoteNumberRequest,
 } from "../../../../api/requests/accounts/notes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +27,9 @@ import { CloseOutlined } from "@ant-design/icons";
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import moment from "moment";
+import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { BEAM_RECEIVE_TAG_COLOR, JOB_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -61,7 +66,11 @@ const validationSchema = yup.object().shape({
 
 const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
-  const { companyId, company } = useContext(GlobalContext);
+  const { companyId, company, companyListRes } = useContext(GlobalContext);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   const { mutateAsync: addCreditNote, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -154,7 +163,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       date: dayjs(),
       bill_id: null,
       amount: "",
-
+      company_id: "",
       //
       supplier_id: "",
       sale_challan_id: "",
@@ -177,6 +186,8 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     },
     resolver: yupResolver(validationSchema),
   });
+
+  const { company_id } = watch();
 
   const currentValue = watch();
   const {
@@ -230,26 +241,26 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     enabled: Boolean(companyId),
   });
 
+  // ============== Bill dropdown ============================// 
   const { data: saleBillList, isLoadingSaleBillList } = useQuery({
     queryKey: [
       "saleBill",
       "list",
       {
-        company_id: companyId,
-        end: !is_current ? dayjs().get("year") - 1 : dayjs().get("year"),
+        company_id: company_id,
+        end: !is_current ? getFinancialYearEnd("previous") : getFinancialYearEnd("current"),
       },
     ],
     queryFn: async () => {
       const params = {
-        company_id: companyId,
-        page: 0,
-        pageSize: 99999,
-        end: !is_current ? dayjs().get("year") - 1 : dayjs().get("year"),
+        company_id: company_id,
+        end: !is_current ? getFinancialYearEnd("previous") : getFinancialYearEnd("current"),
+        type: "claim_note"
       };
-      const res = await getSaleBillListRequest({ params });
+      const res = await creditNoteDropDownRequest({ params });
       return res.data?.data;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company_id),
   });
 
   const billData = useMemo(() => {
@@ -258,6 +269,12 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     );
     return selectedBillData;
   }, [bill_id, saleBillList?.SaleBill]);
+
+  const selectedCompany = useMemo(() => {
+    if (company_id) {
+      return companyListRes?.rows?.find(({ id }) => id === company_id);
+    }
+  }, [company_id, companyListRes]);
 
   useEffect(() => {
     if (billData && Object.keys(billData)) {
@@ -282,6 +299,8 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       setValue("discount_amount", billData?.discount_amount);
     }
   }, [billData, setValue]);
+
+
 
   return (
     <Modal
@@ -323,7 +342,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </td>
               </tr> */}
               <tr>
-                <td colSpan={3} width={"33.33%"}>
+                <td colSpan={3} width={"25%"}>
                   {/* <div className="p-2">
                     Credit Note No.
                     <span
@@ -343,32 +362,79 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <div>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
                   </div>
                 </td>
-                <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle">
-                    <label style={{ textAlign: "left" }}>Date:</label>
-                    <Form.Item
-                      label=""
-                      name="date"
-                      validateStatus={errors?.date ? "error" : ""}
-                      help={errors?.date && errors?.date?.message}
-                      required={true}
-                      wrapperCol={{ sm: 24 }}
-                      style={{ marginBottom: 5 }}
-                    >
-                      <Controller
-                        control={control}
+
+                <td colSpan={3} width={"35.33%"}>
+                  <Flex style={{
+                    justifyContent: "center",
+                    gap: 10,
+                  }}>
+
+                    <div className="year-toggle" style={{
+                      marginTop: "auto"
+                    }}>
+                      <label style={{ textAlign: "left" }}>Company:</label>
+                      <Form.Item
+                        label=""
+                        name="company_id"
+                        validateStatus={errors.company_id ? "error" : ""}
+                        help={errors.company_id && errors.company_id.message}
+                        required={true}
+                        wrapperCol={{ sm: 24 }}
+                      >
+                        <Controller
+                          control={control}
+                          name="company_id"
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              className="width-100"
+                              placeholder="Select Company"
+                              style={{
+                                textTransform: "capitalize",
+                              }}
+                              dropdownStyle={{
+                                textTransform: "capitalize",
+                              }}
+                              options={companyListRes?.rows?.map((company) => {
+                                return {
+                                  label: company?.company_name,
+                                  value: company?.id,
+                                };
+                              })}
+                            />
+                          )}
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <div className="year-toggle">
+                      <label style={{ textAlign: "left" }}>Date:</label>
+                      <Form.Item
+                        label=""
                         name="date"
-                        render={({ field }) => (
-                          <DatePicker
-                            {...field}
-                            name="date"
-                            className="width-100"
-                          />
-                        )}
-                      />
-                    </Form.Item>
-                  </div>
+                        validateStatus={errors?.date ? "error" : ""}
+                        help={errors?.date && errors?.date?.message}
+                        required={true}
+                        wrapperCol={{ sm: 24 }}
+                        style={{ marginBottom: 5 }}
+                      >
+                        <Controller
+                          control={control}
+                          name="date"
+                          render={({ field }) => (
+                            <DatePicker
+                              {...field}
+                              name="date"
+                              className="width-100"
+                              disabledDate={disabledFutureDate}
+                            />
+                          )}
+                        />
+                      </Form.Item>
+                    </div>
+                  </Flex>
                 </td>
+
                 <td colSpan={3} width={"33.33%"}>
                   <div className="year-toggle">
                     <Form.Item
@@ -405,19 +471,35 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             placeholder="Select Bill"
                             allowClear
                             loading={isLoadingSaleBillList}
-                            options={saleBillList?.SaleBill?.map((item) => {
-                              return {
-                                label: item.invoice_no,
-                                value: item.id,
-                              };
-                            })}
                             style={{
                               textTransform: "capitalize",
                             }}
                             dropdownStyle={{
                               textTransform: "capitalize",
                             }}
-                          />
+                          >
+                            {saleBillList?.bills?.map((item) => (
+                              <Select.Option key={item.bill_no} value={`${item?.model}****${item?.bill_id}`}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                  <span style={{
+                                    fontWeight: 600
+                                  }}>{item.bill_no}</span>
+                                  <Tag color={
+                                    item?.model == "sale_biills"?SALE_TAG_COLOR:
+                                    item?.model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
+                                    item?.model == "job_gray_sale_bill"?JOB_TAG_COLOR:
+                                    item?.model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR:"default"
+                                  } style={{ marginLeft: "8px" }}>
+                                    { item?.model == "sale_biills"?"Sale Bill": 
+                                      item?.model == "yarn_sale_bills"?"Yarn Sale":
+                                      item?.model == "job_gray_sale_bill"?"Job Gray":
+                                      item?.model == "beam_sale_bill"?"Beam Sale":item?.model 
+                                    } 
+                                  </Tag>
+                                </div>
+                              </Select.Option>
+                            ))}
+                          </Select>
                         )}
                       />
                     </Form.Item>
@@ -427,27 +509,26 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               <tr width="50%">
                 <td colSpan={4}>
                   <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span> {company?.gst_no || ""}
+                    <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>State Name:</span> {company?.state || ""}
+                    <span>State Name:</span> {selectedCompany?.state || ""}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>PinCode:</span> {company?.pincode || ""}
+                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>Contact:</span> {company?.company_contact || ""}
+                    <span>Contact:</span> {selectedCompany?.company_contact || ""}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>Email:</span> {company?.company_email || ""}
+                    <span>Email:</span> {selectedCompany?.company_email || ""}
                   </div>
                 </td>
                 <td colSpan={4}>
                   <div className="credit-note-info-title">
                     <span>Party:</span>{" "}
-                    {`${billData?.party?.first_name || ""} ${
-                      billData?.party?.last_name || ""
-                    }` || ""}
+                    {`${billData?.party?.first_name || ""} ${billData?.party?.last_name || ""
+                      }` || ""}
                     {billData?.party?.address || ""}
                   </div>
                   <div className="credit-note-info-title">

@@ -18,6 +18,10 @@ export function createCreditNoteRequest({ data, params }) {
   return api.post(`/account/credit-notes/create`, data, { params });
 }
 
+export function creditNoteDropDownRequest({ params}) {
+  return api.get(`account/credit-notes/bill/get`, {params})
+}
+
 // Debit notes services---------------------------------------------------
 
 export function getDebitNotesListRequest({ params }) {

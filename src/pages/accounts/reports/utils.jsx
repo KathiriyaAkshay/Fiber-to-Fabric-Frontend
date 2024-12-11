@@ -151,3 +151,29 @@ export const gstr2_dialog_data = [
     status: "Paid",
   },
 ];
+
+
+export function getFinancialYearEnd(type) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0 = January, 11 = December
+
+  let endYear;
+
+  // Determine the financial year end based on the current date
+  if (month < 3) { 
+      // Financial year ends in the current calendar year
+      endYear = year;
+  } else {
+      // Financial year ends in the next calendar year
+      endYear = year + 1;
+  }
+
+  if (type === "current") {
+      return endYear;
+  } else if (type === "previous") {
+      return endYear - 1;
+  } else {
+      throw new Error("Invalid parameter. Use 'current' or 'previous'.");
+  }
+}

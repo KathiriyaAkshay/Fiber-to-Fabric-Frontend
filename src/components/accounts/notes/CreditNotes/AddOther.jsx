@@ -8,6 +8,7 @@ import {
   Modal,
   Radio,
   Select,
+  Tag
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo } from "react";
@@ -26,6 +27,7 @@ import { CloseOutlined } from "@ant-design/icons";
 import moment from "moment";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR } from "../../../../constants/tag";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -525,7 +527,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     >
                       <Controller
                         control={control}
-                        rules={{required: "Credit Note number is required"}}
+                        rules={{ required: "Credit Note number is required" }}
                         name="credit_note_no"
                         render={({ field }) => (
                           <Input {...field} style={{ width: "100px" }} />
@@ -559,7 +561,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       <Controller
                         control={control}
                         name="date"
-                        rules={{required: "Date is required"}}
+                        rules={{ required: "Date is required" }}
                         render={({ field }) => (
                           <DatePicker
                             {...field}
@@ -587,7 +589,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         <Controller
                           control={control}
                           name="company_id"
-                          rules={{required: "Company selection required"}}
+                          rules={{ required: "Company selection required" }}
                           render={({ field }) => (
                             <Select
                               {...field}
@@ -626,7 +628,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       <Controller
                         control={control}
                         name="party_id"
-                        rules={{required: "Party selection is required"}}
+                        rules={{ required: "Party selection is required" }}
                         render={({ field }) => (
                           <Select
                             {...field}
@@ -664,8 +666,18 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         name="is_current"
                         render={({ field }) => (
                           <Radio.Group {...field}>
-                            <Radio value={1}>Current Year</Radio>
-                            <Radio value={0}>Previous Year</Radio>
+                            <Flex>
+                              <Radio style={{ fontSize: "12px" }} value={"previous"}>
+                                <Tag color={PREVIOUS_YEAR_TAG_COLOR}>
+                                  Previous Year
+                                </Tag>
+                              </Radio>
+                              <Radio style={{ fontSize: "12px" }} value={"current"}>
+                                <Tag color={CURRENT_YEAR_TAG_COLOR}>
+                                  Current Year
+                                </Tag>
+                              </Radio>
+                            </Flex>
                           </Radio.Group>
                         )}
                       />
@@ -685,7 +697,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       >
                         <Controller
                           control={control}
-                          rules={{required: "Invoice number is required"}}
+                          rules={{ required: "Invoice number is required" }}
                           name="invoice_number"
                           render={({ field }) => (
                             <Input {...field} placeholder="Invoice Number" />
@@ -768,11 +780,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Controller
                       control={control}
                       name="particular"
-                      rules={{required: "Debit note is required"}}
+                      rules={{ required: "Debit note is required" }}
                       render={({ field }) => (
-                        <TextArea 
-                          {...field} 
-                          placeholder="Debit note" 
+                        <TextArea
+                          {...field}
+                          placeholder="Debit note"
                         />
                       )}
                     />
@@ -789,7 +801,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <Controller
                       control={control}
-                      rules={{required: "HSN code is required"}}
+                      rules={{ required: "HSN code is required" }}
                       name="hsn_no"
                       render={({ field }) => (
                         <Input {...field} type="number" placeholder="234512" />
@@ -810,7 +822,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <Controller
                       control={control}
-                      rules={{required: "Amount is required"}}
+                      rules={{ required: "Amount is required" }}
                       name="amount"
                       render={({ field }) => (
                         <Input {...field} placeholder="300" type="number" />
@@ -889,7 +901,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Controller
                       control={control}
                       name="extra_tex_name"
-                      rules={{required: "Tax name is required"}}
+                      rules={{ required: "Tax name is required" }}
                       render={({ field }) => (
                         <Input
                           {...field}
@@ -921,11 +933,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
               <tr>
                 <td></td>
-                <td colSpan={3} style={{fontWeight: 600}}>Total</td>
+                <td colSpan={3} style={{ fontWeight: 600 }}>Total</td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td style={{fontWeight: 600}}>{net_amount}</td>
+                <td style={{ fontWeight: 600 }}>{net_amount}</td>
               </tr>
               <tr>
                 <td colSpan={8}>

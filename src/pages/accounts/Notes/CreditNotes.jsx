@@ -32,6 +32,7 @@ import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import ViewSaleReturn from "../../../components/sale/challan/saleReturn/ViewSaleReturn";
+import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -295,10 +296,9 @@ const CreditNotes = () => {
           <Space>
 
             {creditNoteTypes == "sale_return" && (
-              <></>
-              // <ViewSaleReturn
-              //   details={details}
-              // />
+              <CreditNoteSaleReturnComp
+                details={details}
+              />
             )}
             {/* <ActionView /> */}
             <ViewCreditNoteModal details={details} />
@@ -309,7 +309,6 @@ const CreditNotes = () => {
               </Button>
             )}
             {/* <ActionFile /> */}
-            {/* <Invoice /> */}
           </Space>
         );
       },

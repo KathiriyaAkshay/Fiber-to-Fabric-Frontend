@@ -1,7 +1,7 @@
 import { Button, Flex, Modal, Typography } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import "./_style.css";
-import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
+import { CloseOutlined, EyeOutlined, FileTextFilled } from "@ant-design/icons";
 import { useContext, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ToWords } from "to-words";
@@ -44,7 +44,7 @@ const ViewCreditNoteModal = ({ details }) => {
   return (
     <>
       <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
-        <EyeOutlined />
+        <FileTextFilled />
       </Button>
       <Modal
         open={isAddModalOpen}
