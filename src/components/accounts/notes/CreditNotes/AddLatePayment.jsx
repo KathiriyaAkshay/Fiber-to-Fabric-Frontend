@@ -8,6 +8,7 @@ import {
   Modal,
   Select,
   Typography,
+  Tag
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo } from "react";
@@ -27,6 +28,9 @@ import { CloseOutlined } from "@ant-design/icons";
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { CURRENT_YEAR_TAG_COLOR, JOB_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -66,7 +70,7 @@ const validationSchema = yup.object().shape({
 
 const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
-  const { companyListRes } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -292,6 +296,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
     enabled: Boolean(company_id),
   });
 
+  // Load PartyList dropdown =========================================
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: company_id }],
     queryFn: async () => {
@@ -303,19 +308,61 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
     enabled: Boolean(company_id),
   });
 
+  // Load Supplier list dropdown =====================================
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
+
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
 
+  // Handle selected company related information based on party and supplier selection
   const selectedPartyCompany = useMemo(() => {
     if (party_id) {
-      return partyUserListRes?.partyList?.rows?.find(
-        ({ id }) => id === party_id
-      );
+      if (party_id?.includes("party")) {
+        let temp_party_id = party_id.split("***")[1];
+        return partyUserListRes?.partyList?.rows?.find(
+          ({ id }) => id === +temp_party_id
+        );
+      } else {
+        let temp_supplier_id = party_id.split("***")[1];
+        let supplierInfo = null;
+        dropdownSupplierListRes?.some((element) =>
+          element?.supplier_company?.some((supplier) => {
+            if (supplier?.supplier_id === +temp_supplier_id) {
+              supplierInfo = supplier;
+              return true; // Stop searching once the supplier is found
+            }
+            return false;
+          })
+        );
+        return supplierInfo
+      }
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
+
+  const selectedUser = useMemo(() => {
+    if (party_id) {
+      if (party_id?.includes("party")) {
+        return "party";
+      } else {
+        return "supplier";
+      }
+    }
+  }, [party_id])
 
   useEffect(() => {
     if (
@@ -431,6 +478,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       <Controller
                         control={control}
                         name="party_id"
+                        rules={{ required: "Party selection is required" }}
                         render={({ field }) => (
                           <Select
                             {...field}
@@ -443,18 +491,31 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                               textTransform: "capitalize",
                             }}
                             loading={isLoadingPartyList}
-                            options={partyUserListRes?.partyList?.rows?.map(
-                              (party) => ({
-                                label:
-                                  party.first_name +
-                                  " " +
-                                  party.last_name +
-                                  " " +
-                                  `| ( ${party?.username})`,
-                                value: party.id,
-                              })
+                          >
+                            {/* Party Options */}
+                            {partyUserListRes?.partyList?.rows?.map((party) => (
+                              <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
+                                <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
+                                <span>
+                                  {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
+                                  <strong>{party?.party?.company_name}</strong>
+                                </span>
+                              </Select.Option>
+                            ))}
+
+                            {/* Supplier Options */}
+                            {dropdownSupplierListRes?.flatMap((element) =>
+                              element?.supplier_company?.map((supplier) => (
+                                <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
+                                  <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
+                                  <span>
+                                    {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
+                                  </span>
+                                </Select.Option>
+                              ))
                             )}
-                          />
+                          </Select>
+
                         )}
                       />
                     </Form.Item>
@@ -463,7 +524,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <label style={{ textAlign: "left" }}>Date:</label>
                     <Form.Item
                       label=""
-                      name="party_id"
+                      name="date"
                       validateStatus={errors.date ? "error" : ""}
                       help={errors.date && errors.date.message}
                       required={true}
@@ -548,22 +609,48 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   </div>
                 </td>
                 <td colSpan={4}>
-                  <div className="credit-note-info-title">
-                    <span>Party:</span>{" "}
-                    {selectedPartyCompany
-                      ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
-                      : ""}
-                  </div>
-                  <div>
-                    {selectedPartyCompany?.party?.delivery_address || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span> {selectedPartyCompany?.gst_no || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>State Name :</span>{" "}
-                    {selectedPartyCompany?.state || ""}
-                  </div>
+                  {selectedUser == "party" && (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Party:</span>
+                        {selectedPartyCompany
+                          ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
+                          : ""}
+                      </div>
+                      <div>
+                        {selectedPartyCompany?.party?.delivery_address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN: </span>
+                        {selectedPartyCompany?.gst_no || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>State Name: </span>{" "}
+                        {selectedPartyCompany?.state || ""}
+                      </div>
+                    </>
+                  )}
+                  {selectedUser == "supplier" && (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Supplier:</span>
+                        {selectedPartyCompany
+                          ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
+                          : ""}
+                      </div>
+                      <div>
+                        {selectedPartyCompany?.users?.address}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN: </span>
+                        {selectedPartyCompany?.users?.gst_no || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Mobile: </span>{" "}
+                        {selectedPartyCompany?.users?.mobile || ""}
+                      </div>
+                    </>
+                  )}
                 </td>
               </tr>
             </tbody>

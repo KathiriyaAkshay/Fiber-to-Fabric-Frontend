@@ -28,11 +28,12 @@ import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
 import { render } from "react-dom";
-import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN } from "../../../constants/tag";
+import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
-import ViewSaleReturn from "../../../components/sale/challan/saleReturn/ViewSaleReturn";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
+import { getDropdownSupplierListRequest } from "../../../api/requests/users";
+import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -40,7 +41,6 @@ const CREDIT_NOTE_TYPES = [
   { label: "Claim Note", value: "claim" },
   { label: "Discount Note", value: "discount" },
   { label: "Other", value: "other" },
-  // { label: "All", value: "all" },
 ];
 
 const CreditNotes = () => {
@@ -62,7 +62,7 @@ const CreditNotes = () => {
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
-  // Party list dropdown
+  // Party list dropdown =====================================
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -73,6 +73,7 @@ const CreditNotes = () => {
     },
     enabled: Boolean(companyId),
   });
+
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -182,10 +183,22 @@ const CreditNotes = () => {
         } else if (creditNoteTypes == "sale_return")   {
           return(
             <div>
-              {record?.sale_challan?.challan_no || "-"}
+              { record?.sale_challan?.challan_no || 
+                record?.yarn_sale?.challan_no || "-"  
+              }
             </div>
           )
-        } else null
+        } else {
+          return (
+            <div style={{
+              fontWeight: 600
+            }}>
+              {record?.credit_note_details
+                ?.map((element) => element?.bill_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                .join(", ")}
+            </div>
+          );
+        }
       }
     },
     {
@@ -210,6 +223,22 @@ const CreditNotes = () => {
       title: "Party Name",
       dataIndex: ["party", "company_name"],
       key: ["party", "company_name"],
+      render: (text, record) => {
+        return(
+          <>
+            <strong>
+              { String(record?.party?.user?.first_name ||
+                record?.supplier?.supplier_name).toUpperCase()
+              }
+            </strong>
+            <div>
+              { record?.party?.company_name || 
+                record?.supplier?.supplier_company  
+              }
+            </div>
+          </>
+        )
+      }
     },
     {
       title: "Meter",
@@ -222,17 +251,25 @@ const CreditNotes = () => {
       dataIndex: "amount",
       key: "amount",
       render: (text, record) => {
+        let total_amount = 0 ; 
+        record?.credit_note_details?.map((element) => {
+          total_amount += +element?.amount;
+        })
         if (creditNoteTypes == "other"){
-            return(
-              <div>
-                {record?.credit_note_details[0]?.amount}
-              </div>
-            )
+          return(
+            <div>
+              {record?.credit_note_details[0]?.amount}
+            </div>
+          )
         } else if (creditNoteTypes == "sale_return") {  
           return(
             <div>{record?.amount || "0.0"}</div>
           ) 
-        } else null
+        } else {
+          return(
+            <div>{parseFloat(total_amount).toFixed(2)}</div>
+          )
+        }
       },
     },
     {
@@ -269,7 +306,13 @@ const CreditNotes = () => {
               CLAIM NOTE
             </Tag>
           )
-        }else{
+        } else if (text == "yarn_sale_return"){
+          return(
+            <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
+              YARN SALE
+            </Tag>
+          )
+        }  else{
           return(
             <Tag>
               {text}
@@ -300,8 +343,18 @@ const CreditNotes = () => {
                 details={details}
               />
             )}
-            {/* <ActionView /> */}
-            <ViewCreditNoteModal details={details} />
+
+            {creditNoteTypes != "discount"?<>
+              <ViewCreditNoteModal 
+                details={details} 
+                type={creditNoteTypes}
+              />
+            </>:<>
+              <ViewDiscountCreditNoteModel
+                details={details}
+                type={creditNoteTypes}
+              />
+            </>}
 
             {creditNoteTypes !== "sale_return" && (
               <Button>

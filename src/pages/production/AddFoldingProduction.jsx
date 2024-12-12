@@ -40,6 +40,8 @@ import { USER_ROLES } from "../../constants/userRole";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { debounce } from "lodash";
 import { addFoldingProductionRequest } from "../../api/requests/production/foldingProduction";
+import { checkUniqueTakaNoRequest } from "../../api/requests/purchase/purchaseTaka";
+import { useDebounceCallback } from "../../hooks/useDebounce";
 
 const disableFutureDates = (current) => {
   return current && current > new Date().setHours(0, 0, 0, 0);
@@ -67,6 +69,7 @@ const AddFoldingProduction = () => {
   const [weightPlaceholder, setWeightPlaceholder] = useState(null);
   const [finalMeter, setFinalMeter] = useState(null);
   const [actualMeterCopy, setActualMeterCopy] = useState(0);
+  const [actualWeight, setActualWeight] = useState(0);
 
   // ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -135,7 +138,7 @@ const AddFoldingProduction = () => {
       folding_user_id: +data?.folding_user_id,
       machine_name: data.machine_name,
       machine_no: data.machine_no,
-      taka_no: data.taka_no,
+      taka_no: String(data.taka_no),
       quality_id: data.quality_id,
       beam_no: data.beam_no,
       beam_load_id: +data.beam_load_id, // running beam id -> take from selected machine no.
@@ -217,21 +220,11 @@ const AddFoldingProduction = () => {
     quality_id,
     pis,
     is_tp,
+    auto_taka_generate,
+    weight, 
+    average
   } = watch();
 
-  const onChangeTakaNoHandler = (e, field) => {
-    const FROM = selectedUser?.folding_mending_user_detail?.from_taka_number;
-    const TO = selectedUser?.folding_mending_user_detail?.to_taka_number;
-    field.onChange(e.target.value);
-    if (+e.target.value < +FROM || +e.target.value > +TO) {
-      setError("taka_no", {
-        type: "manual",
-        message: "Invalid taka no.",
-      });
-    } else {
-      clearErrors("taka_no");
-    }
-  };
 
   // get folding user list
   const { data: userListRes, isLoading: isLoadingUserList } = useQuery({
@@ -454,22 +447,6 @@ const AddFoldingProduction = () => {
     }
   }, [actual_meter, extra_meter]);
 
-  useEffect(() => {
-    if (pis && !is_tp) {
-      if (+pis > actualMeterCopy || +pis < 0) {
-        setError("pis", {
-          type: "manual",
-          message: "You have enter invalid pis.",
-        });
-        return;
-      }
-      trigger("pis");
-      const actualMeterCalc = +actualMeterCopy - (+pis || 0);
-      setValue("actual_meter", actualMeterCalc);
-    } else {
-      setValue("actual_meter", actualMeterCopy);
-    }
-  }, [actualMeterCopy, is_tp, pis, setError, setValue, trigger]);
 
   const handleWeightChange = (value, field) => {
     if (
@@ -493,6 +470,135 @@ const AddFoldingProduction = () => {
     }
     field.onChange(value ? value : "");
   };
+
+  // Check Folding production related taka validation handler 
+  const checkTakaNumberCheckHandler = async (value) => {
+    try {
+      const params = { company_id: companyId, taka_no: +value };
+      const response = await checkUniqueTakaNoRequest({ params });
+      if (response.data.success) {
+        clearErrors("taka_no");
+      } else {
+        setError(`taka_no`, {
+          type: "manual",
+          message: "Taka number already in used"
+        })
+      }
+    } catch (error) {
+      setError("taka_no", {
+        type: "manual",
+        message: "Invalid taka no.",
+      });
+    }
+  }
+
+  const debouncedCheckUniqueTakaHandler = useDebounceCallback(
+    (value) => {
+      checkTakaNumberCheckHandler(value)
+    }
+  )
+
+  const onChangeTakaNoHandler = (e, field) => {
+    const FROM = selectedUser?.folding_mending_user_detail?.from_taka_number;
+    const TO = selectedUser?.folding_mending_user_detail?.to_taka_number;
+    field.onChange(e.target.value);
+    if (+e.target.value < +FROM || +e.target.value > +TO) {
+      setError("taka_no", {
+        type: "manual",
+        message: "Invalid taka no.",
+      });
+    } else {
+      let status = debouncedCheckUniqueTakaHandler(+e.target.value);
+      clearErrors("taka_no");
+    }
+  };
+
+  // Handle Auto taka generate related functionality handler =======================
+  const GenerateTakaNumber = async () => {
+    let from_taka = selectedUser?.folding_mending_user_detail?.from_taka_number;
+    let to_taka = selectedUser?.folding_mending_user_detail?.to_taka_number;
+    const params = { company_id: companyId, from_taka: from_taka, to_taka: to_taka, auto: 1 };
+    const response = await checkUniqueTakaNoRequest({ params });
+    if (response.data?.success) {
+      setValue('taka_no', response.data.data?.taka_no)
+    }
+
+  }
+
+  useEffect(() => {
+    if (auto_taka_generate && selectedUser?.folding_mending_user_detail !== undefined) {
+      GenerateTakaNumber();
+    }
+  }, [auto_taka_generate, selectedUser]);
+
+  // =========== Pis related functionality handling ==================== // 
+  const [pisWeight, setPisWeight] = useState(undefined);
+
+  useEffect(() => {
+    if (pis && !is_tp) {
+      if (+pis > actualMeterCopy || +pis < 0) {
+        setError("pis", {
+          type: "manual",
+          message: "You have enter invalid pis.",
+        });
+        setPisWeight(undefined);
+        return;
+      }
+      // trigger("pis");
+      // setValue("actual_meter", actualMeterCalc);
+    } else {
+      console.log(pis);
+      let temp_actual_meter = +actual_meter - +pis;
+      console.log(temp_actual_meter);
+
+      console.log(+actual_meter - +pis);
+
+      setValue("actual_meter", +actual_meter - +pis);
+      // setValue("actual_meter", actualMeterCopy);
+    }
+  }, [actualMeterCopy, is_tp, pis, setError, setValue, trigger]);
+
+    useEffect(() => {
+      if (pis) {
+        if (+pis < actualMeterCopy || +pis > 0){
+          if (!is_tp){
+            console.log("Run this functionality of not tp");
+            
+            setValue("actual_meter", +actualMeterCopy - pis);
+          } else{
+            setValue("actual_meter", actualMeterCopy) ; 
+          }
+        }
+      }
+    }, [pis, actualMeterCopy, is_tp]);
+
+    useEffect(() => {
+      if (pis) {
+        if ((+pis < actualMeterCopy || +pis > 0)){
+          if (!is_tp){
+
+            // Set Pis weight information  
+            let average_weight = (average * actualMeterCopy) / 100 
+            let pis_weight = pis*average_weight/ actualMeterCopy ;
+            setPisWeight(parseFloat(pis_weight).toFixed(2));
+            
+            // Update other weight information 
+            let other_weight = average_weight - pis_weight ; 
+            setValue('weight', parseFloat(other_weight).toFixed(2)) ; 
+            
+            // Update actual meter information
+            setValue("actual_meter", +actualMeterCopy - pis);
+          } else {
+
+            setValue("actual_meter", actualMeterCopy) ;
+
+            // Reset other wight 
+            let average_weight = (average * actualMeterCopy) / 100 ; 
+            setValue("weight", parseFloat(average_weight).toFixed(2));
+          }
+        }
+      }
+    }, [pis, actual_meter, is_tp])
 
   return (
     <Form
@@ -548,11 +654,16 @@ const AddFoldingProduction = () => {
               control={control}
               name="auto_taka_generate"
               render={({ field }) => (
-                <Checkbox {...field} onChange={() => {}}>
+                <Checkbox
+                  {...field}
+                  checked={field.value} // Ensure the `checked` state is controlled
+                  onChange={(e) => field.onChange(e.target.checked)} // Update the state
+                >
                   Auto Taka Generate
                 </Checkbox>
               )}
             />
+
           </div>
         </div>
 
@@ -692,6 +803,7 @@ const AddFoldingProduction = () => {
                     {...field}
                     placeholder="Enter taka no."
                     onChange={(e) => onChangeTakaNoHandler(e, field)}
+                    readOnly={auto_taka_generate ? true : false}
                     addonAfter={
                       errors.taka_no ? (
                         <CloseOutlined style={{ color: "red" }} />
@@ -713,7 +825,7 @@ const AddFoldingProduction = () => {
           </Col>
         </Row>
 
-        <Row className="w-100" justify={"flex-start"} style={{ gap: "12px" }}>
+        <Row className="w-100" justify={"flex-start"} style={{ gap: "12px", marginTop: -15 }}>
           <Col span={6}>
             <Form.Item
               label="Quality"
@@ -813,7 +925,9 @@ const AddFoldingProduction = () => {
             </Form.Item>
           </Col>
         </Row>
-        <Divider />
+        <Divider style={{
+          marginTop: 0
+        }} />
 
         {machine_no && isRunningBeamFound ? (
           <ProductionMeterForm
@@ -853,6 +967,7 @@ const AddFoldingProduction = () => {
                         onChange={(e) => {
                           handleWeightChange(e.target.value, field);
                         }}
+                        readOnly=  {pis !== undefined?pis == ""?false:true:false}
                       />
                     )}
                   />
@@ -930,6 +1045,13 @@ const AddFoldingProduction = () => {
                     render={({ field }) => <Input {...field} placeholder="" />}
                   />
                 </Form.Item>
+                <div style={{
+                  fontWeight: 600,
+                  color: "green",
+                  marginTop: -10
+                }}>
+                  {pisWeight !== undefined?`Weight Info ${pisWeight}`:''}
+                </div>
               </Col>
               <Col span={6}>
                 <Form.Item
@@ -990,7 +1112,7 @@ const ProductionMeterForm = ({
       const res = await getEmployeeListRequest({
         params: {
           company_id: companyId,
-          salary_type : 'Work basis'
+          salary_type: 'Work basis'
         },
       });
       return res.data?.data?.empoloyeeList;

@@ -27,11 +27,9 @@ const toWords = new ToWords({
   },
 });
 
-const ViewCreditNoteModal = ({ details }) => {
+const ViewCreditNoteModal = ({ details, type }) => {
   const { companyListRes } = useContext(GlobalContext);
-
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
   const company = useMemo(() => {
     if (details && Object.keys(details).length && companyListRes) {
       const data = companyListRes?.rows?.find(
@@ -46,6 +44,7 @@ const ViewCreditNoteModal = ({ details }) => {
       <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
         <FileTextFilled />
       </Button>
+
       <Modal
         open={isAddModalOpen}
         width={"75%"}
@@ -78,32 +77,29 @@ const ViewCreditNoteModal = ({ details }) => {
         <div className="credit-note-container">
           <table className="credit-note-table">
             <tbody>
-              {/* <tr>
-                <td colSpan={8} className="text-center">
-                  <h2>Credit Note</h2>
-                </td>
-              </tr> */}
               <tr>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle">
-                    <Typography.Text style={{ fontSize: 20 }}>
+                  <div className="year-toggle" style={{textAlign: "left"}}>
+                    <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
                       Credit Note No.
                     </Typography.Text>
                     <div>{details.credit_note_number || ""}</div>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle">
-                    <Typography.Text>Date.</Typography.Text>
+                  <div className="year-toggle" style={{textAlign: "left"}}>
+                    <Typography.Text style={{
+                      fontWeight: 400
+                    }}>Date.</Typography.Text>
                     <div>{dayjs(details.createdAt).format("DD-M-YYYY")}</div>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle">
-                    <Typography.Text>Bill.</Typography.Text>
+                  <div className="year-toggle" style={{textAlign: "left"}}>
+                    <div style={{fontWeight: 400}}>Bill No.</div>
                     <div>
                       {details?.credit_note_details
-                        .map((item) => item.bill_no)
+                        .map((item) => item.bill_no || item?.invoice_no)
                         .join(", ")}
                     </div>
                   </div>
@@ -155,7 +151,7 @@ const ViewCreditNoteModal = ({ details }) => {
               <tr>
                 <td style={{ width: "50px" }}>SL No.</td>
                 <td colSpan={2}>Particulars</td>
-                <td>Quantity</td>
+                <td>{type == "other"?"HSN Code":"Quantity"}</td>
                 <td>Rate</td>
                 <td>Per</td>
                 <td style={{ width: "100px" }}>Amount</td>
@@ -172,11 +168,11 @@ const ViewCreditNoteModal = ({ details }) => {
               </tr> */}
               <tr>
                 <td>1.</td>
-                <td colSpan={2}>{details?.particular_name || ""}</td>
-                <td>{details?.quantity || ""}</td>
+                <td colSpan={2}>{details?.particular_name || details?.credit_note_details[0]?.particular_name || ""}</td>
+                <td>{type == "other"?details?.hsn_no:details?.quantity || ""}</td>
                 <td>{details?.rate || ""}</td>
                 <td></td>
-                <td>{details?.amount || 0}</td>
+                <td>{details?.amount || details?.credit_note_details[0]?.amount || ""}</td>
               </tr>
               <tr>
                 <td></td>

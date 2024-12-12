@@ -342,7 +342,7 @@ const AddSaleChallan = () => {
   //     enabled: Boolean(companyId && is_gray),
   //   });
 
-  // Dropdown vechicle list
+  // Vehicle dropdown list ===========================================================
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -358,7 +358,7 @@ const AddSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  // Dropdown quality list
+  // DropDown quality list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
