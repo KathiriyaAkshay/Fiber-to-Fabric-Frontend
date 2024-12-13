@@ -9,6 +9,7 @@ import {
   Table,
   Space,
   Spin,
+  Tag
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
@@ -20,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
+import { disabledFutureDate } from "../../../utils/date";
 
 const DEBIT_NOTE_TYPES = [
   { label: "Purchase Return", value: "purchase_return" },
@@ -90,6 +92,9 @@ const DebitNotes = () => {
       title: "Debit No",
       dataIndex: "debit_note_number",
       key: "debit_note_number",
+      render: (text, record) => (
+        <Tag color="green">{text}</Tag>
+      ) 
     },
     {
       title: "Challan/Bill Type",
@@ -116,12 +121,24 @@ const DebitNotes = () => {
     // },
     {
       title: "Party Name",
-      dataIndex: "party",
-      key: "party",
-      // render: (text) => {
-      //   return `${text?.first_name || ""} ${text?.last_name || ""}`;
-      // },
-      render: (text) => text?.checker_name || "-",
+      dataIndex: ["party", "company_name"],
+      key: ["party", "company_name"],
+      render: (text, record) => {
+        return(
+          <>
+            <strong>
+              { String(record?.party?.user?.first_name ||
+                record?.supplier?.supplier_name).toUpperCase()
+              }
+            </strong>
+            <div>
+              { record?.party?.company_name || 
+                record?.supplier?.supplier_company  
+              }
+            </div>
+          </>
+        )
+      }
     },
     {
       title: "Int./return Amt",
@@ -266,11 +283,11 @@ const DebitNotes = () => {
             <Typography.Text className="whitespace-nowrap">
               From
             </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} />
+            <DatePicker value={fromDate} onChange={setFromDate} disabledDate={disabledFutureDate} />
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} />
+            <DatePicker value={toDate} onChange={setToDate} disabledDate={disabledFutureDate} />
           </Flex>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
