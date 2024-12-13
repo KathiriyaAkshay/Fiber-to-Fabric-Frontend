@@ -495,7 +495,7 @@ const AddFoldingProduction = () => {
   const debouncedCheckUniqueTakaHandler = useDebounceCallback(
     (value) => {
       checkTakaNumberCheckHandler(value)
-    }
+    }, 300
   )
 
   const onChangeTakaNoHandler = (e, field) => {
@@ -547,12 +547,6 @@ const AddFoldingProduction = () => {
       // trigger("pis");
       // setValue("actual_meter", actualMeterCalc);
     } else {
-      console.log(pis);
-      let temp_actual_meter = +actual_meter - +pis;
-      console.log(temp_actual_meter);
-
-      console.log(+actual_meter - +pis);
-
       setValue("actual_meter", +actual_meter - +pis);
       // setValue("actual_meter", actualMeterCopy);
     }
@@ -562,8 +556,6 @@ const AddFoldingProduction = () => {
       if (pis) {
         if (+pis < actualMeterCopy || +pis > 0){
           if (!is_tp){
-            console.log("Run this functionality of not tp");
-            
             setValue("actual_meter", +actualMeterCopy - pis);
           } else{
             setValue("actual_meter", actualMeterCopy) ; 

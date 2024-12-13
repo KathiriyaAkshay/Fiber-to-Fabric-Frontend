@@ -15,12 +15,12 @@ const CreditNoteSaleReturnComp = ({ details }) => {
   const { company } = useContext(GlobalContext);
 
   // const [companyInfo, setCompanyInfo] = useState({});
-  const TakaArray = Array(0).fill(0);
+  const TakaArray = Array(12).fill(0);
 
   const [totalTaka1, setTotalTaka1] = useState(0);
   const [totalTaka2, setTotalTaka2] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
-
+  const [currentTakaReturnId, setCurrentTakaReturnId] = useState(details?.sale_return_id) ; 
   const pageStyle = `
         @media print {
              .print-instructions {
@@ -35,32 +35,24 @@ const CreditNoteSaleReturnComp = ({ details }) => {
   useEffect(() => {
     let tempTotal1 = 0;
     let tempTotal2 = 0;
+    TakaArray?.map((element, index) => {
+      tempTotal1 =
+        Number(tempTotal1) +
+        Number(details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter || 0);
+      tempTotal2 =
+        Number(tempTotal2) +
+        Number(
+          details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.meter || 0
+        );
+    });
 
-    // TakaArray?.map((element, index) => {
-    //   tempTotal1 =
-    //     Number(tempTotal1) +
-    //     Number(details?.sale_challan?.sale_challan_details[index]?.meter || 0);
-    //   tempTotal2 =
-    //     Number(tempTotal2) +
-    //     Number(
-    //       details?.sale_challan?.sale_challan_details[index + 12]?.meter || 0
-    //     );
-    // });
-
-    // let total = Number(tempTotal1) + Number(tempTotal2);
-
-    // setTotalMeter(total);
-    // setTotalTaka1(tempTotal1);
-    // setTotalTaka2(tempTotal2);
+    let total = Number(tempTotal1) + Number(tempTotal2);
+    console.log("Total information", total);
+    
+    setTotalMeter(total);
+    setTotalTaka1(tempTotal1);
+    setTotalTaka2(tempTotal2);
   }, [TakaArray, details]);
-
-  // useEffect(() => {
-  //   companyListRes?.rows?.map((element) => {
-  //     if (element?.id == details?.company_id) {
-  //       setCompanyInfo(element);
-  //     }
-  //   });
-  // }, [details, companyListRes]);
 
   return (
     <>
@@ -218,7 +210,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                 <Col span={24}>
                   <Text className="font-bold">CHALLAN No</Text>
                   <Text className="block">
-                    {details?.sale_challan?.challan_no}
+                    {details?.sale_challan_return?.sale_challan?.challan_no}
                   </Text>
                 </Col>
               </Row>
@@ -234,8 +226,8 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                 <Col span={24}>
                   <Text className="font-bold">BROKER</Text>
                   <Text className="block">
-                    {details?.sale_challan?.broker?.first_name}{" "}
-                    {details?.sale_challan?.broker?.last_name}
+                    {details?.supplier?.broker?.first_name}{" "}
+                    {details?.supplier?.broker?.last_name}
                   </Text>
                 </Col>
               </Row>
@@ -279,13 +271,8 @@ const CreditNoteSaleReturnComp = ({ details }) => {
           </Row>
 
           {TakaArray?.map((element, index) => {
-            const isReturned =
-              details?.sale_challan?.sale_challan_details[index]?.is_returned;
-
-            const isReturned2 =
-              details?.sale_challan?.sale_challan_details[index + 12]
-                ?.is_returned;
-
+            const isReturned = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.sale_challan_return_id?true:false;
+            const isReturned2 = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.sale_challan_return_id?true:false;
             return (
               <Row
                 key={index}
@@ -308,7 +295,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan?.sale_challan_details[index]
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index]
                         ?.taka_no
                     }{" "}
                     {isReturned ? "(return)" : ""}
@@ -320,7 +307,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                       color: isReturned ? "red" : "inherit",
                     }}
                   >
-                    {details?.sale_challan?.sale_challan_details[index]?.meter}
+                    {details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter}
                   </Text>
                 </Col>
                 {/* Table 2 */}
@@ -340,7 +327,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan?.sale_challan_details[index + 12]
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
                         ?.taka_no
                     }{" "}
                     {isReturned2 ? "(return)" : ""}
@@ -353,7 +340,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan?.sale_challan_details[index + 12]
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
                         ?.meter
                     }
                   </Text>
@@ -384,7 +371,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.sale_challan?.sale_challan_details?.length}
+              {details?.sale_challan_return?.sale_challan?.sale_challan_details?.length}
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>

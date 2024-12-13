@@ -27,13 +27,12 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
-import { render } from "react-dom";
 import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
-import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
+import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -180,10 +179,10 @@ const CreditNotes = () => {
               {record?.credit_note_details[0]?.invoice_no}
             </div>
           )
-        } else if (creditNoteTypes == "sale_return")   {
+        } else if (creditNoteTypes == "sale_return"){
           return(
             <div>
-              { record?.sale_challan?.challan_no || 
+              { record?.sale_challan_return?.sale_challan?.challan_no || 
                 record?.yarn_sale?.challan_no || "-"  
               }
             </div>
@@ -205,20 +204,20 @@ const CreditNotes = () => {
       title: "Quality/Denier",
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
-      render: (text) => {
-        if (text == undefined){
+      render: (text, record) => {
+        console.log(record?.yarn_sale);
+        
+        if (record?.yarn_sale == null){
+          return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
+        } else {
           return(
-            <div>-</div>
+            <div>
+              {`${record?.yarn_sale?.yarn_stock_company?.yarn_denier}( ${record?.yarn_sale?.yarn_stock_company?.yarn_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_Sub_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_color} )`}
+            </div>
           )
         }
-        return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
       },
     },
-    // {
-    //   title: "Firm Name",
-    //   dataIndex: "firm_name",
-    //   key: "firm_name",
-    // },
     {
       title: "Party Name",
       dataIndex: ["party", "company_name"],
@@ -334,12 +333,20 @@ const CreditNotes = () => {
 
     {
       title: "Action",
-      render: (details) => {
+      render: (details, record) => {
         return (
           <Space>
 
-            {creditNoteTypes == "sale_return" && (
+            {/* Sale return related information*/}
+            {details?.credit_note_type == "sale_return" && (
               <CreditNoteSaleReturnComp
+                details={details}
+              />
+            )}
+
+            {/* Yarn sale return related information  */}
+            {details?.credit_note_type == "yarn_sale_return" && (
+              <AccountantYarnSaleChallan
                 details={details}
               />
             )}

@@ -56,7 +56,7 @@ const validationSchema = yup.object().shape({
   company_id: yup.string().required("Please select company"),
   // debit_note_no: yup.string().required("Please enter debit note number"),
   // invoice_number: yup.string().required("Please enter invoice number"),
-  party_id: yup.string().required("Please select party"),
+  // party_id: yup.string().required("Please select party"),
   date: yup.string().required("Please enter date"),
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
@@ -72,6 +72,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     return current && current > moment().endOf("day");
   }
 
+  // Credit note create request handler ===================
   const { mutateAsync: addCreditNote, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createCreditNoteRequest({
@@ -100,19 +101,15 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const onSubmit = async (data) => {
-    const selectedBillData = saleBillList?.SaleBill?.find(
-      (item) => item.id === data?.bill_id
-    );
-
     const payload = {
       // supplier_id: data?.supplier_id,
       // model: selectedBillData?.model,
       credit_note_number: creditNoteLastNumber?.debitNoteNumber || "",
       credit_note_type: "claim",
-      sale_challan_id: data.sale_challan_id,
+      sale_challan_id:  null,
       quality_id: data?.quality_id,
       // gray_order_id: 321,
-      party_id: selectedBillData.party_id,
+      // party_id: selectedBillData.party_id,
       // return_id: 987,
       total_taka: +data.total_taka,
       total_meter: +data.total_meter,
@@ -134,19 +131,24 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       credit_note_details: [
         {
-          bill_id: selectedBillData?.id,
-          bill_no: selectedBillData?.invoice_no,
+          bill_id: billData?.bill_id,
+          bill_no: billData?.invoice_no || billData?.bill_no,
           model: "sale_bills",
           rate: +data.rate,
           per: 1.0,
           invoice_no: data?.invoice_number,
           particular_name: "Claim On Sales",
-          quantity: selectedBillData?.total_meter,
+          quantity: billData?.total_meter || billData?.meter || billData?.quantity,
           amount: +data.amount,
         },
       ],
     };
 
+    if (billData?.party !== null){
+      payload["party_id"] = billData?.party?.id
+    } else {
+      payload["supplier_id"] = billData?.supplier?.id
+    }
     await addCreditNote(payload);
   };
 
@@ -169,9 +171,9 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       sale_challan_id: "",
       quality_id: "",
 
-      SGST_value: 0,
+      SGST_value: 2.5,
       SGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 2.5,
       CGST_amount: 0,
       IGST_value: 0,
       IGST_amount: 0,
@@ -264,41 +266,43 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const billData = useMemo(() => {
-    const selectedBillData = saleBillList?.SaleBill?.find(
-      (item) => item.id === bill_id
+    if (!bill_id) return null; // Handle case where bill_id is null/undefined
+    const [parsedBillModel, parsedBillId] = String(bill_id).split("****");
+    const selectedBillData = saleBillList?.bills?.find(
+      (item) => item.bill_id === +parsedBillId && item?.model === parsedBillModel
     );
-    return selectedBillData;
-  }, [bill_id, saleBillList?.SaleBill]);
+    return selectedBillData || null;
+}, [bill_id, saleBillList?.bills]);
 
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
+  
+  // useEffect(() => {
+  //   if (billData && Object.keys(billData)) {
+  //     setValue("supplier_id", billData?.sale_challan?.supplier_id);
+  //     setValue("sale_challan_id", billData?.sale_challan_id);
+  //     setValue("quality_id", billData?.quality_id);
 
-  useEffect(() => {
-    if (billData && Object.keys(billData)) {
-      setValue("supplier_id", billData?.sale_challan?.supplier_id);
-      setValue("sale_challan_id", billData?.sale_challan_id);
-      setValue("quality_id", billData?.quality_id);
+  //     setValue("SGST_value", billData?.SGST_value);
+  //     // setValue("SGST_amount", billData?.SGST_amount);
+  //     setValue("CGST_value", billData?.CGST_value);
+  //     // setValue("CGST_amount", billData?.CGST_amount);
+  //     setValue("IGST_value", billData?.IGST_value);
+  //     // setValue("IGST_amount", billData?.IGST_amount);
+  //     setValue("round_off_amount", billData?.round_off_amount);
+  //     setValue("net_amount", billData?.net_amount);
+  //     setValue("rate", billData?.rate);
+  //     setValue("invoice_number", billData?.invoice_number);
 
-      setValue("SGST_value", billData?.SGST_value);
-      // setValue("SGST_amount", billData?.SGST_amount);
-      setValue("CGST_value", billData?.CGST_value);
-      // setValue("CGST_amount", billData?.CGST_amount);
-      setValue("IGST_value", billData?.IGST_value);
-      // setValue("IGST_amount", billData?.IGST_amount);
-      setValue("round_off_amount", billData?.round_off_amount);
-      setValue("net_amount", billData?.net_amount);
-      setValue("rate", billData?.rate);
-      setValue("invoice_number", billData?.invoice_number);
-
-      setValue("total_taka", billData?.total_taka);
-      setValue("total_meter", billData?.total_meter);
-      setValue("discount_value", billData?.discount_value);
-      setValue("discount_amount", billData?.discount_amount);
-    }
-  }, [billData, setValue]);
+  //     setValue("total_taka", billData?.total_taka);
+  //     setValue("total_meter", billData?.total_meter);
+  //     setValue("discount_value", billData?.discount_value);
+  //     setValue("discount_amount", billData?.discount_amount);
+  //   }
+  // }, [billData, setValue]);
 
 
 
@@ -369,8 +373,10 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     gap: 10,
                   }}>
 
+                    {/* Company selection  */}
                     <div className="year-toggle" style={{
-                      marginTop: "auto"
+                      marginTop: "auto", 
+                      width: "45%"
                     }}>
                       <label style={{ textAlign: "left" }}>Company:</label>
                       <Form.Item
@@ -406,8 +412,11 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         />
                       </Form.Item>
                     </div>
-
-                    <div className="year-toggle">
+                        
+                    {/* Date selection  */}
+                    <div className="year-toggle" style={{
+                      width: "45%"
+                    }}>
                       <label style={{ textAlign: "left" }}>Date:</label>
                       <Form.Item
                         label=""
@@ -432,6 +441,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         />
                       </Form.Item>
                     </div>
+
                   </Flex>
                 </td>
 
@@ -525,21 +535,30 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   </div>
                 </td>
                 <td colSpan={4}>
-                  <div className="credit-note-info-title">
-                    <span>Party:</span>{" "}
-                    {`${billData?.party?.first_name || ""} ${billData?.party?.last_name || ""
-                      }` || ""}
-                    {billData?.party?.address || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN: </span> {billData?.party?.gst_no || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PAN/IT No : </span> {billData?.party?.pancard_no}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>State Name: </span>
-                  </div>
+                  {billData?.party !== null && (
+                    <>
+                      <strong>{String(billData?.supplier?.supplier?.supplier_company).toUpperCase()}</strong>
+                      <div className="credit-note-info-title">
+                        <span>Supplier:</span>{" "}
+                        {`${billData?.supplier?.supplier?.supplier_name}` || ""}
+                        {billData?.supplier?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN: </span> {billData?.supplier?.gst_no || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>PAN/IT No : </span> {billData?.supplier?.pancard_no}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Email: {billData?.supplier?.email} </span>
+                      </div>
+                    </>
+                  )}
+
+                  {billData?.supplier !== null && (
+                    <>
+                    </>
+                  )}
                 </td>
               </tr>
             </tbody>
@@ -622,7 +641,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         <span style={{ fontWeight: "500" }}>
                           Amount Chargable(in words):
                         </span>{" "}
-                        {toWords.convert(net_amount || 0)}{" "}
+                        {toWords.convert(isNaN(net_amount) ? 0 : net_amount || 0)}{" "}
                       </div>
                       <div>
                         <span style={{ fontWeight: "500" }}>Remarks:</span>{" "}

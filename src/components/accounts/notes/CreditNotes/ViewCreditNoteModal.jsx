@@ -124,24 +124,52 @@ const ViewCreditNoteModal = ({ details, type }) => {
                   </div>
                 </td>
                 <td colSpan={4}>
-                  <div className="credit-note-info-title">
-                    <span>Party:</span>
-                    {details?.party?.company_name || "-"}
-                    <br />
-                    {details?.address || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span>{" "}
-                    {details?.party?.user?.gst_no || "-"}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PAN/IT No: </span>
-                    {details?.party?.user?.pancard_no || "-"}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>State Name:</span>{" "}
-                    {details?.party?.user?.state || "-"}
-                  </div>
+                  {details?.party !== null && (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Party:</span>
+                        {details?.party?.company_name || "-"}
+                        <br />
+                        {details?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.party?.user?.gst_no || "-"}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>PAN/IT No: </span>
+                        {details?.party?.user?.pancard_no || "-"}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Email:</span>{" "}
+                        {details?.party?.user?.email || "-"}
+                      </div>
+                    </>
+                  )}
+
+                  {details?.supplier !== null && (
+                    <>
+                      <strong>{String(details?.supplier?.supplier_company).toUpperCase()}</strong>
+                      <div className="credit-note-info-title">
+                        <span>Supplier:</span>
+                        {details?.supplier?.supplier_name || "-"}
+                        <br />
+                        {details?.supplier?.user?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.supplier?.user?.gst_no || "-"}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>PAN/IT No: </span>
+                        {details?.suupplier?.user?.pancard_no || "-"}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Email:</span>{" "}
+                        {details?.supplier?.user?.email || "-"}
+                      </div>
+                    </>
+                  )}
                 </td>
               </tr>
             </tbody>
