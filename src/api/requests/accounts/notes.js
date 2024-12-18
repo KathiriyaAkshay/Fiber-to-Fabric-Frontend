@@ -43,3 +43,7 @@ export function getLastDebitNoteNumberRequest({ params }) {
 export function createDebitNoteRequest({ data, params }) {
   return api.post(`/account/debit-notes/create`, data, { params });
 }
+
+export function debitNoteDropDownRequest({params}){
+  return api.get(`account/debit-notes/bill/get`, {params}) ; }
+

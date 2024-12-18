@@ -28,7 +28,6 @@ const DEBIT_NOTE_TYPES = [
   { label: "Discount Note", value: "discount_note" },
   { label: "Claim Note", value: "claim_note" },
   { label: "Other", value: "other" },
-  // { label: "All", value: "all" },
 ];
 
 const DebitNotes = () => {
@@ -97,10 +96,19 @@ const DebitNotes = () => {
       ) 
     },
     {
-      title: "Challan/Bill Type",
+      title: "Challan/Bill",
       dataIndex: "debit_note_details",
       key: "debit_note_details",
-      render: (text) => text[0]?.model || "-",
+      render: (text, record) => {
+        let debit_note_details = record?.debit_note_details ; 
+        if (debitNoteType == "other"){
+          return(
+            <div>
+              {debit_note_details[0]?.invoice_no || debit_note_details[0]?.bill_no}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Meter",
@@ -144,12 +152,34 @@ const DebitNotes = () => {
       title: "Int./return Amt",
       dataIndex: "net_amount",
       key: "net_amount",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        let debit_note_details = record?.debit_note_details; 
+        if (debitNoteType == "other"){
+          return(
+            <div>
+              {debit_note_details[0]?.amount || "0"}
+            </div>
+          )
+        } else {
+          let total_amount = 0; 
+          record?.debit_note_details?.map((element) => {
+            total_amount += +element?.amount || 0; 
+          })
+          return(
+            <div>{total_amount}</div>
+          )
+        }
+        
+      }
     },
     {
       title: "Int. Payment Date",
       dataIndex: "amount",
-      key: "amount",
+      render: (text, record) => {
+        return(
+          <div>-</div>
+        )
+      }
     },
     // {
     //   title: "Net Amount",

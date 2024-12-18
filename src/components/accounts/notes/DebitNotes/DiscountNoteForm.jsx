@@ -7,12 +7,14 @@ import {
   message,
   Select,
   Typography,
+  Tag
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createDebitNoteRequest,
+  debitNoteDropDownRequest,
   getDebitNoteBillDropDownRequest,
   getLastDebitNoteNumberRequest,
 } from "../../../../api/requests/accounts/notes";
@@ -25,6 +27,10 @@ import { getSupplierListRequest } from "../../../../api/requests/users";
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../../constants/tag";
+import moment from "moment";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -67,6 +73,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
 
+  // Debit note creation related handler ================================
   const { mutateAsync: addDebitClaimNOte, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
       const res = await createDebitNoteRequest({
@@ -193,28 +200,29 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     }
   }, [resetField, supplier_id]);
 
-  const { data: billList } = useQuery({
-    queryKey: [
-      "debit-note",
-      "bill",
-      "list",
-      {
-        company_id: company_id,
-        supplier_id: supplier_id,
-      },
-    ],
-    queryFn: async () => {
-      const params = {
-        company_id: company_id,
-        type: "discount_note",
-        supplier_id: supplier_id,
-      };
-      const response = await getDebitNoteBillDropDownRequest({ params });
-      return response?.data?.data || [];
-    },
-    enabled: Boolean(company_id && supplier_id),
-  });
+  // const { data: billList } = useQuery({
+  //   queryKey: [
+  //     "debit-note",
+  //     "bill",
+  //     "list",
+  //     {
+  //       company_id: company_id,
+  //       supplier_id: supplier_id,
+  //     },
+  //   ],
+  //   queryFn: async () => {
+  //     const params = {
+  //       company_id: company_id,
+  //       type: "discount_note",
+  //       supplier_id: supplier_id,
+  //     };
+  //     const response = await getDebitNoteBillDropDownRequest({ params });
+  //     return response?.data?.data || [];
+  //   },
+  //   enabled: Boolean(company_id && supplier_id),
+  // });
 
+  // Get Last debit note information related api 
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [
       "get",
@@ -234,6 +242,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(company_id),
   });
 
+  // Get Supplier dropdown related api 
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
     queryKey: ["supplier", "list", { company_id }],
     queryFn: async () => {
@@ -245,6 +254,33 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(company_id),
   });
 
+  // Get bill number selecion related api
+  const { data: saleBillList, isLoadingSaleBillList } = useQuery({
+    queryKey: [
+      "saleBill",
+      "list",
+      {
+        company_id: company_id,
+        supplier_id: supplier_id,
+        end: getFinancialYearEnd("current")
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: company_id,
+        page: 0,
+        pageSize: 99999,
+        end: getFinancialYearEnd("current"),
+        type: "discount_note",
+        supplier_id: supplier_id
+      };
+      const res = await debitNoteDropDownRequest({ params });
+      return res.data?.data;
+    },
+    enabled: Boolean(company_id && supplier_id),
+  });
+
+  // Supplier selection related handler 
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
@@ -256,6 +292,9 @@ const DiscountNoteForm = ({ type, handleClose }) => {
       return supplierListRes?.rows?.find(({ id }) => id === supplier_id);
     }
   }, [supplierListRes, supplier_id]);
+
+  console.log(selectedSupplierCompany);
+  
 
   const calculateTaxAmount = () => {
     let totalAmount = 0;
@@ -290,6 +329,10 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     setValue("net_amount", totalNetAmount.toFixed(2));
   };
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <>
       <table className="credit-note-table">
@@ -301,7 +344,9 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 <Typography.Text style={{ fontSize: 20 }}>
                   Discount Note No.
                 </Typography.Text>
-                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+                <div style={{
+                  color: "red"
+                }}>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
               </div>
             </td>
           </tr>
@@ -321,7 +366,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                     control={control}
                     name="date"
                     render={({ field }) => (
-                      <DatePicker {...field} className="width-100" />
+                      <DatePicker {...field} disabledDate={disabledFutureDate} className="width-100" />
                     )}
                   />
                 </Form.Item>
@@ -428,17 +473,39 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                         dropdownStyle={{
                           textTransform: "capitalize",
                         }}
-                        options={billList?.result?.map((item) => {
-                          return {
-                            label: item?.bill_no,
-                            value: item?.bill_id,
-                          };
-                        })}
                         onChange={(selectedValue) => {
                           setValue("bill_id", selectedValue);
                           setNumOfBill(selectedValue.map((item) => item));
                         }}
-                      />
+                      >
+                        {saleBillList?.result?.map((item) => (
+                          <Select.Option key={item?.bill_id} value={`$${item?.model}***${item?.bill_id}`}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span style={{ fontWeight: 600 }}>{item.bill_no}</span>
+                              <Tag
+                                color={{
+                                  general_purchase_entries: SALE_TAG_COLOR,
+                                  yarn_bills: YARN_SALE_BILL_TAG_COLOR,
+                                  job_rework_bill: JOB_TAG_COLOR,
+                                  receive_size_beam_bill: BEAM_RECEIVE_TAG_COLOR,
+                                  purchase_taka_bills: PURCHASE_TAG_COLOR,
+                                  job_taka_bills: JOB_TAG_COLOR,
+                                }[item?.model] || "default"}
+                                style={{ marginLeft: "8px" }}
+                              >
+                                {{
+                                  general_purchase_entries: "General Purchase",
+                                  yarn_bills: "Yarn Bill",
+                                  job_rework_bill: "Job Rework",
+                                  receive_size_beam_bill: "Receive Size Beam",
+                                  purchase_taka_bills: "Purchase Taka",
+                                  job_taka_bills: "Job Taka",
+                                }[item?.model] || "Default"}
+                              </Tag>
+                            </div>
+                          </Select.Option>
+                        ))}
+                      </Select>
                     )}
                   />
                 </Form.Item>
@@ -472,9 +539,13 @@ const DiscountNoteForm = ({ type, handleClose }) => {
               </div>
             </td>
             <td colSpan={4}>
+              <div style={{
+                fontWeight: 600, 
+                fontSize: 16
+              }}>{String(selectedSupplierCompany?.supplier?.supplier_company).toUpperCase()}</div>
               <div className="credit-note-info-title">
                 <span>Supplier:</span>
-                {selectedSupplierCompany?.supplier?.supplier_company || "-"}
+                {selectedSupplierCompany?.supplier?.supplier_name || "-"}
               </div>
               <div className="credit-note-info-title">
                 <span>GSTIN/UIN:</span> {selectedSupplierCompany?.gst_no || "-"}
@@ -484,7 +555,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 {selectedSupplierCompany?.pancard_no || "-"}
               </div>
               <div className="credit-note-info-title">
-                <span>State Name:</span> {selectedSupplierCompany?.state || "-"}
+                <span>Email:</span> {selectedSupplierCompany?.email || "-"}
               </div>
             </td>
           </tr>
@@ -506,18 +577,18 @@ const DiscountNoteForm = ({ type, handleClose }) => {
         <tbody>
           {numOfBill && numOfBill.length
             ? numOfBill.map((id, index) => {
-                return (
-                  <SingleBillRender
-                    key={index}
-                    index={index}
-                    billId={id}
-                    control={control}
-                    company_id={company_id}
-                    billList={billList}
-                    setValue={setValue}
-                  />
-                );
-              })
+              return (
+                <SingleBillRender
+                  key={index}
+                  index={index}
+                  billId={id}
+                  control={control}
+                  company_id={company_id}
+                  billList={saleBillList?.result}
+                  setValue={setValue}
+                />
+              );
+            })
             : null}
           <tr>
             <td></td>

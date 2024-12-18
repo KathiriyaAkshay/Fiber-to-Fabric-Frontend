@@ -9,12 +9,14 @@ import {
   Radio,
   Select,
   Typography,
+  Tag
 } from "antd";
 import { Controller, useForm } from "react-hook-form";
 import {
   createDebitNoteRequest,
   getDebitNoteBillDropDownRequest,
   getLastDebitNoteNumberRequest,
+  debitNoteDropDownRequest
 } from "../../../../api/requests/accounts/notes";
 import { useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -30,6 +32,11 @@ import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challa
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR} from "../../../../constants/tag";
+import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../../constants/tag";
+import moment from "moment";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -224,6 +231,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     }
   }, [CGST_value, IGST_value, SGST_value, amount, round_off_amount, setValue]);
 
+  // Claim note bill selection api =======================================
   const { data: billList } = useQuery({
     queryKey: [
       "debit-note",
@@ -235,8 +243,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       const params = {
         company_id: companyId,
         type: "claim_note",
-        supplier_id: 0,
-        is_current,
+        end: is_current?getFinancialYearEnd("current"):getFinancialYearEnd("end")
       };
       const response = await getDebitNoteBillDropDownRequest({ params });
       return response?.data?.data || [];
@@ -244,6 +251,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(companyId),
   });
 
+  // Last debit note number information request =================
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [
       "get",
@@ -386,6 +394,10 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     }
   }, [billData, setValue]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <Form>
       <table className="credit-note-table">
@@ -405,7 +417,11 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                 <Typography.Text style={{ fontSize: 20 }}>
                   Debit Note No.
                 </Typography.Text>
-                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+                <div style={{
+                  fontWeight: 600,
+                  color: "red",
+                  fontSize: 16
+                }}>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
               </div>
             </td>
             <td colSpan={3} width={"33.33%"}>
@@ -427,6 +443,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                         {...field}
                         name="date"
                         className="width-100"
+                        disabledDate={disabledFutureDate}
                       />
                     )}
                   />
@@ -445,8 +462,16 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                     name="is_current"
                     render={({ field }) => (
                       <Radio.Group {...field}>
-                        <Radio value={1}>Current Year</Radio>
-                        <Radio value={0}>Previous Year</Radio>
+                        <Radio value={1}>
+                          <Tag color={CURRENT_YEAR_TAG_COLOR}>
+                            Current Year
+                          </Tag>
+                        </Radio>
+                        <Radio value={0}>
+                          <Tag color={PREVIOUS_YEAR_TAG_COLOR}>
+                            Previous Year
+                          </Tag>
+                        </Radio>
                       </Radio.Group>
                     )}
                   />
@@ -483,7 +508,13 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                         dropdownStyle={{
                           textTransform: "capitalize",
                         }}
-                      />
+                      >
+                        {billList?.result?.map((item) => (
+                          <Select.Option key={item?.bill_id} value={`$${item?.model}***${item?.bill_id}`}>
+
+                          </Select.Option>
+                        ))}
+                      </Select>
                     )}
                   />
                 </Form.Item>
