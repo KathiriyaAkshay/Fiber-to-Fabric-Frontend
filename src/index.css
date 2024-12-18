@@ -979,3 +979,10 @@ h2 {
 .purchase-total-font {
   color: #fff;
 }
+
+.sub-table{
+  .ant-table{
+    width: 30% !important;
+    margin-right: auto !important;
+  }
+}

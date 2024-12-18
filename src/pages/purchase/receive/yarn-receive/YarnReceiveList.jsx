@@ -376,10 +376,10 @@ function YarnReceiveList() {
               placeholder="Bill status"
               value={billStatus}
               onChange={setBillStatus}
-              options={[
-                { label: "Pending", value: "0" },
-                { label: "Received", value: "1" },
-              ]}
+                options={[
+                  { label: "Pending", value: "0" },
+                  { label: "Received", value: "1" },
+                ]}
               style={{
                 width: "100%",
               }}

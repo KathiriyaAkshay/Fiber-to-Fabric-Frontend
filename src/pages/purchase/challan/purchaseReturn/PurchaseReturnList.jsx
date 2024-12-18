@@ -32,6 +32,88 @@ import DebitNote from "../../../../components/purchase/purchaseReturn/DebitNote"
 import moment from "moment/moment";
 import ParticularPurchaseReturnInfo from "../../../../components/purchase/purchaseReturn/particularPurchaseReturnInfo";
 
+const PurchaseReturnInformation = ({item}) => {
+
+  const makeUniqueList = (items) => {
+    const filteredItems = items.filter(item => item.purchased_return_id !== null);
+    const grouped = filteredItems.reduce((acc, item) => {
+        const key = item.purchased_return_id;
+        if (!acc[key]) {
+            acc[key] = [];
+        }
+        acc[key].push(item);
+        return acc;
+    }, {});
+
+    // Convert grouped object back into an array
+    return Object.values(grouped);
+  };
+
+  const uniqueList = makeUniqueList(item?.purchase_taka_challan?.purchase_challan_details);
+
+  const columns = [
+    {
+      title: 'Return Taka',
+      render: (text, record) => {
+        return(
+          <div>{record?.length}</div>
+        )
+      }
+    },
+    {
+      title: 'Return Meter',
+      render: (text, record) => {
+        let total_return_meter = 0 ; 
+        record?.map((element) => {
+          total_return_meter += +element?.meters || +element?.meter;
+        })
+        return(
+          <div style={{
+            fontWeight: 600,
+            color: "red"
+          }}>
+            {total_return_meter}
+          </div>
+        )
+      }
+    },
+    {
+      title: "Action", 
+      render: (record) => {
+        let taka_no = []; 
+        record?.map((element) => {
+          taka_no.push(element?.taka_no) ;
+        })
+        return(
+          <Space>
+            <ParticularPurchaseReturnInfo
+              details={{...item, new_challan_details: record}}
+            />
+          </Space>
+        )
+      }
+    }
+  ];
+
+
+  return (
+    <>
+      <div style={{
+        paddingTop: 10, 
+        paddingBottom: 10
+      }}>
+        <Table
+          dataSource={uniqueList}
+          columns={columns}
+          pagination={false}
+          className="sub-table"
+        />
+      </div>
+    </>
+  )
+}
+
+
 const PurchaseReturnList = () => {
   const navigate = useNavigate();
   const [quality, setQuality] = useState(null);
@@ -39,7 +121,7 @@ const PurchaseReturnList = () => {
   const [challanNo, setChallanNo] = useState("");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  const [data, setData] = useState([]) ; 
+  const [data, setData] = useState([]);
 
   const debouncedFromDate = useDebounce(fromDate, 500);
   const debouncedToDate = useDebounce(toDate, 500);
@@ -125,41 +207,6 @@ const PurchaseReturnList = () => {
     },
     enabled: Boolean(companyId),
   });
-
-  useEffect(() => {
-    if (purchaseReturnList){
-      
-      const generateColor = (index) => {
-        const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9']; // Example color array
-        return colors[index % colors.length];
-      };
-
-      const result = purchaseReturnList.rows?.flatMap((item, itemIndex) => {
-        const groupedDetails = {};
-        const details = item.purchase_taka_challan.purchase_challan_details;
-      
-        // Grouping the details by purchased_return_id
-        details.forEach(detail => {
-          const prId = detail.purchased_return_id;
-          if (!groupedDetails[prId]) {
-            groupedDetails[prId] = [];
-          }
-          groupedDetails[prId].push(detail);
-        });
-      
-        return Object.entries(groupedDetails).map(([prId, prDetails], index) => {
-          const newItem = JSON.parse(JSON.stringify(item));
-          newItem.new_challan_details = prDetails;
-          newItem.color = generateColor(itemIndex);
-          return newItem;
-        });
-      });
-
-      setData(result);
-      // onShowSizeChange(0, result?.length +1);
-      
-    }
-  }, [purchaseReturnList])
 
   function navigateToUpdate(id) {
     navigate(`/job/challan/rework-challan/update/${id}`);
@@ -259,8 +306,8 @@ const PurchaseReturnList = () => {
       dataIndex: ["purchase_taka_challan", "challan_no"],
       key: "challan_no",
       render: (text, record) => {
-        return(
-          <Tag color = {record?.color}>{text}</Tag>
+        return (
+          <Tag color="#108ee9">{text}</Tag>
         )
       }
     },
@@ -282,46 +329,45 @@ const PurchaseReturnList = () => {
       render: (supplier) => `${supplier?.supplier_name}`,
     },
     {
-      title: "To Company",
+      title: "Supplier Company",
       render: (details) =>
         details?.purchase_taka_challan?.supplier?.supplier_company,
     },
-    {
-      title: "Return Meter",
-      render: (text, record) => {
-        let data = record?.new_challan_details ; 
-        let return_meter = 0 ;
-        data?.map((element) => {
-          return_meter += +element?.meter ; 
-        })
-        return(
-          <div style={{
-            color: "red", 
-            fontWeight: 600
-          }}>{return_meter}</div>
-        )
-      },
-    },
+    // {
+    //   title: "Return Meter",
+    //   render: (text, record) => {
+    //     let data = record?.new_challan_details;
+    //     let return_meter = 0;
+    //     data?.map((element) => {
+    //       return_meter += +element?.meter;
+    //     })
+    //     return (
+    //       <div style={{
+    //         color: "red",
+    //         fontWeight: 600
+    //       }}>{return_meter}</div>
+    //     )
+    //   },
+    // },
     {
       title: "Total Taka",
       render: (details) => details?.purchase_taka_challan?.total_taka,
     },
     {
       title: "Total Meter",
-      render: (details) => details?.purchase_taka_challan?.total_meter 
+      render: (details) => details?.purchase_taka_challan?.total_meter
     },
-    {
-      title: "Return Date",
-      dataIndex: "return_date",
-      key: "return_date",
-    },
+    // {
+    //   title: "Return Date",
+    //   dataIndex: "return_date",
+    //   key: "return_date",
+    // },
     {
       title: "Action",
       render: (details) => {
         return (
           <Space>
-            <ParticularPurchaseReturnInfo details={details} />
-
+            {/* <ParticularPurchaseReturnInfo details={details} /> */}
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -329,11 +375,8 @@ const PurchaseReturnList = () => {
             >
               <EditOutlined />
             </Button>
-            
             <DebitNote />
-          
             <DeleteReworkChallan details={details} />
-          
           </Space>
         );
       },
@@ -351,7 +394,7 @@ const PurchaseReturnList = () => {
 
     return (
       <Table
-        dataSource={data || []}
+        dataSource={purchaseReturnList?.rows || []}
         columns={columns}
         rowKey={"id"}
         pagination={{
@@ -360,7 +403,16 @@ const PurchaseReturnList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        expandable={{
+          expandedRowRender: (record) => {
+            return <PurchaseReturnInformation 
+              item={record}
+            />;
+          },
+          expandedRowKeys: purchaseReturnList?.rows?.map((element) => element?.id) || [], // Correct syntax
+        }}
       />
+
     );
   }
 

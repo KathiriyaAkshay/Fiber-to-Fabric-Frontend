@@ -1,25 +1,26 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
-import { useRef, useContext, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import ReactToPrint from "react-to-print";
-import { GlobalContext } from "../../../contexts/GlobalContext";
+import dayjs from "dayjs";
+import { GlobalContext } from "../../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
-const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
+const CreditNoteSaleReturnComp = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
-  const { companyListRes } = useContext(GlobalContext);
-  const [companyInfo, setCompanyInfo] = useState({});
+  const { company } = useContext(GlobalContext);
+
+  // const [companyInfo, setCompanyInfo] = useState({});
   const TakaArray = Array(12).fill(0);
 
   const [totalTaka1, setTotalTaka1] = useState(0);
   const [totalTaka2, setTotalTaka2] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
-
+  const [currentTakaReturnId, setCurrentTakaReturnId] = useState(details?.sale_return_id) ; 
   const pageStyle = `
         @media print {
              .print-instructions {
@@ -34,36 +35,24 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
   useEffect(() => {
     let tempTotal1 = 0;
     let tempTotal2 = 0;
-
     TakaArray?.map((element, index) => {
       tempTotal1 =
         Number(tempTotal1) +
-        Number(
-          details?.purchase_taka_challan?.purchase_challan_details[index]
-            ?.meter || 0
-        );
+        Number(details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter || 0);
       tempTotal2 =
         Number(tempTotal2) +
         Number(
-          details?.purchase_taka_challan?.purchase_challan_details[index + 12]
-            ?.meter || 0
+          details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.meter || 0
         );
     });
 
     let total = Number(tempTotal1) + Number(tempTotal2);
-
+    console.log("Total information", total);
+    
     setTotalMeter(total);
     setTotalTaka1(tempTotal1);
     setTotalTaka2(tempTotal2);
   }, [TakaArray, details]);
-
-  useEffect(() => {
-    companyListRes?.rows?.map((element) => {
-      if (element?.id == details?.company_id) {
-        setCompanyInfo(element);
-      }
-    });
-  }, [details, companyListRes]);
 
   return (
     <>
@@ -80,7 +69,7 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Purchase Return Challan
+            Sale Return
           </Typography.Text>
         }
         open={isModelOpen}
@@ -137,6 +126,54 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
           ref={componentRef}
         >
           <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={24}>
+              <Text className="font-bold" style={{ fontSize: "22px" }}>
+                SONU TEXTTILE
+              </Text>
+            </Col>
+          </Row>
+          <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={24}>
+              <Text>
+                {company?.address_line_1} {company?.address_line_2} ,{" "}
+                {company?.city}
+              </Text>
+            </Col>
+          </Row>
+          <Row
+            className="p-4 border-0 border-b border-solid !m-0"
+            style={{ textAlign: "center" }}
+          >
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PHONE NO:</span>{" "}
+                {company?.company_contact}
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PAYMENT:</span> -
+              </Text>
+            </Col>
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">GST NO:</span> {company?.gst_no}
+              </Text>
+            </Col>
+
+            <Col span={6}>
+              <Text>
+                <span className="font-bold">PAN NO:</span> {company.pancard_no}
+              </Text>
+            </Col>
+          </Row>
+          <Row
             className="border p-4 border-b ,0border-solid !m-0"
             style={{
               borderTop: 0,
@@ -146,64 +183,52 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
             }}
           >
             <Col span={12}>
-              <Row>
+              <Row style={{ padding: "6px 0px" }}>
                 <Col span={24}>
-                  <Text>To,</Text>
-                  <Text className="block font-bold">
-                    {details?.purchase_taka_challan?.supplier?.supplier_company}
-                    ({details?.purchase_taka_challan?.supplier?.supplier_name})
+                  <Text className="font-bold">M/S.</Text>
+                  <Text className="block">
+                    {details?.party?.company_name}(
+                    {`${details?.party?.user?.first_name}${details?.party?.user?.last_name}`}
+                    )
                   </Text>
                   <Text className="block">
-                    {details?.purchase_taka_challan?.supplier?.user?.address}
-                  </Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>Challan</Text>
-                  <Text className="block">
-                    {details?.purchase_taka_challan?.challan_no}
+                    {details?.party?.user?.address}
                   </Text>
                 </Col>
               </Row>
-              <Row>
+              <Row style={{ padding: "6px 0px" }}>
                 <Col span={24}>
-                  <Text>GST</Text>
+                  <Text className="font-bold">GST</Text>
                   <Text className="block">
-                    {details?.purchase_taka_challan?.supplier?.user?.gst_no}
+                    {details?.party?.company_gst_number}
                   </Text>
                 </Col>
               </Row>
             </Col>
             <Col span={12}>
-              <Row>
+              <Row style={{ padding: "6px 0px" }}>
                 <Col span={24}>
-                  <Text>From,</Text>
-                  <Text className="block font-bold">
-                    {companyInfo?.company_name}
-                  </Text>
-                  <Text className="block">{`${companyInfo?.address_line_1} ${
-                    companyInfo?.address_line_2 == null
-                      ? ""
-                      : companyInfo?.address_line_2
-                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
-                    companyInfo?.pincode
-                  }, ${companyInfo?.country}`}</Text>
-                </Col>
-              </Row>
-              <Row>
-                <Col span={24}>
-                  <Text>Broker</Text>
-                  <Text className="block font-bold">
-                    {details?.purchase_taka_challan?.broker?.first_name}{" "}
-                    {details?.purchase_taka_challan?.broker?.last_name}
+                  <Text className="font-bold">CHALLAN No</Text>
+                  <Text className="block">
+                    {details?.sale_challan_return?.sale_challan?.challan_no}
                   </Text>
                 </Col>
               </Row>
-              <Row>
+              <Row style={{ padding: "6px 0px" }}>
                 <Col span={24}>
-                  <Text>GST</Text>
-                  <Text className="block">{companyInfo?.gst_no}</Text>
+                  <Text className="font-bold">DATE</Text>
+                  <Text className="block">
+                    {dayjs(details.createdAt).format("DD-MM-YYYY")}
+                  </Text>
+                </Col>
+              </Row>
+              <Row style={{ padding: "6px 0px" }}>
+                <Col span={24}>
+                  <Text className="font-bold">BROKER</Text>
+                  <Text className="block">
+                    {details?.supplier?.broker?.first_name}{" "}
+                    {details?.supplier?.broker?.last_name}
+                  </Text>
                 </Col>
               </Row>
             </Col>
@@ -212,14 +237,14 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description:</Col>
             <Col span={6}>
-              {details?.purchase_taka_challan?.inhouse_quality?.quality_name} (
-              {details?.purchase_taka_challan?.inhouse_quality?.quality_weight}
+              <Text className="font-bold">DESCRIPTION OF GOODS:</Text>
+            </Col>
+            <Col span={6}>
+              {details?.inhouse_quality?.quality_name} (
+              {details?.inhouse_quality?.quality_weight}
               KG)
             </Col>
-            <Col span={6}>Date:</Col>
-            <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
           </Row>
           <Row
             className="p-4 border-0 border-b border-solid !m-0"
@@ -246,84 +271,80 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
           </Row>
 
           {TakaArray?.map((element, index) => {
-            
-            let Return1 = false; 
-            let Return2 = false;
-            let Taka1Index = details?.purchase_taka_challan?.purchase_challan_details[index]?.id ; 
-            let Taka2Index = details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.id ; 
-            
-            details?.new_challan_details?.map((taka) => {
-                if (taka?.id == Taka1Index){
-                    Return1 = true; 
-                }
-
-                if (taka?.id == Taka2Index){
-                    Return2 = true ; 
-                }
-            })
-
-
+            const isReturned = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.sale_challan_return_id?true:false;
+            const isReturned2 = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.sale_challan_return_id?true:false;
             return (
               <Row
                 key={index}
                 className="p-3 border-0"
                 style={{ borderTop: 0 }}
               >
-
-                {/* ========= Taka1 array ============  */}
                 <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 1}
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {index + 1}
+                  </Text>
                 </Col>
-
-                <Col span={5} style={{ textAlign: "center", 
-                  color: Return1?"red":"black",
-                  fontWeight: Return1?600:0
-                }}>
-                  {
-                    `${details?.purchase_taka_challan?.purchase_challan_details[index]?.taka_no ?? ""} ${
-                        Return1 ? "(Returned)" : ""
-                    }`
-                  }
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index]
+                        ?.taka_no
+                    }{" "}
+                    {isReturned ? "(return)" : ""}
+                  </Text>
                 </Col>
-
-                <Col span={5} style={{ textAlign: "center", 
-                  color: Return1?"red":"black",
-                  fontWeight: Return1?600:0
-                 }}>
-                  {
-                    details?.purchase_taka_challan?.purchase_challan_details[
-                      index
-                    ]?.meter
-                  }
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <Text
+                    style={{
+                      color: isReturned ? "red" : "inherit",
+                    }}
+                  >
+                    {details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter}
+                  </Text>
                 </Col>
-
-                {/* ======== Taka2 array =============  */}
+                {/* Table 2 */}
                 <Col span={1} style={{ textAlign: "center" }}>
-                  {index + 13}
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {index + 13}
+                  </Text>
                 </Col>
-
-                <Col span={5} style={{ textAlign: "center", 
-                  color: Return2?"red":"black",
-                  fontWeight: Return2?600:0
-                 }}>
-                  {
-                    `${details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.taka_no ?? ""} ${
-                        Return2 ? "(Returned)" : ""
-                    }`
-                  }
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
+                        ?.taka_no
+                    }{" "}
+                    {isReturned2 ? "(return)" : ""}
+                  </Text>
                 </Col>
-
-                <Col span={5} style={{ textAlign: "center", 
-                   color: Return2?"red":"black",
-                   fontWeight: Return2?600:0
-                 }}>
-                  {
-                    details?.purchase_taka_challan?.purchase_challan_details[
-                      index + 12
-                    ]?.meter
-                  }
+                <Col span={5} style={{ textAlign: "center" }}>
+                  <Text
+                    style={{
+                      color: isReturned2 ? "red" : "inherit",
+                    }}
+                  >
+                    {
+                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
+                        ?.meter
+                    }
+                  </Text>
                 </Col>
-
               </Row>
             );
           })}
@@ -350,9 +371,9 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.purchase_taka_challan?.purchase_challan_details?.length}
+              {details?.sale_challan_return?.sale_challan?.sale_challan_details?.length}
             </Col>
-            <Col span={4} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
@@ -365,4 +386,4 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
   );
 };
 
-export default ParticularPurchaseReturnInfo;
+export default CreditNoteSaleReturnComp;

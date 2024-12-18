@@ -366,7 +366,7 @@ function SizeBeamOrderList() {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
-              disabledDate={disableFutureDates}
+              // disabledDate={disableFutureDates}
             />
           </Flex>
         </Flex>

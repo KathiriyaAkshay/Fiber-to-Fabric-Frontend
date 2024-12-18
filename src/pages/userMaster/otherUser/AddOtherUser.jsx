@@ -43,6 +43,44 @@ const validationSchema = yupResolver(
     password: yup.string().required("Please enter password"),
     username: yup.string().required("Please enter username"),
     role_id: yup.string().required("Please select user type"),
+
+    // is_regular_per_taka: yup.string().required("Please select anyone."),
+    // regular_rate: yup.string().required("Please enter regular rate."),
+    // is_rework_per_taka: yup.string().required("Please select anyone."),
+    // rework_rate: yup.string().required("Please enter rework rate."),
+
+    // from_taka_number: yup.string().required("Please enter from taka no."),
+    // to_taka_number: yup.string().required("Please enter to taka no."),
+    is_regular_per_taka: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please select anyone."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    regular_rate: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter regular rate."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    is_rework_per_taka: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please select anyone."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    rework_rate: yup.string().when("role_id", {
+      is: USER_ROLES.MENDING_USER.role_id || USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter rework rate."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    from_taka_number: yup.string().when("role_id", {
+      is: USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter from taka no."),
+      otherwise: () => yup.string().notRequired(),
+    }),
+    to_taka_number: yup.string().when("role_id", {
+      is: USER_ROLES.FOLDING_USER.role_id,
+      then: () => yup.string().required("Please enter to taka no."),
+      otherwise: () => yup.string().notRequired(),
+    }),
   })
 );
 
@@ -87,8 +125,30 @@ function AddOtherUser() {
   async function onSubmit(data) {
     const roleId = +data?.role_id;
     const payload = {
-      ...data,
+      first_name: data?.first_name,
+      last_name: data?.last_name,
+      mobile: data?.mobile,
+      email: data?.email,
+      address: data?.address,
+      role_id: +data?.role_id,
+      password: data?.password,
+      username: data?.username,
     };
+
+    if (
+      roleId === USER_ROLES.MENDING_USER.role_id ||
+      roleId === USER_ROLES.FOLDING_USER.role_id
+    ) {
+      payload.is_regular_per_taka = data?.is_regular_per_taka;
+      payload.regular_rate = +data?.regular_rate;
+      payload.is_rework_per_taka = data?.is_rework_per_taka;
+      payload.rework_rate = +data?.rework_rate;
+    }
+
+    if (roleId === USER_ROLES.FOLDING_USER.role_id) {
+      payload.from_taka_number = +data?.from_taka_number;
+      payload.to_taka_number = +data?.to_taka_number;
+    }
 
     await addUser({ roleId, data: payload });
   }

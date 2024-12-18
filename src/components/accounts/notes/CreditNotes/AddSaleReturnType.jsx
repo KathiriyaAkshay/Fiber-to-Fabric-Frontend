@@ -10,6 +10,7 @@ import {
   Radio,
   Row,
   Select,
+  Tag,
   Typography,
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,11 +26,14 @@ import dayjs from "dayjs";
 import { getLastCreditNoteNumberRequest } from "../../../../api/requests/accounts/notes";
 import moment from "moment";
 import { CloseOutlined } from "@ant-design/icons";
+import { useMemo } from "react";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR } from "../../../../constants/tag";
 
 const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const TakaArray = Array(12).fill(0);
 
-  const { companyId } = useContext(GlobalContext);
+  const { companyId,companyListRes  } = useContext(GlobalContext);
+  const [selectCompany, setSelectCompany] = useState(companyListRes?.rows?.[0]?.id) ; 
   const queryClient = useQueryClient();
   const [returnDate, setReturnDate] = useState(dayjs());
   const [yearValue, setYearValue] = useState("previous");
@@ -120,7 +124,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       "saleChallan",
       "list",
       {
-        company_id: companyId,
+        company_id: selectCompany,
         end:
           yearValue === "previous"
             ? dayjs().get("year") - 1
@@ -129,19 +133,27 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
     ],
     queryFn: async () => {
       const params = {
-        company_id: companyId,
+        company_id: selectCompany,
         page: 0,
         pageSize: 99999,
+        endInclude : `bill_status,pending`,
         end:
           yearValue === "previous"
-            ? dayjs().get("year") - 1
-            : dayjs().get("year"),
+            ? dayjs().get("year") 
+            : dayjs().get("year") + 1,
+             
       };
       const res = await getSaleChallanListRequest({ params });
       return res.data?.data;
     },
-    enabled: Boolean(companyId),
+    enabled: !!selectCompany,
   });
+
+  const selectedCompany = useMemo(() => {
+    if (selectCompany) {
+      return companyListRes?.rows?.find(({ id }) => id === selectCompany);
+    }
+  }, [selectCompany, companyListRes]);
 
   const { data: saleChallanData } = useQuery({
     queryKey: [
@@ -246,7 +258,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
         <table className="credit-note-table">
           <tbody>
             <tr>
-              <td colSpan={2} width={"33.33%"}>
+              <td colSpan={2} width={"25%"}>
                 <div className="year-toggle">
                   <Typography.Text style={{ fontSize: 20 }}>
                     Credit Note No.
@@ -256,24 +268,54 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </td>
 
               <td colSpan={2} width={"33.33%"}>
-                <div
-                  className="year-toggle"
-                  style={{
-                    paddingLeft: 10,
-                    paddingRight: 10,
-                  }}
-                >
-                  <label style={{ textAlign: "left" }}>Return Date:</label>
-                  <DatePicker
-                    value={returnDate}
-                    onChange={(selectedDate) => setReturnDate(selectedDate)}
-                    className="width-100"
-                    disabledDate={disabledFutureDate}
-                  />
-                </div>
+                <Flex>
+                  <div
+                    className="year-toggle"
+                    style={{
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                    }}
+                  >
+                    <label style={{ textAlign: "left" }}>Company</label>
+                    <Select
+                      className="width-100"
+                      placeholder="Select Company"
+                      style={{
+                        textTransform: "capitalize",
+                      }}
+                      dropdownStyle={{
+                        textTransform: "capitalize",
+                      }}
+                      options={companyListRes?.rows?.map((company) => {
+                        return {
+                          label: company?.company_name,
+                          value: company?.id,
+                        };
+                      })}
+                      defaultValue={selectCompany}
+                      value={selectCompany}
+                      onChange={setSelectCompany}
+                    />
+                  </div>
+                  <div
+                    className="year-toggle"
+                    style={{
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                    }}
+                  >
+                    <label style={{ textAlign: "left" }}>Return Date:</label>
+                    <DatePicker
+                      value={returnDate}
+                      onChange={(selectedDate) => setReturnDate(selectedDate)}
+                      className="width-100"
+                      disabledDate={disabledFutureDate}
+                    />
+                  </div>
+                </Flex>
               </td>
 
-              <td colSpan={2} width={"33.33%"}>
+              <td colSpan={2} width={"10%"}>
                 <div
                   className="year-toggle"
                   style={{
@@ -287,10 +329,14 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   >
                     <Flex>
                       <Radio style={{ fontSize: "12px" }} value={"previous"}>
-                        Previous Year
+                        <Tag color= {PREVIOUS_YEAR_TAG_COLOR}>
+                          Previous Year
+                        </Tag>
                       </Radio>
                       <Radio style={{ fontSize: "12px" }} value={"current"}>
-                        Current Year
+                        <Tag color= {CURRENT_YEAR_TAG_COLOR}>
+                          Current Year
+                        </Tag>
                       </Radio>
                     </Flex>
                   </Radio.Group>
@@ -313,30 +359,42 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     }}
                     value={challanNo}
                     onChange={setChallanNo}
+                    showSearch
+                    filterOption={(input, option) =>
+                      option?.label?.toLowerCase().includes(input.toLowerCase())
+                    } 
                   />
                 </div>
               </td>
             </tr>
             <tr width="50%">
               <td colSpan={3}>
-                <div className="credit-note-info-title">
-                  <span>GSTIN/UIN:</span>
+                <b>{selectedCompany?.company_name || ""}</b>
+                <div>
+                  {selectedCompany?.address_line_1 || ""}
+                  {selectedCompany?.address_line_2 || ""}
                 </div>
                 <div className="credit-note-info-title">
-                  <span>State Name:</span>
+                  <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
                 </div>
                 <div className="credit-note-info-title">
-                  <span>PinCode:</span>
+                  <span>State Name: </span> {selectedCompany?.state || ""}
                 </div>
                 <div className="credit-note-info-title">
-                  <span>Contact:</span>
+                  <span>PinCode:</span> {selectedCompany?.pincode || ""}
                 </div>
                 <div className="credit-note-info-title">
-                  <span>Email:</span>
+                  <span>Contact:</span>{" "}
+                  {selectedCompany?.company_contact || ""}
+                </div>
+                <div className="credit-note-info-title">
+                  <span>Email:</span> {selectedCompany?.company_email || ""}
                 </div>
               </td>
               <td colSpan={3}>
-                <div className="credit-note-info-title">
+                <div className="credit-note-info-title" style={{
+                  verticalAlign: "top"
+                }}>
                   <span>Party:</span>{" "}
                   <span
                     style={{
@@ -352,7 +410,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   </span>
                 </div>
                 <div className="credit-note-info-title">
-                  <span>GSTIN/UIN:</span>
+                  <span>GSTIN/UIN:{saleChallanData?.saleChallan?.party?.gst_no}</span>
                   <span style={{ fontWeight: 400, marginLeft: 10 }}>
                     {
                       saleChallanData?.saleChallan?.party?.party
@@ -621,6 +679,7 @@ const AddSaleReturnType = ({ setIsAddModalOpen, isAddModalOpen }) => {
             onClick={submitHandler}
             loading={isPending}
             style={{ marginRight: 10 }}
+            danger
           >
             Sales Return
           </Button>
