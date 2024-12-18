@@ -14,7 +14,6 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
 import {
   createCreditNoteRequest,
   creditNoteDropDownRequest,
@@ -29,8 +28,9 @@ import moment from "moment";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { CURRENT_YEAR_TAG_COLOR, JOB_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { BEAM_RECEIVE_TAG_COLOR, JOB_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
 
 
 const toWords = new ToWords({
@@ -62,8 +62,12 @@ const validationSchema = yup.object().shape({
   date: yup.string().required("Please enter date"),
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
-  amount: yup.string().required("Please enter amount"),
-  bill_id: yup.string().required("Please select bill."),
+  // amount: yup.string().required("Please enter amount"),
+  bill_id: yup
+    .array()
+    .of(yup.string().required("Invalid bill ID"))
+    .min(1, "Please select at least one bill.")
+    .required("Please select bill.")
 });
 
 const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
@@ -99,6 +103,18 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const onSubmit = async (data) => {
+    const temp_credit_notes_data = [] ;
+    numOfBill?.map((id, index) => {
+      temp_credit_notes_data.push({
+        bill_id: data[`bill_id_${index}`], 
+        model: data[`model_${index}`], 
+        per: 1.0, 
+        invoice_no: data[`bill_number_${index}`], 
+        bill_no: data[`bill_number_${index}`], 
+        particular_name: "Discount On Sales", 
+        amount: +data[`amount_${index}`]
+      })
+    })
     const payload = {
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
@@ -106,7 +122,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       credit_note_type: "discount",
       // sale_challan_id: 456,
       // quality_id: data?.quality_id,
-      party_id: data?.party_id,
+      party_id: null,
       // gray_order_id: 321,
       // sale_return_id: 5050,
       // hsn_no: "HSN456",
@@ -129,20 +145,13 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       // extra_tex_value: 1.0,
       // extra_tex_amount: 15.0,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-      credit_note_details: numOfBill.map((_, index) => {
-        return {
-          bill_id: data[`bill_id_${index}`],
-          model: "sale_bills",
-          rate: +data[`rate_${index}`],
-          per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          particular_name: "Discount On Sales",
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
-        };
-      }),
+      credit_note_details: temp_credit_notes_data,
     };
-
+    if (selectedPartyCompany?.party !== null && selectedPartyCompany?.party  !== undefined){
+      payload["party_id"] = selectedPartyCompany?.party?.id
+    } else {
+      payload["supplier_id"] = selectedPartyCompany?.supplier_id
+    }
     await addCreditClaimNOte({ data: payload, companyId: data.company_id });
   };
 
@@ -230,7 +239,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
         params["supplier_id"] = party_id_value
       }
 
-      const res = await creditNoteDropDownRequest({ params });
+      const res = await creditNoteDropDownRequest ({ params });
       return res.data?.data;
     },
     enabled: Boolean(company_id && party_id),
@@ -537,17 +546,39 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             dropdownStyle={{
                               textTransform: "capitalize",
                             }}
-                            options={saleBillList?.SaleBill?.map((item) => {
-                              return {
-                                label: item.e_way_bill_no,
-                                value: item.id,
-                              };
-                            })}
+                            // options={saleBillList?.SaleBill?.map((item) => {
+                            //   return {
+                            //     label: item.e_way_bill_no,
+                            //     value: item.id,
+                            //   };
+                            // })}
                             onChange={(selectedValue) => {
                               setValue("bill_id", selectedValue);
-                              setNumOfBill(selectedValue.map((item) => item));
+                              setNumOfBill(selectedValue);
                             }}
-                          />
+                          >
+                              {saleBillList?.bills?.map((item) => (
+                                <Select.Option key={item.bill_no} value={`${item?.model}****${item?.bill_id}`}>
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <span style={{
+                                      fontWeight: 600
+                                    }}>{item.bill_no}</span>
+                                    <Tag color={
+                                      item?.model == "sale_biills"?SALE_TAG_COLOR:
+                                      item?.model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
+                                      item?.model == "job_gray_sale_bill"?JOB_TAG_COLOR:
+                                      item?.model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR:"default"
+                                    } style={{ marginLeft: "8px" }}>
+                                      { item?.model == "sale_biills"?"Sale Bill": 
+                                        item?.model == "yarn_sale_bills"?"Yarn Sale":
+                                        item?.model == "job_gray_sale_bill"?"Job Gray":
+                                        item?.model == "beam_sale_bill"?"Beam Sale":item?.model 
+                                      } 
+                                    </Tag>
+                                  </div>
+                                </Select.Option>
+                              ))}
+                          </Select>
                         )}
                       />
                     </Form.Item>
@@ -602,10 +633,14 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   )}
                   {selectedUser == "supplier" && (
                     <>
+                      <span style={{
+                        fontWeight: 600, 
+                        fontSize: 16
+                      }}>{String(selectedPartyCompany?.supplier_company).toUpperCase()}</span>
                       <div className="credit-note-info-title">
                         <span>Supplier:</span>
                         {selectedPartyCompany
-                          ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
+                          ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name}`
                           : ""}
                       </div>
                       <div>
@@ -809,7 +844,10 @@ const SingleBillRender = ({
   billList,
   setValue,
 }) => {
-  const billData = billList?.SaleBill?.find((item) => item.id === billId);
+  const temp_bill_id = String(billId).split("****")[1] ; 
+  const temp_bill_model = String(billId).split("****")[0] ;
+  const billData = billList?.bills?.find((item) => item.bill_id === +temp_bill_id && item?.model == temp_bill_model);
+
   // const { data: billData } = useQuery({
   //   queryKey: [
   //     "get",
@@ -861,21 +899,21 @@ const SingleBillRender = ({
 
   const calculateAmount = (per) => {
     const amount =
-      ((billData?.total_meter || 0) * (billData?.rate || 0) * per) / 100;
+      ((billData?.total_meter || +billData?.meter || 0) * (billData?.rate || 0) * per) / 100;
     setValue(`amount_${index}`, amount.toFixed(2));
   };
 
+  
+
   useEffect(() => {
     if (billData && Object.keys(billData).length) {
-      // const selectedBillData = billList?.result?.find(
-      //   (item) => item.bill_id === billId
-      // );
-
-      setValue(`quantity_${index}`, +billData?.total_meter || 0);
+      console.log(billData);
+      
+      setValue(`quantity_${index}`, +billData?.total_meter || +billData?.quantity || +billData?.meter);
       setValue(`rate_${index}`, +billData?.rate || 0);
-
-      setValue(`bill_id_${index}`, billId);
-      setValue(`model_${index}`, "sale_bill");
+      setValue(`bill_id_${index}`, temp_bill_id);
+      setValue(`model_${index}`, temp_bill_model);
+      setValue(`bill_number_${index}`, billData?.bill_no || billData?.invoice_no)
     }
   }, [billData, billId, index, setValue]);
 

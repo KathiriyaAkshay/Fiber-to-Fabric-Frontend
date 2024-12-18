@@ -30,6 +30,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import moment from "moment";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { BEAM_RECEIVE_TAG_COLOR, JOB_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR } from "../../../../constants/tag";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -101,13 +102,16 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const onSubmit = async (data) => {
+    console.log(data);
+    
+    
     const payload = {
       // supplier_id: data?.supplier_id,
       // model: selectedBillData?.model,
       credit_note_number: creditNoteLastNumber?.debitNoteNumber || "",
       credit_note_type: "claim",
-      sale_challan_id:  null,
-      quality_id: data?.quality_id,
+      sale_challan_id: null,
+      quality_id: data?.quality_id  || null,
       // gray_order_id: 321,
       // party_id: selectedBillData.party_id,
       // return_id: 987,
@@ -144,11 +148,13 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       ],
     };
 
-    if (billData?.party !== null){
+    if (billData?.party !== null) {
       payload["party_id"] = billData?.party?.id
     } else {
       payload["supplier_id"] = billData?.supplier?.id
     }
+    console.log(payload);
+    
     await addCreditNote(payload);
   };
 
@@ -272,14 +278,14 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       (item) => item.bill_id === +parsedBillId && item?.model === parsedBillModel
     );
     return selectedBillData || null;
-}, [bill_id, saleBillList?.bills]);
+  }, [bill_id, saleBillList?.bills]);
 
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
-  
+
   // useEffect(() => {
   //   if (billData && Object.keys(billData)) {
   //     setValue("supplier_id", billData?.sale_challan?.supplier_id);
@@ -375,7 +381,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
 
                     {/* Company selection  */}
                     <div className="year-toggle" style={{
-                      marginTop: "auto", 
+                      marginTop: "auto",
                       width: "45%"
                     }}>
                       <label style={{ textAlign: "left" }}>Company:</label>
@@ -412,7 +418,7 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         />
                       </Form.Item>
                     </div>
-                        
+
                     {/* Date selection  */}
                     <div className="year-toggle" style={{
                       width: "45%"
@@ -457,8 +463,16 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         name="is_current"
                         render={({ field }) => (
                           <Radio.Group {...field}>
-                            <Radio value={1}>Current Year</Radio>
-                            <Radio value={0}>Previous Year</Radio>
+                            <Radio value={1}>
+                              <Tag color = {CURRENT_YEAR_TAG_COLOR}>
+                                Current Year
+                              </Tag>
+                            </Radio>
+                            <Radio value={0}>
+                              <Tag color= {PREVIOUS_YEAR_TAG_COLOR}>
+                                Previous Year
+                              </Tag>
+                            </Radio>
                           </Radio.Group>
                         )}
                       />
@@ -495,16 +509,16 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                                     fontWeight: 600
                                   }}>{item.bill_no}</span>
                                   <Tag color={
-                                    item?.model == "sale_biills"?SALE_TAG_COLOR:
-                                    item?.model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-                                    item?.model == "job_gray_sale_bill"?JOB_TAG_COLOR:
-                                    item?.model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR:"default"
+                                    item?.model == "sale_biills" ? SALE_TAG_COLOR :
+                                      item?.model == "yarn_sale_bills" ? YARN_SALE_BILL_TAG_COLOR :
+                                        item?.model == "job_gray_sale_bill" ? JOB_TAG_COLOR :
+                                          item?.model == "beam_sale_bill" ? BEAM_RECEIVE_TAG_COLOR : "default"
                                   } style={{ marginLeft: "8px" }}>
-                                    { item?.model == "sale_biills"?"Sale Bill": 
-                                      item?.model == "yarn_sale_bills"?"Yarn Sale":
-                                      item?.model == "job_gray_sale_bill"?"Job Gray":
-                                      item?.model == "beam_sale_bill"?"Beam Sale":item?.model 
-                                    } 
+                                    {item?.model == "sale_biills" ? "Sale Bill" :
+                                      item?.model == "yarn_sale_bills" ? "Yarn Sale" :
+                                        item?.model == "job_gray_sale_bill" ? "Job Gray" :
+                                          item?.model == "beam_sale_bill" ? "Beam Sale" : item?.model
+                                    }
                                   </Tag>
                                 </div>
                               </Select.Option>

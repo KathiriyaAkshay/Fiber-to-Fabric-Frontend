@@ -36,7 +36,7 @@ import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/acc
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
-  { label: "Late Payment", value: "late_payment" },
+  { label: "Late Payment", value: "late" },
   { label: "Claim Note", value: "claim" },
   { label: "Discount Note", value: "discount" },
   { label: "Other", value: "other" },
@@ -187,6 +187,16 @@ const CreditNotes = () => {
               }
             </div>
           )
+        } else if (creditNoteTypes == "late"){
+          return (
+            <div style={{
+              fontWeight: 600
+            }}>
+              {record?.credit_note_details
+                ?.map((element) => element?.invoice_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                .join(", ")}
+            </div>
+          );
         } else {
           return (
             <div style={{
@@ -205,11 +215,21 @@ const CreditNotes = () => {
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
       render: (text, record) => {
-        console.log(record?.yarn_sale);
-        
-        if (record?.yarn_sale == null){
+        if (creditNoteTypes == "late"){
+          return(
+            <div>-</div>
+          )
+        } else if (creditNoteTypes == "discount"){
+          return(
+            <div>-</div>
+          )
+        } else if (creditNoteTypes == "other"){
+          return(
+            <div>-</div>
+          )
+        }  else if (record?.yarn_sale == null){
           return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
-        } else {
+        } else{
           return(
             <div>
               {`${record?.yarn_sale?.yarn_stock_company?.yarn_denier}( ${record?.yarn_sale?.yarn_stock_company?.yarn_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_Sub_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_color} )`}
@@ -281,42 +301,66 @@ const CreditNotes = () => {
       dataIndex: "credit_note_type",
       key: "credit_note_type",
       render: (text, record) => {
-        if (text == "other"){
-          return(
-            <Tag color =  {CREDIT_NOTE_OTHER}>
-              OTHER
-            </Tag>
-          )
-        } else if (text == "sale_return"){
-          return(
-            <Tag color = {CREDIT_NOTE_SALE_RETURN}>
-              SALE RETURN
-            </Tag>
-          )
-        } else if (text == "discount"){
-          return(
-            <Tag color = {CREDIT_NOTE_DISCOUNT}>
-              DISCOUNT
-            </Tag>
-          )
-        } else if (text == "claim"){
-          return(
-            <Tag color = {CREDIT_NOTE_CLAIM}>
-              CLAIM NOTE
-            </Tag>
-          )
-        } else if (text == "yarn_sale_return"){
-          return(
-            <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
-              YARN SALE
-            </Tag>
-          )
-        }  else{
-          return(
-            <Tag>
-              {text}
-            </Tag>
-          )
+        if (creditNoteTypes === "late") {
+          return (
+            <div style={{ fontWeight: 600 }}>
+              {[
+                ...new Set(
+                  record?.credit_note_details?.map((element) =>
+                    element?.model === "sale_biills"
+                      ? "Sale Bill"
+                      : element?.model === "yarn_sale_bills"
+                      ? "Yarn Sale"
+                      : element?.model === "job_gray_sale_bill"
+                      ? "Job Gray Sale"
+                      : element?.model === "beam_sale_bill"
+                      ? "Beam Sale"
+                      : "N/A"
+                  )
+                ),
+              ].map((label, index) => (
+                <Tag key={index}>{label}</Tag>
+              ))}
+            </div>
+          );
+        } else {
+          if (text == "other"){
+            return(
+              <Tag color =  {CREDIT_NOTE_OTHER}>
+                OTHER
+              </Tag>
+            )
+          } else if (text == "sale_return"){
+            return(
+              <Tag color = {CREDIT_NOTE_SALE_RETURN}>
+                SALE RETURN
+              </Tag>
+            )
+          } else if (text == "discount"){
+            return(
+              <Tag color = {CREDIT_NOTE_DISCOUNT}>
+                DISCOUNT
+              </Tag>
+            )
+          } else if (text == "claim"){
+            return(
+              <Tag color = {CREDIT_NOTE_CLAIM}>
+                CLAIM NOTE
+              </Tag>
+            )
+          } else if (text == "yarn_sale_return"){
+            return(
+              <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
+                YARN SALE
+              </Tag>
+            )
+          }  else{
+            return(
+              <Tag>
+                {text}
+              </Tag>
+            )
+          }
         }
       }
     },

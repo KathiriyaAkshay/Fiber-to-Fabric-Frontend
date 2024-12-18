@@ -18,7 +18,7 @@ const AddCreditNotes = ({
           isAddModalOpen={isAddModalOpen}
         />
       );
-    } else if (creditNoteTypes === "late_payment") {
+    } else if (creditNoteTypes === "late") {
       return (
         <AddLatePayment
           setIsAddModalOpen={setIsAddModalOpen}
