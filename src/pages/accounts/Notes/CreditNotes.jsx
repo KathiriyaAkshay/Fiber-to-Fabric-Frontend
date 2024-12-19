@@ -27,7 +27,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
-import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
@@ -354,7 +354,13 @@ const CreditNotes = () => {
                 YARN SALE
               </Tag>
             )
-          }  else{
+          } else if (text == "beam_sale_return"){
+              return(
+                <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
+                  BEAM SALE
+                </Tag>
+              )
+          } else{
             return(
               <Tag>
                 {text}

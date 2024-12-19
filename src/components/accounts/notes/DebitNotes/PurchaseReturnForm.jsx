@@ -106,10 +106,6 @@ const PurchaseReturnForm = ({ handleClose }) => {
   const selectedChallan = useMemo(() => {
     if (!challan_no || !debitNoteChallanNo?.result?.length) return null; // Early exit for invalid inputs
     const [temp_model, temp_challan_id] = String(challan_no).split("****"); 
-    console.log(temp_model);
-    console.log(temp_challan_id);
-    
-    
     if (!temp_model || !temp_challan_id) return null;
     return debitNoteChallanNo.result.find(
         (item) => item.challan_id === +temp_challan_id && item.model === temp_model

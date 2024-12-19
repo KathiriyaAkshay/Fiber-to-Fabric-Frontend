@@ -21,6 +21,8 @@ import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/cha
 import DeleteBeamSale from "../../../../components/sale/challan/beamSale/DeleteBeamSale";
 import BeamSaleChallanModel from "../../../../components/sale/challan/beamSale/BeamSaleChallan";
 import PrintBeamSaleChallan from "../../../../components/sale/challan/beamSale/printBeamSaleChallan";
+import { UndoOutlined } from "@ant-design/icons";
+import ReturnBeamSaleChallan from "../../../../components/sale/challan/beamSale/returnBeamSaleChallan";
 
 const BeamSaleList = () => {
   const navigate = useNavigate();
@@ -251,7 +253,9 @@ const BeamSaleList = () => {
       render: (record) => {
         return (
           <Flex gap={5} align="start">
+            
             <PrintBeamSaleChallan details={record} />
+
             {record.bill_status.toLowerCase() !== "confirmed" ? (
               <>
                 <Button
@@ -268,6 +272,7 @@ const BeamSaleList = () => {
                 <TruckOutlined />
               </Button>
             )}
+            
             <Button
               onClick={() => {
                 let MODE;
@@ -292,6 +297,15 @@ const BeamSaleList = () => {
             >
               <FileTextOutlined />
             </Button>
+
+            {record?.bill_status !== "pending" && (
+              <>
+                <ReturnBeamSaleChallan
+                  details = {record}
+                /> 
+              </>
+            )}
+
           </Flex>
         );
       },

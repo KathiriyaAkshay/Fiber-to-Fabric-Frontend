@@ -82,7 +82,7 @@ const PurchaseReturnInformation = ({item}) => {
       render: (record) => {
         let taka_no = []; 
         record?.map((element) => {
-          taka_no.push(element?.taka_no) ;
+          taka_no.push(element?.taka_no) ;  
         })
         return(
           <Space>

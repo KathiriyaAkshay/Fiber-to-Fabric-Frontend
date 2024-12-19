@@ -175,6 +175,7 @@ import SalaryReportList from "./pages/accounts/salaryMaster/employeeSalaryReport
 import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/AddSalaryReport";
 import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
 import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
+import BeamSaleBillList from "./pages/sale/bill/beamSale/beamSaleBillList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -484,7 +485,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "beam-sales-bill-list",
-                element: <div>beam-sales-bill-list</div>,
+                element: <BeamSaleBillList/>,
               },
               {
                 path: "job-grey-sales-bill-list",
