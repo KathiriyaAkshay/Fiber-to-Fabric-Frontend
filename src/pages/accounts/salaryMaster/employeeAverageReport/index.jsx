@@ -8,6 +8,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import MachineNoWiseTable from "./machineNoWiseTable";
 import { SearchOutlined } from "@ant-design/icons";
 import EmployeeWiseTable from "./employeeWiseTable";
+import { getEmployeeListRequest } from "../../../../api/requests/users";
 
 const EmployeeAverageReport = () => {
   const { companyId } = useContext(GlobalContext);
@@ -27,6 +28,25 @@ const EmployeeAverageReport = () => {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+          salary_type: "Work basis",
+        },
+      });
+      return res.data?.data?.empoloyeeList;
     },
     enabled: Boolean(companyId),
   });
@@ -59,7 +79,14 @@ const EmployeeAverageReport = () => {
       employee.length > 0 &&
       clickedAction === "employee"
     ) {
-      return <EmployeeWiseTable />;
+      return (
+        <EmployeeWiseTable
+          key={"employee_table"}
+          month={month}
+          employee={employee}
+          machineName={machineName}
+        />
+      );
     } else {
       return (
         <Flex style={{ flexDirection: "column" }} align="center">
@@ -138,9 +165,16 @@ const EmployeeAverageReport = () => {
               <Select
                 allowClear
                 placeholder="Select Employee"
+                mode="multiple"
                 value={employee}
                 onChange={setEmployee}
-                options={[]}
+                loading={isLoadingEmployeeList}
+                options={employeeListRes?.rows?.map(
+                  ({ id = 0, first_name = "" }) => ({
+                    label: first_name,
+                    value: id,
+                  })
+                )}
                 style={{
                   textTransform: "capitalize",
                   minWidth: "180px",
