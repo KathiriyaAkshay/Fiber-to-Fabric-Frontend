@@ -1,5 +1,14 @@
 import { CheckOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Flex, Input, Tag, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Checkbox,
+  Flex,
+  Input,
+  message,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
 import dayjs from "dayjs";
 import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
@@ -14,6 +23,7 @@ const OnProductionTable = ({
   timeSlice,
   control,
   setValue,
+  month,
 }) => {
   console.log("OnProductionTable", data);
   return (
@@ -49,6 +59,7 @@ const OnProductionTable = ({
                   createSalaryReportComponents={createSalaryReportComponents}
                   control={control}
                   setValue={setValue}
+                  month={month}
                 />
               );
             })
@@ -89,6 +100,7 @@ const TableRow = ({
   createSalaryReportComponents,
   control,
   setValue,
+  month,
 }) => {
   const [bonusValue, setBonusValue] = useState(0);
   const [deductionValue, setDeductionValue] = useState(0);
@@ -97,13 +109,28 @@ const TableRow = ({
   const isPaid = row.salary_paid_log?.length;
   const totalProduction = (
     <>
-      <span>0 x {+row.regular_rate || 0}</span> (per taka)
+      {/* Regular */}
+      <span>
+        {row?.is_regular_per_taka
+          ? row?.total_folding_production_taka || 0
+          : row?.total_meter || 0}{" "}
+        x {+row.regular_rate || 0}
+      </span>{" "}
+      ({row?.is_regular_per_taka ? "per taka" : "per meter"})
       <br />
-      <span>0 x {+row.rework_rate || 0}</span> (per taka)
+      {/* Rework  */}
+      <span>
+        {0} x {+row.rework_rate || 0}
+      </span>{" "}
+      ({row?.is_rework_per_taka ? "per taka" : "per meter"})
     </>
   );
   const calculatedTotalProduction =
-    0 * (+row.regular_rate || 0) + 0 * (+row.rework_rate || 0);
+    (row?.is_regular_per_taka
+      ? row?.total_folding_production_taka || 0
+      : row?.total_meter || 0) *
+      (+row.regular_rate || 0) +
+    0 * (+row.rework_rate || 0);
 
   // const bonus = _.isEmpty(row.components) ? 0 : 0;
   // const bonus = useMemo(() => {
@@ -154,18 +181,28 @@ const TableRow = ({
 
   const saveHandler = () => {
     try {
+      const selectedMonth = dayjs(month); // `month` contains the selected month from DatePicker
+      const currentDay = dayjs().date(); // Get the current day
+
+      // Ensure the `currentDay` does not exceed the last day of the selected month
+      const lastDayOfSelectedMonth = selectedMonth.daysInMonth();
+      const validDay = Math.min(currentDay, lastDayOfSelectedMonth);
+
+      // Construct the `createdAt` date with the selected month, year, and adjusted day
+      const createdAt = selectedMonth.date(validDay).format("YYYY-MM-DD");
+
       const data = {
         user_id: row.user.id,
         bonus: +bonusValue,
         deduction: +deductionValue,
         cf_advance: +cfAdvanceValue,
         time_slice: timeSlice,
-        createdAt: dayjs().format("YYYY-MM-DD"),
+        createdAt: createdAt,
         salary_type: row.salary_type,
       };
       createSalaryReportComponents(data);
     } catch (error) {
-      console.log(error);
+      message.error(error.message || "Something went wrong!");
     }
   };
 

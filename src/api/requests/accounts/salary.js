@@ -34,3 +34,8 @@ export function deleteAdvanceSalaryRequest({ id, params }) {
     params,
   });
 }
+
+// Average salary report services.
+export function getAverageSalaryReportListRequest({ params }) {
+  return api.get(`/account/salary/report/work-basis/list`, { params });
+}
