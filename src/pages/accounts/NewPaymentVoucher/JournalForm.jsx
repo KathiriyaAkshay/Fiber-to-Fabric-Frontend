@@ -325,7 +325,7 @@ const JournalForm = () => {
                 control={control}
                 name="voucher_no"
                 render={({ field }) => {
-                  return <Input {...field} placeholder="V-12" />;
+                  return <Input {...field} placeholder="V-12" readOnly />;
                 }}
               />
             </Form.Item>

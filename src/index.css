@@ -986,3 +986,13 @@ h2 {
     margin-right: auto !important;
   }
 }
+
+.payment-voucher-model{
+  .ant-descriptions-title{
+    font-size: 22px !important;
+  }
+  .ant-descriptions-item-label{
+    font-weight: 600 !important;
+    color: #000000 !important;
+  }
+}

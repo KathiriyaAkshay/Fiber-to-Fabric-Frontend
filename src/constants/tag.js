@@ -22,3 +22,7 @@ export const CREDIT_NOTE_OTHER = "purple" ;
 
 export const CURRENT_YEAR_TAG_COLOR = "blue" ; 
 export const PREVIOUS_YEAR_TAG_COLOR = "green" ; 
+
+// ============ Bill payment ============== // 
+
+export const BILL_VOUCHER_TAG_COLOR = "blue" ; 

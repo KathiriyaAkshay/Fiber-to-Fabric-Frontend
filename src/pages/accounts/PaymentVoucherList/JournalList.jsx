@@ -8,6 +8,7 @@ import {
   Flex,
   Typography,
   Spin,
+  Tag,
 } from "antd";
 import { useContext, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
@@ -18,6 +19,8 @@ import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
 import DeleteJournalModal from "../../../components/accounts/payment/DeleteJournalModal";
 import { getJournalListRequest } from "../../../api/requests/accounts/payment";
+import { BILL_VOUCHER_TAG_COLOR } from "../../../constants/tag";
+import JournalVoucherDetails from "../../../components/accounts/payment/journalVoucherDetails";
 
 const JournalList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -90,13 +93,25 @@ const JournalList = () => {
       title: "Supplier Name",
       dataIndex: "supplier_name",
       key: "supplier_name",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.from_particular}
+          </div>
+        )
+      },
     },
     {
       title: "Account Name",
       dataIndex: "account_name",
       key: "account_name",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.to_particular}
+          </div>
+        )
+      },
     },
     // {
     //   title: "Company Name",
@@ -112,6 +127,13 @@ const JournalList = () => {
       title: "Voucher No.",
       dataIndex: "voucher_no",
       key: "voucher_no",
+      render: (text, record) => {
+        return(
+          <Tag color={BILL_VOUCHER_TAG_COLOR}>
+            {text}
+          </Tag>
+        )
+      }
     },
     {
       title: "Voucher Date.",
@@ -138,7 +160,7 @@ const JournalList = () => {
       key: "action",
       render: (details) => (
         <Space>
-          <PaymentVoucherDetails details={details} />
+          <JournalVoucherDetails details={details} />
           <DeleteJournalModal key={"delete_journal"} details={details} />
         </Space>
       ),

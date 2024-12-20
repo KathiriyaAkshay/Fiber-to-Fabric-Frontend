@@ -1,13 +1,10 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Descriptions, Flex, Modal, Row, Table } from "antd";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { GlobalContext } from "../../../contexts/GlobalContext";
 
-const dataSourcePayment = [
-  {
-    no: "1",
-  },
-];
+const dataSourcePayment = [];
 
 const columnsPayment = [
   {
@@ -57,10 +54,18 @@ const columnsPayment = [
   },
 ];
 
-const PaymentVoucherDetails = ({ details }) => {
-  console.log(details);
-  
+const JournalVoucherDetails = ({ details }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const {companyListRes} = useContext(GlobalContext) ; 
+  const [companyInfo, setCompanyInfo] = useState(undefined) ; 
+
+  useEffect(() => {
+    if (isModalOpen){
+        let data = companyListRes?.rows?.find((element) => element?.id == details?.company_id) ; 
+        setCompanyInfo(data) ; 
+    }
+  },[isModalOpen]) ; 
+  
   const showModal = () => {
     setIsModalOpen(true);
   };
@@ -91,10 +96,10 @@ const PaymentVoucherDetails = ({ details }) => {
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
               <Table.Summary.Cell index={0}>
-                <b>1123</b>
+                <b>0</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>1124513</b>
+                <b>0</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -120,6 +125,7 @@ const PaymentVoucherDetails = ({ details }) => {
         onCancel={handleCancel}
         width={"85%"}
         centered
+        footer = {null}
       >
         <Descriptions
           bordered
@@ -132,15 +138,15 @@ const PaymentVoucherDetails = ({ details }) => {
           {/* Voucher number information  */}
           <Descriptions.Item label="Voucher No">{details?.voucher_no}</Descriptions.Item>
           
-          <Descriptions.Item label="Cheque No">{details?.cheque_no}</Descriptions.Item>
-          <Descriptions.Item label="Supplier Name">POWER</Descriptions.Item>
-          <Descriptions.Item label="Company Name">SONU TEXTILES</Descriptions.Item>
+          <Descriptions.Item label="Cheque No">{"--"}</Descriptions.Item>
+          <Descriptions.Item label="Supplier Name">{String(details?.from_particular).toUpperCase()}</Descriptions.Item>
+          <Descriptions.Item label="Company Name">{companyInfo?.company_name}</Descriptions.Item>
 
           {/* Voucher date information  */}
           <Descriptions.Item label="Voucher Date">{dayjs(details?.voucher_date).format("DD-MM-YYYY")}</Descriptions.Item>
           <Descriptions.Item label="Cheque Date">--</Descriptions.Item>
           <Descriptions.Item label="Account Name">
-            KEYUR VAGHASIYA
+            {String(details?.to_particular).toUpperCase()}
           </Descriptions.Item>
           <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name}</Descriptions.Item>
           <Descriptions.Item label="Remark">{details?.remark}</Descriptions.Item>
@@ -165,4 +171,4 @@ const PaymentVoucherDetails = ({ details }) => {
   );
 };
 
-export default PaymentVoucherDetails;
+export default JournalVoucherDetails;
