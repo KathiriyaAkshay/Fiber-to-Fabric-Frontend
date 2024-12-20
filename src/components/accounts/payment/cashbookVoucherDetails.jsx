@@ -1,8 +1,9 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Col, Descriptions, Flex, Modal, Row, Table } from "antd";
+import { Button, Col, Descriptions, Flex, Modal, Row, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { DEPOSITE_TAG_COLOR, WITHDRAW_TAG_COLOR } from "../../../constants/tag";
 
 const dataSourcePayment = [];
 
@@ -54,7 +55,7 @@ const columnsPayment = [
   },
 ];
 
-const JournalVoucherDetails = ({ details }) => {
+const CashbookVoucherDetails = ({ details }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {companyListRes} = useContext(GlobalContext) ; 
   const [companyInfo, setCompanyInfo] = useState(undefined) ; 
@@ -139,17 +140,22 @@ const JournalVoucherDetails = ({ details }) => {
           <Descriptions.Item label="Voucher No">{details?.voucher_no}</Descriptions.Item>
           
           <Descriptions.Item label="Cheque No">{"--"}</Descriptions.Item>
-          <Descriptions.Item label="Supplier Name">{String(details?.from_particular).toUpperCase()}</Descriptions.Item>
+          {/* <Descriptions.Item label="Supplier Name">{String(details?.from_particular).toUpperCase()}</Descriptions.Item> */}
           <Descriptions.Item label="Company Name">{companyInfo?.company_name}</Descriptions.Item>
 
           {/* Voucher date information  */}
           <Descriptions.Item label="Voucher Date">{dayjs(details?.voucher_date).format("DD-MM-YYYY")}</Descriptions.Item>
           <Descriptions.Item label="Cheque Date">--</Descriptions.Item>
-          <Descriptions.Item label="Account Name">
+          {/* <Descriptions.Item label="Account Name">
             {String(details?.to_particular).toUpperCase()}
-          </Descriptions.Item>
+          </Descriptions.Item> */}
           <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name}</Descriptions.Item>
-          <Descriptions.Item label="Remark">{details?.remark}</Descriptions.Item>
+          <Descriptions.Item label="Amount">
+            <Tag color = {details?.is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>
+                {details?.amount}
+            </Tag>
+          </Descriptions.Item>
+          <Descriptions.Item label="Remark">{details?.remark || "-"}</Descriptions.Item>
         </Descriptions>
         {/* <Row className="mt-2">
           <Col span={6}>
@@ -171,4 +177,4 @@ const JournalVoucherDetails = ({ details }) => {
   );
 };
 
-export default JournalVoucherDetails;
+export default CashbookVoucherDetails;

@@ -26,3 +26,8 @@ export const PREVIOUS_YEAR_TAG_COLOR = "green" ;
 // ============ Bill payment ============== // 
 
 export const BILL_VOUCHER_TAG_COLOR = "blue" ; 
+
+// ============ Withdraw and Deposite related hex color code ===================== // 
+
+export const WITHDRAW_TAG_COLOR = "#E74C3C" ; 
+export const DEPOSITE_TAG_COLOR = "#2ECC71" ; 

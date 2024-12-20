@@ -31,6 +31,7 @@ import {
   ENTRY_TYPE_OPTIONS,
   PARTICULAR_OPTIONS,
 } from "../../../constants/account";
+import moment from "moment/moment";
 
 const { TextArea } = Input;
 
@@ -226,6 +227,11 @@ const CashBookForm = () => {
     }
   }, [lastVoucherNo, setValue]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
       <Row gutter={12} style={{ padding: "12px" }}>
@@ -398,7 +404,7 @@ const CashBookForm = () => {
                     name="voucher_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker {...field} style={{ width: "100%" }} />
+                        <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />
                       );
                     }}
                   />
@@ -478,7 +484,7 @@ const CashBookForm = () => {
                   return (
                     <Radio.Group {...field}>
                       <Radio value="one_way">One Way</Radio>
-                      <Radio value="return">Return</Radio>
+                      {/* <Radio value="return">Return</Radio> */}
                     </Radio.Group>
                   );
                 }}

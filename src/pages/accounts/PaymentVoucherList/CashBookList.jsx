@@ -19,6 +19,8 @@ import ChequeBookModal from "../../../components/accounts/payment/ChequeBookModa
 import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
 import { getCashbookListRequest } from "../../../api/requests/accounts/payment";
+import { BILL_VOUCHER_TAG_COLOR, DEPOSITE_TAG_COLOR, WITHDRAW_TAG_COLOR } from "../../../constants/tag";
+import CashbookVoucherDetails from "../../../components/accounts/payment/cashbookVoucherDetails";
 
 const CashBookList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -88,16 +90,16 @@ const CashBookList = () => {
       render: (_, record, index) => index + 1,
     },
     {
-      title: "Supplier Name",
-      dataIndex: "supplier_name",
-      key: "supplier_name",
-      render: (text) => text || "-",
-    },
-    {
       title: "Account Name",
       dataIndex: "account_name",
       key: "account_name",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.particular_type}
+          </div>
+        )
+      },
     },
     // {
     //   title: "Company Name",
@@ -112,7 +114,7 @@ const CashBookList = () => {
         return (
           <span>
             {text} <br />
-            <Tag color="blue">{is_withdraw ? "Withdrawals" : "Deposite"}</Tag>
+            <Tag color={is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>{is_withdraw ? "Withdrawals" : "Deposite"}</Tag>
           </span>
         );
       },
@@ -121,6 +123,13 @@ const CashBookList = () => {
       title: "Voucher No.",
       dataIndex: "voucher_no",
       key: "voucher_no",
+      render: (text, record) => {
+        return(
+          <Tag color = {BILL_VOUCHER_TAG_COLOR}>
+            {text}
+          </Tag>
+        )
+      }
     },
     {
       title: "Voucher Date.",
@@ -132,19 +141,28 @@ const CashBookList = () => {
       title: "Cheque No.",
       dataIndex: "cheque_no",
       key: "cheque_no",
+      render: (text, record) => {
+        return(
+          <div>-</div>
+        )
+      }
     },
     {
       title: "Cheque Date",
       dataIndex: "cheque_date",
       key: "cheque_date",
-      render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      render: (text, record) => {
+        return(
+          <div>-</div>
+        )
+      },
     },
     {
       title: "Action",
       key: "action",
       render: (details) => (
         <Space>
-          <PaymentVoucherDetails details={details} />
+          <CashbookVoucherDetails details={details} />
           <ChequeBookModal details={details} />
         </Space>
       ),
@@ -177,9 +195,8 @@ const CashBookList = () => {
               <Table.Summary.Row>
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>{parseFloat(paymentList?.totalAmount).toFixed(2)}</Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  {paymentList?.totalAmount}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
