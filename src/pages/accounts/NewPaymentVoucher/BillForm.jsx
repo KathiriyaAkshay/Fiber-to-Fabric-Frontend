@@ -13,6 +13,7 @@ import {
   Select,
   Spin,
   Tag,
+  Tooltip,
 } from "antd";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
@@ -27,7 +28,7 @@ import {
   getLastVoucherNoRequest,
   getUnPaidPaymentBillListRequest,
 } from "../../../api/requests/accounts/payment";
-import { BEAM_RECEIVE_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
+import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_REWORK_BILL_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
 import moment from "moment";
 
 const { TextArea } = Input;
@@ -268,8 +269,8 @@ const BillForm = () => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
       let netAmount = +bill.net_amount;
-      let finalTotalAmount = netAmount;
-      finalTotalAmount += +bill?.part_payment || 0;
+      let finalTotalAmount = 0;
+      finalTotalAmount += (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0;
       finalTotalAmount += +bill?.plus_percentage || 0;
       finalTotalAmount -= +bill?.less_percentage || 0;
 
@@ -354,6 +355,8 @@ const BillForm = () => {
               height: "100%",
             }}
           >
+
+            {/* Company selection  */}
             <Form.Item
               label={"Select Company"}
               name="company_id"
@@ -387,6 +390,7 @@ const BillForm = () => {
               />
             </Form.Item>
 
+            {/* Supplier type selection  */}
             <Form.Item
               label={"Supplier Type"}
               name="supplier_type"
@@ -412,6 +416,7 @@ const BillForm = () => {
               />
             </Form.Item>
 
+            {/* Supplier name selection  */}
             <Form.Item
               label={"Supplier Name"}
               name="supplier_name"
@@ -440,7 +445,8 @@ const BillForm = () => {
                 }}
               />
             </Form.Item>
-
+              
+            {/* Supplier company selection  */}
             <Form.Item
               label={"Account Name"}
               name="account_name"
@@ -486,6 +492,8 @@ const BillForm = () => {
           >
             <Row gutter={12}>
               <Col span={24}>
+
+                {/* Bank name selection  */}
                 <Form.Item
                   label={"Bank Name"}
                   name="bank_name"
@@ -735,7 +743,15 @@ const BillForm = () => {
                         onChange={(e) => selectBillHandler(e, bill)}
                       />
                     </td>
-                    <td style={{ textAlign: "center" }}>{bill.bill_no}</td>
+                    
+                    <td style={{ textAlign: "center", fontWeight: 600,
+                      color: bill?.model == "credit_notes"?"green":"#000"
+                     }}>
+                      <Tooltip title = {bill?.debit_note_number !== undefined?`Debit note : ${bill?.debit_note_number}`:""}>
+                        {bill.bill_no} {bill?.debit_note_number !== undefined?`(${bill?.debit_note_number})`:""}
+                      </Tooltip>
+                    </td>
+                    
                     <td style={{ textAlign: "center" }}>
                       {bill?.model == "purchase_taka_bills"?
                         <Tag color = {PURCHASE_TAG_COLOR}>PURCHASE TAKA</Tag>
@@ -743,10 +759,20 @@ const BillForm = () => {
                         <Tag color = {PURCHASE_YARN_BILL_TAG_COLOR}>YARN</Tag>
                       :bill?.model == "receive_size_beam_bill"?
                         <Tag color = {BEAM_RECEIVE_TAG_COLOR}>BEAM PURCAHSE</Tag>
-                      :<Tag>{bill?.model}</Tag>}
+                      : bill?.model == "credit_notes"?
+                        <Tag color= {CREDIT_NOTE_OTHER}>CREDIT NOTE</Tag>
+                      : bill?.model == "job_rework_bill"?
+                        <Tag color = {JOB_REWORK_BILL_TAG_COLOR}>
+                          JOB REWORK
+                        </Tag>
+                      : <Tag>{bill?.model}</Tag>}
                     </td>
-                    <td style={{ textAlign: "center" }}>{bill.amount}</td>
-                    <td style={{ textAlign: "center" }}>{bill.net_amount}</td>
+                    <td style={{ textAlign: "center", color: "#000" }}>{bill.amount}</td>
+                    <td style={{ textAlign: "center" }}>
+                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill?.part_payment || 0} = ${+bill?.net_amount - +(bill?.part_payment || 0)}`}>
+                        {+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)}
+                      </Tooltip>
+                    </td>
                     <td style={{ textAlign: "center" }}>
                       {dayjs(bill.bill_date).format("DD-MM-YYYY")}
                     </td>
