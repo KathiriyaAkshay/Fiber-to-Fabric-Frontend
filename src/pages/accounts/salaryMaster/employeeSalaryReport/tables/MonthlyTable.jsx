@@ -14,6 +14,7 @@ const MonthlyTable = ({
   timeSlice,
   control,
   setValue,
+  month,
 }) => {
   return (
     <>
@@ -49,6 +50,7 @@ const MonthlyTable = ({
                   createSalaryReportComponents={createSalaryReportComponents}
                   control={control}
                   setValue={setValue}
+                  month={month}
                 />
               );
             })
@@ -89,6 +91,7 @@ const TableRow = ({
   createSalaryReportComponents,
   control,
   setValue,
+  month,
 }) => {
   const [bonusValue, setBonusValue] = useState(0);
   const [deductionValue, setDeductionValue] = useState(0);
@@ -155,13 +158,23 @@ const TableRow = ({
 
   const saveHandler = () => {
     try {
+      const selectedMonth = dayjs(month); // `month` contains the selected month from DatePicker
+      const currentDay = dayjs().date(); // Get the current day
+
+      // Ensure the `currentDay` does not exceed the last day of the selected month
+      const lastDayOfSelectedMonth = selectedMonth.daysInMonth();
+      const validDay = Math.min(currentDay, lastDayOfSelectedMonth);
+
+      // Construct the `createdAt` date with the selected month, year, and adjusted day
+      const createdAt = selectedMonth.date(validDay).format("YYYY-MM-DD");
+
       const data = {
         user_id: row.user.id,
         bonus: +bonusValue,
         deduction: +deductionValue,
         cf_advance: +cfAdvanceValue,
         time_slice: timeSlice,
-        createdAt: dayjs().format("YYYY-MM-DD"),
+        createdAt: createdAt,
         salary_type: row.salary_type,
       };
       createSalaryReportComponents(data);

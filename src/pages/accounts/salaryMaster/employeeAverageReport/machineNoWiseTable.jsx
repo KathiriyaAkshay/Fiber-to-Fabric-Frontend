@@ -40,7 +40,7 @@ const MachineNoWiseTable = ({ month, machineNo, machineName }) => {
         machine_no: machineNo,
         machine_name: machineName,
         month: dayjs(month).format("MM-YYYY"),
-        is_user_group: 0,
+        is_user_group: 1,
       };
 
       const response = await getAverageSalaryReportListRequest({ params });
@@ -140,9 +140,13 @@ const MachineNoWiseTable = ({ month, machineNo, machineName }) => {
               <tr>
                 <td>Date</td>
                 {/* <td>Taka No.</td> */}
-                {header.map((user) => (
-                  <td key={user.userId}>{user.username}</td>
-                ))}
+                {header && header.length ? (
+                  header.map((user) => (
+                    <td key={user.userId}>{user.username}</td>
+                  ))
+                ) : (
+                  <td style={{ textAlign: "center" }}>Taka No</td>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -155,28 +159,32 @@ const MachineNoWiseTable = ({ month, machineNo, machineName }) => {
                     <tr key={day + "_machine_wise"}>
                       <td style={{ textAlign: "center" }}>{newDate}</td>
                       {/* <td style={{ textAlign: "center" }}>-</td> */}
-                      {header.map((user) => {
-                        const userSalaryData = userData[user.userId];
+                      {header && header.length ? (
+                        header.map((user) => {
+                          const userSalaryData = userData[user.userId];
 
-                        return (
-                          <td
-                            key={user.userId + "_machine_wise_user_data"}
-                            style={{ textAlign: "center" }}
-                          >
-                            {!_.isEmpty(userSalaryData)
-                              ? +userSalaryData.day_meter ||
-                                0 + +userSalaryData.night_meter ||
-                                0
-                              : "-"}{" "}
-                            &nbsp;&nbsp;&nbsp;
-                            {!_.isEmpty(userSalaryData) ? (
-                              <Tag color="blue">
-                                Taka No: {userSalaryData?.taka_no}
-                              </Tag>
-                            ) : null}
-                          </td>
-                        );
-                      })}
+                          return (
+                            <td
+                              key={user.userId + "_machine_wise_user_data"}
+                              style={{ textAlign: "center" }}
+                            >
+                              {!_.isEmpty(userSalaryData)
+                                ? +userSalaryData.day_meter ||
+                                  0 + +userSalaryData.night_meter ||
+                                  0
+                                : "-"}{" "}
+                              &nbsp;&nbsp;&nbsp;
+                              {!_.isEmpty(userSalaryData) ? (
+                                <Tag color="blue">
+                                  Taka No: {userSalaryData?.taka_no}
+                                </Tag>
+                              ) : null}
+                            </td>
+                          );
+                        })
+                      ) : (
+                        <td style={{ textAlign: "center" }}>-</td>
+                      )}
                     </tr>
                   );
                 })
@@ -198,16 +206,20 @@ const MachineNoWiseTable = ({ month, machineNo, machineName }) => {
                 }}
               >
                 <td>Total</td>
-                {header.map((user) => {
-                  return (
-                    <td
-                      key={user.userId + "_machine_wise_total"}
-                      style={{ textAlign: "center" }}
-                    >
-                      <b>{Total[user.userId]}</b>
-                    </td>
-                  );
-                })}
+                {header && header.length ? (
+                  header.map((user) => {
+                    return (
+                      <td
+                        key={user.userId + "_machine_wise_total"}
+                        style={{ textAlign: "center" }}
+                      >
+                        <b>{Total[user.userId]}</b>
+                      </td>
+                    );
+                  })
+                ) : (
+                  <td style={{ textAlign: "center" }}>-</td>
+                )}
               </tr>
             </tbody>
           </table>

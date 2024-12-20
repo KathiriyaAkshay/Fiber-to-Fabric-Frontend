@@ -65,7 +65,7 @@ const EmployeeAverageReport = () => {
   }, [machineListRes?.rows, machineName]);
 
   const renderTable = useMemo(() => {
-    if (machineNo && clickedAction === "machine") {
+    if (machineNo && clickedAction === "machine" && machineName) {
       return (
         <MachineNoWiseTable
           key={"machine_no_table"}
@@ -77,7 +77,8 @@ const EmployeeAverageReport = () => {
     } else if (
       employee &&
       employee.length > 0 &&
-      clickedAction === "employee"
+      clickedAction === "employee" &&
+      machineName
     ) {
       return (
         <EmployeeWiseTable
@@ -167,7 +168,7 @@ const EmployeeAverageReport = () => {
                 placeholder="Select Employee"
                 mode="multiple"
                 value={employee}
-                onChange={setEmployee}
+                onChange={(_, value) => setEmployee(value)}
                 loading={isLoadingEmployeeList}
                 options={employeeListRes?.rows?.map(
                   ({ id = 0, first_name = "" }) => ({

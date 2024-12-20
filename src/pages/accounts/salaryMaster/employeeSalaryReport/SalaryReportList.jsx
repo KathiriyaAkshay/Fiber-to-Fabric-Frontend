@@ -228,6 +228,7 @@ const SalaryReportList = () => {
           timeSlice={duration}
           control={control}
           setValue={setValue}
+          month={month}
         />
       );
     } else if (salaryType === "monthly") {
@@ -241,6 +242,7 @@ const SalaryReportList = () => {
           timeSlice={duration}
           control={control}
           setValue={setValue}
+          month={month}
         />
       );
     } else if (salaryType === "on production") {
@@ -254,6 +256,7 @@ const SalaryReportList = () => {
           timeSlice={duration}
           control={control}
           setValue={setValue}
+          month={month}
         />
       );
     } else if (salaryType === "work basis") {
@@ -267,6 +270,7 @@ const SalaryReportList = () => {
           timeSlice={duration}
           control={control}
           setValue={setValue}
+          month={month}
         />
       );
     } else if (salaryType === "BEAM pasaria") {
@@ -285,13 +289,14 @@ const SalaryReportList = () => {
       );
     }
   }, [
-    control,
-    createSalaryReportComponents,
-    duration,
     salaryType,
-    setValue,
     workBasisSalaryList,
     selectedEntries,
+    createSalaryReportComponents,
+    duration,
+    control,
+    setValue,
+    month,
   ]);
 
   return (

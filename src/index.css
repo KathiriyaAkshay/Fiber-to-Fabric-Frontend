@@ -980,8 +980,8 @@ h2 {
   color: #fff;
 }
 
-.sub-table{
-  .ant-table{
+.sub-table {
+  .ant-table {
     width: 30% !important;
     margin-right: auto !important;
   }
