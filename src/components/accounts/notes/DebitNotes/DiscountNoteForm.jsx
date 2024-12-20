@@ -20,7 +20,7 @@ import {
 } from "../../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { Controller, useForm } from "react-hook-form";
-import { getReceiveSizeBeamBillByIdRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import { getGeneralPurchaseByIdRequest, getReceiveSizeBeamBillByIdRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import { getJobTakaBillByIdRequest } from "../../../../api/requests/job/bill/jobBill";
 import { getYarnReceiveBillByIdRequest } from "../../../../api/requests/purchase/yarnReceive";
 import { getSupplierListRequest } from "../../../../api/requests/users";
@@ -31,6 +31,8 @@ import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
 import { SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../../constants/tag";
 import moment from "moment";
+import { getPurchaseTakaBillByIdRequest } from "../../../../api/requests/purchase/bill";
+import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -61,7 +63,6 @@ const validationSchema = yup.object().shape({
   date: yup.string().required("Please enter date"),
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
-  amount: yup.string().required("Please enter amount"),
   bill_id: yup
     .array()
     .min(1, "Please select bill.")
@@ -99,52 +100,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     },
   });
 
-  const onSubmit = async (data) => {
-    const payload = {
-      // supplier_id: billData?.supplier_id,
-      // model: selectedBillData?.model,
-      debit_note_number: debitNoteLastNumber?.debitNoteNumber || "",
-      debit_note_type: type,
-      // sale_challan_id: 456,
-      // quality_id: data?.quality_id,
-      supplier_id: data?.supplier_id,
-      // gray_order_id: 321,
-      // party_id: 654,
-      // return_id: 987,
-      // total_taka: +data.total_taka,
-      // total_meter: +data.total_meter,
-      // discount_value: +data.discount_value,
-      // discount_amount: +data.discount_amount,
-      SGST_value: +data.SGST_value,
-      SGST_amount: +data.SGST_amount,
-      CGST_value: +data.CGST_value,
-      CGST_amount: +data.CGST_amount,
-      IGST_value: +data.IGST_value,
-      IGST_amount: +data.IGST_amount,
-      round_off_amount: +data.round_off_amount,
-      net_amount: +data.net_amount,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
-      // extra_tex_value: 1.0,
-      // extra_tex_amount: 15.0,
-      createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-      debit_note_details: numOfBill.map((_, index) => {
-        return {
-          bill_id: data[`bill_id_${index}`],
-          model: data[`model_${index}`],
-          rate: +data[`rate_${index}`],
-          per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          particular_name: "Discount On Purchase",
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
-        };
-      }),
-    };
-
-    await addDebitClaimNOte({ data: payload, companyId: data.company_id });
-  };
 
   const {
     control,
@@ -293,9 +248,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     }
   }, [supplierListRes, supplier_id]);
 
-  console.log(selectedSupplierCompany);
-  
-
   const calculateTaxAmount = () => {
     let totalAmount = 0;
     let totalNetAmount = 0;
@@ -332,6 +284,73 @@ const DiscountNoteForm = ({ type, handleClose }) => {
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
   }
+
+  const onSubmit = async (data) => {
+    let temp_debit_note_number = String(debitNoteLastNumber?.debitNoteNumber || "DNP-0").split("-")[1] ; 
+    temp_debit_note_number = `DNP-${+temp_debit_note_number + 1}` ; 
+    let hasError = false ; 
+
+    numOfBill.map((_, index) => {
+      if (data[`per_${index}`] == "" || data[`per_${index}`] == undefined){
+        message.warning("Per amount is required") ; 
+        hasError = true; 
+        return ; 
+      }
+
+      if (data[`amount_${index}`] == "" || data[`amount_${index}`] == undefined){
+        message.warning("Bill amount is required") ; 
+        hasError = true ; 
+        return ; 
+      }
+    })
+
+    if (!hasError){
+      const payload = {
+        // supplier_id: billData?.supplier_id,
+        // model: selectedBillData?.model,
+        debit_note_number: temp_debit_note_number || "",
+        debit_note_type: type,
+        // sale_challan_id: 456,
+        // quality_id: data?.quality_id,
+        supplier_id: data?.supplier_id,
+        // gray_order_id: 321,
+        // party_id: 654,
+        // return_id: 987,
+        // total_taka: +data.total_taka,
+        // total_meter: +data.total_meter,
+        // discount_value: +data.discount_value,
+        // discount_amount: +data.discount_amount,
+        SGST_value: +data.SGST_value,
+        SGST_amount: +data.SGST_amount,
+        CGST_value: +data.CGST_value,
+        CGST_amount: +data.CGST_amount,
+        IGST_value: +data.IGST_value,
+        IGST_amount: +data.IGST_amount,
+        round_off_amount: +data.round_off_amount,
+        net_amount: +data.net_amount,
+        // net_rate: 6.67,
+        // tcs_value: 0.75,
+        // tcs_amount: 11.25,
+        // extra_tex_value: 1.0,
+        // extra_tex_amount: 15.0,
+        createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+        debit_note_details: numOfBill.map((_, index) => {
+          return {
+            bill_id: data[`bill_id_${index}`],
+            model: data[`model_${index}`],
+            rate: +data[`rate_${index}`],
+            per: +data[`per_${index}`],
+            invoice_no: data[`bill_number_${index}`],
+            particular_name: "Discount On Purchase",
+            quantity: +data[`quantity_${index}`],
+            amount: +data[`amount_${index}`],
+          };
+        }),
+      };
+      await addDebitClaimNOte({ data: payload, companyId: data.company_id });
+    }
+  };
+
 
   return (
     <>
@@ -474,12 +493,19 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                           textTransform: "capitalize",
                         }}
                         onChange={(selectedValue) => {
-                          setValue("bill_id", selectedValue);
-                          setNumOfBill(selectedValue.map((item) => item));
+                          const selectedModels = selectedValue.map((value) => value.split("***")[0].slice(1)); // Extract model from value
+                          const isValidSelection = selectedModels.every((model) => model === selectedModels[0]);
+
+                          if (isValidSelection) {
+                            setValue("bill_id", selectedValue);
+                            setNumOfBill(selectedValue.map((item) => item));
+                          } else {
+                            message.warning("You can only select items of the same type.")
+                          }
                         }}
                       >
                         {saleBillList?.result?.map((item) => (
-                          <Select.Option key={item?.bill_id} value={`$${item?.model}***${item?.bill_id}`}>
+                          <Select.Option key={item?.bill_id} value={`${item?.model}***${item?.bill_id}`}>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                               <span style={{ fontWeight: 600 }}>{item.bill_no}</span>
                               <Tag
@@ -506,6 +532,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                           </Select.Option>
                         ))}
                       </Select>
+
                     )}
                   />
                 </Form.Item>
@@ -540,7 +567,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={4}>
               <div style={{
-                fontWeight: 600, 
+                fontWeight: 600,
                 fontSize: 16
               }}>{String(selectedSupplierCompany?.supplier?.supplier_company).toUpperCase()}</div>
               <div className="credit-note-info-title">
@@ -586,6 +613,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                   company_id={company_id}
                   billList={saleBillList?.result}
                   setValue={setValue}
+                  calculateTaxAmount = {calculateTaxAmount}
                 />
               );
             })
@@ -664,11 +692,15 @@ const DiscountNoteForm = ({ type, handleClose }) => {
           </tr>
           <tr>
             <td></td>
-            <td colSpan={3}>Total</td>
+            <td colSpan={3} style={{
+              fontWeight: 600
+            }}>Total</td>
             <td></td>
             <td></td>
             <td></td>
-            <td>{net_amount}</td>
+            <td style={{
+              fontWeight: 600
+            }}>{net_amount}</td>
           </tr>
           <tr>
             <td colSpan={8}>
@@ -679,7 +711,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
               >
                 <div>
                   <div>
-                    <span style={{ fontWeight: "500" }}>
+                    <span style={{ fontWeight: 600 }}>
                       Amount Chargable(in words):
                     </span>{" "}
                     {toWords.convert(net_amount || 0)}
@@ -740,6 +772,7 @@ const SingleBillRender = ({
   company_id,
   billList,
   setValue,
+  calculateTaxAmount
 }) => {
   const { data: billData } = useQuery({
     queryKey: [
@@ -753,10 +786,12 @@ const SingleBillRender = ({
     ],
     queryFn: async () => {
       let response;
-      const selectedBillData = billList?.result?.find(
-        (item) => item.bill_id === billId
-      );
-
+      let temp_model_name = String(billId).split("***")[0];
+      let temp_model_id = String(billId).split("***")[1];
+      const selectedBillData = {
+        model: temp_model_name,
+        bill_id: temp_model_id
+      }
       switch (selectedBillData.model) {
         case "yarn_bills":
           response = await getYarnReceiveBillByIdRequest({
@@ -764,7 +799,6 @@ const SingleBillRender = ({
             params: { company_id: company_id },
           });
           return response?.data?.data;
-
         case "job_taka_bills":
           response = await getJobTakaBillByIdRequest({
             params: {
@@ -773,7 +807,6 @@ const SingleBillRender = ({
             },
           });
           return response?.data?.data;
-
         case "receive_size_beam_bill":
           response = await getReceiveSizeBeamBillByIdRequest({
             id: selectedBillData.bill_id,
@@ -782,8 +815,40 @@ const SingleBillRender = ({
             },
           });
           return response?.data?.data;
+        case "general_purchase_entries" :
+          response = await getGeneralPurchaseByIdRequest({
+            id: selectedBillData?.bill_id,
+            params: {company_id: company_id}
+          })
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.generalPurchaseEntry,
+          };
+          delete response.generalPurchaseEntry;
+          return response;
+        case "purchase_taka_bills":
+          response = await getPurchaseTakaBillByIdRequest({
+            params:{
+              company_id: company_id, 
+              challan_id: selectedBillData?.bill_id
+            }
+          })
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.purchaseBill,
+          };
+          delete response.purchaseBill;
+          return response;
+        case "job_rework_bill":
+          response = await getReworkChallanByIdRequest({
+            id: selectedBillData?.bill_id,
+            params: {
+              company_id: company_id
+            }
+          })
+          return response?.data?.data ; 
 
-        default:
+          default:
           return response;
       }
     },
@@ -794,6 +859,7 @@ const SingleBillRender = ({
     const amount =
       ((billData?.quantity || 0) * (billData?.rate || 0) * per) / 100;
     setValue(`amount_${index}`, amount.toFixed(2));
+    calculateTaxAmount() ; 
   };
 
   useEffect(() => {
@@ -801,17 +867,21 @@ const SingleBillRender = ({
       billData &&
       Object.keys(billData).length &&
       billList &&
-      billList?.result?.length
+      billList?.length
     ) {
-      const selectedBillData = billList?.result?.find(
-        (item) => item.bill_id === billId
-      );
+      let temp_model_name = String(billId).split("***")[0];
+      let temp_model_id = String(billId).split("***")[1];
+      const selectedBillData = {
+        model: temp_model_name,
+        bill_id: temp_model_id
+      }
+      setValue(`bill_id_${index}`, selectedBillData?.bill_id);
+      setValue(`model_${index}`, selectedBillData.model);
 
       setValue(`quantity_${index}`, billData?.quantity || 0);
       setValue(`rate_${index}`, billData?.rate || 0);
+      setValue(`bill_number_${index}`, billData?.receive?.bill_number || "0") ;
 
-      setValue(`bill_id_${index}`, billId);
-      setValue(`model_${index}`, selectedBillData.model);
     }
   }, [billData, billId, billList, index, setValue]);
 
@@ -893,7 +963,13 @@ const SingleBillRender = ({
         <Controller
           control={control}
           name={`amount_${index}`}
-          render={({ field }) => <Input {...field} placeholder="3" />}
+          rules={{required: "Amount is required"}}
+          render={({ field, fieldState: { error } }) => (
+            <>
+              <Input {...field} placeholder="3" />
+              {error && <span style={{ color: "red" }}>{error.message}</span>}
+            </>
+          )}
         />
       </td>
     </tr>

@@ -163,7 +163,9 @@ const PurchaseReturnForm = ({ handleClose }) => {
                 <Typography.Text style={{ fontSize: 20 }}>
                   Debit Note No.
                 </Typography.Text>
-                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+                <div style={{
+                  color: "Red"
+                }}>DNP-{+String(debitNoteLastNumber?.debitNoteNumber || "DNP-0").split("-")[1] + 1 || ""}</div>
               </div>
             </td>
             <td colSpan={2} width={"33.33%"}>

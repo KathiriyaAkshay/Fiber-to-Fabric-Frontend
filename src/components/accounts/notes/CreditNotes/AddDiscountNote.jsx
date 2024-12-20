@@ -164,6 +164,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     formState: { errors },
     getValues,
     reset,
+    setError
   } = useForm({
     defaultValues: {
       company_id: null,

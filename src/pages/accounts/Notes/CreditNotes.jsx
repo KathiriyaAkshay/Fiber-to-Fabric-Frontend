@@ -333,7 +333,9 @@ const CreditNotes = () => {
           } else if (text == "sale_return"){
             return(
               <Tag color = {CREDIT_NOTE_SALE_RETURN}>
-                SALE RETURN
+                <div style={{
+                  fontSize:10
+                }}>SALE RETURN</div>
               </Tag>
             )
           } else if (text == "discount"){
@@ -351,13 +353,21 @@ const CreditNotes = () => {
           } else if (text == "yarn_sale_return"){
             return(
               <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
-                YARN SALE
+                <div style={{
+                  fontSize: 10
+                }}>
+                  YARN SALE RETURN
+                </div>
               </Tag>
             )
           } else if (text == "beam_sale_return"){
               return(
                 <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
-                  BEAM SALE
+                  <div style={{
+                    fontSize: 10
+                  }}>
+                    BEAM SALE RETURN
+                  </div>
                 </Tag>
               )
           } else{

@@ -22,6 +22,9 @@ import { usePagination } from "../../../hooks/usePagination";
 import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../utils/date";
+import ViewDebitNote from "../../../components/accounts/notes/DebitNotes/ViewDebitNote";
+import { CREDIT_NOTE_OTHER, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { SALE_TAG_COLOR, JOB_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../constants/tag";
 
 const DEBIT_NOTE_TYPES = [
   { label: "Purchase Return", value: "purchase_return" },
@@ -93,19 +96,128 @@ const DebitNotes = () => {
       key: "debit_note_number",
       render: (text, record) => (
         <Tag color="green">{text}</Tag>
-      ) 
+      )
     },
     {
       title: "Challan/Bill",
       dataIndex: "debit_note_details",
       key: "debit_note_details",
       render: (text, record) => {
-        let debit_note_details = record?.debit_note_details ; 
-        if (debitNoteType == "other"){
-          return(
+        let debit_note_details = record?.debit_note_details;
+        if (debitNoteType == "other") {
+          return (
             <div>
               {debit_note_details[0]?.invoice_no || debit_note_details[0]?.bill_no}
             </div>
+          )
+        } else if (debitNoteType == "purchase_return") {
+          if (record?.purchase_taka_challan !== null) {
+            return (
+              <div>
+                {record?.purchase_taka_challan?.challan_no}
+              </div>
+            )
+          } else {
+            return (
+              <div>
+                {record?.yarn_receive_challan?.challan_no}
+              </div>
+            )
+          }
+        } else if (debitNoteType == 'claim_note') {
+          let bill_number = record?.debit_note_details[0];
+          return (
+            <div>
+              {bill_number?.invoice_no || "-"}
+            </div>
+          )
+        } else {
+          return (
+            <div style={{
+              fontWeight: 600
+            }}>
+              {record?.debit_note_details
+                ?.map((element) => element?.invoice_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                .join(", ")}
+            </div>
+          );
+        }
+      }
+    },
+    {
+      title: "Challan/Bill Type",
+      dataIndex: "",
+      render: (text, record) => {
+        if (debitNoteType == "purchase_return") {
+          if (record?.yarn_receive_challan !== null) {
+            return (
+              <Tag color={YARN_SALE_BILL_TAG_COLOR}>
+                <div style={{ fontSize: 11 }}>
+                  YARN RETURN
+                </div>
+              </Tag>
+            )
+          } else {
+            return (
+              <Tag color={PURCHASE_TAG_COLOR}>
+                <div style={{ fontSize: 11 }}>
+                  PURCHASE RETURN
+                </div>
+              </Tag>
+            )
+          }
+        } else if (debitNoteType == "other") {
+          return (
+            <Tag color={CREDIT_NOTE_OTHER}>
+              OTHER
+            </Tag>
+          )
+        } else if (debitNoteType == "claim_note") {
+          return (
+            <Tag
+              color={{
+                general_purchase_entries: SALE_TAG_COLOR,
+                yarn_bills: YARN_SALE_BILL_TAG_COLOR,
+                job_rework_bill: JOB_TAG_COLOR,
+                receive_size_beam_bill: BEAM_RECEIVE_TAG_COLOR,
+                purchase_taka_bills: PURCHASE_TAG_COLOR,
+                job_taka_bills: JOB_TAG_COLOR,
+              }[record?.model] || "default"}
+              style={{ marginLeft: "8px" }}
+            >
+              {{
+                general_purchase_entries: "General Purchase",
+                yarn_bills: "Yarn Bill",
+                job_rework_bill: "Job Rework",
+                receive_size_beam_bill: "Receive Size Beam",
+                purchase_taka_bills: "Purchase Taka",
+                job_taka_bills: "Job Taka",
+              }[record?.model] || "Default"}
+            </Tag>
+          )
+        } else {
+          let bill_type = record?.debit_note_details[0]?.model; 
+          return (
+            <Tag
+              color={{
+                general_purchase_entries: SALE_TAG_COLOR,
+                yarn_bills: YARN_SALE_BILL_TAG_COLOR,
+                job_rework_bill: JOB_TAG_COLOR,
+                receive_size_beam_bill: BEAM_RECEIVE_TAG_COLOR,
+                purchase_taka_bills: PURCHASE_TAG_COLOR,
+                job_taka_bills: JOB_TAG_COLOR,
+              }[bill_type] || "default"}
+              style={{ marginLeft: "8px" }}
+            >
+              {{
+                general_purchase_entries: "General Purchase",
+                yarn_bills: "Yarn Bill",
+                job_rework_bill: "Job Rework",
+                receive_size_beam_bill: "Receive Size Beam",
+                purchase_taka_bills: "Purchase Taka",
+                job_taka_bills: "Job Taka",
+              }[bill_type] || "Default"}
+            </Tag>
           )
         }
       }
@@ -114,7 +226,17 @@ const DebitNotes = () => {
       title: "Meter",
       dataIndex: "total_meter",
       key: "total_meter",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        if (debitNoteType == "discount_note") {
+          let total_meter = 0;
+          record?.debit_note_details?.map((element) => {
+            total_meter += +element?.quantity || 0;
+          });
+          return <div>{total_meter}</div>;
+        } else {
+          return <div>{text || "0"}</div>;
+        }
+      },
     },
     {
       title: "KG",
@@ -132,16 +254,16 @@ const DebitNotes = () => {
       dataIndex: ["party", "company_name"],
       key: ["party", "company_name"],
       render: (text, record) => {
-        return(
+        return (
           <>
             <strong>
-              { String(record?.party?.user?.first_name ||
+              {String(record?.party?.user?.first_name ||
                 record?.supplier?.supplier_name).toUpperCase()
               }
             </strong>
             <div>
-              { record?.party?.company_name || 
-                record?.supplier?.supplier_company  
+              {record?.party?.company_name ||
+                record?.supplier?.supplier_company
               }
             </div>
           </>
@@ -153,30 +275,40 @@ const DebitNotes = () => {
       dataIndex: "net_amount",
       key: "net_amount",
       render: (text, record) => {
-        let debit_note_details = record?.debit_note_details; 
-        if (debitNoteType == "other"){
-          return(
+        let debit_note_details = record?.debit_note_details;
+        if (debitNoteType == "other") {
+          return (
             <div>
               {debit_note_details[0]?.amount || "0"}
             </div>
           )
-        } else {
-          let total_amount = 0; 
-          record?.debit_note_details?.map((element) => {
-            total_amount += +element?.amount || 0; 
-          })
+        } else if (debitNoteType == "purchase_return") {
+          return (
+            <div>
+              {parseFloat(record?.net_amount).toFixed(2)}
+            </div>
+          )
+        } else if (debitNoteType == "claim_note"){
           return(
-            <div>{total_amount}</div>
+            <div>
+              {record?.net_amount || 0}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.net_amount}
+            </div>
           )
         }
-        
+
       }
     },
     {
       title: "Int. Payment Date",
       dataIndex: "amount",
       render: (text, record) => {
-        return(
+        return (
           <div>-</div>
         )
       }
@@ -198,12 +330,13 @@ const DebitNotes = () => {
     // },
     {
       title: "Action",
-      render: () => {
+      render: (text, record) => {
         return (
           <Space>
-            <ActionView />
-            <ActionFile />
-            <Invoice />
+            <ViewDebitNote
+              details={record}
+              type={debitNoteType}
+            />
           </Space>
         );
       },
@@ -231,10 +364,6 @@ const DebitNotes = () => {
           onChange: onPageChange,
         }}
         summary={(pageData) => {
-          let totalReturnAmount = 0;
-          pageData?.forEach((item) => {
-            totalReturnAmount += +item.net_amount || 0;
-          });
           return (
             <Table.Summary.Row>
               <Table.Summary.Cell index={0}>
@@ -247,9 +376,11 @@ const DebitNotes = () => {
               <Table.Summary.Cell index={0} />
               <Table.Summary.Cell index={0} />
               <Table.Summary.Cell index={1}>
-                <b>{totalReturnAmount}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={1} />
+              <Table.Summary.Cell index={1}>
+                {debitNotesList?.debitNotes?.total_bill_amounts}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell index={0} />
               <Table.Summary.Cell index={0} />
               {/* <Table.Summary.Cell index={0} /> */}
             </Table.Summary.Row>
