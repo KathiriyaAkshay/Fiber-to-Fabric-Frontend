@@ -55,6 +55,8 @@ const columnsPayment = [
 ];
 
 const PaymentVoucherDetails = ({ details }) => {
+  console.log(details);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);

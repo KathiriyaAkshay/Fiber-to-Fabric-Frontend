@@ -30,6 +30,7 @@ import {
 } from "../../../api/requests/accounts/payment";
 import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_REWORK_BILL_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
 import moment from "moment";
+import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
 
 const { TextArea } = Input;
 const SUPPLIER_TYPES = [
@@ -39,6 +40,15 @@ const SUPPLIER_TYPES = [
   { label: "Other", value: "other" },
   { label: "Re-Work", value: "re-work" },
 ];
+
+function calculateDaysDifference(dueDate) {
+  const today = new Date(); // Get today's date
+  const [day, month, year] = dueDate.split('-');
+  const due = new Date(year, month - 1, day);
+  const timeDifference = today - due; // Difference in milliseconds
+  const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+  return dayDifference;
+}
 
 const addBillValidationSchema = yupResolver(
   yup.object().shape({
@@ -73,6 +83,7 @@ const BillForm = () => {
     return current && current > moment().endOf("day");
   }
 
+  // Bill Payment related request handler ===================================
   const { mutateAsync: addBillEntry, isPending: isPendingBillEntry } =
     useMutation({
       mutationFn: async ({ company_id, data }) => {
@@ -109,6 +120,33 @@ const BillForm = () => {
     });
 
   const onSubmit = async (data) => {
+
+    const temp_bill_details = selectedBills?.map((element) => {
+      let finalTotalAmount = 0;
+      
+      let netAmount = (+element?.net_amount - element?.debit_note_amount - +(element?.part_payment || 0)) || 0;
+      finalTotalAmount += netAmount;
+      
+      let tdsAmount = +element?.tds; 
+      finalTotalAmount -= tdsAmount;
+      
+      let plusAmount = (netAmount * (+element?.plus_percentage)) / 100; 
+      finalTotalAmount += plusAmount || 0;
+  
+      let lessAmount = (netAmount * (+element?.less_percentage)) / 100; 
+      finalTotalAmount -= lessAmount || 0;
+  
+      // Remove the is_paid property
+      delete element?.is_paid;
+      delete element?.debit_note_amount ; 
+      
+      // Add the paid_amount to the element
+      element.paid_amount = finalTotalAmount;
+  
+      return element;
+  });
+  
+
     const payload = {
       supplier_id: +data.account_name,
       bank_id: +data.bank_name,
@@ -119,12 +157,9 @@ const BillForm = () => {
       is_passbook_entry: data.selection === "passbook_update" ? true : false,
       cheque_date: dayjs(data.cheque_date).format("YYYY-MM-DD"),
       createdAt: dayjs(data.voucher_date).format("YYYY-MM-DD"),
-      bill_details: selectedBills.map((item) => {
-        delete item.bp_tds;
-        return item;
-      }),
+      bill_details: temp_bill_details,
+      is_credited: false
     };
-
     await addBillEntry({ company_id: data.company_id, data: payload });
   };
 
@@ -268,16 +303,24 @@ const BillForm = () => {
   const calculateAmount = useCallback(() => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
-      let netAmount = +bill.net_amount;
       let finalTotalAmount = 0;
-      finalTotalAmount += (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0;
-      finalTotalAmount += +bill?.plus_percentage || 0;
-      finalTotalAmount -= +bill?.less_percentage || 0;
+      
+      let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
+      finalTotalAmount += netAmount;
+      
+      let tdsAmount = +bill?.tds; 
+      finalTotalAmount -= tdsAmount ;
+      
+      let plusAmount = (netAmount*(+bill?.plus_percentage)) / 100 ; 
+      finalTotalAmount += plusAmount || 0;
+
+      let lessAmount = (netAmount*(+bill?.less_percentage)) / 100 ; 
+      finalTotalAmount -= lessAmount || 0;
 
       totalAmount += finalTotalAmount;
     });
 
-    setValue("amount", totalAmount);
+    setValue("amount", parseFloat(totalAmount).toFixed(2));
     setValue("remark", selectedBills.map((bill) => bill.bill_no).join(", "));
   }, [selectedBills, setValue]);
 
@@ -308,7 +351,7 @@ const BillForm = () => {
       });
     } else {
       setSelectedBills((prev) => {
-        return prev.filter((item) => item?.bill_id !== bill?.bill_id);
+        return prev.filter((item) => item?.bill_id !== +bill?.bill_id && item?.model != bill?.model);
       });
     }
   };
@@ -723,17 +766,28 @@ const BillForm = () => {
               <th>Bill Date</th>
               <th>Due Days</th>
               <th>Part Payment</th>
-              <th>TDS (Less)</th>
-              <th>Less Amt.</th>
-              <th>Plus Amt.</th>
+              <th>TDS (Less % )</th>
+              <th>Less (%)</th>
+              <th>Plus (%)</th>
             </tr>
           </thead>
           <tbody>
             {unPaidBillData && unPaidBillData.length ? (
               unPaidBillData?.map((bill, index) => {
                 const isBillSelected = selectedBills.find(
-                  ({ bill_id }) => bill_id === bill.bill_id
+                  ({ bill_id, model }) => bill_id === +bill.bill_id && model == bill?.model
                 );
+
+                const dueDate = bill?.due_date == null?
+                  bill?.model == "purchase_taka_bills"?generatePurchaseBillDueDate(bill?.bill_date):
+                  generateJobBillDueDate(bill?.bill_date)
+                  :moment(bill?.due_date).format("DD-MM-YYYY") ;
+
+                const dueDays = bill?.model == "credit_notes"?0:calculateDaysDifference(dueDate) ; 
+
+                let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
+                let tdsAmount = (netAmount*(+bill?.tds)) / 100 ;
+
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
@@ -767,16 +821,23 @@ const BillForm = () => {
                         </Tag>
                       : <Tag>{bill?.model}</Tag>}
                     </td>
-                    <td style={{ textAlign: "center", color: "#000" }}>{bill.amount}</td>
+
+                    <td style={{ textAlign: "center", color: "#000" }}>{bill.amount || "0"}</td>
+                    
                     <td style={{ textAlign: "center" }}>
                       <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill?.part_payment || 0} = ${+bill?.net_amount - +(bill?.part_payment || 0)}`}>
                         {+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)}
                       </Tooltip>
                     </td>
+                    
                     <td style={{ textAlign: "center" }}>
                       {dayjs(bill.bill_date).format("DD-MM-YYYY")}
                     </td>
-                    <td style={{ textAlign: "center" }}>4</td>
+                    
+                    <td style={{ textAlign: "center", color: dueDays == 0?"#000":"red" }}>
+                      {`${dueDays !== 0 ? '+' + dueDays : "0"}`}
+                    </td>
+                    
                     <td style={{ textAlign: "center", width: "200px" }}>
                       <Input
                         type="number"
@@ -797,6 +858,7 @@ const BillForm = () => {
                         }
                       />
                     </td>
+
                     <td style={{ textAlign: "center" }}>{bill.tds || 0}</td>
                     <td style={{ textAlign: "center", width: "200px" }}>
                       <Input

@@ -439,7 +439,7 @@ const TableWithAccordion = ({
               const dueDate = bill?.due_date == null?
                 bill?.model == "purchase_taka_bills"?generatePurchaseBillDueDate(bill?.bill_date):
                 generateJobBillDueDate(bill?.bill_date)
-              :moment(bill?.due_dat).format("DD-MM-YYYY") ;
+              :moment(bill?.due_date).format("DD-MM-YYYY") ;
               const dueDays = calculateDaysDifference(dueDate) ; 
 
               return (

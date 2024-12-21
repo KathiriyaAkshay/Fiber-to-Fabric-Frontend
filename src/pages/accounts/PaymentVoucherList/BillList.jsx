@@ -8,6 +8,7 @@ import {
   Flex,
   Typography,
   Spin,
+  Tag,
 } from "antd";
 import { useContext, useMemo, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
@@ -19,6 +20,9 @@ import ChequeBookModal from "../../../components/accounts/payment/ChequeBookModa
 import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
 import { getPaymentBillListRequest } from "../../../api/requests/accounts/payment";
+import { BILL_VOUCHER_TAG_COLOR } from "../../../constants/tag";
+import moment from "moment";
+import BillVoucherDetails from "../../../components/accounts/payment/billVocherDetails";
 
 const BillList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -27,6 +31,10 @@ const BillList = () => {
   const [supplier, setSupplier] = useState(null);
   const [chequeDate, setChequeDate] = useState(null);
   const [voucherDate, setVoucherDate] = useState(null);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -115,13 +123,29 @@ const BillList = () => {
       title: "Supplier Name",
       dataIndex: ["supplier","supplier_name"],
       key: "supplier_name",
-      render: (text) => text || "-",
+      render: (text) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {String(text).toUpperCase()}
+          </div>
+        )
+      },
     },
     {
       title: "Account Name",
       dataIndex: ["supplier","supplier_company"],
       key: "account_name",
-      render: (text) => text || "-",
+      render: (text) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {String(text).toUpperCase()}
+          </div>
+        )
+      },
     },
     // {
     //   title: "Company Name",
@@ -137,12 +161,25 @@ const BillList = () => {
       title: "Voucher No.",
       dataIndex: "voucher_no",
       key: "voucher_no",
+      render: (text, record) => {
+        return(
+          <Tag color={BILL_VOUCHER_TAG_COLOR}>
+            {text}
+          </Tag>
+        )
+      }
     },
     {
       title: "Voucher Date.",
       dataIndex: "voucher_date",
-      key: "voucher_date",
-      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
+      key: "createdAt",
+      render: (text, record) => {
+        return(
+          <div>
+            {moment(record?.createdAt).format("DD-MM-YYYY")}
+          </div>
+        )
+      }
     },
     {
       title: "Cheque No.",
@@ -160,7 +197,7 @@ const BillList = () => {
       key: "action",
       render: (details) => (
         <Space>
-          <PaymentVoucherDetails details={details} />
+          <BillVoucherDetails details={details} />
           <ChequeBookModal details={details} />
         </Space>
       ),
@@ -259,13 +296,13 @@ const BillList = () => {
           <Typography.Text className="whitespace-nowrap">
             Cheque Date
           </Typography.Text>
-          <DatePicker value={chequeDate} onChange={setChequeDate} />
+          <DatePicker value={chequeDate} onChange={setChequeDate} disabledDate={disabledFutureDate} />
         </Flex>
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Voucher Date
           </Typography.Text>
-          <DatePicker value={voucherDate} onChange={setVoucherDate} />
+          <DatePicker value={voucherDate} onChange={setVoucherDate} disabledDate={disabledFutureDate} />
         </Flex>
         <Button
           icon={<FilePdfOutlined />}
