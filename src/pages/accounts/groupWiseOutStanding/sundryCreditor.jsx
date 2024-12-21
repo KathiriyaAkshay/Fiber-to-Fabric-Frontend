@@ -20,6 +20,10 @@ import PaymentModal from "../../../components/accounts/groupWiseOutStanding/sund
 import ViewDebitNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewDebitNoteModal";
 import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewCreditNoteModal";
 
+// ======= Yarn receive challan model ========//
+import { getYarnReceiveBillByIdRequest } from "../../../api/requests/purchase/yarnReceive";
+import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
+
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
   { label: "Job", value: "job" },
@@ -57,6 +61,11 @@ const SundryCreditor = () => {
   const debounceOrderType = useDebounce(orderType, 500);
 
   const [selectedRecords, setSelectedRecords] = useState([]);
+  
+  // Bill Information // 
+  const [billModel, setBillModel] = useState(false) ; 
+  const [billInformation, setBillInformation] = useState(undefined) ; 
+  const [billLayout, setBillLayout] = useState(false) ; 
 
   const storeRecord = (e, record) => {
     if (e.target.checked) {
@@ -143,187 +152,226 @@ const SundryCreditor = () => {
     }
   }, [sundryCreditorData]);
 
+  const ReteriveBillInformation = async (model, bill_id) => {
+    const selectedBillData = {
+      model, 
+      bill_id
+    } ; 
+    let response ; 
+    switch (selectedBillData?.model){
+      case "yarn_bills":
+        response = await getYarnReceiveBillByIdRequest({
+          id : selectedBillData?.bill_id, 
+          params: {company_id: companyId}
+        }); 
+        setBillInformation(response?.data?.yarnReciveBill) ; 
+        setBillLayout(true) ; 
+        setBillModel(selectedBillData?.model) ;
+        return response?.data?.data ; 
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-2 p-4">
-      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Sundry Creditors</h3>
+    <>
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="m-0 text-primary">Sundry Creditors</h3>
+          </div>
+
+          <Flex gap={10} align="center" style={{ marginLeft: "auto" }}>
+            <Checkbox
+              value={isCash}
+              onChange={(e) => setIsCash(e.target.checked)}
+            >
+              Cash
+            </Checkbox>
+            <Checkbox
+              value={isOnlyDues}
+              onChange={(e) => setIsOnlyDues(e.target.checked)}
+            >
+              Only Dues
+            </Checkbox>
+            <Button
+              icon={<FilePdfOutlined />}
+              type="primary"
+              // disabled={!paymentList?.rows?.length}
+              // onClick={downloadPdf}
+              className="flex-none"
+            />
+            <Button type="primary" className="flex-none">
+              Summary
+            </Button>
+            <Button type="primary" className="flex-none">
+              STOCK STATMENT
+            </Button>
+          </Flex>
         </div>
 
-        <Flex gap={10} align="center" style={{ marginLeft: "auto" }}>
-          <Checkbox
-            value={isCash}
-            onChange={(e) => setIsCash(e.target.checked)}
-          >
-            Cash
-          </Checkbox>
-          <Checkbox
-            value={isOnlyDues}
-            onChange={(e) => setIsOnlyDues(e.target.checked)}
-          >
-            Only Dues
-          </Checkbox>
-          <Button
-            icon={<FilePdfOutlined />}
-            type="primary"
-            // disabled={!paymentList?.rows?.length}
-            // onClick={downloadPdf}
-            className="flex-none"
-          />
-          <Button type="primary" className="flex-none">
-            Summary
-          </Button>
-          <Button type="primary" className="flex-none">
-            STOCK STATMENT
-          </Button>
+        <Flex
+          align="center"
+          justify={selectedRecords?.length ? "space-between" : "flex-end"}
+          gap={10}
+        >
+          {selectedRecords?.length ? (
+            <Button type="primary" className="flex-none">
+              GEN. CREDIT NOTE
+            </Button>
+          ) : null}
+
+          <Flex>
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Supplier
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select supplier"
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                value={supplier}
+                onChange={(selectedValue) => setSupplier(selectedValue)}
+                loading={isLoadingSupplierList}
+                options={supplierListRes?.rows?.map((item) => {
+                  return {
+                    label: item?.supplier?.supplier_company,
+                    value: item?.id,
+                  };
+                })}
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Order Type
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select order type"
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                value={orderType}
+                onChange={(selectedValue) => setOrderType(selectedValue)}
+                options={orderTypeOptions || []}
+              />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                From
+              </Typography.Text>
+              <DatePicker value={fromDate} onChange={setFromDate} />
+            </Flex>
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+              <DatePicker value={toDate} onChange={setToDate} />
+            </Flex>
+          </Flex>
         </Flex>
+
+        {isLoadingSundryDebtor ? (
+          <Flex
+            style={{
+              minHeight: "200px",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Spin />
+          </Flex>
+        ) : (
+          <table
+            style={{ fontSize: "12px", borderColor: "black" }}
+            border={1}
+            // cellSpacing={0}
+            cellPadding={6}
+            className="custom-table"
+          >
+            <thead>
+              {/* <!-- Table Header Row --> */}
+              <tr>
+                <th>Date</th>
+                <th>Bill No</th>
+                <th>Type</th>
+                <th>Taka/Crtn</th>
+                <th>Mtr/KG</th>
+                <th>Bill Amount</th>
+                <th>Due Day</th>
+                <th style={{ width: "105px" }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sundryCreditorData ? (
+                sundryCreditorData?.map((data, index) => (
+                  <TableWithAccordion
+                    key={index}
+                    data={data}
+                    company={company}
+                    selectedRecords={selectedRecords}
+                    storeRecord={storeRecord}
+                    ReteriveBillInformation = {async(model, bill_id) => {
+                      console.log("Run this");
+                      
+                      await ReteriveBillInformation(model, bill_id)
+                    } }
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} style={{ textAlign: "center" }}>
+                    No Data Found
+                  </td>
+                </tr>
+              )}
+
+              <tr style={{ backgroundColor: "white" }}>
+                <td colSpan={11}></td>
+              </tr>
+
+              <tr className="sundary-total" style={{ backgroundColor: "white" }}>
+                <td>
+                  <b>Grand Total</b>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                  <b>{grandTotal?.meters}</b>
+                </td>
+                <td>
+                  <b>{grandTotal?.bill_amount}</b>
+                </td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        )}
       </div>
 
-      <Flex
-        align="center"
-        justify={selectedRecords?.length ? "space-between" : "flex-end"}
-        gap={10}
-      >
-        {selectedRecords?.length ? (
-          <Button type="primary" className="flex-none">
-            GEN. CREDIT NOTE
-          </Button>
-        ) : null}
-
-        <Flex>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Supplier
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select supplier"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-              value={supplier}
-              onChange={(selectedValue) => setSupplier(selectedValue)}
-              loading={isLoadingSupplierList}
-              options={supplierListRes?.rows?.map((item) => {
-                return {
-                  label: item?.supplier?.supplier_company,
-                  value: item?.id,
-                };
-              })}
+      {billLayout ? (
+        <>
+          {billModel === "yarn_bills" ? (
+            <ViewYarnReceiveChallan 
+              details={billInformation} 
+              isOpen = {billLayout}
+              setLayout = {setBillLayout}
             />
-          </Flex>
+          ) : null}
+        </>
+      ) : null}
 
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Order Type
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select order type"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-              value={orderType}
-              onChange={(selectedValue) => setOrderType(selectedValue)}
-              options={orderTypeOptions || []}
-            />
-          </Flex>
-
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              From
-            </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} />
-          </Flex>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} />
-          </Flex>
-        </Flex>
-      </Flex>
-
-      {isLoadingSundryDebtor ? (
-        <Flex
-          style={{
-            minHeight: "200px",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Spin />
-        </Flex>
-      ) : (
-        <table
-          style={{ fontSize: "12px", borderColor: "black" }}
-          border={1}
-          // cellSpacing={0}
-          cellPadding={6}
-          className="custom-table"
-        >
-          <thead>
-            {/* <!-- Table Header Row --> */}
-            <tr>
-              <th>Date</th>
-              <th>Bill No</th>
-              <th>Type</th>
-              <th>Taka/Crtn</th>
-              <th>Mtr/KG</th>
-              <th>Bill Amount</th>
-              <th>Due Day</th>
-              <th style={{ width: "105px" }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sundryCreditorData ? (
-              sundryCreditorData?.map((data, index) => (
-                <TableWithAccordion
-                  key={index}
-                  data={data}
-                  company={company}
-                  selectedRecords={selectedRecords}
-                  storeRecord={storeRecord}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={12} style={{ textAlign: "center" }}>
-                  No Data Found
-                </td>
-              </tr>
-            )}
-
-            <tr style={{ backgroundColor: "white" }}>
-              <td colSpan={11}></td>
-            </tr>
-
-            <tr style={{ backgroundColor: "white" }}>
-              <td>
-                <b>Grand Total</b>
-              </td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>
-                <b>{grandTotal?.meters}</b>
-              </td>
-              <td>
-                <b>{grandTotal?.bill_amount}</b>
-              </td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      )}
-    </div>
+    </>
   );
 };
 
@@ -334,6 +382,7 @@ const TableWithAccordion = ({
   company,
   selectedRecords,
   storeRecord,
+  ReteriveBillInformation
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(null);
 
@@ -368,10 +417,11 @@ const TableWithAccordion = ({
       <tr
         style={{ cursor: "pointer", backgroundColor: "#f0f0f0" }}
         onClick={toggleAccordion}
+        className="sundary-header"
       >
         <td></td>
-        <td colSpan={2}>{data?.first_name + " " + data?.last_name}</td>
-        <td colSpan={4}>{data?.address || ""}</td>
+        <td colSpan={2}>{String(data?.first_name + " " + data?.last_name).toUpperCase()}</td>
+        <td colSpan={4}>{String(data?.address || "").toUpperCase()}</td>
         <td>
           <Button type="text">{isAccordionOpen ? "▼" : "►"}</Button>
         </td>
@@ -392,10 +442,20 @@ const TableWithAccordion = ({
                       ? { backgroundColor: "rgb(25 74 109 / 20%)" }
                       : { backgroundColor: "white" }
                   }
+                  className="sundary-data"
                 >
                   <td>{dayjs(bill?.createdAt).format("DD-MM-YYYY")}</td>
                   <td>{bill?.bill_no || ""}</td>
-                  <td>{company?.company_name || ""}</td>
+                  <td style={{
+                    fontWeight: 600
+                  }}>
+                    {bill?.model === "job_taka_bills" ? "JOB TAKA" :
+                    bill?.model === "receive_size_beam_bill" ? "SIZE BEAM" :
+                    bill?.model === "yarn_bills" ? "YARN BILL" :
+                    bill?.model === "general_purchase_entries" ? "GENERAL PURCHASE" :
+                    bill?.model === "purchase_taka_bills" ? "PURCHASE TAKA" :
+                    bill?.model === "job_rework_bill" ? "REWORK BILL" : ""}
+                  </td>
                   <td>{bill?.taka || 0}</td>
                   <td>{bill?.meters || 0}</td>
                   <td>{bill?.amount || 0}</td>
@@ -403,9 +463,16 @@ const TableWithAccordion = ({
                   {/* <td></td> */}
                   <td>
                     <Space>
-                      <Button type="primary">
+                      
+                      <Button type="primary"
+                        onClick={async () => {
+                          console.log("Run this function");
+                          
+                          await ReteriveBillInformation(bill?.model, bill?.bill_id)
+                        }}>
                         <EyeOutlined />
                       </Button>
+
                       <PaymentModal />
                       <Button
                         style={{
@@ -440,7 +507,7 @@ const TableWithAccordion = ({
         </>
       )}
 
-      <tr style={{ backgroundColor: "white" }}>
+      <tr style={{ backgroundColor: "white" }} className="sundary-total">
         <td>
           <b>Total</b>
         </td>

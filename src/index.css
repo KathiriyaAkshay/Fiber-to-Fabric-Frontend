@@ -996,3 +996,24 @@ h2 {
     color: #000000 !important;
   }
 }
+
+.custom-table thead th{
+  font-size: 15px !important;
+}
+
+.sundary-header td{
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 10px !important;
+}
+
+.sundary-data td{
+  font-size: 14px;
+  padding-left: 10px !important;
+}
+
+.sundary-total td {
+  font-size: 15px ;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}

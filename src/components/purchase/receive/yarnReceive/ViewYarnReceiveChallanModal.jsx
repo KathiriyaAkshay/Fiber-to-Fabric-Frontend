@@ -43,8 +43,8 @@ const toWords = new ToWords({
     },
 });
 
-const ViewYarnReceiveChallan = ({ details }) => {
-    const [isModelOpen, setIsModalOpen] = useState(false);
+const ViewYarnReceiveChallan = ({ details, isOpen, setLayout }) => {
+    const [isModelOpen, setIsModalOpen] = useState(isOpen == undefined?false:isOpen);
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [totalCartoon, setTotalCartoon] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
@@ -80,7 +80,7 @@ const ViewYarnReceiveChallan = ({ details }) => {
                 }
                 open={isModelOpen}
                 footer={null}
-                onCancel={() => { setIsModalOpen(false) }}
+                onCancel={() => { setLayout == undefined?setIsModalOpen(false):setLayout(false) }}
                 centered={true}
                 classNames={{
                     header: "text-center",
