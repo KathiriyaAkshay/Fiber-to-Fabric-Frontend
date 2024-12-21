@@ -1,13 +1,10 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Col, Descriptions, Flex, Modal, Row, Table } from "antd";
+import { Button, Col, Descriptions, Flex, Modal, Row, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { WITHDRAW_TAG_COLOR, DEPOSITE_TAG_COLOR } from "../../../constants/tag";
 
-const dataSourcePayment = [
-  {
-    no: "1",
-  },
-];
+const dataSourcePayment = [];
 
 const columnsPayment = [
   {
@@ -58,8 +55,6 @@ const columnsPayment = [
 ];
 
 const PaymentVoucherDetails = ({ details }) => {
-  console.log(details);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -86,15 +81,12 @@ const PaymentVoucherDetails = ({ details }) => {
                 <b>Total</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>1</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
               <Table.Summary.Cell index={0}>
-                <b>1123</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>1124513</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -120,6 +112,7 @@ const PaymentVoucherDetails = ({ details }) => {
         onCancel={handleCancel}
         width={"85%"}
         centered
+        footer = {null}
       >
         <Descriptions
           bordered
@@ -143,6 +136,11 @@ const PaymentVoucherDetails = ({ details }) => {
             KEYUR VAGHASIYA
           </Descriptions.Item>
           <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name}</Descriptions.Item>
+          <Descriptions.Item label="Amount">
+            <Tag color = {details?.is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>
+                {details?.amount}
+            </Tag>
+          </Descriptions.Item>          
           <Descriptions.Item label="Remark">{details?.remark}</Descriptions.Item>
         </Descriptions>
         {/* <Row className="mt-2">

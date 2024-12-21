@@ -1017,3 +1017,9 @@ h2 {
   padding-top: 10px !important;
   padding-bottom: 10px !important;
 }
+
+.sundary-due-date{
+  color: red !important;
+  font-weight: 600 !important;
+  
+}

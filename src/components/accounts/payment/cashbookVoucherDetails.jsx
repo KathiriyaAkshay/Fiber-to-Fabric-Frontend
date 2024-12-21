@@ -149,7 +149,7 @@ const CashbookVoucherDetails = ({ details }) => {
           {/* <Descriptions.Item label="Account Name">
             {String(details?.to_particular).toUpperCase()}
           </Descriptions.Item> */}
-          <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name}</Descriptions.Item>
+          <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name || "--"}</Descriptions.Item>
           <Descriptions.Item label="Amount">
             <Tag color = {details?.is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>
                 {details?.amount}

@@ -34,6 +34,7 @@ import {
   getLastVoucherNoRequest,
 } from "../../../api/requests/accounts/payment";
 import EditPassBookParticular from "../../../components/accounts/payment/EditPassBookParticular";
+import moment from "moment";
 
 const { TextArea } = Input;
 
@@ -264,6 +265,10 @@ const PassBookForm = () => {
     }
   }, [lastVoucherNo, setValue]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
       <Row gutter={12} style={{ padding: "12px" }}>
@@ -492,7 +497,7 @@ const PassBookForm = () => {
                     name="cheque_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker {...field} style={{ width: "100%" }} />
+                        <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
                       );
                     }}
                   />
@@ -531,7 +536,7 @@ const PassBookForm = () => {
                     name="voucher_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker {...field} style={{ width: "100%" }} />
+                        <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
                       );
                     }}
                   />

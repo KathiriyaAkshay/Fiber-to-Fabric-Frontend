@@ -23,6 +23,8 @@ import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStandi
 // ======= Yarn receive challan model ========//
 import { getYarnReceiveBillByIdRequest } from "../../../api/requests/purchase/yarnReceive";
 import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
+import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
+import moment from "moment";
 
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
@@ -33,16 +35,14 @@ const orderTypeOptions = [
   { label: "Rework", value: "rework" },
 ];
 
-const calculateDueDays = (createdAt, dueDate) => {
-  const startDate = dayjs(createdAt);
-  const endDate = dayjs(dueDate);
-
-  // Calculate the difference in days
-  const dueDays = endDate.diff(startDate, "day");
-
-  return dueDays;
-};
-
+function calculateDaysDifference(dueDate) {
+  const today = new Date(); // Get today's date
+  const [day, month, year] = dueDate.split('-');
+  const due = new Date(year, month - 1, day);
+  const timeDifference = today - due; // Difference in milliseconds
+  const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+  return dayDifference;
+}
 const SundryCreditor = () => {
   const { company, companyId } = useContext(GlobalContext);
 
@@ -219,7 +219,7 @@ const SundryCreditor = () => {
             </Button>
           ) : null}
 
-          <Flex>
+          <Flex style={{gap: 6}}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
                 Supplier
@@ -306,6 +306,7 @@ const SundryCreditor = () => {
                 <th>Taka/Crtn</th>
                 <th>Mtr/KG</th>
                 <th>Bill Amount</th>
+                <th>Due Date</th>
                 <th>Due Day</th>
                 <th style={{ width: "105px" }}>Action</th>
               </tr>
@@ -351,6 +352,7 @@ const SundryCreditor = () => {
                 <td>
                   <b>{grandTotal?.bill_amount}</b>
                 </td>
+                <td></td>
                 <td></td>
                 <td></td>
               </tr>
@@ -422,6 +424,7 @@ const TableWithAccordion = ({
         <td></td>
         <td colSpan={2}>{String(data?.first_name + " " + data?.last_name).toUpperCase()}</td>
         <td colSpan={4}>{String(data?.address || "").toUpperCase()}</td>
+        <td></td>
         <td>
           <Button type="text">{isAccordionOpen ? "▼" : "►"}</Button>
         </td>
@@ -433,6 +436,11 @@ const TableWithAccordion = ({
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
               const isChecked = selectedRecords?.includes(bill?.bill_id);
+              const dueDate = bill?.due_date == null?
+                bill?.model == "purchase_taka_bills"?generatePurchaseBillDueDate(bill?.bill_date):
+                generateJobBillDueDate(bill?.bill_date)
+              :moment(bill?.due_dat).format("DD-MM-YYYY") ;
+              const dueDays = calculateDaysDifference(dueDate) ; 
 
               return (
                 <tr
@@ -444,7 +452,7 @@ const TableWithAccordion = ({
                   }
                   className="sundary-data"
                 >
-                  <td>{dayjs(bill?.createdAt).format("DD-MM-YYYY")}</td>
+                  <td>{dayjs(bill?.bill_date).format("DD-MM-YYYY")}</td>
                   <td>{bill?.bill_no || ""}</td>
                   <td style={{
                     fontWeight: 600
@@ -459,15 +467,15 @@ const TableWithAccordion = ({
                   <td>{bill?.taka || 0}</td>
                   <td>{bill?.meters || 0}</td>
                   <td>{bill?.amount || 0}</td>
-                  <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td>
-                  {/* <td></td> */}
+                  <td className="sundary-due-date">{dueDate}</td>
+                  <td className={dueDays != 0?"sundary-due-date":""} >
+                    {dueDays == 0?0:`+${dueDays}`}
+                  </td>
                   <td>
                     <Space>
                       
                       <Button type="primary"
                         onClick={async () => {
-                          console.log("Run this function");
-                          
                           await ReteriveBillInformation(bill?.model, bill?.bill_id)
                         }}>
                         <EyeOutlined />
