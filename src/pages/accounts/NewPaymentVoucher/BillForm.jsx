@@ -139,6 +139,8 @@ const BillForm = () => {
       // Remove the is_paid property
       delete element?.is_paid;
       delete element?.debit_note_amount ; 
+      delete element?.bp_tds; 
+      delete element?.debit_note_number; 
       
       // Add the paid_amount to the element
       element.paid_amount = finalTotalAmount;

@@ -193,3 +193,15 @@ export function generateJobBillDueDate(bill_date){
   date.setDate(date.getDate() + JOB_DUE_DAYS); // Add the specified number of days
   return moment(date.toISOString().split('T')[0]).format("DD-MM-YYYY");
 }
+
+export function addDaysToDate(startDate, daysToAdd) {
+  console.log(startDate);
+  
+  // Convert the startDate to a Date object if it's not already one
+  let date = new Date(startDate);
+
+  // Add the days to the date
+  date.setDate(date.getDate() + daysToAdd);
+
+  return date;
+}

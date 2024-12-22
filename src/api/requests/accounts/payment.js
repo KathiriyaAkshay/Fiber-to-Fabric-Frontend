@@ -68,3 +68,9 @@ export function getUnPaidPaymentBillListRequest({ params }) {
 export function addPaymentBillRequest({ data, params }) {
   return api.post(`/account/bill/create`, data, { params });
 }
+
+// Particular bill related information 
+
+export function particularBillPartPaymentRequest({id, params}){
+  return api.get(`account/bill/payments/list/${id}`, {params}) ; 
+}
