@@ -1022,3 +1022,9 @@ h2 {
   color: red !important;
   font-weight: 600 !important;
 }
+
+.sundary-bill-payment-label{
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 8px;
+}

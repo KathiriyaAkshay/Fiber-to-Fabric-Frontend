@@ -15,7 +15,7 @@ const toWords = new ToWords({
         doNotAddOnly: false,
         currencyOptions: {
             // can be used to override defaults for the selected locale
-            name: "Rupee",
+            name: "Rupee",  
             plural: "Rupees",
             symbol: "₹",
             fractionalUnit: {
