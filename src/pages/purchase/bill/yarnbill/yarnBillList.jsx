@@ -479,9 +479,9 @@ const YarnBillList = () => {
             <h3 className="m-0 text-primary">Yarn Bill List </h3>
 
             <Flex style={{ marginLeft: "10px" }} gap={"10px"}>
-              <Button type="primary" icon={<PlusCircleFilled />}>
+              {/* <Button type="primary" icon={<PlusCircleFilled />}>
                 Advance Bill payment
-              </Button>
+              </Button> */}
               <Button
                 onClick={SummaryGeneration}
                 type="primary"

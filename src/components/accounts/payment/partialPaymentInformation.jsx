@@ -1,11 +1,12 @@
-import React, { useContext, useState } from "react";
-import { Modal, Table, Button, Flex, Tooltip } from "antd";
+import React, { useContext, useEffect, useState } from "react";
+import { Modal, Table, Button, Flex, Tooltip, Tag } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { particularBillPartPaymentRequest } from "../../../api/requests/accounts/payment";
+import moment from "moment";
 
-const PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
+const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const {companyId} = useContext(GlobalContext) ; 
 
@@ -18,21 +19,54 @@ const PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
             title: 'No.',
             dataIndex: 'key',
             key: 'key',
+            render: (text, record, index) => {
+                return(
+                    <div>
+                        {index + 1  }
+                    </div>
+                )
+            }
         },
         {
             title: 'Part amount date',
             dataIndex: 'date',
             key: 'date',
+            render: (text, record) => {
+                return(
+                    <div>
+                        {moment(record?.createdAt).format("DD-MM-YYYY")}
+                    </div>
+                )
+            }
         },
         {
             title: 'Part amount',
             dataIndex: 'amount',
             key: 'amount',
+            render: (text, record) => {
+                return(
+                    <div>
+                        {record?.part_payment}
+                    </div>
+                )
+            }
+        },
+        {
+            title: "Paid Amount", 
+            dataIndex: "paid_amount", 
+            return: (text, record) => {
+                    
+            }
         },
         {
             title: 'Purchase return',
             dataIndex: 'return',
             key: 'return',
+            render: (text, record) => {
+                return(
+                    <div>---</div>
+                )
+            }
         },
         {
             title: 'Bank',
@@ -43,49 +77,35 @@ const PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
             title: 'Cheque no.',
             dataIndex: 'chequeNo',
             key: 'chequeNo',
+            render: (text, record) => {
+                return(
+                    <div>
+                        {record?.bill_payment_detail?.cheque_no}
+                    </div>
+                )
+            }
         },
         {
             title: 'Payment date',
             dataIndex: 'paymentDate',
             key: 'paymentDate',
+            render: (text, record) => {
+                return(
+                    <div>
+                        {moment(record?.createdAt).format("DD-MM-YYYY")}
+                    </div>
+                )
+            }
         },
         {
             title: 'Payment status',
             dataIndex: 'status',
             key: 'status',
             render: (status) => (
-                <span style={{ color: status === 'Paid' ? 'green' : 'red' }}>{status}</span>
+                <Tag color = "green">
+                    PAID
+                </Tag>
             ),
-        },
-        {
-            title: 'Cheque Image',
-            dataIndex: 'chequeImage',
-            key: 'chequeImage',
-        },
-    ];
-
-    const data = [
-        {
-            key: '1',
-            date: '21-08-2024',
-            amount: 22289,
-            return: 0,
-            bank: 'MESHANA URBAN',
-            chequeNo: '121212',
-            paymentDate: '21-08-2024',
-            status: 'Paid',
-            chequeImage: 'N/A'
-        },
-        {
-            key: '2',
-            date: '21-08-2024',
-            amount: 111,
-            return: 0,
-            bank: '--',
-            chequeNo: '--',
-            paymentDate: '--',
-            status: 'Unpaid',
-            chequeImage: 'N/A'
         },
     ];
 
@@ -109,6 +129,9 @@ const PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
         setIsModalOpen(true);
         await refetch({ queryKey: ["account/bill/payments/list", { company_id: companyId}] }); // Manually refetch the query
     };
+
+    // ================= Bank Transaction information ====================== // 
+    const [bannkTransaction, setBankTransaction] = useState([]) ; 
 
     return (
         <>
@@ -174,8 +197,9 @@ const PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
             >
                 <Table
                     columns={columns}
-                    dataSource={data}
+                    dataSource={billPaymentData?.billPaymentDetails?.rows || []}
                     pagination={false}
+                    loading = {isLoading}
                     footer={() => (
                         <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
                             Total 22400 0
