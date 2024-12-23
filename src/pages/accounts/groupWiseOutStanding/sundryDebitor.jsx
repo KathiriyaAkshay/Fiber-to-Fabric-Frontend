@@ -208,8 +208,6 @@ const SundryDebitor = () => {
 
   const { mutateAsync: addInterestAmount, isPending: isInterestPending } = useMutation({
     mutationFn: async ({ data }) => {
-      console.log(data);
-      
       const res = await paidInterestRequest({
         data: data,
         params: {
@@ -257,9 +255,9 @@ const SundryDebitor = () => {
     if (selectedBill?.length > 0){
       let totalAmount = 0 ; 
       selectedBill?.map((bill) => {
-        let total_amount = parseFloat(+bill?.amount).toFixed(2) || 0 ; 
-        let credit_note_amount = parseFloat(+bill?.credit_note_amount).toFixed(2) || 0  ; 
-        let paid_amount = parseFloat(+bill?.paid_amount).toFixed(2) || 0 ;
+        let total_amount = parseFloat(+bill?.amount || 0 ).toFixed(2) || 0 ; 
+        let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0  ; 
+        let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0 ;
 
         let finalAmount = total_amount - paid_amount - credit_note_amount;
         finalAmount = parseFloat(finalAmount).toFixed(2) ; 
@@ -500,13 +498,13 @@ const SundryDebitor = () => {
               <td></td>
               <td></td>
               <td></td>
+              <td></td>
               <td>
                 <b>{grandTotal?.meter}</b>
               </td>
               <td>
                 <b>{grandTotal?.bill_amount}</b>
               </td>
-              <td></td>
               <td></td>
               {/* <td>
                 <b>0</b>
@@ -538,6 +536,7 @@ const SundryDebitor = () => {
             setBillModelOpen(false); 
             setSelectedBill([]) ; 
           }}
+          sundryDebtorData = {sundryDebtorData}
         />
       )}
     </div>
@@ -642,10 +641,9 @@ const TableWithAccordion = ({ data, company, handleInterestCheckboxSelection,sel
               let isBillChecked = selectedBill?.filter((item) => item?.bill_id == bill?.bill_id && item?.model == bill?.model)?.length > 0?true:false ; 
 
               let is_paid = bill?.is_paid == null?false:bill?.is_paid == 0?false:true
-              let total_amount = parseFloat(+bill?.amount).toFixed(2) || 0 ; 
-              let credit_note_amount = parseFloat(+bill?.credit_note_amount).toFixed(2) || 0  ; 
-              let paid_amount = parseFloat(+bill?.paid_amount).toFixed(2) || 0 ;
-
+              let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0 ; 
+              let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0  ; 
+              let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0 ;
               let finalAmount = total_amount - paid_amount - credit_note_amount;
 
               // Interest amount 
@@ -794,7 +792,7 @@ const TableWithAccordion = ({ data, company, handleInterestCheckboxSelection,sel
         <td style={{
           fontWeight: 600
         }}>
-          {TOTAL?.amount}
+          {parseFloat(TOTAL?.amount).toFixed(2)}
         </td>
         {/* <td>
           <b>0</b>

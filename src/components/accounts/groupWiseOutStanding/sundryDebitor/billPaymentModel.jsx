@@ -5,9 +5,11 @@ import moment from 'moment';
 import dayjs from 'dayjs';
 const { Option } = Select;
 const { Text} = Typography ; 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { addPaymentBillRequest } from '../../../../api/requests/accounts/payment';
 
-const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
-
+const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) => {
+    const queryClient = useQueryClient() ; 
     const {companyListRes, companyId} = useContext(GlobalContext) ;
     const [bankOption, setBankOption] = useState([]) ; 
 
@@ -152,9 +154,9 @@ const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
             let totalSaleReturnAmount = 0 ;
             let finalNetAmount = 0 ; 
             selectedBill?.map((bill, index) => {
-                let total_amount = parseFloat(+bill?.amount).toFixed(2) || 0 ; 
-                let credit_note_amount = parseFloat(+bill?.credit_note_amount).toFixed(2) || 0  ; 
-                let paid_amount = parseFloat(+bill?.paid_amount).toFixed(2) || 0 ;
+                let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0 ; 
+                let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0  ; 
+                let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0 ;
                 let finalAmount = total_amount - paid_amount - credit_note_amount;
 
                 if (paymentOption == "fullPayment"){
@@ -162,7 +164,7 @@ const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
                         no: index + 1,
                         billNo: bill?.bill_no,
                         amount: parseFloat(bill?.amount || 0).toFixed(2), 
-                        salesReturn: parseFloat(bill?.credit_note_amount).toFixed(2), 
+                        salesReturn: parseFloat(bill?.credit_note_amount || 0).toFixed(2), 
                         remainingAmount: finalAmount, 
                         ...bill
                     })
@@ -214,9 +216,37 @@ const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
             }
             setPayableAmount(totalAmount) ; 
         }
-    },[tdsAmount, roundOffAmount, data])
+    },[tdsAmount, roundOffAmount, data]) ; 
 
-    const handleConfirm = () => {
+    const { mutateAsync: addBillEntry, isPending: isPendingBillEntry } =
+        useMutation({
+            mutationFn: async ({data }) => {
+            const res = await addPaymentBillRequest({
+                data,
+                params: {
+                company_id: companyId,
+                },
+            });
+            return res.data;
+            },
+            mutationKey: ["account", "group-wise-outstanding", "debiter", 'sundry'],
+            onSuccess: (res) => {
+            queryClient.invalidateQueries("account/statement/last/voucher", {
+                company_id: companyId,
+            });
+            const successMessage = res?.message;
+            if (successMessage) {
+                message.success(successMessage);
+            }
+            onClose() ; 
+        },
+            onError: (error) => {
+            const errorMessage = error?.response?.data?.message || error.message;
+            message.error(errorMessage);
+        },
+    });
+
+    const handleConfirm = async () => {
         if (chequeNumber == "" || chequeNumber == undefined){
             message.warning("Please, Enter cheque number") ; 
         }   else if (partyBank == "" || partyBank == undefined){
@@ -225,15 +255,15 @@ const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
             message.warning("Please, Select bank") ; 
         }   else {
             let bill_details = [] ; 
+            let total_paid_amount = 0 ;
             data?.map((element) => {
-                let total_amount = parseFloat(+element?.amount).toFixed(2) || 0 ; 
-                let credit_note_amount = parseFloat(+element?.credit_note_amount).toFixed(2) || 0  ; 
-                let paid_amount = parseFloat(+element?.paid_amount).toFixed(2) || 0 ;
+                let total_amount = parseFloat(+element?.amount || 0).toFixed(2) || 0 ; 
+                let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0  ; 
+                let paid_amount = parseFloat(+element?.paid_amount || 0).toFixed(2) || 0 ;
                 let finalAmount = total_amount - paid_amount - credit_note_amount;
-
                 let partAmount = element?.partAmount; 
                 let new_paid_amount = paymentOption == "fullPayment"?finalAmount:+finalAmount - +partAmount;
-                
+                total_paid_amount += +new_paid_amount ; 
                 bill_details.push({
                     "bill_id": element?.bill_id,
                     "bill_no": element?.bill_no,
@@ -251,24 +281,24 @@ const BillPaymentModel = ({ visible, onClose, selectedBill }) => {
                 })
             })
             let requestPayload = {
-                "supplier_id": null,
+                "supplier_id": data[0]?.supplier_id,
                 "bank_id": bankValue,
                 "cheque_no": chequeNumber,
-                "cheque_date": chequeDate,
-                "total_amount": 5000.75,
+                "cheque_date": moment(chequeDate).format('YYYY-MM-DD'),
+                "total_amount": total_paid_amount,
                 "voucher_no": null,
                 "remark": "",
-                "createdAt": new Date(),
+                "createdAt": moment(new Date()).format("YYYY-MM-DD"),
                 "is_passbook_entry": updateOption == "passbookUpdate"?true:false,
-                "party_id": null,
+                "party_id":  data[0]?.party_id,
                 "party_bank": partyBank,
-                "is_full_payment": null,
+                "is_full_payment":  paymentOption == "fullPayment"?true:false,
                 "tds": tdsAmount,
                 "round_off_amount": roundOffAmount,
                 "is_credited": true,
                 "bill_details": bill_details
             }
-              
+            await addBillEntry({data: requestPayload}) ; 
         }
     };
 
