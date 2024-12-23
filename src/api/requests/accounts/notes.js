@@ -18,8 +18,16 @@ export function createCreditNoteRequest({ data, params }) {
   return api.post(`/account/credit-notes/create`, data, { params });
 }
 
-export function creditNoteDropDownRequest({ params}) {
-  return api.get(`account/credit-notes/bill/get`, {params})
+export function updateCreditNoteRequest({ data, params }) {
+  return api.patch(`/account/credit-notes/update`, data, { params });
+}
+
+export function creditNoteDropDownRequest({ params }) {
+  return api.get(`account/credit-notes/bill/get`, { params });
+}
+
+export function deleteCreditNoteRequest({ id, params }) {
+  return api.delete(`/account/credit-notes/delete/${id}`, { params });
 }
 
 // Debit notes services---------------------------------------------------

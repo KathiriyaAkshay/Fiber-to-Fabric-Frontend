@@ -9,6 +9,7 @@ const AddCreditNotes = ({
   setIsAddModalOpen,
   isAddModalOpen,
   creditNoteTypes,
+  creditNoteData,
 }) => {
   const renderForm = useMemo(() => {
     if (creditNoteTypes === "sale_return") {
@@ -16,12 +17,14 @@ const AddCreditNotes = ({
         <AddSaleReturnType
           setIsAddModalOpen={setIsAddModalOpen}
           isAddModalOpen={isAddModalOpen}
+          creditNoteData={creditNoteData}
         />
       );
-    } else if (creditNoteTypes === "late_payment") {
+    } else if (creditNoteTypes === "late") {
       return (
         <AddLatePayment
           setIsAddModalOpen={setIsAddModalOpen}
+          creditNoteData={creditNoteData}
           isAddModalOpen={isAddModalOpen}
         />
       );

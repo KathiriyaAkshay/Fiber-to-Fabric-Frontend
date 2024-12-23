@@ -892,6 +892,23 @@ h2 {
   border: 1px solid #ccc;
 }
 
+.special-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.special-table thead td {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.special-table td {
+  padding: 10px;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+
 .input-box {
   width: 100%;
   padding: 8px;

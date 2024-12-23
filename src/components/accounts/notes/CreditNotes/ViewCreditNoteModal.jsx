@@ -1,7 +1,7 @@
 import { Button, Flex, Modal, Typography } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import "./_style.css";
-import { CloseOutlined, EyeOutlined, FileTextFilled } from "@ant-design/icons";
+import { CloseOutlined, FileTextFilled } from "@ant-design/icons";
 import { useContext, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ToWords } from "to-words";
@@ -79,7 +79,7 @@ const ViewCreditNoteModal = ({ details, type }) => {
             <tbody>
               <tr>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{textAlign: "left"}}>
+                  <div className="year-toggle" style={{ textAlign: "left" }}>
                     <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
                       Credit Note No.
                     </Typography.Text>
@@ -87,16 +87,20 @@ const ViewCreditNoteModal = ({ details, type }) => {
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{textAlign: "left"}}>
-                    <Typography.Text style={{
-                      fontWeight: 400
-                    }}>Date.</Typography.Text>
+                  <div className="year-toggle" style={{ textAlign: "left" }}>
+                    <Typography.Text
+                      style={{
+                        fontWeight: 400,
+                      }}
+                    >
+                      Date.
+                    </Typography.Text>
                     <div>{dayjs(details.createdAt).format("DD-M-YYYY")}</div>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{textAlign: "left"}}>
-                    <div style={{fontWeight: 400}}>Bill No.</div>
+                  <div className="year-toggle" style={{ textAlign: "left" }}>
+                    <div style={{ fontWeight: 400 }}>Bill No.</div>
                     <div>
                       {details?.credit_note_details
                         .map((item) => item.bill_no || item?.invoice_no)
@@ -141,15 +145,18 @@ const ViewCreditNoteModal = ({ details, type }) => {
                         {details?.party?.user?.pancard_no || "-"}
                       </div>
                       <div className="credit-note-info-title">
-                        <span>Email:</span>{" "}
-                        {details?.party?.user?.email || "-"}
+                        <span>Email:</span> {details?.party?.user?.email || "-"}
                       </div>
                     </>
                   )}
 
                   {details?.supplier !== null && (
                     <>
-                      <strong>{String(details?.supplier?.supplier_company).toUpperCase()}</strong>
+                      <strong>
+                        {String(
+                          details?.supplier?.supplier_company
+                        ).toUpperCase()}
+                      </strong>
                       <div className="credit-note-info-title">
                         <span>Supplier:</span>
                         {details?.supplier?.supplier_name || "-"}
@@ -179,7 +186,7 @@ const ViewCreditNoteModal = ({ details, type }) => {
               <tr>
                 <td style={{ width: "50px" }}>SL No.</td>
                 <td colSpan={2}>Particulars</td>
-                <td>{type == "other"?"HSN Code":"Quantity"}</td>
+                <td>{type == "other" ? "HSN Code" : "Quantity"}</td>
                 <td>Rate</td>
                 <td>Per</td>
                 <td style={{ width: "100px" }}>Amount</td>
@@ -196,11 +203,21 @@ const ViewCreditNoteModal = ({ details, type }) => {
               </tr> */}
               <tr>
                 <td>1.</td>
-                <td colSpan={2}>{details?.particular_name || details?.credit_note_details[0]?.particular_name || ""}</td>
-                <td>{type == "other"?details?.hsn_no:details?.quantity || ""}</td>
+                <td colSpan={2}>
+                  {details?.particular_name ||
+                    details?.credit_note_details[0]?.particular_name ||
+                    ""}
+                </td>
+                <td>
+                  {type == "other" ? details?.hsn_no : details?.quantity || ""}
+                </td>
                 <td>{details?.rate || ""}</td>
                 <td></td>
-                <td>{details?.amount || details?.credit_note_details[0]?.amount || ""}</td>
+                <td>
+                  {details?.amount ||
+                    details?.credit_note_details[0]?.amount ||
+                    ""}
+                </td>
               </tr>
               <tr>
                 <td></td>
