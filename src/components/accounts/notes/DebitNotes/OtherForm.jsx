@@ -135,9 +135,6 @@ const OtherForm = ({ type, handleClose }) => {
         },
       ],
     };
-
-    console.log(payload);
-    
     await addDebitOtherNOte({ data: payload, companyId: data.company_id });
   };
 

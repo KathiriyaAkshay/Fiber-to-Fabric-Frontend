@@ -30,10 +30,10 @@ const toWords = new ToWords({
     },
 });
 
-const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => {
-    console.log(data);
+const SundaryDebitNoteGenerate = ({ bill_details,companyListRes, open, setOpen, debiteNoteData }) => {
+    console.log(debiteNoteData);
     
-    const { companyId, companyListRes } = useContext(GlobalContext);
+    const { companyId } = useContext(GlobalContext);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [debitNote, setDebitNote] = useState(undefined) ; 
 
@@ -48,7 +48,7 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
         }
     }, [companyListRes]);
 
-    // Get last debite note last number information request ==================
+    // Get last debite note last number information request 
     const { data: debitNoteLastNumber } = useQuery({
         queryKey: [
           "get",
@@ -90,13 +90,11 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
 
     return (
         <>
-            <FileTextFilled style={{fontSize: 18}} />
-
             <Modal
-                open={isAddModalOpen}
+                open={open}
                 width={"75%"}
                 onCancel={() => {
-                    setIsAddModalOpen(false);
+                    setOpen(false);
                 }}
                 footer={false}
                 closeIcon={<CloseOutlined className="text-white" />}
@@ -148,7 +146,7 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
                                 <td colSpan={3} width={"33.33%"}>
                                     <div className="year-toggle" style={{ textAlign: "left" }}>
                                         <div style={{ fontWeight: 400 }}>Bill No.</div>
-                                        <div>{bill_details?.bill_no}</div>
+                                        <div>{bill_details?.map((element) => element?.bill_no).join(",")}</div>
                                     </div>
                                 </td>
                             </tr>
@@ -170,23 +168,23 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
                                         <span>Email:</span> company@example.com
                                     </div>
                                 </td>
-                                {data?.supplier?.id !== undefined && (
+                                {debiteNoteData?.supplier?.id !== undefined && (
                                     <td colSpan={4}>
                                         <div className="credit-note-info-title">
                                             <span style={{fontWeight: 400}}>Supplier</span><br></br>
-                                            <span>{String(data?.supplier?.supplier_company).toUpperCase()}</span>
+                                            <span>{String(debiteNoteData?.supplier?.supplier_company).toUpperCase()}</span>
                                             <br />
-                                            <span>{data?.supplier?.supplier_name}</span><br/>
-                                            {data?.address}
+                                            <span>{debiteNoteData?.supplier?.supplier_name}</span><br/>
+                                            {debiteNoteData?.address}
                                         </div>
                                         <div className="credit-note-info-title">
-                                            <span>GSTIN/UIN:</span> {data?.gst_no}
+                                            <span>GSTIN/UIN:</span> {debiteNoteData?.gst_no}
                                         </div>
                                         <div className="credit-note-info-title">
-                                            <span>PAN/IT No:</span> {data?.pancard_no}
+                                            <span>PAN/IT No:</span> {debiteNoteData?.pancard_no}
                                         </div>
                                         <div className="credit-note-info-title">
-                                            <span>Email:</span> {data?.email}
+                                            <span>Email:</span> {debiteNoteData?.email}
                                         </div>
                                     </td>
                                 )}
@@ -207,14 +205,11 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
                         <tbody>
                             <tr>
                                 <td>1.</td>
-                                <td colSpan={2} style={{
-                                    fontWeight: 600, 
-                                    color: "#000"
-                                }}>Late Payment Income</td>
-                                <td></td>
-                                <td></td>
+                                <td colSpan={2}>Sample Particular</td>
+                                <td>10</td>
+                                <td>100.0</td>
                                 <td>-</td>
-                                <td></td>
+                                <td>1000.0</td>
                             </tr>
                             <tr>
                                 <td></td>
@@ -324,8 +319,9 @@ const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => 
                     </Flex>
                 </div>
             </Modal>
+
         </>
     );
 };
 
-export default SundaryStaticDebiteNoteViews;
+export default SundaryDebitNoteGenerate;
