@@ -5,8 +5,9 @@ import moment from 'moment';
 import dayjs from 'dayjs';
 const { Option } = Select;
 const { Text} = Typography ; 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addPaymentBillRequest } from '../../../../api/requests/accounts/payment';
+import { getLastVoucherNoRequest } from '../../../../api/requests/accounts/payment';
 
 const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) => {
     const queryClient = useQueryClient() ; 
@@ -246,6 +247,20 @@ const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) 
         },
     });
 
+    // Get last vocher number related information 
+
+    const {data: lastVoucherNo} = useQuery({
+        queryKey: ["account/statement/last/voucher", { companyId }],
+        queryFn: async () => {
+            const res = await getLastVoucherNoRequest({
+              params: { company_id: companyId , is_credited: 1},
+            });
+            return res.data?.data;
+          },
+        enabled: Boolean(companyId),
+    })
+    
+
     const handleConfirm = async () => {
         if (chequeNumber == "" || chequeNumber == undefined){
             message.warning("Please, Enter cheque number") ; 
@@ -256,6 +271,10 @@ const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) 
         }   else {
             let bill_details = [] ; 
             let total_paid_amount = 0 ;
+            let temp_vocher_number = lastVoucherNo || "V-0";
+            temp_vocher_number = String(temp_vocher_number).split("-")[1] ;
+            let vocher_details = `V-${+temp_vocher_number + 1}` ; 
+            
             data?.map((element) => {
                 let total_amount = parseFloat(+element?.amount || 0).toFixed(2) || 0 ; 
                 let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0  ; 
@@ -286,7 +305,7 @@ const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) 
                 "cheque_no": chequeNumber,
                 "cheque_date": moment(chequeDate).format('YYYY-MM-DD'),
                 "total_amount": total_paid_amount,
-                "voucher_no": null,
+                "voucher_no": vocher_details,
                 "remark": "",
                 "createdAt": moment(new Date()).format("YYYY-MM-DD"),
                 "is_passbook_entry": updateOption == "passbookUpdate"?true:false,
@@ -315,7 +334,7 @@ const BillPaymentModel = ({ visible, onClose, selectedBill, sundryDebtorData }) 
                 <Button key="cancel" onClick={onClose}>
                     Cancel
                 </Button>,
-                <Button key="confirm" type="primary" onClick={handleConfirm}>
+                <Button key="confirm" loading = {isPendingBillEntry} type="primary" onClick={handleConfirm}>
                     Confirm
                 </Button>
             ]}

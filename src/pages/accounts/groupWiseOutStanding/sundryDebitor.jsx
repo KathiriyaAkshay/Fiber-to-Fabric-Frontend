@@ -537,7 +537,7 @@ const SundryDebitor = () => {
             setSelectedBill([]) ; 
           }}
           sundryDebtorData = {sundryDebtorData}
-        />
+      />
       )}
     </div>
   );

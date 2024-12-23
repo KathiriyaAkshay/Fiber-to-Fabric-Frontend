@@ -17,6 +17,7 @@ import dayjs from "dayjs";
 import { getGstr1ReportService } from "../../../api/requests/accounts/reports";
 import { useQuery } from "@tanstack/react-query";
 import ConfirmGstModal from "./confirmGstModal";
+import moment from "moment";
 
 const Gstr1 = () => {
   const { companyListRes } = useContext(GlobalContext);
@@ -28,6 +29,10 @@ const Gstr1 = () => {
 
   const [isParticularOpen, setIsParticularOpen] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   const submitHandler = () => {
     if (company && companyListRes) {
@@ -46,9 +51,10 @@ const Gstr1 = () => {
       title: "Particulars",
       dataIndex: "particulars",
       key: "particulars",
-      // render: (text) => <a onClick={() => setIsParticularOpen(text)}>{text}</a>,
       render: (text, record) => (
-        <a onClick={() => printHandler(record)}>{text}</a>
+        <a onClick={() => printHandler(record)} style={{
+          fontWeight: 600
+        }}>{text}</a>
       ),
     },
     {
@@ -61,18 +67,55 @@ const Gstr1 = () => {
       dataIndex: "taxable_amount",
       key: "taxable_amount",
     },
-    { title: "Central Tax", dataIndex: "central_tax", key: "central_tax" },
-    { title: "State Tax", dataIndex: "state_tax", key: "state_tax" },
+    { 
+      title: "Central Tax", 
+      dataIndex: "central_tax", 
+      key: "central_tax", 
+      render: (text, record) => {
+        return(
+          <div>{parseFloat(text).toFixed(2)}</div>
+        )
+      }
+    },
+    { 
+      title: "State Tax", 
+      dataIndex: "state_tax", 
+      key: "state_tax" , 
+      render: (text, record) => {
+        return(
+          <div>{parseFloat(text).toFixed(2)}</div>
+        )
+      }
+    },
     {
       title: "Integrated Tax",
       dataIndex: "integrated_tax",
       key: "integrated_tax",
+      render: (text, record) => {
+        return(
+          <div>{parseFloat(text).toFixed(2)}</div>
+        )
+      }
     },
-    { title: "Tax Amount", dataIndex: "tax_amount", key: "tax_amount" },
+    { 
+      title: "Tax Amount", 
+      dataIndex: "tax_amount", 
+      key: "tax_amount" , 
+      render: (text, record) => {
+        return(
+          <div>{parseFloat(text).toFixed(2)}</div>
+        )
+      }
+    },
     {
       title: "Invoice Amount",
       dataIndex: "invoice_amount",
       key: "invoice_amount",
+      render: (text, record) => {
+        return(
+          <div>{parseFloat(text).toFixed(2)}</div>
+        )
+      }
     },
   ];
 
@@ -94,7 +137,6 @@ const Gstr1 = () => {
 
   const data = useMemo(() => {
     if (gstr1Data && Object.keys(gstr1Data).length) {
-      //
       let payload = [];
       payload.push({
         key: 1,
@@ -213,6 +255,7 @@ const Gstr1 = () => {
               <DatePicker
                 value={fromDate}
                 onChange={(selectedDate) => setFromDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -222,13 +265,13 @@ const Gstr1 = () => {
               <DatePicker
                 value={toDate}
                 onChange={(selectedDate) => setToDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
-            <Button type="primary" onClick={submitHandler}>
+            <Button onClick={submitHandler} color="green" >
               SUBMIT
             </Button>
-            {/* <Button type="primary">CONFIRM GST</Button> */}
             <ConfirmGstModal />
             <Button type="primary">EXPORT</Button>
           </Flex>
@@ -241,6 +284,8 @@ const Gstr1 = () => {
           </Flex>
         ) : gstr1Data && Object.keys(gstr1Data).length ? (
           <div className="border p-4 rounded-lg shadow">
+
+            {/* GSTR1 Report information  */}
             <div className="text-center mb-4">
               <h2 className="text-xl font-bold">
                 {selectedCompany?.company_name || ""}
@@ -253,19 +298,24 @@ const Gstr1 = () => {
               </p>
               <p>GSTR-1</p>
               {fromDate && toDate ? (
-                <p>
+                <p style={{
+                  fontWeight: 600
+                }}>
                   {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
                   {toDate && dayjs(toDate).format("DD-MM-YYYY")}
                 </p>
               ) : null}
             </div>
+            
             <Flex justify="space-between">
               <div>
                 <span className="font-semibold">GSTIN/UIN:</span>{" "}
                 {selectedCompany?.gst_no || ""}
               </div>
               {fromDate && toDate ? (
-                <div>
+                <div style={{
+                  fontWeight: 600
+                }}>
                   {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
                   {toDate && dayjs(toDate).format("DD-MM-YYYY")}
                 </div>
@@ -279,15 +329,17 @@ const Gstr1 = () => {
               <div>Vouchers Count</div>
             </Flex>
             <hr className="border-x-gray-100" />
-            {/* Particular Body */}
+            
             <Flex justify="space-between" className="text-sm">
               <div>Total Vouchers</div>
               <div style={{ marginRight: "1rem" }}>{totalVoucher}</div>
             </Flex>
-            <Flex justify="space-between" className="text-sm">
+            
+            {/* <Flex justify="space-between" className="text-sm">
               <div>Included in Return</div>
               <div style={{ marginRight: "1rem" }}>{totalVoucher}</div>
-            </Flex>
+            </Flex> */}
+            
             <hr className="border-x-gray-100" />
 
             <div className="my-4">
