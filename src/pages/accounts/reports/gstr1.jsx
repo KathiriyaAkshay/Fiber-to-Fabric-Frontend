@@ -5,6 +5,7 @@ import {
   DatePicker,
   Drawer,
   Flex,
+  message,
   Select,
   Spin,
   Table,
@@ -35,24 +36,32 @@ const Gstr1 = () => {
   }
 
   const submitHandler = () => {
-    if (company && companyListRes) {
-      const companyData = companyListRes?.rows?.find(
-        ({ id }) => id === company
-      );
-      console.log({ companyData });
-      setSelectedCompany(companyData);
+    if (company == null || company == undefined){
+      message.warning("Please, Select company first") ; 
+    } else {
+      if (company && companyListRes) {
+        const companyData = companyListRes?.rows?.find(
+          ({ id }) => id === company
+        );
+        setSelectedCompany(companyData);
+      }
+      setIsSubmitted(true);
     }
-    setIsSubmitted(true);
   };
 
+  // =========== GSTR-1 Report columns ================== // 
   const columns = [
-    { title: "Sl No.", dataIndex: "key", key: "key" },
+    { 
+      title: "Sl No.", 
+      dataIndex: "key", 
+      key: "key" 
+    },
     {
       title: "Particulars",
       dataIndex: "particulars",
       key: "particulars",
       render: (text, record) => (
-        <a onClick={() => printHandler(record)} style={{
+        <a onClick={() => printHandler(record, text)} style={{
           fontWeight: 600
         }}>{text}</a>
       ),
@@ -203,8 +212,8 @@ const Gstr1 = () => {
 
   // -------- Print functionality.....
 
-  function printHandler(record) {
-    localStorage.setItem("print-title", "Gstr-report-1");
+  function printHandler(record, title) {
+    localStorage.setItem("print-title", title);
     localStorage.setItem("gstr-report-data", JSON.stringify(gstr1Data));
     localStorage.setItem(
       "gstr-report-data-company",
@@ -360,22 +369,22 @@ const Gstr1 = () => {
                           <strong>{totalVoucher}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={2}>
-                          <strong>{totalData?.taxable_amount || 0}</strong>
+                          <strong>{parseFloat(totalData?.taxable_amount).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={3}>
-                          <strong>{totalData?.central_tax || 0}</strong>
+                          <strong>{parseFloat(totalData?.central_tax).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={4}>
-                          <strong>{totalData?.state_tax || 0}</strong>
+                          <strong>{parseFloat(totalData?.state_tax).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={5}>
-                          <strong>{totalData?.integrated_tax || 0}</strong>
+                          <strong>{parseFloat(totalData?.integrated_tax).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={6}>
-                          <strong>{totalData?.tax_amount || 0}</strong>
+                          <strong>{parseFloat(totalData?.tax_amount).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={6}>
-                          <strong>{totalData?.invoice_amount || 0}</strong>
+                          <strong>{parseFloat(totalData?.invoice_amount).toFixed(2) || 0}</strong>
                         </Table.Summary.Cell>
                       </Table.Summary.Row>
                     </Table.Summary>
@@ -383,10 +392,11 @@ const Gstr1 = () => {
                 }}
               />
             </div>
-            <div className="mt-4 text-red-500 text-sm">
+            <div className="mt-4 text-red-500 text-sm" style={{
+              fontWeight: 600
+            }}>
               <p>
-                * Zero tax rate invoice are found and removed in this report
-                such as J-23, J-68, J-23432... invoice numbers.
+                Zero tax rate invoice : {gstr1Data?.skip_b2b_bills?.map((element) => element?.invoice_no || element?.bill_no).join(",")} {gstr1Data?.skip_b2b_bills?.length == 0?"Not Found any Invoice":""}
               </p>
             </div>
           </div>

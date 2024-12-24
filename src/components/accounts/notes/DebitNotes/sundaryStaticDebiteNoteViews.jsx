@@ -31,8 +31,6 @@ const toWords = new ToWords({
 });
 
 const SundaryStaticDebiteNoteViews = ({ details, bill_details, type, data }) => {
-    console.log(data);
-    
     const { companyId, companyListRes } = useContext(GlobalContext);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [debitNote, setDebitNote] = useState(undefined) ; 

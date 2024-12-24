@@ -47,3 +47,6 @@ export function createDebitNoteRequest({ data, params }) {
 export function debitNoteDropDownRequest({params}){
   return api.get(`account/debit-notes/bill/get`, {params}) ; }
 
+export function getDebitNoteByIdRequest({id, params}){
+  return api.get(`account/debit-notes/get/${id}`, {params}) ;
+}
