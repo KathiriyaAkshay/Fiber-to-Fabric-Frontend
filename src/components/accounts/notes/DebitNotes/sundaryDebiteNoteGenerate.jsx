@@ -290,7 +290,11 @@ const SundaryDebitNoteGenerate = ({ bill_details, companyListRes, open, setOpen,
                                         <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
                                             Debit Note No.
                                         </Typography.Text>
-                                        <div>{debitNote || "DNP-1"}</div>
+                                        {isGenerated?<>
+                                            <div>{genratedDebiteNoteInfo?.debit_note_number}</div>
+                                        </>:<>
+                                            <div>{debitNote || "DNP-1"}</div>
+                                        </>}
                                     </div>
                                 </td>
                                 <td colSpan={3} width={"33.33%"}>
