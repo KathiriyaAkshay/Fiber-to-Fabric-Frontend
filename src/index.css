@@ -816,7 +816,7 @@ input:read-only {
 .statement-passbook-table tbody tr td {
   border: 1px solid #d3d3d3; /* Change #3498db to your desired color */
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .statement-passbook-table tbody tr.red {
@@ -826,6 +826,10 @@ input:read-only {
 .statement-passbook-table tbody tr.green {
   /* background-color: rgba(0, 128, 0, 0.5); */
   background-color: #eff5e9;
+}
+
+.statement-passbook-table-particular-entry{
+  font-weight: 600;
 }
 
 .remove-input-style {
@@ -1032,4 +1036,12 @@ h2 {
 .table-due-date-information-div{
   font-weight: 600;
   color: red;
+}
+
+.opening-balance-entry{
+  background-color: #c9efa4;
+}
+
+.passbook-particular-entry-td{
+  font-weight: 500;
 }

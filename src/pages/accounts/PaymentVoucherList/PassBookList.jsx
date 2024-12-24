@@ -237,7 +237,6 @@ const PassBookList = () => {
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                {/* <Table.Summary.Cell></Table.Summary.Cell> */}
               </Table.Summary.Row>
             </Table.Summary>
           );

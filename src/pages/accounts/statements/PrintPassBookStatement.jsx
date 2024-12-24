@@ -595,9 +595,6 @@ const PrintPassBookStatement = () => {
             Download Excel
           </Button>
         </Flex>
-        {/* <div style={{ marginLeft: "auto", width: "100%", marginTop: "15px" }}>
-                </div> */}
-
         <div className="printable-main-div" ref={ComponentRef}>
           <div className="page_title">{orderTitle}</div>
 
@@ -623,6 +620,7 @@ const PrintPassBookStatement = () => {
                 </tr>
               </thead>
               <tbody>
+                
                 <tr>
                   <td
                     style={{
@@ -630,6 +628,7 @@ const PrintPassBookStatement = () => {
                       textAlign: "center",
                       fontWeight: "bold",
                       fontSize: "16px",
+                      paddingTop: "20px"
                     }}
                     colSpan={8}
                   >
@@ -639,6 +638,9 @@ const PrintPassBookStatement = () => {
                       : "No unverified entry available"}
                   </td>
                 </tr>
+
+                {/* =========== Unverified entries related data ============  */}
+
                 {orderData?.unverifiedEntries &&
                 orderData?.unverifiedEntries?.length
                   ? orderData?.unverifiedEntries?.map((row, index) => {
@@ -649,7 +651,8 @@ const PrintPassBookStatement = () => {
                           style={{
                             backgroundColor: row?.is_withdraw
                               ? "#ffe9e9"
-                              : "#eff5e9",
+                              : row?.particular_type == "OPENING BALANCE"?"#c7d0be":"#eff5e9",
+                            
                           }}
                         >
                           <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
@@ -702,6 +705,8 @@ const PrintPassBookStatement = () => {
                   </td>
                 </tr>
 
+                {/* ============= Verified enteries related data ===========  */}
+
                 {orderData?.verifiedEntries &&
                 orderData?.verifiedEntries?.length
                   ? orderData?.verifiedEntries?.map((row, index) => {
@@ -712,7 +717,8 @@ const PrintPassBookStatement = () => {
                           style={{
                             backgroundColor: row?.is_withdraw
                               ? "#ffe9e9"
-                              : "#eff5e9",
+                              : row?.particular_type == "OPENING BALANCE"?"#c7d0be":"#eff5e9",
+                            
                           }}
                         >
                           <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>

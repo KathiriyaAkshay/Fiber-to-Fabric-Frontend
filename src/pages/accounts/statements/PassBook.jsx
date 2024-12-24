@@ -41,6 +41,7 @@ import DeletePassBookEntry from "../../../components/accounts/statement/passbook
 import RevertPassBookEntry from "../../../components/accounts/statement/passbook/RevertPassBookEntry";
 import EditPassBookVoucherDate from "../../../components/accounts/statement/passbook/EditPassBookVoucherDate";
 import useDebounce from "../../../hooks/useDebounce";
+import moment from "moment";
 
 const PassBook = () => {
   const navigate = useNavigate();
@@ -65,6 +66,13 @@ const PassBook = () => {
   const [isOpenVerifyEntry, setIsOpenVerifyEntry] = useState(false);
   const [isOpenEditVoucherDate, setIsOpenEditVoucherDate] = useState(false);
   const [isVerifyEntry, setIsVerifyEntry] = useState(null);
+
+  useEffect(() => {
+    if (company?.company_bank_details?.length >0){
+      let option = company?.company_bank_details[0] ; 
+      setBank(option?.id)
+    }
+  },[company])
 
   const navigateToAdd = () => {
     navigate("/account/payment/add");
@@ -193,6 +201,11 @@ const PassBook = () => {
     window.open("/print-passbook-statement");
   }
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+  
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -205,6 +218,8 @@ const PassBook = () => {
           />
         </div>
         <Flex align="center" justify="flex-end" gap={10}>
+
+          {/* Month selection  */}
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Month
@@ -212,6 +227,7 @@ const PassBook = () => {
             <DatePicker value={month} picker="month" onChange={setMonth} />
           </Flex>
 
+          {/* Particular selection  */}
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Particular
@@ -233,6 +249,7 @@ const PassBook = () => {
               onChange={setParticular}
             />
           </Flex>
+
           <Flex align="center" gap={10}>
             <Input
               value={search}
@@ -240,6 +257,8 @@ const PassBook = () => {
               placeholder="Search"
             />
           </Flex>
+
+          {/* Bank selection  */}
           <Flex align="center" gap={10}>
             <Select
               allowClear
@@ -309,6 +328,8 @@ const PassBook = () => {
                   textAlign: "center",
                   fontWeight: "bold",
                   fontSize: "16px",
+                  paddingTop: 20, 
+                  paddingBottom: 20
                 }}
                 colSpan={9}
               >
@@ -317,16 +338,20 @@ const PassBook = () => {
                   : "No unverified entry available"}
               </td>
             </tr>
+
+            {/* ============= Unverified enteries related information ===============  */}
             {unverifiedEntries && unverifiedEntries?.length
               ? unverifiedEntries?.map((row, index) => {
                   return (
                     <tr
                       key={index + "_unverified"}
-                      className={row?.is_withdraw ? "red" : "green"}
+                      className={row?.is_withdraw ? "red" :
+                        row?.particular_type == "OPENING BALANCE"?"opening-balance-entry":"green"
+                      }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
-                      <td>{row?.cheque_no}</td>
+                      <td>{row?.cheque_no || "----"}</td>
                       <td>
                         {capitalizeFirstCharacter(row?.particular_type)
                           .split("_")
@@ -362,8 +387,10 @@ const PassBook = () => {
                           >
                             <CheckCircleOutlined style={{ color: "green" }} />
                           </Button>
+
                           {/* delete action */}
                           <DeletePassBookEntry details={row} />
+
                           {/* edit action */}
                           <Button
                             style={{
@@ -400,38 +427,73 @@ const PassBook = () => {
                   : "No verified entry available"}
               </td>
             </tr>
+            
+            {/* =========== Verified entries related information ===============  */}
             {verifiedEntries && verifiedEntries?.length
               ? verifiedEntries?.map((row, index) => {
                   return (
                     <tr
                       key={index + "_verified"}
-                      className={
-                        !row?.is_withdraw || row.is_reverted ? "green" : "red"
+                      className={row?.is_withdraw ? "red" :
+                        row?.particular_type == "OPENING BALANCE"?"opening-balance-entry":"green"
                       }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
-                      <td>{row?.cheque_no}</td>
-                      <td>
+                      <td>{row?.cheque_no || "----"}</td>
+                      <td style={{
+                        fontWeight: capitalizeFirstCharacter(row?.particular_type)
+                        .split("_")
+                        .join(" ") == "OPENING BALANCE"?600:500
+                      }}>
+
                         {capitalizeFirstCharacter(row?.particular_type)
                           .split("_")
                           .join(" ")}
+
+                        {row?.is_reverted && <span style={{
+                          fontSize: 12,
+                          fontWeight: 600
+                        }}> ( Reverse entry ) </span>}
                       </td>
                       <td>
-                        <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
+                        {row?.is_reverted?
+                        <>
+                          <span style={{
+                            fontWeight: 600,
+                            color: "blue"
+                          }}>
+                            {row?.is_withdraw
+                                ? row?.amount?.toFixed(2)
+                                : (0).toFixed(2)}
+                          </span>
+                        </>:<>
+                          <Typography style={{ color: "red", fontWeight: "600" }}>
+                            {row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </>}
                       </td>
                       <td>
-                        <Typography
-                          style={{ color: "green", fontWeight: "600" }}
-                        >
-                          {!row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
+                        {row?.is_reverted?
+                          <span style={{
+                            fontWeight: 600,
+                            color: "blue"
+                          }}>
+                            {!row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </span>
+                        :<>
+                          <Typography
+                            style={{ color: "green", fontWeight: "600" }}
+                          >
+                            {!row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </>}
                       </td>
                       <td>{row?.balance}</td>
                       <td>{row.remarks}</td>
@@ -471,7 +533,8 @@ const PassBook = () => {
                     </tr>
                   );
                 })
-              : null}
+            : null}
+
 
             {/* Display totals and closing balance */}
             <tr>
@@ -518,7 +581,7 @@ const PassBook = () => {
         </table>
       )}
 
-      {/* Modals */}
+      {/* Passbook entry update related model  */}
       {isOpenEditEntry && (
         <EditPassBookEntry
           open={isOpenEditEntry}
@@ -528,6 +591,8 @@ const PassBook = () => {
           isVerifyEntry={isVerifyEntry}
         />
       )}
+
+      {/* Passbook entry vocher date related model  */}
       {isOpenEditVoucherDate && (
         <EditPassBookVoucherDate
           open={isOpenEditVoucherDate}
@@ -536,6 +601,8 @@ const PassBook = () => {
           companyId={companyId}
         />
       )}
+
+      {/* Passbook entry verified or not verified related model  */}
       {isOpenVerifyEntry && (
         <VerifyPassBookEntry
           open={isOpenVerifyEntry}
