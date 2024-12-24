@@ -245,13 +245,20 @@ const ReworkChallanBill = () => {
         if (daysDifference < 0) {
           daysDifference = 0;
         }
-      
-        return <div style={{
-          color: daysDifference == 0?"#000":"red",
-          fontWeight: 600
-        }}>
-          +{daysDifference}D
-        </div>;
+
+        if (record?.job_rework_bill?.is_paid){
+          return(
+            <div>0</div>
+          )
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+
       }
     },
     {

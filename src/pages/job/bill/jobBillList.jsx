@@ -302,13 +302,20 @@ const JobBillList = () => {
         if (daysDifference < 0) {
           daysDifference = 0;
         }
+
+        if (record?.job_taka_bill?.is_paid){
+          return(
+            <div>0</div>
+          )
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
       
-        return <div style={{
-          color: daysDifference == 0?"#000":"red",
-          fontWeight: 600
-        }}>
-          +{daysDifference}D
-        </div>;
       } ,
     },
     {
@@ -329,7 +336,7 @@ const JobBillList = () => {
             {record?.job_taka_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.job_taka_bill?.id}
-                bill_model={"job_bills"}
+                bill_model={"job_taka_bills"}
                 paid_amount={record?.job_taka_bill?.paid_amount}
               />
             </>:<>

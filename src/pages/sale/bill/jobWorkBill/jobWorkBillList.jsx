@@ -133,10 +133,17 @@ const JobWorkBillList = () => {
           const daysDifference = Math.floor(
             differenceInMilliseconds / millisecondsInADay
           );
-          return <div style={{
-            color: daysDifference == 0?"#000":"red",
-            fontWeight: 600
-          }}>{`+${daysDifference}D`}</div>;
+
+          if (record?.job_work_bill?.is_paid){
+            return(
+              <div>0</div>
+            )
+          } else {
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
+          }
         }
       },
     },
@@ -149,7 +156,7 @@ const JobWorkBillList = () => {
             {record?.job_work_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.job_work_bill?.id}
-                bill_model={"job_work_bill"}
+                bill_model={"job_work_bills"}
                 paid_amount={record?.job_work_bill?.paid_amount}
               />
             </>:<>

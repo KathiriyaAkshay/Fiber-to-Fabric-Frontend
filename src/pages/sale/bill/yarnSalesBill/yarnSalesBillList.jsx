@@ -188,10 +188,17 @@ const YarnSalesBillList = () => {
           const daysDifference = Math.floor(
             differenceInMilliseconds / millisecondsInADay
           );
-          return <div style={{
-            color: daysDifference == 0?"#000":"red",
-            fontWeight: 600
-          }}>{`+${daysDifference}D`}</div>;
+
+          if (record?.yarn_sale_bill?.is_paid){
+            return(
+              <div>0</div>
+            )
+          } else {
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
+          }
         }
       },
     },

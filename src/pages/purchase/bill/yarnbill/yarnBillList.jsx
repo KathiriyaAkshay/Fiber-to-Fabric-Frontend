@@ -213,13 +213,20 @@ const YarnBillList = () => {
         if (daysDifference < 0) {
           daysDifference = 0;
         }
-      
-        return <div style={{
-          color: daysDifference == 0?"#000":"red",
-          fontWeight: 600
-        }}>
-          +{daysDifference}D
-        </div>;
+        
+        if (record?.is_paid){
+          return(
+            <div>0</div>
+          ) 
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+
       }      
     },
     {

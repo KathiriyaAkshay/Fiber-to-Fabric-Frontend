@@ -328,6 +328,33 @@ const JobGrayList = () => {
       title: "Due Days",
       dataIndex: "due_days",
       key: "due_days",
+      render: (text, record) => {
+        let result = new Date(record?.createdAt);
+        result.setDate(result.getDate() + record?.due_days);
+        const currentDate = new Date();
+        const targetDate = result;
+
+        if (currentDate < targetDate) {
+          return <div>0</div>;
+        } else {
+          const differenceInMilliseconds = currentDate - targetDate;
+          const millisecondsInADay = 24 * 60 * 60 * 1000;
+          const daysDifference = Math.floor(
+            differenceInMilliseconds / millisecondsInADay
+          );
+
+          if (record?.is_paid){
+            return(
+              <div>0</div>
+            )
+          } else {
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
+          }
+        }
+      },
     },
     {
       title: "Status",
@@ -337,7 +364,7 @@ const JobGrayList = () => {
             {record?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.id}
-                bill_model={"sale_bills"}
+                bill_model={"job_gray_sale_bill"}
                 paid_amount={record?.paid_amount}
               />
             </>:<>
