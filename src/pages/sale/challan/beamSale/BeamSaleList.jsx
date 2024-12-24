@@ -198,10 +198,6 @@ const BeamSaleList = () => {
         return `${detail?.inhouse_quality?.quality_name} - (${detail?.inhouse_quality?.quality_weight}KG)`;
       },
     },
-    // {
-    //   title: "Total Weight",
-    //   dataIndex: "enter_weight",
-    // },
     {
       title: "Total Meter",
       dataIndex: "total_meter",

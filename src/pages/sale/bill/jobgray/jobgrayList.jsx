@@ -34,6 +34,7 @@ import { getJobGraySaleBillListRequest } from "../../../../api/requests/sale/bil
 import DeleteJobGrayBill from "../../../../components/sale/bill/DeleteJobGrayBill";
 import moment from "moment";
 import JobGrayBillMultiplePrint from "../../../../components/sale/bill/jobGrayBillMultiplePrint";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 
 const JobGrayList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -330,39 +331,50 @@ const JobGrayList = () => {
     },
     {
       title: "Status",
-      render: (details) => {
-        return details.is_paid ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (details, record) => {
+        return(
+          <div>
+            {record?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.id}
+                bill_model={"sale_bills"}
+                paid_amount={record?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.is_paid?"green":"red"}>
+                {String(record?.is_paid?"Paid":"Un-paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {
       title: "Action",
-      render: (details) => {
+      render: (details, record) => {
         return (
           <Space>
-            {/* <ViewPurchaseTakaDetailsModal
-              title="Purchase Taka Details"
-              details={details}
-            /> */}
-            <Button
-              onClick={() => {
-                setJobGraySaleBillChallanModel((prev) => {
-                  return {
-                    ...prev,
-                    isModalOpen: true,
-                    details: details,
-                    mode: "UPDATE",
-                  };
-                });
-              }}
-            >
-              <EditOutlined />
-            </Button>
+            
+            {record?.is_partial_payment == false && (
+              <>
+                <Button
+                  onClick={() => {
+                    setJobGraySaleBillChallanModel((prev) => {
+                      return {
+                        ...prev,
+                        isModalOpen: true,
+                        details: details,
+                        mode: "UPDATE",
+                      };
+                    });
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
 
-            <DeleteJobGrayBill details={details} />
+                <DeleteJobGrayBill details={details} />
+              </>
+            )}
             <Button
               onClick={() => {
                 setJobGraySaleBillChallanModel((prev) => {

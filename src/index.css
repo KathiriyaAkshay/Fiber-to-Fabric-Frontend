@@ -1028,3 +1028,8 @@ h2 {
   text-align: left;
   margin-bottom: 8px;
 }
+
+.table-due-date-information-div{
+  font-weight: 600;
+  color: red;
+}

@@ -30,6 +30,7 @@ import dayjs from "dayjs";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
 import * as XLSX from "xlsx";
 import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/challan/beamSale";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 
 const BeamSaleBillList = () => {
     const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -145,34 +146,56 @@ const BeamSaleBillList = () => {
         },
       },
       {
-        title: "Yarn Company",
-        dataIndex: ["yarn_stock_company", "yarn_company_name"],
-      },
-      {
-        title: "Dennier",
-        dataIndex: ["yarn_stock_company"],
-        render: (text) =>
-          `${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`,
-      },
-  
-      {
-        title: "KG",
+        title: "Total Beam",
         render: (record) => {
-          return `${record.kg}`;
+          return `${record.beam_sale_details?.length}`;
         },
       },
       {
-        title: "Rate",
-        dataIndex: ["yarn_sale_bill", "rate"],
+        title: "Total Meter",
+        render: (text, record) => {
+          let total_meter = 0 ; 
+          record?.beam_sale_details?.map((element) => {
+            const obj =
+              element?.loaded_beam?.non_pasarela_beam_detail ||
+              element?.loaded_beam?.recieve_size_beam_detail ||
+              element?.loaded_beam?.job_beam_receive_detail;
+            
+            total_meter += +obj?.meter || +obj?.meters;  
+          })
+          
+          return(
+            <div>
+              {total_meter}
+            </div>
+          )
+        }
       },
+      {
+        title: "Rate", 
+        render: (text, record) => {
+          return(
+            <div>
+              {record?.beam_sale_bill?.rate}
+            </div>
+          )
+        }
+      }, 
       {
         title: "Amount (Exc GST)",
         dataIndex: ["yarn_sale_bill", "amount"],
+        render: (text, record) => {
+          return(
+            <div>
+              {record?.beam_sale_bill?.amount}
+            </div>
+          )
+        }
       },
       {
         title: "Due Date",
         render: (record) => {
-          return dayjs(record?.yarn_sale_bill?.due_date).format("DD-MM-YYYY");
+          return dayjs(record?.beam_sale_bill?.due_date).format("DD-MM-YYYY");
         },
       },
       {
@@ -180,9 +203,9 @@ const BeamSaleBillList = () => {
         dataIndex: "due_date",
         render: (text, record) => {
           const currentDate = new Date();
-          const targetDate = new Date(record?.yarn_sale_bill?.due_date);
+          const targetDate = new Date(record?.beam_sale_bill?.due_date);
   
-          if (currentDate > targetDate) {
+          if (currentDate < targetDate) {
             return <div>0</div>;
           } else {
             const differenceInMilliseconds = currentDate - targetDate;
@@ -190,15 +213,33 @@ const BeamSaleBillList = () => {
             const daysDifference = Math.floor(
               differenceInMilliseconds / millisecondsInADay
             );
-            return <div>{daysDifference}</div>;
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
           }
         },
       },
       {
         title: "Bill Status",
-        dataIndex: ["yarn_sale_bill", "is_paid"],
-        render: (text) =>
-          text ? <Tag color="green">Paid</Tag> : <Tag color="red">Un-Paid</Tag>,
+        dataIndex: ["beam_sale_bill", "is_paid"],
+        render: (text,record) => {
+          return(
+            <div>
+              {record?.beam_sale_bill?.is_partial_payment?<>
+                <PartialPaymentInformation
+                  bill_id={record?.beam_sale_bill?.id}
+                  bill_model={"beam_sale_bill"}
+                  paid_amount={record?.beam_sale_bill?.paid_amount}
+                />
+              </>:<>
+                <Tag color = {record?.beam_sale_bill?.is_paid?"green":"red"}>
+                  {String(record?.beam_sale_bill?.is_paid?"Paid":"Un-paid").toUpperCase()}
+                </Tag>
+              </>}
+            </div>
+          )
+        }
       },
       {
         title: "Actions",
@@ -343,14 +384,14 @@ const BeamSaleBillList = () => {
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
-                  <Table.Summary.Cell />
-                  <Table.Summary.Cell />
+                  <Table.Summary.Cell>{yarnSaleBillListData?.total_beams || 0}</Table.Summary.Cell>
+                  <Table.Summary.Cell>{yarnSaleBillListData?.total_meter || 0}</Table.Summary.Cell>
                   <Table.Summary.Cell>
-                    {yarnSaleBillListData?.total_bill_kgs}
                   </Table.Summary.Cell>
-                  <Table.Summary.Cell />
                   <Table.Summary.Cell>
-                    {yarnSaleBillListData?.total_bill_amount}
+                    {parseFloat(yarnSaleBillListData?.total_bill_amounts).toFixed(2) || 0}
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
