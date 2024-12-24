@@ -51,3 +51,11 @@ export function getLastDebitNoteNumberRequest({ params }) {
 export function createDebitNoteRequest({ data, params }) {
   return api.post(`/account/debit-notes/create`, data, { params });
 }
+
+export function deleteDebitNoteRequest({ id, params }) {
+  return api.delete(`/account/debit-notes/delete/${id}`, { params });
+}
+
+export function updateDebitNoteRequest({ data, params }) {
+  return api.patch(`/account/debit-notes/update`, data, { params });
+}

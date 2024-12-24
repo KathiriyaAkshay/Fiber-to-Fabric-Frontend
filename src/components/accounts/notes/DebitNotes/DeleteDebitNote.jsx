@@ -3,19 +3,19 @@ import { Button, message } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { deleteCreditNoteRequest } from "../../../../api/requests/accounts/notes";
+import { deleteDebitNoteRequest } from "../../../../api/requests/accounts/notes";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import DeleteConfirmationDialog from "../../../common/modal/DeleteConfirmationDialog";
 
-const DeleteCreditNote = ({ details }) => {
+const DeleteDebitNote = ({ details }) => {
   const queryClient = useQueryClient();
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: deleteCreditNote } = useMutation({
+  const { mutateAsync: deleteDebitNote } = useMutation({
     mutationFn: async ({ id }) => {
-      const res = await deleteCreditNoteRequest({
+      const res = await deleteDebitNoteRequest({
         id,
         params: {
           company_id: companyId,
@@ -23,7 +23,7 @@ const DeleteCreditNote = ({ details }) => {
       });
       return res?.data;
     },
-    mutationKey: ["credit", "note", "delete"],
+    mutationKey: ["debit", "note", "delete"],
     onSuccess: (res) => {
       const successMessage = res?.message;
       if (successMessage) {
@@ -31,7 +31,7 @@ const DeleteCreditNote = ({ details }) => {
       }
       queryClient.invalidateQueries([
         "get",
-        "credit-notes",
+        "debit-notes",
         "list",
         { company_id: companyId },
       ]);
@@ -42,7 +42,7 @@ const DeleteCreditNote = ({ details }) => {
   });
 
   async function handleDelete() {
-    deleteCreditNote({
+    deleteDebitNote({
       id: details.id,
     });
     setIsOpenDeleteDialog(false);
@@ -74,4 +74,4 @@ const DeleteCreditNote = ({ details }) => {
   );
 };
 
-export default DeleteCreditNote;
+export default DeleteDebitNote;

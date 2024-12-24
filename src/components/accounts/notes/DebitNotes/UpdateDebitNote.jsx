@@ -3,7 +3,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateCreditNoteRequest } from "../../../../api/requests/accounts/notes";
+import { updateDebitNoteRequest } from "../../../../api/requests/accounts/notes";
 import { Controller, useForm } from "react-hook-form";
 import "./_style.css";
 import moment from "moment";
@@ -50,12 +50,14 @@ const validationSchema = yup.object().shape({
   //   .required("Please select bill."),
 });
 
-const UpdateCreditNote = ({
+const UpdateDebitNote = ({
   details,
   isModalOpen,
   setIsModalOpen,
-  creditNoteTypes,
+  debitNoteTypes,
 }) => {
+  console.log("update debit note: ", details);
+
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
@@ -64,9 +66,9 @@ const UpdateCreditNote = ({
     return current && current > moment().endOf("day");
   }
 
-  const { mutateAsync: updateCreditNote, isPending } = useMutation({
+  const { mutateAsync: updateDebitNote, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
-      const res = await updateCreditNoteRequest({
+      const res = await updateDebitNoteRequest({
         data,
         params: {
           company_id: companyId,
@@ -74,7 +76,7 @@ const UpdateCreditNote = ({
       });
       return res.data;
     },
-    mutationKey: ["update", "credit", "note"],
+    mutationKey: ["update", "debit", "note"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["get", "credit-notes", "list"]);
       const successMessage = res?.message;
@@ -92,12 +94,12 @@ const UpdateCreditNote = ({
   const onSubmit = async (data) => {
     const payload = {
       id: details.id,
-      credit_note_type: creditNoteTypes,
-      credit_note_number: details?.credit_note_number,
+      debit_note_type: debitNoteTypes,
+      debit_note_number: details?.debit_note_number,
       // sale_challan_id: 1010,
       // quality_id: 2020, // **************************************
       // gray_order_id: 3030,
-      party_id: details?.party_id,
+      //   party_id: details?.party_id,
       // sale_return_id: 5050,
       hsn_no: details.hsn_no,
       // extra_tex_name: "TDS",
@@ -125,14 +127,18 @@ const UpdateCreditNote = ({
       // extra_tex_amount: 7.5,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
     };
+    if (details.party) {
+      payload.party_id = details?.party?.id;
+    } else if (details.supplier) {
+      payload.party_id = details?.supplier?.id;
+    }
 
     if (
-      creditNoteTypes === "late" ||
-      creditNoteTypes === "discount" ||
-      creditNoteTypes === "claim" ||
-      creditNoteTypes === "other"
+      debitNoteTypes === "discount_note" ||
+      debitNoteTypes === "claim_note" ||
+      debitNoteTypes === "other"
     ) {
-      payload.credit_note_details = numOfBill.map((_, index) => {
+      payload.debit_note_details = numOfBill.map((_, index) => {
         return {
           bill_id: data[`bill_id_${index}`],
           model: data[`model_${index}`],
@@ -144,13 +150,11 @@ const UpdateCreditNote = ({
           amount: +data[`amount_${index}`],
         };
       });
-    } else if (creditNoteTypes === "sale_return") {
+    } else if (debitNoteTypes === "purchase_return") {
       payload.amount = data[`amount_${0}`];
     }
 
-    // console.log("on submit", data, payload);
-
-    await updateCreditNote({ data: payload, companyId: data.company_id });
+    await updateDebitNote({ data: payload, companyId: data.company_id });
   };
 
   const {
@@ -313,18 +317,18 @@ const UpdateCreditNote = ({
   // ]);
 
   useEffect(() => {
-    if (creditNoteTypes === "sale_return") {
+    if (debitNoteTypes === "purchase_return") {
       setNumOfBill([1]);
-    } else if (creditNoteTypes === "late" || creditNoteTypes === "discount") {
+    } else if (debitNoteTypes === "discount_note") {
       setNumOfBill(() =>
-        Array.from({ length: details.credit_note_details.length })
+        Array.from({ length: details.debit_note_details.length })
       );
-    } else if (creditNoteTypes === "claim" || creditNoteTypes === "other") {
+    } else if (debitNoteTypes === "claim_note" || debitNoteTypes === "other") {
       setNumOfBill(() =>
-        Array.from({ length: details.credit_note_details.length })
+        Array.from({ length: details.debit_note_details.length })
       );
     }
-  }, [creditNoteTypes, details]);
+  }, [debitNoteTypes, details]);
 
   // ----------------------------------------------------------------------------------------------------------------------
 
@@ -405,7 +409,7 @@ const UpdateCreditNote = ({
         }}
         footer={false}
         closeIcon={<CloseOutlined className="text-white" />}
-        title="Credit Note"
+        title="Debit Note"
         centered
         className={{
           header: "text-center",
@@ -459,8 +463,8 @@ const UpdateCreditNote = ({
                 </td>
                 <td width={"25%"}>
                   <div className="credit-note-info-title">
-                    <span>Credit Note No: </span>
-                    {details?.credit_note_number || "-"}
+                    <span>Debit Note No: </span>
+                    {details?.debit_note_number || "-"}
                   </div>
                   {/* <div>
                     <Form.Item
@@ -535,19 +539,38 @@ const UpdateCreditNote = ({
               </tr>
               <tr>
                 <td rowSpan={2}>
-                  <div className="credit-note-info-title">
-                    <span>Party: </span>
-                    {details?.party?.company_name || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Address: </span>
-                    {details?.party?.address_line_1 || ""}
-                    {details?.party?.address_line_2 || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span>{" "}
-                    {details?.party?.company_gst_number || ""}
-                  </div>
+                  {details?.party ? (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Party: </span>
+                        {details?.party?.company_name || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Address: </span>
+                        {details?.party?.user?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.party?.company_gst_number || ""}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Supplier: </span>
+                        {details?.supplier?.supplier_company || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Address: </span>
+                        {details?.supplier?.user?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.supplier?.user?.gst_no || ""}
+                      </div>
+                    </>
+                  )}
+
                   {/* <div className="credit-note-info-title">
                     <span>State Name: </span> {selectedCompany?.state || ""}
                   </div>
@@ -635,7 +658,7 @@ const UpdateCreditNote = ({
                             // company_id={company_id}
                             details={details}
                             setValue={setValue}
-                            creditNoteTypes={creditNoteTypes}
+                            creditNoteTypes={debitNoteTypes}
                             calculateTaxAmount={calculateTaxAmount}
                           />
                         );
@@ -917,7 +940,7 @@ const UpdateCreditNote = ({
   );
 };
 
-export default UpdateCreditNote;
+export default UpdateDebitNote;
 
 const SingleBillRender = ({
   index,
@@ -935,32 +958,35 @@ const SingleBillRender = ({
 
       // setValue(`bill_id_${index}`, billId);
       // setValue(`model_${index}`, "sale_bill");
-      if (creditNoteTypes === "sale_return") {
-        setValue(`amount_${index}`, +details.amount);
+      if (creditNoteTypes === "purchase_return") {
+        setValue(`amount_${index}`, +details.amount || 0);
         setValue(`quantity_${index}`, details.quantity);
-      } else if (creditNoteTypes === "late" || creditNoteTypes === "discount") {
-        setValue(`amount_${index}`, +details.credit_note_details[index].amount);
+      } else if (creditNoteTypes === "discount_note") {
+        setValue(`amount_${index}`, +details.debit_note_details[index].amount);
         setValue(
           `quantity_${index}`,
-          details.credit_note_details[index].quantity
+          details.debit_note_details[index].quantity
         );
         setValue(
           `bill_id_${index}`,
-          +details.credit_note_details[index].bill_id
+          +details.debit_note_details[index].bill_id
         );
-        setValue(`model_${index}`, details.credit_note_details[index].model);
-      } else if (creditNoteTypes === "claim" || creditNoteTypes === "other") {
-        setValue(`amount_${index}`, +details.credit_note_details[index].amount);
+        setValue(`model_${index}`, details.debit_note_details[index].model);
+      } else if (
+        creditNoteTypes === "claim_note" ||
+        creditNoteTypes === "other"
+      ) {
+        setValue(`amount_${index}`, +details.debit_note_details[index].amount);
         setValue(
           `quantity_${index}`,
-          details.credit_note_details[index].quantity
+          details.debit_note_details[index].quantity
         );
 
         setValue(
           `bill_id_${index}`,
-          +details.credit_note_details[index].bill_id
+          +details.debit_note_details[index].bill_id
         );
-        setValue(`model_${index}`, details.credit_note_details[index].model);
+        setValue(`model_${index}`, details.debit_note_details[index].model);
       }
     }
   }, [creditNoteTypes, details, index, setValue]);
