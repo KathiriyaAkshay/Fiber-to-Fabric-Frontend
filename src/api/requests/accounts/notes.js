@@ -22,6 +22,10 @@ export function creditNoteDropDownRequest({ params}) {
   return api.get(`account/credit-notes/bill/get`, {params})
 }
 
+export function getCreditNoteByIdRequest({id, params}){
+  return api.get(`account/credit-notes/get/${id}`, {params}) ;
+}
+
 // Debit notes services---------------------------------------------------
 
 export function getDebitNotesListRequest({ params }) {

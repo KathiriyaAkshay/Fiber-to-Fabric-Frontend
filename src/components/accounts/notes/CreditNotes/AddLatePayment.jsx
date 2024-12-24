@@ -304,12 +304,8 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
         page: 0,
         pageSize: 99999,
         end: getFinancialYearEnd("current"),
-        type: "discount_note"
+        type: "late_payment"
       };
-
-      console.log(params);
-      
-
       if (is_party) {
         params["party_id"] = party_id_value
       } else {
@@ -608,21 +604,23 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             }}
                           >
                             {saleBillList?.bills?.map((item) => (
-                              <Select.Option key={item.bill_no} value={`${item?.model}****${item?.bill_id}`}>
-                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <Select.Option key={`${item?.model}****${item?.bill_id}`} value={`${item?.model}****${item?.bill_id}`}>
+                                <div style={{ display: "flex", alignItems: "center"}}>
                                   <span style={{
                                     fontWeight: 600
                                   }}>{item.bill_no}</span>
                                   <Tag color={
-                                    item?.model == "sale_biills"?SALE_TAG_COLOR:
-                                    item?.model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-                                    item?.model == "job_gray_sale_bill"?JOB_TAG_COLOR:
-                                    item?.model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR:"default"
+                                    item?.model == "purchase_taka_bills"?PURCHASE_TAG_COLOR:
+                                    item?.model == "job_taka_bills"?JOB_TAG_COLOR:
+                                    item?.model == "yarn_bills"?YARN_SALE_BILL_TAG_COLOR:
+                                    item?.model == "beam_sale_bill"?SALE_TAG_COLOR:
+                                    item?.model == "receive_size_beam_bill"?BEAM_RECEIVE_TAG_COLOR:""
                                   } style={{ marginLeft: "8px" }}>
-                                    { item?.model == "sale_biills"?"Sale Bill": 
-                                      item?.model == "yarn_sale_bills"?"Yarn Sale":
-                                      item?.model == "job_gray_sale_bill"?"Job Gray":
-                                      item?.model == "beam_sale_bill"?"Beam Sale":item?.model 
+                                    { item?.model == "purchase_taka_bills"?"PURCHASE TAKA": 
+                                      item?.model == "job_taka_bills"?"JOB TAKA":
+                                      item?.model == "yarn_bills"?"YARN BILL":
+                                      item?.model == "beam_sale_bill"?"BEAM SALE":
+                                      item?.model == "receive_size_beam_bill"?"BEAM RECEIVE":""
                                     } 
                                   </Tag>
                                 </div>
@@ -763,7 +761,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
               <tr>
                 <td></td>
                 <td colSpan={3} style={{ textAlign: "right" }}>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     SGST @{" "}
                     <Controller
                       control={control}
@@ -774,12 +772,13 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     CGST @{" "}
                     <Controller
                       control={control}
@@ -790,12 +789,13 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     IGST @{" "}
                     <Controller
                       control={control}
@@ -806,12 +806,16 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div>Round Off</div>
+                  <div style={{
+                    fontWeight: 600,
+                    fontSize: 14
+                  }}>Round Off</div>
                 </td>
                 <td></td>
                 <td></td>

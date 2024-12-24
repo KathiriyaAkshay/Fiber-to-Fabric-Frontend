@@ -23,7 +23,7 @@ import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../utils/date";
 import ViewDebitNote from "../../../components/accounts/notes/DebitNotes/ViewDebitNote";
-import { CREDIT_NOTE_OTHER, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { CREDIT_NOTE_LATE_PAYMENT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import { SALE_TAG_COLOR, JOB_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../constants/tag";
 
 const DEBIT_NOTE_TYPES = [
@@ -107,7 +107,9 @@ const DebitNotes = () => {
         if (debitNoteType == "other") {
           return (
             <div>
-              {debit_note_details[0]?.invoice_no || debit_note_details[0]?.bill_no}
+              {record?.debit_note_details
+                ?.map((element) => element?.invoice_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                .join(", ")}
             </div>
           )
         } else if (debitNoteType == "purchase_return") {
@@ -167,9 +169,32 @@ const DebitNotes = () => {
             )
           }
         } else if (debitNoteType == "other") {
+          
+          let check_type = record?.debit_note_details[0]?.model ; 
+          let current_model = null ; 
+
+          if (check_type == null || check_type == undefined){
+            current_model = "OTHER" ;
+          } else {
+            const modelLabels = {
+              sale_bills: "SALE BILL",
+              yarn_sale_bills: "YARN SALE",
+              job_gray_sale_bill: "JOB GRAY",
+              beam_sale_bill: "BEAM SALE",
+            };
+            
+            // Get the label using the mapping object
+            if (modelLabels[check_type] == undefined){
+              current_model = check_type ; 
+            } else {
+              current_model = modelLabels[check_type]
+            }
+            
+          }
+
           return (
-            <Tag color={CREDIT_NOTE_OTHER}>
-              OTHER
+            <Tag color={current_model == "OTHER"?CREDIT_NOTE_OTHER:CREDIT_NOTE_LATE_PAYMENT}>
+              {current_model}
             </Tag>
           )
         } else if (debitNoteType == "claim_note") {

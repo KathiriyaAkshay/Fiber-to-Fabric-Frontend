@@ -7,6 +7,7 @@ import {
   Select,
   Space,
   Spin,
+  Tooltip,
   Typography,
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
@@ -27,6 +28,7 @@ import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnRec
 import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
 import moment from "moment";
 import SundaryDebitNoteGenerate from "../../../components/accounts/notes/DebitNotes/sundaryDebiteNoteGenerate";
+import SunadryCreditNoteGenerate from "../../../components/accounts/notes/CreditNotes/sundaryCreditNoteGenerate";
 
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
@@ -233,6 +235,11 @@ const SundryCreditor = () => {
   const [debitNoteSelection, setDebitNoteSelection] = useState([]) ; 
   const [debitNoteModelData, setDebitNoteModelData] = useState(undefined) ; 
 
+  // ========= Credit note information model =============== // 
+  const [creditNoteMoelOpen, setCreditNoteModelOpen] = useState(false) ; 
+  const [creditNoteSelection, setCreditNoteSelection] = useState([]) ; 
+  const [creditNoteModelData, setCreditNoteModelData] = useState(undefined) ;
+
   return (
     <>
       <div className="flex flex-col gap-2 p-4">
@@ -386,10 +393,15 @@ const SundryCreditor = () => {
                     ReteriveBillInformation = {async(model, bill_id) => {
                       await ReteriveBillInformation(model, bill_id)
                     } }
-                    handleDebitNoteClick = {(bill, Data) => {
+                    handleDebitNoteClick = {(bill, data) => {
                       setDebitNoteModelOpen(true); 
                       setDebitNoteSelection([bill])
                       setDebitNoteModelData(data);
+                    }}
+                    handleCreditNoteClick = {(bill, data) => {
+                      setCreditNoteModelOpen(true) ; 
+                      setCreditNoteSelection([bill]) ; 
+                      setCreditNoteModelData(data);
                     }}
                   />
                 ))
@@ -448,6 +460,18 @@ const SundryCreditor = () => {
           setDebitNoteSelection={setDebitNoteSelection}
         />
       )}
+      
+      {creditNoteMoelOpen && (
+        <SunadryCreditNoteGenerate
+          open={creditNoteMoelOpen}
+          setOpen={setCreditNoteModelOpen}
+          bill_details={creditNoteSelection}
+          debiteNoteData={setCreditNoteSelection}
+          setDebitNoteSelection={setCreditNoteModelData}
+        />
+      )}
+
+      
 
     </>
   );
@@ -461,7 +485,8 @@ const TableWithAccordion = ({
   selectedRecords,
   storeRecord,
   ReteriveBillInformation,
-  handleDebitNoteClick
+  handleDebitNoteClick,
+  handleCreditNoteClick
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(null);
 
@@ -520,8 +545,12 @@ const TableWithAccordion = ({
               :moment(bill?.due_date).format("DD-MM-YYYY") ;
               const dueDays = calculateDaysDifference(dueDate) ; 
               const interestAmount = CalculateInterest(dueDays, bill?.amount) ; 
+              
+              const paid_amount = +bill?.paid_amount; 
+              const debit_note_amount = +bill?.debit_note_net_amount ; 
+              const bill_amount = +bill?.amount ; 
 
-              const part_payment = ""
+              const net_amount = bill_amount - debit_note_amount - paid_amount ; 
 
               return (
                 <tr
@@ -538,10 +567,26 @@ const TableWithAccordion = ({
                     <div>
                       {bill?.bill_no || ""}
                       {bill?.debit_note_id !== null && (
-                        <div>( {bill?.debit_note_number} )</div>
+                        <div style={{
+                          fontSize: 12, 
+                          color: "red", 
+                          cursor: "pointer"
+                        }}>
+                          <Tooltip title = {`DEBIT NOTE - ${bill?.debit_note_number}`}>
+                            ( {bill?.debit_note_number} )
+                          </Tooltip>
+                        </div>
                       )}
                       {bill?.credit_note_id !== null && (
-                        <div>( {bill?.credit_note_number} )</div>
+                        <div style={{
+                          fontSize: 12,
+                          color: "green", 
+                          cursor: "pointer"
+                        }}>
+                          <Tooltip title = {`CRDIT NOTE - ${bill?.credit_note_number}`}>
+                            ( {bill?.credit_note_number} )
+                          </Tooltip>
+                        </div>
                       )}
                     </div>
                   </td>
@@ -556,14 +601,26 @@ const TableWithAccordion = ({
                     bill?.model === "job_rework_bill" ? "REWORK BILL" : ""}
                   </td>
                   <td>{bill?.taka || 0}</td>
+
                   <td>{bill?.meters || 0}</td>
-                  <td>{bill?.amount || 0}</td>
+                  
+                  <td>
+                    <Tooltip
+                      title = {`${bill_amount} - ${debit_note_amount} - ${paid_amount} = ${net_amount}`}
+                    >
+                      {net_amount || 0}
+                    </Tooltip>
+                  </td>
+                  
                   <td >{dueDate}</td>
                   <td className={dueDays != 0?"sundary-due-date":""} >
-                    {dueDays == 0?0:`+${dueDays}`}
+                    {dueDays == 0?0:`+${dueDays}D`}
                   </td>
                   <td className={interestAmount !== 0?"sundary-due-date":""}>
-                    {interestAmount}
+
+                    {/* If found any credit note than show credit note amount rather than calculate interest amount  */}
+                    {bill?.credit_note_id !== null?
+                      parseFloat(bill?.credit_note_net_amount).toFixed(2):interestAmount}
                   </td>
                   <td>
                     <Space>
@@ -574,10 +631,8 @@ const TableWithAccordion = ({
                         }}>
                         <EyeOutlined />
                       </Button>
-
-                      <PaymentModal />
                       
-                      {bill?.crdit_note_id == null?<>
+                      {bill?.credit_note_id == null?<>
                         <Button
                           style={{
                             display: "flex",
@@ -593,12 +648,17 @@ const TableWithAccordion = ({
                           />
                         </Button>
                       </>:<>
-                        <ViewCreditNoteModal />  
+                        <TabletFilled style={{color: "blue"}}
+                          onClick={() => {
+                            handleCreditNoteClick(bill, data) ;
+                          }}
+                        /> 
                       </>}
 
                       {bill?.debit_note_id !== null && (
                         <>
-                          <TabletFilled color="gray" 
+                          <TabletFilled 
+                            style={{color: "gray"}} 
                             onClick={() => {
                               handleDebitNoteClick(bill, data)
                             }}/>

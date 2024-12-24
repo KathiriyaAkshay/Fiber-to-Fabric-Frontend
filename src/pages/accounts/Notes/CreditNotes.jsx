@@ -27,7 +27,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
-import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
@@ -302,24 +302,63 @@ const CreditNotes = () => {
       key: "credit_note_type",
       render: (text, record) => {
         if (creditNoteTypes === "late") {
+          // Helper function to map models to labels
+          const getModelLabel = (model) => {
+            switch (model) {
+              case "purchase_taka_bills":
+                return "PURCHASE TAKA";
+              case "job_taka_bills":
+                return "JOB TAKA";
+              case "yarn_bills":
+                return "YARN BILL";
+              case "beam_sale_bill":
+                return "BEAM SALE";
+              case "receive_size_beam_bill":
+                return "BEAM RECEIVE";
+              default:
+                return "";
+            }
+          };
+        
+          // Helper function to map models to tag colors
+          const getModelTagColor = (model) => {
+            switch (model) {
+              case "purchase_taka_bills":
+                return PURCHASE_TAG_COLOR;
+              case "job_taka_bills":
+                return JOB_TAG_COLOR;
+              case "yarn_bills":
+                return YARN_SALE_BILL_TAG_COLOR;
+              case "beam_sale_bill":
+                return SALE_TAG_COLOR;
+              case "receive_size_beam_bill":
+                return BEAM_RECEIVE_TAG_COLOR;
+              default:
+                return "";
+            }
+          };
+        
+          // Get unique labels
+          const uniqueLabels = [
+            ...new Set(
+              record?.credit_note_details?.map((element) => getModelLabel(element?.model))
+            ),
+          ];
+        
+          // Render the tags
           return (
             <div style={{ fontWeight: 600 }}>
-              {[
-                ...new Set(
-                  record?.credit_note_details?.map((element) =>
-                    element?.model === "sale_biills"
-                      ? "Sale Bill"
-                      : element?.model === "yarn_sale_bills"
-                      ? "Yarn Sale"
-                      : element?.model === "job_gray_sale_bill"
-                      ? "Job Gray Sale"
-                      : element?.model === "beam_sale_bill"
-                      ? "Beam Sale"
-                      : "N/A"
-                  )
-                ),
-              ].map((label, index) => (
-                <Tag key={index}>{label}</Tag>
+              {uniqueLabels.map((label, index) => (
+                <Tag
+                  key={index}
+                  color={getModelTagColor(
+                    record?.credit_note_details?.find(
+                      (element) => getModelLabel(element?.model) === label
+                    )?.model
+                  )}
+                >
+                  {label}
+                </Tag>
               ))}
             </div>
           );
