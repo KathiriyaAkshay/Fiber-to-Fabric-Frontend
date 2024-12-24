@@ -95,8 +95,10 @@ const CashBookList = () => {
       key: "account_name",
       render: (text, record) => {
         return(
-          <div>
-            {record?.particular_type}
+          <div style={{
+            fontWeight: 600
+          }}>
+            {String(record?.particular_type).toUpperCase()}
           </div>
         )
       },

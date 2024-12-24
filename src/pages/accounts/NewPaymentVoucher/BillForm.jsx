@@ -307,7 +307,7 @@ const BillForm = () => {
     selectedBills.forEach((bill) => {
       let finalTotalAmount = 0;
       
-      let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
+      let netAmount = (+bill?.net_amount - (+bill?.debit_note_amount) -  (+bill?.exists_part_payment || 0) - (+bill?.part_payment)) || 0 ; 
       finalTotalAmount += netAmount;
       
       let tdsAmount = +bill?.tds; 
@@ -337,20 +337,18 @@ const BillForm = () => {
 
   const selectBillHandler = (e, bill) => {
     if (e.target.checked) {
-      setSelectedBills((prev) => {
-        return [
-          ...prev,
-          {
-            ...bill,
-            // paid_amount: bill.net_amount,
-            paid_amount: 0,
-            is_paid: true,
-            part_payment: bill.part_payment || 0,
-            less_percentage: bill.less_percentage || 0,
-            plus_percentage: bill.plus_percentage || 0,
-          },
-        ];
-      });
+      setSelectedBills((prev) => [
+        ...prev,
+        {
+          ...bill,
+          exists_part_payment: bill?.part_payment || 0,
+          paid_amount: 0,
+          is_paid: true,
+          part_payment: 0,
+          less_percentage: 0,
+          plus_percentage: 0,
+        },
+      ]);
     } else {
       setSelectedBills((prev) => {
         return prev.filter((item) => item?.bill_id !== +bill?.bill_id && item?.model != bill?.model);
@@ -788,8 +786,6 @@ const BillForm = () => {
                 const dueDays = bill?.model == "credit_notes"?0:calculateDaysDifference(dueDate) ; 
 
                 let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
-                let tdsAmount = (netAmount*(+bill?.tds)) / 100 ;
-
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
@@ -804,7 +800,15 @@ const BillForm = () => {
                       color: bill?.model == "credit_notes"?"green":"#000"
                      }}>
                       <Tooltip title = {bill?.debit_note_number !== undefined?`Debit note : ${bill?.debit_note_number}`:""}>
-                        {bill.bill_no} {bill?.debit_note_number !== undefined?`(${bill?.debit_note_number})`:""}
+                        <div>
+                          {bill.bill_no}
+                        </div>
+                        <div style={{
+                          color: "blue", 
+                          fontSize: 12
+                        }}>
+                          {bill?.debit_note_number !== undefined?`(${bill?.debit_note_number})`:""}
+                        </div>
                       </Tooltip>
                     </td>
                     
@@ -836,8 +840,8 @@ const BillForm = () => {
                       {dayjs(bill.bill_date).format("DD-MM-YYYY")}
                     </td>
                     
-                    <td style={{ textAlign: "center", color: dueDays == 0?"#000":"red" }}>
-                      {`${dueDays !== 0 ? '+' + dueDays : "0"}`}
+                    <td style={{ textAlign: "center", color: dueDays == 0?"#000":"red", fontWeight: dueDays == 0?500:600 }}>
+                      {`${dueDays !== 0 ? '+' + dueDays + 'D' : "0"}`}
                     </td>
                     
                     <td style={{ textAlign: "center", width: "200px" }}>
