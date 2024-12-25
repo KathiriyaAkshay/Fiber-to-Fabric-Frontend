@@ -1049,3 +1049,13 @@ h2 {
 .bank-balance-card .ant-collapse-header-text{
   font-weight:600;
 }
+
+.dashboard-monthlyproduction-table thead th{
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.dashboard-monthlyproduction-table tbody td{
+  padding-top: 3px;
+  padding-bottom: 3px;
+}

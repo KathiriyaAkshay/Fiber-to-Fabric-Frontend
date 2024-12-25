@@ -367,6 +367,8 @@ const Dashboard = () => {
           </Row>
 
           <Row gutter={6} className="mt-6 w-100">
+            
+            {/* Monthly Production related information chart  */}
             <Col span={10}>
               <ChartWrapper
                 chart="monthly_production"
@@ -374,9 +376,12 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
+            
+            {/* Monthly Production table  */}
             <Col span={6}>
               <MonthlyProductionTable />
             </Col>
+            
             <Col span={8}>
               <ChartWrapper
                 chart="BAR"
@@ -384,6 +389,7 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
+            
             <Col span={8}>
               <ChartWrapper
                 chart="PIE"

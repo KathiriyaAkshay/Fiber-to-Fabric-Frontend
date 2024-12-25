@@ -821,6 +821,8 @@ const TableWithAccordion = ({ data,
               
               let dueDate= moment(bill?.due_days).format("DD-MM-YYYY") ; 
               let dueDays = isNaN(calculateDaysDifference(dueDate))?0:calculateDaysDifference(dueDate) ; 
+              let billDate = moment(bill?.createdAt).format("DD-MM-YYYY") ; 
+              let billDays = isNaN(calculateDaysDifference(billDate))?0:calculateDaysDifference(billDate) ; 
               let model = bill?.model == "sale_bills" ? "SALE BILL" :
                 bill?.model == "yarn_sale_bills" ? "YARN SALE" :
                 bill?.model == "job_gray_sale_bill" ? "JOB GRAY SALE" :
@@ -834,6 +836,11 @@ const TableWithAccordion = ({ data,
               let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0  ; 
               let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0 ;
               let finalAmount = total_amount - paid_amount - credit_note_amount;
+              let interest_amount = 0 ; 
+              if (bill?.credit_note_id == null){
+                interest_amount = CalculateInterest(dueDays, bill?.amount)
+              }
+
               return (
                 <tr key={index + "_bill"} className="sundary-data">
                   <td>
@@ -882,10 +889,28 @@ const TableWithAccordion = ({ data,
                     </Tooltip>
                   </td>
                   
+                  {/* Due Days related information  */}
+                  {/* Bill days information also showing in ()  */}
+
                   <td style={{
                     color: +dueDays != 0?"red":"#000", 
-                    fontWeight: 600
-                  }}>{dueDays <= 0?0:`+${dueDays}` || 0}</td>
+                    fontWeight: 600,
+                    cursor: "pointer"
+                  }}>
+                    <Tooltip title = {`Due Days : ${dueDays}`}>{dueDays <= 0?0:`+${dueDays}D` || 0}</Tooltip>
+                    <Tooltip title = {`Bill Days: ${billDays}`}>
+                      <span style={{
+                        color: "blue", 
+                        fontWeight: 500, 
+                        fontSize: 12, 
+                        paddingLeft: 5
+                      }}>( {billDays} )</span>
+                    </Tooltip>
+                  </td>
+                    
+                  {/* Interest amount information  */}
+                  {/* If creadit note is created than show inerest amount is 0 otherwise normal interest amount  */}
+                  {/* Credit note and Debit note related interest amount not show  */}
 
                   <td>
                     {["credit_notes", "debit_notes"]?.includes(bill?.model)?<>
@@ -912,7 +937,7 @@ const TableWithAccordion = ({ data,
 
                       {bill?.interest_paid_date == null && (
                         <>
-                          {CalculateInterest(dueDays, bill?.amount)}
+                          {interest_amount}
                         </>
                       )}
                     </>}
