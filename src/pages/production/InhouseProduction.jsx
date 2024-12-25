@@ -487,6 +487,8 @@ const InhouseProduction = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: productionList?.count,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

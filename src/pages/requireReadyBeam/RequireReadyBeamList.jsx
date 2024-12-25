@@ -8,7 +8,7 @@ import {
   Table,
   Typography,
 } from "antd";
-import { EditOutlined, /*PlusCircleOutlined*/ } from "@ant-design/icons";
+import { EditOutlined /*PlusCircleOutlined*/ } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../hooks/usePagination";
@@ -155,6 +155,8 @@ const RequireReadyBeamList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: requireReadyBeamList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

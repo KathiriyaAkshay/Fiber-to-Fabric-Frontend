@@ -109,6 +109,8 @@ function AddPartnerModal({ open, onCancel, companyDetails }) {
           rowKey="id"
           style={{ overflow: "auto" }}
           pagination={{
+            current: page + 1,
+            pageSize: pageSize,
             total: partnerListRes?.count || 0,
             showSizeChanger: true,
             onShowSizeChange: onShowSizeChange,

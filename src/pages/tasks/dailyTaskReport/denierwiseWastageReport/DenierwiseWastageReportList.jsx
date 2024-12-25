@@ -81,7 +81,7 @@ function DenierwiseWastageReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index )+ 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -184,6 +184,8 @@ function DenierwiseWastageReportList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: reportListRes?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -193,10 +195,9 @@ function DenierwiseWastageReportList() {
     );
   }
 
-  
   const disableFutureDates = (current) => {
     // Check if the current date is after (or equal to) the end of the current day
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   return (

@@ -290,6 +290,8 @@ function SupplierList() {
           textTransform: "capitalize",
         }}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: userListRes?.supplierList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

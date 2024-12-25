@@ -9,7 +9,7 @@ import {
   Typography,
   Spin,
   Space,
-  Tag
+  Tag,
 } from "antd";
 import { EditOutlined, FilePdfOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -32,76 +32,80 @@ import DebitNote from "../../../../components/purchase/purchaseReturn/DebitNote"
 import moment from "moment/moment";
 import ParticularPurchaseReturnInfo from "../../../../components/purchase/purchaseReturn/particularPurchaseReturnInfo";
 
-const PurchaseReturnInformation = ({item}) => {
-
+const PurchaseReturnInformation = ({ item }) => {
   const makeUniqueList = (items) => {
-    const filteredItems = items.filter(item => item.purchased_return_id !== null);
+    const filteredItems = items.filter(
+      (item) => item.purchased_return_id !== null
+    );
     const grouped = filteredItems.reduce((acc, item) => {
-        const key = item.purchased_return_id;
-        if (!acc[key]) {
-            acc[key] = [];
-        }
-        acc[key].push(item);
-        return acc;
+      const key = item.purchased_return_id;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
     }, {});
 
     // Convert grouped object back into an array
     return Object.values(grouped);
   };
 
-  const uniqueList = makeUniqueList(item?.purchase_taka_challan?.purchase_challan_details);
+  const uniqueList = makeUniqueList(
+    item?.purchase_taka_challan?.purchase_challan_details
+  );
 
   const columns = [
     {
-      title: 'Return Taka',
+      title: "Return Taka",
       render: (text, record) => {
-        return(
-          <div>{record?.length}</div>
-        )
-      }
+        return <div>{record?.length}</div>;
+      },
     },
     {
-      title: 'Return Meter',
+      title: "Return Meter",
       render: (text, record) => {
-        let total_return_meter = 0 ; 
+        let total_return_meter = 0;
         record?.map((element) => {
           total_return_meter += +element?.meters || +element?.meter;
-        })
-        return(
-          <div style={{
-            fontWeight: 600,
-            color: "red"
-          }}>
+        });
+        return (
+          <div
+            style={{
+              fontWeight: 600,
+              color: "red",
+            }}
+          >
             {total_return_meter}
           </div>
-        )
-      }
+        );
+      },
     },
     {
-      title: "Action", 
+      title: "Action",
       render: (record) => {
-        let taka_no = []; 
+        let taka_no = [];
         record?.map((element) => {
-          taka_no.push(element?.taka_no) ;
-        })
-        return(
+          taka_no.push(element?.taka_no);
+        });
+        return (
           <Space>
             <ParticularPurchaseReturnInfo
-              details={{...item, new_challan_details: record}}
+              details={{ ...item, new_challan_details: record }}
             />
           </Space>
-        )
-      }
-    }
+        );
+      },
+    },
   ];
-
 
   return (
     <>
-      <div style={{
-        paddingTop: 10, 
-        paddingBottom: 10
-      }}>
+      <div
+        style={{
+          paddingTop: 10,
+          paddingBottom: 10,
+        }}
+      >
         <Table
           dataSource={uniqueList}
           columns={columns}
@@ -110,9 +114,8 @@ const PurchaseReturnInformation = ({item}) => {
         />
       </div>
     </>
-  )
-}
-
+  );
+};
 
 const PurchaseReturnList = () => {
   const navigate = useNavigate();
@@ -216,7 +219,6 @@ const PurchaseReturnList = () => {
     return current && current > moment().endOf("day");
   }
 
-
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
     const body = purchaseReturnList?.rows?.map((item, index) => {
@@ -306,10 +308,8 @@ const PurchaseReturnList = () => {
       dataIndex: ["purchase_taka_challan", "challan_no"],
       key: "challan_no",
       render: (text, record) => {
-        return (
-          <Tag color="#108ee9">{text}</Tag>
-        )
-      }
+        return <Tag color="#108ee9">{text}</Tag>;
+      },
     },
     {
       title: "Quality",
@@ -355,7 +355,7 @@ const PurchaseReturnList = () => {
     },
     {
       title: "Total Meter",
-      render: (details) => details?.purchase_taka_challan?.total_meter
+      render: (details) => details?.purchase_taka_challan?.total_meter,
     },
     // {
     //   title: "Return Date",
@@ -398,6 +398,8 @@ const PurchaseReturnList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: purchaseReturnList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -405,14 +407,12 @@ const PurchaseReturnList = () => {
         }}
         expandable={{
           expandedRowRender: (record) => {
-            return <PurchaseReturnInformation 
-              item={record}
-            />;
+            return <PurchaseReturnInformation item={record} />;
           },
-          expandedRowKeys: purchaseReturnList?.rows?.map((element) => element?.id) || [], // Correct syntax
+          expandedRowKeys:
+            purchaseReturnList?.rows?.map((element) => element?.id) || [], // Correct syntax
         }}
       />
-
     );
   }
 

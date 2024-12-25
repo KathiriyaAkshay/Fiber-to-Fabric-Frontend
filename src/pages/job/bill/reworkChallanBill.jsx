@@ -229,23 +229,19 @@ const ReworkChallanBill = () => {
       dataIndex: "due_days",
       key: "due_days",
       render: (text, record) => {
-          let due_date = record?.job_rework_bill?.due_date;
-          due_date = new Date(due_date);
+        let due_date = record?.job_rework_bill?.due_date;
+        due_date = new Date(due_date);
 
-          let today = new Date();
+        let today = new Date();
 
-          let timeDifference = due_date.getTime() - today.getTime();
-          let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+        let timeDifference = due_date.getTime() - today.getTime();
+        let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
 
-          if (daysDifference < 0) {
-            daysDifference = 0;
-          }
-        return(
-          <div>
-            {daysDifference}
-          </div>
-        )
-      }
+        if (daysDifference < 0) {
+          daysDifference = 0;
+        }
+        return <div>{daysDifference}</div>;
+      },
     },
     {
       title: "Status",
@@ -318,6 +314,8 @@ const ReworkChallanBill = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: reworkChallanBillData?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -331,11 +329,19 @@ const ReworkChallanBill = () => {
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_taka}</Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_meter}</Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_taka}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_meter}
+              </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_amounts}</Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_net_amounts}</Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_amounts}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_net_amounts}
+              </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>

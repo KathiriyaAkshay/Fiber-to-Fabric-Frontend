@@ -179,8 +179,8 @@ const StockPurchaseTaka = () => {
     },
     {
       title: "Sale Ch. No.",
-      dataIndex: "saleChNo",  // Update this to match the actual data field name, or remove if unused
-      render: (_, record) => <div>-</div>,  // Only include `record` if you need it
+      dataIndex: "saleChNo", // Update this to match the actual data field name, or remove if unused
+      render: (_, record) => <div>-</div>, // Only include `record` if you need it
     },
     {
       title: "Status",
@@ -190,13 +190,11 @@ const StockPurchaseTaka = () => {
           <>
             <Tag color="green">In Stock</Tag>
           </>
-        ) : record?.sale_challan_id !== null?
-          (
-            <>
-              <Tag color="red">Sale</Tag>
-            </>
-          )
-        :(
+        ) : record?.sale_challan_id !== null ? (
+          <>
+            <Tag color="red">Sale</Tag>
+          </>
+        ) : (
           <>
             <Tag color="red">Sale</Tag>
           </>
@@ -219,6 +217,8 @@ const StockPurchaseTaka = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: jobTakaList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

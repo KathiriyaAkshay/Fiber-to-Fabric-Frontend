@@ -146,37 +146,31 @@ const ReceiveReworkTaka = () => {
     {
       title: "Date",
       render: (text, record) => {
-        return (
-          moment(record?.createdAt).format("DD-MM-YYYY")
-        );
-      }
-    }, 
+        return moment(record?.createdAt).format("DD-MM-YYYY");
+      },
+    },
     {
-      title: "Rework Challan No", 
+      title: "Rework Challan No",
       render: (text, record) => {
-        return(
-          <div>{record.rework_challan_id || "-"}</div>
-        )
-      }
-    },  
+        return <div>{record.rework_challan_id || "-"}</div>;
+      },
+    },
     {
       title: "Taka No",
       dataIndex: "taka_no",
       key: "taka_no",
       sorter: (a, b) => a.taka_no - b.taka_no,
       render: (text, record) => {
-        if (record?.is_used_in_taka){
-          return(
+        if (record?.is_used_in_taka) {
+          return (
             <div>
               {text} <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>Sold</Tag>
             </div>
-          )
+          );
         } else {
-          return(
-            <div>{text}</div>
-          )
+          return <div>{text}</div>;
         }
-      }
+      },
     },
     {
       title: "Total Meter",
@@ -202,29 +196,26 @@ const ReceiveReworkTaka = () => {
       dataIndex: "wastageInKg",
       render: (text, record) => {
         let total_received_weight = +record?.received_weight;
-        let short_value = +record?.short; 
-        let wastage = (total_received_weight *short_value) / 100 ; 
-        return(
-          <div>
-            {parseFloat(wastage).toFixed(2)}
-          </div>
-        )
-      }
+        let short_value = +record?.short;
+        let wastage = (total_received_weight * short_value) / 100;
+        return <div>{parseFloat(wastage).toFixed(2)}</div>;
+      },
     },
     {
       title: "TP",
-      dataIndex: "tp"
+      dataIndex: "tp",
     },
     {
-      title: "Piece", 
-      dataIndex: "pis"
+      title: "Piece",
+      dataIndex: "pis",
     },
     {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
       key: ["inhouse_quality"],
-      render: (quality) =>
+      render: (quality) => (
         <Tag color="green">{`${quality.quality_name} (${quality.quality_weight})`}</Tag>
+      ),
     },
     {
       title: "Supplier Name",
@@ -283,6 +274,8 @@ const ReceiveReworkTaka = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: receiveReworkTakaList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

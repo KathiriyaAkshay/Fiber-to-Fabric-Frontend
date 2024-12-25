@@ -145,6 +145,8 @@ const Turnover = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: turnoverData ? turnoverData?.length : 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
