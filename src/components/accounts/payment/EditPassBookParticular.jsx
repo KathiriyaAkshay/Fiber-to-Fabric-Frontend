@@ -152,68 +152,74 @@ const EditPassBookParticular = () => {
             </tr>
           </thead>
           <tbody>
-            {particularRes && particularRes.rows.length
-              ? particularRes?.rows?.map((_, index) => {
-                  const fieldNumber = index + 1;
-                  return (
-                    <tr key={index + "_particular_row"}>
-                      <td style={{ textAlign: "center" }}>{index + 1}.</td>
-                      <td>
-                        <Form.Item
+            {particularRes && particularRes.rows.length ? (
+              particularRes?.rows?.map((_, index) => {
+                const fieldNumber = index + 1;
+                return (
+                  <tr key={index + "_particular_row"}>
+                    <td style={{ textAlign: "center" }}>{index + 1}.</td>
+                    <td>
+                      <Form.Item
+                        name={`particular_name_${fieldNumber}`}
+                        validateStatus={
+                          errors[`particular_name_${fieldNumber}`]
+                            ? "error"
+                            : ""
+                        }
+                        help={
+                          errors[`particular_name_${fieldNumber}`] &&
+                          errors[`particular_name_${fieldNumber}`].message
+                        }
+                        wrapperCol={{ sm: 24 }}
+                        style={{ margin: 0 }}
+                      >
+                        <Controller
+                          control={control}
                           name={`particular_name_${fieldNumber}`}
-                          validateStatus={
-                            errors[`particular_name_${fieldNumber}`]
-                              ? "error"
-                              : ""
-                          }
-                          help={
-                            errors[`particular_name_${fieldNumber}`] &&
-                            errors[`particular_name_${fieldNumber}`].message
-                          }
-                          wrapperCol={{ sm: 24 }}
-                          style={{ margin: 0 }}
-                        >
-                          <Controller
-                            control={control}
-                            name={`particular_name_${fieldNumber}`}
-                            render={({ field }) => {
-                              return <Input {...field} />;
-                            }}
-                          />
-                        </Form.Item>
-                      </td>
-                      <td>
-                        <Form.Item
+                          render={({ field }) => {
+                            return <Input {...field} />;
+                          }}
+                        />
+                      </Form.Item>
+                    </td>
+                    <td>
+                      <Form.Item
+                        name={`head_${fieldNumber}`}
+                        validateStatus={
+                          errors[`head_${fieldNumber}`] ? "error" : ""
+                        }
+                        help={
+                          errors[`head_${fieldNumber}`] &&
+                          errors[`head_${fieldNumber}`].message
+                        }
+                        wrapperCol={{ sm: 24 }}
+                        style={{ margin: 0 }}
+                      >
+                        <Controller
+                          control={control}
                           name={`head_${fieldNumber}`}
-                          validateStatus={
-                            errors[`head_${fieldNumber}`] ? "error" : ""
-                          }
-                          help={
-                            errors[`head_${fieldNumber}`] &&
-                            errors[`head_${fieldNumber}`].message
-                          }
-                          wrapperCol={{ sm: 24 }}
-                          style={{ margin: 0 }}
-                        >
-                          <Controller
-                            control={control}
-                            name={`head_${fieldNumber}`}
-                            render={({ field }) => {
-                              return (
-                                <Select
-                                  {...field}
-                                  placeholder="Select Head"
-                                  options={HEAD_OPTIONS}
-                                />
-                              );
-                            }}
-                          />
-                        </Form.Item>
-                      </td>
-                    </tr>
-                  );
-                })
-              : null}
+                          render={({ field }) => {
+                            return (
+                              <Select
+                                {...field}
+                                placeholder="Select Head"
+                                options={HEAD_OPTIONS}
+                              />
+                            );
+                          }}
+                        />
+                      </Form.Item>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={3} style={{ textAlign: "center" }}>
+                  No Particulars Found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
         <Flex gap={10} style={{ marginTop: "1rem" }} justify="flex-end">
