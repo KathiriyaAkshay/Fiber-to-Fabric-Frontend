@@ -17,6 +17,7 @@ import {
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
+import CreditNoteInvoice from "../../../components/accounts/notes/CreditNotes/CreditNoteInvoice";
 import AddCreditNotes from "../../../components/accounts/notes/CreditNotes/AddCreditNotes";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -27,16 +28,25 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
-import { CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import {
+  CREDIT_NOTE_CLAIM,
+  CREDIT_NOTE_DISCOUNT,
+  CREDIT_NOTE_OTHER,
+  CREDIT_NOTE_SALE_RETURN,
+  YARN_SALE_BILL_TAG_COLOR,
+} from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
 import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
+import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
+import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
+// import UpdateCreditNode from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
-  { label: "Late Payment", value: "late_payment" },
+  { label: "Late Payment", value: "late" },
   { label: "Claim Note", value: "claim" },
   { label: "Discount Note", value: "discount" },
   { label: "Other", value: "other" },
@@ -52,6 +62,8 @@ const CreditNotes = () => {
   const [toDate, setToDate] = useState(null);
   const [saleReturnNo, setSaleReturnNo] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [creditNoteData, setCreditNoteData] = useState(null);
 
   const debounceParty = useDebounce(party, 150);
   const debounceQuality = useDebounce(quality, 150);
@@ -72,7 +84,6 @@ const CreditNotes = () => {
     },
     enabled: Boolean(companyId),
   });
-
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -164,57 +175,53 @@ const CreditNotes = () => {
       title: "Credit No",
       dataIndex: "credit_note_number",
       key: "credit_note_number",
-      render: (text, record) => (
-        <Tag color="green">{text}</Tag>
-      )
+      render: (text) => <Tag color="green">{text}</Tag>,
     },
     {
       title: "Challan/Bill",
       dataIndex: "challan",
       key: "challan",
       render: (text, record) => {
-        if (creditNoteTypes == "other"){
-          return(
+        if (creditNoteTypes == "other") {
+          return <div>{record?.credit_note_details[0]?.invoice_no}</div>;
+        } else if (creditNoteTypes == "sale_return") {
+          return (
             <div>
-              {record?.credit_note_details[0]?.invoice_no}
+              {record?.sale_challan_return?.sale_challan?.challan_no ||
+                record?.yarn_sale?.challan_no ||
+                "-"}
             </div>
-          )
-        } else if (creditNoteTypes == "sale_return"){
-          return(
-            <div>
-              { record?.sale_challan_return?.sale_challan?.challan_no || 
-                record?.yarn_sale?.challan_no || "-"  
-              }
-            </div>
-          )
+          );
         } else {
           return (
-            <div style={{
-              fontWeight: 600
-            }}>
+            <div
+              style={{
+                fontWeight: 600,
+              }}
+            >
               {record?.credit_note_details
-                ?.map((element) => element?.bill_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                ?.map((element) => element?.bill_no || "N/A") // Map through to get bill_no or "N/A" if it's null
                 .join(", ")}
             </div>
           );
         }
-      }
+      },
     },
     {
       title: "Quality/Denier",
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
       render: (text, record) => {
-        console.log(record?.yarn_sale);
-        
-        if (record?.yarn_sale == null){
-          return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
+        if (record?.yarn_sale == null) {
+          return `${text?.quality_name || ""} (${
+            text?.quality_weight || ""
+          }KG)`;
         } else {
-          return(
+          return (
             <div>
               {`${record?.yarn_sale?.yarn_stock_company?.yarn_denier}( ${record?.yarn_sale?.yarn_stock_company?.yarn_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_Sub_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_color} )`}
             </div>
-          )
+          );
         }
       },
     },
@@ -223,21 +230,21 @@ const CreditNotes = () => {
       dataIndex: ["party", "company_name"],
       key: ["party", "company_name"],
       render: (text, record) => {
-        return(
+        return (
           <>
             <strong>
-              { String(record?.party?.user?.first_name ||
-                record?.supplier?.supplier_name).toUpperCase()
-              }
+              {String(
+                record?.party?.user?.first_name ||
+                  record?.supplier?.supplier_name
+              ).toUpperCase()}
             </strong>
             <div>
-              { record?.party?.company_name || 
-                record?.supplier?.supplier_company  
-              }
+              {record?.party?.company_name ||
+                record?.supplier?.supplier_company}
             </div>
           </>
-        )
-      }
+        );
+      },
     },
     {
       title: "Meter",
@@ -250,24 +257,16 @@ const CreditNotes = () => {
       dataIndex: "amount",
       key: "amount",
       render: (text, record) => {
-        let total_amount = 0 ; 
+        let total_amount = 0;
         record?.credit_note_details?.map((element) => {
           total_amount += +element?.amount;
-        })
-        if (creditNoteTypes == "other"){
-          return(
-            <div>
-              {record?.credit_note_details[0]?.amount}
-            </div>
-          )
-        } else if (creditNoteTypes == "sale_return") {  
-          return(
-            <div>{record?.amount || "0.0"}</div>
-          ) 
+        });
+        if (creditNoteTypes == "other") {
+          return <div>{record?.credit_note_details[0]?.amount}</div>;
+        } else if (creditNoteTypes == "sale_return") {
+          return <div>{record?.amount || "0.0"}</div>;
         } else {
-          return(
-            <div>{parseFloat(total_amount).toFixed(2)}</div>
-          )
+          return <div>{parseFloat(total_amount).toFixed(2)}</div>;
         }
       },
     },
@@ -280,95 +279,89 @@ const CreditNotes = () => {
       title: "Type",
       dataIndex: "credit_note_type",
       key: "credit_note_type",
-      render: (text, record) => {
-        if (text == "other"){
-          return(
-            <Tag color =  {CREDIT_NOTE_OTHER}>
-              OTHER
-            </Tag>
-          )
-        } else if (text == "sale_return"){
-          return(
-            <Tag color = {CREDIT_NOTE_SALE_RETURN}>
-              SALE RETURN
-            </Tag>
-          )
-        } else if (text == "discount"){
-          return(
-            <Tag color = {CREDIT_NOTE_DISCOUNT}>
-              DISCOUNT
-            </Tag>
-          )
-        } else if (text == "claim"){
-          return(
-            <Tag color = {CREDIT_NOTE_CLAIM}>
-              CLAIM NOTE
-            </Tag>
-          )
-        } else if (text == "yarn_sale_return"){
-          return(
-            <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
-              YARN SALE
-            </Tag>
-          )
-        }  else{
-          return(
-            <Tag>
-              {text}
-            </Tag>
-          )
+      render: (text) => {
+        if (text == "other") {
+          return <Tag color={CREDIT_NOTE_OTHER}>OTHER</Tag>;
+        } else if (text == "sale_return") {
+          return <Tag color={CREDIT_NOTE_SALE_RETURN}>SALE RETURN</Tag>;
+        } else if (text == "discount") {
+          return <Tag color={CREDIT_NOTE_DISCOUNT}>DISCOUNT</Tag>;
+        } else if (text == "claim") {
+          return <Tag color={CREDIT_NOTE_CLAIM}>CLAIM NOTE</Tag>;
+        } else if (text == "yarn_sale_return") {
+          return <Tag color={YARN_SALE_BILL_TAG_COLOR}>YARN SALE</Tag>;
+        } else {
+          return <Tag>{text}</Tag>;
         }
-      }
+      },
     },
     {
       title: "Invoice Date",
       dataIndex: "createdAt",
       key: "invoice_date",
-      render: (text, record) => {
-        return(
-          <div>{moment(text).format("DD-MM-YYYY")}</div>
-        )
-      }
+      render: (text) => {
+        return <div>{moment(text).format("DD-MM-YYYY")}</div>;
+      },
     },
 
     {
       title: "Action",
-      render: (details, record) => {
+      render: (details) => {
         return (
           <Space>
-
             {/* Sale return related information*/}
             {details?.credit_note_type == "sale_return" && (
-              <CreditNoteSaleReturnComp
-                details={details}
-              />
+              <CreditNoteSaleReturnComp details={details} />
             )}
 
             {/* Yarn sale return related information  */}
             {details?.credit_note_type == "yarn_sale_return" && (
-              <AccountantYarnSaleChallan
-                details={details}
-              />
+              <AccountantYarnSaleChallan details={details} />
             )}
 
-            {creditNoteTypes != "discount"?<>
-              <ViewCreditNoteModal 
-                details={details} 
-                type={creditNoteTypes}
-              />
-            </>:<>
-              <ViewDiscountCreditNoteModel
-                details={details}
-                type={creditNoteTypes}
-              />
-            </>}
-
-            {creditNoteTypes !== "sale_return" && (
-              <Button>
-                <EditOutlined />
-              </Button>
+            {creditNoteTypes != "discount" ? (
+              <>
+                <ViewCreditNoteModal details={details} type={creditNoteTypes} />
+              </>
+            ) : (
+              <>
+                <ViewDiscountCreditNoteModel
+                  details={details}
+                  type={creditNoteTypes}
+                />
+              </>
             )}
-            {/* <ActionFile /> */}
+
+            {/* {creditNoteTypes !== "sale_return" && ( */}
+            {/* <Button
+              onClick={() => {
+                setIsAddModalOpen(true);
+                setCreditNoteData(details);
+              }}
+            >
+              <EditOutlined />
+            </Button> */}
+            {/* )} */}
+            {!details.is_partial_payment ? (
+              <>
+                {/* <UpdateCreditNote details={details} /> */}
+                <Button
+                  onClick={() => {
+                    setIsUpdateModalOpen(true);
+                    setCreditNoteData(details);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteCreditNote
+                  key={"delete_credit_note"}
+                  details={details}
+                />
+              </>
+            ) : null}
+
+            <CreditNoteInvoice />
           </Space>
         );
       },
@@ -438,6 +431,7 @@ const CreditNotes = () => {
             <Button
               onClick={() => {
                 setIsAddModalOpen(true);
+                setCreditNoteData(null);
               }}
               icon={<PlusCircleOutlined />}
               type="text"
@@ -502,7 +496,7 @@ const CreditNotes = () => {
             </Typography.Text>
             <Select
               allowClear
-              placeholder="Select Party"
+              placeholder="Select Quality"
               dropdownStyle={{
                 textTransform: "capitalize",
               }}
@@ -572,6 +566,16 @@ const CreditNotes = () => {
         <AddCreditNotes
           isAddModalOpen={isAddModalOpen}
           setIsAddModalOpen={setIsAddModalOpen}
+          creditNoteTypes={creditNoteTypes}
+          creditNoteData={creditNoteData}
+        />
+      )}
+
+      {isUpdateModalOpen && (
+        <UpdateCreditNote
+          details={creditNoteData}
+          isModalOpen={isUpdateModalOpen}
+          setIsModalOpen={setIsUpdateModalOpen}
           creditNoteTypes={creditNoteTypes}
         />
       )}

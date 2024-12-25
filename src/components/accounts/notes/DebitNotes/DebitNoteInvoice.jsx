@@ -10,7 +10,7 @@ const onFinishFailed = (errorInfo) => {
   console.log("Failed:", errorInfo);
 };
 
-const Invoice = () => {
+const DebitNotInvoice = () => {
   const [isModalOpen, setIsAddModalOpen] = useState(false);
   const showModal = () => {
     setIsAddModalOpen(true);
@@ -102,4 +102,4 @@ const Invoice = () => {
   );
 };
 
-export default Invoice;
+export default DebitNotInvoice;
