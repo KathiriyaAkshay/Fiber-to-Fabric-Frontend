@@ -149,7 +149,7 @@ const JobWorkBillList = () => {
     },
     {
       title: "Bill Status",
-      dataIndex: ["job_work_bill", "is_paid"],
+    dataIndex: ["job_work_bill", "is_paid"],
       render: (text,record) => {
         return(
           <div>

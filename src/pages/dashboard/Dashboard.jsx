@@ -10,7 +10,7 @@ import {
 } from "antd";
 import QueryChart from "./Charts/QueryChart";
 import { ChartWrapper } from "./Chart Wrapper/ChartWrapper";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import MonthlyProductionTable from "./Charts/MonthlyProductionTable";
 import { useQuery } from "@tanstack/react-query";
@@ -18,54 +18,159 @@ import {
   getCompanyBankBalanceRequest,
   getCompanyUserAnalyticsRequest,
 } from "../../api/requests/dashboard";
+import prettyNum from "pretty-num";
 
+const formatNumber = (number) => {
+  // Using pretty-num to convert to short format
+  return prettyNum(number, {
+    precision: 1, // Keep one decimal place
+    abbreviations: {
+      K: 'K', 
+      M: 'M',    // Millions
+      B: 'B',    // Billions
+      Cr: 'Cr',  // Crore
+      L: 'L',    // Lakh
+    },
+  });
+};
+
+// ============== Company bank balance related information ================== // 
 const CompanyBankBalance = ({ company }) => {
   const { data: bankBalanceData } = useQuery({
-    queryKey: ["get", "company", "bank-balance", { companyId: company.id }],
+    queryKey: ["get", "company", "bank-balance", { companyId: company }],
     queryFn: async () => {
       const params = {
-        company_id: company.id,
+        company_id: company,
       };
       const response = await getCompanyBankBalanceRequest({ params });
       return response?.data?.data;
     },
   });
 
+  // Ensure bankBalanceData is defined before processing
+  const groupedData = bankBalanceData
+    ? [...(bankBalanceData.banks || []), ...(bankBalanceData.cashbook || [])].reduce(
+      (acc, item) => {
+        const { company_name } = item;
+
+        // Initialize the group if it doesn't exist
+        if (!acc[company_name]) {
+          acc[company_name] = { banks: [], cashbook: [] };
+        }
+
+        // Push items into the respective group
+        if ("bank_name" in item) {
+          acc[company_name].banks.push(item);
+        } else if ("id" in item) {
+          acc[company_name].cashbook.push(item);
+        }
+
+        return acc;
+      },
+      {}
+    )
+    : {}; // Return an empty object if bankBalanceData is undefined
+
+  const [totalBankBalance, setTotalBankBalance] = useState(0);
+  const [totalCashbookBalance, setTotalCashbookBalanace] = useState(0);
+  console.log(groupedData);
+
+
+  useEffect(() => {
+    if (groupedData !== undefined) {
+      let temp_total_balance = 0;
+      let temp_total_cashbook_balance = 0;
+      Object.entries(groupedData).map(([key, value]) => {
+        value?.banks?.map((element) => {
+          temp_total_balance += +element?.balance || 0;
+          
+        })
+        value?.cashbook?.map((element) => {
+          temp_total_cashbook_balance += +element?.balance || 0;
+        })
+      })
+      setTotalBankBalance(temp_total_balance);
+      setTotalCashbookBalanace(temp_total_cashbook_balance);
+    }
+  }, [groupedData]);
+
+
   return (
-    <div style={{ padding: "2px" }}>
-      <h4
-        style={{
-          color: "var(--menu-item-hover-color)",
-        }}
-      >
-        ❖ {company?.company_name}
-      </h4>
-      {bankBalanceData && bankBalanceData.length
-        ? bankBalanceData.map((item, index) => {
-            return (
-              <Flex key={index + "_bank"} justify="space-between">
-                <Typography>{item.bank_name}</Typography>
-                <Typography>
-                  B/L: <b>{item.balance}</b>
-                </Typography>
-              </Flex>
-            );
-          })
-        : null}
-      <Flex justify="flex-end">
-        <Typography>
-          <span
-            style={{
+    <div>
+      {/* Bank wise bank balance and cashbbook balance related information  */}
+      {Object.entries(groupedData).map(([key, value]) => {
+        return (
+          <div key={key}
+            style={{ padding: "2px", borderBottom: "1px solid #888888", paddingBottom: 10 }}>
+
+            <h3 style={{
               color: "var(--menu-item-hover-color)",
-            }}
-          >
-            CB B/L:
-          </span>{" "}
-          <b>5.6cr</b>
-        </Typography>
-      </Flex>
+              marginBottom: 0,
+              marginTop: 8
+            }}>
+              ❖ {key} ❖
+            </h3>
+
+            {/* Render bank balance related inforamtion  */}
+            {value.banks && value.banks.length > 0 && (
+              value.banks.map((item, index) => (
+                <Flex key={index + "_bank"} justify="space-between" style={{
+                  marginTop: 8
+                }}>
+                  <Typography >{String(item.bank_name).toUpperCase()}</Typography>
+                  <Typography>
+                    B/L: <b>{formatNumber(item.balance)}</b>
+                  </Typography>
+                </Flex>
+              ))
+            )}
+
+            {/* Render cashbook balance related information  */}
+            {value.cashbook && value.cashbook.length > 0 && (
+              value.cashbook.map((item, index) => (
+                <Flex key={index + "_cashbook"} justify="space-between" style={{
+                  marginTop: 8
+                }}>
+                  <Typography style={{ color: "blue", fontWeight: 600 }}>CB B/L :</Typography>
+                  <Typography>
+                    <b>{item.balance}</b>
+                  </Typography>
+                </Flex>
+              ))
+            )}
+          </div>
+        );
+      })}
+
+      {/* Total data related information  */}
+      <div>
+        <div 
+          style={{ color: "green", marginTop:10, marginBottom: 10, fontWeight: 600, fontSize: 16 }}>Total </div>
+        
+        <Flex justify="space-between">
+          <Typography>
+            B/L: <b style={{marginLeft: 6}}>{totalBankBalance}</b>
+          </Typography>
+        </Flex>
+        
+        <Flex justify="space-between" style={{
+          marginTop: 5
+        }}>
+          <Typography>
+            <span
+              style={{
+                color: "var(--menu-item-hover-color)",
+              }}
+            >
+              CB B/L:
+            </span>{" "}
+            <b style={{marginLeft: 6}}>{totalCashbookBalance}</b>
+          </Typography>
+        </Flex>
+      </div>
     </div>
   );
+
 };
 
 const Dashboard = () => {
@@ -166,67 +271,49 @@ const Dashboard = () => {
                   </thead>
                   <tbody>
                     {userAnalyticsData?.employee &&
-                    userAnalyticsData?.employee?.length
+                      userAnalyticsData?.employee?.length
                       ? userAnalyticsData?.employee?.map((item, index) => {
-                          return (
-                            <tr key={index}>
-                              <td>{item?.salary_type}</td>
-                              <td>0</td>
-                              <td>0</td>
-                              <td>{item?.employee_count}</td>
-                            </tr>
-                          );
-                        })
+                        return (
+                          <tr key={index}>
+                            <td>{item?.salary_type}</td>
+                            <td>0</td>
+                            <td>0</td>
+                            <td>{item?.employee_count}</td>
+                          </tr>
+                        );
+                      })
                       : null}
                   </tbody>
                 </table>
               </Card>
             </Col>
+
+            {/* ============= Company bank balance data ==================  */}
+
             <Col span={24}>
               <Card className="bank-balance-card" style={{ padding: "0px" }}>
                 <Collapse
                   accordion
+                  defaultActiveKey={"1"}
                   items={[
                     {
                       key: "1",
                       label: "Bank Balance",
                       children: (
                         <>
-                          {companyListRes?.rows?.map((company) => {
-                            return (
-                              <CompanyBankBalance
-                                key={company.id}
-                                company={company}
-                              />
-                            );
-                          })}
-                          <div>
-                            <h4 style={{ color: "green" }}>Total </h4>
-                            <Flex justify="space-between">
-                              <Typography>
-                                B/L: <b>5.6cr</b>
-                              </Typography>
-                            </Flex>
-                            <Flex justify="space-between">
-                              <Typography>
-                                <span
-                                  style={{
-                                    color: "var(--menu-item-hover-color)",
-                                  }}
-                                >
-                                  CB B/L:
-                                </span>{" "}
-                                <b>5.6cr</b>
-                              </Typography>
-                            </Flex>
-                          </div>
+                          <CompanyBankBalance
+                            key={companyId}
+                            company={companyId}
+                          />
                         </>
                       ),
                     },
                   ]}
                 />
               </Card>
+
             </Col>
+
           </Row>
         </Col>
 

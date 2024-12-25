@@ -1045,3 +1045,7 @@ h2 {
 .passbook-particular-entry-td{
   font-weight: 500;
 }
+
+.bank-balance-card .ant-collapse-header-text{
+  font-weight:600;
+}

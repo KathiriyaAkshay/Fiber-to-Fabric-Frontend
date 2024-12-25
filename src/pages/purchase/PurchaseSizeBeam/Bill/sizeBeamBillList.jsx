@@ -272,7 +272,7 @@ function SizeBeamBillList() {
                 {record?.is_partial_payment && (
                   <PartialPaymentInformation
                     bill_id={record?.id}
-                    bill_model={"receive_size_beam_bill"}
+                    bill_model={" "}
                     paid_amount = {record?.paid_amount}
                   />
                 )}
