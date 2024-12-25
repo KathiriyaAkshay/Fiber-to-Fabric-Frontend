@@ -201,6 +201,8 @@ function DailyTaskList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: taskListRes?.taskList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

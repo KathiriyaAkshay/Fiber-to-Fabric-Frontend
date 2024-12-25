@@ -48,7 +48,11 @@ function JobWorkChallanList() {
   });
 
   const handleCloseModal = () => {
-    setJobWorkSaleChallanModel((prev) => ({ ...prev, isModalOpen: false, mode: "" }));
+    setJobWorkSaleChallanModel((prev) => ({
+      ...prev,
+      isModalOpen: false,
+      mode: "",
+    }));
   };
 
   const {
@@ -92,7 +96,7 @@ function JobWorkChallanList() {
           end: financialYearEnd,
           vehicle_id: debouncedVehicle,
           bill_status: debounceBillStatus,
-          is_gray: debounceBillType
+          is_gray: debounceBillType,
         },
       ],
       queryFn: async () => {
@@ -106,7 +110,7 @@ function JobWorkChallanList() {
             end: financialYearEnd,
             vehicle_id: debouncedVehicle,
             bill_status: debounceBillStatus,
-            is_gray: debounceBillType
+            is_gray: debounceBillType,
           },
         });
         return res.data?.data;
@@ -226,6 +230,8 @@ function JobWorkChallanList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: saleYarnChallanData?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -261,7 +267,7 @@ function JobWorkChallanList() {
                 value={billStatus}
                 options={[
                   { label: "Pending", value: "pending" },
-                  { label: "Confirmed", value: "confirmed" }
+                  { label: "Confirmed", value: "confirmed" },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -281,7 +287,7 @@ function JobWorkChallanList() {
                 value={billType}
                 options={[
                   { label: "Gery", value: 1 },
-                  { label: "Cash", value: 0 }
+                  { label: "Cash", value: 0 },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",

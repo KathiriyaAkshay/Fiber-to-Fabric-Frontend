@@ -129,7 +129,7 @@ function VehicleUserList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Username",
@@ -169,10 +169,8 @@ function VehicleUserList() {
       title: "Rate",
       dataIndex: ["vehicle", "pricePerRate"],
       key: "pricePerRate",
-      render: (text, record) => (
-        `₹${text}`
-      )
-    }, 
+      render: (text) => `₹${text}`,
+    },
     {
       title: "Address",
       dataIndex: "address",
@@ -252,6 +250,8 @@ function VehicleUserList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: userListRes?.vehicleList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

@@ -263,48 +263,45 @@ const JobTakaList = () => {
       dataIndex: "total_meter",
       key: "total_meter",
       render: (text, record) => {
-        let weight = +record?.weight; 
-        let meter = +record?.meter ; 
-        let average = (weight/meter) * 100 ; 
-        return(
-          <div>{parseFloat(average).toFixed(2)}</div>
-        )
-      }
+        let weight = +record?.weight;
+        let meter = +record?.meter;
+        let average = (weight / meter) * 100;
+        return <div>{parseFloat(average).toFixed(2)}</div>;
+      },
     },
     {
       title: "Sale Ch.No.",
       dataIndex: "total_taka",
       render: (text, record) => {
         if (record?.sale_challan?.challan_no !== undefined) {
-          return(
-            <Tag color = {SALE_CHALLAN_INFO_TAG_COLOR}>
-                Sale Chal - {record?.sale_challan?.challan_no || "-"}
+          return (
+            <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>
+              Sale Chal - {record?.sale_challan?.challan_no || "-"}
             </Tag>
-          ) 
+          );
         }
         return <div>-</div>; // Render nothing if the value is undefined
       },
-    }
-    ,,
+    },
+    ,
     {
       title: "Status",
       render: (details) => {
         return details.sale_challan_id != null ? (
           <Tag color="red">Sold</Tag>
-        ) :  details.is_returned ?(
+        ) : details.is_returned ? (
           <Tag color="red">Returned</Tag>
-        ) : details.in_stock ?(
+        ) : details.in_stock ? (
           <Tag color="green">In-Stock</Tag>
-        ):null;
+        ) : null;
       },
     },
     {
       title: "Action",
       render: (details) => {
-
-        let weight = +details?.weight; 
-        let meter = +details?.meter ; 
-        let average = (weight/meter) * 100 ; 
+        let weight = +details?.weight;
+        let meter = +details?.meter;
+        let average = (weight / meter) * 100;
 
         return (
           <Space>
@@ -332,8 +329,8 @@ const JobTakaList = () => {
                   value: details.job_taka_challan.challan_no,
                 },
                 {
-                  label: "Sale Challan No", 
-                  value: details?.sale_challan?.challan_no || "-"
+                  label: "Sale Challan No",
+                  value: details?.sale_challan?.challan_no || "-",
                 },
                 {
                   label: "Supplier Name",
@@ -366,6 +363,8 @@ const JobTakaList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: jobTakaList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

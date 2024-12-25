@@ -143,7 +143,9 @@ function YarnReceiveList() {
       title: "Order No",
       dataIndex: "order_no",
       key: "order_no",
-      render: (text, record) => <div>{record?.yarn_order?.order_id || "-"}</div>,
+      render: (text, record) => (
+        <div>{record?.yarn_order?.order_id || "-"}</div>
+      ),
     },
     {
       title: "Challan Date",
@@ -306,6 +308,8 @@ function YarnReceiveList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: yarnReceiveListRes?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -376,10 +380,10 @@ function YarnReceiveList() {
               placeholder="Bill status"
               value={billStatus}
               onChange={setBillStatus}
-                options={[
-                  { label: "Pending", value: "0" },
-                  { label: "Received", value: "1" },
-                ]}
+              options={[
+                { label: "Pending", value: "0" },
+                { label: "Received", value: "1" },
+              ]}
               style={{
                 width: "100%",
               }}

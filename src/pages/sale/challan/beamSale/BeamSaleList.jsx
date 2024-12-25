@@ -314,6 +314,8 @@ const BeamSaleList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: beamSaleListData?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

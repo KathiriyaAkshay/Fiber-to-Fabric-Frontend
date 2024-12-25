@@ -359,6 +359,8 @@ const GrayPurchaseBillList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: grayPurchaseBillList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -375,10 +377,18 @@ const GrayPurchaseBillList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{parseFloat(grayPurchaseBillList?.total_taka || 0).toFixed(2)}</Typography.Text>
+                  <Typography.Text>
+                    {parseFloat(grayPurchaseBillList?.total_taka || 0).toFixed(
+                      2
+                    )}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{parseFloat(grayPurchaseBillList?.total_meter || 0).toFixed(2)}</Typography.Text>
+                  <Typography.Text>
+                    {parseFloat(grayPurchaseBillList?.total_meter || 0).toFixed(
+                      2
+                    )}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>

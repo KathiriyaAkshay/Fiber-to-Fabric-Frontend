@@ -1,16 +1,5 @@
-import {
-  Button,
-  Flex,
-  Space,
-  Spin,
-  Table,
-  Switch,
-  message
-} from "antd";
-import {
-  FilePdfOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons";
+import { Button, Flex, Space, Spin, Table, Switch, message } from "antd";
+import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useCurrentUser } from "../../api/hooks/auth";
@@ -22,7 +11,10 @@ import { useContext } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 // import useDebounce from "../../hooks/useDebounce";
 import dayjs from "dayjs";
-import { getGatePassListRequest, updateGatePassRequest } from "../../api/requests/gatePass";
+import {
+  getGatePassListRequest,
+  updateGatePassRequest,
+} from "../../api/requests/gatePass";
 import DeleteGatePass from "../../components/auth/gatePass/DeleteGatePass";
 
 const GatePassList = () => {
@@ -99,13 +91,38 @@ const GatePassList = () => {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
     const body = gatePassList?.rows?.map((gatePass, index) => {
-      const { person_name, company_name, gate_pass_date, status, is_returnable, address } = gatePass;
-      return [index+1, person_name, company_name, dayjs(gate_pass_date).format("DD-MM-YYYY"), address,  status, is_returnable ? "Yes" : "No" ];
+      const {
+        person_name,
+        company_name,
+        gate_pass_date,
+        status,
+        is_returnable,
+        address,
+      } = gatePass;
+      return [
+        index + 1,
+        person_name,
+        company_name,
+        dayjs(gate_pass_date).format("DD-MM-YYYY"),
+        address,
+        status,
+        is_returnable ? "Yes" : "No",
+      ];
     });
 
     downloadUserPdf({
       body,
-      head: [["ID", "Person Name", "Company Group", "Gate Pass Date", "Address", "Status", "Is Returnable"]],
+      head: [
+        [
+          "ID",
+          "Person Name",
+          "Company Group",
+          "Gate Pass Date",
+          "Address",
+          "Status",
+          "Is Returnable",
+        ],
+      ],
       leftContent,
       rightContent,
       title: "Gate Pass List",
@@ -140,8 +157,8 @@ const GatePassList = () => {
     {
       title: "Gate Pass Date",
       render: (details) => {
-        return dayjs(details.gate_pass_date).format("DD-MM-YYYY")
-      }
+        return dayjs(details.gate_pass_date).format("DD-MM-YYYY");
+      },
     },
     {
       title: "Address",
@@ -156,13 +173,13 @@ const GatePassList = () => {
     {
       title: "Is Returnable",
       render: (details) => {
-        return details.is_returnable ? "Yes" : "No"
-      }
+        return details.is_returnable ? "Yes" : "No";
+      },
     },
     {
       title: "Status",
       render: (details) => {
-        console.log({details});
+        console.log({ details });
         const { status, id } = details;
         return (
           <Switch
@@ -189,9 +206,15 @@ const GatePassList = () => {
               details={[
                 { title: "Person Name", value: details.person_name },
                 { title: "Company Name", value: details.company_name },
-                { title: "Gate Pass Date", value: dayjs(details.gate_pass_date).format('DD-MM-YYYY') },
+                {
+                  title: "Gate Pass Date",
+                  value: dayjs(details.gate_pass_date).format("DD-MM-YYYY"),
+                },
                 { title: "Status", value: details.status },
-                { title: "Is Returnable", value: details.is_returnable ? "Yes" : "No" },
+                {
+                  title: "Is Returnable",
+                  value: details.is_returnable ? "Yes" : "No",
+                },
                 { title: "Address", value: details.address },
               ]}
             />
@@ -225,6 +248,8 @@ const GatePassList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: gatePassList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

@@ -9,7 +9,7 @@ import {
   Table,
   Space,
   Spin,
-  Tag
+  Tag,
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
@@ -92,9 +92,7 @@ const DebitNotes = () => {
       title: "Debit No",
       dataIndex: "debit_note_number",
       key: "debit_note_number",
-      render: (text, record) => (
-        <Tag color="green">{text}</Tag>
-      ) 
+      render: (text) => <Tag color="green">{text}</Tag>,
     },
     {
       title: "Challan/Bill Type",
@@ -124,21 +122,21 @@ const DebitNotes = () => {
       dataIndex: ["party", "company_name"],
       key: ["party", "company_name"],
       render: (text, record) => {
-        return(
+        return (
           <>
             <strong>
-              { String(record?.party?.user?.first_name ||
-                record?.supplier?.supplier_name).toUpperCase()
-              }
+              {String(
+                record?.party?.user?.first_name ||
+                  record?.supplier?.supplier_name
+              ).toUpperCase()}
             </strong>
             <div>
-              { record?.party?.company_name || 
-                record?.supplier?.supplier_company  
-              }
+              {record?.party?.company_name ||
+                record?.supplier?.supplier_company}
             </div>
           </>
-        )
-      }
+        );
+      },
     },
     {
       title: "Int./return Amt",
@@ -195,6 +193,8 @@ const DebitNotes = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: debitNotesList?.debitNotes?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -283,11 +283,19 @@ const DebitNotes = () => {
             <Typography.Text className="whitespace-nowrap">
               From
             </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={fromDate}
+              onChange={setFromDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={toDate}
+              onChange={setToDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>

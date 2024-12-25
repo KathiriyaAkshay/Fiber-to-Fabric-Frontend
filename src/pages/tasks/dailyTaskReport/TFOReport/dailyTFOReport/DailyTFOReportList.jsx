@@ -123,13 +123,12 @@ function DailyTFOReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page * pageSize) + index) + 1
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
-      title: "TFO Number", 
-      dataIndex: "tfo_number", 
-
-    }, 
+      title: "TFO Number",
+      dataIndex: "tfo_number",
+    },
     {
       title: "Motor Type",
       dataIndex: "motor_type",
@@ -186,11 +185,11 @@ function DailyTFOReportList() {
       title: "is Unload Motor",
       key: "load_time",
       render: ({ load_date }) => {
-        return(
+        return (
           <>
             <Tag color="red">Pending</Tag>
           </>
-        )
+        );
       },
     },
     {
@@ -268,6 +267,8 @@ function DailyTFOReportList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: reportListRes?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

@@ -71,7 +71,7 @@ function MachineList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-            render: (text, record, index) => ((page*pageSize) + index) + 1,
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Machine Name",
@@ -158,6 +158,8 @@ function MachineList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: machineListRes?.machineList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
