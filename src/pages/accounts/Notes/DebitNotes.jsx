@@ -11,10 +11,11 @@ import {
   Spin,
   Tag,
 } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
-import ActionView from "../../../components/accounts/notes/CreditNotes/ActionView";
-import ActionFile from "../../../components/accounts/notes/CreditNotes/ActionFile";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import AddDebitNotes from "../../../components/accounts/notes/DebitNotes/AddDebitNotes";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +23,9 @@ import { usePagination } from "../../../hooks/usePagination";
 import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../utils/date";
+import DeleteDebitNote from "../../../components/accounts/notes/DebitNotes/DeleteDebitNote";
+import UpdateDebitNote from "../../../components/accounts/notes/DebitNotes/UpdateDebitNote";
+import DebitNotInvoice from "../../../components/accounts/notes/DebitNotes/DebitNoteInvoice";
 
 const DEBIT_NOTE_TYPES = [
   { label: "Purchase Return", value: "purchase_return" },
@@ -36,9 +40,13 @@ const DebitNotes = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [debitNoteType, setDebitNoteType] = useState("purchase_return");
+
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [search, setSearch] = useState("");
+
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [debitNoteData, setDebitNoteData] = useState(null);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -121,18 +129,20 @@ const DebitNotes = () => {
       title: "Party Name",
       dataIndex: ["party", "company_name"],
       key: ["party", "company_name"],
-      render: (text, record) => {
+      render: (_, record) => {
         return (
           <>
             <strong>
               {String(
                 record?.party?.user?.first_name ||
-                  record?.supplier?.supplier_name
+                  record?.supplier?.supplier_name ||
+                  "-"
               ).toUpperCase()}
             </strong>
             <div>
               {record?.party?.company_name ||
-                record?.supplier?.supplier_company}
+                record?.supplier?.supplier_company ||
+                "-"}
             </div>
           </>
         );
@@ -146,8 +156,9 @@ const DebitNotes = () => {
     },
     {
       title: "Int. Payment Date",
-      dataIndex: "amount",
-      key: "amount",
+      dataIndex: "interest_pay_date",
+      key: "interest_pay_date",
+      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
     },
     // {
     //   title: "Net Amount",
@@ -166,12 +177,29 @@ const DebitNotes = () => {
     // },
     {
       title: "Action",
-      render: () => {
+      render: (details) => {
         return (
           <Space>
-            <ActionView />
-            <ActionFile />
-            <Invoice />
+            {/* <ActionView /> */}
+            {/* <ActionFile /> */}
+            {/* <Invoice /> */}
+            {!details.is_partial_payment ? (
+              <>
+                {/* <UpdateCreditNote details={details} /> */}
+                <Button
+                  onClick={() => {
+                    setIsUpdateModalOpen(true);
+                    setDebitNoteData(details);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteDebitNote key={"delete_debit_note"} details={details} />
+              </>
+            ) : null}
+
+            <DebitNotInvoice />
           </Space>
         );
       },
@@ -325,6 +353,15 @@ const DebitNotes = () => {
           isAddModalOpen={isAddModalOpen}
           setIsAddModalOpen={setIsAddModalOpen}
           defaultDebitNoteType={debitNoteType}
+        />
+      )}
+
+      {isUpdateModalOpen && (
+        <UpdateDebitNote
+          details={debitNoteData}
+          isModalOpen={isUpdateModalOpen}
+          setIsModalOpen={setIsUpdateModalOpen}
+          debitNoteTypes={debitNoteType}
         />
       )}
     </>

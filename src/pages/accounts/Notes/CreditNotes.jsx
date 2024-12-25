@@ -17,6 +17,7 @@ import {
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
+import CreditNoteInvoice from "../../../components/accounts/notes/CreditNotes/CreditNoteInvoice";
 import AddCreditNotes from "../../../components/accounts/notes/CreditNotes/AddCreditNotes";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -39,10 +40,13 @@ import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
 import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
+import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
+import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
+// import UpdateCreditNode from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
-  { label: "Late Payment", value: "late_payment" },
+  { label: "Late Payment", value: "late" },
   { label: "Claim Note", value: "claim" },
   { label: "Discount Note", value: "discount" },
   { label: "Other", value: "other" },
@@ -58,6 +62,8 @@ const CreditNotes = () => {
   const [toDate, setToDate] = useState(null);
   const [saleReturnNo, setSaleReturnNo] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [creditNoteData, setCreditNoteData] = useState(null);
 
   const debounceParty = useDebounce(party, 150);
   const debounceQuality = useDebounce(quality, 150);
@@ -206,8 +212,6 @@ const CreditNotes = () => {
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
       render: (text, record) => {
-        console.log(record?.yarn_sale);
-
         if (record?.yarn_sale == null) {
           return `${text?.quality_name || ""} (${
             text?.quality_weight || ""
@@ -328,12 +332,36 @@ const CreditNotes = () => {
               </>
             )}
 
-            {creditNoteTypes !== "sale_return" && (
-              <Button>
-                <EditOutlined />
-              </Button>
-            )}
-            {/* <ActionFile /> */}
+            {/* {creditNoteTypes !== "sale_return" && ( */}
+            {/* <Button
+              onClick={() => {
+                setIsAddModalOpen(true);
+                setCreditNoteData(details);
+              }}
+            >
+              <EditOutlined />
+            </Button> */}
+            {/* )} */}
+            {!details.is_partial_payment ? (
+              <>
+                {/* <UpdateCreditNote details={details} /> */}
+                <Button
+                  onClick={() => {
+                    setIsUpdateModalOpen(true);
+                    setCreditNoteData(details);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteCreditNote
+                  key={"delete_credit_note"}
+                  details={details}
+                />
+              </>
+            ) : null}
+
+            <CreditNoteInvoice />
           </Space>
         );
       },
@@ -405,6 +433,7 @@ const CreditNotes = () => {
             <Button
               onClick={() => {
                 setIsAddModalOpen(true);
+                setCreditNoteData(null);
               }}
               icon={<PlusCircleOutlined />}
               type="text"
@@ -469,7 +498,7 @@ const CreditNotes = () => {
             </Typography.Text>
             <Select
               allowClear
-              placeholder="Select Party"
+              placeholder="Select Quality"
               dropdownStyle={{
                 textTransform: "capitalize",
               }}
@@ -539,6 +568,16 @@ const CreditNotes = () => {
         <AddCreditNotes
           isAddModalOpen={isAddModalOpen}
           setIsAddModalOpen={setIsAddModalOpen}
+          creditNoteTypes={creditNoteTypes}
+          creditNoteData={creditNoteData}
+        />
+      )}
+
+      {isUpdateModalOpen && (
+        <UpdateCreditNote
+          details={creditNoteData}
+          isModalOpen={isUpdateModalOpen}
+          setIsModalOpen={setIsUpdateModalOpen}
           creditNoteTypes={creditNoteTypes}
         />
       )}
