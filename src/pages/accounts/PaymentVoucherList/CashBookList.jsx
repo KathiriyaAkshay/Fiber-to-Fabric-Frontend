@@ -186,6 +186,8 @@ const CashBookList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: paymentList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

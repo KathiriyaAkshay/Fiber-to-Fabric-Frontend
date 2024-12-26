@@ -9,12 +9,13 @@ import {
   Table,
   Space,
   Spin,
-  Tag
+  Tag,
 } from "antd";
-import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
-import Invoice from "../../../components/accounts/notes/CreditNotes/Invoice";
-import ActionView from "../../../components/accounts/notes/CreditNotes/ActionView";
-import ActionFile from "../../../components/accounts/notes/CreditNotes/ActionFile";
+import {
+  EditOutlined,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import AddDebitNotes from "../../../components/accounts/notes/DebitNotes/AddDebitNotes";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +26,9 @@ import { disabledFutureDate } from "../../../utils/date";
 import ViewDebitNote from "../../../components/accounts/notes/DebitNotes/ViewDebitNote";
 import { CREDIT_NOTE_LATE_PAYMENT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import { SALE_TAG_COLOR, JOB_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../constants/tag";
+import DeleteDebitNote from "../../../components/accounts/notes/DebitNotes/DeleteDebitNote";
+import UpdateDebitNote from "../../../components/accounts/notes/DebitNotes/UpdateDebitNote";
+import DebitNotInvoice from "../../../components/accounts/notes/DebitNotes/DebitNoteInvoice";
 
 const DEBIT_NOTE_TYPES = [
   { label: "Purchase Return", value: "purchase_return" },
@@ -38,9 +42,13 @@ const DebitNotes = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [debitNoteType, setDebitNoteType] = useState("purchase_return");
+
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [search, setSearch] = useState("");
+
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [debitNoteData, setDebitNoteData] = useState(null);
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
@@ -292,8 +300,8 @@ const DebitNotes = () => {
               }
             </div>
           </>
-        )
-      }
+        );
+      },
     },
     {
       title: "Int./return Amt",
@@ -331,12 +339,9 @@ const DebitNotes = () => {
     },
     {
       title: "Int. Payment Date",
-      dataIndex: "amount",
-      render: (text, record) => {
-        return (
-          <div>-</div>
-        )
-      }
+      dataIndex: "interest_pay_date",
+      key: "interest_pay_date",
+      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
     },
     // {
     //   title: "Net Amount",
@@ -362,6 +367,23 @@ const DebitNotes = () => {
               details={record}
               type={debitNoteType}
             />
+            {!details.is_partial_payment ? (
+              <>
+                {/* <UpdateCreditNote details={details} /> */}
+                <Button
+                  onClick={() => {
+                    setIsUpdateModalOpen(true);
+                    setDebitNoteData(details);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+
+                <DeleteDebitNote key={"delete_debit_note"} details={details} />
+              </>
+            ) : null}
+
+            <DebitNotInvoice />
           </Space>
         );
       },
@@ -383,6 +405,8 @@ const DebitNotes = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: debitNotesList?.debitNotes?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -469,11 +493,19 @@ const DebitNotes = () => {
             <Typography.Text className="whitespace-nowrap">
               From
             </Typography.Text>
-            <DatePicker value={fromDate} onChange={setFromDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={fromDate}
+              onChange={setFromDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">To</Typography.Text>
-            <DatePicker value={toDate} onChange={setToDate} disabledDate={disabledFutureDate} />
+            <DatePicker
+              value={toDate}
+              onChange={setToDate}
+              disabledDate={disabledFutureDate}
+            />
           </Flex>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
@@ -503,6 +535,15 @@ const DebitNotes = () => {
           isAddModalOpen={isAddModalOpen}
           setIsAddModalOpen={setIsAddModalOpen}
           defaultDebitNoteType={debitNoteType}
+        />
+      )}
+
+      {isUpdateModalOpen && (
+        <UpdateDebitNote
+          details={debitNoteData}
+          isModalOpen={isUpdateModalOpen}
+          setIsModalOpen={setIsUpdateModalOpen}
+          debitNoteTypes={debitNoteType}
         />
       )}
     </>

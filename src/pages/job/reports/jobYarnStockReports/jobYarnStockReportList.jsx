@@ -98,13 +98,13 @@ const JobYarnStockReportList = () => {
       title: "Mtr in Process",
       dataIndex: "production_type",
       key: "production_type",
-      render: (text, record) => ("-")
+      render: (text, record) => "-",
     },
     {
       title: "Yarn Process",
       dataIndex: "production_type",
       key: "production_type",
-      render: (text, record) => ("-")
+      render: (text, record) => "-",
     },
   ];
 
@@ -123,6 +123,8 @@ const JobYarnStockReportList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: jobYarnStockReportList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

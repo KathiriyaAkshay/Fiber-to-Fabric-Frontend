@@ -68,7 +68,11 @@ const validationSchema = yup.object().shape({
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
   amount: yup.string().required("Please enter amount"),
-  bill_id: yup.string().required("Please, Select bill "),
+  bill_id: yup.string().required("Please select bill"),
+  // bill_id: yup
+  //   .array()
+  //   .min(1, "Please select bill.")
+  //   .required("Please select bill."),
 });
 
 const ClaimNoteForm = ({ type, handleClose }) => {

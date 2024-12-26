@@ -8,12 +8,13 @@ import {
   Modal,
   Select,
   Typography,
-  Tag
+  Tag,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// import { getSaleBillListRequest } from "../../../../api/requests/sale/bill/saleBill";
 import {
   createCreditNoteRequest,
   creditNoteDropDownRequest,
@@ -28,15 +29,15 @@ import moment from "moment";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR } from "../../../../constants/tag";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { BEAM_RECEIVE_TAG_COLOR, JOB_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
-
 
 const toWords = new ToWords({
   localeCode: "en-IN",
   converterOptions: {
-    currency: true,
+    currency: true, 
     ignoreDecimal: false,
     ignoreZeroCurrency: false,
     doNotAddOnly: false,
@@ -211,7 +212,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     }
   }, [resetField, party_id]);
 
-  // Load Bill number related dropdown request  
+  // Load Bill number related dropdown request
   const { data: saleBillList, isLoadingSaleBillList } = useQuery({
     queryKey: [
       "saleBill",
@@ -219,25 +220,25 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       {
         company_id: company_id,
         party_id: party_id,
-        end: getFinancialYearEnd("current")
+        end: getFinancialYearEnd("current"),
       },
     ],
     queryFn: async () => {
-      let is_party = party_id?.includes("party")?true:false
-      let party_id_value = String(party_id).split("***")[1] ; 
+      let is_party = party_id?.includes("party") ? true : false;
+      let party_id_value = String(party_id).split("***")[1];
 
       const params = {
         company_id: company_id,
         page: 0,
         pageSize: 99999,
-        end: getFinancialYearEnd("current"), 
-        type: "discount_note"
+        end: getFinancialYearEnd("current"),
+        type: "discount_note",
       };
 
-      if (is_party){
-        params["party_id"] = party_id_value
+      if (is_party) {
+        params["party_id"] = party_id_value;
       } else {
-        params["supplier_id"] = party_id_value
+        params["supplier_id"] = party_id_value;
       }
 
       const res = await creditNoteDropDownRequest ({ params });
@@ -318,7 +319,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
             return false;
           })
         );
-        return supplierInfo
+        return supplierInfo;
       }
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
@@ -331,7 +332,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
         return "supplier";
       }
     }
-  }, [party_id])
+  }, [party_id]);
 
   const calculateTaxAmount = () => {
     let totalAmount = 0;
@@ -410,7 +411,9 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <Typography.Text style={{ fontSize: 20 }}>
                       Discount Note No.
                     </Typography.Text>
-                    <div style={{ color: "red" }}>{creditNoteLastNumber?.debitNoteNumber || ""}</div>
+                    <div style={{ color: "red" }}>
+                      {creditNoteLastNumber?.debitNoteNumber || ""}
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -422,7 +425,11 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       control={control}
                       name="date"
                       render={({ field }) => (
-                        <DatePicker {...field} className="width-100" disabledDate={disabledFutureDate} />
+                        <DatePicker
+                          {...field}
+                          className="width-100"
+                          disabledDate={disabledFutureDate}
+                        />
                       )}
                     />
                   </div>
@@ -490,11 +497,17 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             dropdownStyle={{
                               textTransform: "capitalize",
                             }}
-                            loading={isLoadingPartyList}
+                            loading={
+                              isLoadingPartyList ||
+                              isLoadingDropdownSupplierList
+                            }
                           >
                             {/* Party Options */}
                             {partyUserListRes?.partyList?.rows?.map((party) => (
-                              <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
+                              <Select.Option
+                                key={`party-${party?.id}`}
+                                value={`party***${party?.id}`}
+                              >
                                 <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
                                 <span>
                                   {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
@@ -506,16 +519,19 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             {/* Supplier Options */}
                             {dropdownSupplierListRes?.flatMap((element) =>
                               element?.supplier_company?.map((supplier) => (
-                                <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
+                                <Select.Option
+                                  key={`supplier-${supplier?.supplier_id}`}
+                                  value={`supplier***${supplier?.supplier_id}`}
+                                >
                                   <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                                   <span>
-                                    {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
+                                    {`${supplier?.supplier_company} | `}
+                                    <strong>{`${element?.supplier_name}`}</strong>
                                   </span>
                                 </Select.Option>
                               ))
                             )}
                           </Select>
-
                         )}
                       />
                     </Form.Item>
@@ -644,9 +660,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name}`
                           : ""}
                       </div>
-                      <div>
-                        {selectedPartyCompany?.users?.address}
-                      </div>
+                      <div>{selectedPartyCompany?.users?.address}</div>
                       <div className="credit-note-info-title">
                         <span>GSTIN/UIN: </span>
                         {selectedPartyCompany?.users?.gst_no || ""}
@@ -677,18 +691,18 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
             <tbody>
               {numOfBill && numOfBill.length
                 ? numOfBill.map((id, index) => {
-                  return (
-                    <SingleBillRender
-                      key={index}
-                      index={index}
-                      billId={id}
-                      control={control}
-                      company_id={company_id}
-                      billList={saleBillList || []}
-                      setValue={setValue}
-                    />
-                  );
-                })
+                    return (
+                      <SingleBillRender
+                        key={index}
+                        index={index}
+                        billId={id}
+                        control={control}
+                        company_id={company_id}
+                        billList={saleBillList || []}
+                        setValue={setValue}
+                      />
+                    );
+                  })
                 : null}
               <tr>
                 <td></td>
@@ -764,7 +778,9 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
               <tr>
                 <td></td>
-                <td style={{ fontWeight: 600 }} colSpan={3}>Total</td>
+                <td style={{ fontWeight: 600 }} colSpan={3}>
+                  Total
+                </td>
                 <td></td>
                 <td></td>
                 <td></td>

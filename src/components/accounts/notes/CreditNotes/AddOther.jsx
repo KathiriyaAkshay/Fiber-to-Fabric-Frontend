@@ -8,7 +8,7 @@ import {
   Modal,
   Radio,
   Select,
-  Tag
+  Tag,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useMemo } from "react";
@@ -27,7 +27,12 @@ import { CloseOutlined } from "@ant-design/icons";
 import moment from "moment";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { CURRENT_YEAR_TAG_COLOR, JOB_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import {
+  CURRENT_YEAR_TAG_COLOR,
+  JOB_TAG_COLOR,
+  PREVIOUS_YEAR_TAG_COLOR,
+  PURCHASE_TAG_COLOR,
+} from "../../../../constants/tag";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 
 const toWords = new ToWords({
@@ -61,12 +66,12 @@ const validationSchema = yup.object().shape({
   // hsn_code: yup.string().required("Please enter hsn code"),
   amount: yup.string().required("Please enter amount"),
   // bill_id: yup.string().required("Please select bill."),
-  particular: yup.string().required("Please,Provide credit note information"), 
+  particular: yup.string().required("Please,Provide credit note information"),
   hsn_no: yup
-  .string()
-  .matches(/^\d{6}$/, "HSN number must be a 6-digit code")
-  .required("Please provide a 6-digit HSN number"),
-  extra_tex_name: yup.string().required("Please, Provide tax name")
+    .string()
+    .matches(/^\d{6}$/, "HSN number must be a 6-digit code")
+    .required("Please provide a 6-digit HSN number"),
+  extra_tex_name: yup.string().required("Please, Provide tax name"),
 });
 
 const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
@@ -122,11 +127,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
   });
 
   const onSubmit = async (data) => {
-    let is_party = data?.party_id?.includes("party")?true:false
-    let party_id = String(data?.party_id).split("***")[1] ; 
+    let is_party = data?.party_id?.includes("party") ? true : false;
+    let party_id = String(data?.party_id).split("***")[1];
     const payload = {
-      party_id: is_party?+party_id:null,
-      supplier_id: !is_party?+party_id:null,
+      party_id: is_party ? +party_id : null,
+      supplier_id: !is_party ? +party_id : null,
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
       credit_note_number: `CNS-${data?.credit_note_no}` || "",
@@ -310,14 +315,14 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
 
   // Handle selected company related information based on party and supplier selection
   const selectedPartyCompany = useMemo(() => {
-    if (party_id){
+    if (party_id) {
       if (party_id?.includes("party")) {
-        let temp_party_id = party_id.split("***")[1] ; 
+        let temp_party_id = party_id.split("***")[1];
         return partyUserListRes?.partyList?.rows?.find(
           ({ id }) => id === +temp_party_id
         );
       } else {
-        let temp_supplier_id = party_id.split("***")[1] ; 
+        let temp_supplier_id = party_id.split("***")[1];
         let supplierInfo = null;
         dropdownSupplierListRes?.some((element) =>
           element?.supplier_company?.some((supplier) => {
@@ -328,20 +333,20 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
             return false;
           })
         );
-        return supplierInfo
+        return supplierInfo;
       }
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
 
   const selectedUser = useMemo(() => {
-    if (party_id){
-      if (party_id?.includes("party")){
-        return "party" ; 
+    if (party_id) {
+      if (party_id?.includes("party")) {
+        return "party";
       } else {
-        return "supplier" ; 
+        return "supplier";
       }
     }
-  }, [party_id])
+  }, [party_id]);
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -490,7 +495,9 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   </td>
                   <td colSpan={2} width={"25%"}>
                     <div className="year-toggle">
-                      <label style={{ textAlign: "left" }}>Party Company:</label>
+                      <label style={{ textAlign: "left" }}>
+                        Party Company:
+                      </label>
                       <Form.Item
                         label=""
                         name="party_id"
@@ -510,36 +517,51 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                               placeholder="Select Party Company"
                               style={{
                                 textTransform: "capitalize",
+                                minWidth: "200px",
+                                maxWidth: "250px",
                               }}
                               dropdownStyle={{
                                 textTransform: "capitalize",
                               }}
-                              loading={isLoadingPartyList}
+                              loading={
+                                isLoadingPartyList ||
+                                isLoadingDropdownSupplierList
+                              }
                             >
                               {/* Party Options */}
-                              {partyUserListRes?.partyList?.rows?.map((party) => (
-                                <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
-                                  <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
-                                  <span>
-                                    {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
-                                    <strong>{party?.party?.company_name}</strong>
-                                  </span>
-                                </Select.Option>
-                              ))}
+                              {partyUserListRes?.partyList?.rows?.map(
+                                (party) => (
+                                  <Select.Option
+                                    key={`party-${party?.id}`}
+                                    value={`party***${party?.id}`}
+                                  >
+                                    <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
+                                    <span>
+                                      {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
+                                      <strong>
+                                        {party?.party?.company_name}
+                                      </strong>
+                                    </span>
+                                  </Select.Option>
+                                )
+                              )}
 
                               {/* Supplier Options */}
                               {dropdownSupplierListRes?.flatMap((element) =>
                                 element?.supplier_company?.map((supplier) => (
-                                  <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
+                                  <Select.Option
+                                    key={`supplier-${supplier?.supplier_id}`}
+                                    value={`supplier***${supplier?.supplier_id}`}
+                                  >
                                     <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                                     <span>
-                                      {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
+                                      {`${supplier?.supplier_company} | `}
+                                      <strong>{`${element?.supplier_name}`}</strong>
                                     </span>
                                   </Select.Option>
                                 ))
                               )}
                             </Select>
-
                           )}
                         />
                       </Form.Item>
@@ -554,12 +576,18 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           render={({ field }) => (
                             <Radio.Group {...field}>
                               <Flex>
-                                <Radio style={{ fontSize: "12px" }} value={"previous"}>
+                                <Radio
+                                  style={{ fontSize: "12px" }}
+                                  value={"previous"}
+                                >
                                   <Tag color={PREVIOUS_YEAR_TAG_COLOR}>
                                     Previous Year
                                   </Tag>
                                 </Radio>
-                                <Radio style={{ fontSize: "12px" }} value={"current"}>
+                                <Radio
+                                  style={{ fontSize: "12px" }}
+                                  value={"current"}
+                                >
                                   <Tag color={CURRENT_YEAR_TAG_COLOR}>
                                     Current Year
                                   </Tag>
@@ -569,15 +597,18 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           )}
                         />
                       </Form.Item>
-                      <div style={{
-                        marginTop: -10
-                      }}>
+                      <div
+                        style={{
+                          marginTop: -10,
+                        }}
+                      >
                         <Form.Item
                           label=""
                           name="invoice_number"
                           validateStatus={errors.invoice_number ? "error" : ""}
                           help={
-                            errors.invoice_number && errors.invoice_number.message
+                            errors.invoice_number &&
+                            errors.invoice_number.message
                           }
                           required={true}
                           wrapperCol={{ sm: 24 }}
@@ -649,9 +680,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
                             : ""}
                         </div>
-                        <div>
-                          {selectedPartyCompany?.users?.address}
-                        </div>
+                        <div>{selectedPartyCompany?.users?.address}</div>
                         <div className="credit-note-info-title">
                           <span>GSTIN/UIN: </span>
                           {selectedPartyCompany?.users?.gst_no || ""}
@@ -694,10 +723,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         name="particular"
                         rules={{ required: "Debit note is required" }}
                         render={({ field }) => (
-                          <TextArea
-                            {...field}
-                            placeholder="Debit note"
-                          />
+                          <TextArea {...field} placeholder="Debit note" />
                         )}
                       />
                     </Form.Item>
@@ -716,7 +742,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                         rules={{ required: "HSN code is required" }}
                         name="hsn_no"
                         render={({ field }) => (
-                          <Input {...field} type="number" placeholder="234512" />
+                          <Input
+                            {...field}
+                            type="number"
+                            placeholder="234512"
+                          />
                         )}
                       />
                     </Form.Item>
@@ -803,7 +833,9 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     <div style={{ marginBottom: "6px" }}>{SGST_amount}</div>
                     <div style={{ marginBottom: "6px" }}>{CGST_amount}</div>
                     <div style={{ marginBottom: "6px" }}>{IGST_amount}</div>
-                    <div style={{ marginBottom: "6px" }}>{round_off_amount}</div>
+                    <div style={{ marginBottom: "6px" }}>
+                      {round_off_amount}
+                    </div>
                   </td>
                 </tr>
                 <tr>
@@ -845,7 +877,9 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                 </tr>
                 <tr>
                   <td></td>
-                  <td colSpan={3} style={{ fontWeight: 600 }}>Total</td>
+                  <td colSpan={3} style={{ fontWeight: 600 }}>
+                    Total
+                  </td>
                   <td></td>
                   <td></td>
                   <td></td>

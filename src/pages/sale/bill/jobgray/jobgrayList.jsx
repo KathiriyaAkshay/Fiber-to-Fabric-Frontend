@@ -422,7 +422,7 @@ const JobGrayList = () => {
     },
   ];
 
-  const [mutlipleChallanLayout, setMultipleChallanLayout] = useState(false) ; 
+  const [mutlipleChallanLayout, setMultipleChallanLayout] = useState(false);
   const rowSelectionHandler = {
     rowSelection,
     onChange: (selectedRowKeys, selectedRows) => {
@@ -447,6 +447,8 @@ const JobGrayList = () => {
         rowKey={"id"}
         rowSelection={rowSelectionHandler}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: JobGrayBillList?.jobGraySaleBill?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -484,8 +486,7 @@ const JobGrayList = () => {
               <Table.Summary.Cell index={7}>
                 <b>{JobGrayBillList?.total_meters}</b>
               </Table.Summary.Cell>
-              <Table.Summary.Cell index={8}>
-              </Table.Summary.Cell>
+              <Table.Summary.Cell index={8}></Table.Summary.Cell>
               <Table.Summary.Cell index={9}>
                 <b>{JobGrayBillList?.total_amounts}</b>
               </Table.Summary.Cell>
@@ -531,7 +532,14 @@ const JobGrayList = () => {
             <Flex align="center" gap={10}>
               {rowSelection?.length > 0 && (
                 <Flex align="center" gap={10}>
-                  <Button type="primary" onClick={() => {setMultipleChallanLayout(true)}}>MULTIPLE PRINT</Button>
+                  <Button
+                    type="primary"
+                    onClick={() => {
+                      setMultipleChallanLayout(true);
+                    }}
+                  >
+                    MULTIPLE PRINT
+                  </Button>
                 </Flex>
               )}
               <Radio.Group
@@ -551,7 +559,10 @@ const JobGrayList = () => {
                 options={[
                   { label: "E invoice pending", value: "E-invoice-pending" },
                   { label: "E way bill pending", value: "E-way-bill-pending" },
-                  { label: "E invoice cancelled", value: "E-invoice-cancelled" },
+                  {
+                    label: "E invoice cancelled",
+                    value: "E-invoice-cancelled",
+                  },
                 ]}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -745,7 +756,9 @@ const JobGrayList = () => {
         <JobGrayBillMultiplePrint
           details={multipleData}
           isModelOpen={mutlipleChallanLayout}
-          handleCloseModal={() => {setMultipleChallanLayout(false)}}
+          handleCloseModal={() => {
+            setMultipleChallanLayout(false);
+          }}
         />
       )}
     </>

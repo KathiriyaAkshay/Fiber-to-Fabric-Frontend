@@ -77,7 +77,6 @@ const SaleBillList = () => {
   const debouncedQuality = useDebounce(quality, 500);
   const debouncePayment = useDebounce(payment, 500);
 
-  
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -412,7 +411,6 @@ const SaleBillList = () => {
     },
   ];
 
-  
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
   }
@@ -432,19 +430,20 @@ const SaleBillList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: SaleBillList?.SaleBill?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
         summary={(pageData) => {
-          
-          if (SaleBillList){
+          if (SaleBillList) {
             let totalAmount = 0;
             let totalNetAmount = 0;
             let totalRate = 0;
             let totalMeter = 0;
-  
+
             pageData.forEach(({ total_meter, amount, net_amount, rate }) => {
               totalMeter += +total_meter;
               totalAmount += +amount;
@@ -467,8 +466,7 @@ const SaleBillList = () => {
                 <Table.Summary.Cell index={7}>
                   <b>{SaleBillList?.total_meters || 0}</b>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell index={8}>
-                </Table.Summary.Cell>
+                <Table.Summary.Cell index={8}></Table.Summary.Cell>
                 <Table.Summary.Cell index={9}>
                   <b>{SaleBillList?.total_amounts || 0}</b>
                 </Table.Summary.Cell>

@@ -171,7 +171,6 @@ const JobChallanList = () => {
     enabled: Boolean(companyId),
   });
 
-
   function navigateToAdd() {
     navigate("/job/job-taka/add");
   }
@@ -394,6 +393,8 @@ const JobChallanList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: jobChallanList?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

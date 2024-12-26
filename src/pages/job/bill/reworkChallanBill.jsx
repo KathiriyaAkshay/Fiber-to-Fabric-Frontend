@@ -342,6 +342,8 @@ const ReworkChallanBill = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: reworkChallanBillData?.rows?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -355,11 +357,19 @@ const ReworkChallanBill = () => {
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_taka}</Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_meter}</Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_taka}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_meter}
+              </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_amounts}</Table.Summary.Cell>
-              <Table.Summary.Cell>{reworkChallanBillData?.total_net_amounts}</Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_amounts}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {reworkChallanBillData?.total_net_amounts}
+              </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>

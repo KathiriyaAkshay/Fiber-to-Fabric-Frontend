@@ -37,7 +37,10 @@ import moment from "moment";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { disabledFutureDate } from "../../../../utils/date";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
-import { PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
+import {
+  PURCHASE_TAG_COLOR,
+  YARN_SALE_BILL_TAG_COLOR,
+} from "../../../../constants/tag";
 
 const validationSchema = yup.object().shape({
   challan_no: yup.string().required("Please select challan no."),
@@ -52,6 +55,7 @@ const PurchaseReturnForm = ({ handleClose }) => {
     formState: { errors },
     watch,
     setError,
+    resetField,
   } = useForm({
     defaultValues: {
       is_current: 1,
@@ -88,13 +92,17 @@ const PurchaseReturnForm = ({ handleClose }) => {
       "list",
       {
         company_id: companyId,
-        end: !is_current ? getFinancialYearEnd("previous") : getFinancialYearEnd("current"),
+        end: !is_current
+          ? getFinancialYearEnd("previous")
+          : getFinancialYearEnd("current"),
       },
     ],
     queryFn: async () => {
       const params = {
         company_id: companyId,
-        end: !is_current ? getFinancialYearEnd("previous") : getFinancialYearEnd("current"),
+        end: !is_current
+          ? getFinancialYearEnd("previous")
+          : getFinancialYearEnd("current"),
       };
       const response = await getDebitNoteChallanNoDropDownRequest({ params });
       return response?.data?.data || [];
@@ -113,6 +121,14 @@ const PurchaseReturnForm = ({ handleClose }) => {
     
 }, [challan_no, debitNoteChallanNo]);
 
+    if (!temp_model || !temp_challan_id) return null;
+    return (
+      debitNoteChallanNo.result.find(
+        (item) =>
+          item.challan_id === +temp_challan_id && item.model === temp_model
+      ) || null
+    );
+  }, [challan_no, debitNoteChallanNo]);
 
   const { data: challanData } = useQuery({
     queryKey: [
@@ -217,7 +233,13 @@ const PurchaseReturnForm = ({ handleClose }) => {
                     control={control}
                     name="is_current"
                     render={({ field }) => (
-                      <Radio.Group {...field}>
+                      <Radio.Group
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          resetField("challan_no");
+                        }}
+                      >
                         <Radio value={1}>Current Year</Radio>
                         <Radio value={0}>Previous Year</Radio>
                       </Radio.Group>
@@ -250,15 +272,26 @@ const PurchaseReturnForm = ({ handleClose }) => {
                         }}
                       >
                         {debitNoteChallanNo?.result?.map((element) => (
-                          <Select.Option key={`${element?.model}****${element?.challan_id}`} value={`${element?.model}****${element?.challan_id}`}>
-                              <div style={{display: "flex", alignItems: "center"}}>
-                                <Tag color= {
-                                  element?.model == "yarn_receive_challans"?YARN_SALE_BILL_TAG_COLOR:PURCHASE_TAG_COLOR
-                                }>
-                                  {element?.model == "yarn_receive_challans"?"YARN":"PURCHASE"}
-                                </Tag>
-                                <span>{element?.challan_number}</span>
-                              </div>
+                          <Select.Option
+                            key={`${element?.model}****${element?.challan_id}`}
+                            value={`${element?.model}****${element?.challan_id}`}
+                          >
+                            <div
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <Tag
+                                color={
+                                  element?.model == "yarn_receive_challans"
+                                    ? YARN_SALE_BILL_TAG_COLOR
+                                    : PURCHASE_TAG_COLOR
+                                }
+                              >
+                                {element?.model == "yarn_receive_challans"
+                                  ? "YARN"
+                                  : "PURCHASE"}
+                              </Tag>
+                              <span>{element?.challan_number}</span>
+                            </div>
                           </Select.Option>
                         ))}
                       </Select>
@@ -735,10 +768,29 @@ const PurchaseTakaChallan = ({
                 </Col>
 
                 {/* Taka no information  */}
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"}}>
-                  {details?.purchase_challan_details[index]?.taka_no} {details?.purchase_challan_details[index]?.is_returned?"( Returned )":""}
+                <Col
+                  span={5}
+                  style={{
+                    textAlign: "center",
+                    color: details?.purchase_challan_details[index]?.is_returned
+                      ? "red"
+                      : "black",
+                  }}
+                >
+                  {details?.purchase_challan_details[index]?.taka_no}{" "}
+                  {details?.purchase_challan_details[index]?.is_returned
+                    ? "( Returned )"
+                    : ""}
                 </Col>
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black" }}>
+                <Col
+                  span={5}
+                  style={{
+                    textAlign: "center",
+                    color: details?.purchase_challan_details[index]?.is_returned
+                      ? "red"
+                      : "black",
+                  }}
+                >
                   {details?.purchase_challan_details[index]?.meter}
                 </Col>
                 <Col span={1} style={{ textAlign: "center" }}>
@@ -757,10 +809,31 @@ const PurchaseTakaChallan = ({
                 </Col>
 
                 {/* Taka number information  */}
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index + 12]?.is_returned?"red":"black" }}>
-                  {details?.purchase_challan_details[index + 12]?.taka_no} {details?.purchase_challan_details[index + 12]?.is_returned?"( Returned )":""}
+                <Col
+                  span={5}
+                  style={{
+                    textAlign: "center",
+                    color: details?.purchase_challan_details[index + 12]
+                      ?.is_returned
+                      ? "red"
+                      : "black",
+                  }}
+                >
+                  {details?.purchase_challan_details[index + 12]?.taka_no}{" "}
+                  {details?.purchase_challan_details[index + 12]?.is_returned
+                    ? "( Returned )"
+                    : ""}
                 </Col>
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index + 12]?.is_returned?"red":"black" }}>
+                <Col
+                  span={5}
+                  style={{
+                    textAlign: "center",
+                    color: details?.purchase_challan_details[index + 12]
+                      ?.is_returned
+                      ? "red"
+                      : "black",
+                  }}
+                >
                   {details?.purchase_challan_details[index + 12]?.meter}
                 </Col>
               </Row>

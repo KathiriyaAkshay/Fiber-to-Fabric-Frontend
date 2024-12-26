@@ -146,9 +146,7 @@ const JournalList = () => {
       title: "Cheque No.",
       dataIndex: "cheque_no",
       key: "cheque_no",
-      render: (text, record) => (
-        <div>-</div>
-      )
+      render: (text, record) => <div>-</div>,
     },
     {
       title: "Cheque Date",
@@ -187,6 +185,8 @@ const JournalList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: paymentList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,
@@ -199,7 +199,9 @@ const JournalList = () => {
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell>{paymentList?.total_amounts}</Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {paymentList?.total_amounts}
+                </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>

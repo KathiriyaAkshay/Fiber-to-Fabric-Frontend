@@ -177,6 +177,7 @@ import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/
 import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
 import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
 import BeamSaleBillList from "./pages/sale/bill/beamSale/beamSaleBillList";
+import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverageReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -901,7 +902,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "employee-average-report",
-                element: <div>employee-average-report</div>,
+                element: <EmployeeAverageReport />,
               },
             ],
           },

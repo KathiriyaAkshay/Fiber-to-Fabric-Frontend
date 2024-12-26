@@ -249,6 +249,8 @@ function BrokerList() {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: userListRes?.brokerList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

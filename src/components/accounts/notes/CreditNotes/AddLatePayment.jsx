@@ -8,10 +8,10 @@ import {
   Modal,
   Select,
   Typography,
-  Tag
+  Tag,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -33,6 +33,8 @@ import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { CURRENT_YEAR_TAG_COLOR, JOB_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { BEAM_RECEIVE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import _ from "lodash";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -71,13 +73,21 @@ const validationSchema = yup.object().shape({
     .required("Please select bill."),
 });
 
-const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
+const AddLatePayment = ({
+  setIsAddModalOpen,
+  isAddModalOpen,
+  creditNoteData,
+}) => {
+  const isEditMode = !_.isNull(creditNoteData);
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
+
+  const [numOfBill, setNumOfBill] = useState([]);
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
   }
+
   const { mutateAsync: addCreditNote, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
       const res = await createCreditNoteRequest({
@@ -170,9 +180,10 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
     reset,
     resetField,
     formState: { errors },
+    getValues,
   } = useForm({
     defaultValues: {
-      particular: "Late Payment",
+      // particular: "Late Payment",
       // credit_note_no: "",
       company_id: null,
 
@@ -211,18 +222,16 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const {
     company_id,
     party_id,
-    SGST_value,
+    // SGST_value,
     SGST_amount,
-    CGST_value,
+    // CGST_value,
     CGST_amount,
-    IGST_value,
+    // IGST_value,
     IGST_amount,
     round_off_amount,
-    extra_tex_value,
     extra_tex_amount,
-    amount,
     net_amount,
-    bill_id,
+    // bill_id,
   } = watch();
 
   useEffect(() => {
@@ -231,39 +240,39 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
     }
   }, [company_id, resetField]);
 
-  useEffect(() => {
-    if (amount) {
-      const SGSTAmount = (amount * SGST_value) / 100;
-      setValue("SGST_amount", SGSTAmount.toFixed(2));
+  // useEffect(() => {
+  //   if (amount) {
+  //     const SGSTAmount = (amount * SGST_value) / 100;
+  //     setValue("SGST_amount", SGSTAmount.toFixed(2));
 
-      const CGSTAmount = (amount * CGST_value) / 100;
-      setValue("CGST_amount", CGSTAmount.toFixed(2));
+  //     const CGSTAmount = (amount * CGST_value) / 100;
+  //     setValue("CGST_amount", CGSTAmount.toFixed(2));
 
-      const IGSTAmount = (amount * IGST_value) / 100;
-      setValue("IGST_amount", IGSTAmount.toFixed(2));
+  //     const IGSTAmount = (amount * IGST_value) / 100;
+  //     setValue("IGST_amount", IGSTAmount.toFixed(2));
 
-      const extraTexAmount = (amount * extra_tex_value) / 100;
-      setValue("extra_tex_amount", extraTexAmount.toFixed(2));
+  //     const extraTexAmount = (amount * extra_tex_value) / 100;
+  //     setValue("extra_tex_amount", extraTexAmount.toFixed(2));
 
-      const netAmount =
-        +amount +
-        +SGSTAmount +
-        +CGSTAmount +
-        +IGSTAmount +
-        +round_off_amount -
-        +extraTexAmount;
+  //     const netAmount =
+  //       +amount +
+  //       +SGSTAmount +
+  //       +CGSTAmount +
+  //       +IGSTAmount +
+  //       +round_off_amount -
+  //       +extraTexAmount;
 
-      setValue("net_amount", netAmount.toFixed(2));
-    }
-  }, [
-    CGST_value,
-    IGST_value,
-    SGST_value,
-    amount,
-    extra_tex_value,
-    round_off_amount,
-    setValue,
-  ]);
+  //     setValue("net_amount", netAmount.toFixed(2));
+  //   }
+  // }, [
+  //   CGST_value,
+  //   IGST_value,
+  //   SGST_value,
+  //   amount,
+  //   extra_tex_value,
+  //   round_off_amount,
+  //   setValue,
+  // ]);
 
   const { data: creditNoteLastNumber } = useQuery({
     queryKey: [
@@ -355,12 +364,12 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const selectedPartyCompany = useMemo(() => {
     if (party_id) {
       if (party_id?.includes("party")) {
-        let temp_party_id = party_id.split("***")[1];
+        let temp_party_id = party_id.split("-")[1];
         return partyUserListRes?.partyList?.rows?.find(
           ({ id }) => id === +temp_party_id
         );
       } else {
-        let temp_supplier_id = party_id.split("***")[1];
+        let temp_supplier_id = party_id.split("-")[1];
         let supplierInfo = null;
         dropdownSupplierListRes?.some((element) =>
           element?.supplier_company?.some((supplier) => {
@@ -371,7 +380,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
             return false;
           })
         );
-        return supplierInfo
+        return supplierInfo;
       }
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
@@ -384,7 +393,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
         return "supplier";
       }
     }
-  }, [party_id])
+  }, [party_id]);
 
   useEffect(() => {
     if (
@@ -404,7 +413,32 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
       });
       setValue("amount", totalAmount);
     }
-  }, [bill_id, saleBillList, setValue]);
+
+    const CGSTValue = +getValues("CGST_value");
+    if (CGSTValue) {
+      const CGSTAmount = (+totalAmount * +CGSTValue) / 100;
+      setValue("CGST_amount", CGSTAmount.toFixed(2));
+      totalNetAmount += +CGSTAmount;
+    }
+
+    const IGSTValue = +getValues("IGST_value");
+    if (IGSTValue) {
+      const IGSTAmount = (+totalAmount * +IGSTValue) / 100;
+      setValue("IGST_amount", IGSTAmount.toFixed(2));
+      totalNetAmount += +IGSTAmount;
+    }
+
+    const extraTexValue = +getValues("extra_tex_value");
+    if (extraTexValue) {
+      const extraTexAmount = (totalAmount * extraTexValue) / 100;
+      console.log(extraTexAmount);
+      setValue("extra_tex_amount", extraTexAmount.toFixed(2));
+      totalNetAmount -= +extraTexAmount;
+    }
+
+    totalNetAmount += totalAmount;
+    setValue("net_amount", totalNetAmount.toFixed(2));
+  };
 
   return (
     <>
@@ -416,7 +450,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
         }}
         footer={false}
         closeIcon={<CloseOutlined className="text-white" />}
-        title="Credit Note - Late Payment"
+        title={`Credit Note - Late Payment`}
         centered
         className={{
           header: "text-center",
@@ -515,11 +549,17 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             dropdownStyle={{
                               textTransform: "capitalize",
                             }}
-                            loading={isLoadingPartyList}
+                            loading={
+                              isLoadingPartyList ||
+                              isLoadingDropdownSupplierList
+                            }
                           >
                             {/* Party Options */}
                             {partyUserListRes?.partyList?.rows?.map((party) => (
-                              <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
+                              <Select.Option
+                                key={`party-${party?.id}`}
+                                value={`party-${party?.id}`}
+                              >
                                 <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
                                 <span>
                                   {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
@@ -531,16 +571,19 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             {/* Supplier Options */}
                             {dropdownSupplierListRes?.flatMap((element) =>
                               element?.supplier_company?.map((supplier) => (
-                                <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
+                                <Select.Option
+                                  key={`supplier-${supplier?.supplier_id}`}
+                                  value={`supplier-${supplier?.supplier_id}`}
+                                >
                                   <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                                   <span>
-                                    {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
+                                    {`${supplier?.supplier_company} | `}
+                                    <strong>{`${element?.supplier_name}`}</strong>
                                   </span>
                                 </Select.Option>
                               ))
                             )}
                           </Select>
-
                         )}
                       />
                     </Form.Item>
@@ -687,9 +730,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
                           : ""}
                       </div>
-                      <div>
-                        {selectedPartyCompany?.users?.address}
-                      </div>
+                      <div>{selectedPartyCompany?.users?.address}</div>
                       <div className="credit-note-info-title">
                         <span>GSTIN/UIN: </span>
                         {selectedPartyCompany?.users?.gst_no || ""}
@@ -716,7 +757,22 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
               </tr>
             </thead>
             <tbody>
-              <tr>
+              {numOfBill && numOfBill.length
+                ? numOfBill.map((id, index) => {
+                    return (
+                      <SingleBillRender
+                        key={index}
+                        index={index}
+                        billId={id}
+                        control={control}
+                        company_id={company_id}
+                        billList={saleBillList || []}
+                        setValue={setValue}
+                      />
+                    );
+                  })
+                : null}
+              {/* <tr>
                 <td></td>
                 <td colSpan={3}>
                   <Form.Item
@@ -757,7 +813,7 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     />
                   </Form.Item>
                 </td>
-              </tr>
+              </tr> */}
               <tr>
                 <td></td>
                 <td colSpan={3} style={{ textAlign: "right" }}>
@@ -852,6 +908,10 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           placeholder="3"
                           style={{ width: "20%" }}
                           type="number"
+                          onChange={(e) => {
+                            setValue("extra_tex_value", +e.target.value);
+                            calculateTaxAmount();
+                          }}
                         />
                       )}
                     />
@@ -937,3 +997,171 @@ const AddLatePayment = ({ setIsAddModalOpen, isAddModalOpen }) => {
 };
 
 export default AddLatePayment;
+
+const SingleBillRender = ({
+  billId,
+  index,
+  control,
+  // company_id,
+  billList,
+  setValue,
+}) => {
+  const billData = billList?.SaleBill?.find((item) => item.id === billId);
+  // const { data: billData } = useQuery({
+  //   queryKey: [
+  //     "get",
+  //     "selected-bill",
+  //     "data",
+  //     {
+  //       company_id: company_id,
+  //       bill_id: billId,
+  //     },
+  //   ],
+  //   queryFn: async () => {
+  //     let response;
+  //     const selectedBillData = billList?.SaleBill?.find(
+  //       (item) => item.id === billId
+  //     );
+
+  //     switch (selectedBillData.model) {
+  //       case "yarn_bills":
+  //         response = await getYarnReceiveBillByIdRequest({
+  //           id: selectedBillData.bill_id,
+  //           params: { company_id: company_id },
+  //         });
+  //         return response?.data?.data;
+
+  //       case "job_taka_bills":
+  //         response = await getJobTakaBillByIdRequest({
+  //           params: {
+  //             company_id: company_id,
+  //             bill_id: selectedBillData.bill_id,
+  //           },
+  //         });
+  //         return response?.data?.data;
+
+  //       case "receive_size_beam_bill":
+  //         response = await getReceiveSizeBeamBillByIdRequest({
+  //           id: selectedBillData.bill_id,
+  //           params: {
+  //             company_id: company_id,
+  //           },
+  //         });
+  //         return response?.data?.data;
+
+  //       default:
+  //         return response;
+  //     }
+  //   },
+  //   enabled: Boolean(company_id && billId),
+  // });
+
+  const calculateAmount = (per) => {
+    const amount =
+      ((billData?.total_meter || 0) * (billData?.rate || 0) * per) / 100;
+    setValue(`amount_${index}`, amount.toFixed(2));
+  };
+
+  useEffect(() => {
+    if (billData && Object.keys(billData).length) {
+      // const selectedBillData = billList?.result?.find(
+      //   (item) => item.bill_id === billId
+      // );
+
+      setValue(`quantity_${index}`, +billData?.total_meter || 0);
+      setValue(`rate_${index}`, +billData?.rate || 0);
+
+      setValue(`bill_id_${index}`, billId);
+      setValue(`model_${index}`, "sale_bill");
+      setValue(`particular_${index}`, "Late Payment");
+    }
+  }, [billData, billId, index, setValue]);
+
+  return (
+    <tr>
+      <td style={{ textAlign: "center" }}>{index + 1}.</td>
+      <td colSpan={3}>
+        {/* <Form.Item
+            label=""
+            name={`particular_${index}`}
+            // validateStatus={errors.particular ? "error" : ""}
+            // help={errors.particular && errors.particular.message}
+            required={true}
+            wrapperCol={{ sm: 24 }}
+          > */}
+        <Controller
+          control={control}
+          name={`particular_${index}`}
+          render={({ field }) => (
+            <TextArea
+              {...field}
+              style={{ width: "100%" }}
+              placeholder="Late Payment"
+            />
+          )}
+        />
+        {/* </Form.Item> */}
+      </td>
+      <td>
+        <Controller
+          control={control}
+          name={`quantity_${index}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              // value={billData?.receive_quantity || 0}
+              placeholder="3"
+              className="remove-input-box"
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name={`bill_id_${index}`}
+          render={({ field }) => (
+            <Input {...field} type="hidden" placeholder="3" />
+          )}
+        />
+        <Controller
+          control={control}
+          name={`model_${index}`}
+          render={({ field }) => (
+            <Input {...field} type="hidden" placeholder="3" />
+          )}
+        />
+      </td>
+      <td>
+        <Controller
+          control={control}
+          name={`rate_${index}`}
+          render={({ field }) => (
+            <Input {...field} placeholder="3" className="remove-input-box" />
+          )}
+        />
+      </td>
+      <td>
+        <Controller
+          control={control}
+          name={`per_${index}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              placeholder="3"
+              onChange={(e) => {
+                setValue(`per_${index}`, e.target.value);
+                calculateAmount(e.target.value);
+              }}
+            />
+          )}
+        />
+      </td>
+      <td>
+        <Controller
+          control={control}
+          name={`amount_${index}`}
+          render={({ field }) => <Input {...field} placeholder="3" />}
+        />
+      </td>
+    </tr>
+  );
+};

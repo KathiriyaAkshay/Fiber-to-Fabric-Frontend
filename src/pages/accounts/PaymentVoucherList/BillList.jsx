@@ -121,7 +121,7 @@ const BillList = () => {
     },
     {
       title: "Supplier Name",
-      dataIndex: ["supplier","supplier_name"],
+      dataIndex: ["supplier", "supplier_name"],
       key: "supplier_name",
       render: (text) => {
         return(
@@ -135,7 +135,7 @@ const BillList = () => {
     },
     {
       title: "Account Name",
-      dataIndex: ["supplier","supplier_company"],
+      dataIndex: ["supplier", "supplier_company"],
       key: "account_name",
       render: (text) => {
         return(
@@ -219,6 +219,8 @@ const BillList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: paymentBillList?.billPaymentDetails?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

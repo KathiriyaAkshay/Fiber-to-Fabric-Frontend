@@ -114,7 +114,6 @@ const JobBillList = () => {
     return current && current > moment().endOf("day");
   }
 
-
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -403,6 +402,8 @@ const JobBillList = () => {
         columns={columns}
         rowKey={"id"}
         pagination={{
+          current: page + 1,
+          pageSize: pageSize,
           total: jobTakaBillList?.count || 0,
           showSizeChanger: true,
           onShowSizeChange: onShowSizeChange,

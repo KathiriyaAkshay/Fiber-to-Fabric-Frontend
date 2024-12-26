@@ -20,7 +20,9 @@ const CreditNoteSaleReturnComp = ({ details }) => {
   const [totalTaka1, setTotalTaka1] = useState(0);
   const [totalTaka2, setTotalTaka2] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
-  const [currentTakaReturnId, setCurrentTakaReturnId] = useState(details?.sale_return_id) ; 
+  const [currentTakaReturnId, setCurrentTakaReturnId] = useState(
+    details?.sale_return_id
+  );
   const pageStyle = `
         @media print {
              .print-instructions {
@@ -38,17 +40,22 @@ const CreditNoteSaleReturnComp = ({ details }) => {
     TakaArray?.map((element, index) => {
       tempTotal1 =
         Number(tempTotal1) +
-        Number(details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter || 0);
+        Number(
+          details?.sale_challan_return?.sale_challan?.sale_challan_details[
+            index
+          ]?.meter || 0
+        );
       tempTotal2 =
         Number(tempTotal2) +
         Number(
-          details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.meter || 0
+          details?.sale_challan_return?.sale_challan?.sale_challan_details[
+            index + 12
+          ]?.meter || 0
         );
     });
 
     let total = Number(tempTotal1) + Number(tempTotal2);
-    console.log("Total information", total);
-    
+
     setTotalMeter(total);
     setTotalTaka1(tempTotal1);
     setTotalTaka2(tempTotal2);
@@ -191,9 +198,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     {`${details?.party?.user?.first_name}${details?.party?.user?.last_name}`}
                     )
                   </Text>
-                  <Text className="block">
-                    {details?.party?.user?.address}
-                  </Text>
+                  <Text className="block">{details?.party?.user?.address}</Text>
                 </Col>
               </Row>
               <Row style={{ padding: "6px 0px" }}>
@@ -271,8 +276,20 @@ const CreditNoteSaleReturnComp = ({ details }) => {
           </Row>
 
           {TakaArray?.map((element, index) => {
-            const isReturned = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.sale_challan_return_id?true:false;
-            const isReturned2 = details?.sale_return_id == details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]?.sale_challan_return_id?true:false;
+            const isReturned =
+              details?.sale_return_id ==
+              details?.sale_challan_return?.sale_challan?.sale_challan_details[
+                index
+              ]?.sale_challan_return_id
+                ? true
+                : false;
+            const isReturned2 =
+              details?.sale_return_id ==
+              details?.sale_challan_return?.sale_challan?.sale_challan_details[
+                index + 12
+              ]?.sale_challan_return_id
+                ? true
+                : false;
             return (
               <Row
                 key={index}
@@ -295,8 +312,8 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index]
-                        ?.taka_no
+                      details?.sale_challan_return?.sale_challan
+                        ?.sale_challan_details[index]?.taka_no
                     }{" "}
                     {isReturned ? "(return)" : ""}
                   </Text>
@@ -307,7 +324,10 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                       color: isReturned ? "red" : "inherit",
                     }}
                   >
-                    {details?.sale_challan_return?.sale_challan?.sale_challan_details[index]?.meter}
+                    {
+                      details?.sale_challan_return?.sale_challan
+                        ?.sale_challan_details[index]?.meter
+                    }
                   </Text>
                 </Col>
                 {/* Table 2 */}
@@ -327,8 +347,8 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
-                        ?.taka_no
+                      details?.sale_challan_return?.sale_challan
+                        ?.sale_challan_details[index + 12]?.taka_no
                     }{" "}
                     {isReturned2 ? "(return)" : ""}
                   </Text>
@@ -340,8 +360,8 @@ const CreditNoteSaleReturnComp = ({ details }) => {
                     }}
                   >
                     {
-                      details?.sale_challan_return?.sale_challan?.sale_challan_details[index + 12]
-                        ?.meter
+                      details?.sale_challan_return?.sale_challan
+                        ?.sale_challan_details[index + 12]?.meter
                     }
                   </Text>
                 </Col>
@@ -371,7 +391,10 @@ const CreditNoteSaleReturnComp = ({ details }) => {
               <strong>Total Taka:</strong>
             </Col>
             <Col span={5} style={{ textAlign: "center" }}>
-              {details?.sale_challan_return?.sale_challan?.sale_challan_details?.length}
+              {
+                details?.sale_challan_return?.sale_challan?.sale_challan_details
+                  ?.length
+              }
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
               <strong>Total Meter:</strong>
