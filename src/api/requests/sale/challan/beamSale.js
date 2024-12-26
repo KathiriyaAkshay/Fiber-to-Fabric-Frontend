@@ -22,6 +22,10 @@ export function deleteBeamSaleChallanRequest({ id, params }) {
     return api.delete(`/sale/challan/beam-sale/delete/${id}`, { params });
 }
 
+export function returnBeamSaleChallanRequest({data, params}){
+    return api.post(`sale/challan/beam-sale/return/create`, data, {params} ) ; 
+}
+
 // Bill APi services---------------------------------------------------------------------
 
 

@@ -2324,6 +2324,11 @@ fraction.js@^4.3.6:
   resolved "https://registry.npmjs.org/fraction.js/-/fraction.js-4.3.7.tgz"
   integrity sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==
 
+from-exponential@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.npmjs.org/from-exponential/-/from-exponential-1.1.1.tgz"
+  integrity sha512-VBE7f5OVnYwdgB3LHa+Qo29h8qVpxhVO9Trlc+AWm+/XNAgks1tAwMFHb33mjeiof77GglsJzeYF7OqXrROP/A==
+
 fs.realpath@^1.0.0:
   version "1.0.0"
   resolved "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
@@ -3358,6 +3363,14 @@ prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
+
+pretty-num@^0.5.2:
+  version "0.5.2"
+  resolved "https://registry.npmjs.org/pretty-num/-/pretty-num-0.5.2.tgz"
+  integrity sha512-79Rzmw+BmoOGLpfnhjZ+B+y1dMR6+4GxNsPEl4NrDsvYAO1sdzocaus5QB6fuhy1rkyrHoN7/y4bD0axNgdN0A==
+  dependencies:
+    from-exponential "^1.1.1"
+    thousands "^1.0.1"
 
 prop-types@^15.6.2, prop-types@^15.8.1:
   version "15.8.1"
@@ -4426,6 +4439,11 @@ thenify-all@^1.0.0:
   integrity sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==
   dependencies:
     any-promise "^1.0.0"
+
+thousands@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.npmjs.org/thousands/-/thousands-1.0.1.tgz"
+  integrity sha512-Di+gdTXx6Xm6ST/XJqqp1Y7N+SnA1WAfrjABCnVvFi3ao6cqkV/wMfxQXJaxJ0qw/L05GVjPP6DKigdkCwnGNg==
 
 throttle-debounce@^5.0.0:
   version "5.0.0"

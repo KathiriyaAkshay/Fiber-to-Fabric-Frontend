@@ -85,9 +85,9 @@ const PurchaseReturnInformation = ({ item }) => {
       render: (record) => {
         let taka_no = [];
         record?.map((element) => {
-          taka_no.push(element?.taka_no);
-        });
-        return (
+          taka_no.push(element?.taka_no) ;  
+        })
+        return(
           <Space>
             <ParticularPurchaseReturnInfo
               details={{ ...item, new_challan_details: record }}

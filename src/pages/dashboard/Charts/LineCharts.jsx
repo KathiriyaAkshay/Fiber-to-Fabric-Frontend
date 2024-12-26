@@ -247,7 +247,6 @@ const LineCharts = ({ isModalOpen, companyId }) => {
       <Skeleton.Node
         className="monthly-production-line-chart-skeleton"
         active={isLoading}
-        // style={{ width: "100% !important", height: "200px" }}
       >
         <LineChartOutlined style={{ fontSize: 100, color: "#bfbfbf" }} />
       </Skeleton.Node>

@@ -8,7 +8,7 @@ export const CUT_TAG_COLOR = "orange" ;
 export const PURCHASE_YARN_BILL_TAG_COLOR = "cyan" ; 
 export const BEAM_RECEIVE_TAG_COLOR = "#108ee9" ; 
 export const YARN_SALE_BILL_TAG_COLOR = "#264653"
-
+export const JOB_REWORK_BILL_TAG_COLOR = "#FF6F61" ; 
 
 // =============== Credit note tag information ======================== // 
 
@@ -22,3 +22,12 @@ export const CREDIT_NOTE_OTHER = "purple" ;
 
 export const CURRENT_YEAR_TAG_COLOR = "blue" ; 
 export const PREVIOUS_YEAR_TAG_COLOR = "green" ; 
+
+// ============ Bill payment ============== // 
+
+export const BILL_VOUCHER_TAG_COLOR = "blue" ; 
+
+// ============ Withdraw and Deposite related hex color code ===================== // 
+
+export const WITHDRAW_TAG_COLOR = "#E74C3C" ; 
+export const DEPOSITE_TAG_COLOR = "#2ECC71" ; 

@@ -8,6 +8,7 @@ import {
   Radio,
   Select,
   Typography,
+  Tag
 } from "antd";
 import dayjs from "dayjs";
 import { useContext, useEffect, useMemo } from "react";
@@ -20,6 +21,9 @@ import { createDebitNoteRequest } from "../../../../api/requests/accounts/notes"
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToWords } from "to-words";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { PREVIOUS_YEAR_TAG_COLOR, CURRENT_YEAR_TAG_COLOR } from "../../../../constants/tag";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -51,6 +55,7 @@ const validationSchema = yup.object().shape({
   particular: yup.string().required("Please enter particular"),
   hsn_code: yup.string().required("Please enter hsn code"),
   amount: yup.string().required("Please enter amount"),
+  extra_tex_name: yup.string().required("Please, Enter tax name information")
 });
 
 const OtherForm = ({ type, handleClose }) => {
@@ -84,11 +89,14 @@ const OtherForm = ({ type, handleClose }) => {
   });
 
   const onSubmit = async (data) => {
+    let is_party = data?.party_id?.includes("party")?true:false
+    let party_id = String(data?.party_id).split("***")[1] ; 
     const payload = {
-      party_id: data?.party_id,
+      party_id: is_party? +party_id:null,
+      supplier_id: !is_party?+party_id:null,
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
-      debit_note_number: data?.debit_note_no || "",
+      debit_note_number: `DNS-${data?.debit_note_no}` || "",
       debit_note_type: type,
       // sale_challan_id: 456,
       // quality_id: data?.quality_id,
@@ -153,9 +161,9 @@ const OtherForm = ({ type, handleClose }) => {
       // sale_challan_id: "",
       // quality_id: "",
 
-      SGST_value: 0,
+      SGST_value: 6,
       SGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 6,
       CGST_amount: 0,
       IGST_value: 0,
       IGST_amount: 0,
@@ -168,8 +176,9 @@ const OtherForm = ({ type, handleClose }) => {
       // discount_value: "",
       // discount_amount: "",
       extra_tex_value: 0,
-      extra_tex_name: "",
+      extra_tex_name: "TDS",
       extra_tex_amount: 0,
+      particular: "Debit note"
     },
     resolver: yupResolver(validationSchema),
   });
@@ -224,6 +233,7 @@ const OtherForm = ({ type, handleClose }) => {
     setValue,
   ]);
 
+  // Load Partylist Dropdown =======================================================
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: company_id }],
     queryFn: async () => {
@@ -235,19 +245,61 @@ const OtherForm = ({ type, handleClose }) => {
     enabled: Boolean(company_id),
   });
 
+  // Load Supplier list DropDown ====================================================
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: company_id }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: company_id },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(company_id),
+  });
+
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
 
+  // Handle selected company related information based on party and supplier selection
   const selectedPartyCompany = useMemo(() => {
     if (party_id) {
-      return partyUserListRes?.partyList?.rows?.find(
-        ({ id }) => id === party_id
-      );
+      if (party_id?.includes("party")) {
+        let temp_party_id = party_id.split("***")[1];
+        return partyUserListRes?.partyList?.rows?.find(
+          ({ id }) => id === +temp_party_id
+        );
+      } else {
+        let temp_supplier_id = party_id.split("***")[1];
+        let supplierInfo = null;
+        dropdownSupplierListRes?.some((element) =>
+          element?.supplier_company?.some((supplier) => {
+            if (supplier?.supplier_id === +temp_supplier_id) {
+              supplierInfo = supplier;
+              return true; // Stop searching once the supplier is found
+            }
+            return false;
+          })
+        );
+        return supplierInfo
+      }
     }
   }, [partyUserListRes?.partyList?.rows, party_id]);
+
+  const selectedUser = useMemo(() => {
+    if (party_id) {
+      if (party_id?.includes("party")) {
+        return "party";
+      } else {
+        return "supplier";
+      }
+    }
+  }, [party_id])
 
   return (
     <>
@@ -284,7 +336,9 @@ const OtherForm = ({ type, handleClose }) => {
               </div>
             </td>
           </tr>
-          <tr>
+          <tr style={{
+            marginTop: -25
+          }}>
             <td colSpan={2} width={"20%"}>
               <div className="year-toggle">
                 <label style={{ textAlign: "left" }}>Date:</label>
@@ -375,18 +429,42 @@ const OtherForm = ({ type, handleClose }) => {
                           textTransform: "capitalize",
                         }}
                         loading={isLoadingPartyList}
-                        options={partyUserListRes?.partyList?.rows?.map(
-                          (party) => ({
-                            label:
-                              party.first_name +
-                              " " +
-                              party.last_name +
-                              " " +
-                              `| ( ${party?.username})`,
-                            value: party.id,
-                          })
+                      // options={partyUserListRes?.partyList?.rows?.map(
+                      //   (party) => ({
+                      //     label:
+                      //       party.first_name +
+                      //       " " +
+                      //       party.last_name +
+                      //       " " +
+                      //       `| ( ${party?.username})`,
+                      //     value: party.id,
+                      //   })
+                      // )}
+                      >
+
+                        {/* Party Options */}
+                        {partyUserListRes?.partyList?.rows?.map((party) => (
+                          <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
+                            <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
+                            <span>
+                              {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
+                              <strong>{party?.party?.company_name}</strong>
+                            </span>
+                          </Select.Option>
+                        ))}
+
+                        {/* Supplier Options */}
+                        {dropdownSupplierListRes?.flatMap((element) =>
+                          element?.supplier_company?.map((supplier) => (
+                            <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
+                              <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
+                              <span>
+                                {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
+                              </span>
+                            </Select.Option>
+                          ))
                         )}
-                      />
+                      </Select>
                     )}
                   />
                 </Form.Item>
@@ -404,8 +482,18 @@ const OtherForm = ({ type, handleClose }) => {
                     name="is_current"
                     render={({ field }) => (
                       <Radio.Group {...field}>
-                        <Radio value={1}>Current Year</Radio>
-                        <Radio value={0}>Previous Year</Radio>
+                        <Flex>
+                          <Radio value={1}>
+                            <Tag color={PREVIOUS_YEAR_TAG_COLOR}>
+                              Previous Year
+                            </Tag>
+                          </Radio>
+                          <Radio value={0}>
+                            <Tag color={CURRENT_YEAR_TAG_COLOR}>
+                              Current Year
+                            </Tag>
+                          </Radio>
+                        </Flex>
                       </Radio.Group>
                     )}
                   />
@@ -454,19 +542,52 @@ const OtherForm = ({ type, handleClose }) => {
               </div>
             </td>
             <td colSpan={4}>
-              <div className="credit-note-info-title">
-                <span>Party:</span>
-                {selectedPartyCompany
-                  ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
-                  : ""}
-              </div>
-              <div>{selectedPartyCompany?.party?.delivery_address || ""}</div>
-              <div className="credit-note-info-title">
-                <span>GSTIN/UIN:</span> {selectedPartyCompany?.gst_no || ""}
-              </div>
-              <div className="credit-note-info-title">
-                <span>State Name:</span> {selectedPartyCompany?.state || ""}
-              </div>
+              {selectedUser == "party" && (
+                <>
+                  <div className="credit-note-info-title">
+                    <span>Party:</span>
+                    {selectedPartyCompany
+                      ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
+                      : ""}
+                  </div>
+                  <div>
+                    {selectedPartyCompany?.party?.delivery_address || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN: </span>
+                    {selectedPartyCompany?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>State Name: </span>{" "}
+                    {selectedPartyCompany?.state || ""}
+                  </div>
+                </>
+              )}
+              {selectedUser == "supplier" && (
+                <>
+                  <span style={{
+                    fontWeight: 600,
+                    fontSize: 16
+                  }}>{selectedPartyCompany?.supplier_company}</span>
+                  <div className="credit-note-info-title">
+                    <span>Supplier:</span>
+                    {selectedPartyCompany
+                      ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
+                      : ""}
+                  </div>
+                  <div>
+                    {selectedPartyCompany?.users?.address}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN: </span>
+                    {selectedPartyCompany?.users?.gst_no || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Mobile: </span>{" "}
+                    {selectedPartyCompany?.users?.mobile || ""}
+                  </div>
+                </>
+              )}
             </td>
           </tr>
         </tbody>

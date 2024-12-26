@@ -90,7 +90,7 @@ const EditPassBookVoucherDate = ({ open, handleClose, row, companyId }) => {
       closeIcon={<CloseOutlined className="text-white" />}
       title={
         <Typography.Text className="text-xl font-medium text-white">
-          Entry Date Update
+          Update Vocher date
         </Typography.Text>
       }
       open={open}

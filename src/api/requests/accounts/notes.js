@@ -30,6 +30,10 @@ export function deleteCreditNoteRequest({ id, params }) {
   return api.delete(`/account/credit-notes/delete/${id}`, { params });
 }
 
+export function getCreditNoteByIdRequest({id, params}){
+  return api.get(`account/credit-notes/get/${id}`, {params}) ;
+}
+
 // Debit notes services---------------------------------------------------
 
 export function getDebitNotesListRequest({ params }) {
@@ -52,6 +56,12 @@ export function createDebitNoteRequest({ data, params }) {
   return api.post(`/account/debit-notes/create`, data, { params });
 }
 
+export function debitNoteDropDownRequest({params}){
+  return api.get(`account/debit-notes/bill/get`, {params}) ; }
+
+export function getDebitNoteByIdRequest({id, params}){
+  return api.get(`account/debit-notes/get/${id}`, {params}) ;
+}
 export function deleteDebitNoteRequest({ id, params }) {
   return api.delete(`/account/debit-notes/delete/${id}`, { params });
 }

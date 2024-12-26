@@ -138,6 +138,7 @@ import UpdateReworkChallan from "./pages/job/challan/reworkChallan/UpdateReworkC
 import ReworkChallanBill from "./pages/job/bill/reworkChallanBill";
 import PurchaseReturnList from "./pages/purchase/challan/purchaseReturn/PurchaseReturnList";
 import PrintPage from "./components/common/printPage";
+import GstrReportListing from "./components/common/gstrReportListing";
 import SaleChallanList from "./pages/sale/challan/saleChallan/SaleChallanList";
 import AddSaleChallan from "./pages/sale/challan/saleChallan/AddSaleChallan";
 import UpdateSaleChallan from "./pages/sale/challan/saleChallan/UpdateSaleChallan";
@@ -175,6 +176,7 @@ import SalaryReportList from "./pages/accounts/salaryMaster/employeeSalaryReport
 import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/AddSalaryReport";
 import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
 import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
+import BeamSaleBillList from "./pages/sale/bill/beamSale/beamSaleBillList";
 import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverageReport";
 
 const queryClient = new QueryClient({
@@ -226,6 +228,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/print", element: <PrintPage /> },
+      { path: "/report-list", element: <GstrReportListing/>},
       {
         path: "/print-cashbook-statement",
         element: <PrintCashBookStatement />,
@@ -485,7 +488,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "beam-sales-bill-list",
-                element: <div>beam-sales-bill-list</div>,
+                element: <BeamSaleBillList/>,
               },
               {
                 path: "job-grey-sales-bill-list",

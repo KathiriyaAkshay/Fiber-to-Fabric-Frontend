@@ -1,13 +1,10 @@
 import { EyeOutlined } from "@ant-design/icons";
-import { Button, Col, Flex, Modal, Row, Table } from "antd";
+import { Button, Col, Descriptions, Flex, Modal, Row, Table, Tag } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { WITHDRAW_TAG_COLOR, DEPOSITE_TAG_COLOR } from "../../../constants/tag";
 
-const dataSourcePayment = [
-  {
-    no: "1",
-  },
-];
+const dataSourcePayment = [];
 
 const columnsPayment = [
   {
@@ -58,6 +55,8 @@ const columnsPayment = [
 ];
 
 const PaymentVoucherDetails = ({ details }) => {
+  console.log(details);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
@@ -76,13 +75,7 @@ const PaymentVoucherDetails = ({ details }) => {
         columns={columnsPayment}
         rowKey={"id"}
         className="mt-3"
-        scroll={{ y: 330 }}
-        pagination={{
-          total: 0,
-          showSizeChanger: true,
-          //   onShowSizeChange: onShowSizeChange,
-          //   onChange: onPageChange,
-        }}
+        pagination = {false}
         summary={() => {
           return (
             <Table.Summary.Row>
@@ -90,15 +83,12 @@ const PaymentVoucherDetails = ({ details }) => {
                 <b>Total</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>1</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
 
               <Table.Summary.Cell index={0}>
-                <b>1123</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}>
-                <b>1124513</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
               <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -123,71 +113,39 @@ const PaymentVoucherDetails = ({ details }) => {
         onOk={handleOk}
         onCancel={handleCancel}
         width={"85%"}
+        centered
+        footer = {null}
       >
-        <div className="font-semibold text-lg mb-3">
-          Payment Voucher Details
-        </div>
-        <Row gutter={6}>
-          <Col span={6}>
-            <Flex justify="center">
-              <div className="w-1/2 text-left font-semibold">Voucher No</div>
-              <div className="w-1/2 text-left">{details?.voucher_no}</div>
-            </Flex>
-          </Col>
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Cheque No</div>
-              <div className="w-1/2 text-left">{details?.cheque_no}</div>
-            </Flex>
-          </Col>{" "}
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Supplier Name</div>
-              <div className="w-1/2 text-left">
-                {details?.supplier?.supplier_name}
-              </div>
-            </Flex>
-          </Col>{" "}
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Company Name</div>
-              <div className="w-1/2 text-left">Sonu Textiles</div>
-            </Flex>
-          </Col>
-        </Row>
-        <Row className="mt-2" gutter={6}>
-          <Col span={6}>
-            <Flex justify="center">
-              <div className="w-1/2 text-left font-semibold">Voucher Date</div>
-              <div className="w-1/2 text-left">
-                {dayjs(details?.voucher_date).format("DD-MM-YYYY")}
-              </div>
-            </Flex>
-          </Col>
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Cheque Date</div>
-              <div className="w-1/2 text-left">
-                {dayjs(details?.cheque_date).format("DD-MM-YYYY")}
-              </div>
-            </Flex>
-          </Col>{" "}
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Account Name</div>
-              <div className="w-1/2 text-left">***</div>
-            </Flex>
-          </Col>{" "}
-          <Col span={6}>
-            <Flex justify="space-evenly">
-              <div className="w-1/2 text-left font-semibold">Bank Name</div>
-              <div className="w-1/2 text-left">
-                {details?.company_bank_detail?.bank_name}
-              </div>
-            </Flex>
-          </Col>
-        </Row>
-        <Row className="mt-2">
+        <Descriptions
+          bordered
+          column={4}
+          title="Payment Voucher Details"
+          className="payment-voucher-model"
+          style={{ marginBottom: "20px" }}
+        >
+
+          {/* Voucher number information  */}
+          <Descriptions.Item label="Voucher No">{details?.voucher_no}</Descriptions.Item>
+          
+          <Descriptions.Item label="Cheque No">{details?.cheque_no}</Descriptions.Item>
+          <Descriptions.Item label="Supplier Name">POWER</Descriptions.Item>
+          <Descriptions.Item label="Company Name">SONU TEXTILES</Descriptions.Item>
+
+          {/* Voucher date information  */}
+          <Descriptions.Item label="Voucher Date">{dayjs(details?.voucher_date).format("DD-MM-YYYY")}</Descriptions.Item>
+          <Descriptions.Item label="Cheque Date">--</Descriptions.Item>
+          <Descriptions.Item label="Account Name">
+            KEYUR VAGHASIYA
+          </Descriptions.Item>
+          <Descriptions.Item label="Bank Name">{details?.company_bank_detail?.bank_name}</Descriptions.Item>
+          <Descriptions.Item label="Amount">
+            <Tag color = {details?.is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>
+                {details?.amount}
+            </Tag>
+          </Descriptions.Item>          
+          <Descriptions.Item label="Remark">{details?.remark}</Descriptions.Item>
+        </Descriptions>
+        {/* <Row className="mt-2">
           <Col span={6}>
             <Flex justify="center">
               <div className="w-1/2 text-left font-semibold">Amount</div>
@@ -200,7 +158,7 @@ const PaymentVoucherDetails = ({ details }) => {
               <div className="w-1/2 text-left">{details?.remark}</div>
             </Flex>
           </Col>
-        </Row>
+        </Row> */}
         {renderPaymentTable()}
       </Modal>
     </>

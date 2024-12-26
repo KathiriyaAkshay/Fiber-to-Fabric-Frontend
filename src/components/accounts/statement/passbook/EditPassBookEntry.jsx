@@ -21,6 +21,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { PARTICULAR_OPTIONS } from "../../../../constants/account";
 import { getParticularListRequest } from "../../../../api/requests/accounts/particular";
+import moment from "moment";
 
 const { TextArea } = Input;
 
@@ -167,6 +168,11 @@ const EditPassBookEntry = ({
     }
   }, [particularRes]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+
   return (
     <Modal
       closeIcon={<CloseOutlined className="text-white" />}
@@ -217,7 +223,7 @@ const EditPassBookEntry = ({
               control={control}
               name="voucher_date"
               render={({ field }) => {
-                return <DatePicker {...field} style={{ width: "100%" }} />;
+                return <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />;
               }}
             />
           </Form.Item>
@@ -238,7 +244,7 @@ const EditPassBookEntry = ({
                   control={control}
                   name="amount"
                   render={({ field }) => {
-                    return <Input {...field} />;
+                    return <Input {...field} readOnly />;
                   }}
                 />
               </Form.Item>

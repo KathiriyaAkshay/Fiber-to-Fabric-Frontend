@@ -21,6 +21,7 @@ import dayjs from "dayjs";
 import { getPassbookListRequest } from "../../../api/requests/accounts/payment";
 import DeletePassBookEntryModal from "../../../components/accounts/payment/DeletePassBookEntryModal";
 import EditPassBookEntryModal from "../../../components/accounts/payment/EditPassBookEntryModal";
+import { BILL_VOUCHER_TAG_COLOR, DEPOSITE_TAG_COLOR, WITHDRAW_TAG_COLOR } from "../../../constants/tag";
 
 const PassBookList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -113,17 +114,25 @@ const PassBookList = () => {
       key: "no",
       render: (_, record, index) => index + 1,
     },
-    {
-      title: "Supplier Name",
-      dataIndex: "supplier_name",
-      key: "supplier_name",
-      render: (text) => text || "-",
-    },
+    // {
+    //   title: "Supplier Name",
+    //   dataIndex: "supplier_name",
+    //   key: "supplier_name",
+    //   render: (text) => text || "-",
+    // },
     {
       title: "Account Name",
       dataIndex: "account_name",
       key: "account_name",
-      render: (text) => text || "-",
+      render: (text, record) =>  {
+        return(
+          <div style = {{
+            fontWeight: 600
+          }}>
+            {String(record?.particular_type).toUpperCase()}
+          </div>
+        )
+      },
     },
     // {
     //   title: "Company Name",
@@ -138,7 +147,7 @@ const PassBookList = () => {
         return (
           <span>
             {text} <br />
-            <Tag color="blue">{is_withdraw ? "Withdrawals" : "Deposite"}</Tag>
+            <Tag color={is_withdraw?WITHDRAW_TAG_COLOR:DEPOSITE_TAG_COLOR}>{is_withdraw ? "Withdrawals" : "Deposite"}</Tag>
           </span>
         );
       },
@@ -147,6 +156,13 @@ const PassBookList = () => {
       title: "Voucher No.",
       dataIndex: "voucher_no",
       key: "voucher_no",
+      render: (text, record) => {
+        return(
+          <Tag color = {BILL_VOUCHER_TAG_COLOR}>
+            {text}
+          </Tag>
+        )
+      }
     },
     {
       title: "Voucher Date.",
@@ -213,16 +229,14 @@ const PassBookList = () => {
               <Table.Summary.Row>
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                <Table.Summary.Cell></Table.Summary.Cell>
+                <Table.Summary.Cell>{passBookList?.totalAmount}</Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  {passBookList?.totalAmount}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell></Table.Summary.Cell>
-                {/* <Table.Summary.Cell></Table.Summary.Cell> */}
               </Table.Summary.Row>
             </Table.Summary>
           );

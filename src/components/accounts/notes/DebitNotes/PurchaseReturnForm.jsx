@@ -114,15 +114,14 @@ const PurchaseReturnForm = ({ handleClose }) => {
   const selectedChallan = useMemo(() => {
     if (!challan_no || !debitNoteChallanNo?.result?.length) return null; // Early exit for invalid inputs
     const [temp_model, temp_challan_id] = String(challan_no).split("****");
-
     if (!temp_model || !temp_challan_id) return null;
-    return (
-      debitNoteChallanNo.result.find(
-        (item) =>
-          item.challan_id === +temp_challan_id && item.model === temp_model
-      ) || null
-    );
+    return debitNoteChallanNo.result.find(
+      (item) => item.challan_id === +temp_challan_id && item.model === temp_model
+    ) || null;
   }, [challan_no, debitNoteChallanNo]);
+  
+  if (!temp_model || !temp_challan_id) return null; // Invalid placement
+  
 
   const { data: challanData } = useQuery({
     queryKey: [
@@ -173,7 +172,9 @@ const PurchaseReturnForm = ({ handleClose }) => {
                 <Typography.Text style={{ fontSize: 20 }}>
                   Debit Note No.
                 </Typography.Text>
-                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+                <div style={{
+                  color: "Red"
+                }}>DNP-{+String(debitNoteLastNumber?.debitNoteNumber || "DNP-0").split("-")[1] + 1 || ""}</div>
               </div>
             </td>
             <td colSpan={2} width={"33.33%"}>

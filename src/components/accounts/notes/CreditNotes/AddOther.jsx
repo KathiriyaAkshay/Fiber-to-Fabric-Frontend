@@ -296,7 +296,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: company_id }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId },

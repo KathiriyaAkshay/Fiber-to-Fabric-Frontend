@@ -114,7 +114,7 @@ const VerifyPassBookEntry = ({
       closeIcon={<CloseOutlined className="text-white" />}
       title={
         <Typography.Text className="text-xl font-medium text-white">
-          Alert
+          Return / Revert
         </Typography.Text>
       }
       open={open}

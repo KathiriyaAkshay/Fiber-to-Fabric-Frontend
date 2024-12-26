@@ -15,6 +15,8 @@ import JobWorkSaleChallanModel from "../../../../components/sale/challan/jobwork
 import dayjs from "dayjs";
 import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
 import * as XLSX from "xlsx";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+
 
 const JobWorkBillList = () => {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -120,17 +122,51 @@ const JobWorkBillList = () => {
     {
       title: "Due Days",
       render: (text, record) => {
-        const date1 = new Date(record?.createdAt);
-        const date2 = new Date(record?.job_work_bill?.due_date);
-        const difference = date2 - date1;
-        return <div>{difference}</div>;
+        const currentDate = new Date();
+        const targetDate = new Date(record?.job_work_bill?.due_date);
+
+        if (currentDate < targetDate) {
+          return <div>0</div>;
+        } else {
+          const differenceInMilliseconds = currentDate - targetDate;
+          const millisecondsInADay = 24 * 60 * 60 * 1000;
+          const daysDifference = Math.floor(
+            differenceInMilliseconds / millisecondsInADay
+          );
+
+          if (record?.job_work_bill?.is_paid){
+            return(
+              <div>0</div>
+            )
+          } else {
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
+          }
+        }
       },
     },
     {
       title: "Bill Status",
-      dataIndex: ["job_work_bill", "is_paid"],
-      render: (text) =>
-        text ? <Tag color="green">Paid</Tag> : <Tag color="red">Un-Paid</Tag>,
+    dataIndex: ["job_work_bill", "is_paid"],
+      render: (text,record) => {
+        return(
+          <div>
+            {record?.job_work_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.job_work_bill?.id}
+                bill_model={"job_work_bills"}
+                paid_amount={record?.job_work_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.job_work_bill?.is_paid?"green":"red"}>
+                {String(record?.job_work_bill?.is_paid?"Paid":"Un-paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
+      }
     },
     {
       title: "Actions",
