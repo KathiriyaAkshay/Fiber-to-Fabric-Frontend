@@ -35,12 +35,16 @@ export function getCashbookListRequest({ params }) {
   return api.get(`/account/statement/cashbook/list`, { params });
 }
 
-export function updateCashbookRequest({ id, data, params }) {
-  return api.patch(`/account/statement/cashbook/update/${id}`, data, { params });
+export function updateCashbookRequest({data, params }) {
+  return api.patch(`/account/statement/cashbook/update`, data, { params });
 }
 
 export function addCashbookRequest({ data, params }) {
   return api.post(`/account/statement/cashbook/create`, data, { params });
+}
+
+export function deleteRevertCashbookRequest({id, params}){
+  return api.patch(`/account/statement/cashbook/revert/${id}`, null, {params}) ; 
 }
 
 // Journal services------------------------------------------------------------------------

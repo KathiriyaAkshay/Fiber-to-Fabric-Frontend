@@ -15,15 +15,17 @@ import {
   Col,
   Checkbox,
   Space,
+  message,
+  Tooltip
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import {
   PARTICULAR_OPTIONS,
   PAYMENT_OPTIONS,
 } from "../../../constants/account";
-import { getCashbookListRequest } from "../../../api/requests/accounts/payment";
+import { getCashbookListRequest, updateCashbookRequest } from "../../../api/requests/accounts/payment";
 // import { usePagination } from "../../../hooks/usePagination";
 import { useNavigate } from "react-router-dom";
 import { getParticularListRequest } from "../../../api/requests/accounts/particular";
@@ -35,9 +37,13 @@ import {
 import { PAYMENT_TYPE } from "../../../constants/localStorage";
 import useDebounce from "../../../hooks/useDebounce";
 import RevertPassBookEntry from "../../../components/accounts/statement/passbook/RevertPassBookEntry";
+import { useMutation } from "@tanstack/react-query";
+import RevertCashbookEntry from "../../../components/accounts/statement/cashbook/RevertCashbookEntry";
+import EditCashbookEntry from "../../../components/accounts/statement/cashbook/EditCashbokEntry";
 
 const CashBook = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient() ;
   const { companyId } = useContext(GlobalContext);
 
   const [isDeleted, setIsDeleted] = useState(false);
@@ -58,6 +64,37 @@ const CashBook = () => {
     localStorageHandler("STORE", PAYMENT_TYPE, PAYMENT_OPTIONS.cashbook_update);
   };
 
+  // Update cashbook statement related api
+  const { mutateAsync: updatePassBookEntry, isPending: isCashbookPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await updateCashbookRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["update", "passbook", "entry", { companyId }],
+    onSuccess: (res) => {
+      queryClient.invalidateQueries([
+        "get",
+        "cashBook",
+        "list",
+        { company_id: companyId },
+      ]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Cashbook statement updated successfully");
+      }
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  // Cashbook listing related api ==================================
   const { data: cashBookList, isLoading: isLoadingCashBookList } = useQuery({
     queryKey: [
       "get",
@@ -90,7 +127,7 @@ const CashBook = () => {
     enabled: Boolean(companyId),
   });
 
-  // get particular list API
+  // Particular user list fetch API
   const { data: particularRes, isLoading: isLoadingParticular } = useQuery({
     queryKey: [
       "dropdown/passbook_particular_type/list",
@@ -176,6 +213,19 @@ const CashBook = () => {
     window.open("/print-cashbook-statement");
   }
 
+  // Cashbook statement related handler 
+  const CashbookStatementVerify = async (row) => {
+    let requestPayload = {
+      id: row?.id, 
+      is_verified : !row?.is_verified, 
+    }; 
+    await updatePassBookEntry(requestPayload)
+  }
+
+  // Edit cashbook related functionality handle 
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isOpenEditEntry, setIsOpenEditEntry] = useState(false);
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -223,28 +273,6 @@ const CashBook = () => {
           <Flex align="center" gap={10}>
             <Input value={search} onChange={setSearch} placeholder="Search" />
           </Flex>
-          {/* <Flex align="center" gap={10}>
-            <Select
-              allowClear
-              showSearch
-              placeholder="Select Bank"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-                minWidth: "200px",
-              }}
-              options={company?.company_bank_details?.map(
-                ({ id, bank_name }) => {
-                  return { label: bank_name, value: id };
-                }
-              )}
-              value={bank}
-              onChange={setBank}
-            />
-          </Flex> */}
-
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
@@ -300,6 +328,8 @@ const CashBook = () => {
                   : "No unverified entry available"}
               </td>
             </tr>
+            
+            {/* ============ Unverified entries information ============  */}
             {unverifiedEntries && unverifiedEntries?.length
               ? unverifiedEntries?.map((row, index) => {
                   return (
@@ -332,9 +362,21 @@ const CashBook = () => {
                         </Typography>
                       </td>
                       <td>{row?.balance}</td>
-                      <td width={250}>{row.remarks}</td>
+                      <td width={250}>{row.remarks || "----"}</td>
                       <td>
-                        <Space></Space>
+                        <Space>
+                          <Tooltip title = "Verify Statement">
+                            <div style={{
+                              cursor: "pointer", 
+                              color: row?.is_verified?"green":"red", 
+                              fontWeight: 600
+                            }} onClick={() => {
+                              CashbookStatementVerify(row)
+                            }}>
+                              {row?.is_verified?"Confirmed":"Confirm"}
+                            </div>
+                          </Tooltip>
+                        </Space>
                       </td>
                     </tr>
                   );
@@ -355,6 +397,8 @@ const CashBook = () => {
                   : "No verified entry available"}
               </td>
             </tr>
+              
+            {/* ======= Verified enteries information ============  */}
             {verifiedEntries && verifiedEntries?.length
               ? verifiedEntries?.map((row, index) => {
                   return (
@@ -387,29 +431,50 @@ const CashBook = () => {
                         </Typography>
                       </td>
                       <td>{row?.balance}</td>
-                      <td>{row.remarks}</td>
+                      <td>{row.remarks || "-----"}</td>
                       <td>
                         <Space>
-                          {/* revert action */}
-                          {row.able_to_revert ? (
-                            <RevertPassBookEntry details={row} />
-                          ) : null}
+                          
+                          <div>
+                            {!row.is_reverted && (
+                              <Tooltip title = "Un-verified statement">
+                                <div style={{
+                                  cursor: "pointer", 
+                                  color: row?.is_verified?"green":"red", 
+                                  fontWeight: 600
+                                }} onClick={() => {
+                                  CashbookStatementVerify(row)
+                                }}>
+                                  {row?.is_verified?"Confirmed":"Confirm"}
+                                </div>
+                              </Tooltip>
+                            )}
 
-                          {/* edit action */}
-                          <Button
-                            style={{
-                              borderColor: "var(--menu-item-hover-color)",
-                            }}
-                            // onClick={() => {
-                            //   setSelectedRow(row);
-                            //   setIsOpenEditEntry(true);
-                            //   setIsVerifyEntry(false);
-                            // }}
-                          >
-                            <EditOutlined
-                              style={{ color: "var(--menu-item-hover-color)" }}
-                            />
-                          </Button>
+                            <Flex style={{gap: 7, marginTop: 4}}>
+                            
+                              {/* Revert action ===========  */}
+                              {row.able_to_revert ? (
+                                <RevertCashbookEntry details={row} />
+                              ) : null}
+
+                              {/* Edit action ====================  */}
+                              <Button
+                                style={{
+                                  borderColor: "var(--menu-item-hover-color)",
+                                }}
+                                onClick={() => {
+                                  setSelectedRow(row);
+                                  setIsOpenEditEntry(true);
+                                  setIsVerifyEntry(false);
+                                }}
+                              >
+                                <EditOutlined
+                                  style={{ color: "var(--menu-item-hover-color)" }}
+                                />
+                              </Button>
+                            </Flex>
+                          </div>
+                          
                         </Space>
                       </td>
                     </tr>
@@ -426,12 +491,12 @@ const CashBook = () => {
               <td></td>
               <td>
                 <Typography style={{ fontWeight: "700" }}>
-                  {totalAmount || 0}
+                  {parseFloat(totalAmount).toFixed(2) || 0}
                 </Typography>
               </td>
               <td>
                 <Typography style={{ fontWeight: "700" }}>
-                  {totalDeposit || 0}
+                  {parseFloat(totalDeposit).toFixed(2) || 0}
                 </Typography>
               </td>
               <td></td>
@@ -458,6 +523,17 @@ const CashBook = () => {
             </tr>
           </tbody>
         </table>
+      )}
+
+      {/* Edit cashbook related functionality  */}
+      {isOpenEditEntry && (
+        <EditCashbookEntry
+          open={isOpenEditEntry}
+          handleClose={() => {setIsOpenEditEntry(false)}}
+          row={selectedRow}
+          companyId={companyId}
+          isVerifyEntry={true}
+        />
       )}
     </div>
   );
