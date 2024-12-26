@@ -19,6 +19,7 @@ import {
   getCompanyUserAnalyticsRequest,
 } from "../../api/requests/dashboard";
 import prettyNum from "pretty-num";
+import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
 
 const formatNumber = (number) => {
   // Using pretty-num to convert to short format
@@ -390,7 +391,7 @@ const Dashboard = () => {
               ></ChartWrapper>
             </Col>
             
-            <Col span={8}>
+            {/* <Col span={8}>
               <ChartWrapper
                 chart="PIE"
                 header="Days Payable Outstanding"
@@ -413,7 +414,13 @@ const Dashboard = () => {
                 header="Days Receivable Aging"
                 companyId={companyId}
               ></ChartWrapper>
+            </Col> */}
+
+            {/* Day receivable outstanding related information  */}
+            <Col span={8}>
+              <DayReceivableOutStanding/>
             </Col>
+            
             <Col span={24}>
               <ChartWrapper
                 chart="TABLE"

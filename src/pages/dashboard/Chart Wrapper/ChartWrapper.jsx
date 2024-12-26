@@ -34,6 +34,7 @@ export const ChartWrapper = ({ header, chart, companyId }) => {
 
   return (
     <div className="chart-wrapper">
+      
       <Flex justify="space-between" align="center" className="mb-2">
         <div className="title" style={{
           fontWeight: 600,
@@ -46,9 +47,11 @@ export const ChartWrapper = ({ header, chart, companyId }) => {
           />
         </div>
       </Flex>
+      
       <div width="100%" height="100%">
         <ResponsiveContainer>{renderChart()}</ResponsiveContainer>
       </div>
+
       <Modal
         open={isModalOpen}
         onCancel={handleCancel}

@@ -1059,3 +1059,93 @@ h2 {
   padding-top: 3px;
   padding-bottom: 3px;
 }
+
+.dashboard-chart-card {
+  border-top: 1px solid #d8d8d8;
+  background: #fff;
+  padding: 16px;
+  margin-top: -20px;
+}
+
+.dashboard-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dashboard-chart-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.dashboard-chart-total-dues {
+  font-size: 14px;
+  color: green;
+  font-weight: bold;
+}
+
+.dashboard-chart-dues-value {
+  font-weight: normal;
+}
+
+.dashboard-chart-amount {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+  margin-top: -5px;
+}
+
+.dashboard-chart-details {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd; /* Added border to the table */
+}
+
+.dashboard-chart-details th {
+  font-size: 12px;
+  text-align: left;
+  border: 1px solid #ddd; /* Added border to the header cells */
+  padding: 4px;
+  color: #222222;
+  padding-left: 6px;
+  margin-top: -10px;
+}
+
+.dashboard-chart-details td {
+  font-size: 12px;
+  padding: 4px;
+  border: 1px solid #ddd; /* Added border to table cells */
+  color: #333;
+  padding-left:  6px;
+}
+
+.dashboard-chart-due-days {
+  color: blue;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.dashboard-chart-due-days:hover {
+  text-decoration: underline;
+}
+
+.challan-information-text{
+  color: rgb(65, 65, 65);
+  cursor: pointer;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.challan-information-text:hover{
+  color: black;
+}
+
+.challan-information-count{
+  color: black;
+  font-weight: 600;
+  margin-left: 8px;
+}

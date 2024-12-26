@@ -12,7 +12,7 @@ const PieCharts = (props) => {
 
   return (
     <PieChart
-      width={props.isModalOpen ? 550 : 300}
+      width={props.isModalOpen ? 550 : 400}
       height={props.isModalOpen ? 400 : 200}
     >
       <Pie
