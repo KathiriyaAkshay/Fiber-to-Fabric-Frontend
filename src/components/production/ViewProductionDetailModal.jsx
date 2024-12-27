@@ -1,18 +1,23 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Modal, Table, Tag, Typography } from "antd";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../constants/tag";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { GlobalContext } from "../../contexts/GlobalContext";
+import { inhouseProductionDetailsRequest } from "../../api/requests/production/inhouseProduction";
+import moment from "moment";
 
 const ViewProductionDetailModal = ({ title, details }) => {
+  console.log(details);
+  
+  const queryClient = useQueryClient() ; 
+  const {companyId} = useContext(GlobalContext) ; 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
   };
-  // const handleOk = () => {
-  //   setIsModalOpen(false);
-  // };
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -25,19 +30,54 @@ const ViewProductionDetailModal = ({ title, details }) => {
 
   const columnsModal = [
     {
+      title: "ID", 
+      dataIndex: "id", 
+      render: (text, record, index) => {
+        return(
+          <div>
+            {index + 1}
+          </div>
+        )
+      }
+    },
+    {
       title: "Date",
       dataIndex: "date",
       key: "date",
+      render: (text, record) => {
+        return(
+          <div>
+            {moment(record?.createdAt).format("DD-MM-YYYY")}
+          </div>
+        )
+      }
     },
     {
       title: "Employee Name",
       dataIndex: "employee_name",
       key: "employee_name",
+      render: (text, record) => {
+        return(
+          <div>
+            {String(record?.user?.first_name).toUpperCase()}
+          </div>
+        )
+      }
     },
     {
       title: "Meter",
       dataIndex: "meter",
       key: "meter",
+      render: (text, record) => {
+        return(
+          <div style={{
+            color: record?.night_meter !== 0?"#000":"blue",
+            fontWeight: 600
+          }}>
+            {record?.night_meter || record?.day_meter}
+          </div>
+        )
+      }
     },
     {
       title: "Taka No",
@@ -53,19 +93,14 @@ const ViewProductionDetailModal = ({ title, details }) => {
       title: "Beam No",
       key: "beam_no",
       dataIndex: "beam_no",
+      render: () => {
+        return(
+          <div>
+            {details?.beam_no || "-"}
+          </div>
+        )
+      }
     },
-  ];
-
-  const data = [
-    // {
-    //   key: "1",
-    //   date: "11-1-11",
-    //   employee_name: "John",
-    //   meter: "",
-    //   taka_no: "",
-    //   machine_no: "",
-    //   beam_no: "",
-    // },
   ];
 
   const items = [
@@ -286,6 +321,33 @@ const ViewProductionDetailModal = ({ title, details }) => {
     },
   ];
 
+  
+  // Particular production details related information =========== 
+  const { data: productionDetails, isPending, refetch } = useQuery({
+    queryKey: ["production", "folding", "list"],
+    queryFn: async () => {
+      let params = {
+        company_id: companyId,
+        production_taka_id: details?.id,
+      };
+      let res = await inhouseProductionDetailsRequest({ params });
+      return res?.data?.data; // Return the response to store it in `productionDetails`
+    },
+    enabled: Boolean(companyId), // Enable query based on companyId presence
+  });
+
+  useEffect(() => {
+    if (companyId !== undefined && isModalOpen == true){
+      refetch() ; 
+    }
+  },[companyId, isModalOpen])
+
+  useEffect(() => {
+    if (productionDetails?.folding_details){
+      
+    }
+  },[productionDetails])
+
   return (
     <>
       <Button type="primary" onClick={showModal}>
@@ -327,6 +389,8 @@ const ViewProductionDetailModal = ({ title, details }) => {
           size="small"
         />
 
+        {/* ===== Employee average report related information ====  */}
+
         <div
           className="text-center"
           style={{ fontWeight: 600, fontSize: "1.1rem", marginTop: "1.2rem" }}
@@ -337,7 +401,9 @@ const ViewProductionDetailModal = ({ title, details }) => {
         <Table
           style={{ marginTop: "20px" }}
           columns={columnsModal}
-          dataSource={data}
+          dataSource={productionDetails?.folding_details || []}
+          loading = {isPending}
+          pagination = {false}
         />
       </Modal>
     </>

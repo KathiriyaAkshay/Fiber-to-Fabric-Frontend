@@ -170,8 +170,6 @@ const AddFoldingProduction = () => {
     });
 
     payload = { ...payload, taka_details: takaDetails };
-
-    console.log({ payload });
     await addFoldingProduction(payload);
   };
 

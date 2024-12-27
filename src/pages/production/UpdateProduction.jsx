@@ -10,6 +10,10 @@ import {
   Divider,
   message,
   Typography,
+  Table,
+  DatePicker,
+  Tag,
+  Switch
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -24,6 +28,14 @@ import {
   updateProductionRequest,
 } from "../../api/requests/production/inhouseProduction";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
+import { inhouseProductionDetailsRequest } from "../../api/requests/production/inhouseProduction";
+import { getOtherUserListRequest } from "../../api/requests/users";
+const { Text } = Typography;
+const { Option } = Select;
+import { USER_ROLES } from "../../constants/userRole";
+import { getEmployeeListRequest } from "../../api/requests/users";
+import moment from "moment";
+import dayjs from "dayjs";
 
 const updateProductionSchema = yupResolver(
   yup.object().shape({
@@ -45,6 +57,142 @@ const UpdateProduction = () => {
   const [form] = Form.useForm();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+
+  // Get Employee user list =================================================== 
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+          salary_type: 'Work basis'
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+
+  const columns = [
+    {
+      title: "ID", 
+      dataIndex: "id", 
+      render: (text, record, index) => {
+        return(
+          <div>
+            {index + 1}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (value, record) => {
+        return(
+          <div>
+            <DatePicker value={dayjs(record?.createdAt)} defaultChecked = {record?.createdAt} disabledDate={disabledFutureDate}/>
+          </div>
+        )
+      }
+    },
+    {
+      title: "Employee name",
+      dataIndex: "employeeName",
+      key: "employeeName",
+      render: (value, record) =>{
+        return(
+          <Select value={record?.user?.id} style={{ width: "100%" }} placeholder="Select Employee"
+            options={employeeListRes?.rows?.map(
+              ({ id = 0, first_name = "" }) => ({
+                label: first_name,
+                value: id,
+              })
+            )}>
+          </Select>
+        )
+      }
+    },
+    {
+      title: "Taka no",
+      dataIndex: "takaNo",
+      key: "takaNo",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.taka_no || "-"}
+          </div>
+        )
+      }
+    },
+    {
+      title: "Shift",
+      dataIndex: "shift",
+      key: "shift",
+      render: (value, record) => {
+        return (
+          <Switch 
+            checked={value === "Day"} 
+            onChange={(checked) => handleShiftToggle(record.id, checked)} 
+            checkedChildren="Day" 
+            unCheckedChildren="Night" 
+          />
+        );
+      }
+    },
+    {
+      title: "Meter",
+      dataIndex: "meter",
+      key: "meter",
+      render: (value, record) =>{
+        return(
+          <>
+            <Flex>
+              <Input style={{ width: "100%", marginTop: 4 }} 
+                placeholder="Meter" 
+                defaultValue={value} 
+                value={record?.night_meter == 0?record?.day_meter:record?.night_meter}
+              />
+            </Flex>
+          </>
+        )
+      }
+    },
+    {
+      title: "Machine no",
+      dataIndex: "machineNo",
+      key: "machineNo",
+    },
+    {
+      title: "Beam no",
+      dataIndex: "beamNo",
+      key: "beamNo",
+    },
+    {
+      title: "Paid Status",
+      dataIndex: "paidStatus",
+      key: "paidStatus",
+      render: (status) =>
+        status === "Paid" ? (
+          <Text style={{ color: "green" }}>{status}</Text>
+        ) : (
+          <Text style={{ color: "red" }}>{status}</Text>
+        ),
+    },
+  ];
+
+  // Particular production details related information ====================
   const { data: productionDetail } = useQuery({
     queryKey: ["productionDetail", "get", id, { company_id: companyId }],
     queryFn: async () => {
@@ -57,6 +205,7 @@ const UpdateProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Update production related functionality 
   const { mutateAsync: updateProduction, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateProductionRequest({
@@ -127,7 +276,7 @@ const UpdateProduction = () => {
 
   const { quality_id, meter } = watch();
 
-  // DropDown quality list request
+  // DropDown quality list request =================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -160,7 +309,7 @@ const UpdateProduction = () => {
       enabled: Boolean(companyId),
   });
 
-  // Machinenumber dropdown list information 
+  // Machinenumber dropdown list information ===========================
   const {data: beamCardList, isLoading: isBeamCardListLoading} = useQuery({
     queryKey: [
       "beamCard",
@@ -185,6 +334,27 @@ const UpdateProduction = () => {
     }, 
     enabled: Boolean(companyId && quality_id)
   })
+
+  // Particular production taka average report information ========== 
+  const { data: foldingProductionTakaDetails, refetch } = useQuery({
+    queryKey: ["production", "folding", "list"],
+    queryFn: async () => {
+      let params = {
+        company_id: companyId,
+        production_taka_id: productionDetail?.id,
+      };
+      let res = await inhouseProductionDetailsRequest({ params });
+      return res?.data?.data; // Return the response to store it in `productionDetails`
+    },
+    enabled: Boolean(companyId), // Enable query based on companyId presence
+  });
+
+  useEffect(() => {
+    if (productionDetail?.id !== undefined){
+      refetch();
+    }
+  }, [companyId, productionDetail])
+
 
   const [machineListDropDown, setMachineListDropDown] = useState([]) ; 
   const [changedBeamNumber, setChangedBeamNumber] = useState(null) ; 
@@ -274,6 +444,7 @@ const UpdateProduction = () => {
       });
     }
   }, [productionDetail, reset]);
+
 
   return (
     <Form
@@ -365,7 +536,10 @@ const UpdateProduction = () => {
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{
+          marginTop: -10, 
+          marginBottom: 0
+        }} />
 
         <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
           <Col span={6}>
@@ -547,11 +721,24 @@ const UpdateProduction = () => {
         </Row>
 
         {quality_id && (
-          <Typography.Text style={{ color: "red" }}>
+          <Typography.Text style={{ color: "red", marginTop: -20 }}>
             Avg must be between {avgWeight?.weight_from} to{" "}
             {avgWeight?.weight_to}
           </Typography.Text>
         )}
+        {/* Particular employee average report related information  */}
+        <div>
+          <h2 style={{
+            textAlign: "left"
+          }}>Employee Average Report</h2>
+          
+          <Table
+            columns={columns}
+            dataSource={foldingProductionTakaDetails?.folding_details || []}
+            pagination = {false}
+          />
+        </div>
+
 
         <Flex gap={10} justify="flex-end">
           <Button type="primary" htmlType="submit" loading={isPending}>

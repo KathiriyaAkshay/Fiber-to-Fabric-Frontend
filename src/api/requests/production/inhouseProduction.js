@@ -27,3 +27,7 @@ export function deleteProductionRequest({ data, params }) {
 export function getInHouseProductionByTakaNo({ takaNo, params }) {
   return api.get(`/production/get/taka-no/${takaNo}`, { params });
 }
+
+export function inhouseProductionDetailsRequest({params}) {
+  return api.get(`/production/folding/list`, {params}) ; 
+}
