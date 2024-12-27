@@ -16,6 +16,10 @@ export function updateProductionRequest({ id, data, params }) {
   return api.patch(`/production/update/${id}`, data, { params });
 }
 
+export function updateProductionReportRequest({data, params}){
+  return api.patch("/production/folding/update", data, {params}) ; 
+}
+
 export function getProductionByIdRequest({ id, params }) {
   return api.get(`/production/get/${id}`, { params });
 }
