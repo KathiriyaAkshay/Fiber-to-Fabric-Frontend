@@ -1,6 +1,6 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
@@ -9,7 +9,12 @@ import ReactToPrint from "react-to-print";
 
 const { Text, Title } = Typography;
 
-const ViewReworkChallanInfo = ({ details }) => {
+const ViewReworkChallanInfo = ({
+  details,
+  isEyeButton = true,
+  open = false,
+  close,
+}) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -96,16 +101,31 @@ const ViewReworkChallanInfo = ({ details }) => {
     });
   }, [details, companyListRes]);
 
+  const isOpen = useMemo(() => {
+    if (isEyeButton) return isModelOpen;
+    else return open;
+  }, [isEyeButton, isModelOpen, open]);
+
+  const closeHandler = () => {
+    if (isEyeButton) {
+      setIsModalOpen(false);
+    } else {
+      close();
+    }
+  };
+
   return (
     <>
-      <Button
-        type="primary"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <EyeOutlined />
-      </Button>
+      {isEyeButton ? (
+        <Button
+          type="primary"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <EyeOutlined />
+        </Button>
+      ) : null}
 
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
@@ -114,7 +134,7 @@ const ViewReworkChallanInfo = ({ details }) => {
             Rework Challan
           </Typography.Text>
         }
-        open={isModelOpen}
+        open={isOpen}
         footer={() => {
           return (
             <>
@@ -136,7 +156,7 @@ const ViewReworkChallanInfo = ({ details }) => {
           );
         }}
         onCancel={() => {
-          setIsModalOpen(false);
+          closeHandler();
         }}
         centered={true}
         classNames={{
@@ -163,11 +183,11 @@ const ViewReworkChallanInfo = ({ details }) => {
         }}
         width={"60vw"}
       >
-
-        <div ref={componentRef} style={{ marginRight: "1px", marginLeft: "1px", width: "99%" }}>
-          <Flex
-            className="flex-col border border-b-0 border-solid"
-          >
+        <div
+          ref={componentRef}
+          style={{ marginRight: "1px", marginLeft: "1px", width: "99%" }}
+        >
+          <Flex className="flex-col border border-b-0 border-solid">
             <Row
               justify="center"
               align="middle"
@@ -179,11 +199,13 @@ const ViewReworkChallanInfo = ({ details }) => {
             >
               <Col span={24} style={{ textAlign: "center" }}>
                 <p style={{ marginTop: 0, marginBottom: 0 }}>
-                  <strong>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
-                    ? ""
-                    : companyInfo?.address_line_2
-                    }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
-                    }, ${companyInfo?.country}`}</strong>
+                  <strong>{`${companyInfo?.address_line_1} ${
+                    companyInfo?.address_line_2 == null
+                      ? ""
+                      : companyInfo?.address_line_2
+                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
+                    companyInfo?.pincode
+                  }, ${companyInfo?.country}`}</strong>
                 </p>
                 <p style={{ marginTop: 3, marginBottom: 0 }}>
                   Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp;
@@ -205,7 +227,6 @@ const ViewReworkChallanInfo = ({ details }) => {
               }}
             >
               <Col span={12}>
-
                 <Row>
                   <Col span={3}>
                     <Text className="font-bold">M/S,</Text>
@@ -215,7 +236,6 @@ const ViewReworkChallanInfo = ({ details }) => {
                       {details?.supplier?.supplier_company} (
                       {details?.supplier?.supplier_name})
                     </Text>
-
                   </Col>
                 </Row>
 
@@ -230,11 +250,11 @@ const ViewReworkChallanInfo = ({ details }) => {
 
                 <Row className="mt-2">
                   <Col span={3}>
-                    <Text strong style={{ fontWeight: 600 }}>GST :</Text>
+                    <Text strong style={{ fontWeight: 600 }}>
+                      GST :
+                    </Text>
                   </Col>
-                  <Col span={10}>
-                    {details?.supplier?.user?.gst_no}
-                  </Col>
+                  <Col span={10}>{details?.supplier?.user?.gst_no}</Col>
                 </Row>
                 {/* <Row>
                   <Col span={24}>
@@ -249,10 +269,7 @@ const ViewReworkChallanInfo = ({ details }) => {
                     <Text className="font-bold">CHALLAN NO :</Text>
                   </Col>
                   <Col span={10}>
-                    <Text>
-                      {details?.challan_no}
-                    </Text>
-
+                    <Text>{details?.challan_no}</Text>
                   </Col>
                 </Row>
                 {/* <Row>
@@ -288,19 +305,24 @@ const ViewReworkChallanInfo = ({ details }) => {
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderTop: "1px dashed" }}
             >
-              <Col span={3}><strong>Description:</strong></Col>
+              <Col span={3}>
+                <strong>Description:</strong>
+              </Col>
               <Col span={9}>
                 {details?.inhouse_quality?.quality_name} (
                 {details?.inhouse_quality?.quality_weight}KG)
               </Col>
-              <Col span={3}><strong>Date:</strong></Col>
-              <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>
+              <Col span={3}>
+                <strong>Date:</strong>
+              </Col>
+              <Col span={6}>
+                {dayjs(details?.createdAt).format("DD-MM-YYYY")}
+              </Col>
             </Row>
             <Row
               className="p-4 border-0 border-b border-solid !m-0"
               style={{ borderBottom: 0 }}
             >
-
               <Col span={2} style={{ textAlign: "center" }}>
                 <strong>No</strong>
               </Col>
@@ -354,7 +376,10 @@ const ViewReworkChallanInfo = ({ details }) => {
                     {details?.job_rework_challan_details[index]?.received_meter}
                   </Col>
                   <Col span={3} style={{ textAlign: "center" }}>
-                    {details?.job_rework_challan_details[index]?.received_weight}
+                    {
+                      details?.job_rework_challan_details[index]
+                        ?.received_weight
+                    }
                   </Col>
                   <Col span={2} style={{ textAlign: "center" }}>
                     <strong>{index + 13}</strong>
@@ -381,7 +406,10 @@ const ViewReworkChallanInfo = ({ details }) => {
               );
             })}
 
-            <Row className="p-3 border-0" style={{ borderTop: "1px solid", borderTopStyle: "dashed" }}>
+            <Row
+              className="p-3 border-0"
+              style={{ borderTop: "1px solid", borderTopStyle: "dashed" }}
+            >
               <Col span={1} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}></Col>
               <Col span={2} style={{ textAlign: "center" }}>
@@ -414,51 +442,39 @@ const ViewReworkChallanInfo = ({ details }) => {
               </Col>
             </Row>
 
-
-            <Row className="border-b !m-0 p-4" style={{ borderBottom: "1px solid" }}>
+            <Row
+              className="border-b !m-0 p-4"
+              style={{ borderBottom: "1px solid" }}
+            >
               <Col span={16} className="p-2">
                 <Title level={5} className="m-0">
                   ➤ TERMS OF SALES :-
                 </Title>
-                <Text
-                  className="block"
-                  style={{ color: "#000" }}
-                >
+                <Text className="block" style={{ color: "#000" }}>
                   1. Interest at 2% per month will be charged remaining unpaid
                   from the date bill.
                 </Text>
-                <Text
-                  className="block"
-                  style={{ color: "#000" }}
-                >
+                <Text className="block" style={{ color: "#000" }}>
                   2. Complaint if any regarding this invoice must be settled
                   within 24 hours.
                 </Text>
-                <Text
-                  className="block"
-                  style={{ color: "#000" }}
-                >
+                <Text className="block" style={{ color: "#000" }}>
                   3. Disputes shall be settled in SURAT court only.
                 </Text>
-                <Text
-                  className="block"
-                  style={{ color: "#000" }}
-                >
+                <Text className="block" style={{ color: "#000" }}>
                   4. We are not responsible for processed goods & width.
                 </Text>
-                <Text
-                  className="block"
-                  style={{ color: "#000" }}
-                >
+                <Text className="block" style={{ color: "#000" }}>
                   5. Subject to SURAT Jurisdiction.
                 </Text>
                 <Text className="block mt-2"></Text>
               </Col>
               <Col span={8} className="p-2 text-right">
-                <Text strong>For, {companyInfo?.company_name}</Text><br />Authorized Signature
+                <Text strong>For, {companyInfo?.company_name}</Text>
+                <br />
+                Authorized Signature
               </Col>
             </Row>
-
           </Flex>
         </div>
       </Modal>

@@ -19,6 +19,19 @@ import { getSundryCreditorService } from "../../../api/requests/accounts/sundryC
 import PaymentModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/PaymentModal";
 import ViewDebitNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewDebitNoteModal";
 import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewCreditNoteModal";
+import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
+import {
+  getPurchaseTakaListRequest,
+  getYarnBillListRequest,
+} from "../../../api/requests/purchase/purchaseTaka";
+import SizeBeamChallanModal from "../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
+import { getReceiveSizeBeamListRequest } from "../../../api/requests/purchase/purchaseSizeBeam";
+import ViewPurchaseChallanInfo from "../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
+import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
+import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
+import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
+import { getReworkChallanListRequest } from "../../../api/requests/job/challan/reworkChallan";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
@@ -28,6 +41,14 @@ const orderTypeOptions = [
   { label: "Expenses", value: "expenses" },
   { label: "Rework", value: "rework" },
 ];
+
+const BILL_MODEL = {
+  yarn_bills: "yarn_bills",
+  receive_size_beam_bill: "receive_size_beam_bill",
+  purchase_taka_bills: "purchase_taka_bills",
+  job_taka_bills: "job_taka_bills",
+  job_rework_bill: "job_rework_bill",
+};
 
 const calculateDueDays = (createdAt, dueDate) => {
   const startDate = dayjs(createdAt);
@@ -190,7 +211,7 @@ const SundryCreditor = () => {
           </Button>
         ) : null}
 
-        <Flex>
+        <Flex gap={12}>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Supplier
@@ -290,6 +311,7 @@ const SundryCreditor = () => {
                   company={company}
                   selectedRecords={selectedRecords}
                   storeRecord={storeRecord}
+                  companyId={companyId}
                 />
               ))
             ) : (
@@ -334,6 +356,7 @@ const TableWithAccordion = ({
   company,
   selectedRecords,
   storeRecord,
+  companyId,
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(null);
 
@@ -346,6 +369,20 @@ const TableWithAccordion = ({
         return data.id;
       }
     });
+  };
+
+  const [creditorBillModal, setCreditorBillModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+    model: "",
+  });
+
+  const handleCloseModal = () => {
+    setCreditorBillModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+    }));
   };
 
   const TOTAL = useMemo(() => {
@@ -362,6 +399,55 @@ const TableWithAccordion = ({
       return { meter: 0, amount: 0 };
     }
   }, [data]);
+
+  const onClickViewHandler = async (bill) => {
+    try {
+      let response;
+      let details;
+      let params = {
+        company_id: companyId,
+        bill_id: bill.bill_id,
+        page: 0,
+        pageSize: 10,
+      };
+
+      if (bill.model === BILL_MODEL.yarn_bills) {
+        response = await getYarnBillListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.row[0];
+        }
+      } else if (bill.model === BILL_MODEL.receive_size_beam_bill) {
+        response = await getReceiveSizeBeamListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.purchase_taka_bills) {
+        response = await getPurchaseTakaListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_taka_bills) {
+        response = await getJobTakaListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_rework_bill) {
+        response = await getReworkChallanListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      }
+
+      setCreditorBillModal({
+        isModalOpen: true,
+        details: details,
+        mode: "VIEW",
+        model: bill.model,
+      });
+    } catch (error) {
+      mutationOnErrorHandler({ error });
+    }
+  };
 
   return (
     <>
@@ -399,11 +485,16 @@ const TableWithAccordion = ({
                   <td>{bill?.taka || 0}</td>
                   <td>{bill?.meters || 0}</td>
                   <td>{bill?.amount || 0}</td>
-                  <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td>
-                  {/* <td></td> */}
+                  <td>
+                    {calculateDueDays(bill?.createdAt, bill?.due_days)}
+                    &nbsp;&nbsp;&nbsp;&nbsp;{bill.model}
+                  </td>
                   <td>
                     <Space>
-                      <Button type="primary">
+                      <Button
+                        type="primary"
+                        onClick={() => onClickViewHandler(bill)}
+                      >
                         <EyeOutlined />
                       </Button>
                       <PaymentModal />
@@ -456,6 +547,57 @@ const TableWithAccordion = ({
         <td></td>
         <td></td>
       </tr>
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.yarn_bills && (
+          <ViewYarnReceiveChallan
+            details={creditorBillModal.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.receive_size_beam_bill && (
+          <SizeBeamChallanModal
+            details={creditorBillModal.details}
+            mode={creditorBillModal.mode}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.purchase_taka_bills && (
+          <ViewPurchaseChallanInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.job_taka_bills && (
+          <ViewJobTakaInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.job_rework_bill && (
+          <ViewReworkChallanInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
     </>
   );
 };

@@ -26,7 +26,6 @@ import ReactToPrint from "react-to-print";
 import { ToWords } from "to-words";
 import moment from "moment";
 
-
 const toWords = new ToWords({
   localeCode: "en-IN",
   converterOptions: {
@@ -78,7 +77,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
-  const componentRef = useRef() ; 
+  const componentRef = useRef();
 
   const { data: saleBillDetail = null } = useQuery({
     queryKey: ["/sale/bill/get", MODE, { id: details.id }],
@@ -110,16 +109,15 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
     mutationKey: ["sale", "bill", "add"],
     onSuccess: (res) => {
       queryClient.invalidateQueries(["saleBill", "list", companyId]);
-      
-      if (MODE == "UPDATE"){
-        message.success("Job Gery bill updated successfully")
+
+      if (MODE == "UPDATE") {
+        message.success("Job Gery bill updated successfully");
       } else {
         const successMessage = res?.message;
         if (successMessage) {
           message.success(successMessage);
         }
       }
-      
 
       handleCloseModal();
     },
@@ -288,7 +286,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
   //  CALCULATION END------------------------------------------------
 
-  const [dueDate, setDueDate] = useState(null) ; 
+  const [dueDate, setDueDate] = useState(null);
   useEffect(() => {
     if (saleBillDetail) {
       console.log("Sale bill details information");
@@ -309,22 +307,22 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
 
       setValue("IGST_amount", saleBillDetail.IGST_amount);
       setValue("IGST_value", saleBillDetail.IGST_value);
-      
+
       setValue("CGST_amount", saleBillDetail.CGST_amount);
       setValue("CGST_value", saleBillDetail.CGST_value);
-      
+
       setValue("SGST_amount", saleBillDetail.SGST_amount);
       setValue("SGST_value", saleBillDetail.SGST_value);
-      
+
       setValue("TCS_value", saleBillDetail.TCS_value || 0);
       setValue("TCS_amount", saleBillDetail.TCS_amount || 0);
 
-      // Calculate due date 
+      // Calculate due date
       let initialDate = new Date(saleBillDetail?.createdAt);
-      let daysToAdd = saleBillDetail?.due_days; 
+      let daysToAdd = saleBillDetail?.due_days;
       let newDate = new Date(initialDate);
       newDate.setDate(initialDate.getDate() + daysToAdd);
-      setDueDate(moment(newDate).format("DD-MM-YYYY")) ; 
+      setDueDate(moment(newDate).format("DD-MM-YYYY"));
     }
   }, [saleBillDetail, setValue]);
 
@@ -339,21 +337,21 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         }
     `;
 
-    useEffect(() => {
-      companyListRes?.rows?.map((element) => {
-        if (element?.id == details?.company_id){
-          setCompanyInfo(element) ; 
-        }
-      })
-    },[details, companyListRes]) ; 
+  useEffect(() => {
+    companyListRes?.rows?.map((element) => {
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
+      }
+    });
+  }, [details, companyListRes]);
 
-    const [averageAmount, setAverageAmount] = useState(0) ; 
+  const [averageAmount, setAverageAmount] = useState(0);
 
-
-    useEffect(() => {
-      let tempAverage = Number(currentValues?.net_amount) / Number(details.total_taka) ; 
-      setAverageAmount(tempAverage) ; 
-    }, [currentValues?.net_amount]) ; 
+  useEffect(() => {
+    let tempAverage =
+      Number(currentValues?.net_amount) / Number(details.total_taka);
+    setAverageAmount(tempAverage);
+  }, [currentValues?.net_amount]);
 
   return (
     <>
@@ -366,19 +364,24 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
         }
         open={isModelOpen}
         footer={() => {
-          return(
+          return (
             <>
               <ReactToPrint
-                trigger={() => <Flex>
-                    <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
-                        PRINT
+                trigger={() => (
+                  <Flex>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft: "auto", marginTop: 15 }}
+                    >
+                      PRINT
                     </Button>
-                </Flex>}
+                  </Flex>
+                )}
                 content={() => componentRef.current}
                 pageStyle={pageStyle}
               />
             </>
-          )
+          );
         }}
         onCancel={handleCloseModal}
         className={{
@@ -398,35 +401,36 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
           },
           body: {
             padding: "16px 32px",
-            maxHeight: "75vh", 
-            overflowY: "auto"
+            maxHeight: "75vh",
+            overflowY: "auto",
           },
 
-          footer:{
-            paddingBottom: 10, 
-            paddingRight: 10, 
-            backgroundColor: "#efefef"
-        }
+          footer: {
+            paddingBottom: 10,
+            paddingRight: 10,
+            backgroundColor: "#efefef",
+          },
         }}
         width={"70vw"}
       >
-        <Form onFinish={handleSubmit(onSubmit)} >
-          <Flex className="flex-col border border-b-0 border-solid" ref={componentRef}>
+        <Form onFinish={handleSubmit(onSubmit)}>
+          <Flex
+            className="flex-col border border-b-0 border-solid"
+            ref={componentRef}
+          >
             <Row className="p-2 border-0 border-b border-solid">
               <Col
                 span={24}
                 className="flex items-center justify-center border"
               >
-                  <div>:: SHREE GANESHAY NAMAH ::</div>
+                <div>:: SHREE GANESHAY NAMAH ::</div>
               </Col>
               <Col
                 span={24}
                 className="flex items-center justify-center border"
-                style={{marginTop: -20}}
+                style={{ marginTop: -20 }}
               >
-                <Typography.Text
-                  className="font-semibold text-center"
-                >
+                <Typography.Text className="font-semibold text-center">
                   <h3>{companyInfo?.company_name}</h3>
                 </Typography.Text>
               </Col>
@@ -448,9 +452,16 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 className="flex items-center justify-center border"
               >
                 <Typography.Text className="font-semibold text-center">
-                  {`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}
+                  {`${companyInfo?.address_line_1} ${
+                    companyInfo?.address_line_2 == null
+                      ? ""
+                      : companyInfo?.address_line_2
+                  }, ${companyInfo?.city}, ${companyInfo?.state} - ${
+                    companyInfo?.pincode
+                  }, ${companyInfo?.country}`}
                   <br />
-                  MOBILE NO: {companyInfo?.company_contact}, PAYMENT: {companyInfo?.account_number}
+                  MOBILE NO: {companyInfo?.company_contact}, PAYMENT:{" "}
+                  {companyInfo?.account_number}
                 </Typography.Text>
               </Col>
             </Row>
@@ -530,35 +541,35 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <strong>HSN NO</strong>
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <strong>TAKA</strong>
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <strong>METER</strong>
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <strong>RATE</strong>
               </Col>
-              <Col 
-                span={4} 
+              <Col
+                span={4}
                 className="p-2 font-medium"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <strong>AMOUNT</strong>
               </Col>
@@ -574,28 +585,28 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 {details.hsn_no}
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 {details.total_taka}
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 {saleBillDetail?.total_meter}
               </Col>
               <Col
                 span={4}
                 className="p-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <Form.Item
                   name="rate"
@@ -673,9 +684,9 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="p-0 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
-                <span style={{fontSize: 13}}>Discount ( % )</span>
+                <span style={{ fontSize: 13 }}>Discount ( % )</span>
               </Col>
               <Col
                 span={4}
@@ -707,7 +718,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={4} className="p-0 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-0 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues?.discount_amount}
               </Col>
             </Row>
@@ -728,7 +743,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="pl-2 pr-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 TOTAL AMOUNT
               </Col>
@@ -738,7 +753,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               >
                 {/* TOTAL AMOUNT */}
               </Col>
-              <Col span={4} className="p-2 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-2 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues.total_amount}
               </Col>
             </Row>
@@ -759,7 +778,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="pl-2 pr-2 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <div style={{ color: "gray" }}>SGST(%)</div>
               </Col>
@@ -793,7 +812,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={4} className="p-0 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-0 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues?.SGST_amount}
               </Col>
             </Row>
@@ -814,7 +837,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="p-1 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <div style={{ color: "gray" }}>CGST(%)</div>
               </Col>
@@ -847,7 +870,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={4} className="p-1 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-1 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues?.CGST_amount}
               </Col>
             </Row>
@@ -868,7 +895,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="p-1 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}} 
+                style={{ textAlign: "center" }}
               >
                 <div style={{ color: "gray" }}>IGST(%)</div>
               </Col>
@@ -901,7 +928,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={4} className="p-2 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-2 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues?.IGST_amount}
               </Col>
             </Row>
@@ -922,7 +953,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="p-1 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
                 <div style={{ color: "gray" }}>TCS(%)</div>
               </Col>
@@ -957,7 +988,11 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   />
                 </Form.Item>
               </Col>
-              <Col span={4} className="p-1 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-1 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {currentValues.TCS_amount}
               </Col>
             </Row>
@@ -980,15 +1015,21 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               <Col
                 span={3}
                 className="p-0 font-medium border-0 border-r border-solid"
-                style={{textAlign: "center"}}
+                style={{ textAlign: "center" }}
               >
-                <div style={{ color: "gray" }}><strong>Round off</strong></div>
+                <div style={{ color: "gray" }}>
+                  <strong>Round off</strong>
+                </div>
               </Col>
               <Col
                 span={4}
                 className="p-0 font-medium border-0 border-r border-solid"
               ></Col>
-              <Col span={4} className="p-0 font-medium" style={{textAlign: "center"}}>
+              <Col
+                span={4}
+                className="p-0 font-medium"
+                style={{ textAlign: "center" }}
+              >
                 {parseFloat(currentValues?.round_off).toFixed(2)}
               </Col>
             </Row>
@@ -1033,12 +1074,10 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               </Col>
             </Row>
             <Row className="border-0 border-b border-solid !m-0 ">
-              <Col
-                span={24}
-                className="pt-2 pb-2 pl-2 border-0 "
-              >
+              <Col span={24} className="pt-2 pb-2 pl-2 border-0 ">
                 <Typography.Text className="font-semibold">
-                  Tax Amount(IN WORDS): {toWords.convert(currentValues?.net_amount)}
+                  Tax Amount(IN WORDS):{" "}
+                  {toWords.convert(currentValues?.net_amount)}
                 </Typography.Text>
               </Col>
             </Row>
@@ -1048,21 +1087,38 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 <Title level={5} className="m-0">
                   ➤ TERMS OF SALES :-
                 </Title>
-                <Text className="block" style={{color: "#000", fontWeight: 600}}>
+                <Text
+                  className="block"
+                  style={{ color: "#000", fontWeight: 600 }}
+                >
                   1. Interest at 2% per month will be charged remaining unpaid
                   from the date bill.
                 </Text>
-                <Text className="block" style={{color: "#000", fontWeight: 600}}>
+                <Text
+                  className="block"
+                  style={{ color: "#000", fontWeight: 600 }}
+                >
                   2. Complaint if any regarding this invoice must be settled
                   within 24 hours.
                 </Text>
-                <Text className="block" style={{color: "#000", fontWeight: 600}}>
+                <Text
+                  className="block"
+                  style={{ color: "#000", fontWeight: 600 }}
+                >
                   3. Disputes shall be settled in SURAT court only.
                 </Text>
-                <Text className="block" style={{color: "#000", fontWeight: 600}}>
+                <Text
+                  className="block"
+                  style={{ color: "#000", fontWeight: 600 }}
+                >
                   4. We are not responsible for processed goods & width.
                 </Text>
-                <Text className="block" style={{color: "#000", fontWeight: 600}}>5. Subject to SURAT Jurisdiction.</Text>
+                <Text
+                  className="block"
+                  style={{ color: "#000", fontWeight: 600 }}
+                >
+                  5. Subject to SURAT Jurisdiction.
+                </Text>
                 <Text className="block mt-2"></Text>
               </Col>
               <Col span={8} className="p-2 text-right">
@@ -1122,10 +1178,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
               >
                 DATE
               </Col>
-              <Col
-                span={6}
-                className="p-2 font-medium border-0"
-              >
+              <Col span={6} className="p-2 font-medium border-0">
                 {"PARTY'S BANK"}
               </Col>
             </Row>
