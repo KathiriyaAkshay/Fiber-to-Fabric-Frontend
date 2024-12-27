@@ -1204,3 +1204,39 @@ h2 {
   color: black;
   font-weight: 600;
 }
+
+.dashboard-order-title{
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard-order-data-div{
+  margin-top: 6px;
+}
+
+.dashboard-order-data-title{
+  font-size: 13px;
+  color: gray;
+  font-weight: 600;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.dashboard-order-data-title:hover{
+  color: black;
+}
+
+.dashboard-order-data-count{
+  font-size: 12px;
+  background-color: #194a6d;
+  color: #fff;
+  padding: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin-left: auto;
+  height: fit-content;
+}
+
+.dashboard-order-pending-meter-title{
+  font-size: 12px;
+}

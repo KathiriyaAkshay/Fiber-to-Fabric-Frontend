@@ -17,11 +17,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getCompanyBankBalanceRequest,
   getCompanyUserAnalyticsRequest,
+  getOrderMasterAnalyticsRequest,
 } from "../../api/requests/dashboard";
 import prettyNum from "pretty-num";
 import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
 import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
 import PayableChart from "./Charts/PayableChart";
+import { useNavigate, useNavigation } from "react-router-dom";
 
 const formatNumber = (number) => {
   // Using pretty-num to convert to short format
@@ -179,7 +181,9 @@ const Dashboard = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [dayPayableData, setDayPayableData] = useState([]) ; 
   const [dayReceivableData, setDayReceivableData] = useState([]) ; 
+  const navigation = useNavigate()
 
+  // User related data information ============================================
   const { data: userAnalyticsData } = useQuery({
     queryKey: ["get", "company", "user-analytics", { companyId }],
     queryFn: async () => {
@@ -191,6 +195,32 @@ const Dashboard = () => {
     },
   });
 
+  // Order master related data information ==================================== 
+  const {data: orderAnalyticsData} = useQuery({
+    queryKey: ["get", "company", "order-analytics", {companyId}], 
+    queryFn: async () => {
+      const params = {
+        company_id: companyId
+      }; 
+      const response = await getOrderMasterAnalyticsRequest({params}) ; 
+      return response?.data?.data ; 
+    }
+  })
+
+  // Navigation handler ==========================================
+  const OrderMasterNavigation = (type) => {
+    if (type == "purchase/trading"){
+      navigation("/order-master/my-orders") ; 
+    } else if (type == "taka(inhouse)"){
+      navigation("/order-master/my-orders") ; 
+    } else if (type == "job"){
+      navigation("/order-master/my-orders") ; 
+    } else if (type == "Yarn"){
+      navigation("/order-master/my-yarn-orders")
+    } else {
+      navigation("/order-master/size-beam-order")
+    }
+  }
 
   return (
     <div className="dashboard-wrapper">
@@ -215,13 +245,102 @@ const Dashboard = () => {
                 <Statistic title="Schedule Meter" value={0} />
               </Card>
             </Col>
+
+            {/* ========== Oder master related data information ==========  */}
             <Col span={24}>
-              <Card className="w-100 mt-1 chart-wrapper side-row-card">
-                <Statistic title="Yarn Purchase Order" value={4.38} />
+
+              <Card className="w-100 mt-1 chart-wrapper side-row-card" 
+                style={{cursor: "pointer", padding: 0}}>
+
+                {/* ========= My order information ===========  */}
+
+                <div className="dashboard-order-title">My order</div>
+
+                {orderAnalyticsData?.gray_order?.map((element) => {
+                  return(
+                    <Flex className="dashboard-order-data-div">
+                      <div>
+                        <div className="dashboard-order-data-title"
+                          onClick={() => {
+                            OrderMasterNavigation(element?.order_type)
+                          }}>
+                          {String(element?.order_type).toUpperCase()}
+                        </div>
+                        <div className="dashboard-order-pending-meter-title">
+                          Pending Meter: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>{element?.pending_meters}</span>
+                        </div>
+                      </div>
+                      <div className="dashboard-order-data-count">
+                        {element?.orders}
+                      </div>
+                    </Flex>
+                  )
+                })}
+
+                {/* ======= Yarn order information ========  */}
+
+                <div className="dashboard-order-title" style={{
+                  marginTop: 10,
+                  borderTop: "1px solid #a49f9f", 
+                  paddingTop: 10
+                }}>
+                  <Flex>
+                    <div onClick={() => {
+                      OrderMasterNavigation("Yarn")
+                    }}>Yarn Order</div>
+                    <div className="dashboard-order-data-count">
+                      {String(orderAnalyticsData?.yarn_order[0]?.orders).toUpperCase()}
+                    </div>
+                  </Flex>
+                </div>
+
+                <div style={{marginTop: 5}}>
+                  <div className="dashboard-order-pending-meter-title">
+                    Pending Quantity: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_quantity}
+                    </span>
+                  </div>
+                  <div className="dashboard-order-pending-meter-title"
+                    style={{marginTop: 3}}>
+                    Pending Cartoon: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_cartoon}
+                    </span>
+                  </div>
+                  <div className="dashboard-order-pending-meter-title"
+                    style={{marginTop: 3}}>
+                    Pending KG: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_kg}
+                    </span>
+                  </div>
+                </div>
+
+                {/* =========== Size beam order information ==========  */}
+
+                <div className="dashboard-order-title" style={{
+                  marginTop: 10,
+                  borderTop: "1px solid #a49f9f", 
+                  paddingTop: 10
+                }}>
+                  <Flex>
+                    <div onClick={() => {
+                      OrderMasterNavigation("size_beam_order")
+                    }}>Size Beam order</div>
+                    <div className="dashboard-order-data-count">
+                      {String(orderAnalyticsData?.size_beam_order[0]?.orders).toUpperCase()}
+                    </div>
+                  </Flex>
+                </div>
+                
+                {/* <Statistic title="Yarn Purchase Order" value={4.38} />
+                
                 <Divider />
+                
                 <Statistic title="Trading Meter" value={5.38} />
+                
                 <Divider />
-                <Statistic title="Trading Meter" value={1.548} />
+                
+                <Statistic title="Trading Meter" value={1.548} /> */}
+              
               </Card>
             </Col>
             

@@ -16,6 +16,10 @@ export const getCompanyUserAnalyticsRequest = ({ params }) => {
   return api.get(`/dashboard/company/users`, { params });
 }
 
+export const getOrderMasterAnalyticsRequest = ({params}) => {
+  return api.get(`/dashboard/order-master/analytics`, {params}) ; 
+}
+
 export const getDashboardOutStandingInformation = ({params}) => {
   return api.get(`/dashboard/receivable-outstanding`, {params}) ; 
 }
