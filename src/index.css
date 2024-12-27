@@ -1081,7 +1081,7 @@ h2 {
   border-top: 1px solid #d8d8d8;
   background: #fff;
   padding: 16px;
-  margin-top: -20px;
+  /* margin-top: -60px; */
 }
 
 .dashboard-chart-header {
@@ -1094,6 +1094,7 @@ h2 {
 .dashboard-chart-title {
   font-size: 16px;
   font-weight: bold;
+  margin-top: -15px;
 }
 
 .dashboard-chart-total-dues {
@@ -1111,7 +1112,7 @@ h2 {
   font-weight: bold;
   margin-bottom: 16px;
   color: #333;
-  margin-top: -5px;
+  margin-top: -20px;
 }
 
 .dashboard-chart-details {
@@ -1165,4 +1166,36 @@ h2 {
   color: black;
   font-weight: 600;
   margin-left: 8px;
+}
+
+.due-days {
+  font-weight: 600;
+  color: rgb(90, 90, 252) !important;
+  cursor: pointer;
+}
+
+.due-days:hover{
+  text-decoration: underline;
+  color: blue !important;
+}
+
+.dashboard-employee-attendance thead th{
+  font-size: 11px;
+}
+
+.dashboard-employee-attendance tbody td{
+  color: #525252;
+  font-size: 11px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.present-employee-count{
+  color: blue !important;
+  font-weight: 600 !important;
+}
+
+.absent-employee-count{
+  color: red !important;
+  font-weight: 600 !important;
 }

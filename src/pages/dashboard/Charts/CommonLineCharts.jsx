@@ -149,115 +149,13 @@ const formatData = (data, previousFinancialYear, currentFinancialYear) => {
   return formattedData;
 };
 
-const LineCharts = ({ isModalOpen, companyId }) => {
-  const [currentFinancialYear, setCurrentFinancialYear] = useState("");
-  const [previousFinancialYear, setPreviousFinancialYear] = useState("");
-
-  useEffect(() => {
-    const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth() + 1; // getMonth() returns 0-11
-
-    // Determine the start year of the current financial year
-    const startYear = currentMonth >= 4 ? currentYear : currentYear - 1;
-    const endYear = startYear + 1;
-
-    const currentFY = `${startYear}-${endYear}`;
-    const previousFY = `${startYear - 1}-${startYear}`;
-
-    setCurrentFinancialYear(currentFY);
-    setPreviousFinancialYear(previousFY);
-  }, []);
-
-  // const data = [
-  //   {
-  //     name: "Jan",
-  //     "2023-2024": 4000,
-  //     "2024-2025": 2400,
-  //   },
-  //   {
-  //     name: "Feb",
-  //     "2023-2024": 500,
-  //     "2024-2025": 600,
-  //   },
-  //   {
-  //     name: "Mar",
-  //     "2023-2024": 3000,
-  //     "2024-2025": 2500,
-  //   },
-  //   {
-  //     name: "Apr",
-  //     "2023-2024": 1500,
-  //     "2024-2025": 1000,
-  //   },
-  //   {
-  //     name: "May",
-  //     "2023-2024": 500,
-  //     "2024-2025": 200,
-  //   },
-  //   {
-  //     name: "June",
-  //     "2023-2024": 4500,
-  //     "2024-2025": 3000,
-  //     // amt: 2500,
-  //   },
-  //   {
-  //     name: "July",
-  //     "2023-2024": 2350,
-  //     "2024-2025": 4690,
-  //     // amt: 2100,
-  //   },
-  //   {
-  //     name: "Aug",
-  //     "2023-2024": 1000,
-  //     "2024-2025": 1200,
-  //     // amt: 2100,
-  //   },
-  //   {
-  //     name: "Sept",
-  //     "2023-2024": 1000,
-  //     "2024-2025": 1000,
-  //     // amt: 2100,
-  //   },
-  // ];
-
-  const { data: productionMeterData, isLoading } = useQuery({
-    queryKey: ["get", "monthly", "production"],
-    queryFn: async () => {
-      const params = {
-        company_id: companyId,
-      };
-      const response = await getMonthlyProductionChartRequest({ params });
-      return response.data.data;
-    },
-  });
-
-  const formattedData = useMemo(() => {
-    if (productionMeterData && currentFinancialYear && previousFinancialYear) {
-      return formatData(
-        productionMeterData,
-        previousFinancialYear,
-        currentFinancialYear
-      );
-    }
-  }, [currentFinancialYear, previousFinancialYear, productionMeterData]);
-
-  if (isLoading) {
-    return (
-      <Skeleton.Node
-        className="monthly-production-line-chart-skeleton"
-        active={isLoading}
-      >
-        <LineChartOutlined style={{ fontSize: 100, color: "#bfbfbf" }} />
-      </Skeleton.Node>
-    );
-  }
+const CommonLineCharts = ({ isModalOpen, data }) => {
 
   return (
     <LineChart
       width={isModalOpen ? 550 : 400}
       height={isModalOpen ? 400 : 200}
-      data={formattedData}
+      data={data}
       margin={{
         top: 5,
         right: 30,
@@ -282,4 +180,4 @@ const LineCharts = ({ isModalOpen, companyId }) => {
   );
 };
 
-export default LineCharts;
+export default CommonLineCharts;

@@ -17,5 +17,13 @@ export const getCompanyUserAnalyticsRequest = ({ params }) => {
 }
 
 export const getDashboardOutStandingInformation = ({params}) => {
+  return api.get(`/dashboard/receivable-outstanding`, {params}) ; 
+}
+
+export const getDashboardPayableInformation = ({params}) => {
   return api.get(`/dashboard/payable-outstanding`, {params}) ; 
+}
+
+export const getDashboardEmployeeInformation = ({params}) => {
+  return api.get(`/dashboard/company/users`, {params}) ; 
 }

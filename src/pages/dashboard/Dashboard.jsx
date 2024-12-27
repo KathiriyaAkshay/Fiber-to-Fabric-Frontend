@@ -20,6 +20,8 @@ import {
 } from "../../api/requests/dashboard";
 import prettyNum from "pretty-num";
 import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
+import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
+import PayableChart from "./Charts/PayableChart";
 
 const formatNumber = (number) => {
   // Using pretty-num to convert to short format
@@ -74,8 +76,6 @@ const CompanyBankBalance = ({ company }) => {
 
   const [totalBankBalance, setTotalBankBalance] = useState(0);
   const [totalCashbookBalance, setTotalCashbookBalanace] = useState(0);
-  console.log(groupedData);
-
 
   useEffect(() => {
     if (groupedData !== undefined) {
@@ -87,6 +87,7 @@ const CompanyBankBalance = ({ company }) => {
           
         })
         value?.cashbook?.map((element) => {
+          
           temp_total_cashbook_balance += +element?.balance || 0;
         })
       })
@@ -176,6 +177,8 @@ const CompanyBankBalance = ({ company }) => {
 
 const Dashboard = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
+  const [dayPayableData, setDayPayableData] = useState([]) ; 
+  const [dayReceivableData, setDayReceivableData] = useState([]) ; 
 
   const { data: userAnalyticsData } = useQuery({
     queryKey: ["get", "company", "user-analytics", { companyId }],
@@ -187,6 +190,7 @@ const Dashboard = () => {
       return response?.data?.data;
     },
   });
+
 
   return (
     <div className="dashboard-wrapper">
@@ -220,6 +224,8 @@ const Dashboard = () => {
                 <Statistic title="Trading Meter" value={1.548} />
               </Card>
             </Col>
+            
+            {/* ============== Employee related information =============  */}
             <Col span={24}>
               <Card
                 className="w-100 mt-1 chart-wrapper side-row-card"
@@ -241,7 +247,7 @@ const Dashboard = () => {
                   <Col span={12}>{userAnalyticsData?.total_party}</Col>
                   <Col span={12}>{userAnalyticsData?.total_broker}</Col>
                 </Row>
-                <Divider />
+                <Divider style={{color: "#2d2d2d", marginTop: 5, marginBottom: 5  }} />
                 <Row>
                   <Col span={24}>
                     <Typography>
@@ -254,6 +260,7 @@ const Dashboard = () => {
                 </Row>
                 <Divider />
                 <table
+                  className="dashboard-employee-attendance"
                   border={1}
                   style={{
                     width: "100%",
@@ -265,7 +272,7 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>Type</th>
-                      <th>Req.</th>
+                      <th>Pre.</th>
                       <th>Abs.</th>
                       <th>Total</th>
                     </tr>
@@ -276,9 +283,9 @@ const Dashboard = () => {
                       ? userAnalyticsData?.employee?.map((item, index) => {
                         return (
                           <tr key={index}>
-                            <td>{item?.salary_type}</td>
-                            <td>0</td>
-                            <td>0</td>
+                            <td>{String(item?.salary_type).toUpperCase()}</td>
+                            <td className={item?.present_user > 0?"present-employee-count":""}>{item?.present_user}</td>
+                            <td className={item?.absent_user > 0?"absent-employee-count":""}>{item?.absent_user}</td>
                             <td>{item?.employee_count}</td>
                           </tr>
                         );
@@ -288,6 +295,7 @@ const Dashboard = () => {
                 </table>
               </Card>
             </Col>
+
 
             {/* ============= Company bank balance data ==================  */}
 
@@ -390,35 +398,23 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
-            
-            {/* <Col span={8}>
-              <ChartWrapper
-                chart="PIE"
-                header="Days Payable Outstanding"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper
-                chart="RADICAL"
-                header="Total Sales/Stock"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper chart="TREE" companyId={companyId}></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper
-                chart="BAR"
-                header="Days Receivable Aging"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col> */}
 
             {/* Day receivable outstanding related information  */}
             <Col span={8}>
-              <DayReceivableOutStanding/>
+              <DayReceivableOutStanding
+                setDayReceivableData = {setDayReceivableData}
+              />
+            </Col>
+            <Col span={8}>
+              <DayPayableOutStanding
+                setDayPayableData = {setDayPayableData}
+              />
+            </Col>
+            <Col span={8}>
+              <PayableChart
+                dayPayableData = {dayPayableData}
+                dayReceivableData = {dayReceivableData}
+              />
             </Col>
             
             <Col span={24}>
