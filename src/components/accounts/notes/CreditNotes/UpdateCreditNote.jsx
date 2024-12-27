@@ -59,6 +59,21 @@ const UpdateCreditNote = ({
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
+  const [buyerRef, setBuyerRef] = useState(undefined) ; 
+  const [descriptionGoods, setDescriptionGoods] = useState(undefined) ; 
+
+  useEffect(() => {
+    if (details){
+      let ref_number = details?.credit_note_details?.map((element) => element?.bill_no || element?.invoice_no).join(",") ; 
+      setBuyerRef(ref_number) ; 
+      
+      if (details?.credit_note_details?.length == 1){
+        setDescriptionGoods(details?.credit_note_details[0]?.particular_name) ; 
+      } else {
+
+      }
+    }
+  }, [details]) ; 
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -519,7 +534,7 @@ const UpdateCreditNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Ref.:"}</span>
-                    {"1230034"}
+                    {buyerRef}
                   </div>
                   <div className="credit-note-info-title">
                     <span>Date : </span>
@@ -529,12 +544,14 @@ const UpdateCreditNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Order No. :"}</span>
-                    {"37"}
+                    {"---"}
                   </div>
                 </td>
               </tr>
               <tr>
                 <td rowSpan={2}>
+                  
+                  {/* ========= Party information ===========  */}
                   <div className="credit-note-info-title">
                     <span>Party: </span>
                     {details?.party?.company_name || ""}
@@ -548,6 +565,22 @@ const UpdateCreditNote = ({
                     <span>GSTIN/UIN:</span>{" "}
                     {details?.party?.company_gst_number || ""}
                   </div>
+
+                  {/* ========== Supplier information ==============  */}
+                  <div className="credit-note-info-title">
+                    <span>Party: </span>
+                    {details?.party?.company_name || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Address: </span>
+                    {details?.party?.address_line_1 || ""}
+                    {details?.party?.address_line_2 || ""}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>GSTIN/UIN:</span>{" "}
+                    {details?.party?.company_gst_number || ""}
+                  </div>
+
                   {/* <div className="credit-note-info-title">
                     <span>State Name: </span> {selectedCompany?.state || ""}
                   </div>
@@ -565,11 +598,12 @@ const UpdateCreditNote = ({
                 <td colSpan={2} width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>DESCRIPTION OF GOODS : </span>
-                    {_.isEmpty(details?.inhouse_quality)
+                      {descriptionGoods}
+                    {/* {_.isEmpty(details?.inhouse_quality)
                       ? `${details?.inhouse_quality?.quality_name || ""} (${
                           details?.inhouse_quality?.quality_weight || ""
                         }KG)`
-                      : ""}
+                      : ""} */}
                   </div>
                 </td>
               </tr>
@@ -603,9 +637,26 @@ const UpdateCreditNote = ({
             <tbody>
               <tr>
                 <td>1</td>
-                <td>{total_taka || 0}</td>
-                <td>{total_meter || 0}</td>
-                <td>{rate || 0}</td>
+                
+                {creditNoteTypes == "other"?<>
+                  <td>
+                    {details?.credit_note_details[0]?.particular_name}
+                  </td>
+                </>:<>
+                  <td>{total_taka || 0}</td>
+                </>}
+                
+                {creditNoteTypes == "other"?<>
+                  <td></td>
+                </>:<>
+                  <td>{total_meter || 0}</td>
+                </>}
+
+                {creditNoteTypes == "other"?<>
+                  <td></td>
+                </>:<>
+                  <td>{rate || 0}</td>
+                </>}
                 {/* <td> */}
                 {/* <Form.Item
                     label=""
@@ -847,10 +898,16 @@ const UpdateCreditNote = ({
 
               <tr>
                 <td></td>
-                <td>Total</td>
+                <td style={{
+                  fontWeight: 600, 
+                  color: "black"
+                }}>Total</td>
                 <td></td>
                 <td></td>
-                <td>{net_amount || 0}</td>
+                <td style={{
+                  fontWeight: 600, 
+                  color: "black"
+                }}>{net_amount || 0}</td>
               </tr>
               <tr>
                 <td colSpan={5}>
@@ -861,7 +918,7 @@ const UpdateCreditNote = ({
                   >
                     <div>
                       <div>
-                        <span style={{ fontWeight: "500" }}>
+                        <span style={{ fontWeight: 600 }}>
                           Amount Chargable(in words):
                         </span>{" "}
                         {net_amount ? toWords.convert(net_amount || 0) : "0"}

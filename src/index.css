@@ -1199,3 +1199,8 @@ h2 {
   color: red !important;
   font-weight: 600 !important;
 }
+
+.credit-note-table tr td:nth-child(3){
+  color: black;
+  font-weight: 600;
+}
