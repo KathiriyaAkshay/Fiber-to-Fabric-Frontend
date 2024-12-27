@@ -26,7 +26,7 @@ import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 
 const YarnBillList = () => {
   const [startDate, endDate] = currentMonthStartDateEndDate();
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const [supplier, setSupplier] = useState();
@@ -427,10 +427,14 @@ const YarnBillList = () => {
               <Table.Summary.Cell />
               <Table.Summary.Cell />
               <Table.Summary.Cell>
-                <Typography.Text>{parseFloat(total_amount).toFixed(2)}</Typography.Text>
+                <Typography.Text>
+                  {parseFloat(total_amount).toFixed(2)}
+                </Typography.Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell>
-                <Typography.Text>{parseFloat(amount_include_gst).toFixed(2)}</Typography.Text>
+                <Typography.Text>
+                  {parseFloat(amount_include_gst).toFixed(2)}
+                </Typography.Text>
               </Table.Summary.Cell>
               <Table.Summary.Cell />
               <Table.Summary.Cell />

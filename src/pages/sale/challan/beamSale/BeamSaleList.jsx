@@ -344,7 +344,6 @@ const BeamSaleList = () => {
                   <Typography.Text>{totalWeight}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
-                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
           );

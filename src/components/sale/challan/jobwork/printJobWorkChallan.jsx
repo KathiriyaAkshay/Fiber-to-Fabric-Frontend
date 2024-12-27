@@ -1,4 +1,4 @@
-import { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useRef, useEffect, useMemo } from "react";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
@@ -6,7 +6,12 @@ import moment from "moment";
 const { Paragraph } = Typography;
 import ReactToPrint from "react-to-print";
 
-const PrintJobWorkChallan = ({ details }) => {
+const PrintJobWorkChallan = ({
+  details,
+  isEyeButton = true,
+  open = false,
+  close,
+}) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const { companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -30,16 +35,31 @@ const PrintJobWorkChallan = ({ details }) => {
     });
   }, [details, companyListRes]);
 
+  const isOpen = useMemo(() => {
+    if (isEyeButton) return isModelOpen;
+    else return open;
+  }, [isEyeButton, isModelOpen, open]);
+
+  const closeHandler = () => {
+    if (isEyeButton) {
+      setIsModalOpen(false);
+    } else {
+      close();
+    }
+  };
+
   return (
     <>
-      <Button
-        type="primary"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <EyeOutlined />
-      </Button>
+      {isEyeButton ? (
+        <Button
+          type="primary"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <EyeOutlined />
+        </Button>
+      ) : null}
 
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
@@ -48,7 +68,7 @@ const PrintJobWorkChallan = ({ details }) => {
             Job Work
           </Typography.Text>
         }
-        open={isModelOpen}
+        open={isOpen}
         footer={() => {
           return (
             <>
@@ -70,7 +90,7 @@ const PrintJobWorkChallan = ({ details }) => {
           );
         }}
         onCancel={() => {
-          setIsModalOpen(false);
+          closeHandler();
         }}
         centered={true}
         classNames={{

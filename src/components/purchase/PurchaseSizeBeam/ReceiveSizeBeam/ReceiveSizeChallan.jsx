@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   Button,
   Col,
@@ -62,7 +62,14 @@ const addSizeBeamReceive = yup.object().shape({
   net_amount: yup.string().required("Please enter net amount"),
 });
 
-const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
+const SizeBeamChallanModal = ({
+  details = {},
+  mode,
+  isBill,
+  isEyeButton,
+  open,
+  close,
+}) => {
   const queryClient = useQueryClient();
   const {
     control,
@@ -253,15 +260,30 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
     }
   }, [details, setValue, mode, isModelOpen]);
 
+  const isOpen = useMemo(() => {
+    if (isEyeButton) return isModelOpen;
+    else return open;
+  }, [isEyeButton, isModelOpen, open]);
+
+  const closeHandler = () => {
+    if (isEyeButton) {
+      setIsModalOpen(false);
+    } else {
+      close();
+    }
+  };
+
   return (
     <>
-      <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <FileTextOutlined />
-      </Button>
+      {isEyeButton ? (
+        <Button
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <FileTextOutlined />
+        </Button>
+      ) : null}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -271,11 +293,9 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
               : "Bill of Size Beam"}
           </Typography.Text>
         }
-        open={isModelOpen}
+        open={isOpen}
         footer={null}
-        onCancel={() => {
-          setIsModalOpen(false);
-        }}
+        onCancel={closeHandler}
         className={{
           header: "text-center",
         }}
@@ -317,7 +337,7 @@ const SizeBeamChallanModal = ({ details = {}, mode, isBill }) => {
               <Col span={12} className="flex flex-col self-center mb-6">
                 <Row gutter={12} className="flex-grow w-full">
                   <Col span={8} className="font-medium">
-                    Supplier Name : 
+                    Supplier Name :
                   </Col>
                   <Col
                     span={16}

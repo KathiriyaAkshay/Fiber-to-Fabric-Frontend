@@ -200,31 +200,33 @@ const YarnSalesBillList = () => {
     {
       title: "Actions",
       dataIndex: "actions",
-      render: (text, record) => (
-        <Space>
-          <PrintYarnSaleChallan details={record} />
-          <Button
-            onClick={() => {
-              let MODE;
-              if (record.yarn_sale_bill.is_paid) {
-                MODE = "VIEW";
-              } else {
-                MODE = "UPDATE";
-              }
-              setYarnSaleChallanModel((prev) => {
-                return {
-                  ...prev,
-                  isModalOpen: true,
-                  details: record,
-                  mode: MODE,
-                };
-              });
-            }}
-          >
-            <FileTextOutlined />
-          </Button>
-        </Space>
-      ),
+      render: (text, record) => {
+        return (
+          <Space>
+            <PrintYarnSaleChallan details={record} />
+            <Button
+              onClick={() => {
+                let MODE;
+                if (record.yarn_sale_bill.is_paid) {
+                  MODE = "VIEW";
+                } else {
+                  MODE = "UPDATE";
+                }
+                setYarnSaleChallanModel((prev) => {
+                  return {
+                    ...prev,
+                    isModalOpen: true,
+                    details: record,
+                    mode: MODE,
+                  };
+                });
+              }}
+            >
+              <FileTextOutlined />
+            </Button>
+          </Space>
+        );
+      },
     },
   ];
 
