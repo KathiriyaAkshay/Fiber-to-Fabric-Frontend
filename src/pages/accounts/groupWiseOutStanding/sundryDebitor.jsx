@@ -538,6 +538,7 @@ const TableWithAccordion = ({ data, company, companyId }) => {
                   >
                     <EyeOutlined />
                   </Button>
+                  {bill.model}
                 </td>
                 <td>{/* Receive payment field */}</td>
                 <td>{/* Cash int field */}</td>
