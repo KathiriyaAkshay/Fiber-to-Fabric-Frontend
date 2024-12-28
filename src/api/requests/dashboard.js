@@ -31,3 +31,7 @@ export const getDashboardPayableInformation = ({params}) => {
 export const getDashboardEmployeeInformation = ({params}) => {
   return api.get(`/dashboard/company/users`, {params}) ; 
 }
+
+export const productionInHoustTakaReportRequest = ({params}) => {
+  return api.get(`/production/instock-taka/report/get`, {params}) ; 
+}

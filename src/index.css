@@ -630,6 +630,10 @@ input:read-only {
   /* width: 100%; */
   padding: 0.4rem;
   background-color: #fff;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 .chart-wrapper .title {
   color: rgba(0, 0, 0, 0.45);
@@ -1239,4 +1243,26 @@ h2 {
 
 .dashboard-order-pending-meter-title{
   font-size: 12px;
+}
+
+.equal-height-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Create three equal columns */
+  gap: 6px; /* Matches the gutter spacing */
+}
+
+.equal-height-column {
+  padding: 16px; /* Optional, adjust as needed */
+  height: 100%; /* Ensures full height in grid layout */
+  display: flex; /* Flexbox for proper content alignment */
+  flex-direction: column; /* Align content properly */
+  width: fit-content;
+}
+
+.production-report-title{
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  text-align: center;
 }

@@ -121,6 +121,8 @@ const BillForm = () => {
 
   const onSubmit = async (data) => {
     const temp_bill_details = selectedBills?.map((element) => {
+      console.log(element);
+      
       let finalTotalAmount = 0;
       
       let netAmount = (+element?.net_amount - (+element?.debit_note_amount) -  (+element?.exists_part_payment || 0) ) || 0 ; 

@@ -18,19 +18,21 @@ import {
   getCompanyBankBalanceRequest,
   getCompanyUserAnalyticsRequest,
   getOrderMasterAnalyticsRequest,
+  productionInHoustTakaReportRequest,
 } from "../../api/requests/dashboard";
 import prettyNum from "pretty-num";
 import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
 import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
 import PayableChart from "./Charts/PayableChart";
 import { useNavigate, useNavigation } from "react-router-dom";
+import ProductionReport from "./Charts/productionReport";
 
 const formatNumber = (number) => {
   // Using pretty-num to convert to short format
   return prettyNum(number, {
     precision: 1, // Keep one decimal place
     abbreviations: {
-      K: 'K', 
+      K: 'K',
       M: 'M',    // Millions
       B: 'B',    // Billions
       Cr: 'Cr',  // Crore
@@ -86,10 +88,10 @@ const CompanyBankBalance = ({ company }) => {
       Object.entries(groupedData).map(([key, value]) => {
         value?.banks?.map((element) => {
           temp_total_balance += +element?.balance || 0;
-          
+
         })
         value?.cashbook?.map((element) => {
-          
+
           temp_total_cashbook_balance += +element?.balance || 0;
         })
       })
@@ -148,15 +150,15 @@ const CompanyBankBalance = ({ company }) => {
 
       {/* Total data related information  */}
       <div>
-        <div 
-          style={{ color: "green", marginTop:10, marginBottom: 10, fontWeight: 600, fontSize: 16 }}>Total </div>
-        
+        <div
+          style={{ color: "green", marginTop: 10, marginBottom: 10, fontWeight: 600, fontSize: 16 }}>Total </div>
+
         <Flex justify="space-between">
           <Typography>
-            B/L: <b style={{marginLeft: 6}}>{totalBankBalance}</b>
+            B/L: <b style={{ marginLeft: 6 }}>{totalBankBalance}</b>
           </Typography>
         </Flex>
-        
+
         <Flex justify="space-between" style={{
           marginTop: 5
         }}>
@@ -168,7 +170,7 @@ const CompanyBankBalance = ({ company }) => {
             >
               CB B/L:
             </span>{" "}
-            <b style={{marginLeft: 6}}>{totalCashbookBalance}</b>
+            <b style={{ marginLeft: 6 }}>{totalCashbookBalance}</b>
           </Typography>
         </Flex>
       </div>
@@ -179,8 +181,8 @@ const CompanyBankBalance = ({ company }) => {
 
 const Dashboard = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
-  const [dayPayableData, setDayPayableData] = useState([]) ; 
-  const [dayReceivableData, setDayReceivableData] = useState([]) ; 
+  const [dayPayableData, setDayPayableData] = useState([]);
+  const [dayReceivableData, setDayReceivableData] = useState([]);
   const navigation = useNavigate()
 
   // User related data information ============================================
@@ -196,26 +198,38 @@ const Dashboard = () => {
   });
 
   // Order master related data information ==================================== 
-  const {data: orderAnalyticsData} = useQuery({
-    queryKey: ["get", "company", "order-analytics", {companyId}], 
+  const { data: orderAnalyticsData } = useQuery({
+    queryKey: ["get", "company", "order-analytics", { companyId }],
     queryFn: async () => {
       const params = {
         company_id: companyId
-      }; 
-      const response = await getOrderMasterAnalyticsRequest({params}) ; 
-      return response?.data?.data ; 
+      };
+      const response = await getOrderMasterAnalyticsRequest({ params });
+      return response?.data?.data;
+    }
+  })
+
+  // Production report information related handler ===========================
+  const { data: productionReportData } = useQuery({
+    queryKey: ["get", "production", "taka-report", { company_id: companyId }],
+    queryFn: async () => {
+      const params = {
+        company_id: companyId
+      };
+      const response = await productionInHoustTakaReportRequest({ params });
+      return response?.data?.data;
     }
   })
 
   // Navigation handler ==========================================
   const OrderMasterNavigation = (type) => {
-    if (type == "purchase/trading"){
-      navigation("/order-master/my-orders") ; 
-    } else if (type == "taka(inhouse)"){
-      navigation("/order-master/my-orders") ; 
-    } else if (type == "job"){
-      navigation("/order-master/my-orders") ; 
-    } else if (type == "Yarn"){
+    if (type == "purchase/trading") {
+      navigation("/order-master/my-orders");
+    } else if (type == "taka(inhouse)") {
+      navigation("/order-master/my-orders");
+    } else if (type == "job") {
+      navigation("/order-master/my-orders");
+    } else if (type == "Yarn") {
       navigation("/order-master/my-yarn-orders")
     } else {
       navigation("/order-master/size-beam-order")
@@ -249,15 +263,15 @@ const Dashboard = () => {
             {/* ========== Oder master related data information ==========  */}
             <Col span={24}>
 
-              <Card className="w-100 mt-1 chart-wrapper side-row-card" 
-                style={{cursor: "pointer", padding: 0}}>
+              <Card className="w-100 mt-1 chart-wrapper side-row-card"
+                style={{ cursor: "pointer", padding: 0 }}>
 
                 {/* ========= My order information ===========  */}
 
                 <div className="dashboard-order-title">My order</div>
 
                 {orderAnalyticsData?.gray_order?.map((element) => {
-                  return(
+                  return (
                     <Flex className="dashboard-order-data-div">
                       <div>
                         <div className="dashboard-order-data-title"
@@ -267,7 +281,7 @@ const Dashboard = () => {
                           {String(element?.order_type).toUpperCase()}
                         </div>
                         <div className="dashboard-order-pending-meter-title">
-                          Pending Meter: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>{element?.pending_meters}</span>
+                          Pending Meter: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>{element?.pending_meters}</span>
                         </div>
                       </div>
                       <div className="dashboard-order-data-count">
@@ -281,7 +295,7 @@ const Dashboard = () => {
 
                 <div className="dashboard-order-title" style={{
                   marginTop: 10,
-                  borderTop: "1px solid #a49f9f", 
+                  borderTop: "1px solid #a49f9f",
                   paddingTop: 10
                 }}>
                   <Flex>
@@ -294,21 +308,21 @@ const Dashboard = () => {
                   </Flex>
                 </div>
 
-                <div style={{marginTop: 5}}>
+                <div style={{ marginTop: 5 }}>
                   <div className="dashboard-order-pending-meter-title">
-                    Pending Quantity: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                    Pending Quantity: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
                       {orderAnalyticsData?.yarn_order[0]?.pending_quantity}
                     </span>
                   </div>
                   <div className="dashboard-order-pending-meter-title"
-                    style={{marginTop: 3}}>
-                    Pending Cartoon: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                    style={{ marginTop: 3 }}>
+                    Pending Cartoon: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
                       {orderAnalyticsData?.yarn_order[0]?.pending_cartoon}
                     </span>
                   </div>
                   <div className="dashboard-order-pending-meter-title"
-                    style={{marginTop: 3}}>
-                    Pending KG: <span style={{color: "red", fontSize: 11, fontWeight: 600}}>
+                    style={{ marginTop: 3 }}>
+                    Pending KG: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
                       {orderAnalyticsData?.yarn_order[0]?.pending_kg}
                     </span>
                   </div>
@@ -318,7 +332,7 @@ const Dashboard = () => {
 
                 <div className="dashboard-order-title" style={{
                   marginTop: 10,
-                  borderTop: "1px solid #a49f9f", 
+                  borderTop: "1px solid #a49f9f",
                   paddingTop: 10
                 }}>
                   <Flex>
@@ -330,7 +344,7 @@ const Dashboard = () => {
                     </div>
                   </Flex>
                 </div>
-                
+
                 {/* <Statistic title="Yarn Purchase Order" value={4.38} />
                 
                 <Divider />
@@ -340,10 +354,10 @@ const Dashboard = () => {
                 <Divider />
                 
                 <Statistic title="Trading Meter" value={1.548} /> */}
-              
+
               </Card>
             </Col>
-            
+
             {/* ============== Employee related information =============  */}
             <Col span={24}>
               <Card
@@ -366,7 +380,7 @@ const Dashboard = () => {
                   <Col span={12}>{userAnalyticsData?.total_party}</Col>
                   <Col span={12}>{userAnalyticsData?.total_broker}</Col>
                 </Row>
-                <Divider style={{color: "#2d2d2d", marginTop: 5, marginBottom: 5  }} />
+                <Divider style={{ color: "#2d2d2d", marginTop: 5, marginBottom: 5 }} />
                 <Row>
                   <Col span={24}>
                     <Typography>
@@ -403,8 +417,8 @@ const Dashboard = () => {
                         return (
                           <tr key={index}>
                             <td>{String(item?.salary_type).toUpperCase()}</td>
-                            <td className={item?.present_user > 0?"present-employee-count":""}>{item?.present_user}</td>
-                            <td className={item?.absent_user > 0?"absent-employee-count":""}>{item?.absent_user}</td>
+                            <td className={item?.present_user > 0 ? "present-employee-count" : ""}>{item?.present_user}</td>
+                            <td className={item?.absent_user > 0 ? "absent-employee-count" : ""}>{item?.absent_user}</td>
                             <td>{item?.employee_count}</td>
                           </tr>
                         );
@@ -495,7 +509,7 @@ const Dashboard = () => {
           </Row>
 
           <Row gutter={6} className="mt-6 w-100">
-            
+
             {/* Monthly Production related information chart  */}
             <Col span={10}>
               <ChartWrapper
@@ -504,12 +518,12 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
-            
+
             {/* Monthly Production table  */}
             <Col span={6}>
               <MonthlyProductionTable />
             </Col>
-            
+
             <Col span={8}>
               <ChartWrapper
                 chart="BAR"
@@ -518,89 +532,38 @@ const Dashboard = () => {
               ></ChartWrapper>
             </Col>
 
+          </Row>
+
+          <Row gutter={6} className="mt-2 w-100">
+
             {/* Day receivable outstanding related information  */}
             <Col span={8}>
               <DayReceivableOutStanding
-                setDayReceivableData = {setDayReceivableData}
-              />
-            </Col>
-            <Col span={8}>
-              <DayPayableOutStanding
-                setDayPayableData = {setDayPayableData}
-              />
-            </Col>
-            <Col span={8}>
-              <PayableChart
-                dayPayableData = {dayPayableData}
-                dayReceivableData = {dayReceivableData}
+                setDayReceivableData={setDayReceivableData}
               />
             </Col>
             
-            <Col span={24}>
-              <ChartWrapper
-                chart="TABLE"
-                header="Data"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            {/*
+            {/* Day payable outstanding related information  */}
             <Col span={8}>
-              <ChartWrapper>
-                <LineChart
-                  width={350}
-                  height={200}
-                  data={data}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="pv"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                  />
-                  <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-              </ChartWrapper>
+              <DayPayableOutStanding
+                setDayPayableData={setDayPayableData}
+              />
             </Col>
+
+            {/* Payable chart related information  */}
             <Col span={8}>
-              <ChartWrapper>
-                <LineChart
-                  width={350}
-                  height={200}
-                  data={data}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="pv"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                  />
-                  <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-              </ChartWrapper>
-            </Col> */}
+              <PayableChart
+                dayPayableData={dayPayableData}
+                dayReceivableData={dayReceivableData}
+              />
+            </Col>
           </Row>
+
+
+          <Col span={24} className="mt-3">
+            <ProductionReport />
+          </Col>
+
         </Col>
       </Row>
     </div>

@@ -30,7 +30,8 @@ const PayableChart = ({dayPayableData, dayReceivableData}) => {
             </div>
             <div style={{
                 width: "100%", 
-                height: "100%"
+                height: "100%", 
+                marginTop: 10
             }}>
 
                 <div style={{

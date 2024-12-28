@@ -1,4 +1,6 @@
 import {
+  DeleteOutlined,
+  DeleteRowOutlined,
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
@@ -25,7 +27,7 @@ import {
   PARTICULAR_OPTIONS,
   PAYMENT_OPTIONS,
 } from "../../../constants/account";
-import { getCashbookListRequest, updateCashbookRequest } from "../../../api/requests/accounts/payment";
+import { deleteCashbookRequest, getCashbookListRequest, updateCashbookRequest } from "../../../api/requests/accounts/payment";
 // import { usePagination } from "../../../hooks/usePagination";
 import { useNavigate } from "react-router-dom";
 import { getParticularListRequest } from "../../../api/requests/accounts/particular";
@@ -226,6 +228,44 @@ const CashBook = () => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [isOpenEditEntry, setIsOpenEditEntry] = useState(false);
 
+  // Delete cashbook entry related handler ====================
+  const {mutateAsync: deleteCashbookEntry} = useMutation({
+    mutationFn: async ({id}) => {
+      const res = await deleteCashbookRequest({
+        id, 
+        params: {
+          company_id: companyId
+        }
+      }); 
+      return res?.data ; 
+    }, 
+    mutationKey: ["payment", "cashbook", "delete"], 
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Cashbook entry deleted successfully");
+      }
+      queryClient.invalidateQueries([
+        "get", 
+        "cashBook", 
+        "list", 
+        {
+          company_id: companyId
+        }
+      ]); 
+    }, 
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    }
+  }); 
+
+  const DeleteCashbookEntryHandler = async (record) => {
+    await deleteCashbookEntry({id: record?.id}) ;
+  }
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -364,19 +404,29 @@ const CashBook = () => {
                       <td>{row?.balance}</td>
                       <td width={250}>{row.remarks || "----"}</td>
                       <td>
-                        <Space>
+                        <Flex style={{gap: 10}}>
                           <Tooltip title = "Verify Statement">
                             <div style={{
                               cursor: "pointer", 
                               color: row?.is_verified?"green":"red", 
-                              fontWeight: 600
+                              fontWeight: 600, 
+                              marginTop: "auto", 
+                              marginBottom: "auto"
                             }} onClick={() => {
                               CashbookStatementVerify(row)
                             }}>
                               {row?.is_verified?"Confirmed":"Confirm"}
                             </div>
                           </Tooltip>
-                        </Space>
+                            
+                          {/* Delete cashbook entry option  */}
+                          <Button icon = {<DeleteOutlined/>} danger
+                            onClick={() => {
+                              DeleteCashbookEntryHandler(row)
+                            }}>                           
+                          </Button>
+                        
+                        </Flex>
                       </td>
                     </tr>
                   );
@@ -408,11 +458,16 @@ const CashBook = () => {
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
-                      {/* <td>{row?.cheque_no}</td> */}
                       <td>
                         {capitalizeFirstCharacter(row?.particular_type)
                           .split("_")
                           .join(" ")}
+
+                        <span style={{
+                          fontSize: 12
+                        }}>
+                          {row?.is_reverted?"(Reverse Entry)":""}
+                        </span>
                       </td>
                       <td>
                         <Typography style={{ color: "red", fontWeight: "600" }}>
