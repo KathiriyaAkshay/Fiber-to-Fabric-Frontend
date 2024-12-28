@@ -352,6 +352,19 @@ const UpdateCreditNote = ({
     }
   }, [details, reset]);
 
+  const renderCell = (type, value) => {
+    if (creditNoteTypes === "other") return <td></td>;
+  
+    switch (type) {
+      case "discount":
+      case "claim":
+      case "late":
+        return <td></td>;
+      default:
+        return <td>{value || 0}</td>;
+    }
+  };
+
   return (
     <>
       <Modal
@@ -537,61 +550,13 @@ const UpdateCreditNote = ({
               <tr>
                 <td>1</td>
                 
-                {creditNoteTypes == "other"?<>
-                  <td>
-                    {  details?.credit_note_details[0]?.particular_name}
-                  </td>
-                </>:<>
-                    {creditNoteTypes == "discount"?<>
-                      <td></td>                      
-                    </>:<>
-                      {creditNoteTypes == "claim"?<>
-                        <td></td>
-                      </>:<>
-                        {creditNoteTypes == "late"?<>
-                          <td></td>
-                        </>:<>
-                          <td>{total_taka || 0}</td>
-                        </>}
-                      </>}
-                    </>}
-                </>}
-                
-                {creditNoteTypes == "other"?<>
-                  <td></td>
-                </>:<>
-                  {creditNoteTypes == "discount"?<>
-                    <td></td>
-                  </>:<>
-                    {creditNoteTypes == "claim"?<>
-                      <td></td>
-                    </>:<>
-                      {creditNoteTypes == "late"?<>
-                        <td></td>
-                      </>:<>
-                        <td>{total_meter || 0}</td>
-                      </>}
-                    </>}
-                  </>}
-                </>}
-
-                {creditNoteTypes == "other"?<>
-                  <td></td>
-                </>:<>
-                  {creditNoteTypes == "discount"?<>
-                    <td></td>
-                  </>:<>
-                    {creditNoteTypes == "claim"?<>
-                      <td></td>
-                    </>:<>
-                      {creditNoteTypes == "late"?<>
-                        <td></td>
-                      </>:<>
-                        <td>{rate || 0}</td>
-                      </>}
-                    </>}
-                  </>}
-                </>}
+                <td>
+                  {creditNoteTypes === "other"
+                    ? details?.credit_note_details[0]?.particular_name
+                    : null}
+                </td>
+                {renderCell("", total_meter)}
+                {renderCell("", rate)}
                 <td>
                   {numOfBill && numOfBill.length
                     ? numOfBill.map((_, index) => {
