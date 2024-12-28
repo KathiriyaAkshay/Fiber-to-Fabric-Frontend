@@ -8,6 +8,7 @@ import {
   Radio,
   Select,
   Spin,
+  Tag,
   Tooltip,
   Typography,
   message
@@ -231,8 +232,12 @@ const SundryDebitor = () => {
 
       debitorDataList?.forEach((item) => {
         item?.bills?.forEach((bill) => {
+          let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0 ; 
+          let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0  ; 
+          let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0 ;
+          let finalAmount = total_amount - paid_amount - credit_note_amount;
           meter += +bill?.meter;
-          billAmount += +bill?.amount;
+          billAmount += +finalAmount;
         });
       });
 
@@ -667,10 +672,10 @@ const SundryDebitor = () => {
               <td></td>
               <td></td>
               <td>
-                <b>{grandTotal?.meter}</b>
+                <b>{parseFloat(grandTotal?.meter).toFixed(2)}</b>
               </td>
               <td>
-                <b>{grandTotal?.bill_amount}</b>
+                <b>{parseFloat(grandTotal?.bill_amount).toFixed(2)}</b>
               </td>
               <td></td>
               {/* <td>
@@ -735,7 +740,7 @@ const TableWithAccordion = ({ data,
   setDebiteNoteData,
   handleDebitNoteClick
  }) => {
-  const [isAccordionOpen, setIsAccordionOpen] = useState(null);
+  const [isAccordionOpen, setIsAccordionOpen] = useState(data?.id);
 
   // Toggle accordion open state
   const toggleAccordion = () => {
@@ -766,8 +771,12 @@ const TableWithAccordion = ({ data,
       let meter = 0;
       let amount = 0;
       data?.bills?.forEach((item) => {
+        let total_amount = parseFloat(+item?.amount || 0).toFixed(2) || 0 ; 
+        let credit_note_amount = parseFloat(+item?.credit_note_amount || 0).toFixed(2) || 0  ; 
+        let paid_amount = parseFloat(+item?.paid_amount || 0).toFixed(2) || 0 ;
+        let finalAmount = total_amount - paid_amount - credit_note_amount;
         meter += +item?.meter || 0;
-        amount += +item?.amount || 0;
+        amount += +finalAmount|| 0;
       });
 
       return { meter, amount };
@@ -784,7 +793,14 @@ const TableWithAccordion = ({ data,
         className="sundary-header"
       >
         <td></td>
-        <td colSpan={3}>{String(data?.first_name + " " + data?.last_name).toUpperCase()}</td>
+        <td colSpan={3}>
+          {String(data?.first_name + " " + data?.last_name).toUpperCase()}
+          <Tag color="#108ee9" style={{
+            marginLeft: 10
+          }}>
+            {data?.bills?.length} Bills
+          </Tag>
+        </td>
         <td colSpan={5}>{data?.address || ""}</td>
         <td></td>
         <td>
@@ -801,10 +817,6 @@ const TableWithAccordion = ({ data,
         </td>
         <td style={{ textAlign: "center" }}>
           <Link>Clear</Link> &nbsp;&nbsp;&nbsp;&nbsp;
-          {/* <Button
-            // style={{ backgroundColor: "green", color: "#fff" }}
-            icon={<FileSyncOutlined />}
-          /> */}
           <DebitorNotesModal />
         </td>
         <td>
@@ -828,7 +840,9 @@ const TableWithAccordion = ({ data,
                 bill?.model == "job_gray_sale_bill" ? "JOB GRAY SALE" :
                 bill?.model == "beam_sale_bill" ? "BEAM SALE" :
                 bill?.model == "credit_notes" ? "CREDIT NOTE" :
-                bill?.model == "debit_notes" ? "DEBIT NOTE":"" ; 
+                bill?.model == "debit_notes" ? "DEBIT NOTE":
+                bill?.model == "job_work_bills"?"JOB WORK":
+                bill?.model == "job_gray_sale_bill"?"JOB GRAY SALE":"" ; 
               let isChecked = selectedInterestBill?.filter((item) => item?.bill_id == bill?.bill_id && item?.model == bill?.model)?.length > 0?true:false ; 
               let isBillChecked = selectedBill?.filter((item) => item?.bill_id == bill?.bill_id && item?.model == bill?.model)?.length > 0?true:false ; 
               let debiteNoteChecked = debitNoteSelection?.filter((item) => item?.bill_id == bill?.bill_id && item?.model == bill?.model)?.length > 0?true:false ; 
@@ -921,16 +935,11 @@ const TableWithAccordion = ({ data,
                       
                       {bill?.interest_paid_date !== null && bill?.interest_amount !== null && (
                         <>
-                          
                           <div>
-                            0 <span style={{
-                              color: "green", 
-                              fontWeight: 600
-                            }}>( Received )</span>
+                            0
                           </div>
-
-                          <div style={{fontSize: 12}}>
-                            {moment(bill?.interest_paid_date).format("DD-MM-YYYY")}
+                          <div style={{fontSize: 12, color: "green", fontWeight: 600, marginTop: 3}}>
+                            (Rece.: {moment(bill?.interest_paid_date).format("DD-MM-YYYY")})
                           </div>
                         </>
                       )}

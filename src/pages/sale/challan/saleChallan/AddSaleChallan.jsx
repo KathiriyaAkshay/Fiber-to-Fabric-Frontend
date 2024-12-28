@@ -1321,6 +1321,8 @@ const AddSaleChallan = () => {
 
       <Divider style={{ marginTop: "-15px" }} />
 
+      {/* ================= Sale challan information related table ================  */}
+
       {quality_id !== undefined && quality_id !== null && (
         <SaleChallanFieldTable
           errors={errors}
