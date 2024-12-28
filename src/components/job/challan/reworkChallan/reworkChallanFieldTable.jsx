@@ -257,7 +257,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly={fieldNumber !== activeField}
+                            disabled={fieldNumber !== activeField}
                             onChange={(e) => {
                               field.onChange(e);
                               setStoreTakaNo(e.target.value);
@@ -316,7 +316,7 @@ const ReworkChallanFieldTable = ({
                               } solid`,
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();
@@ -352,7 +352,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             onChange={(e) => {
                               field.onChange(e);
                               calculateTotal();
@@ -388,7 +388,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }
@@ -423,7 +423,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             onKeyDown={(event) =>
                               activeNextField(event, fieldNumber)
                             }
@@ -499,7 +499,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             onChange={(e) => {
                               field.onChange(e);
                               setStoreTakaNo(e.target.value);
@@ -555,7 +555,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                           />
                         )}
                       />
@@ -587,7 +587,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                           />
                         )}
                       />
@@ -619,7 +619,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                           />
                         )}
                       />
@@ -651,7 +651,7 @@ const ReworkChallanFieldTable = ({
                               border: "0px solid",
                               borderRadius: "0px",
                             }}
-                            readOnly
+                            disabled
                             // onChange={(e) => {
                             //   if (e.key === " ") {
                             //     e.stopPropagation();
