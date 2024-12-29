@@ -39,3 +39,7 @@ export const productionInHoustTakaReportRequest = ({params}) => {
 export const getDashboardSaleInfoReportRequest = ({params}) => {
   return api.get(`/dashboard/sales-stock/report`, {params}) ; 
 }
+
+export const getProductionStockReportRequest = ({params}) => {
+  return api.get(`/production/production/stock/report/get`, {params}) ; 
+}

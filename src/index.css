@@ -1275,6 +1275,7 @@ h2 {
   padding: 20px;
   background-color: #fff;
   border-radius: 10px;
+  margin-top: -15px;
 }
 
 .sale-stat {
@@ -1282,7 +1283,7 @@ h2 {
 }
 
 .sale-value {
-  font-size: 1.2em;
+  font-size: 1.1em;
   font-weight: bold;
   margin: 0;
 }
@@ -1299,4 +1300,32 @@ h2 {
 
 .sale-highlight-green {
   color: #28a745;
+}
+
+.sale-stock-title{
+  cursor: pointer;
+}
+
+.sale-stock-title:hover{
+  color: blue !important;
+  text-decoration: underline;
+}
+
+.production-taka-report{
+  cursor: pointer;
+}
+
+.production-taka-report:hover{
+  color: blue;
+  text-decoration: underline;
+}
+
+.production-taka-info{
+  font-weight: 600;
+  padding-left: 5px;
+  font-size: 12px;
+}
+
+.production-taka-info-quality{
+  font-weight: 600;
 }

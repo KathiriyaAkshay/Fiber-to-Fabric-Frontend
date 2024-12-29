@@ -182,10 +182,14 @@ const CompanyBankBalance = ({ company }) => {
 };
 
 const Dashboard = () => {
+  const navigation = useNavigate()
   const { companyId, companyListRes } = useContext(GlobalContext);
+  
   const [dayPayableData, setDayPayableData] = useState([]);
   const [dayReceivableData, setDayReceivableData] = useState([]);
-  const navigation = useNavigate()
+  const [takaInformation, setTakaInformation] = useState(undefined) ; 
+  const [totalTaka, setTotalTaka] = useState(undefined) ; 
+  const [totalMeter, setTotalMeter] = useState(undefined); 
 
   // User related data information ============================================
   const { data: userAnalyticsData } = useQuery({
@@ -238,6 +242,25 @@ const Dashboard = () => {
     }
   }
 
+  // Taka and Meter information handler ============================
+  useEffect(() => {
+    if (takaInformation !== undefined){
+      let temp_total_meter = 0; 
+      let temp_total_taka = 0 ; 
+
+      temp_total_taka += +takaInformation?.purchase_taka[0]?.total_taka || 0 ; 
+      temp_total_taka += +takaInformation?.job_taka[0]?.total_taka || 0; 
+      temp_total_taka += +takaInformation?.production_taka?.total_taka || 0; 
+
+      temp_total_meter += +takaInformation?.purchase_taka[0]?.total_meter || 0; 
+      temp_total_meter += +takaInformation?.job_taka[0]?.total_meter || 0; 
+      temp_total_meter += +takaInformation?.production_taka?.total_meter || 0; 
+
+      setTotalMeter(temp_total_meter) ; 
+      setTotalTaka(temp_total_taka) ; 
+    } 
+  }, [takaInformation])
+
   return (
     <div className="dashboard-wrapper">
       <Row>
@@ -264,7 +287,6 @@ const Dashboard = () => {
 
             {/* ========== Oder master related data information ==========  */}
             <Col span={24}>
-
               <Card className="w-100 mt-1 chart-wrapper side-row-card"
                 style={{ cursor: "pointer", padding: 0 }}>
 
@@ -431,9 +453,7 @@ const Dashboard = () => {
               </Card>
             </Col>
 
-
             {/* ============= Company bank balance data ==================  */}
-
             <Col span={24}>
               <Card className="bank-balance-card" style={{ padding: "0px" }}>
                 <Collapse
@@ -456,6 +476,76 @@ const Dashboard = () => {
                 />
               </Card>
 
+            </Col>
+
+            {/* ===== Taka report related information =====  */}
+            <Col span={24}>
+              <Card
+                className="w-100 mt-1 chart-wrapper side-row-card"
+                style={{ padding: "0px" }}
+              >
+                <Row>
+
+                  {/* Totak Taka information  */}
+                  <Col span={12}>
+                    <Typography>
+                      <b>Total Taka</b>
+                    </Typography>
+                  </Col>
+                  
+                  {/* Total meter information  */}
+                  <Col span={12}>
+                    <Typography>
+                      <b>Total Meter</b>
+                    </Typography>
+                  </Col>
+                
+                </Row>
+                <Row>
+                  <Col span={12}>{totalTaka || 0 }</Col>
+                  <Col span={12}>{totalMeter || 0}</Col>
+                </Row>
+                <Divider />
+                <table
+                  className="dashboard-employee-attendance"
+                  border={1}
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Taka</th>
+                      <th>Meter</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {takaInformation && (
+                      <>
+                        <tr>
+                          <td>Production Taka</td>
+                          <td>{takaInformation?.production_taka?.total_taka}</td>
+                          <td>{takaInformation?.production_taka?.total_meter}</td>
+                        </tr>
+                        <tr>
+                          <td>Purchase Taka</td>
+                          <td>{takaInformation?.purchase_taka[0]?.total_taka}</td>
+                          <td>{takaInformation?.purchase_taka[0]?.total_meter}</td>
+                        </tr>
+                        <tr>
+                          <td>Job Taka</td>
+                          <td>{takaInformation?.job_taka[0]?.total_taka}</td>
+                          <td>{takaInformation?.job_taka[0]?.total_meter}</td>
+                        </tr>
+                      </>
+                    )}
+                  </tbody>
+                </table>
+              </Card>
             </Col>
 
           </Row>
@@ -566,9 +656,13 @@ const Dashboard = () => {
             <ProductionReport />
           </Col>
           
+          {/* ========== Dashboard sale information ============  */}
           <Row gutter={6} className="mt-2 w-100">
             <Col span={8}>
-              <DashboardSaleInfo/>
+              <DashboardSaleInfo
+                setTakaInformation = {setTakaInformation}
+                takaInformation = {takaInformation}
+              />
             </Col>
           </Row>
 
