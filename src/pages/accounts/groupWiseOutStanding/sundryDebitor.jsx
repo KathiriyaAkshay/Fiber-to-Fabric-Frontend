@@ -39,6 +39,7 @@ import JobGrayBillComp from "../../../components/sale/bill/jobGrayBillComp";
 import { getJobGraySaleBillListRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
 import moment from "moment";
 import SundaryStaticDebiteNoteViews from "../../../components/accounts/notes/DebitNotes/sundaryStaticDebiteNoteViews";
+import InterestPaymentModal from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/InterestPaymentModel";
 
 function calculateDaysDifference(dueDate) {
   const today = new Date(); // Get today's date
