@@ -12,9 +12,9 @@ import {
   Tag,
   Tooltip,
   Typography,
-  message
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { getBrokerListRequest } from "../../../api/requests/users";
@@ -37,6 +37,27 @@ import SaleBillComp from "../../../components/sale/bill/saleBillComp";
 import PrintJobWorkChallan from "../../../components/sale/challan/jobwork/printJobWorkChallan";
 import JobGrayBillComp from "../../../components/sale/bill/jobGrayBillComp";
 import { getJobGraySaleBillListRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
+import moment from "moment";
+import SundaryStaticDebiteNoteViews from "../../../components/accounts/notes/DebitNotes/sundaryStaticDebiteNoteViews";
+
+function calculateDaysDifference(dueDate) {
+  const today = new Date(); // Get today's date
+  const [day, month, year] = dueDate.split('-');
+  const due = new Date(year, month - 1, day);
+  const timeDifference = today - due; // Difference in milliseconds
+  const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
+  return dayDifference;
+}
+
+const CalculateInterest = (due_days, bill_amount) => {
+  const INTEREST_RATE = 0.12; // Annual interest rate of 12%
+  if (due_days <= 0 || bill_amount <= 0) {
+    return 0; // Return 0 if inputs are invalid
+  }
+  // Calculate interest
+  const interestAmount = (+bill_amount * INTEREST_RATE * due_days) / 365;
+  return interestAmount.toFixed(2); // Return the interest amount rounded to 2 decimal places
+};
 
 const selectionOption = [
   { label: "Show all bills", value: "show_all_bills" },
