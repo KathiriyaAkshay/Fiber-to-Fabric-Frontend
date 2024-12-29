@@ -15,3 +15,27 @@ export const getCompanyBankBalanceRequest = ({ params }) => {
 export const getCompanyUserAnalyticsRequest = ({ params }) => {
   return api.get(`/dashboard/company/users`, { params });
 }
+
+export const getOrderMasterAnalyticsRequest = ({params}) => {
+  return api.get(`/dashboard/order-master/analytics`, {params}) ; 
+}
+
+export const getDashboardOutStandingInformation = ({params}) => {
+  return api.get(`/dashboard/receivable-outstanding`, {params}) ; 
+}
+
+export const getDashboardPayableInformation = ({params}) => {
+  return api.get(`/dashboard/payable-outstanding`, {params}) ; 
+}
+
+export const getDashboardEmployeeInformation = ({params}) => {
+  return api.get(`/dashboard/company/users`, {params}) ; 
+}
+
+export const productionInHoustTakaReportRequest = ({params}) => {
+  return api.get(`/production/instock-taka/report/get`, {params}) ; 
+}
+
+export const getDashboardSaleInfoReportRequest = ({params}) => {
+  return api.get(`/dashboard/sales-stock/report`, {params}) ; 
+}

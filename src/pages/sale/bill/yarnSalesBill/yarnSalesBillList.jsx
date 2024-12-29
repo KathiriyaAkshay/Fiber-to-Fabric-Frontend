@@ -29,6 +29,7 @@ import YarnSaleChallanModel from "../../../../components/sale/challan/yarn/YarnS
 import dayjs from "dayjs";
 import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/printYarnSaleChallan";
 import * as XLSX from "xlsx";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 
 const YarnSalesBillList = () => {
   const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -179,7 +180,7 @@ const YarnSalesBillList = () => {
         const currentDate = new Date();
         const targetDate = new Date(record?.yarn_sale_bill?.due_date);
 
-        if (currentDate > targetDate) {
+        if (currentDate < targetDate) {
           return <div>0</div>;
         } else {
           const differenceInMilliseconds = currentDate - targetDate;
@@ -187,15 +188,40 @@ const YarnSalesBillList = () => {
           const daysDifference = Math.floor(
             differenceInMilliseconds / millisecondsInADay
           );
-          return <div>{daysDifference}</div>;
+
+          if (record?.yarn_sale_bill?.is_paid){
+            return(
+              <div>0</div>
+            )
+          } else {
+            return <div style={{
+              color: daysDifference == 0?"#000":"red",
+              fontWeight: 600
+            }}>{`+${daysDifference}D`}</div>;
+          }
         }
       },
     },
     {
       title: "Bill Status",
       dataIndex: ["yarn_sale_bill", "is_paid"],
-      render: (text) =>
-        text ? <Tag color="green">Paid</Tag> : <Tag color="red">Un-Paid</Tag>,
+      render: (text,record) => {
+        return(
+          <div>
+            {record?.yarn_sale_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.yarn_sale_bill?.id}
+                bill_model={"yarn_sale_bills"}
+                paid_amount={record?.yarn_sale_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.yarn_sale_bill?.is_paid?"green":"red"}>
+                {String(record?.yarn_sale_bill?.is_paid?"Paid":"Un-paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
+      }
     },
     {
       title: "Actions",

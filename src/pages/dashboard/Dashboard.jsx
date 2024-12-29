@@ -10,67 +10,184 @@ import {
 } from "antd";
 import QueryChart from "./Charts/QueryChart";
 import { ChartWrapper } from "./Chart Wrapper/ChartWrapper";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../contexts/GlobalContext";
 import MonthlyProductionTable from "./Charts/MonthlyProductionTable";
 import { useQuery } from "@tanstack/react-query";
 import {
   getCompanyBankBalanceRequest,
   getCompanyUserAnalyticsRequest,
+  getOrderMasterAnalyticsRequest,
+  productionInHoustTakaReportRequest,
 } from "../../api/requests/dashboard";
+import prettyNum from "pretty-num";
+import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
+import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
+import PayableChart from "./Charts/PayableChart";
+import { useNavigate, useNavigation } from "react-router-dom";
+import ProductionReport from "./Charts/productionReport";
+import RadicalCharts from "./Charts/RadicalCharts";
+import DashboardSaleInfo from "./Charts/DashboardSaleInfo";
 
+const formatNumber = (number) => {
+  // Using pretty-num to convert to short format
+  return prettyNum(number, {
+    precision: 1, // Keep one decimal place
+    abbreviations: {
+      K: 'K',
+      M: 'M',    // Millions
+      B: 'B',    // Billions
+      Cr: 'Cr',  // Crore
+      L: 'L',    // Lakh
+    },
+  });
+};
+
+// ============== Company bank balance related information ================== // 
 const CompanyBankBalance = ({ company }) => {
   const { data: bankBalanceData } = useQuery({
-    queryKey: ["get", "company", "bank-balance", { companyId: company.id }],
+    queryKey: ["get", "company", "bank-balance", { companyId: company }],
     queryFn: async () => {
       const params = {
-        company_id: company.id,
+        company_id: company,
       };
       const response = await getCompanyBankBalanceRequest({ params });
       return response?.data?.data;
     },
   });
 
+  // Ensure bankBalanceData is defined before processing
+  const groupedData = bankBalanceData
+    ? [...(bankBalanceData.banks || []), ...(bankBalanceData.cashbook || [])].reduce(
+      (acc, item) => {
+        const { company_name } = item;
+
+        // Initialize the group if it doesn't exist
+        if (!acc[company_name]) {
+          acc[company_name] = { banks: [], cashbook: [] };
+        }
+
+        // Push items into the respective group
+        if ("bank_name" in item) {
+          acc[company_name].banks.push(item);
+        } else if ("id" in item) {
+          acc[company_name].cashbook.push(item);
+        }
+
+        return acc;
+      },
+      {}
+    )
+    : {}; // Return an empty object if bankBalanceData is undefined
+
+  const [totalBankBalance, setTotalBankBalance] = useState(0);
+  const [totalCashbookBalance, setTotalCashbookBalanace] = useState(0);
+
+  useEffect(() => {
+    if (groupedData !== undefined) {
+      let temp_total_balance = 0;
+      let temp_total_cashbook_balance = 0;
+      Object.entries(groupedData).map(([key, value]) => {
+        value?.banks?.map((element) => {
+          temp_total_balance += +element?.balance || 0;
+
+        })
+        value?.cashbook?.map((element) => {
+
+          temp_total_cashbook_balance += +element?.balance || 0;
+        })
+      })
+      setTotalBankBalance(temp_total_balance);
+      setTotalCashbookBalanace(temp_total_cashbook_balance);
+    }
+  }, [groupedData]);
+
+
   return (
-    <div style={{ padding: "2px" }}>
-      <h4
-        style={{
-          color: "var(--menu-item-hover-color)",
-        }}
-      >
-        ❖ {company?.company_name}
-      </h4>
-      {bankBalanceData && bankBalanceData.length
-        ? bankBalanceData.map((item, index) => {
-            return (
-              <Flex key={index + "_bank"} justify="space-between">
-                <Typography>{item.bank_name}</Typography>
-                <Typography>
-                  B/L: <b>{item.balance}</b>
-                </Typography>
-              </Flex>
-            );
-          })
-        : null}
-      <Flex justify="flex-end">
-        <Typography>
-          <span
-            style={{
+    <div>
+      {/* Bank wise bank balance and cashbbook balance related information  */}
+      {Object.entries(groupedData).map(([key, value]) => {
+        return (
+          <div key={key}
+            style={{ padding: "2px", borderBottom: "1px solid #888888", paddingBottom: 10 }}>
+
+            <h3 style={{
               color: "var(--menu-item-hover-color)",
-            }}
-          >
-            CB B/L:
-          </span>{" "}
-          <b>5.6cr</b>
-        </Typography>
-      </Flex>
+              marginBottom: 0,
+              marginTop: 8
+            }}>
+              ❖ {key} ❖
+            </h3>
+
+            {/* Render bank balance related inforamtion  */}
+            {value.banks && value.banks.length > 0 && (
+              value.banks.map((item, index) => (
+                <Flex key={index + "_bank"} justify="space-between" style={{
+                  marginTop: 8
+                }}>
+                  <Typography >{String(item.bank_name).toUpperCase()}</Typography>
+                  <Typography>
+                    B/L: <b>{formatNumber(item.balance)}</b>
+                  </Typography>
+                </Flex>
+              ))
+            )}
+
+            {/* Render cashbook balance related information  */}
+            {value.cashbook && value.cashbook.length > 0 && (
+              value.cashbook.map((item, index) => (
+                <Flex key={index + "_cashbook"} justify="space-between" style={{
+                  marginTop: 8
+                }}>
+                  <Typography style={{ color: "blue", fontWeight: 600 }}>CB B/L :</Typography>
+                  <Typography>
+                    <b>{item.balance}</b>
+                  </Typography>
+                </Flex>
+              ))
+            )}
+          </div>
+        );
+      })}
+
+      {/* Total data related information  */}
+      <div>
+        <div
+          style={{ color: "green", marginTop: 10, marginBottom: 10, fontWeight: 600, fontSize: 16 }}>Total </div>
+
+        <Flex justify="space-between">
+          <Typography>
+            B/L: <b style={{ marginLeft: 6 }}>{totalBankBalance}</b>
+          </Typography>
+        </Flex>
+
+        <Flex justify="space-between" style={{
+          marginTop: 5
+        }}>
+          <Typography>
+            <span
+              style={{
+                color: "var(--menu-item-hover-color)",
+              }}
+            >
+              CB B/L:
+            </span>{" "}
+            <b style={{ marginLeft: 6 }}>{totalCashbookBalance}</b>
+          </Typography>
+        </Flex>
+      </div>
     </div>
   );
+
 };
 
 const Dashboard = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
+  const [dayPayableData, setDayPayableData] = useState([]);
+  const [dayReceivableData, setDayReceivableData] = useState([]);
+  const navigation = useNavigate()
 
+  // User related data information ============================================
   const { data: userAnalyticsData } = useQuery({
     queryKey: ["get", "company", "user-analytics", { companyId }],
     queryFn: async () => {
@@ -81,6 +198,45 @@ const Dashboard = () => {
       return response?.data?.data;
     },
   });
+
+  // Order master related data information ==================================== 
+  const { data: orderAnalyticsData } = useQuery({
+    queryKey: ["get", "company", "order-analytics", { companyId }],
+    queryFn: async () => {
+      const params = {
+        company_id: companyId
+      };
+      const response = await getOrderMasterAnalyticsRequest({ params });
+      return response?.data?.data;
+    }
+  })
+
+  // Production report information related handler ===========================
+  const { data: productionReportData } = useQuery({
+    queryKey: ["get", "production", "taka-report", { company_id: companyId }],
+    queryFn: async () => {
+      const params = {
+        company_id: companyId
+      };
+      const response = await productionInHoustTakaReportRequest({ params });
+      return response?.data?.data;
+    }
+  })
+
+  // Navigation handler ==========================================
+  const OrderMasterNavigation = (type) => {
+    if (type == "purchase/trading") {
+      navigation("/order-master/my-orders");
+    } else if (type == "taka(inhouse)") {
+      navigation("/order-master/my-orders");
+    } else if (type == "job") {
+      navigation("/order-master/my-orders");
+    } else if (type == "Yarn") {
+      navigation("/order-master/my-yarn-orders")
+    } else {
+      navigation("/order-master/size-beam-order")
+    }
+  }
 
   return (
     <div className="dashboard-wrapper">
@@ -105,15 +261,106 @@ const Dashboard = () => {
                 <Statistic title="Schedule Meter" value={0} />
               </Card>
             </Col>
+
+            {/* ========== Oder master related data information ==========  */}
             <Col span={24}>
-              <Card className="w-100 mt-1 chart-wrapper side-row-card">
-                <Statistic title="Yarn Purchase Order" value={4.38} />
+
+              <Card className="w-100 mt-1 chart-wrapper side-row-card"
+                style={{ cursor: "pointer", padding: 0 }}>
+
+                {/* ========= My order information ===========  */}
+
+                <div className="dashboard-order-title">My order</div>
+
+                {orderAnalyticsData?.gray_order?.map((element) => {
+                  return (
+                    <Flex className="dashboard-order-data-div">
+                      <div>
+                        <div className="dashboard-order-data-title"
+                          onClick={() => {
+                            OrderMasterNavigation(element?.order_type)
+                          }}>
+                          {String(element?.order_type).toUpperCase()}
+                        </div>
+                        <div className="dashboard-order-pending-meter-title">
+                          Pending Meter: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>{element?.pending_meters}</span>
+                        </div>
+                      </div>
+                      <div className="dashboard-order-data-count">
+                        {element?.orders}
+                      </div>
+                    </Flex>
+                  )
+                })}
+
+                {/* ======= Yarn order information ========  */}
+
+                <div className="dashboard-order-title" style={{
+                  marginTop: 10,
+                  borderTop: "1px solid #a49f9f",
+                  paddingTop: 10
+                }}>
+                  <Flex>
+                    <div onClick={() => {
+                      OrderMasterNavigation("Yarn")
+                    }}>Yarn Order</div>
+                    <div className="dashboard-order-data-count">
+                      {String(orderAnalyticsData?.yarn_order[0]?.orders).toUpperCase()}
+                    </div>
+                  </Flex>
+                </div>
+
+                <div style={{ marginTop: 5 }}>
+                  <div className="dashboard-order-pending-meter-title">
+                    Pending Quantity: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_quantity}
+                    </span>
+                  </div>
+                  <div className="dashboard-order-pending-meter-title"
+                    style={{ marginTop: 3 }}>
+                    Pending Cartoon: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_cartoon}
+                    </span>
+                  </div>
+                  <div className="dashboard-order-pending-meter-title"
+                    style={{ marginTop: 3 }}>
+                    Pending KG: <span style={{ color: "red", fontSize: 11, fontWeight: 600 }}>
+                      {orderAnalyticsData?.yarn_order[0]?.pending_kg}
+                    </span>
+                  </div>
+                </div>
+
+                {/* =========== Size beam order information ==========  */}
+
+                <div className="dashboard-order-title" style={{
+                  marginTop: 10,
+                  borderTop: "1px solid #a49f9f",
+                  paddingTop: 10
+                }}>
+                  <Flex>
+                    <div onClick={() => {
+                      OrderMasterNavigation("size_beam_order")
+                    }}>Size Beam order</div>
+                    <div className="dashboard-order-data-count">
+                      {String(orderAnalyticsData?.size_beam_order[0]?.orders).toUpperCase()}
+                    </div>
+                  </Flex>
+                </div>
+
+                {/* <Statistic title="Yarn Purchase Order" value={4.38} />
+                
                 <Divider />
+                
                 <Statistic title="Trading Meter" value={5.38} />
+                
                 <Divider />
-                <Statistic title="Trading Meter" value={1.548} />
+                
+                <Statistic title="Trading Meter" value={1.548} /> */}
+
               </Card>
             </Col>
+
+            {/* ============== Employee related information =============  */}
             <Col span={24}>
               <Card
                 className="w-100 mt-1 chart-wrapper side-row-card"
@@ -135,7 +382,7 @@ const Dashboard = () => {
                   <Col span={12}>{userAnalyticsData?.total_party}</Col>
                   <Col span={12}>{userAnalyticsData?.total_broker}</Col>
                 </Row>
-                <Divider />
+                <Divider style={{ color: "#2d2d2d", marginTop: 5, marginBottom: 5 }} />
                 <Row>
                   <Col span={24}>
                     <Typography>
@@ -148,6 +395,7 @@ const Dashboard = () => {
                 </Row>
                 <Divider />
                 <table
+                  className="dashboard-employee-attendance"
                   border={1}
                   style={{
                     width: "100%",
@@ -159,74 +407,57 @@ const Dashboard = () => {
                   <thead>
                     <tr>
                       <th>Type</th>
-                      <th>Req.</th>
+                      <th>Pre.</th>
                       <th>Abs.</th>
                       <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {userAnalyticsData?.employee &&
-                    userAnalyticsData?.employee?.length
+                      userAnalyticsData?.employee?.length
                       ? userAnalyticsData?.employee?.map((item, index) => {
-                          return (
-                            <tr key={index}>
-                              <td>{item?.salary_type}</td>
-                              <td>0</td>
-                              <td>0</td>
-                              <td>{item?.employee_count}</td>
-                            </tr>
-                          );
-                        })
+                        return (
+                          <tr key={index}>
+                            <td>{String(item?.salary_type).toUpperCase()}</td>
+                            <td className={item?.present_user > 0 ? "present-employee-count" : ""}>{item?.present_user}</td>
+                            <td className={item?.absent_user > 0 ? "absent-employee-count" : ""}>{item?.absent_user}</td>
+                            <td>{item?.employee_count}</td>
+                          </tr>
+                        );
+                      })
                       : null}
                   </tbody>
                 </table>
               </Card>
             </Col>
+
+
+            {/* ============= Company bank balance data ==================  */}
+
             <Col span={24}>
               <Card className="bank-balance-card" style={{ padding: "0px" }}>
                 <Collapse
                   accordion
+                  defaultActiveKey={"1"}
                   items={[
                     {
                       key: "1",
                       label: "Bank Balance",
                       children: (
                         <>
-                          {companyListRes?.rows?.map((company) => {
-                            return (
-                              <CompanyBankBalance
-                                key={company.id}
-                                company={company}
-                              />
-                            );
-                          })}
-                          <div>
-                            <h4 style={{ color: "green" }}>Total </h4>
-                            <Flex justify="space-between">
-                              <Typography>
-                                B/L: <b>5.6cr</b>
-                              </Typography>
-                            </Flex>
-                            <Flex justify="space-between">
-                              <Typography>
-                                <span
-                                  style={{
-                                    color: "var(--menu-item-hover-color)",
-                                  }}
-                                >
-                                  CB B/L:
-                                </span>{" "}
-                                <b>5.6cr</b>
-                              </Typography>
-                            </Flex>
-                          </div>
+                          <CompanyBankBalance
+                            key={companyId}
+                            company={companyId}
+                          />
                         </>
                       ),
                     },
                   ]}
                 />
               </Card>
+
             </Col>
+
           </Row>
         </Col>
 
@@ -280,6 +511,8 @@ const Dashboard = () => {
           </Row>
 
           <Row gutter={6} className="mt-6 w-100">
+
+            {/* Monthly Production related information chart  */}
             <Col span={10}>
               <ChartWrapper
                 chart="monthly_production"
@@ -287,9 +520,12 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
+
+            {/* Monthly Production table  */}
             <Col span={6}>
               <MonthlyProductionTable />
             </Col>
+
             <Col span={8}>
               <ChartWrapper
                 chart="BAR"
@@ -297,95 +533,45 @@ const Dashboard = () => {
                 companyId={companyId}
               ></ChartWrapper>
             </Col>
-            <Col span={8}>
-              <ChartWrapper
-                chart="PIE"
-                header="Days Payable Outstanding"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper
-                chart="RADICAL"
-                header="Total Sales/Stock"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper chart="TREE" companyId={companyId}></ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper
-                chart="BAR"
-                header="Days Receivable Aging"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            <Col span={24}>
-              <ChartWrapper
-                chart="TABLE"
-                header="Data"
-                companyId={companyId}
-              ></ChartWrapper>
-            </Col>
-            {/*
-            <Col span={8}>
-              <ChartWrapper>
-                <LineChart
-                  width={350}
-                  height={200}
-                  data={data}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="pv"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                  />
-                  <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-              </ChartWrapper>
-            </Col>
-            <Col span={8}>
-              <ChartWrapper>
-                <LineChart
-                  width={350}
-                  height={200}
-                  data={data}
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 20,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="pv"
-                    stroke="#8884d8"
-                    activeDot={{ r: 8 }}
-                  />
-                  <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
-                </LineChart>
-              </ChartWrapper>
-            </Col> */}
+
           </Row>
+
+          <Row gutter={6} className="mt-2 w-100">
+
+            {/* Day receivable outstanding related information  */}
+            <Col span={8}>
+              <DayReceivableOutStanding
+                setDayReceivableData={setDayReceivableData}
+              />
+            </Col>
+            
+            {/* Day payable outstanding related information  */}
+            <Col span={8}>
+              <DayPayableOutStanding
+                setDayPayableData={setDayPayableData}
+              />
+            </Col>
+
+            {/* Payable chart related information  */}
+            <Col span={8}>
+              <PayableChart
+                dayPayableData={dayPayableData}
+                dayReceivableData={dayReceivableData}
+              />
+            </Col>
+          </Row>
+
+          {/* =========== Production report information ============  */}
+          <Col span={24} className="mt-3">
+            <ProductionReport />
+          </Col>
+          
+          <Row gutter={6} className="mt-2 w-100">
+            <Col span={8}>
+              <DashboardSaleInfo/>
+            </Col>
+          </Row>
+
         </Col>
       </Row>
     </div>

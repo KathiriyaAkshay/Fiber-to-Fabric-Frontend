@@ -193,14 +193,6 @@ const ViewCreditNoteModal = ({ details, type }) => {
               </tr>
             </thead>
             <tbody>
-              {/* <tr style={{ height: "50px" }}>
-                <td></td>
-                <td colSpan={2}></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr> */}
               <tr>
                 <td>1.</td>
                 <td colSpan={2}>

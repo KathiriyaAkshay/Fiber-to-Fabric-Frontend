@@ -116,7 +116,7 @@ const InhouseProduction = () => {
       },
     });
 
-  // Quality list dropdown request
+  // Quality list dropdown request =============================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -143,7 +143,7 @@ const InhouseProduction = () => {
       enabled: Boolean(companyId),
     });
 
-  // Production taka list request
+  // Production taka list request ===============================
   const { data: productionList, isLoading } = useQuery({
     queryKey: [
       "production",

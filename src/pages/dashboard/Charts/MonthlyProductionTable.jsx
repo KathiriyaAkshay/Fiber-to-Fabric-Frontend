@@ -122,7 +122,10 @@ const MonthlyProductionTable = () => {
   return (
     <div className="chart-wrapper">
       <Flex justify="space-between" align="center" className="mb-2">
-        <div className="title">Monthly Production (Meter)</div>
+        <div className="title" style={{
+          fontWeight: 600, 
+          color: "#000"
+        }}>Monthly Production (Meter)</div>
       </Flex>
 
       {isLoading ? (
@@ -132,6 +135,7 @@ const MonthlyProductionTable = () => {
           <table
             style={{ width: "100%", borderCollapse: "collapse" }}
             border={1}
+            className="dashboard-monthlyproduction-table"
           >
             <thead>
               <tr>
@@ -145,7 +149,9 @@ const MonthlyProductionTable = () => {
                 formattedData.map((data, index) => {
                   return (
                     <tr key={index}>
-                      <td>{data?.name}</td>
+                      <td style={{
+                        fontWeight: 600
+                      }}>{data?.name}</td>
                       <td style={{ textAlign: "center" }}>
                         {data[currentFinancialYear].toFixed(2)}
                       </td>

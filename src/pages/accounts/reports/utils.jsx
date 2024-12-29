@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export const gstr1_dialog_columns = [
   { title: "No", dataIndex: "no", key: "no" },
   { title: "Bill No.", dataIndex: "billNo", key: "billNo" },
@@ -176,4 +178,30 @@ export function getFinancialYearEnd(type) {
   } else {
       throw new Error("Invalid parameter. Use 'current' or 'previous'.");
   }
+}
+
+export function generatePurchaseBillDueDate (bill_date) {
+  const PURCHAE_DUE_DAYS = 10; 
+  const date = new Date(bill_date); // Create a new Date object from the start date
+  date.setDate(date.getDate() + PURCHAE_DUE_DAYS); // Add the specified number of days
+  return moment(date.toISOString().split('T')[0]).format("DD-MM-YYYY");
+}
+
+export function generateJobBillDueDate(bill_date){
+  const JOB_DUE_DAYS = 23; 
+  const date = new Date(bill_date); // Create a new Date object from the start date
+  date.setDate(date.getDate() + JOB_DUE_DAYS); // Add the specified number of days
+  return moment(date.toISOString().split('T')[0]).format("DD-MM-YYYY");
+}
+
+export function addDaysToDate(startDate, daysToAdd) {
+  console.log(startDate);
+  
+  // Convert the startDate to a Date object if it's not already one
+  let date = new Date(startDate);
+
+  // Add the days to the date
+  date.setDate(date.getDate() + daysToAdd);
+
+  return date;
 }

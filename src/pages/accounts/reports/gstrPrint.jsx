@@ -31,6 +31,9 @@ function getFileName(input) {
 const GstrPrint = () => {
   const { key } = useParams();
 
+  console.log("Key information ====================", key);
+  
+
   const ComponentRef = useRef();
   const pageStyle = `
          @media print {
@@ -179,16 +182,9 @@ const GstrPrint = () => {
   // const { company } = useContext(GlobalContext);
 
   const excelDownloadHandler = () => {
-    // const fileName = prompt("Please enter the file name", getFileName(title));
     const fileName = prompt("Please enter the file name", title);
-
     if (fileName) {
       let data = [];
-      // if (totalVisible) {
-      //   data = [tableHead, ...orderData, totalCount];
-      // } else {
-      //   data = [tableHead, ...orderData];
-      // }
       if (key === "1") {
         data = [tableHead1, ...tableBody1];
       } else if (key === "2") {
@@ -198,12 +194,7 @@ const GstrPrint = () => {
       }
       let worksheet = XLSX.utils.aoa_to_sheet(data);
       let workbook = XLSX.utils.book_new();
-
       XLSX.utils.book_append_sheet(workbook, worksheet, fileName);
-
-      // Export to Excel file
-      // const dateString = dayjs().format("YYYY-MMD-D_HH:mm:ss");
-      // const fileName = `${fileName}.xlsx`;
       XLSX.writeFile(workbook, `${fileName}.xlsx`);
     }
   };
@@ -308,7 +299,6 @@ const GstrPrint = () => {
                 <th>Bill No.</th>
                 <th>Bill Date</th>
                 <th>Company Name</th>
-                {/* <th>Party Company</th> */}
                 <th>No of GSTIN (1)</th>
                 <th>Place of Supply</th>
                 <th>Meter</th>
@@ -344,15 +334,6 @@ const GstrPrint = () => {
                   </tr>
                 );
               })}
-
-              {/* <tr>
-          {totalVisible &&
-            totalCount?.map((element, index) => (
-              <td key={index} className="total-information-td">
-                {element}
-              </td>
-            ))}
-        </tr> */}
             </tbody>
           </table>
         ) : null}
@@ -401,15 +382,6 @@ const GstrPrint = () => {
                   </tr>
                 );
               })}
-
-              {/* <tr>
-          {totalVisible &&
-            totalCount?.map((element, index) => (
-              <td key={index} className="total-information-td">
-                {element}
-              </td>
-            ))}
-        </tr> */}
             </tbody>
           </table>
         ) : null}

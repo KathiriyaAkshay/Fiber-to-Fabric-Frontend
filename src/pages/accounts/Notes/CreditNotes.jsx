@@ -28,13 +28,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import dayjs from "dayjs";
 import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
-import {
-  CREDIT_NOTE_CLAIM,
-  CREDIT_NOTE_DISCOUNT,
-  CREDIT_NOTE_OTHER,
-  CREDIT_NOTE_SALE_RETURN,
-  YARN_SALE_BILL_TAG_COLOR,
-} from "../../../constants/tag";
+import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
@@ -191,6 +185,24 @@ const CreditNotes = () => {
                 record?.yarn_sale?.challan_no ||
                 "-"}
             </div>
+          )
+        } else if (creditNoteTypes == "sale_return"){
+          return(
+            <div>
+              { record?.sale_challan_return?.sale_challan?.challan_no || 
+                record?.yarn_sale?.challan_no || "-"  
+              }
+            </div>
+          )
+        } else if (creditNoteTypes == "late"){
+          return (
+            <div style={{
+              fontWeight: 600
+            }}>
+              {record?.credit_note_details
+                ?.map((element) => element?.invoice_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                .join(", ")}
+            </div>
           );
         } else {
           return (
@@ -212,12 +224,22 @@ const CreditNotes = () => {
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
       render: (text, record) => {
-        if (record?.yarn_sale == null) {
-          return `${text?.quality_name || ""} (${
-            text?.quality_weight || ""
-          }KG)`;
-        } else {
-          return (
+        if (creditNoteTypes == "late"){
+          return(
+            <div>-</div>
+          )
+        } else if (creditNoteTypes == "discount"){
+          return(
+            <div>-</div>
+          )
+        } else if (creditNoteTypes == "other"){
+          return(
+            <div>-</div>
+          )
+        }  else if (record?.yarn_sale == null){
+          return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
+        } else{
+          return(
             <div>
               {`${record?.yarn_sale?.yarn_stock_company?.yarn_denier}( ${record?.yarn_sale?.yarn_stock_company?.yarn_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_Sub_type}-${record?.yarn_sale?.yarn_stock_company?.yarn_color} )`}
             </div>
@@ -279,19 +301,122 @@ const CreditNotes = () => {
       title: "Type",
       dataIndex: "credit_note_type",
       key: "credit_note_type",
-      render: (text) => {
-        if (text == "other") {
-          return <Tag color={CREDIT_NOTE_OTHER}>OTHER</Tag>;
-        } else if (text == "sale_return") {
-          return <Tag color={CREDIT_NOTE_SALE_RETURN}>SALE RETURN</Tag>;
-        } else if (text == "discount") {
-          return <Tag color={CREDIT_NOTE_DISCOUNT}>DISCOUNT</Tag>;
-        } else if (text == "claim") {
-          return <Tag color={CREDIT_NOTE_CLAIM}>CLAIM NOTE</Tag>;
-        } else if (text == "yarn_sale_return") {
-          return <Tag color={YARN_SALE_BILL_TAG_COLOR}>YARN SALE</Tag>;
+      render: (text, record) => {
+        if (creditNoteTypes === "late") {
+          // Helper function to map models to labels
+          const getModelLabel = (model) => {
+            switch (model) {
+              case "purchase_taka_bills":
+                return "PURCHASE TAKA";
+              case "job_taka_bills":
+                return "JOB TAKA";
+              case "yarn_bills":
+                return "YARN BILL";
+              case "beam_sale_bill":
+                return "BEAM SALE";
+              case "receive_size_beam_bill":
+                return "BEAM RECEIVE";
+              default:
+                return "";
+            }
+          };
+        
+          // Helper function to map models to tag colors
+          const getModelTagColor = (model) => {
+            switch (model) {
+              case "purchase_taka_bills":
+                return PURCHASE_TAG_COLOR;
+              case "job_taka_bills":
+                return JOB_TAG_COLOR;
+              case "yarn_bills":
+                return YARN_SALE_BILL_TAG_COLOR;
+              case "beam_sale_bill":
+                return SALE_TAG_COLOR;
+              case "receive_size_beam_bill":
+                return BEAM_RECEIVE_TAG_COLOR;
+              default:
+                return "";
+            }
+          };
+        
+          // Get unique labels
+          const uniqueLabels = [
+            ...new Set(
+              record?.credit_note_details?.map((element) => getModelLabel(element?.model))
+            ),
+          ];
+        
+          // Render the tags
+          return (
+            <div style={{ fontWeight: 600 }}>
+              {uniqueLabels.map((label, index) => (
+                <Tag
+                  key={index}
+                  color={getModelTagColor(
+                    record?.credit_note_details?.find(
+                      (element) => getModelLabel(element?.model) === label
+                    )?.model
+                  )}
+                >
+                  {label}
+                </Tag>
+              ))}
+            </div>
+          );
         } else {
-          return <Tag>{text}</Tag>;
+          if (text == "other"){
+            return(
+              <Tag color =  {CREDIT_NOTE_OTHER}>
+                OTHER
+              </Tag>
+            )
+          } else if (text == "sale_return"){
+            return(
+              <Tag color = {CREDIT_NOTE_SALE_RETURN}>
+                <div style={{
+                  fontSize:10
+                }}>SALE RETURN</div>
+              </Tag>
+            )
+          } else if (text == "discount"){
+            return(
+              <Tag color = {CREDIT_NOTE_DISCOUNT}>
+                DISCOUNT
+              </Tag>
+            )
+          } else if (text == "claim"){
+            return(
+              <Tag color = {CREDIT_NOTE_CLAIM}>
+                CLAIM NOTE
+              </Tag>
+            )
+          } else if (text == "yarn_sale_return"){
+            return(
+              <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
+                <div style={{
+                  fontSize: 10
+                }}>
+                  YARN SALE RETURN
+                </div>
+              </Tag>
+            )
+          } else if (text == "beam_sale_return"){
+              return(
+                <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
+                  <div style={{
+                    fontSize: 10
+                  }}>
+                    BEAM SALE RETURN
+                  </div>
+                </Tag>
+              )
+          } else{
+            return(
+              <Tag>
+                {text}
+              </Tag>
+            )
+          }
         }
       },
     },
@@ -331,17 +456,6 @@ const CreditNotes = () => {
                 />
               </>
             )}
-
-            {/* {creditNoteTypes !== "sale_return" && ( */}
-            {/* <Button
-              onClick={() => {
-                setIsAddModalOpen(true);
-                setCreditNoteData(details);
-              }}
-            >
-              <EditOutlined />
-            </Button> */}
-            {/* )} */}
             {!details.is_partial_payment ? (
               <>
                 {/* <UpdateCreditNote details={details} /> */}

@@ -630,6 +630,10 @@ input:read-only {
   /* width: 100%; */
   padding: 0.4rem;
   background-color: #fff;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 .chart-wrapper .title {
   color: rgba(0, 0, 0, 0.45);
@@ -816,7 +820,7 @@ input:read-only {
 .statement-passbook-table tbody tr td {
   border: 1px solid #d3d3d3; /* Change #3498db to your desired color */
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .statement-passbook-table tbody tr.red {
@@ -826,6 +830,10 @@ input:read-only {
 .statement-passbook-table tbody tr.green {
   /* background-color: rgba(0, 128, 0, 0.5); */
   background-color: #eff5e9;
+}
+
+.statement-passbook-table-particular-entry{
+  font-weight: 600;
 }
 
 .remove-input-style {
@@ -1002,4 +1010,293 @@ h2 {
     width: 30% !important;
     margin-right: auto !important;
   }
+}
+
+.payment-voucher-model{
+  .ant-descriptions-title{
+    font-size: 22px !important;
+  }
+  .ant-descriptions-item-label{
+    font-weight: 600 !important;
+    color: #000000 !important;
+  }
+}
+
+.custom-table thead th{
+  font-size: 15px !important;
+}
+
+.sundary-header td{
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 10px !important;
+}
+
+.sundary-data td{
+  font-size: 14px;
+  padding-left: 10px !important;
+}
+
+.sundary-total td {
+  font-size: 15px ;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+}
+
+.sundary-due-date{
+  color: red !important;
+  font-weight: 600 !important;
+}
+
+.sundary-bill-payment-label{
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.table-due-date-information-div{
+  font-weight: 600;
+  color: red;
+}
+
+.opening-balance-entry{
+  background-color: #c9efa4;
+}
+
+.passbook-particular-entry-td{
+  font-weight: 500;
+}
+
+.bank-balance-card .ant-collapse-header-text{
+  font-weight:600;
+}
+
+.dashboard-monthlyproduction-table thead th{
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.dashboard-monthlyproduction-table tbody td{
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.dashboard-chart-card {
+  border-top: 1px solid #d8d8d8;
+  background: #fff;
+  padding: 16px;
+  /* margin-top: -60px; */
+}
+
+.dashboard-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dashboard-chart-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: -15px;
+}
+
+.dashboard-chart-total-dues {
+  font-size: 14px;
+  color: green;
+  font-weight: bold;
+}
+
+.dashboard-chart-dues-value {
+  font-weight: normal;
+}
+
+.dashboard-chart-amount {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #333;
+  margin-top: -20px;
+}
+
+.dashboard-chart-details {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ddd; /* Added border to the table */
+}
+
+.dashboard-chart-details th {
+  font-size: 12px;
+  text-align: left;
+  border: 1px solid #ddd; /* Added border to the header cells */
+  padding: 4px;
+  color: #222222;
+  padding-left: 6px;
+  margin-top: -10px;
+}
+
+.dashboard-chart-details td {
+  font-size: 12px;
+  padding: 4px;
+  border: 1px solid #ddd; /* Added border to table cells */
+  color: #333;
+  padding-left:  6px;
+}
+
+.dashboard-chart-due-days {
+  color: blue;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.dashboard-chart-due-days:hover {
+  text-decoration: underline;
+}
+
+.challan-information-text{
+  color: rgb(65, 65, 65);
+  cursor: pointer;
+  padding-left: 8px;
+  padding-right: 8px;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.challan-information-text:hover{
+  color: black;
+}
+
+.challan-information-count{
+  color: black;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.due-days {
+  font-weight: 600;
+  color: rgb(90, 90, 252) !important;
+  cursor: pointer;
+}
+
+.due-days:hover{
+  text-decoration: underline;
+  color: blue !important;
+}
+
+.dashboard-employee-attendance thead th{
+  font-size: 11px;
+}
+
+.dashboard-employee-attendance tbody td{
+  color: #525252;
+  font-size: 11px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.present-employee-count{
+  color: blue !important;
+  font-weight: 600 !important;
+}
+
+.absent-employee-count{
+  color: red !important;
+  font-weight: 600 !important;
+}
+
+.credit-note-table tr td:nth-child(3){
+  color: black;
+  font-weight: 600;
+}
+
+.dashboard-order-title{
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dashboard-order-data-div{
+  margin-top: 6px;
+}
+
+.dashboard-order-data-title{
+  font-size: 13px;
+  color: gray;
+  font-weight: 600;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.dashboard-order-data-title:hover{
+  color: black;
+}
+
+.dashboard-order-data-count{
+  font-size: 12px;
+  background-color: #194a6d;
+  color: #fff;
+  padding: 4px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  margin-left: auto;
+  height: fit-content;
+}
+
+.dashboard-order-pending-meter-title{
+  font-size: 12px;
+}
+
+.equal-height-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Create three equal columns */
+  gap: 6px; /* Matches the gutter spacing */
+}
+
+.equal-height-column {
+  padding: 16px; /* Optional, adjust as needed */
+  height: 100%; /* Ensures full height in grid layout */
+  display: flex; /* Flexbox for proper content alignment */
+  flex-direction: column; /* Align content properly */
+  width: fit-content;
+}
+
+.production-report-title{
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  margin-top: 5px;
+  text-align: center;
+}
+
+.sale-dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 600px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.sale-stat {
+  text-align: center;
+}
+
+.sale-value {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.sale-label {
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0 0;
+}
+
+.sale-highlight-blue {
+  color: #007bff;
+}
+
+.sale-highlight-green {
+  color: #28a745;
 }

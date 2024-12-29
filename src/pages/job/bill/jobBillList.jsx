@@ -25,6 +25,8 @@ import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
 import moment from "moment";
+import PartialPaymentInformation from "../../../components/accounts/payment/partialPaymentInformation";
+import { addDaysToDate } from "../../accounts/reports/utils";
 
 const JobBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -271,14 +273,49 @@ const JobBillList = () => {
     {
       title: "Due Date",
       dataIndex: ["job_taka_bill", "due_date"],
-      // render: (text) => dayjs(text).format("DD-MM-YYYY"),
-      render: () => <div>-</div>,
+      render: (text, record) => {
+        return(
+          <div>
+            {moment(addDaysToDate(record?.job_taka_bill?.bill_date, 23)).format("DD-MM-YYYY")}
+          </div>
+        )
+      },
     },
     {
       title: "Due Days",
       dataIndex: "amount",
       key: "amount",
-      render: () => <div>-</div>,
+      render: (text, record) => {
+        let due_date = record?.due_date;
+        due_date = new Date(addDaysToDate(record?.job_taka_bill?.bill_date, 10));
+      
+        let today = new Date();
+    
+        // Correct the time difference calculation
+        let timeDifference = today.getTime() - due_date.getTime();
+        
+        // Convert time difference to days
+        let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+      
+        // If the due date is in the future, set the days difference to 0
+        if (daysDifference < 0) {
+          daysDifference = 0;
+        }
+
+        if (record?.job_taka_bill?.is_paid){
+          return(
+            <div>0</div>
+          )
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+      
+      } ,
     },
     {
       title: "Bill Status",
@@ -292,12 +329,22 @@ const JobBillList = () => {
     },
     {
       title: "Payment Status",
-      render: (details) => {
-        return details.payment_status === "paid" ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.job_taka_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.job_taka_bill?.id}
+                bill_model={"job_taka_bills"}
+                paid_amount={record?.job_taka_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.job_taka_bill?.is_paid?"green":"red"}>
+                {String(record?.job_taka_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {

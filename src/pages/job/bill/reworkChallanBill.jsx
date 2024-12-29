@@ -24,6 +24,7 @@ import { getReworkChallanListRequest } from "../../../api/requests/job/challan/r
 import { EditOutlined, FileTextOutlined } from "@ant-design/icons";
 import ReworkChallanModal from "../../../components/job/challan/reworkChallan/ReworkChallanModal";
 import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
+import PartialPaymentInformation from "../../../components/accounts/payment/partialPaymentInformation";
 
 const ReworkChallanBill = () => {
   const [quality, setQuality] = useState(null);
@@ -231,26 +232,53 @@ const ReworkChallanBill = () => {
       render: (text, record) => {
         let due_date = record?.job_rework_bill?.due_date;
         due_date = new Date(due_date);
-
+      
         let today = new Date();
-
-        let timeDifference = due_date.getTime() - today.getTime();
+    
+        // Correct the time difference calculation
+        let timeDifference = today.getTime() - due_date.getTime();
+        
+        // Convert time difference to days
         let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-
+      
+        // If the due date is in the future, set the days difference to 0
         if (daysDifference < 0) {
           daysDifference = 0;
         }
-        return <div>{daysDifference}</div>;
-      },
+
+        if (record?.job_rework_bill?.is_paid){
+          return(
+            <div>0</div>
+          )
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+
+      }
     },
     {
       title: "Status",
-      render: (details) => {
-        return details.is_paid ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.job_rework_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.job_rework_bill?.id}
+                bill_model={"job_rework_bill"}
+                paid_amount={record?.job_rework_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.job_rework_bill?.is_paid?"green":"red"}>
+                {String(record?.job_rework_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {
@@ -342,7 +370,6 @@ const ReworkChallanBill = () => {
               <Table.Summary.Cell>
                 {reworkChallanBillData?.total_net_amounts}
               </Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>

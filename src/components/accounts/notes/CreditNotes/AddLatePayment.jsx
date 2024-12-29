@@ -1,4 +1,4 @@
-import {
+  import {
   Button,
   DatePicker,
   Flex,
@@ -17,6 +17,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createCreditNoteRequest,
   getLastCreditNoteNumberRequest,
+  creditNoteDropDownRequest
 } from "../../../../api/requests/accounts/notes";
 import { Controller, useForm } from "react-hook-form";
 import { getPartyListRequest } from "../../../../api/requests/users";
@@ -29,8 +30,9 @@ import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
-import _ from "lodash";
+import { CURRENT_YEAR_TAG_COLOR, JOB_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { BEAM_RECEIVE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -61,7 +63,8 @@ const validationSchema = yup.object().shape({
   date: yup.string().required("Please enter date"),
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
-  // amount: yup.string().required("Please enter amount"),
+  amount: yup.string().required("Please enter amount"),
+  extra_tex_name: yup.string().required("Please, Enter extra tex name information"),
   bill_id: yup
     .array()
     .min(1, "Please select bill.")
@@ -111,8 +114,23 @@ const AddLatePayment = ({
   });
 
   const onSubmit = async (data) => {
+    const temp_credit_notes_data = [] ; 
+    bill_id?.map((id) => {
+      let bill_model = String(id).split("****")[0]; 
+      let bill_model_id = String(id).split("****")[1] ; 
+      const billData = saleBillList?.bills?.find((item) => item.bill_id === +bill_model_id && item?.model ==  bill_model);
+      temp_credit_notes_data.push({
+        bill_id: billData?.bill_id, 
+        model: billData?.model, 
+        per: 1.0, 
+        invoice_no: billData?.bill_no || data?.invoice_no, 
+        particular_name: data?.particular, 
+        amount: +billData?.amount || 0  
+      })
+    })
+    
     const payload = {
-      party_id: data?.party_id.split("-")[1],
+      // party_id: data?.party_id,
       // supplier_id: billData?.supplier_id,
       // model: selectedBillData?.model,
       credit_note_number: creditNoteLastNumber?.debitNoteNumber || "",
@@ -141,32 +159,14 @@ const AddLatePayment = ({
       extra_tex_value: +data.extra_tex_value,
       extra_tex_amount: +data.extra_tex_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-      // credit_note_details: [
-      //   {
-      //     // bill_id: data.bill_id,
-      //     // model: selectedBillData?.model,
-      //     // rate: +data.rate,
-      //     // per: 1.0,
-      //     // invoice_no: data?.invoice_number,
-      //     particular_name: data?.particular,
-      //     // quality: billData?.inhouse_quality?.quality_weight,
-      //     amount: +data.amount,
-      //   },
-      // ],
-      credit_note_details: numOfBill.map((_, index) => {
-        return {
-          bill_id: data[`bill_id_${index}`],
-          model: "sale_bills",
-          rate: +data[`rate_${index}`],
-          per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          particular_name: data[`particular_${index}`],
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
-        };
-      }),
+      credit_note_details: temp_credit_notes_data,
     };
 
+    if (selectedPartyCompany?.party !== null && selectedPartyCompany?.party  !== undefined){
+      payload["party_id"] = selectedPartyCompany?.party?.id
+    } else {
+      payload["supplier_id"] = selectedPartyCompany?.supplier_id
+    }
     await addCreditNote({ data: payload, companyId: data.company_id });
   };
 
@@ -196,9 +196,9 @@ const AddLatePayment = ({
       // sale_challan_id: "",
       // quality_id: "",
 
-      SGST_value: 0,
+      SGST_value: 6,
       SGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 6,
       CGST_amount: 0,
       IGST_value: 0,
       IGST_amount: 0,
@@ -211,7 +211,7 @@ const AddLatePayment = ({
       // discount_value: "",
       // discount_amount: "",
       extra_tex_value: 0,
-      extra_tex_name: "",
+      extra_tex_name: "TDS",
       extra_tex_amount: 0,
     },
     resolver: yupResolver(validationSchema),
@@ -292,7 +292,6 @@ const AddLatePayment = ({
   });
 
   // ----------------------------------------------------------------------------------------------------------------------
-
   const { data: saleBillList, isLoadingSaleBillList } = useQuery({
     queryKey: [
       "saleBill",
@@ -300,19 +299,30 @@ const AddLatePayment = ({
       {
         company_id: company_id,
         party_id: party_id,
+        end: getFinancialYearEnd("current")
       },
     ],
     queryFn: async () => {
+      let is_party = party_id?.includes("party") ? true : false
+      let party_id_value = String(party_id).split("***")[1];
+
       const params = {
+        company_id: company_id,
         page: 0,
         pageSize: 99999,
-        company_id: company_id,
-        // party_id: party_id,
+        end: getFinancialYearEnd("current"),
+        type: "late_payment"
       };
-      const res = await getSaleBillListRequest({ params });
+      if (is_party) {
+        params["party_id"] = party_id_value
+      } else {
+        params["supplier_id"] = party_id_value
+      }
+
+      const res = await creditNoteDropDownRequest({ params });
       return res.data?.data;
     },
-    enabled: Boolean(company_id),
+    enabled: Boolean(company_id && party_id),
   });
 
   // Load PartyList dropdown =========================================
@@ -383,47 +393,23 @@ const AddLatePayment = ({
     }
   }, [party_id]);
 
-  // useEffect(() => {
-  //   if (
-  //     bill_id &&
-  //     bill_id?.length &&
-  //     saleBillList &&
-  //     saleBillList?.SaleBill?.length
-  //   ) {
-  //     let totalAmount = 0;
-
-  //     bill_id.forEach((id) => {
-  //       const data = saleBillList?.SaleBill?.find((item) => item.id === id);
-  //       totalAmount += +data.amount;
-  //     });
-  //     setValue("amount", totalAmount);
-  //   }
-  // }, [bill_id, saleBillList, setValue]);
-
-  // useEffect(() => {
-  //   if (isEditMode && creditNoteData) {
-  //     console.log(isEditMode, creditNoteData);
-  //     reset({
-  //       company_id: creditNoteData?.company_id,
-  //       party_id: "party-" + creditNoteData?.party_id,
-  //       date: dayjs(creditNoteData.createdAt),
-  //     });
-  //   }
-  // }, [creditNoteData, isEditMode, reset]);
-
-  const calculateTaxAmount = () => {
-    let totalAmount = 0;
-    let totalNetAmount = 0;
-    numOfBill.forEach((_, index) => {
-      const amount = getValues(`amount_${index}`);
-      totalAmount += +amount;
-    });
-
-    const SGSTValue = +getValues("SGST_value");
-    if (SGSTValue) {
-      const SGSTAmount = (+totalAmount * +SGSTValue) / 100;
-      setValue("SGST_amount", SGSTAmount.toFixed(2));
-      totalNetAmount += +SGSTAmount;
+  useEffect(() => {
+    if (
+      bill_id &&
+      bill_id?.length &&
+      saleBillList &&
+      saleBillList?.bills?.length
+    ) {
+      let totalAmount = 0;
+      
+      bill_id.forEach((id) => {
+        
+        let bill_model = String(id).split("****")[0]; 
+        let bill_model_id = String(id).split("****")[1] ; 
+        const data = saleBillList?.bills?.find((item) => item.bill_id === +bill_model_id && item?.model ==  bill_model);
+        totalAmount += +data.amount;
+      });
+      setValue("amount", totalAmount);
     }
 
     const CGSTValue = +getValues("CGST_value");
@@ -450,7 +436,7 @@ const AddLatePayment = ({
 
     totalNetAmount += totalAmount;
     setValue("net_amount", totalNetAmount.toFixed(2));
-  };
+  },[]);
 
   return (
     <>
@@ -645,23 +631,43 @@ const AddLatePayment = ({
                             placeholder="Select Bill"
                             mode="multiple"
                             loading={isLoadingSaleBillList}
-                            options={saleBillList?.SaleBill?.map((item) => {
-                              return {
-                                label: item.e_way_bill_no,
-                                value: item.id,
-                              };
-                            })}
+                            // options={saleBillList?.SaleBill?.map((item) => {
+                            //   return {
+                            //     label: item.e_way_bill_no,
+                            //     value: item.id,
+                            //   };
+                            // })}
                             style={{
                               textTransform: "capitalize",
                             }}
                             dropdownStyle={{
                               textTransform: "capitalize",
                             }}
-                            onChange={(selectedValue) => {
-                              setValue("bill_id", selectedValue);
-                              setNumOfBill(selectedValue.map((item) => item));
-                            }}
-                          />
+                          >
+                            {saleBillList?.bills?.map((item) => (
+                              <Select.Option key={`${item?.model}****${item?.bill_id}`} value={`${item?.model}****${item?.bill_id}`}>
+                                <div style={{ display: "flex", alignItems: "center"}}>
+                                  <span style={{
+                                    fontWeight: 600
+                                  }}>{item.bill_no}</span>
+                                  <Tag color={
+                                    item?.model == "purchase_taka_bills"?PURCHASE_TAG_COLOR:
+                                    item?.model == "job_taka_bills"?JOB_TAG_COLOR:
+                                    item?.model == "yarn_bills"?YARN_SALE_BILL_TAG_COLOR:
+                                    item?.model == "beam_sale_bill"?SALE_TAG_COLOR:
+                                    item?.model == "receive_size_beam_bill"?BEAM_RECEIVE_TAG_COLOR:""
+                                  } style={{ marginLeft: "8px" }}>
+                                    { item?.model == "purchase_taka_bills"?"PURCHASE TAKA": 
+                                      item?.model == "job_taka_bills"?"JOB TAKA":
+                                      item?.model == "yarn_bills"?"YARN BILL":
+                                      item?.model == "beam_sale_bill"?"BEAM SALE":
+                                      item?.model == "receive_size_beam_bill"?"BEAM RECEIVE":""
+                                    } 
+                                  </Tag>
+                                </div>
+                              </Select.Option>
+                            ))}
+                          </Select>
                         )}
                       />
                     </Form.Item>
@@ -809,7 +815,7 @@ const AddLatePayment = ({
               <tr>
                 <td></td>
                 <td colSpan={3} style={{ textAlign: "right" }}>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     SGST @{" "}
                     <Controller
                       control={control}
@@ -820,16 +826,13 @@ const AddLatePayment = ({
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
-                          onChange={(e) => {
-                            setValue("SGST_value", +e.target.value);
-                            calculateTaxAmount();
-                          }}
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     CGST @{" "}
                     <Controller
                       control={control}
@@ -840,16 +843,13 @@ const AddLatePayment = ({
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
-                          onChange={(e) => {
-                            setValue("CGST_value", +e.target.value);
-                            calculateTaxAmount();
-                          }}
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div style={{ marginBottom: "6px" }}>
+                  <div style={{ marginBottom: "6px", fontWeight: 600 }}>
                     IGST @{" "}
                     <Controller
                       control={control}
@@ -860,16 +860,16 @@ const AddLatePayment = ({
                           placeholder="3"
                           style={{ width: "100px" }}
                           type="number"
-                          onChange={(e) => {
-                            setValue("IGST_value", +e.target.value);
-                            calculateTaxAmount();
-                          }}
+                          readOnly = {true}
                         />
                       )}
                     />{" "}
                     %
                   </div>
-                  <div>Round Off</div>
+                  <div style={{
+                    fontWeight: 600,
+                    fontSize: 14
+                  }}>Round Off</div>
                 </td>
                 <td></td>
                 <td></td>

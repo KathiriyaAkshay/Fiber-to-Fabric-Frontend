@@ -25,6 +25,8 @@ import dayjs from "dayjs";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import moment from "moment";
 import ViewGrayPurchaseBill from "../../../../components/purchase/grayPurchaseBill/ViewGrayPurchaseBill";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { addDaysToDate } from "../../../accounts/reports/utils";
 
 const GrayPurchaseBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -274,17 +276,55 @@ const GrayPurchaseBillList = () => {
       dataIndex: ["purchase_taka_bill", "net_amount"],
       key: "net_amount",
     },
-    // {
-    //   title: "Due Date",
-    //   dataIndex: ["purchase_taka_bill", "due_date"],
-    //   render: (text) => text || "-",
-    // },
-    // {
-    //   title: "Due Days",
-    //   dataIndex: ["purchase_taka_bill", "due_days"],
-    //   key: "due_days",
-    //   render: (text) => text || "-",
-    // },
+    {
+      title: "Due Date",
+      dataIndex: ["purchase_taka_bill", "due_date"],
+      render: (text, record) => {
+        return(
+          <div>
+            {moment(addDaysToDate(record?.purchase_taka_bill?.bill_date, 10)).format("DD-MM-YYYY")}
+          </div>
+        )
+      },
+    },
+    {
+      title: "Due Days",
+      dataIndex: ["purchase_taka_bill", "due_days"],
+      key: "due_days",
+      render: (text, record) => {
+        let due_date = record?.due_date;
+        due_date = new Date(addDaysToDate(record?.purchase_taka_bill?.bill_date, 10));
+      
+        let today = new Date();
+    
+        // Correct the time difference calculation
+        let timeDifference = today.getTime() - due_date.getTime();
+        
+        // Convert time difference to days
+        let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+      
+        // If the due date is in the future, set the days difference to 0
+        if (daysDifference < 0) {
+          daysDifference = 0;
+        }
+
+        if (record?.purchase_taka_bill?.is_paid){
+          return(
+            <div>
+              0
+            </div>
+          )
+        }  else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+      
+      } ,
+    },
     {
       title: "Bill Status",
       dataIndex: "bill_status",
@@ -299,12 +339,22 @@ const GrayPurchaseBillList = () => {
     {
       title: "Status",
       dataIndex: "payment_status",
-      render: (text) => {
-        return text.toLowerCase() === "paid" ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.purchase_taka_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.purchase_taka_bill?.id}
+                bill_model={"purchase_taka_bills"}
+                paid_amount={record?.purchase_taka_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag color = {record?.purchase_taka_bill?.is_paid?"green":"red"}>
+                {String(record?.purchase_taka_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {
@@ -312,7 +362,6 @@ const GrayPurchaseBillList = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <DeletePurchaseTaka details={details} /> */}
             <ViewGrayPurchaseBill details={details} />
             <Button
               onClick={() => {

@@ -10,6 +10,10 @@ import {
   Divider,
   message,
   Typography,
+  Table,
+  DatePicker,
+  Tag,
+  Switch
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -21,9 +25,18 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import {
   getProductionByIdRequest,
+  updateProductionReportRequest,
   updateProductionRequest,
 } from "../../api/requests/production/inhouseProduction";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
+import { inhouseProductionDetailsRequest } from "../../api/requests/production/inhouseProduction";
+import { getOtherUserListRequest } from "../../api/requests/users";
+const { Text } = Typography;
+const { Option } = Select;
+import { USER_ROLES } from "../../constants/userRole";
+import { getEmployeeListRequest } from "../../api/requests/users";
+import moment from "moment";
+import dayjs from "dayjs";
 
 const updateProductionSchema = yupResolver(
   yup.object().shape({
@@ -45,6 +58,229 @@ const UpdateProduction = () => {
   const [form] = Form.useForm();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+  // Particular production taka average report information ====================
+  const [foldingProductionTaka, setFoldingProductionTaka] = useState([]) ; 
+  const { data: foldingProductionTakaDetails, refetch } = useQuery({
+    queryKey: ["production", "folding", "list"],
+    queryFn: async () => {
+      let params = {
+        company_id: companyId,
+        production_taka_id: productionDetail?.id,
+      };
+      let res = await inhouseProductionDetailsRequest({ params });
+      return res?.data?.data; // Return the response to store it in `productionDetails`
+    },
+    enabled: Boolean(companyId), // Enable query based on companyId presence
+  });
+
+  useEffect(() => {
+    if (foldingProductionTakaDetails){
+      setFoldingProductionTaka(foldingProductionTakaDetails?.folding_details)
+    }
+  },[foldingProductionTakaDetails]);
+
+  // Day handler handler ================ 
+  const InputChangeHandler = (event, index) => {
+    setFoldingProductionTaka((prevTaka) =>
+      prevTaka?.map((element, takaIndex) =>
+        takaIndex === index
+          ? { ...element, createdAt: dayjs(event).format("YYYY-MM-DD") }
+          : element
+      )
+    );
+  };
+
+  // Employee change handler ===============
+  const EmployeeChangeHandler = (event, index) => {
+    setFoldingProductionTaka((prevTaka) =>
+      prevTaka?.map((element, takaIndex) =>
+        takaIndex === index
+          ? { ...element, user_id: event }
+          : element
+      )
+    );
+  }
+
+  // Shift change handler =========================
+  const ShiftChangeHandler = (event, index) => {
+    setFoldingProductionTaka((prevTaka) =>
+      prevTaka?.map((element, takaIndex) =>
+        takaIndex === index
+          ? { ...element, shift: event }
+          : element
+      )
+    );
+  }
+
+  // Meter change handler ==========================
+  const MeterChangeHandler = (event, index) => {
+    setFoldingProductionTaka((prevTaka) =>
+      prevTaka?.map((element, takaIndex) =>
+        takaIndex === index
+          ? {
+              ...element,
+              [foldingProductionTaka[0]?.user?.employer?.shift === "day"
+                ? "day_meter"
+                : "night_meter"]: event.target.value,
+            }
+          : element
+      )
+    );
+  }
+
+  // Get Employee user list =================================================== 
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+          salary_type: 'Work basis'
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+
+  const columns = [
+    {
+      title: "ID", 
+      dataIndex: "id", 
+      render: (text, record, index) => {
+        return(
+          <div>
+            {index + 1}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      render: (value, record, index) => {
+        return(
+          <div>
+            <DatePicker 
+              disabled = {record?.is_paid?true:false} 
+              value={dayjs(record?.createdAt)} 
+              defaultChecked = {record?.createdAt} 
+              disabledDate={disabledFutureDate}
+              onChange={(event) => {
+                InputChangeHandler(event, index)
+              }}
+            />
+          </div>
+        )
+      }
+    },
+    {
+      title: "Employee name",
+      dataIndex: "employeeName",
+      key: "employeeName",
+      render: (value, record, index) =>{
+        return(
+          <Select 
+            disabled = {record?.is_paid?true:false}
+            value={record?.user?.id} style={{ width: "100%" }} placeholder="Select Employee"
+            onChange={(event) => {
+              EmployeeChangeHandler(event, index)
+            }}
+            options={employeeListRes?.rows?.map(
+              ({ id = 0, first_name = "" }) => ({
+                label: first_name,
+                value: id,
+              })
+            )}>
+          </Select>
+        )
+      }
+    },
+    {
+      title: "Taka no",
+      dataIndex: "takaNo",
+      key: "takaNo",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.taka_no || "-"}
+          </div>
+        )
+      }
+    },
+    {
+      title: "Meter",
+      dataIndex: "meter",
+      key: "meter",
+      render: (value, record, index) =>{
+        return(
+          <>
+            <Flex>
+              <Input style={{ width: "100%", marginTop: 4 }} 
+                placeholder="Meter" 
+                readOnly = {record?.is_paid?true:false}
+                defaultValue={value} 
+                value={record?.night_meter == 0?record?.day_meter:record?.night_meter}
+                onChange={(event) => {
+                  MeterChangeHandler(event,index)
+                }}
+              />
+            </Flex>
+          </>
+        )
+      }
+    },
+    {
+      title: "Machine no",
+      dataIndex: "machineNo",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.machine_no}
+          </div>
+        )
+      } 
+    },
+    {
+      title: "Beam no",
+      dataIndex: "beamNo",
+      key: "beamNo",
+      render: (text, record) => {
+        return(
+          <div>
+            {productionDetail?.beam_no}
+          </div>
+        )
+      }
+    },
+    {
+      title: "Paid Status",
+      dataIndex: "is_paid",
+      key: "is_paid",
+      render: (text, record) =>{
+        return(
+          <div>
+            <Tag color={record?.is_paid?"green":"red"}>
+              {record?.is_paid?"Paid":"Un-Paid"}
+            </Tag>
+          </div>
+        )
+      }
+    },
+  ];
+
+  // Particular production details related information ====================
   const { data: productionDetail } = useQuery({
     queryKey: ["productionDetail", "get", id, { company_id: companyId }],
     queryFn: async () => {
@@ -57,6 +293,7 @@ const UpdateProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Update Production details related information =============================
   const { mutateAsync: updateProduction, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateProductionRequest({
@@ -103,6 +340,47 @@ const UpdateProduction = () => {
     // await updateProduction(newData);
   };
 
+  // Update production average report related handler =========================
+  const { mutateAsync: updateProductionReport, isPending: isReportPending } = useMutation({
+    mutationFn: async (data) => {
+      const res = await updateProductionReportRequest({
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["production", "update"],
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(["production", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success("Production report updated successfully");
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  const UpdateReport = async () => {
+    let requestPayload = []; 
+    foldingProductionTaka?.map((element) => {
+      requestPayload.push({
+        "id": element?.id,
+        "user_id": +element?.user_id,
+        "createdAt": element?.createdAt,
+        "day_meter": +element?.day_meter,
+        "night_meter": +element?.night_meter
+      })
+    })
+    await updateProductionReport(requestPayload)
+    
+  }
+
   const {
     control,
     handleSubmit,
@@ -127,7 +405,7 @@ const UpdateProduction = () => {
 
   const { quality_id, meter } = watch();
 
-  // DropDown quality list request
+  // DropDown quality list request =================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -160,7 +438,7 @@ const UpdateProduction = () => {
       enabled: Boolean(companyId),
   });
 
-  // Machinenumber dropdown list information 
+  // Machinenumber dropdown list information ===========================
   const {data: beamCardList, isLoading: isBeamCardListLoading} = useQuery({
     queryKey: [
       "beamCard",
@@ -185,6 +463,14 @@ const UpdateProduction = () => {
     }, 
     enabled: Boolean(companyId && quality_id)
   })
+
+
+  useEffect(() => {
+    if (productionDetail?.id !== undefined){
+      refetch();
+    }
+  }, [companyId, productionDetail])
+
 
   const [machineListDropDown, setMachineListDropDown] = useState([]) ; 
   const [changedBeamNumber, setChangedBeamNumber] = useState(null) ; 
@@ -274,6 +560,7 @@ const UpdateProduction = () => {
       });
     }
   }, [productionDetail, reset]);
+
 
   return (
     <Form
@@ -365,7 +652,10 @@ const UpdateProduction = () => {
           </Col>
         </Row>
 
-        <Divider />
+        <Divider style={{
+          marginTop: -10, 
+          marginBottom: 0
+        }} />
 
         <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
           <Col span={6}>
@@ -547,7 +837,7 @@ const UpdateProduction = () => {
         </Row>
 
         {quality_id && (
-          <Typography.Text style={{ color: "red" }}>
+          <Typography.Text style={{ color: "red", marginTop: -20 }}>
             Avg must be between {avgWeight?.weight_from} to{" "}
             {avgWeight?.weight_to}
           </Typography.Text>
@@ -558,6 +848,39 @@ const UpdateProduction = () => {
             Update
           </Button>
         </Flex>
+
+        {/* Particular employee average report related information  */}
+        <div style={{
+          marginTop: -20
+        }}> 
+          <h2 style={{
+            textAlign: "left"
+          }}>Employee Average Report
+            <span
+              style={{
+                color: "blue", 
+                paddingLeft: 10
+              }}>
+              {foldingProductionTaka && foldingProductionTaka[0]?.user?.employer?.shift == "day"?"Day Shift":"Night Shift"}
+            </span>
+          </h2>
+          
+          <Table
+            columns={columns}
+            dataSource={foldingProductionTaka || []}
+            pagination = {false}
+          />
+        </div>
+
+        {foldingProductionTakaDetails?.folding_details?.length > 0 && (
+           <Flex gap={10} justify="flex-end">
+            <Button type="primary" loading={isReportPending} onClick={UpdateReport}>
+              Update Report
+            </Button>
+          </Flex>
+        )}
+
+
       </div>
     </Form>
   );

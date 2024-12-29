@@ -8,6 +8,7 @@ import {
   Flex,
   Typography,
   Spin,
+  Tag,
 } from "antd";
 import { useContext, useState } from "react";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
@@ -18,6 +19,9 @@ import { usePagination } from "../../../hooks/usePagination";
 import dayjs from "dayjs";
 import DeleteJournalModal from "../../../components/accounts/payment/DeleteJournalModal";
 import { getJournalListRequest } from "../../../api/requests/accounts/payment";
+import { BILL_VOUCHER_TAG_COLOR } from "../../../constants/tag";
+import JournalVoucherDetails from "../../../components/accounts/payment/journalVoucherDetails";
+import moment from "moment";
 
 const JournalList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -90,13 +94,25 @@ const JournalList = () => {
       title: "Supplier Name",
       dataIndex: "supplier_name",
       key: "supplier_name",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.from_particular}
+          </div>
+        )
+      },
     },
     {
       title: "Account Name",
       dataIndex: "account_name",
       key: "account_name",
-      render: (text) => text || "-",
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.to_particular}
+          </div>
+        )
+      },
     },
     // {
     //   title: "Company Name",
@@ -112,6 +128,13 @@ const JournalList = () => {
       title: "Voucher No.",
       dataIndex: "voucher_no",
       key: "voucher_no",
+      render: (text, record) => {
+        return(
+          <Tag color={BILL_VOUCHER_TAG_COLOR}>
+            {text}
+          </Tag>
+        )
+      }
     },
     {
       title: "Voucher Date.",
@@ -129,14 +152,18 @@ const JournalList = () => {
       title: "Cheque Date",
       dataIndex: "cheque_date",
       key: "cheque_date",
-      render: (text) => dayjs(text).format("DD-MM-YYYY"),
+      render: (text, record) => {
+        return(
+          <div>-</div>
+        )
+      },
     },
     {
       title: "Action",
       key: "action",
       render: (details) => (
         <Space>
-          <PaymentVoucherDetails details={details} />
+          <JournalVoucherDetails details={details} />
           <DeleteJournalModal key={"delete_journal"} details={details} />
         </Space>
       ),
@@ -189,6 +216,11 @@ const JournalList = () => {
     );
   }
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+  
+
   return (
     <>
       <Flex align="center" justify="flex-end" gap={10}>
@@ -215,17 +247,17 @@ const JournalList = () => {
             onChange={setSupplier}
           />
         </Flex>
-        <Flex align="center" gap={10}>
+        {/* <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Cheque Date
           </Typography.Text>
-          <DatePicker value={chequeDate} onChange={setChequeDate} />
-        </Flex>
+          <DatePicker value={chequeDate} onChange={setChequeDate} disabledDate={disabledFutureDate} />
+        </Flex> */}
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Voucher Date
           </Typography.Text>
-          <DatePicker value={voucherDate} onChange={setVoucherDate} />
+          <DatePicker value={voucherDate} onChange={setVoucherDate} disabledDate={disabledFutureDate} />
         </Flex>
         <Button
           icon={<FilePdfOutlined />}

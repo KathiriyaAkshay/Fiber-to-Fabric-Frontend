@@ -7,24 +7,32 @@ import {
   message,
   Select,
   Typography,
+  Tag
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   createDebitNoteRequest,
+  debitNoteDropDownRequest,
   getDebitNoteBillDropDownRequest,
   getLastDebitNoteNumberRequest,
 } from "../../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { Controller, useForm } from "react-hook-form";
-import { getReceiveSizeBeamBillByIdRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
+import { getGeneralPurchaseByIdRequest, getReceiveSizeBeamBillByIdRequest } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import { getJobTakaBillByIdRequest } from "../../../../api/requests/job/bill/jobBill";
 import { getYarnReceiveBillByIdRequest } from "../../../../api/requests/purchase/yarnReceive";
 import { getSupplierListRequest } from "../../../../api/requests/users";
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
+import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../../constants/tag";
+import moment from "moment";
+import { getPurchaseTakaBillByIdRequest } from "../../../../api/requests/purchase/bill";
+import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -55,7 +63,6 @@ const validationSchema = yup.object().shape({
   date: yup.string().required("Please enter date"),
   // particular: yup.string().required("Please enter particular"),
   // hsn_code: yup.string().required("Please enter hsn code"),
-  amount: yup.string().required("Please enter amount"),
   bill_id: yup
     .array()
     .min(1, "Please select bill.")
@@ -67,6 +74,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
 
+  // Debit note creation related handler ================================
   const { mutateAsync: addDebitClaimNOte, isPending } = useMutation({
     mutationFn: async ({ data, companyId }) => {
       const res = await createDebitNoteRequest({
@@ -92,52 +100,6 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     },
   });
 
-  const onSubmit = async (data) => {
-    const payload = {
-      // supplier_id: billData?.supplier_id,
-      // model: selectedBillData?.model,
-      debit_note_number: debitNoteLastNumber?.debitNoteNumber || "",
-      debit_note_type: type,
-      // sale_challan_id: 456,
-      // quality_id: data?.quality_id,
-      supplier_id: data?.supplier_id,
-      // gray_order_id: 321,
-      // party_id: 654,
-      // return_id: 987,
-      // total_taka: +data.total_taka,
-      // total_meter: +data.total_meter,
-      // discount_value: +data.discount_value,
-      // discount_amount: +data.discount_amount,
-      SGST_value: +data.SGST_value,
-      SGST_amount: +data.SGST_amount,
-      CGST_value: +data.CGST_value,
-      CGST_amount: +data.CGST_amount,
-      IGST_value: +data.IGST_value,
-      IGST_amount: +data.IGST_amount,
-      round_off_amount: +data.round_off_amount,
-      net_amount: +data.net_amount,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
-      // extra_tex_value: 1.0,
-      // extra_tex_amount: 15.0,
-      createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-      debit_note_details: numOfBill.map((_, index) => {
-        return {
-          bill_id: data[`bill_id_${index}`],
-          model: data[`model_${index}`],
-          rate: +data[`rate_${index}`],
-          per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          particular_name: "Discount On Purchase",
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
-        };
-      }),
-    };
-
-    await addDebitClaimNOte({ data: payload, companyId: data.company_id });
-  };
 
   const {
     control,
@@ -193,28 +155,29 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     }
   }, [resetField, supplier_id]);
 
-  const { data: billList } = useQuery({
-    queryKey: [
-      "debit-note",
-      "bill",
-      "list",
-      {
-        company_id: company_id,
-        supplier_id: supplier_id,
-      },
-    ],
-    queryFn: async () => {
-      const params = {
-        company_id: company_id,
-        type: "discount_note",
-        supplier_id: supplier_id,
-      };
-      const response = await getDebitNoteBillDropDownRequest({ params });
-      return response?.data?.data || [];
-    },
-    enabled: Boolean(company_id && supplier_id),
-  });
+  // const { data: billList } = useQuery({
+  //   queryKey: [
+  //     "debit-note",
+  //     "bill",
+  //     "list",
+  //     {
+  //       company_id: company_id,
+  //       supplier_id: supplier_id,
+  //     },
+  //   ],
+  //   queryFn: async () => {
+  //     const params = {
+  //       company_id: company_id,
+  //       type: "discount_note",
+  //       supplier_id: supplier_id,
+  //     };
+  //     const response = await getDebitNoteBillDropDownRequest({ params });
+  //     return response?.data?.data || [];
+  //   },
+  //   enabled: Boolean(company_id && supplier_id),
+  // });
 
+  // Get Last debit note information related api 
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [
       "get",
@@ -234,6 +197,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(company_id),
   });
 
+  // Get Supplier dropdown related api 
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
     queryKey: ["supplier", "list", { company_id }],
     queryFn: async () => {
@@ -245,6 +209,33 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(company_id),
   });
 
+  // Get bill number selecion related api
+  const { data: saleBillList, isLoadingSaleBillList } = useQuery({
+    queryKey: [
+      "saleBill",
+      "list",
+      {
+        company_id: company_id,
+        supplier_id: supplier_id,
+        end: getFinancialYearEnd("current")
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: company_id,
+        page: 0,
+        pageSize: 99999,
+        end: getFinancialYearEnd("current"),
+        type: "discount_note",
+        supplier_id: supplier_id
+      };
+      const res = await debitNoteDropDownRequest({ params });
+      return res.data?.data;
+    },
+    enabled: Boolean(company_id && supplier_id),
+  });
+
+  // Supplier selection related handler 
   const selectedCompany = useMemo(() => {
     if (company_id) {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
@@ -290,6 +281,77 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     setValue("net_amount", totalNetAmount.toFixed(2));
   };
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+  const onSubmit = async (data) => {
+    let temp_debit_note_number = String(debitNoteLastNumber?.debitNoteNumber || "DNP-0").split("-")[1] ; 
+    temp_debit_note_number = `DNP-${+temp_debit_note_number + 1}` ; 
+    let hasError = false ; 
+
+    numOfBill.map((_, index) => {
+      if (data[`per_${index}`] == "" || data[`per_${index}`] == undefined){
+        message.warning("Per amount is required") ; 
+        hasError = true; 
+        return ; 
+      }
+
+      if (data[`amount_${index}`] == "" || data[`amount_${index}`] == undefined){
+        message.warning("Bill amount is required") ; 
+        hasError = true ; 
+        return ; 
+      }
+    })
+
+    if (!hasError){
+      const payload = {
+        // supplier_id: billData?.supplier_id,
+        // model: selectedBillData?.model,
+        debit_note_number: temp_debit_note_number || "",
+        debit_note_type: type,
+        // sale_challan_id: 456,
+        // quality_id: data?.quality_id,
+        supplier_id: data?.supplier_id,
+        // gray_order_id: 321,
+        // party_id: 654,
+        // return_id: 987,
+        // total_taka: +data.total_taka,
+        // total_meter: +data.total_meter,
+        // discount_value: +data.discount_value,
+        // discount_amount: +data.discount_amount,
+        SGST_value: +data.SGST_value,
+        SGST_amount: +data.SGST_amount,
+        CGST_value: +data.CGST_value,
+        CGST_amount: +data.CGST_amount,
+        IGST_value: +data.IGST_value,
+        IGST_amount: +data.IGST_amount,
+        round_off_amount: +data.round_off_amount,
+        net_amount: +data.net_amount,
+        // net_rate: 6.67,
+        // tcs_value: 0.75,
+        // tcs_amount: 11.25,
+        // extra_tex_value: 1.0,
+        // extra_tex_amount: 15.0,
+        createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+        debit_note_details: numOfBill.map((_, index) => {
+          return {
+            bill_id: data[`bill_id_${index}`],
+            model: data[`model_${index}`],
+            rate: +data[`rate_${index}`],
+            per: +data[`per_${index}`],
+            invoice_no: data[`bill_number_${index}`],
+            particular_name: "Discount On Purchase",
+            quantity: +data[`quantity_${index}`],
+            amount: +data[`amount_${index}`],
+          };
+        }),
+      };
+      await addDebitClaimNOte({ data: payload, companyId: data.company_id });
+    }
+  };
+
+
   return (
     <>
       <table className="credit-note-table">
@@ -301,7 +363,9 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 <Typography.Text style={{ fontSize: 20 }}>
                   Discount Note No.
                 </Typography.Text>
-                <div>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
+                <div style={{
+                  color: "red"
+                }}>{debitNoteLastNumber?.debitNoteNumber || ""}</div>
               </div>
             </td>
           </tr>
@@ -321,7 +385,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                     control={control}
                     name="date"
                     render={({ field }) => (
-                      <DatePicker {...field} className="width-100" />
+                      <DatePicker {...field} disabledDate={disabledFutureDate} className="width-100" />
                     )}
                   />
                 </Form.Item>
@@ -428,17 +492,47 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                         dropdownStyle={{
                           textTransform: "capitalize",
                         }}
-                        options={billList?.result?.map((item) => {
-                          return {
-                            label: item?.bill_no,
-                            value: item?.bill_id,
-                          };
-                        })}
                         onChange={(selectedValue) => {
-                          setValue("bill_id", selectedValue);
-                          setNumOfBill(selectedValue.map((item) => item));
+                          const selectedModels = selectedValue.map((value) => value.split("***")[0].slice(1)); // Extract model from value
+                          const isValidSelection = selectedModels.every((model) => model === selectedModels[0]);
+
+                          if (isValidSelection) {
+                            setValue("bill_id", selectedValue);
+                            setNumOfBill(selectedValue.map((item) => item));
+                          } else {
+                            message.warning("You can only select items of the same type.")
+                          }
                         }}
-                      />
+                      >
+                        {saleBillList?.result?.map((item) => (
+                          <Select.Option key={item?.bill_id} value={`${item?.model}***${item?.bill_id}`}>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span style={{ fontWeight: 600 }}>{item.bill_no}</span>
+                              <Tag
+                                color={{
+                                  general_purchase_entries: SALE_TAG_COLOR,
+                                  yarn_bills: YARN_SALE_BILL_TAG_COLOR,
+                                  job_rework_bill: JOB_TAG_COLOR,
+                                  receive_size_beam_bill: BEAM_RECEIVE_TAG_COLOR,
+                                  purchase_taka_bills: PURCHASE_TAG_COLOR,
+                                  job_taka_bills: JOB_TAG_COLOR,
+                                }[item?.model] || "default"}
+                                style={{ marginLeft: "8px" }}
+                              >
+                                {{
+                                  general_purchase_entries: "General Purchase",
+                                  yarn_bills: "Yarn Bill",
+                                  job_rework_bill: "Job Rework",
+                                  receive_size_beam_bill: "Receive Size Beam",
+                                  purchase_taka_bills: "Purchase Taka",
+                                  job_taka_bills: "Job Taka",
+                                }[item?.model] || "Default"}
+                              </Tag>
+                            </div>
+                          </Select.Option>
+                        ))}
+                      </Select>
+
                     )}
                   />
                 </Form.Item>
@@ -472,9 +566,13 @@ const DiscountNoteForm = ({ type, handleClose }) => {
               </div>
             </td>
             <td colSpan={4}>
+              <div style={{
+                fontWeight: 600,
+                fontSize: 16
+              }}>{String(selectedSupplierCompany?.supplier?.supplier_company).toUpperCase()}</div>
               <div className="credit-note-info-title">
                 <span>Supplier:</span>
-                {selectedSupplierCompany?.supplier?.supplier_company || "-"}
+                {selectedSupplierCompany?.supplier?.supplier_name || "-"}
               </div>
               <div className="credit-note-info-title">
                 <span>GSTIN/UIN:</span> {selectedSupplierCompany?.gst_no || "-"}
@@ -484,7 +582,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                 {selectedSupplierCompany?.pancard_no || "-"}
               </div>
               <div className="credit-note-info-title">
-                <span>State Name:</span> {selectedSupplierCompany?.state || "-"}
+                <span>Email:</span> {selectedSupplierCompany?.email || "-"}
               </div>
             </td>
           </tr>
@@ -506,18 +604,19 @@ const DiscountNoteForm = ({ type, handleClose }) => {
         <tbody>
           {numOfBill && numOfBill.length
             ? numOfBill.map((id, index) => {
-                return (
-                  <SingleBillRender
-                    key={index}
-                    index={index}
-                    billId={id}
-                    control={control}
-                    company_id={company_id}
-                    billList={billList}
-                    setValue={setValue}
-                  />
-                );
-              })
+              return (
+                <SingleBillRender
+                  key={index}
+                  index={index}
+                  billId={id}
+                  control={control}
+                  company_id={company_id}
+                  billList={saleBillList?.result}
+                  setValue={setValue}
+                  calculateTaxAmount = {calculateTaxAmount}
+                />
+              );
+            })
             : null}
           <tr>
             <td></td>
@@ -593,11 +692,15 @@ const DiscountNoteForm = ({ type, handleClose }) => {
           </tr>
           <tr>
             <td></td>
-            <td colSpan={3}>Total</td>
+            <td colSpan={3} style={{
+              fontWeight: 600
+            }}>Total</td>
             <td></td>
             <td></td>
             <td></td>
-            <td>{net_amount}</td>
+            <td style={{
+              fontWeight: 600
+            }}>{net_amount}</td>
           </tr>
           <tr>
             <td colSpan={8}>
@@ -608,7 +711,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
               >
                 <div>
                   <div>
-                    <span style={{ fontWeight: "500" }}>
+                    <span style={{ fontWeight: 600 }}>
                       Amount Chargable(in words):
                     </span>{" "}
                     {toWords.convert(net_amount || 0)}
@@ -669,6 +772,7 @@ const SingleBillRender = ({
   company_id,
   billList,
   setValue,
+  calculateTaxAmount
 }) => {
   const { data: billData } = useQuery({
     queryKey: [
@@ -682,10 +786,12 @@ const SingleBillRender = ({
     ],
     queryFn: async () => {
       let response;
-      const selectedBillData = billList?.result?.find(
-        (item) => item.bill_id === billId
-      );
-
+      let temp_model_name = String(billId).split("***")[0];
+      let temp_model_id = String(billId).split("***")[1];
+      const selectedBillData = {
+        model: temp_model_name,
+        bill_id: temp_model_id
+      }
       switch (selectedBillData.model) {
         case "yarn_bills":
           response = await getYarnReceiveBillByIdRequest({
@@ -693,7 +799,6 @@ const SingleBillRender = ({
             params: { company_id: company_id },
           });
           return response?.data?.data;
-
         case "job_taka_bills":
           response = await getJobTakaBillByIdRequest({
             params: {
@@ -702,7 +807,6 @@ const SingleBillRender = ({
             },
           });
           return response?.data?.data;
-
         case "receive_size_beam_bill":
           response = await getReceiveSizeBeamBillByIdRequest({
             id: selectedBillData.bill_id,
@@ -711,8 +815,40 @@ const SingleBillRender = ({
             },
           });
           return response?.data?.data;
+        case "general_purchase_entries" :
+          response = await getGeneralPurchaseByIdRequest({
+            id: selectedBillData?.bill_id,
+            params: {company_id: company_id}
+          })
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.generalPurchaseEntry,
+          };
+          delete response.generalPurchaseEntry;
+          return response;
+        case "purchase_taka_bills":
+          response = await getPurchaseTakaBillByIdRequest({
+            params:{
+              company_id: company_id, 
+              challan_id: selectedBillData?.bill_id
+            }
+          })
+          response = {
+            ...response?.data?.data,
+            ...response?.data?.data?.purchaseBill,
+          };
+          delete response.purchaseBill;
+          return response;
+        case "job_rework_bill":
+          response = await getReworkChallanByIdRequest({
+            id: selectedBillData?.bill_id,
+            params: {
+              company_id: company_id
+            }
+          })
+          return response?.data?.data ; 
 
-        default:
+          default:
           return response;
       }
     },
@@ -723,6 +859,7 @@ const SingleBillRender = ({
     const amount =
       ((billData?.quantity || 0) * (billData?.rate || 0) * per) / 100;
     setValue(`amount_${index}`, amount.toFixed(2));
+    calculateTaxAmount() ; 
   };
 
   useEffect(() => {
@@ -730,17 +867,21 @@ const SingleBillRender = ({
       billData &&
       Object.keys(billData).length &&
       billList &&
-      billList?.result?.length
+      billList?.length
     ) {
-      const selectedBillData = billList?.result?.find(
-        (item) => item.bill_id === billId
-      );
+      let temp_model_name = String(billId).split("***")[0];
+      let temp_model_id = String(billId).split("***")[1];
+      const selectedBillData = {
+        model: temp_model_name,
+        bill_id: temp_model_id
+      }
+      setValue(`bill_id_${index}`, selectedBillData?.bill_id);
+      setValue(`model_${index}`, selectedBillData.model);
 
       setValue(`quantity_${index}`, billData?.quantity || 0);
       setValue(`rate_${index}`, billData?.rate || 0);
+      setValue(`bill_number_${index}`, billData?.receive?.bill_number || "0") ;
 
-      setValue(`bill_id_${index}`, billId);
-      setValue(`model_${index}`, selectedBillData.model);
     }
   }, [billData, billId, billList, index, setValue]);
 
@@ -822,7 +963,13 @@ const SingleBillRender = ({
         <Controller
           control={control}
           name={`amount_${index}`}
-          render={({ field }) => <Input {...field} placeholder="3" />}
+          rules={{required: "Amount is required"}}
+          render={({ field, fieldState: { error } }) => (
+            <>
+              <Input {...field} placeholder="3" />
+              {error && <span style={{ color: "red" }}>{error.message}</span>}
+            </>
+          )}
         />
       </td>
     </tr>

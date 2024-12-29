@@ -61,6 +61,21 @@ const UpdateDebitNote = ({
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
+  const [buyerRef, setBuyerRef] = useState(undefined) ; 
+  const [descriptionGoods, setDescriptionGoods] = useState(undefined) ; 
+  
+  useEffect(() => {
+    if (details){
+      let ref_number = details?.debit_note_details?.map((element) => element?.bill_no || element?.invoice_no).join(",") ; 
+      setBuyerRef(ref_number) ; 
+      
+      if (details?.debit_note_details?.length == 1){
+        setDescriptionGoods(details?.debit_note_details[0]?.particular_name) ; 
+      } else {
+
+      }
+    }
+  }, [details]) ; 
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -140,6 +155,7 @@ const UpdateDebitNote = ({
     ) {
       payload.debit_note_details = numOfBill.map((_, index) => {
         return {
+          id: +data[`debit_note_details_id_${index}`],
           bill_id: data[`bill_id_${index}`],
           model: data[`model_${index}`],
           // rate: +data[`rate_${index}`],
@@ -166,7 +182,9 @@ const UpdateDebitNote = ({
     getValues,
     formState: { errors },
   } = useForm({
-    defaultValues: {},
+    defaultValues: {
+      round_off_value: 0
+    },
     resolver: yupResolver(validationSchema),
   });
 
@@ -399,6 +417,21 @@ const UpdateDebitNote = ({
     }
   }, [details, reset]);
 
+  console.log("Debit note type information ===========", debitNoteTypes);
+  
+
+  const renderCell = (type, value) => {
+    if (debitNoteTypes === "other") return <td></td>;
+  
+    switch (type) {
+      case "discount_note":
+      case "claim_note":
+        return <td></td>;
+      default:
+        return <td>{value || 0}</td>;
+    }
+  };
+
   return (
     <>
       <Modal
@@ -523,7 +556,7 @@ const UpdateDebitNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Ref.:"}</span>
-                    {"1230034"}
+                    {buyerRef}
                   </div>
                   <div className="credit-note-info-title">
                     <span>Date : </span>
@@ -533,7 +566,6 @@ const UpdateDebitNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Order No. :"}</span>
-                    {"37"}
                   </div>
                 </td>
               </tr>
@@ -556,9 +588,12 @@ const UpdateDebitNote = ({
                     </>
                   ) : (
                     <>
+                      <span>
+                        {String(details?.supplier?.supplier_company).toUpperCase()}
+                      </span>
                       <div className="credit-note-info-title">
                         <span>Supplier: </span>
-                        {details?.supplier?.supplier_company || ""}
+                        {details?.supplier?.supplier_name || ""}
                       </div>
                       <div className="credit-note-info-title">
                         <span>Address: </span>
@@ -588,11 +623,12 @@ const UpdateDebitNote = ({
                 <td colSpan={2} width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>DESCRIPTION OF GOODS : </span>
-                    {_.isEmpty(details?.inhouse_quality)
+                    {/* {_.isEmpty(details?.inhouse_quality)
                       ? `${details?.inhouse_quality?.quality_name || ""} (${
                           details?.inhouse_quality?.quality_weight || ""
                         }KG)`
-                      : ""}
+                      : ""} */}
+                      {descriptionGoods}
                   </div>
                 </td>
               </tr>
@@ -600,13 +636,13 @@ const UpdateDebitNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>HSN :</span>
-                    {details?.hsn_no}
+                    {details?.hsn_no || "-"}
                   </div>
                 </td>
                 <td>
                   <div className="credit-note-info-title">
                     <span>PAN NO:</span>
-                    {"PAN NUMBER"}
+                    {details?.user?.pancard_no}
                   </div>
                 </td>
               </tr>
@@ -626,27 +662,13 @@ const UpdateDebitNote = ({
             <tbody>
               <tr>
                 <td>1</td>
-                <td>{total_taka || 0}</td>
-                <td>{total_meter || 0}</td>
-                <td>{rate || 0}</td>
-                {/* <td> */}
-                {/* <Form.Item
-                    label=""
-                    name="amount"
-                    validateStatus={errors.amount ? "error" : ""}
-                    // help={errors.amount && errors.amount.message}
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="amount"
-                      render={({ field }) => (
-                        <Input {...field} placeholder="300" type="number" />
-                      )}
-                    />
-                  </Form.Item> */}
-                {/* </td> */}
+                <td>
+                  {debitNoteTypes === "other"
+                    ? details?.debit_note_details[0]?.particular_name
+                    : null}
+                </td>
+                {renderCell(debitNoteTypes, total_meter)}
+                {renderCell(debitNoteTypes, rate)}
                 <td>
                   {numOfBill && numOfBill.length
                     ? numOfBill.map((_, index) => {
@@ -666,15 +688,6 @@ const UpdateDebitNote = ({
                     : null}
                 </td>
               </tr>
-
-              {/* <tr style={{ height: "180px" }}>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr> */}
-
               <tr>
                 <td></td>
                 <td></td>
@@ -870,10 +883,14 @@ const UpdateDebitNote = ({
 
               <tr>
                 <td></td>
-                <td>Total</td>
+                <td style={{
+                  fontWeight: 600
+                }}>Total</td>
                 <td></td>
                 <td></td>
-                <td>{net_amount || 0}</td>
+                <td style={{
+                  fontWeight: 600
+                }}>{net_amount || 0}</td>
               </tr>
               <tr>
                 <td colSpan={5}>
@@ -884,7 +901,7 @@ const UpdateDebitNote = ({
                   >
                     <div>
                       <div>
-                        <span style={{ fontWeight: "500" }}>
+                        <span style={{ fontWeight: 600 }}>
                           Amount Chargable(in words):
                         </span>{" "}
                         {net_amount ? toWords.convert(net_amount || 0) : "0"}
@@ -953,11 +970,9 @@ const SingleBillRender = ({
 }) => {
   useEffect(() => {
     if (details) {
-      // setValue(`quantity_${index}`, +billData?.total_meter || 0);
-      // setValue(`rate_${index}`, +billData?.rate || 0);
-
-      // setValue(`bill_id_${index}`, billId);
-      // setValue(`model_${index}`, "sale_bill");
+      setValue(`debit_note_details_id_${index}`, details?.debit_note_details[index]?.id) ; 
+      setValue(`bill_no_${index}`, details?.debit_note_details[index]?.bill_no) ; 
+      setValue(`invoice_no_${index}`, details?.debit_note_details[index]?.invoice_no) ; 
       if (creditNoteTypes === "purchase_return") {
         setValue(`amount_${index}`, +details.amount || 0);
         setValue(`quantity_${index}`, details.quantity);
@@ -993,34 +1008,27 @@ const SingleBillRender = ({
 
   return (
     <>
-      {/* <Form.Item
-        label=""
-        name={`amount_${index}`}
-        // validateStatus={errors.amount ? "error" : ""}
-        // help={errors.amount && errors.amount.message}
-        required={true}
-        wrapperCol={{ sm: 24 }}
-      > */}
-      <Controller
-        control={control}
-        name={`amount_${index}`}
-        render={({ field }) => (
-          <Input
-            {...field}
-            placeholder="300"
-            type="number"
-            style={{ maxWidth: "200px" }}
-            onChange={(e) => {
-              field.onChange(e);
-              calculateTaxAmount();
-            }}
-          />
-        )}
-      />
+      <div style={{
+        marginTop: 3
+      }}>
+        <Controller
+          control={control}
+          name={`amount_${index}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              placeholder="300"
+              type="number"
+              style={{ maxWidth: "200px" }}
+              onChange={(e) => {
+                field.onChange(e);
+                calculateTaxAmount();
+              }}
+            />
+          )}
+        />
+      </div>
       <br />
-      {/* </Form.Item> */}
-      {/* {currentValues?.amount} */}
-
       <Controller
         control={control}
         name={`quantity_${index}`}

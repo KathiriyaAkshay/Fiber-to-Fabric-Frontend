@@ -56,9 +56,31 @@ const UpdateCreditNote = ({
   setIsModalOpen,
   creditNoteTypes,
 }) => {
+  console.log("Update credit note update functionality");
+  console.log(details);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
+  const [buyerRef, setBuyerRef] = useState(undefined) ; 
+  const [descriptionGoods, setDescriptionGoods] = useState(undefined) ; 
+
+  useEffect(() => {
+    if (details){
+      let ref_number = details?.credit_note_details?.map((element) => element?.bill_no || element?.invoice_no).join(",") ; 
+      setBuyerRef(ref_number) ; 
+      
+      if (details?.credit_note_details?.length == 1){
+        setDescriptionGoods(details?.credit_note_details[0]?.particular_name) ; 
+      } else {
+
+      }
+    }
+  }, [details]) ; 
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -99,7 +121,7 @@ const UpdateCreditNote = ({
       // gray_order_id: 3030,
       party_id: details?.party_id,
       // sale_return_id: 5050,
-      hsn_no: details.hsn_no,
+      hsn_no: details.hsn_no || "HSN0036",
       // extra_tex_name: "TDS",
       total_taka: +details.total_taka,
       total_meter: +details.total_meter,
@@ -116,7 +138,7 @@ const UpdateCreditNote = ({
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
       // net_rate: 15.0,
-      rate: data.rate,
+      rate: data.rate || 0,
       tcs_value: +data.SGST_value,
       tcs_amount: +data.SGST_value,
       // invoice_no: "INV98765",
@@ -134,22 +156,18 @@ const UpdateCreditNote = ({
     ) {
       payload.credit_note_details = numOfBill.map((_, index) => {
         return {
-          bill_id: data[`bill_id_${index}`],
+          bill_id: data[`bill_id_${index}`] == 0?data[`invoice_no_${index}`] :data[`bill_id_${index}`],
           model: data[`model_${index}`],
-          // rate: +data[`rate_${index}`],
-          // per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          // particular_name: "Discount On Sales",
           quantity: +data[`quantity_${index}`],
           amount: +data[`amount_${index}`],
+          id: +data[`credit_note_details_id_${index}`], 
+          bill_no: data[`bill_no_${index}`], 
+          invoice_no: data[`invoice_no_${index}`] 
         };
       });
     } else if (creditNoteTypes === "sale_return") {
       payload.amount = data[`amount_${0}`];
     }
-
-    // console.log("on submit", data, payload);
-
     await updateCreditNote({ data: payload, companyId: data.company_id });
   };
 
@@ -162,7 +180,9 @@ const UpdateCreditNote = ({
     getValues,
     formState: { errors },
   } = useForm({
-    defaultValues: {},
+    defaultValues: {
+      round_off_value: 0
+    },
     resolver: yupResolver(validationSchema),
   });
 
@@ -244,73 +264,18 @@ const UpdateCreditNote = ({
     setValue("TCS_amount", TCS_Amount);
 
     const roundOffValue = +getValues("round_off_value");
-
+    
     const netAmount =
       +totalAmount +
       +SGSTAmount +
       +CGSTAmount +
       +IGSTAmount +
-      // +round_off_amount +
       +TCS_Amount +
       +roundOffValue;
 
-    setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
-
-    // totalNetAmount += totalAmount;
-    // setValue("net_amount", totalNetAmount.toFixed(2));
+      setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
   };
 
-  // useEffect(() => {
-  //   if (amount) {
-  //     const discountAmount = (amount * +discount_value) / 100;
-  //     setValue("discount_amount", discountAmount.toFixed(2));
-
-  //     const totalAmount = +amount - +discountAmount;
-  //     setValue("total_amount", totalAmount.toFixed(2));
-
-  //     const SGSTAmount = (totalAmount * SGST_value) / 100;
-  //     setValue("SGST_amount", SGSTAmount.toFixed(2));
-
-  //     const CGSTAmount = (totalAmount * CGST_value) / 100;
-  //     setValue("CGST_amount", CGSTAmount.toFixed(2));
-
-  //     const IGSTAmount = (totalAmount * IGST_value) / 100;
-  //     setValue("IGST_amount", IGSTAmount.toFixed(2));
-
-  //     // const extraTexAmount = (amount * extra_tex_value) / 100;
-  //     // setValue("extra_tex_amount", extraTexAmount.toFixed(2));
-
-  //     const TDS_amount = (+discount_amount * +TDS_value) / 100;
-  //     setValue("TDS_amount", TDS_amount.toFixed(2));
-
-  //     const beforeTCS =
-  //       +discountAmount + +SGSTAmount + +CGSTAmount + +IGSTAmount;
-  //     const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //     setValue("TCS_amount", TCS_Amount);
-
-  //     const netAmount =
-  //       +totalAmount +
-  //       +SGSTAmount +
-  //       +CGSTAmount +
-  //       +IGSTAmount +
-  //       +round_off_amount +
-  //       +TCS_Amount;
-
-  //     setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
-  //   }
-  // }, [
-  //   CGST_value,
-  //   IGST_value,
-  //   SGST_value,
-  //   TCS_value,
-  //   TDS_value,
-  //   amount,
-  //   discount_amount,
-  //   discount_value,
-  //   getValues,
-  //   round_off_amount,
-  //   setValue,
-  // ]);
 
   useEffect(() => {
     if (creditNoteTypes === "sale_return") {
@@ -330,20 +295,12 @@ const UpdateCreditNote = ({
 
   const selectedCompany = useMemo(() => {
     if (company_id) {
+      console.log(companyListRes?.rows);
+      
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
 
-  // const calculateTCSAmount = (TCS_value) => {
-  //   const beforeTCS =
-  //     +getValues("discount_amount") +
-  //     +getValues("SGST_amount") +
-  //     +getValues("CGST_amount") +
-  //     +getValues("IGST_amount");
-  //   // const TCS_Amount = +((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //   const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //   setValue("TCS_amount", TCS_Amount);
-  // };
 
   useEffect(() => {
     if (details) {
@@ -395,6 +352,19 @@ const UpdateCreditNote = ({
     }
   }, [details, reset]);
 
+  const renderCell = (type, value) => {
+    if (creditNoteTypes === "other") return <td></td>;
+  
+    switch (type) {
+      case "discount":
+      case "claim":
+      case "late":
+        return <td></td>;
+      default:
+        return <td>{value || 0}</td>;
+    }
+  };
+
   return (
     <>
       <Modal
@@ -443,50 +413,12 @@ const UpdateCreditNote = ({
                   <div className="credit-note-info-title">
                     <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
                   </div>
-                  {/* <div className="credit-note-info-title">
-                    <span>State Name: </span> {selectedCompany?.state || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Contact:</span>{" "}
-                    {selectedCompany?.company_contact || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Email:</span> {selectedCompany?.company_email || ""}
-                  </div> */}
                 </td>
                 <td width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>Credit Note No: </span>
                     {details?.credit_note_number || "-"}
                   </div>
-                  {/* <div>
-                    <Form.Item
-                      label=""
-                      name="credit_note_no"
-                      validateStatus={errors.credit_note_no ? "error" : ""}
-                      help={
-                        errors.credit_note_no && errors.credit_note_no.message
-                      }
-                      required={true}
-                      wrapperCol={{ sm: 24 }}
-                    >
-                      <Controller
-                        control={control}
-                        name="party_id"
-                        rules={{ required: "Credit note no is required" }}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            className="width-100"
-                            placeholder="Credit Note No."
-                          />
-                        )}
-                      />
-                    </Form.Item>
-                  </div> */}
                 </td>
                 <td width={"25%"}>
                   <div>
@@ -508,6 +440,7 @@ const UpdateCreditNote = ({
                             name="date"
                             className="width-100"
                             disabledDate={disabledFutureDate}
+
                           />
                         )}
                       />
@@ -519,7 +452,7 @@ const UpdateCreditNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Ref.:"}</span>
-                    {"1230034"}
+                    {buyerRef}
                   </div>
                   <div className="credit-note-info-title">
                     <span>Date : </span>
@@ -529,47 +462,60 @@ const UpdateCreditNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>{"Buyer's Order No. :"}</span>
-                    {"37"}
+                    {"---"}
                   </div>
                 </td>
               </tr>
               <tr>
                 <td rowSpan={2}>
-                  <div className="credit-note-info-title">
-                    <span>Party: </span>
-                    {details?.party?.company_name || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Address: </span>
-                    {details?.party?.address_line_1 || ""}
-                    {details?.party?.address_line_2 || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span>{" "}
-                    {details?.party?.company_gst_number || ""}
-                  </div>
-                  {/* <div className="credit-note-info-title">
-                    <span>State Name: </span> {selectedCompany?.state || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Contact:</span>{" "}
-                    {selectedCompany?.company_contact || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Email:</span> {selectedCompany?.company_email || ""}
-                  </div> */}
+                  
+                  {/* ========= Party information ===========  */}
+                  {details?.party !== null  && (
+                    <>
+                      <div className="credit-note-info-title">
+                        <span>Party: </span>
+                        {details?.party?.company_name || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Address: </span>
+                        {details?.party?.address_line_1 || ""}
+                        {details?.party?.address_line_2 || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.party?.company_gst_number || ""}
+                      </div>
+                    </>
+                  )}
+
+                  {/* ========== Supplier information ==============  */}
+                  {details?.supplier !== null && (
+                    <>
+                      <span style={{
+                        fontSize: 15, 
+                        fontWeight: 600
+                      }}>
+                        {String(details?.supplier?.supplier_company).toUpperCase()}
+                      </span>
+                      <div className="credit-note-info-title">
+                        <span>Supplier: </span>
+                        {details?.supplier?.supplier_name || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Address: </span>
+                        {details?.user?.address || ""}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span>{" "}
+                        {details?.user?.gst_no   || ""}
+                      </div>
+                    </>
+                  )}
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>DESCRIPTION OF GOODS : </span>
-                    {_.isEmpty(details?.inhouse_quality)
-                      ? `${details?.inhouse_quality?.quality_name || ""} (${
-                          details?.inhouse_quality?.quality_weight || ""
-                        }KG)`
-                      : ""}
+                      {descriptionGoods}
                   </div>
                 </td>
               </tr>
@@ -577,13 +523,13 @@ const UpdateCreditNote = ({
                 <td>
                   <div className="credit-note-info-title">
                     <span>HSN :</span>
-                    {details?.hsn_no}
+                    {details?.hsn_no || "-"}
                   </div>
                 </td>
                 <td>
                   <div className="credit-note-info-title">
                     <span>PAN NO:</span>
-                    {"PAN NUMBER"}
+                    {selectedCompany?.pancard_no || "-"}
                   </div>
                 </td>
               </tr>
@@ -603,27 +549,14 @@ const UpdateCreditNote = ({
             <tbody>
               <tr>
                 <td>1</td>
-                <td>{total_taka || 0}</td>
-                <td>{total_meter || 0}</td>
-                <td>{rate || 0}</td>
-                {/* <td> */}
-                {/* <Form.Item
-                    label=""
-                    name="amount"
-                    validateStatus={errors.amount ? "error" : ""}
-                    // help={errors.amount && errors.amount.message}
-                    required={true}
-                    wrapperCol={{ sm: 24 }}
-                  >
-                    <Controller
-                      control={control}
-                      name="amount"
-                      render={({ field }) => (
-                        <Input {...field} placeholder="300" type="number" />
-                      )}
-                    />
-                  </Form.Item> */}
-                {/* </td> */}
+                
+                <td>
+                  {creditNoteTypes === "other"
+                    ? details?.credit_note_details[0]?.particular_name
+                    : null}
+                </td>
+                {renderCell("", total_meter)}
+                {renderCell("", rate)}
                 <td>
                   {numOfBill && numOfBill.length
                     ? numOfBill.map((_, index) => {
@@ -632,7 +565,6 @@ const UpdateCreditNote = ({
                             key={index}
                             index={index}
                             control={control}
-                            // company_id={company_id}
                             details={details}
                             setValue={setValue}
                             creditNoteTypes={creditNoteTypes}
@@ -847,10 +779,16 @@ const UpdateCreditNote = ({
 
               <tr>
                 <td></td>
-                <td>Total</td>
+                <td style={{
+                  fontWeight: 600, 
+                  color: "black"
+                }}>Total</td>
                 <td></td>
                 <td></td>
-                <td>{net_amount || 0}</td>
+                <td style={{
+                  fontWeight: 600, 
+                  color: "black"
+                }}>{net_amount || 0}</td>
               </tr>
               <tr>
                 <td colSpan={5}>
@@ -861,7 +799,7 @@ const UpdateCreditNote = ({
                   >
                     <div>
                       <div>
-                        <span style={{ fontWeight: "500" }}>
+                        <span style={{ fontWeight: 600 }}>
                           Amount Chargable(in words):
                         </span>{" "}
                         {net_amount ? toWords.convert(net_amount || 0) : "0"}
@@ -930,11 +868,10 @@ const SingleBillRender = ({
 }) => {
   useEffect(() => {
     if (details) {
-      // setValue(`quantity_${index}`, +billData?.total_meter || 0);
-      // setValue(`rate_${index}`, +billData?.rate || 0);
+      setValue(`credit_note_details_id_${index}`, details?.credit_note_details[index]?.id) ; 
+      setValue(`bill_no_${index}`, details?.credit_note_details[index]?.bill_no) ; 
+      setValue(`invoice_no_${index}`, details?.credit_note_details[index]?.invoice_no) ; 
 
-      // setValue(`bill_id_${index}`, billId);
-      // setValue(`model_${index}`, "sale_bill");
       if (creditNoteTypes === "sale_return") {
         setValue(`amount_${index}`, +details.amount);
         setValue(`quantity_${index}`, details.quantity);
@@ -967,33 +904,27 @@ const SingleBillRender = ({
 
   return (
     <>
-      {/* <Form.Item
-        label=""
-        name={`amount_${index}`}
-        // validateStatus={errors.amount ? "error" : ""}
-        // help={errors.amount && errors.amount.message}
-        required={true}
-        wrapperCol={{ sm: 24 }}
-      > */}
-      <Controller
-        control={control}
-        name={`amount_${index}`}
-        render={({ field }) => (
-          <Input
-            {...field}
-            placeholder="300"
-            type="number"
-            style={{ maxWidth: "200px" }}
-            onChange={(e) => {
-              field.onChange(e);
-              calculateTaxAmount();
-            }}
-          />
-        )}
-      />
+      <div style={{
+        marginTop: 0.1
+      }}>
+        <Controller
+          control={control}
+          name={`amount_${index}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              placeholder="300"
+              type="number"
+              style={{ maxWidth: "200px" }}
+              onChange={(e) => {
+                field.onChange(e);
+                calculateTaxAmount();
+              }}
+            />
+          )}
+        />
+      </div>
       <br />
-      {/* </Form.Item> */}
-      {/* {currentValues?.amount} */}
 
       <Controller
         control={control}

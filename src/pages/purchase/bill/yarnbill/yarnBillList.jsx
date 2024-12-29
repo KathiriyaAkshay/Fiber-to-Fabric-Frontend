@@ -8,6 +8,7 @@ import {
   Spin,
   Space,
   Flex,
+  Tag,
 } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
@@ -23,6 +24,7 @@ import dayjs from "dayjs";
 import UpdateYarnChallanModel from "../../../../components/purchase/receive/yarnReceive/updateYarnChallanModel";
 import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 
 const YarnBillList = () => {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -198,18 +200,34 @@ const YarnBillList = () => {
       render: (text, record) => {
         let due_date = record?.due_date;
         due_date = new Date(due_date);
-
+      
         let today = new Date();
-
-        let timeDifference = due_date.getTime() - today.getTime();
+    
+        // Correct the time difference calculation
+        let timeDifference = today.getTime() - due_date.getTime();
+        
+        // Convert time difference to days
         let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-
+      
+        // If the due date is in the future, set the days difference to 0
         if (daysDifference < 0) {
           daysDifference = 0;
         }
+        
+        if (record?.is_paid){
+          return(
+            <div>0</div>
+          ) 
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
 
-        return <div>{daysDifference}</div>;
-      },
+      }      
     },
     {
       title: "Action",
@@ -217,8 +235,28 @@ const YarnBillList = () => {
         return (
           <Space>
             <ViewYarnReceiveChallan details={record} />
-            <DeleteYarnBillButton details={record} />
-            <UpdateYarnChallanModel details={record} />
+            {record?.is_paid == false && record?.is_partial_payment == false && (
+              <>
+                <DeleteYarnBillButton details={record} />
+                <UpdateYarnChallanModel details={record} />
+              </>
+            )}
+
+            {record?.is_partial_payment == true && (
+              <>
+                <PartialPaymentInformation
+                  bill_id={record?.id}
+                  bill_model={"yarn_bills"}
+                  paid_amount={record?.paid_amount || "0.00"}
+                />
+              </>
+            )}
+
+            {record?.is_paid && (
+              <Tag color="#28a745">
+                PAID
+              </Tag>
+            )}
           </Space>
         );
       },
@@ -454,9 +492,9 @@ const YarnBillList = () => {
             <h3 className="m-0 text-primary">Yarn Bill List </h3>
 
             <Flex style={{ marginLeft: "10px" }} gap={"10px"}>
-              <Button type="primary" icon={<PlusCircleFilled />}>
+              {/* <Button type="primary" icon={<PlusCircleFilled />}>
                 Advance Bill payment
-              </Button>
+              </Button> */}
               <Button
                 onClick={SummaryGeneration}
                 type="primary"

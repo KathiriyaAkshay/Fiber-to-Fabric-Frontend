@@ -22,6 +22,7 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getSupplierListRequest } from "../../../../api/requests/users";
 import { FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 
 function SizeBeamBillList() {
   const { companyId, company, financialYearEnd } = useContext(GlobalContext);
@@ -231,28 +232,59 @@ function SizeBeamBillList() {
       render: (text, record) => {
         let due_date = record?.due_date;
         due_date = new Date(due_date);
-
+      
         let today = new Date();
-
-        let timeDifference = due_date.getTime() - today.getTime();
+    
+        // Correct the time difference calculation
+        let timeDifference = today.getTime() - due_date.getTime();
+        
+        // Convert time difference to days
         let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-
+      
+        // If the due date is in the future, set the days difference to 0
         if (daysDifference < 0) {
           daysDifference = 0;
         }
 
-        return <div>{daysDifference}</div>;
-      },
+        if (record?.is_paid){
+          return(
+            <div>0</div>
+          )
+        } else {
+          return <div style={{
+            color: daysDifference == 0?"#000":"red",
+            fontWeight: 600
+          }}>
+            +{daysDifference}D
+          </div>;
+        }
+      
+      }    
     },
     {
       title: "Status",
       dataIndex: "status",
-      render: (text) => {
-        return text == "unpaid" ? (
-          <Tag color="red">{text}</Tag>
-        ) : (
-          <Tag color="green">{text}</Tag>
-        );
+      render: (text, record) => {
+        return (
+          <div>
+            {record?.is_partial_payment?<>
+              <div>
+                {record?.is_partial_payment && (
+                  <PartialPaymentInformation
+                    bill_id={record?.id}
+                    bill_model={" "}
+                    paid_amount = {record?.paid_amount}
+                  />
+                )}
+              </div>
+            </>:<>
+              <Tag color={text == "unpaid"?"red":"green"}>
+                {String(text).toUpperCase()}
+              </Tag>
+            </>}
+            
+          </div>
+        )
       },
     },
     {
@@ -266,7 +298,7 @@ function SizeBeamBillList() {
               isBill={true}
             />
 
-            {record?.status == "unpaid" && (
+            {record?.status == "unpaid" && record?.is_partial_payment == false && (
               <DeleteSizeBeamBillButton details={record} />
             )}
           </Space>
