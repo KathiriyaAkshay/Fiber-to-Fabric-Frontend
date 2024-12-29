@@ -120,11 +120,12 @@ const BillForm = () => {
   });
 
   const onSubmit = async (data) => {
-
     const temp_bill_details = selectedBills?.map((element) => {
+      console.log(element);
+      
       let finalTotalAmount = 0;
       
-      let netAmount = (+element?.net_amount - element?.debit_note_amount - +(element?.part_payment || 0)) || 0;
+      let netAmount = (+element?.net_amount - (+element?.debit_note_amount) -  (+element?.exists_part_payment || 0) ) || 0 ; 
       finalTotalAmount += netAmount;
       
       let tdsAmount = +element?.tds; 
@@ -136,17 +137,21 @@ const BillForm = () => {
       let lessAmount = (netAmount * (+element?.less_percentage)) / 100; 
       finalTotalAmount -= lessAmount || 0;
   
-      // Remove the is_paid property
-      delete element?.is_paid;
-      delete element?.debit_note_amount ; 
-      delete element?.bp_tds; 
-      delete element?.debit_note_number; 
-      
-      // Add the paid_amount to the element
-      element.paid_amount = finalTotalAmount;
-  
-      return element;
-  });
+      return {
+        "bill_id": element?.bill_id,
+        "bill_no": element?.bill_no,
+        "amount": +element?.amount,
+        "net_amount": netAmount,
+        "bill_date": element?.bill_date,
+        "due_date": element?.due_date,
+        "tds": +element?.tds,
+        "part_payment": +element?.part_payment,
+        "less_percentage": +element?.less_percentage,
+        "plus_percentage": +element?.plus_percentage,
+        "model": element?.model,
+        "paid_amount": +element?.paid_amount
+      }
+    });
   
 
     const payload = {
@@ -156,13 +161,16 @@ const BillForm = () => {
       total_amount: +data.amount,
       voucher_no: data.voucher_no,
       remark: data.remark,
-      is_passbook_entry: data.selection === "passbook_update" ? true : false,
+      is_passbook_entry: data.selection === "passBook_update" ? true : false,
       cheque_date: dayjs(data.cheque_date).format("YYYY-MM-DD"),
       createdAt: dayjs(data.voucher_date).format("YYYY-MM-DD"),
       bill_details: temp_bill_details,
       is_credited: false
     };
-    await addBillEntry({ company_id: data.company_id, data: payload });
+
+    console.log(payload);
+    
+    // await addBillEntry({ company_id: data.company_id, data: payload });
   };
 
   const {
@@ -271,9 +279,10 @@ const BillForm = () => {
       let totalNetAmount = 0;
       setUnPaidBillData(unPaidBillListRes);
       unPaidBillListRes.forEach((bill) => {
-        totalBill += 1;
-        totalAmount += bill.amount;
-        totalNetAmount += bill.net_amount;
+          totalBill += 1;
+          totalAmount += bill.amount;
+          let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
+          totalNetAmount += +netAmount;
       });
 
       setTotalCounts({ totalBills: totalBill, totalAmount, totalNetAmount });
@@ -784,7 +793,6 @@ const BillForm = () => {
                   :moment(bill?.due_date).format("DD-MM-YYYY") ;
 
                 const dueDays = bill?.model == "credit_notes"?0:calculateDaysDifference(dueDate) ; 
-
                 let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
 
                 return (
@@ -831,7 +839,7 @@ const BillForm = () => {
                     <td style={{ textAlign: "center", color: "#000" }}>{bill.amount || "0"}</td>
                     
                     <td style={{ textAlign: "center" }}>
-                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill?.part_payment || 0} = ${+bill?.net_amount - +(bill?.part_payment || 0)}`}>
+                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill?.part_payment || 0} = ${netAmount}`}>
                         {+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)}
                       </Tooltip>
                     </td>
@@ -916,10 +924,10 @@ const BillForm = () => {
               </td>
               <td style={{ textAlign: "center" }}></td>
               <td style={{ textAlign: "center", fontWeight: "bold" }}>
-                {totalCounts.totalAmount}
+                {parseFloat(totalCounts.totalAmount).toFixed(2)}
               </td>
               <td style={{ textAlign: "center", fontWeight: "bold" }}>
-                {totalCounts.totalNetAmount}
+                {parseFloat(totalCounts.totalNetAmount).toFixed(2)}
               </td>
               <td style={{ textAlign: "center" }}></td>
               <td style={{ textAlign: "center" }}></td>

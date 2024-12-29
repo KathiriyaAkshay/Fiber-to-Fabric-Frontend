@@ -58,6 +58,7 @@ const AddPurchaseTaka = () => {
   const [totalWeight, setTotalWeight] = useState(0);
 
   const [activeField, setActiveField] = useState(0);
+  console.log({ activeField });
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
   const [pendingTaka, setPendingTaka] = useState("");
@@ -106,20 +107,24 @@ const AddPurchaseTaka = () => {
 
     const purchase_challan_detail = [];
     let hasError = 0;
-    let all_taka_number = [] ; 
+    let all_taka_number = [];
     purchaseChallanDetailArr.forEach((field) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
 
-      if ((isNaN(takaNo) || takaNo === "") && (isNaN(meter) || meter === "") && (isNaN(weight) || weight === "") ) {
+      if (
+        (isNaN(takaNo) || takaNo === "") &&
+        (isNaN(meter) || meter === "") &&
+        (isNaN(weight) || weight === "")
+      ) {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
           message: "Taka No required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
       if (isNaN(meter) || meter === "") {
         message.error(`Enter meter for ${field} number row.`);
@@ -128,7 +133,7 @@ const AddPurchaseTaka = () => {
           message: "Meter required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
       if (isNaN(weight) || weight === "") {
         message.error(`Enter weight for ${field} number row.`);
@@ -137,7 +142,7 @@ const AddPurchaseTaka = () => {
           message: "Weight required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
 
       if (
@@ -145,7 +150,7 @@ const AddPurchaseTaka = () => {
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
-        all_taka_number.push(data[`taka_no_${field}`])
+        all_taka_number.push(data[`taka_no_${field}`]);
         purchase_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
@@ -173,17 +178,19 @@ const AddPurchaseTaka = () => {
       purchase_challan_detail: purchase_challan_detail,
     };
 
-    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false){
-      message.error("Please, Enter all unique taka") ; 
+    if (
+      all_taka_number?.length !== [...new Set(all_taka_number)]?.length &&
+      hasError == false
+    ) {
+      message.error("Please, Enter all unique taka");
       hasError = 1;
-      return ; 
+      return;
     }
+    console.log(purchase_challan_detail, newData);
 
-    if (!hasError) {
-      await AddPurchaseTaka(newData);
-    }
-
-
+    // if (!hasError) {
+    //   await AddPurchaseTaka(newData);
+    // }
   }
 
   const {
@@ -220,7 +227,14 @@ const AddPurchaseTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id, total_meter, total_weight, total_taka } = watch();
+  const {
+    supplier_name,
+    gray_order_id,
+    supplier_id,
+    total_meter,
+    total_weight,
+    total_taka,
+  } = watch();
 
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
@@ -418,25 +432,24 @@ const AddPurchaseTaka = () => {
   };
 
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined){
-      setPendingMeter(+total_meter - totalMeter) ; 
+    if (total_meter !== "" && total_meter !== undefined) {
+      setPendingMeter(+total_meter - totalMeter);
     }
-    if (total_weight !== "" && total_weight !== undefined){
-      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    if (total_weight !== "" && total_weight !== undefined) {
+      setPendingWeight(+total_weight - (totalWeight || 0));
     }
 
-    if (total_taka !== "" && total_taka !== undefined){
-      setPendingTaka(+total_taka - totalTaka) ; 
+    if (total_taka !== "" && total_taka !== undefined) {
+      setPendingTaka(+total_taka - totalTaka);
     }
-    
   }, [
-    total_meter, 
-    total_weight, 
-    total_taka, 
-    totalTaka, 
-    totalWeight, 
-    totalMeter
-  ])
+    total_meter,
+    total_weight,
+    total_taka,
+    totalTaka,
+    totalWeight,
+    totalMeter,
+  ]);
 
   return (
     <div className="flex flex-col p-4">
@@ -444,7 +457,9 @@ const AddPurchaseTaka = () => {
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
-        <h3 className="m-0 text-primary">Create Purchase Challan | GST No: {getValues("gst_in_1")}</h3>
+        <h3 className="m-0 text-primary">
+          Create Purchase Challan | GST No: {getValues("gst_in_1")}
+        </h3>
       </div>
       <Form layout="vertical">
         <Row
@@ -536,7 +551,7 @@ const AddPurchaseTaka = () => {
           gutter={18}
           style={{
             padding: "0px 12px",
-            marginTop: -20
+            marginTop: -20,
           }}
         >
           <Col span={6}>
@@ -642,17 +657,14 @@ const AddPurchaseTaka = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                    onChange={(selectedValue) =>
-                    {
-                      orderChangeHandler(field, selectedValue)
-                    }
-                    }
+                    onChange={(selectedValue) => {
+                      orderChangeHandler(field, selectedValue);
+                    }}
                   />
                 )}
               />
             </Form.Item>
           </Col>
-          
         </Row>
 
         <Row
@@ -661,7 +673,6 @@ const AddPurchaseTaka = () => {
             padding: "0px 12px",
           }}
         >
-
           <Col span={6}>
             <Form.Item
               label="Broker"
@@ -780,7 +791,6 @@ const AddPurchaseTaka = () => {
               />
             </Form.Item>
           </Col>
-          
         </Row>
 
         <Row
@@ -789,7 +799,6 @@ const AddPurchaseTaka = () => {
             padding: "0px 12px",
           }}
         >
-
           <Col span={3}>
             <Form.Item
               label="Total Meter"
@@ -852,11 +861,10 @@ const AddPurchaseTaka = () => {
           <Row
             gutter={18}
             style={{
-              paddingBottom: 10, 
-              marginTop: -10
+              paddingBottom: 10,
+              marginTop: -10,
             }}
           >
-
             <Col span={3} style={{ textAlign: "center" }}>
               <Typography style={{ color: "red" }}>{pendingMeter}</Typography>
             </Col>
@@ -871,7 +879,7 @@ const AddPurchaseTaka = () => {
           </Row>
         ) : null}
 
-        <Divider style={{marginTop:0}} />
+        <Divider style={{ marginTop: 0 }} />
 
         <FieldTable
           errors={errors}

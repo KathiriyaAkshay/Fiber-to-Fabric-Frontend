@@ -456,17 +456,6 @@ const CreditNotes = () => {
                 />
               </>
             )}
-
-            {/* {creditNoteTypes !== "sale_return" && ( */}
-            {/* <Button
-              onClick={() => {
-                setIsAddModalOpen(true);
-                setCreditNoteData(details);
-              }}
-            >
-              <EditOutlined />
-            </Button> */}
-            {/* )} */}
             {!details.is_partial_payment ? (
               <>
                 {/* <UpdateCreditNote details={details} /> */}

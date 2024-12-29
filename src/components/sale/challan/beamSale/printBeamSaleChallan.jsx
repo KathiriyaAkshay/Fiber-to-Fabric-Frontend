@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
 import { EyeOutlined, CloseOutlined } from "@ant-design/icons";
 import moment from "moment";
@@ -7,20 +7,25 @@ import ReactToPrint from "react-to-print";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 
-const PrintBeamSaleChallan = ({ details }) => {
+const PrintBeamSaleChallan = ({
+  details,
+  isEyeButton = true,
+  open = false,
+  close,
+}) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
-  const componentRef = useRef() ; 
-  const {companyListRes} = useContext(GlobalContext) ; 
+  const componentRef = useRef();
+  const { companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
 
   useEffect(() => {
     companyListRes?.rows?.map((element) => {
-        if (element?.id == details?.company_id){
-            setCompanyInfo(element) ; 
-        }
-    })
-  },[details, companyListRes]) ; 
-  
+      if (element?.id == details?.company_id) {
+        setCompanyInfo(element);
+      }
+    });
+  }, [details, companyListRes]);
+
   const pageStyle = `
   @media print {
        .print-instructions {
@@ -32,16 +37,31 @@ const PrintBeamSaleChallan = ({ details }) => {
       }
   `;
 
+  const isOpen = useMemo(() => {
+    if (isEyeButton) return isModelOpen;
+    else return open;
+  }, [isEyeButton, isModelOpen, open]);
+
+  const closeHandler = () => {
+    if (isEyeButton) {
+      setIsModalOpen(false);
+    } else {
+      close();
+    }
+  };
+
   return (
     <>
-      <Button
-        type="primary"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <EyeOutlined />
-      </Button>
+      {isEyeButton ? (
+        <Button
+          type="primary"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <EyeOutlined />
+        </Button>
+      ) : null}
 
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
@@ -50,25 +70,28 @@ const PrintBeamSaleChallan = ({ details }) => {
             Beam Sale
           </Typography.Text>
         }
-        open={isModelOpen}
+        open={isOpen}
         footer={() => {
-          return(
-              <>
-                  <ReactToPrint
-                      trigger={() => <Flex>
-                          <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
-                              PRINT
-                          </Button>
-                      </Flex>}
-                      content={() => componentRef.current}
-                      pageStyle={pageStyle}
-                  />
-              </>
-          )
+          return (
+            <>
+              <ReactToPrint
+                trigger={() => (
+                  <Flex>
+                    <Button
+                      type="primary"
+                      style={{ marginLeft: "auto", marginTop: 15 }}
+                    >
+                      PRINT
+                    </Button>
+                  </Flex>
+                )}
+                content={() => componentRef.current}
+                pageStyle={pageStyle}
+              />
+            </>
+          );
         }}
-        onCancel={() => {
-          setIsModalOpen(false);
-        }}
+        onCancel={closeHandler}
         centered={true}
         classNames={{
           header: "text-center",
@@ -85,11 +108,11 @@ const PrintBeamSaleChallan = ({ details }) => {
             padding: "16px 32px",
           },
 
-          footer:{
-            paddingBottom: 10, 
-            paddingRight: 10, 
-            backgroundColor: "#efefef"
-        }
+          footer: {
+            paddingBottom: 10,
+            paddingRight: 10,
+            backgroundColor: "#efefef",
+          },
         }}
         width={"70vw"}
       >
@@ -112,9 +135,23 @@ const PrintBeamSaleChallan = ({ details }) => {
             }}
           >
             <Col span={24} style={{ textAlign: "center" }}>
-              <p style={{ marginTop: 0, marginBottom: 0 }}><strong>{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null?"":companyInfo?.address_line_2}, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode}, ${companyInfo?.country}`}</strong></p>
-              <p style={{ marginTop: 3, marginBottom: 0 }}>Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp; PAYMENT: {companyInfo?.account_number}</p>
-              <p style={{ marginTop: 3, marginBottom: 0 }}>GST NO: {companyInfo?.gst_no} &nbsp;&nbsp;&nbsp;&nbsp; PAN NO: {companyInfo?.pancard_no}</p>
+              <p style={{ marginTop: 0, marginBottom: 0 }}>
+                <strong>{`${companyInfo?.address_line_1} ${
+                  companyInfo?.address_line_2 == null
+                    ? ""
+                    : companyInfo?.address_line_2
+                }, ${companyInfo?.city}, ${companyInfo?.state} - ${
+                  companyInfo?.pincode
+                }, ${companyInfo?.country}`}</strong>
+              </p>
+              <p style={{ marginTop: 3, marginBottom: 0 }}>
+                Phone no: {companyInfo?.company_contact} &nbsp;&nbsp;&nbsp;
+                PAYMENT: {companyInfo?.account_number}
+              </p>
+              <p style={{ marginTop: 3, marginBottom: 0 }}>
+                GST NO: {companyInfo?.gst_no} &nbsp;&nbsp;&nbsp;&nbsp; PAN NO:{" "}
+                {companyInfo?.pancard_no}
+              </p>
             </Col>
           </Row>
           <Row
@@ -124,15 +161,30 @@ const PrintBeamSaleChallan = ({ details }) => {
             }}
           >
             <Col span={12}>
-              <p><strong>M/S :</strong> {details?.supplier?.supplier_company}({details?.supplier?.supplier_name})</p>
+              <p>
+                <strong>M/S :</strong> {details?.supplier?.supplier_company}(
+                {details?.supplier?.supplier_name})
+              </p>
               <p>{details?.supplier?.user?.address}</p>
-              <p><strong>GST :</strong> {details?.supplier?.user?.gst_no}</p>
-              <p><strong>E-Way Bill No :</strong></p>
+              <p>
+                <strong>GST :</strong> {details?.supplier?.user?.gst_no}
+              </p>
+              <p>
+                <strong>E-Way Bill No :</strong>
+              </p>
             </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-                <p><strong>CHALLAN NO :</strong> {details?.challan_no}</p>
-                <p><strong>DATE :</strong> {moment(details?.createdAt).format("DD-MM-YYYY")}</p>
-                <p><strong>VEHICLE NO :</strong>{details?.vehicle?.vehicle?.vehicleNo}</p>
+            <Col span={12} style={{ textAlign: "right" }}>
+              <p>
+                <strong>CHALLAN NO :</strong> {details?.challan_no}
+              </p>
+              <p>
+                <strong>DATE :</strong>{" "}
+                {moment(details?.createdAt).format("DD-MM-YYYY")}
+              </p>
+              <p>
+                <strong>VEHICLE NO :</strong>
+                {details?.vehicle?.vehicle?.vehicleNo}
+              </p>
             </Col>
           </Row>
 

@@ -47,6 +47,10 @@ export function deleteRevertCashbookRequest({id, params}){
   return api.patch(`/account/statement/cashbook/revert/${id}`, null, {params}) ; 
 }
 
+export function deleteCashbookRequest({id, params}){
+  return api.delete(`/account/statement/cashbook/delete/${id}`, {params}) ; 
+}
+
 // Journal services------------------------------------------------------------------------
 export function getJournalListRequest({ params }) {
   return api.get(`/account/statement/journal/voucher/list`, { params });

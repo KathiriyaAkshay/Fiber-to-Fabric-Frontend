@@ -343,21 +343,6 @@ const DebitNotes = () => {
       key: "interest_pay_date",
       render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
     },
-    // {
-    //   title: "Net Amount",
-    //   dataIndex: "net_amount",
-    //   key: "net_amount",
-    // },
-    // {
-    //   title: "Type",
-    //   dataIndex: "type",
-    //   key: "type",
-    // },
-    // {
-    //   title: "Invoice Date",
-    //   dataIndex: "invoice_date",
-    //   key: "invoice_date",
-    // },
     {
       title: "Action",
       render: (text, record) => {
@@ -367,19 +352,19 @@ const DebitNotes = () => {
               details={record}
               type={debitNoteType}
             />
-            {!details.is_partial_payment ? (
+            {!record?.is_partial_payment ? (
               <>
                 {/* <UpdateCreditNote details={details} /> */}
                 <Button
                   onClick={() => {
                     setIsUpdateModalOpen(true);
-                    setDebitNoteData(details);
+                    setDebitNoteData(record);
                   }}
                 >
                   <EditOutlined />
                 </Button>
 
-                <DeleteDebitNote key={"delete_debit_note"} details={details} />
+                <DeleteDebitNote key={"delete_debit_note"} details={record} />
               </>
             ) : null}
 
