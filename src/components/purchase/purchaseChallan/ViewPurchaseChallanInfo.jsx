@@ -1,6 +1,6 @@
 import { EyeOutlined } from "@ant-design/icons";
 import { Button, Col, Flex, Modal, Row, Typography } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
@@ -9,7 +9,12 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 
 const { Text } = Typography;
 
-const ViewPurchaseChallanInfo = ({ details }) => {
+const ViewPurchaseChallanInfo = ({
+  details,
+  isEyeButton = true,
+  open = false,
+  close,
+}) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -59,16 +64,31 @@ const ViewPurchaseChallanInfo = ({ details }) => {
     });
   }, [details, companyListRes]);
 
+  const isOpen = useMemo(() => {
+    if (isEyeButton) return isModelOpen;
+    else return open;
+  }, [isEyeButton, isModelOpen, open]);
+
+  const closeHandler = () => {
+    if (isEyeButton) {
+      setIsModalOpen(false);
+    } else {
+      close();
+    }
+  };
+
   return (
     <>
-      <Button
-        type="primary"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <EyeOutlined />
-      </Button>
+      {isEyeButton ? (
+        <Button
+          type="primary"
+          onClick={() => {
+            setIsModalOpen(true);
+          }}
+        >
+          <EyeOutlined />
+        </Button>
+      ) : null}
 
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
@@ -77,7 +97,7 @@ const ViewPurchaseChallanInfo = ({ details }) => {
             Purchase Return Challan
           </Typography.Text>
         }
-        open={isModelOpen}
+        open={isOpen}
         footer={() => {
           return (
             <>
@@ -99,7 +119,7 @@ const ViewPurchaseChallanInfo = ({ details }) => {
           );
         }}
         onCancel={() => {
-          setIsModalOpen(false);
+          closeHandler();
         }}
         centered={true}
         classNames={{
@@ -128,7 +148,7 @@ const ViewPurchaseChallanInfo = ({ details }) => {
       >
         <Flex
           className="flex-col border border-b-0 border-solid"
-          style={{marginRight: 1}}
+          style={{ marginRight: 1 }}
           ref={componentRef}
         >
           <Row

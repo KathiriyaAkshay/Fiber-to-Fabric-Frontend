@@ -1,9 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { PrinterOutlined } from "@ant-design/icons";
 import {
   Button,
   DatePicker,
-  Drawer,
   Flex,
   message,
   Select,
@@ -12,7 +10,7 @@ import {
   Typography,
 } from "antd";
 import "./_style.css";
-import { gstr1_dialog_columns, gstr1_dialog_data } from "./utils";
+// import { gstr1_dialog_columns, gstr1_dialog_data } from "./utils";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { getGstr1ReportService } from "../../../api/requests/accounts/reports";
@@ -28,7 +26,7 @@ const Gstr1 = () => {
   const [company, setCompany] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
-  const [isParticularOpen, setIsParticularOpen] = useState("");
+  // const [isParticularOpen, setIsParticularOpen] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   function disabledFutureDate(current) {
@@ -407,7 +405,7 @@ const Gstr1 = () => {
         )}
       </div>
 
-      <Drawer
+      {/* <Drawer
         title={isParticularOpen}
         onClose={() => setIsParticularOpen("")}
         open={isParticularOpen !== "" ? true : false}
@@ -420,7 +418,7 @@ const Gstr1 = () => {
           dataSource={gstr1_dialog_data}
           pagination={false}
         />
-      </Drawer>
+      </Drawer> */}
     </div>
   );
 };

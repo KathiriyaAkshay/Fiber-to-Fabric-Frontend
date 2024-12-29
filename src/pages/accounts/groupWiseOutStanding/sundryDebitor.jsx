@@ -5,6 +5,7 @@ import {
   Empty,
   Flex,
   Input,
+  message,
   Radio,
   Select,
   Spin,
@@ -23,33 +24,19 @@ import { getSundryDebtorsService, paidInterestRequest } from "../../../api/reque
 import { Link } from "react-router-dom";
 import useDebounce from "../../../hooks/useDebounce";
 import DebitorNotesModal from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/DebitorNotesModal";
-import ViewDebitorBill from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/ViewDebitorBill";
-import moment from "moment";
-import InterestPaymentModal from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/InterestPaymentModel";
-import { useMutation } from "@tanstack/react-query";
-import BillPaymentModel from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/billPaymentModel";
-import { SnippetsOutlined } from "@ant-design/icons";
-import SundaryStaticDebiteNoteViews from "../../../components/accounts/notes/DebitNotes/sundaryStaticDebiteNoteViews";
-import SundaryDebitNoteGenerate from "../../../components/accounts/notes/DebitNotes/sundaryDebiteNoteGenerate";
-
-function calculateDaysDifference(dueDate) {
-  const today = new Date(); // Get today's date
-  const [day, month, year] = dueDate.split('-');
-  const due = new Date(year, month - 1, day);
-  const timeDifference = today - due; // Difference in milliseconds
-  const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
-  return dayDifference;
-}
-
-const CalculateInterest = (due_days, bill_amount) => {
-  const INTEREST_RATE = 0.12; // Annual interest rate of 12%
-  if (due_days <= 0 || bill_amount <= 0) {
-    return 0; // Return 0 if inputs are invalid
-  }
-  // Calculate interest
-  const interestAmount = (+bill_amount * INTEREST_RATE * due_days) / 365;
-  return interestAmount.toFixed(2); // Return the interest amount rounded to 2 decimal places
-};
+// import ViewDebitorBill from "../../../components/accounts/groupWiseOutStanding/sundryDebitor/ViewDebitorBill";
+import PrintYarnSaleChallan from "../../../components/sale/challan/yarn/printYarnSaleChallan";
+import {
+  saleJobWorkChallanListRequest,
+  saleYarnChallanListRequest,
+} from "../../../api/requests/sale/challan/challan";
+import { getBeamSaleChallanListRequest } from "../../../api/requests/sale/challan/beamSale";
+import { getSaleBillListRequest } from "../../../api/requests/sale/bill/saleBill";
+import PrintBeamSaleChallan from "../../../components/sale/challan/beamSale/printBeamSaleChallan";
+import SaleBillComp from "../../../components/sale/bill/saleBillComp";
+import PrintJobWorkChallan from "../../../components/sale/challan/jobwork/printJobWorkChallan";
+import JobGrayBillComp from "../../../components/sale/bill/jobGrayBillComp";
+import { getJobGraySaleBillListRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
 
 const selectionOption = [
   { label: "Show all bills", value: "show_all_bills" },
@@ -60,6 +47,14 @@ const selectionOption = [
   { label: "60+ days", value: "60" },
   { label: "90+ days", value: "90" },
 ];
+
+const BILL_MODEL = {
+  yarn_sale_bills: "yarn_sale_bills",
+  beam_sale_bill: "beam_sale_bill",
+  job_work_bills: "job_work_bills",
+  sale_bills: "sale_bills",
+  job_gray_sale_bill: "job_gray_sale_bill",
+};
 
 const calculateDueDays = (createdAt, dueDate) => {
   const startDate = dayjs(createdAt);
@@ -757,12 +752,13 @@ const TableWithAccordion = ({ data,
     isModalOpen: false,
     details: null,
     mode: "",
+    model: "",
   });
+
   const handleCloseModal = () => {
     setDebitorBillModal((prev) => ({
       ...prev,
       isModalOpen: false,
-      mode: "",
     }));
   };
 
@@ -784,6 +780,57 @@ const TableWithAccordion = ({ data,
       return { meter: 0, amount: 0 };
     }
   }, [data]);
+
+  const onClickViewHandler = async (bill) => {
+    try {
+      console.log("onClickViewHandler", bill.bill_id, bill.model);
+      let response;
+      let details;
+      let params = {
+        company_id: companyId,
+        bill_id: bill.bill_id,
+        page: 0,
+        pageSize: 10,
+      };
+
+      if (bill.model === BILL_MODEL.yarn_sale_bills) {
+        response = await saleYarnChallanListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.list[0];
+        }
+      } else if (bill.model === BILL_MODEL.beam_sale_bill) {
+        response = await getBeamSaleChallanListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.sale_bills) {
+        response = await getSaleBillListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.SaleBill[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_work_bills) {
+        response = await saleJobWorkChallanListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.list[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_gray_sale_bill) {
+        response = await getJobGraySaleBillListRequest({ params });
+        console.log({ response });
+        if (response.data.success) {
+          details = response?.data?.data?.jobGraySaleBill[0];
+        }
+      }
+
+      setDebitorBillModal({
+        isModalOpen: true,
+        details: details,
+        mode: "VIEW",
+        model: bill.model,
+      });
+    } catch (error) {
+      message.error(error.message);
+    }
+  };
 
   return (
     <>
@@ -1051,7 +1098,7 @@ const TableWithAccordion = ({ data,
         <td></td>
       </tr>
 
-      {debitorBillModal?.isModalOpen && (
+      {/* {debitorBillModal?.isModalOpen && (
         <ViewDebitorBill
           MODE={"VIEW"}
           details={debitorBillModal?.details}
@@ -1059,7 +1106,61 @@ const TableWithAccordion = ({ data,
           isModelOpen={debitorBillModal?.isModalOpen}
           selectedInterestBill = {selectedInterestBill}
         />
-      )}
+      )} */}
+
+      {/* yarn_sale_bills */}
+      {debitorBillModal?.isModalOpen &&
+        debitorBillModal.model === BILL_MODEL.yarn_sale_bills && (
+          <PrintYarnSaleChallan
+            details={debitorBillModal.details}
+            isEyeButton={false}
+            open={debitorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {/* beam_sale_bill */}
+      {debitorBillModal?.isModalOpen &&
+        debitorBillModal.model === BILL_MODEL.beam_sale_bill && (
+          <PrintBeamSaleChallan
+            details={debitorBillModal.details}
+            isEyeButton={false}
+            open={debitorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {/* sale_bills */}
+      {debitorBillModal?.isModalOpen &&
+        debitorBillModal.model === BILL_MODEL.sale_bills && (
+          <SaleBillComp
+            details={debitorBillModal.details}
+            MODE={debitorBillModal.mode}
+            isModelOpen={debitorBillModal?.isModalOpen}
+            handleCloseModal={handleCloseModal}
+          />
+        )}
+
+      {/* job_work_bills */}
+      {debitorBillModal?.isModalOpen &&
+        debitorBillModal.model === BILL_MODEL.job_work_bills && (
+          <PrintJobWorkChallan
+            details={debitorBillModal.details}
+            isEyeButton={false}
+            open={debitorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {debitorBillModal?.isModalOpen &&
+        debitorBillModal.model === BILL_MODEL.job_gray_sale_bill && (
+          <JobGrayBillComp
+            details={debitorBillModal.details}
+            MODE={debitorBillModal.mode}
+            isModelOpen={debitorBillModal.isModalOpen}
+            handleCloseModal={handleCloseModal}
+          />
+        )}
     </>
   );
 };

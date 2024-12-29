@@ -14,9 +14,12 @@ import {
   Divider,
   message,
   Typography,
+  Tooltip,
 } from "antd";
 import {
+  ArrowDownOutlined,
   ArrowLeftOutlined,
+  ArrowUpOutlined,
   CheckOutlined,
   CloseOutlined,
   DeleteOutlined,
@@ -38,10 +41,12 @@ import {
 } from "../../api/requests/beamCard";
 import { USER_ROLES } from "../../constants/userRole";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
-import { debounce } from "lodash";
+import _, { debounce } from "lodash";
 import { addFoldingProductionRequest } from "../../api/requests/production/foldingProduction";
 import { checkUniqueTakaNoRequest } from "../../api/requests/purchase/purchaseTaka";
 import { useDebounceCallback } from "../../hooks/useDebounce";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 const disableFutureDates = (current) => {
   return current && current > new Date().setHours(0, 0, 0, 0);
@@ -62,6 +67,31 @@ const getTakaDetailsObject = (details) => {
   }
 };
 
+const validationSchema = yupResolver(
+  yup.object().shape({
+    // grade: yup.string().required(),
+    // generate_qr_code: yup.string().required(),
+    // auto_taka_generate: yup.string().required(),
+    folding_user_id: yup.string().required(),
+    machine_name: yup.string().required(),
+    machine_no: yup.string().required(),
+    taka_no: yup.string().required(),
+    quality_id: yup.string().required(),
+    beam_no: yup.string().required(),
+    beam_load_id: yup.string().required(),
+    pending_meter: yup.string().required(),
+    createdAt: yup.string().required(),
+
+    //
+    weight: yup.string().required(),
+    average: yup.string().required(),
+    actual_meter: yup.string().required(),
+    is_tp: yup.string().required(),
+    pis: yup.string().required(),
+    notes: yup.string().required(),
+  })
+);
+
 const AddFoldingProduction = () => {
   const navigate = useNavigate();
   const { companyId /*company*/ } = useContext(GlobalContext);
@@ -69,7 +99,7 @@ const AddFoldingProduction = () => {
   const [weightPlaceholder, setWeightPlaceholder] = useState(null);
   const [finalMeter, setFinalMeter] = useState(null);
   const [actualMeterCopy, setActualMeterCopy] = useState(0);
-  const [actualWeight, setActualWeight] = useState(0);
+  // const [actualWeight, setActualWeight] = useState(0);
 
   // ----------------------------------------------------------------------------------------------------------------------------------
 
@@ -80,17 +110,17 @@ const AddFoldingProduction = () => {
     const nextValue = fieldArray[fieldArray.length - 1] + 1;
 
     setValue(`createdAt_${nextValue}_0`, null);
-    setValue(`day_meter_${nextValue}_1`, "");
-    setValue(`night_meter_${nextValue}_1`, "");
+    setValue(`day_meter_${nextValue}_1`, null);
+    setValue(`night_meter_${nextValue}_1`, null);
 
-    setValue(`day_meter_${nextValue}_2`, "");
-    setValue(`night_meter_${nextValue}_2`, "");
+    setValue(`day_meter_${nextValue}_2`, null);
+    setValue(`night_meter_${nextValue}_2`, null);
 
-    setValue(`day_meter_${nextValue}_3`, "");
-    setValue(`night_meter_${nextValue}_3`, "");
+    setValue(`day_meter_${nextValue}_3`, null);
+    setValue(`night_meter_${nextValue}_3`, null);
 
-    setValue(`day_meter_${nextValue}_4`, "");
-    setValue(`night_meter_${nextValue}_4`, "");
+    setValue(`day_meter_${nextValue}_4`, null);
+    setValue(`night_meter_${nextValue}_4`, null);
 
     setFieldArray((prev) => {
       return [...prev, nextValue];
@@ -159,17 +189,28 @@ const AddFoldingProduction = () => {
     fieldArray.forEach((row) => {
       [1, 2, 3, 4].forEach((col) => {
         if (data[`employee_${col}`]) {
-          takaDetails.push({
-            createdAt: dayjs(data[`createdAt_${row}_0`]).format("YYYY-MM-DD"),
-            user_id: data[`employee_${col}`],
-            day_meter: +data[`day_meter_${row}_${col}`] || 0,
-            night_meter: +data[`night_meter_${row}_${col}`] || 0,
-          });
+          if (
+            (!_.isUndefined(data[`day_meter_${row}_${col}`]) ||
+              !_.isUndefined(data[`night_meter_${row}_${col}`])) &&
+            (!_.isNull(data[`day_meter_${row}_${col}`]) ||
+              !_.isNull(data[`night_meter_${row}_${col}`])) &&
+            (!_.isEmpty(data[`day_meter_${row}_${col}`]) ||
+              !_.isEmpty(data[`night_meter_${row}_${col}`]))
+          ) {
+            takaDetails.push({
+              createdAt: dayjs(data[`createdAt_${row}_0`]).format("YYYY-MM-DD"),
+              user_id: data[`employee_${col}`],
+              day_meter: +data[`day_meter_${row}_${col}`] || 0,
+              night_meter: +data[`night_meter_${row}_${col}`] || 0,
+            });
+          }
         }
       });
     });
 
     payload = { ...payload, taka_details: takaDetails };
+
+    // console.log({ payload, takaDetails });
     await addFoldingProduction(payload);
   };
 
@@ -208,6 +249,7 @@ const AddFoldingProduction = () => {
       pis: "",
       notes: "",
     },
+    resolver: validationSchema,
   });
   const {
     machine_name,
@@ -219,10 +261,9 @@ const AddFoldingProduction = () => {
     pis,
     is_tp,
     auto_taka_generate,
-    weight, 
-    average
+    // weight,
+    average,
   } = watch();
-
 
   // get folding user list
   const { data: userListRes, isLoading: isLoadingUserList } = useQuery({
@@ -445,7 +486,6 @@ const AddFoldingProduction = () => {
     }
   }, [actual_meter, extra_meter]);
 
-
   const handleWeightChange = (value, field) => {
     if (
       +value >= weightPlaceholder.weightFrom &&
@@ -469,7 +509,7 @@ const AddFoldingProduction = () => {
     field.onChange(value ? value : "");
   };
 
-  // Check Folding production related taka validation handler 
+  // Check Folding production related taka validation handler
   const checkTakaNumberCheckHandler = async (value) => {
     try {
       const params = { company_id: companyId, taka_no: +value };
@@ -479,8 +519,8 @@ const AddFoldingProduction = () => {
       } else {
         setError(`taka_no`, {
           type: "manual",
-          message: "Taka number already in used"
-        })
+          message: "Taka number already in used",
+        });
       }
     } catch (error) {
       setError("taka_no", {
@@ -488,13 +528,11 @@ const AddFoldingProduction = () => {
         message: "Invalid taka no.",
       });
     }
-  }
+  };
 
-  const debouncedCheckUniqueTakaHandler = useDebounceCallback(
-    (value) => {
-      checkTakaNumberCheckHandler(value)
-    }, 300
-  )
+  const debouncedCheckUniqueTakaHandler = useDebounceCallback((value) => {
+    checkTakaNumberCheckHandler(value);
+  }, 300);
 
   const onChangeTakaNoHandler = (e, field) => {
     const FROM = selectedUser?.folding_mending_user_detail?.from_taka_number;
@@ -515,21 +553,28 @@ const AddFoldingProduction = () => {
   const GenerateTakaNumber = async () => {
     let from_taka = selectedUser?.folding_mending_user_detail?.from_taka_number;
     let to_taka = selectedUser?.folding_mending_user_detail?.to_taka_number;
-    const params = { company_id: companyId, from_taka: from_taka, to_taka: to_taka, auto: 1 };
+    const params = {
+      company_id: companyId,
+      from_taka: from_taka,
+      to_taka: to_taka,
+      auto: 1,
+    };
     const response = await checkUniqueTakaNoRequest({ params });
     if (response.data?.success) {
-      setValue('taka_no', response.data.data?.taka_no)
+      setValue("taka_no", response.data.data?.taka_no);
     }
-
-  }
+  };
 
   useEffect(() => {
-    if (auto_taka_generate && selectedUser?.folding_mending_user_detail !== undefined) {
+    if (
+      auto_taka_generate &&
+      selectedUser?.folding_mending_user_detail !== undefined
+    ) {
       GenerateTakaNumber();
     }
   }, [auto_taka_generate, selectedUser]);
 
-  // =========== Pis related functionality handling ==================== // 
+  // =========== Pis related functionality handling ==================== //
   const [pisWeight, setPisWeight] = useState(undefined);
 
   useEffect(() => {
@@ -550,45 +595,43 @@ const AddFoldingProduction = () => {
     }
   }, [actualMeterCopy, is_tp, pis, setError, setValue, trigger]);
 
-    useEffect(() => {
-      if (pis) {
-        if (+pis < actualMeterCopy || +pis > 0){
-          if (!is_tp){
-            setValue("actual_meter", +actualMeterCopy - pis);
-          } else{
-            setValue("actual_meter", actualMeterCopy) ; 
-          }
+  useEffect(() => {
+    if (pis) {
+      if (+pis < actualMeterCopy || +pis > 0) {
+        if (!is_tp) {
+          setValue("actual_meter", +actualMeterCopy - pis);
+        } else {
+          setValue("actual_meter", actualMeterCopy);
         }
       }
-    }, [pis, actualMeterCopy, is_tp]);
+    }
+  }, [pis, actualMeterCopy, is_tp]);
 
-    useEffect(() => {
-      if (pis) {
-        if ((+pis < actualMeterCopy || +pis > 0)){
-          if (!is_tp){
+  useEffect(() => {
+    if (pis) {
+      if (+pis < actualMeterCopy || +pis > 0) {
+        if (!is_tp) {
+          // Set Pis weight information
+          let average_weight = (average * actualMeterCopy) / 100;
+          let pis_weight = (pis * average_weight) / actualMeterCopy;
+          setPisWeight(parseFloat(pis_weight).toFixed(2));
 
-            // Set Pis weight information  
-            let average_weight = (average * actualMeterCopy) / 100 
-            let pis_weight = pis*average_weight/ actualMeterCopy ;
-            setPisWeight(parseFloat(pis_weight).toFixed(2));
-            
-            // Update other weight information 
-            let other_weight = average_weight - pis_weight ; 
-            setValue('weight', parseFloat(other_weight).toFixed(2)) ; 
-            
-            // Update actual meter information
-            setValue("actual_meter", +actualMeterCopy - pis);
-          } else {
+          // Update other weight information
+          let other_weight = average_weight - pis_weight;
+          setValue("weight", parseFloat(other_weight).toFixed(2));
 
-            setValue("actual_meter", actualMeterCopy) ;
+          // Update actual meter information
+          setValue("actual_meter", +actualMeterCopy - pis);
+        } else {
+          setValue("actual_meter", actualMeterCopy);
 
-            // Reset other wight 
-            let average_weight = (average * actualMeterCopy) / 100 ; 
-            setValue("weight", parseFloat(average_weight).toFixed(2));
-          }
+          // Reset other wight
+          let average_weight = (average * actualMeterCopy) / 100;
+          setValue("weight", parseFloat(average_weight).toFixed(2));
         }
       }
-    }, [pis, actual_meter, is_tp])
+    }
+  }, [pis, actual_meter, is_tp]);
 
   return (
     <Form
@@ -653,7 +696,6 @@ const AddFoldingProduction = () => {
                 </Checkbox>
               )}
             />
-
           </div>
         </div>
 
@@ -815,7 +857,11 @@ const AddFoldingProduction = () => {
           </Col>
         </Row>
 
-        <Row className="w-100" justify={"flex-start"} style={{ gap: "12px", marginTop: -15 }}>
+        <Row
+          className="w-100"
+          justify={"flex-start"}
+          style={{ gap: "12px", marginTop: -15 }}
+        >
           <Col span={6}>
             <Form.Item
               label="Quality"
@@ -915,9 +961,11 @@ const AddFoldingProduction = () => {
             </Form.Item>
           </Col>
         </Row>
-        <Divider style={{
-          marginTop: 0
-        }} />
+        <Divider
+          style={{
+            marginTop: 0,
+          }}
+        />
 
         {machine_no && isRunningBeamFound ? (
           <ProductionMeterForm
@@ -927,6 +975,8 @@ const AddFoldingProduction = () => {
             addNewFieldRow={addNewFieldRow}
             deleteFieldRow={deleteFieldRow}
             watch={watch}
+            getValues={getValues}
+            setValue={setValue}
             calculateActualMeter={calculateActualMeter}
           />
         ) : null}
@@ -957,7 +1007,9 @@ const AddFoldingProduction = () => {
                         onChange={(e) => {
                           handleWeightChange(e.target.value, field);
                         }}
-                        readOnly=  {pis !== undefined?pis == ""?false:true:false}
+                        readOnly={
+                          pis !== undefined ? (pis == "" ? false : true) : false
+                        }
                       />
                     )}
                   />
@@ -1035,12 +1087,14 @@ const AddFoldingProduction = () => {
                     render={({ field }) => <Input {...field} placeholder="" />}
                   />
                 </Form.Item>
-                <div style={{
-                  fontWeight: 600,
-                  color: "green",
-                  marginTop: -10
-                }}>
-                  {pisWeight !== undefined?`Weight Info ${pisWeight}`:''}
+                <div
+                  style={{
+                    fontWeight: 600,
+                    color: "green",
+                    marginTop: -10,
+                  }}
+                >
+                  {pisWeight !== undefined ? `Weight Info ${pisWeight}` : ""}
                 </div>
               </Col>
               <Col span={6}>
@@ -1083,13 +1137,18 @@ export default AddFoldingProduction;
 const ProductionMeterForm = ({
   control,
   companyId,
+  getValues,
   fieldArray,
   addNewFieldRow,
   deleteFieldRow,
   watch,
+  setValue,
   calculateActualMeter,
 }) => {
   const { employee_1, employee_2, employee_3, employee_4 } = watch();
+  useState;
+
+  const [sort, setSort] = useState("desc");
 
   const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
     queryKey: [
@@ -1102,13 +1161,25 @@ const ProductionMeterForm = ({
       const res = await getEmployeeListRequest({
         params: {
           company_id: companyId,
-          salary_type: 'Work basis'
+          salary_type: "Work basis",
         },
       });
       return res.data?.data?.empoloyeeList;
     },
     enabled: Boolean(companyId),
   });
+
+  useEffect(() => {
+    if (employeeListRes && employeeListRes?.rows?.length) {
+      Array.from({ length: 4 }).forEach((_, index) => {
+        const item = index + 1;
+        if (item <= employeeListRes?.rows?.length) {
+          const data = employeeListRes?.rows[index];
+          setValue(`employee_${item}`, data.id);
+        }
+      });
+    }
+  }, [employeeListRes, setValue]);
 
   const employeeViewHandler = () => {
     window.open(
@@ -1117,9 +1188,16 @@ const ProductionMeterForm = ({
     );
   };
 
-  const getDateForMeters = (numOfDays) => {
-    return dayjs().subtract(numOfDays, "day");
-  };
+  const getDateForMeters = useCallback(
+    (numOfDays) => {
+      if (sort === "asc") {
+        return dayjs().subtract(fieldArray.length - numOfDays - 1, "day");
+      } else {
+        return dayjs().subtract(numOfDays, "day");
+      }
+    },
+    [fieldArray, sort]
+  );
 
   const IS_DAY_SHIFT_COL_1 = useMemo(() => {
     if (employee_1) {
@@ -1174,6 +1252,29 @@ const ProductionMeterForm = ({
     []
   );
 
+  const checkIsEmployeeSelected = (selected, field, item) => {
+    let isValid = true;
+    Array.from({ length: 4 }).forEach((_, index) => {
+      if (index !== item && selected === getValues(`employee_${index}`)) {
+        isValid = false;
+        return;
+      }
+    });
+
+    if (!isValid) {
+      message.error("This employee is already selected");
+      field.onChange(null);
+    } else {
+      field.onChange(selected);
+    }
+  };
+
+  useEffect(() => {
+    fieldArray.forEach((item) => {
+      setValue(`createdAt_${item}_0`, getDateForMeters(item));
+    });
+  }, [fieldArray, getDateForMeters, setValue, sort]);
+
   return (
     <div
       style={{
@@ -1186,8 +1287,24 @@ const ProductionMeterForm = ({
         <thead>
           <tr style={{ backgroundColor: "#f6f6f6", fontWeight: "bold" }}>
             <td width={150}>
-              <Space size="large">
+              <Space size="small">
                 <span>Date</span>
+                <Tooltip title="Ascending">
+                  <Button
+                    type={sort === "asc" ? "default" : "text"}
+                    onClick={() => setSort("asc")}
+                  >
+                    <ArrowUpOutlined />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Descending">
+                  <Button
+                    type={sort === "desc" ? "default" : "text"}
+                    onClick={() => setSort("desc")}
+                  >
+                    <ArrowDownOutlined />
+                  </Button>
+                </Tooltip>
               </Space>
             </td>
             {Array.from({ length: 4 }).map((_, index) => {
@@ -1202,7 +1319,7 @@ const ProductionMeterForm = ({
                         <Select
                           {...field}
                           name={`employee_${item}`}
-                          placeholder={"Select Employee" + item}
+                          placeholder={"Select Employee"}
                           style={{
                             textTransform: "capitalize",
                             width: "100%",
@@ -1217,6 +1334,9 @@ const ProductionMeterForm = ({
                               value: id,
                             })
                           )}
+                          onChange={(selected) =>
+                            checkIsEmployeeSelected(selected, field, item)
+                          }
                         />
                       )}
                     />
@@ -1246,8 +1366,9 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <DatePicker
                           {...field}
-                          value={getDateForMeters(item)}
-                          placeholder={`createdAt_${item}_0`}
+                          key={sort + "_" + item}
+                          // value={getDateForMeters(item)}
+                          placeholder={`date_${item}_0_${sort}`}
                           disabled
                         />
                       )}
@@ -1263,7 +1384,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`day_meter_${item}_1`}
+                          // placeholder={`day_meter_${item}_1`}
+                          placeholder={`Day meter`}
                           disabled={!employee_1 || !IS_DAY_SHIFT_COL_1}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1278,7 +1400,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`night_meter_${item}_1`}
+                          // placeholder={`night_meter_${item}_1`}
+                          placeholder={`Night meter`}
                           disabled={!employee_1 || IS_DAY_SHIFT_COL_1}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1298,7 +1421,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`day_meter_${item}_2`}
+                          // placeholder={`day_meter_${item}_2`}
+                          placeholder={`Day meter`}
                           disabled={!employee_2 || !IS_DAY_SHIFT_COL_2}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1313,7 +1437,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`night_meter_${item}_2`}
+                          // placeholder={`night_meter_${item}_2`}
+                          placeholder={`Night meter`}
                           disabled={!employee_2 || IS_DAY_SHIFT_COL_2}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1333,7 +1458,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`day_meter_${item}_3`}
+                          // placeholder={`day_meter_${item}_3`}
+                          placeholder={`Day meter`}
                           disabled={!employee_3 || !IS_DAY_SHIFT_COL_3}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1348,7 +1474,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`night_meter_${item}_3`}
+                          // placeholder={`night_meter_${item}_3`}
+                          placeholder={`Night meter`}
                           disabled={!employee_3 || IS_DAY_SHIFT_COL_3}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1368,7 +1495,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`day_meter_${item}_4`}
+                          // placeholder={`day_meter_${item}_4`}
+                          placeholder={`Day meter`}
                           disabled={!employee_4 || !IS_DAY_SHIFT_COL_4}
                           onChange={(e) => {
                             field.onChange(e.target.value);
@@ -1383,7 +1511,8 @@ const ProductionMeterForm = ({
                       render={({ field }) => (
                         <Input
                           {...field}
-                          placeholder={`night_meter_${item}_4`}
+                          // placeholder={`night_meter_${item}_4`}
+                          placeholder={`Night meter`}
                           disabled={!employee_4 || IS_DAY_SHIFT_COL_4}
                           onChange={(e) => {
                             field.onChange(e.target.value);

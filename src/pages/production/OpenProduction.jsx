@@ -30,7 +30,11 @@ import AddOpeningProductionTable from "../../components/production/AddOpeningPro
 import { useNavigate } from "react-router-dom";
 import { getMyOrderListRequest } from "../../api/requests/orderMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
-import { ArrowLeftOutlined, EyeOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  EyeOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { getLastProductionTakaRequest } from "../../api/requests/production/inhouseProduction";
 import { disabledFutureDate } from "../../utils/date";
 import AlertModal from "../../components/common/modal/alertModal";
@@ -260,9 +264,9 @@ const OpenProduction = () => {
     machine_name,
     party_id,
     quality_id,
-    total_meter, 
-    total_taka, 
-    total_weight
+    total_meter,
+    total_taka,
+    total_weight,
   } = watch();
 
   const { data: loadedMachineList, isLoading: isLoadingLoadedMachineNo } =
@@ -283,9 +287,9 @@ const OpenProduction = () => {
           return Array.from({ length: noOfMachine }, (_, index) => index + 1);
         }
       },
-    enabled: Boolean(companyId),
-    initialData: [],
-  });
+      enabled: Boolean(companyId),
+      initialData: [],
+    });
 
   // Fetch last production taka number fetch
   const { data: productionLastTaka } = useQuery({
@@ -419,7 +423,7 @@ const OpenProduction = () => {
         }
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Get Vehicle dropdown list
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -463,7 +467,7 @@ const OpenProduction = () => {
   useEffect(() => {
     if (order_id && grayOrderListRes) {
       const order = grayOrderListRes.row.find(({ id }) => order_id === id);
-      if (order){
+      if (order) {
         setValue("quality_id", order.quality_id);
         setValue(
           "broker_name",
@@ -492,7 +496,6 @@ const OpenProduction = () => {
         trigger("pending_taka");
         trigger("pending_weight");
       }
-
     }
   }, [order_id, grayOrderListRes, setValue, trigger]);
 
@@ -544,25 +547,24 @@ const OpenProduction = () => {
   };
 
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined){
-      setPendingMeter(+total_meter - totalMeter) ; 
+    if (total_meter !== "" && total_meter !== undefined) {
+      setPendingMeter(+total_meter - totalMeter);
     }
-    if (total_weight !== "" && total_weight !== undefined){
-      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    if (total_weight !== "" && total_weight !== undefined) {
+      setPendingWeight(+total_weight - (totalWeight || 0));
     }
 
-    if (total_taka !== "" && total_taka !== undefined){
-      setPendingTaka(+total_taka - totalTaka) ; 
+    if (total_taka !== "" && total_taka !== undefined) {
+      setPendingTaka(+total_taka - totalTaka);
     }
-    
   }, [
-    total_meter, 
-    total_weight, 
-    total_taka, 
-    totalTaka, 
-    totalWeight, 
-    totalMeter
-  ])
+    total_meter,
+    total_weight,
+    total_taka,
+    totalTaka,
+    totalWeight,
+    totalMeter,
+  ]);
 
   return (
     <>
@@ -582,6 +584,12 @@ const OpenProduction = () => {
                 <ArrowLeftOutlined />
               </Button>
               <h3 className="m-0 text-primary">Add New Production</h3>
+              <Button
+                type="primary"
+                onClick={() => navigate("/production/opening-production-stock")}
+              >
+                <PlusCircleOutlined />
+              </Button>
             </div>
             <div className="flex items-center gap-5">
               <Controller
@@ -1272,7 +1280,7 @@ const OpenProduction = () => {
               setTotalWeight={setTotalWeight}
               totalTaka={totalTaka}
               setTotalTaka={setTotalTaka}
-              loadedMachineList = {loadedMachineList}
+              loadedMachineList={loadedMachineList}
             />
           )}
         </div>

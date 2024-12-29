@@ -22,14 +22,6 @@ import PaymentModal from "../../../components/accounts/groupWiseOutStanding/sund
 import ViewDebitNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewDebitNoteModal";
 import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewCreditNoteModal";
 
-// ======= Yarn receive challan model ========//
-import { getYarnReceiveBillByIdRequest } from "../../../api/requests/purchase/yarnReceive";
-import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
-import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
-import moment from "moment";
-import SundaryDebitNoteGenerate from "../../../components/accounts/notes/DebitNotes/sundaryDebiteNoteGenerate";
-import SunadryCreditNoteGenerate from "../../../components/accounts/notes/CreditNotes/sundaryCreditNoteGenerate";
-
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
   { label: "Job", value: "job" },
@@ -38,6 +30,14 @@ const orderTypeOptions = [
   { label: "Expenses", value: "expenses" },
   { label: "Rework", value: "rework" },
 ];
+
+const BILL_MODEL = {
+  yarn_bills: "yarn_bills",
+  receive_size_beam_bill: "receive_size_beam_bill",
+  purchase_taka_bills: "purchase_taka_bills",
+  job_taka_bills: "job_taka_bills",
+  job_rework_bill: "job_rework_bill",
+};
 
 function calculateDaysDifference(dueDate) {
   const today = new Date(); // Get today's date
@@ -288,32 +288,32 @@ const SundryCreditor = () => {
             </Button>
           ) : null}
 
-          <Flex style={{gap: 10}}>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Supplier
-              </Typography.Text>
-              <Select
-                allowClear
-                placeholder="Select supplier"
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-                value={supplier}
-                onChange={(selectedValue) => setSupplier(selectedValue)}
-                loading={isLoadingSupplierList}
-                options={supplierListRes?.rows?.map((item) => {
-                  return {
-                    label: item?.supplier?.supplier_company,
-                    value: item?.id,
-                  };
-                })}
-              />
-            </Flex>
+        <Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
+              Supplier
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select supplier"
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              value={supplier}
+              onChange={(selectedValue) => setSupplier(selectedValue)}
+              loading={isLoadingSupplierList}
+              options={supplierListRes?.rows?.map((item) => {
+                return {
+                  label: item?.supplier?.supplier_company,
+                  value: item?.id,
+                };
+              })}
+            />
+          </Flex>
 
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
@@ -348,70 +348,55 @@ const SundryCreditor = () => {
           </Flex>
         </Flex>
 
-        {isLoadingSundryDebtor ? (
-          <Flex
-            style={{
-              minHeight: "200px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Spin />
-          </Flex>
-        ) : (
-          <table
-            style={{ fontSize: "12px", borderColor: "black" }}
-            border={1}
-            // cellSpacing={0}
-            cellPadding={6}
-            className="custom-table"
-          >
-            <thead>
-              {/* <!-- Table Header Row --> */}
+      {isLoadingSundryDebtor ? (
+        <Flex
+          style={{
+            minHeight: "200px",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Spin />
+        </Flex>
+      ) : (
+        <table
+          style={{ fontSize: "12px", borderColor: "black" }}
+          border={1}
+          // cellSpacing={0}
+          cellPadding={6}
+          className="custom-table"
+        >
+          <thead>
+            {/* <!-- Table Header Row --> */}
+            <tr>
+              <th>Date</th>
+              <th>Bill No</th>
+              <th>Type</th>
+              <th>Taka/Crtn</th>
+              <th>Mtr/KG</th>
+              <th>Bill Amount</th>
+              <th>Due Day</th>
+              <th style={{ width: "105px" }}>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sundryCreditorData ? (
+              sundryCreditorData?.map((data, index) => (
+                <TableWithAccordion
+                  key={index}
+                  data={data}
+                  company={company}
+                  selectedRecords={selectedRecords}
+                  storeRecord={storeRecord}
+                />
+              ))
+            ) : (
               <tr>
-                <th>Date</th>
-                <th>Bill No</th>
-                <th>Type</th>
-                <th>Taka/Crtn</th>
-                <th>Mtr/KG</th>
-                <th>Bill Amount</th>
-                <th>Due Date</th>
-                <th>Due Day</th>
-                <th>Int. Payable</th>
-                <th style={{ width: "105px" }}>Action</th>
+                <td colSpan={12} style={{ textAlign: "center" }}>
+                  No Data Found
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {creditNoteList ? (
-                creditNoteList?.map((data, index) => (
-                  <TableWithAccordion
-                    key={index}
-                    data={data}
-                    company={company}
-                    selectedRecords={selectedRecords}
-                    storeRecord={storeRecord}
-                    ReteriveBillInformation = {async(model, bill_id) => {
-                      await ReteriveBillInformation(model, bill_id)
-                    } }
-                    handleDebitNoteClick = {(bill, data) => {
-                      setDebitNoteModelOpen(true); 
-                      setDebitNoteSelection([bill])
-                      setDebitNoteModelData(data);
-                    }}
-                    handleCreditNoteClick = {(bill, data) => {
-                      setCreditNoteModelOpen(true) ; 
-                      setCreditNoteSelection([bill]) ; 
-                      setCreditNoteModelData(data);
-                    }}
-                  />
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={12} style={{ textAlign: "center" }}>
-                    <Empty/>
-                  </td>
-                </tr>
-              )}
+            )}
 
               <tr style={{ backgroundColor: "white" }}>
                 <td colSpan={11}></td>
@@ -484,9 +469,6 @@ const TableWithAccordion = ({
   company,
   selectedRecords,
   storeRecord,
-  ReteriveBillInformation,
-  handleDebitNoteClick,
-  handleCreditNoteClick
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(null);
 
@@ -499,6 +481,20 @@ const TableWithAccordion = ({
         return data.id;
       }
     });
+  };
+
+  const [creditorBillModal, setCreditorBillModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+    model: "",
+  });
+
+  const handleCloseModal = () => {
+    setCreditorBillModal((prev) => ({
+      ...prev,
+      isModalOpen: false,
+    }));
   };
 
   const TOTAL = useMemo(() => {
@@ -515,6 +511,55 @@ const TableWithAccordion = ({
       return { meter: 0, amount: 0 };
     }
   }, [data]);
+
+  const onClickViewHandler = async (bill) => {
+    try {
+      let response;
+      let details;
+      let params = {
+        company_id: companyId,
+        bill_id: bill.bill_id,
+        page: 0,
+        pageSize: 10,
+      };
+
+      if (bill.model === BILL_MODEL.yarn_bills) {
+        response = await getYarnBillListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.row[0];
+        }
+      } else if (bill.model === BILL_MODEL.receive_size_beam_bill) {
+        response = await getReceiveSizeBeamListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.purchase_taka_bills) {
+        response = await getPurchaseTakaListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_taka_bills) {
+        response = await getJobTakaListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      } else if (bill.model === BILL_MODEL.job_rework_bill) {
+        response = await getReworkChallanListRequest({ params });
+        if (response.data.success) {
+          details = response?.data?.data?.rows[0];
+        }
+      }
+
+      setCreditorBillModal({
+        isModalOpen: true,
+        details: details,
+        mode: "VIEW",
+        model: bill.model,
+      });
+    } catch (error) {
+      mutationOnErrorHandler({ error });
+    }
+  };
 
   return (
     <>
@@ -603,32 +648,12 @@ const TableWithAccordion = ({
                   <td>{bill?.taka || 0}</td>
 
                   <td>{bill?.meters || 0}</td>
-                  
-                  <td>
-                    <Tooltip
-                      title = {`${bill_amount} - ${debit_note_amount} - ${paid_amount} = ${net_amount}`}
-                    >
-                      {net_amount || 0}
-                    </Tooltip>
-                  </td>
-                  
-                  <td >{dueDate}</td>
-                  <td className={dueDays != 0?"sundary-due-date":""} >
-                    {dueDays == 0?0:`+${dueDays}D`}
-                  </td>
-                  <td className={interestAmount !== 0?"sundary-due-date":""}>
-
-                    {/* If found any credit note than show credit note amount rather than calculate interest amount  */}
-                    {bill?.credit_note_id !== null?
-                      parseFloat(bill?.credit_note_net_amount).toFixed(2):interestAmount}
-                  </td>
+                  <td>{bill?.amount || 0}</td>
+                  <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td>
+                  {/* <td></td> */}
                   <td>
                     <Space>
-                      
-                      <Button type="primary"
-                        onClick={async () => {
-                          await ReteriveBillInformation(bill?.model, bill?.bill_id)
-                        }}>
+                      <Button type="primary">
                         <EyeOutlined />
                       </Button>
                       
@@ -697,6 +722,57 @@ const TableWithAccordion = ({
         <td></td>
         <td></td>
       </tr>
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.yarn_bills && (
+          <ViewYarnReceiveChallan
+            details={creditorBillModal.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.receive_size_beam_bill && (
+          <SizeBeamChallanModal
+            details={creditorBillModal.details}
+            mode={creditorBillModal.mode}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.purchase_taka_bills && (
+          <ViewPurchaseChallanInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.job_taka_bills && (
+          <ViewJobTakaInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
+
+      {creditorBillModal?.isModalOpen &&
+        creditorBillModal.model === BILL_MODEL.job_rework_bill && (
+          <ViewReworkChallanInfo
+            details={creditorBillModal?.details}
+            isEyeButton={false}
+            open={creditorBillModal?.isModalOpen}
+            close={handleCloseModal}
+          />
+        )}
     </>
   );
 };

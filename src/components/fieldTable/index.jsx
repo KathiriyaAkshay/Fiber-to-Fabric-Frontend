@@ -22,15 +22,14 @@ const FieldTable = ({
   setTotalTaka,
   getValues,
   clearErrors,
-  isUpdate
+  isUpdate,
 }) => {
-
   const [gt_total, set_gt_total] = useState({
-    "0": { total_taka: 0, total_meter: 0, total_weight: 0 },
-    "1": { total_taka: 0, total_meter: 0, total_weight: 0 },
-    "2": { total_taka: 0, total_meter: 0, total_weight: 0 },
-    "3": { total_taka: 0, total_meter: 0, total_weight: 0 }
-  })
+    0: { total_taka: 0, total_meter: 0, total_weight: 0 },
+    1: { total_taka: 0, total_meter: 0, total_weight: 0 },
+    2: { total_taka: 0, total_meter: 0, total_weight: 0 },
+    3: { total_taka: 0, total_meter: 0, total_weight: 0 },
+  });
 
   const CalculateTableWiseTotal = (index) => {
     let array = Array.from({ length: 12 }, (_, index) => index + 1);
@@ -39,42 +38,51 @@ const FieldTable = ({
     let total_weight = 0;
 
     array?.map((element) => {
-
       let taka_no = getValues(`taka_no_${Number(element) + index}`);
       let meter = getValues(`meter_${Number(element) + index}`);
       let weight = getValues(`weight_${Number(element) + index}`);
 
-      if (taka_no !== undefined && taka_no !== '' && taka_no != null) {
+      if (taka_no !== undefined && taka_no !== "" && taka_no != null) {
         total_taka = total_taka + 1;
         total_meter = total_meter + Number(meter);
         total_weight = total_weight + Number(weight);
       } else {
+        //
       }
-    })
+    });
 
     set_gt_total((prevState) => ({
       ...prevState,
       [index]: {
         total_taka: total_taka,
         total_meter: total_meter,
-        total_weight: total_weight
-      }
-    }))
-  }
+        total_weight: total_weight,
+      },
+    }));
+  };
 
   useEffect(() => {
-    CalculateTableWiseTotal(0)
-    CalculateTableWiseTotal(1)
-    CalculateTableWiseTotal(2)
-    CalculateTableWiseTotal(3)
-  }, [getValues])
+    CalculateTableWiseTotal(0);
+    CalculateTableWiseTotal(1);
+    CalculateTableWiseTotal(2);
+    CalculateTableWiseTotal(3);
+  }, [getValues]);
 
   const activeNextField = (event, fieldNumber, indexTable) => {
     if (event.keyCode === 13) {
+      const takaNo = getValues(`taka_no_${fieldNumber}`);
+      const meter = getValues(`meter_${fieldNumber}`);
+      const weight = getValues(`weight_${fieldNumber}`);
+      if (!takaNo || !meter || !weight) {
+        message.error(`Please enter details of ${fieldNumber} number row.`);
+        return;
+      }
       if (isTakaExist) {
         message.error("Please enter valid taka no.");
       } else {
-        setActiveField((prev) => prev + 1);
+        if (activeField === fieldNumber) {
+          setActiveField((prev) => prev + 1);
+        }
         setTimeout(() => {
           setFocus(`taka_no_${fieldNumber + 1}`);
         }, 0);
@@ -88,22 +96,57 @@ const FieldTable = ({
     }
   };
 
+  // const removeCurrentField = (fieldNumber) => {
+  //   if (fieldNumber) {
+  //     if (fieldNumber > 1) {
+  //       setActiveField((prev) => prev - 1);
+  //     }
+
+  //     setValue(`taka_no_${fieldNumber}`, "");
+  //     setValue(`meter_${fieldNumber}`, "");
+  //     setValue(`weight_${fieldNumber}`, "");
+
+  //     clearErrors(`taka_no_${fieldNumber}`);
+  //     clearErrors(`meter_${fieldNumber}`);
+  //     clearErrors(`weight_${fieldNumber}`);
+  //   }
+  //   calculateTotalHandler();
+  // };
+
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
-      if (fieldNumber > 1) {
-        setActiveField((prev) => prev - 1);
+      // Update all subsequent rows to shift data one row upward
+      for (let i = fieldNumber; i < numOfFields.length; i++) {
+        const nextField = i + 1;
+
+        // Check if the next field exists and has data
+        const nextTakaNo = getValues(`taka_no_${nextField}`);
+        const nextMeter = getValues(`meter_${nextField}`);
+        const nextWeight = getValues(`weight_${nextField}`);
+
+        // If the next field exists, shift its data upward
+        setValue(`taka_no_${i}`, nextTakaNo || "");
+        setValue(`meter_${i}`, nextMeter || "");
+        setValue(`weight_${i}`, nextWeight || "");
+
+        // Clear the next field since its data has been moved
+        clearErrors(`taka_no_${nextField}`);
+        clearErrors(`meter_${nextField}`);
+        clearErrors(`weight_${nextField}`);
+        setValue(`taka_no_${nextField}`, "");
+        setValue(`meter_${nextField}`, "");
+        setValue(`weight_${nextField}`, "");
       }
 
-      setValue(`taka_no_${fieldNumber}`, "");
-      setValue(`meter_${fieldNumber}`, "");
-      setValue(`weight_${fieldNumber}`, "");
+      // Update the active field to reflect the new state
+      setActiveField((prev) => Math.max(prev - 1, fieldNumber));
+      setTimeout(() => {
+        setFocus(`taka_no_${Math.max(activeField - 1, fieldNumber)}`);
+      }, 100);
 
-      clearErrors(`taka_no_${fieldNumber}`);
-      clearErrors(`meter_${fieldNumber}`);
-      clearErrors(`weight_${fieldNumber}`);
-
+      // Recalculate totals after removing the row
+      calculateTotalHandler();
     }
-    calculateTotalHandler();
   };
 
   const debouncedCheckUniqueTakaHandler = useDebounceCallback(
@@ -172,8 +215,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`taka_no_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -188,14 +232,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "75px",
-                              border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`taka_no_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               if (checkUniqueTaka) {
@@ -221,8 +270,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`meter_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -237,14 +287,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`meter_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();
@@ -264,8 +319,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`weight_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -280,14 +336,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`weight_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();
@@ -304,7 +365,7 @@ const FieldTable = ({
                     <Button
                       className="job-challan-taka-plus-option"
                       icon={<MinusCircleOutlined />}
-                      disabled={fieldNumber !== activeField}
+                      disabled={fieldNumber > activeField}
                       onClick={() => removeCurrentField(fieldNumber)}
                     ></Button>
                   </td>
@@ -314,9 +375,15 @@ const FieldTable = ({
 
             <tr>
               <td className="job-challan-taka-index-column">GT</td>
-              <td className="total-info-td-cell">{gt_total["0"]?.total_taka}</td>
-              <td className="total-info-td-cell">{gt_total["0"]?.total_meter}</td>
-              <td className="total-info-td-cell">{gt_total["0"]?.total_weight}</td>
+              <td className="total-info-td-cell">
+                {gt_total["0"]?.total_taka}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["0"]?.total_meter}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["0"]?.total_weight}
+              </td>
               <td className="total-info-td-cell"></td>
             </tr>
           </tbody>
@@ -351,8 +418,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`taka_no_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -367,14 +435,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "75px",
-                              border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`taka_no_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               if (checkUniqueTaka) {
@@ -400,8 +473,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`meter_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -416,14 +490,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`meter_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();
@@ -443,8 +522,9 @@ const FieldTable = ({
                       wrapperCol={{ sm: 24 }}
                       style={{
                         marginBottom: "0px",
-                        border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                          } solid !important`,
+                        border: `${
+                          errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                        } solid !important`,
                         borderColor: errors[`weight_${fieldNumber}`]
                           ? "red"
                           : "",
@@ -459,14 +539,19 @@ const FieldTable = ({
                             type="number"
                             style={{
                               width: "100px",
-                              border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                                } solid !important`,
+                              border: `${
+                                errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                              } solid !important`,
                               borderColor: errors[`weight_${fieldNumber}`]
                                 ? "red"
                                 : "",
                               borderRadius: "0px",
                             }}
-                            disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                            disabled={
+                              fieldNumber > activeField ||
+                              (isUpdate != undefined &&
+                                fieldNumber != activeField)
+                            }
                             onChange={(e) => {
                               field.onChange(e.target.value);
                               calculateTotalHandler();
@@ -492,9 +577,15 @@ const FieldTable = ({
             })}
             <tr>
               <td className="job-challan-taka-index-column">GT</td>
-              <td className="total-info-td-cell">{gt_total["1"]?.total_taka}</td>
-              <td className="total-info-td-cell">{gt_total["1"]?.total_meter}</td>
-              <td className="total-info-td-cell">{gt_total["1"]?.total_weight}</td>
+              <td className="total-info-td-cell">
+                {gt_total["1"]?.total_taka}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["1"]?.total_meter}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["1"]?.total_weight}
+              </td>
               <td className="total-info-td-cell"></td>
             </tr>
           </tbody>
@@ -531,8 +622,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`taka_no_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -547,14 +639,21 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "75px",
-                                border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`taka_no_${fieldNumber}`]
+                                    ? "1px"
+                                    : "0px"
+                                } solid !important`,
                                 borderColor: errors[`taka_no_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 if (checkUniqueTaka) {
@@ -580,8 +679,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`meter_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -596,14 +696,19 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "100px",
-                                border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                                } solid !important`,
                                 borderColor: errors[`meter_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 calculateTotalHandler();
@@ -623,8 +728,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`weight_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -639,14 +745,21 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "100px",
-                                border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`weight_${fieldNumber}`]
+                                    ? "1px"
+                                    : "0px"
+                                } solid !important`,
                                 borderColor: errors[`weight_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 calculateTotalHandler();
@@ -672,9 +785,15 @@ const FieldTable = ({
               })}
             <tr>
               <td className="job-challan-taka-index-column">GT</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_taka}</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_meter}</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_weight}</td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_taka}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_meter}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_weight}
+              </td>
               <td className="total-info-td-cell"></td>
             </tr>
           </tbody>
@@ -711,8 +830,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`taka_no_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -727,14 +847,21 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "75px",
-                                border: `${errors[`taka_no_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`taka_no_${fieldNumber}`]
+                                    ? "1px"
+                                    : "0px"
+                                } solid !important`,
                                 borderColor: errors[`taka_no_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 if (checkUniqueTaka) {
@@ -760,8 +887,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`meter_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -776,14 +904,19 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "100px",
-                                border: `${errors[`meter_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`meter_${fieldNumber}`] ? "1px" : "0px"
+                                } solid !important`,
                                 borderColor: errors[`meter_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 calculateTotalHandler();
@@ -803,8 +936,9 @@ const FieldTable = ({
                         wrapperCol={{ sm: 24 }}
                         style={{
                           marginBottom: "0px",
-                          border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                            } solid !important`,
+                          border: `${
+                            errors[`weight_${fieldNumber}`] ? "1px" : "0px"
+                          } solid !important`,
                           borderColor: errors[`weight_${fieldNumber}`]
                             ? "red"
                             : "",
@@ -819,14 +953,21 @@ const FieldTable = ({
                               type="number"
                               style={{
                                 width: "100px",
-                                border: `${errors[`weight_${fieldNumber}`] ? "1px" : "0px"
-                                  } solid !important`,
+                                border: `${
+                                  errors[`weight_${fieldNumber}`]
+                                    ? "1px"
+                                    : "0px"
+                                } solid !important`,
                                 borderColor: errors[`weight_${fieldNumber}`]
                                   ? "red"
                                   : "",
                                 borderRadius: "0px",
                               }}
-                              disabled={fieldNumber > activeField || isUpdate != undefined && fieldNumber != activeField}
+                              disabled={
+                                fieldNumber > activeField ||
+                                (isUpdate != undefined &&
+                                  fieldNumber != activeField)
+                              }
                               onChange={(e) => {
                                 field.onChange(e.target.value);
                                 calculateTotalHandler();
@@ -852,15 +993,20 @@ const FieldTable = ({
               })}
             <tr>
               <td className="job-challan-taka-index-column">GT</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_taka}</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_meter}</td>
-              <td className="total-info-td-cell">{gt_total["2"]?.total_weight}</td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_taka}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_meter}
+              </td>
+              <td className="total-info-td-cell">
+                {gt_total["2"]?.total_weight}
+              </td>
               <td className="total-info-td-cell"></td>
             </tr>
           </tbody>
         </table>
       </Col>
-
     </Row>
   );
 };
