@@ -35,3 +35,7 @@ export const getDashboardEmployeeInformation = ({params}) => {
 export const productionInHoustTakaReportRequest = ({params}) => {
   return api.get(`/production/instock-taka/report/get`, {params}) ; 
 }
+
+export const getDashboardSaleInfoReportRequest = ({params}) => {
+  return api.get(`/dashboard/sales-stock/report`, {params}) ; 
+}

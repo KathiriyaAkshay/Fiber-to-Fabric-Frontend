@@ -1266,3 +1266,37 @@ h2 {
   margin-top: 5px;
   text-align: center;
 }
+
+.sale-dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 600px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.sale-stat {
+  text-align: center;
+}
+
+.sale-value {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.sale-label {
+  font-size: 0.9em;
+  color: #555;
+  margin: 5px 0 0;
+}
+
+.sale-highlight-blue {
+  color: #007bff;
+}
+
+.sale-highlight-green {
+  color: #28a745;
+}

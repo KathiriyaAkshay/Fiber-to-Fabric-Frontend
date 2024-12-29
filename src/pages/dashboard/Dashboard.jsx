@@ -26,6 +26,8 @@ import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
 import PayableChart from "./Charts/PayableChart";
 import { useNavigate, useNavigation } from "react-router-dom";
 import ProductionReport from "./Charts/productionReport";
+import RadicalCharts from "./Charts/RadicalCharts";
+import DashboardSaleInfo from "./Charts/DashboardSaleInfo";
 
 const formatNumber = (number) => {
   // Using pretty-num to convert to short format
@@ -559,10 +561,16 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-
+          {/* =========== Production report information ============  */}
           <Col span={24} className="mt-3">
             <ProductionReport />
           </Col>
+          
+          <Row gutter={6} className="mt-2 w-100">
+            <Col span={8}>
+              <DashboardSaleInfo/>
+            </Col>
+          </Row>
 
         </Col>
       </Row>
