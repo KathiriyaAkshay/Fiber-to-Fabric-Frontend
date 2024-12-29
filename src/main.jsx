@@ -176,6 +176,7 @@ import AddSalaryReport from "./pages/accounts/salaryMaster/employeeSalaryReport/
 import AdvanceSalaryList from "./pages/accounts/salaryMaster/advanceSalary/AdvanceSalaryList";
 import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdvanceSalary";
 import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverageReport";
+import Gstr3 from "./pages/accounts/reports/gstr3";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -821,7 +822,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "gstr-3b-report",
-                element: <div>gstr-3b-report</div>,
+                element: <Gstr3 />,
               },
               {
                 path: "passbook-cashbook-balance",
