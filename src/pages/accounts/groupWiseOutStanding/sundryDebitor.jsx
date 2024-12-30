@@ -800,6 +800,7 @@ const SundryDebitor = () => {
 
 export default SundryDebitor;
 
+// =========== Table =================
 const TableWithAccordion = ({
   data,
   company,
@@ -1160,20 +1161,6 @@ const TableWithAccordion = ({
                         gap: 5,
                       }}
                     >
-                      <Button
-                        type="primary"
-                        // onClick={() => {
-                        //   setDebitorBillModal({
-                        //     isModalOpen: true,
-                        //     details: null,
-                        //     mode: "VIEW",
-                        //   });
-                        // }}
-                        onClick={() => onClickViewHandler(bill)}
-                      >
-                        <EyeOutlined />
-                      </Button>
-
                       {["credit_notes", "debit_notes"]?.includes(
                         bill?.model
                       ) && (
@@ -1183,16 +1170,25 @@ const TableWithAccordion = ({
                           data={data}
                         />
                       )}
+
                       {!["credit_notes", "debit_notes"]?.includes(
                         bill?.model
                       ) && (
-                        <FileTextFilled
-                          onClick={() => {
-                            handleDebitNoteClick(bill, data);
-                          }}
-                          color="blue"
-                          style={{ fontSize: 18, cursor: "pointer" }}
-                        />
+                        <>
+                          <Button
+                            type="primary"
+                            onClick={() => onClickViewHandler(bill)}
+                          >
+                            <EyeOutlined />
+                          </Button>
+                          <FileTextFilled
+                            onClick={() => {
+                              handleDebitNoteClick(bill, data);
+                            }}
+                            color="blue"
+                            style={{ fontSize: 18, cursor: "pointer" }}
+                          />
+                        </>
                       )}
                     </Flex>
                   </td>
