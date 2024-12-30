@@ -28,7 +28,7 @@ import {
   getLastVoucherNoRequest,
   getUnPaidPaymentBillListRequest,
 } from "../../../api/requests/accounts/payment";
-import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_REWORK_BILL_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
+import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, GENERAL_PURCHASE_ENTRY_TAG_COLOR, JOB_REWORK_BILL_TAG_COLOR, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
 import moment from "moment";
 import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
 
@@ -83,7 +83,7 @@ const BillForm = () => {
     return current && current > moment().endOf("day");
   }
 
-  // Bill Payment related request handler ===================================
+  // ************** Bill Payment request handler ********************** //
   const { mutateAsync: addBillEntry, isPending: isPendingBillEntry } =
     useMutation({
       mutationFn: async ({ company_id, data }) => {
@@ -102,7 +102,7 @@ const BillForm = () => {
         });
         const successMessage = res?.message;
         if (successMessage) {
-          message.success(successMessage);
+          message.success("Bill Payment paid successfully");
         }
         setSelectedBills([]);
         setUnPaidBillData([]);
@@ -121,35 +121,35 @@ const BillForm = () => {
 
   const onSubmit = async (data) => {
     const temp_bill_details = selectedBills?.map((element) => {
-      console.log(element);
-      
+
       let finalTotalAmount = 0;
       
-      let netAmount = (+element?.net_amount - (+element?.debit_note_amount) -  (+element?.exists_part_payment || 0) ) || 0 ; 
-      finalTotalAmount += netAmount;
-      
-      let tdsAmount = +element?.tds; 
-      finalTotalAmount -= tdsAmount;
-      
-      let plusAmount = (netAmount * (+element?.plus_percentage)) / 100; 
-      finalTotalAmount += plusAmount || 0;
-  
-      let lessAmount = (netAmount * (+element?.less_percentage)) / 100; 
-      finalTotalAmount -= lessAmount || 0;
-  
+      let exist_remaing_amount = element?.exists_part_payment == null?+element?.net_amount: +element?.exists_part_payment || 0 ; 
+      let current_remaing_amount = element?.part_payment || 0; 
+      let tds_amount = +element?.tds ; 
+      let plus_amount = +element?.plus_percentage ; 
+      let minus_amount = +element?.less_percentage ; 
+
+      let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+      paid_amount = +paid_amount - +tds_amount ; 
+      paid_amount = +paid_amount + +plus_amount ; 
+      paid_amount = +paid_amount - +minus_amount ; 
+      finalTotalAmount += +paid_amount ; 
+
       return {
         "bill_id": element?.bill_id,
         "bill_no": element?.bill_no,
         "amount": +element?.amount,
-        "net_amount": netAmount,
         "bill_date": element?.bill_date,
         "due_date": element?.due_date,
-        "tds": +element?.tds,
-        "part_payment": +element?.part_payment,
-        "less_percentage": +element?.less_percentage,
-        "plus_percentage": +element?.plus_percentage,
+        "tds": tds_amount,
+        "less_percentage": minus_amount,
+        "plus_percentage": plus_amount,
         "model": element?.model,
-        "paid_amount": +element?.paid_amount
+        
+        "net_amount": element?.exists_part_payment == null?+element?.net_amount:element?.exist_remaing_amount,
+        "part_payment": current_remaing_amount,
+        "paid_amount": paid_amount
       }
     });
   
@@ -167,10 +167,7 @@ const BillForm = () => {
       bill_details: temp_bill_details,
       is_credited: false
     };
-
-    console.log(payload);
-    
-    // await addBillEntry({ company_id: data.company_id, data: payload });
+    await addBillEntry({ company_id: data.company_id, data: payload });
   };
 
   const {
@@ -271,18 +268,19 @@ const BillForm = () => {
       },
       enabled: Boolean(company_id && account_name),
     });
-
+  
+  // Total unpaid bill net amount related calcualtion =============================
   useEffect(() => {
     if (unPaidBillListRes) {
       let totalBill = 0;
       let totalAmount = 0;
       let totalNetAmount = 0;
+
       setUnPaidBillData(unPaidBillListRes);
       unPaidBillListRes.forEach((bill) => {
           totalBill += 1;
           totalAmount += bill.amount;
-          let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
-          totalNetAmount += +netAmount;
+          totalNetAmount += bill?.part_payment == null?+bill?.net_amount:+bill?.part_payment;
       });
 
       setTotalCounts({ totalBills: totalBill, totalAmount, totalNetAmount });
@@ -311,24 +309,22 @@ const BillForm = () => {
 
   // ************************************************************************************************
 
+  // ******** Bill total paid amount calculation ********* // 
   const calculateAmount = useCallback(() => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
-      let finalTotalAmount = 0;
-      
-      let netAmount = (+bill?.net_amount - (+bill?.debit_note_amount) -  (+bill?.exists_part_payment || 0) - (+bill?.part_payment)) || 0 ; 
-      finalTotalAmount += netAmount;
-      
-      let tdsAmount = +bill?.tds; 
-      finalTotalAmount -= tdsAmount ;
-      
-      let plusAmount = (netAmount*(+bill?.plus_percentage)) / 100 ; 
-      finalTotalAmount += plusAmount || 0;
 
-      let lessAmount = (netAmount*(+bill?.less_percentage)) / 100 ; 
-      finalTotalAmount -= lessAmount || 0;
+      let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
+      let current_remaing_amount = bill?.part_payment || 0; 
+      let tds_amount = +bill?.tds ; 
+      let plus_amount = +bill?.plus_percentage ; 
+      let minus_amount = +bill?.less_percentage ; 
 
-      totalAmount += finalTotalAmount;
+      let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+      paid_amount = +paid_amount - +tds_amount ; 
+      paid_amount = +paid_amount + +plus_amount ; 
+      paid_amount = +paid_amount - +minus_amount ; 
+      totalAmount += paid_amount ; 
     });
 
     setValue("amount", parseFloat(totalAmount).toFixed(2));
@@ -344,13 +340,14 @@ const BillForm = () => {
     }
   }, [calculateAmount, selectedBills, setValue]);
 
+  // Bill selection handler =========================
   const selectBillHandler = (e, bill) => {
     if (e.target.checked) {
       setSelectedBills((prev) => [
         ...prev,
         {
-          ...bill,
-          exists_part_payment: bill?.part_payment || 0,
+          ...bill,  
+          exists_part_payment: bill?.part_payment,
           paid_amount: 0,
           is_paid: true,
           part_payment: 0,
@@ -365,7 +362,8 @@ const BillForm = () => {
     }
   };
 
-  const onChangeSelectedBillHandler = (e, bill) => {
+  // Bill changes handler ==========================
+  const onChangeSelectedBillHandler = (e, bill, option) => {
     if (e.target.value == undefined){
       let copyBill = { ...bill };
       copyBill[e.target] = 0;
@@ -376,12 +374,17 @@ const BillForm = () => {
           return bill;
         }
       });
-  
       setSelectedBills(updatedSelectedBills);
-
     } else {
       let copyBill = { ...bill };
       copyBill[e.target.name] = +e.target.value;
+
+      if (e.target.name == "plus_percentage"){
+        copyBill["less_percentage"] = 0 ; 
+      } else {
+        copyBill["plus_percentage"] = 0 ; 
+      }
+
       const updatedSelectedBills = selectedBills.map((bill) => {
         if (bill.bill_id === copyBill.bill_id) {
           return copyBill;
@@ -389,7 +392,6 @@ const BillForm = () => {
           return bill;
         }
       });
-  
       setSelectedBills(updatedSelectedBills);
     }
   };
@@ -793,10 +795,17 @@ const BillForm = () => {
                   :moment(bill?.due_date).format("DD-MM-YYYY") ;
 
                 const dueDays = bill?.model == "credit_notes"?0:calculateDaysDifference(dueDate) ; 
-                let netAmount = (+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)) || 0 ; 
+
+                let bill_net_amount = +bill?.net_amount ; 
+                let debit_note_amount = +bill?.debit_note_amount || 0; 
+                let bill_deducation_amount = +bill_net_amount - +debit_note_amount ; 
+                let bill_remaing_amount = bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment ; 
+                bill_deducation_amount = +bill_deducation_amount - +bill_remaing_amount ; 
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
+
+                    {/* Bill selection  */}
                     <td style={{ textAlign: "center" }}>
                       <Checkbox
                         checked={isBillSelected}
@@ -804,6 +813,7 @@ const BillForm = () => {
                       />
                     </td>
                     
+                    {/* Bill number and debit note number related information  */}
                     <td style={{ textAlign: "center", fontWeight: 600,
                       color: bill?.model == "credit_notes"?"green":"#000"
                      }}>
@@ -820,7 +830,18 @@ const BillForm = () => {
                       </Tooltip>
                     </td>
                     
+                    {/* Bill model  */}
+                    {/* ===== Total bill information ===== 
+                      1. Purchase taka
+                      2. General purchase entry
+                      3. Size beam receive 
+                      4. Yarn receive 
+                      5. Job bill 
+                      6. Job Rework bill 
+                    */}
+
                     <td style={{ textAlign: "center" }}>
+                      
                       {bill?.model == "purchase_taka_bills"?
                         <Tag color = {PURCHASE_TAG_COLOR}>PURCHASE TAKA</Tag>
                       :bill?.model == "yarn_bills"?
@@ -833,25 +854,38 @@ const BillForm = () => {
                         <Tag color = {JOB_REWORK_BILL_TAG_COLOR}>
                           JOB REWORK
                         </Tag>
-                      : <Tag>{bill?.model}</Tag>}
+                      : bill?.model == "general_purchase_entries"?
+                        <Tag color = {GENERAL_PURCHASE_ENTRY_TAG_COLOR}>
+                          GENERAL PURCHASE
+                        </Tag>
+                      :<>
+                        <Tag color={JOB_TAG_COLOR}>
+                          JOB BILL
+                        </Tag>
+                      </>}
                     </td>
-
+                      
+                    {/* Bill amount related information  */}
                     <td style={{ textAlign: "center", color: "#000" }}>{bill.amount || "0"}</td>
                     
+                    {/* Bill remaing amount related information  */}
                     <td style={{ textAlign: "center" }}>
-                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill?.part_payment || 0} = ${netAmount}`}>
-                        {+bill?.net_amount - bill?.debit_note_amount -  +(bill?.part_payment || 0)}
+                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill_deducation_amount} = ${bill_remaing_amount}`}>
+                        {bill_remaing_amount}
                       </Tooltip>
                     </td>
                     
+                    {/* Bill date information  */}
                     <td style={{ textAlign: "center" }}>
                       {dayjs(bill.bill_date).format("DD-MM-YYYY")}
                     </td>
                     
+                    {/* Bill due days information  */}
                     <td style={{ textAlign: "center", color: dueDays == 0?"#000":"red", fontWeight: dueDays == 0?500:600 }}>
                       {`${dueDays !== 0 ? '+' + dueDays + 'D' : "0"}`}
                     </td>
                     
+                    {/* Part payment amount information  */}
                     <td style={{ textAlign: "center", width: "200px" }}>
                       <Input
                         type="number"
@@ -871,9 +905,31 @@ const BillForm = () => {
                         }
                         }
                       />
-                    </td>
+                    </td> 
+                      
+                    {/* ======================= TDS Amount ================================  */}
+                    <td style={{ textAlign: "center" }}>
+                      <Input
+                        type="number"
+                        name="tds"
+                        style={{ width: "100%", color:"red", fontWeight: 600 }}
+                        disabled={!isBillSelected}
+                        value={isBillSelected? isBillSelected?.tds :""}
+                        onChange={(e) =>{
+                          let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
+                          let current_remaing_amount = isBillSelected?.part_payment || 0; 
+                          let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
 
-                    <td style={{ textAlign: "center" }}>{bill.tds || 0}</td>
+                          if (e.target.value > paid_amount){
+                            message.warning("Please, Provide valid TDS amount") ; 
+                          } else {
+                            onChangeSelectedBillHandler(e, isBillSelected, "TDS")
+                          }
+                        }}
+                      />
+                    </td>
+                    
+                    {/* ================= Less amount ======================  */}
                     <td style={{ textAlign: "center", width: "200px" }}>
                       <Input
                         type="number"
@@ -884,15 +940,22 @@ const BillForm = () => {
                           isBillSelected ? isBillSelected?.less_percentage : ""
                         }
                         onChange={(e) =>{
-                          let net_amount = +bill.net_amount
-                          if (e.target.value > net_amount){
-                            message.warning("Please, Provide valid less amount") ; 
+                          
+                          // Handle Functionality if user enter less percentage than plus percentage must be zero
+                          // If Plus percentage have value than less percentage will be zero
+                          let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
+                          let current_remaing_amount = isBillSelected?.part_payment || 0; 
+                          let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+                          if (e.target.value > paid_amount){
+                            message.warning("Please, Provide Valid Less Amount") ; 
                           } else {
-                            onChangeSelectedBillHandler(e, isBillSelected)
+                            onChangeSelectedBillHandler(e, isBillSelected, "LESS")
                           }
                         }}
                       />
                     </td>
+
+                    {/* =========== Plus amount ==========  */}
                     <td style={{ textAlign: "center", width: "200px" }}>
                       <Input
                         type="number"
@@ -903,7 +966,7 @@ const BillForm = () => {
                           isBillSelected ? isBillSelected?.plus_percentage : ""
                         }
                         onChange={(e) =>
-                          onChangeSelectedBillHandler(e, isBillSelected)
+                          onChangeSelectedBillHandler(e, isBillSelected, "PLUS")
                         }
                       />
                     </td>
