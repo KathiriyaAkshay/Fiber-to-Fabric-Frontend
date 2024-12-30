@@ -179,6 +179,7 @@ import AddAdvanceSalary from "./pages/accounts/salaryMaster/advanceSalary/AddAdv
 import BeamSaleBillList from "./pages/sale/bill/beamSale/beamSaleBillList";
 import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverageReport";
 import Gstr3 from "./pages/accounts/reports/gstr3";
+import ParticularLedgerReport from "./pages/accounts/reports/particularLedgerReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -809,7 +810,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "particular-ledger-report",
-                element: <div>particular-ledger-report</div>,
+                element: <ParticularLedgerReport />,
               },
               {
                 path: "gstr-report/print/:key",
