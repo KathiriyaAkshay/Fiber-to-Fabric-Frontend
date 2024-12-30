@@ -76,6 +76,9 @@ const AddBeamStockReport = () => {
 
   const [selectedNonPasarela, setSelectedNonPasarela] = useState([]);
 
+  // Beam max taka related information ===========================
+  const [beamMaxTaka, setBeamMaxTaka] = useState(undefined) ; 
+
   function goBack() {
     navigate(-1);
   }
@@ -105,6 +108,7 @@ const AddBeamStockReport = () => {
     },
   });
 
+  // Beam stock creation related mutation handler ========================
   const { mutateAsync: addBeamStockReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createBeamStockReportRequest({
@@ -125,7 +129,6 @@ const AddBeamStockReport = () => {
 
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
         setFieldArray([]);
       }
       reset();
@@ -156,7 +159,7 @@ const AddBeamStockReport = () => {
       const newData = {
         machine_name: data.machine_name,
         quality_id: +data.quality_id,
-        employee_id: data.employee,
+        warper_user_id: data.employee,
         beam_type: data.beam_type,
         quality_group: data.quality_group,
       };
@@ -249,7 +252,9 @@ const AddBeamStockReport = () => {
         secondary_beam_ids.push(secondaryBeamNo) ; 
         formData.push({
           beam_load_id: nonPasarelaList[index].id,
-          secondary_loaded_beam_id: secondaryBeamNo,
+          secondary_loaded_beam_id: secondaryBeamNo || null,
+          createdAt: dayjs(new Date()), 
+          pasarela_id: +data.employee
         });
       });
     
@@ -346,19 +351,36 @@ const AddBeamStockReport = () => {
     initialData: [],
   });
 
-  // Get Employee dropdown list 
+  // Get Employee dropdown list ==============================================
+  const [employeeDropDownOption, setEmployeeDropDownOption] = useState([]) ; 
+  const BEAM_PASARIA_EMPLOYEE = "BEAM pasaria" ; 
+  const BEAM_WRAPER_EMPLOYEE = "BEAM warpar"; 
+
   const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
     queryKey: ["employee", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getEmployeeListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId},
       });
       return res.data?.data?.empoloyeeList;
     },
     enabled: Boolean(companyId),
     initialData: { rows: [], count: 0 },
   });
+
+  useEffect(() => {
+    if (beam_type !== undefined && employeeList?.rows?.length > 0 ){
+      let temp_employee = [] ; 
+      let employee_type = beam_type == "pasarela (primary)"?BEAM_PASARIA_EMPLOYEE:BEAM_WRAPER_EMPLOYEE ; 
+      employeeList?.rows?.map((element) => {
+        if (element?.employer?.employee_type?.salary_type?.includes(employee_type)){
+          temp_employee.push(element)
+        }
+      })
+      setEmployeeDropDownOption(temp_employee) ; 
+    }
+  },[beam_type, employeeList]);
 
   // Get Machine dropdown list 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
@@ -665,10 +687,14 @@ const AddBeamStockReport = () => {
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
                           label: item.quality_name,
+                          max_taka: item?.max_taka 
                         }))
                       }
                       onChange={(value) => {
                         field.onChange(value);
+                        let filterdQuality = dropDownQualityListRes?.rows?.find((item) => item?.id == +value) ; 
+                        setBeamMaxTaka(filterdQuality?.max_taka)
+
                         if (beam_type === "non pasarela (primary)") {
                           addNewFieldRow(-1);
                         }
@@ -718,7 +744,8 @@ const AddBeamStockReport = () => {
               />
             </Form.Item>
           </Col>
-
+          
+          {/* =========== Employee selection dropdown ============  */}
           <Col span={4}>
             <Form.Item
               label="Select Employee"
@@ -737,7 +764,7 @@ const AddBeamStockReport = () => {
                       {...field}
                       placeholder="Select Employee"
                       loading={isLoadingEmployeeData}
-                      options={employeeList.rows.map(
+                      options={employeeDropDownOption.map(
                         ({ first_name, last_name, id }) => {
                           return {
                             label: `${first_name} ${last_name}`,
@@ -751,27 +778,38 @@ const AddBeamStockReport = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
-
+        </Row>  
+        
+        {/* ========= Non pasarela beam selection ===========  */}
         {beam_type === "non pasarela (primary)" &&
           quality_id &&
           machine_name &&
           fieldArray.map((fieldNumber, index) => {
             return (
-              <FormRow
-                key={index + "_form_row"}
-                index={index}
-                errors={errors}
-                control={control}
-                fieldNumber={fieldNumber}
-                addNewFieldRow={addNewFieldRow}
-                deleteFieldRow={deleteFieldRow}
-                fieldArray={fieldArray}
-                setValue={setValue}
-                lastBeamNumber={lastBeamNumber}
-                quality_group={quality_group}
-                currentWorkingIndex = {currentWorkingIndex}
-              />
+              <>
+                <div style={{
+                  marginTop: -10, 
+                  fontWeight: 600,
+                  color: "red"
+                }}>
+                  Max Taka for Beam : {beamMaxTaka}
+                </div>
+                <FormRow
+                  key={index + "_form_row"}
+                  index={index}
+                  errors={errors}
+                  control={control}
+                  fieldNumber={fieldNumber}
+                  addNewFieldRow={addNewFieldRow}
+                  deleteFieldRow={deleteFieldRow}
+                  fieldArray={fieldArray}
+                  setValue={setValue}
+                  lastBeamNumber={lastBeamNumber}
+                  quality_group={quality_group}
+                  currentWorkingIndex = {currentWorkingIndex}
+                  max_taka = {beamMaxTaka}
+                />
+              </>
             );
         })}
 
@@ -781,6 +819,7 @@ const AddBeamStockReport = () => {
           />
         )}
 
+        {/* ========= Pasarela employee selection ==============  */}
         {beam_type === "pasarela (primary)" &&
           nonPasarelaList?.map((row, index) => {
             const item = getTakaDetailsObject(row);
@@ -835,7 +874,8 @@ const FormRow = ({
   fieldArray,
   quality_group,
   setValue,
-  currentWorkingIndex
+  currentWorkingIndex, 
+  max_taka
 }) => {
   return (
     <>
@@ -944,8 +984,11 @@ const FormRow = ({
                   type="number" 
                   placeholder="0" 
                   onChange={(e) => {
-                    setValue(`taka_${fieldNumber}`, e.target.value) ; 
-
+                    if (e.target.value > max_taka){
+                      message.warning(`The maximum allowed Taka for this quality on the beam is ${max_taka}`)
+                    } else {
+                      setValue(`taka_${fieldNumber}`, e.target.value) ; 
+                    }
                     if (quality_group == "inhouse(gray)"){
                       let meter = Number(e.target.value)*220; 
                       setValue(`meter_${fieldNumber}`, meter) ; 
@@ -1009,6 +1052,7 @@ const FormRow = ({
   );
 };
 
+// ====== Pasarela beam selection ====== 
 const PasarelaFormRow = ({
   index,
   row,
@@ -1039,6 +1083,7 @@ const PasarelaFormRow = ({
         gutter={18}
         style={{
           padding: "12px",
+          marginTop: "-15px"
         }}
       >
         <Col span={3}>
@@ -1088,7 +1133,6 @@ const PasarelaFormRow = ({
               errors[`secondary_beam_no_${fieldNumber}`] &&
               errors[`secondary_beam_no_${fieldNumber}`].message
             }
-            required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller

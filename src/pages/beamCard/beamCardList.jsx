@@ -583,10 +583,10 @@ const BeamCardList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalMeter}</Typography.Text>
+                  <Typography.Text>{parseFloat(totalMeter).toFixed(2)}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalPendingMeter}</Typography.Text>
+                  <Typography.Text>{parseFloat(totalPendingMeter).toFixed(2)}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -607,11 +607,11 @@ const BeamCardList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{beamCardList?.total_meter}</Typography.Text>
+                  <Typography.Text>{parseFloat(beamCardList?.total_meter).toFixed(2)}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>
-                    {beamCardList?.pending_meter}
+                    {parseFloat(beamCardList?.pending_meter).toFixed(2)}
                   </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
