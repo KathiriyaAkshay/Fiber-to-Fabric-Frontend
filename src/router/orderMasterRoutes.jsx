@@ -1,6 +1,7 @@
 import AddMyOrder from "../pages/orderMaster/myOrder/AddMyOrder";
 import MyOrderList from "../pages/orderMaster/myOrder/MyOrderList";
 import UpdateMyOrder from "../pages/orderMaster/myOrder/UpdateMyOrder";
+import ScheduleDeliveryList from "../pages/orderMaster/scheduleDelivery/ScheduleDeliveryList";
 import AddSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/AddSizeBeamOrder";
 import SizeBeamOrderList from "../pages/orderMaster/sizeBeamOrder/SizeBeamOrderList";
 import UpdateSizeBeamOrder from "../pages/orderMaster/sizeBeamOrder/UpdateSizeBeamOrder";
@@ -25,7 +26,7 @@ export const orderMasterRoutes = {
       children: [
         { index: true, element: <YarnOrderList /> },
         { path: "add", element: <AddYarnOrder /> },
-        { path: "update/:id", element: <UpdateYarnOrder/> },
+        { path: "update/:id", element: <UpdateYarnOrder /> },
       ],
     },
     {
@@ -38,7 +39,11 @@ export const orderMasterRoutes = {
     },
     {
       path: "schedule-delivery-list",
-      element: <div>schedule-delivery-list</div>,
+      children: [
+        { index: true, element: <ScheduleDeliveryList /> },
+        { path: "add", element: <h1>Create schedule delivery</h1> },
+        // { path: "update/:id", element: <UpdateSizeBeamOrder /> },
+      ],
     },
   ],
 };

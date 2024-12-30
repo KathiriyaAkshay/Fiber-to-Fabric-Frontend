@@ -18,9 +18,30 @@ import { useQuery } from "@tanstack/react-query";
 import { EyeOutlined, FilePdfOutlined, TabletFilled } from "@ant-design/icons";
 import useDebounce from "../../../hooks/useDebounce";
 import { getSundryCreditorService } from "../../../api/requests/accounts/sundryCreditor";
-import PaymentModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/PaymentModal";
-import ViewDebitNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewDebitNoteModal";
-import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewCreditNoteModal";
+// import PaymentModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/PaymentModal";
+// import ViewDebitNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewDebitNoteModal";
+// import ViewCreditNoteModal from "../../../components/accounts/groupWiseOutStanding/sundryCreditor/ViewCreditNoteModal";
+import {
+  getPurchaseTakaListRequest,
+  getYarnBillListRequest,
+} from "../../../api/requests/purchase/purchaseTaka";
+import { getReceiveSizeBeamListRequest } from "../../../api/requests/purchase/purchaseSizeBeam";
+import { getJobTakaListRequest } from "../../../api/requests/job/jobTaka";
+import { getReworkChallanListRequest } from "../../../api/requests/job/challan/reworkChallan";
+import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
+import ViewYarnReceiveChallan from "../../../components/purchase/receive/yarnReceive/ViewYarnReceiveChallanModal";
+import SunadryCreditNoteGenerate from "../../../components/accounts/notes/CreditNotes/sundaryCreditNoteGenerate";
+import SundaryDebitNoteGenerate from "../../../components/accounts/notes/DebitNotes/sundaryDebiteNoteGenerate";
+import {
+  generateJobBillDueDate,
+  generatePurchaseBillDueDate,
+} from "../reports/utils";
+import moment from "moment";
+import SizeBeamChallanModal from "../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeChallan";
+import ViewPurchaseChallanInfo from "../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
+import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
+import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
+import { getYarnReceiveBillByIdRequest } from "../../../api/requests/purchase/yarnReceive";
 
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
@@ -41,7 +62,7 @@ const BILL_MODEL = {
 
 function calculateDaysDifference(dueDate) {
   const today = new Date(); // Get today's date
-  const [day, month, year] = dueDate.split('-');
+  const [day, month, year] = dueDate.split("-");
   const due = new Date(year, month - 1, day);
   const timeDifference = today - due; // Difference in milliseconds
   const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
@@ -59,7 +80,7 @@ const CalculateInterest = (due_days, bill_amount) => {
 };
 
 const SundryCreditor = () => {
-  const { company, companyId } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
 
   const [isCash, setIsCash] = useState(false);
   const [isOnlyDues, setIsOnlyDues] = useState(false);
@@ -68,19 +89,19 @@ const SundryCreditor = () => {
   const [supplier, setSupplier] = useState(null);
   const [orderType, setOrderType] = useState(null);
 
-  const debounceIsCash = useDebounce(isCash, 500);
-  const debounceIsOnlyDues = useDebounce(isOnlyDues, 500);
+  // const debounceIsCash = useDebounce(isCash, 500);
+  // const debounceIsOnlyDues = useDebounce(isOnlyDues, 500);
   const debounceFromDate = useDebounce(fromDate, 500);
   const debounceToDate = useDebounce(toDate, 500);
-  const debounceSupplier = useDebounce(supplier, 500);
-  const debounceOrderType = useDebounce(orderType, 500);
+  // const debounceSupplier = useDebounce(supplier, 500);
+  // const debounceOrderType = useDebounce(orderType, 500);
 
   const [selectedRecords, setSelectedRecords] = useState([]);
-  
-  // Bill Information // 
-  const [billModel, setBillModel] = useState(false) ; 
-  const [billInformation, setBillInformation] = useState(undefined) ; 
-  const [billLayout, setBillLayout] = useState(false) ; 
+
+  // Bill Information //
+  const [billModel, setBillModel] = useState(false);
+  const [billInformation, setBillInformation] = useState(undefined);
+  const [billLayout, setBillLayout] = useState(false);
 
   const storeRecord = (e, record) => {
     if (e.target.checked) {
@@ -119,8 +140,8 @@ const SundryCreditor = () => {
   });
 
   // ============ Sundary Credit note related information ===========================//
-  const [initialCreditorData, setInitialCreditorData] = useState([]) ; 
-  const [creditNoteList, setCreditNoteList] = useState([]) ; 
+  const [initialCreditorData, setInitialCreditorData] = useState([]);
+  const [creditNoteList, setCreditNoteList] = useState([]);
 
   const { data: sundryCreditorData, isFetching: isLoadingSundryDebtor } =
     useQuery({
@@ -150,48 +171,46 @@ const SundryCreditor = () => {
         const res = await getSundryCreditorService({ params });
         return res.data?.data;
       },
-    enabled: Boolean(companyId),
-  });
+      enabled: Boolean(companyId),
+    });
 
   useEffect(() => {
-    setInitialCreditorData(sundryCreditorData) ; 
-    setCreditNoteList(sundryCreditorData) ; 
-  },[sundryCreditorData])
+    setInitialCreditorData(sundryCreditorData);
+    setCreditNoteList(sundryCreditorData);
+  }, [sundryCreditorData]);
 
-  // ======== Bill selection related option handler ======== // 
+  // ======== Bill selection related option handler ======== //
 
   useEffect(() => {
-    if (orderType == null || orderType == undefined){
-      setCreditNoteList(initialCreditorData) ; 
+    if (orderType == null || orderType == undefined) {
+      setCreditNoteList(initialCreditorData);
     } else {
-      let selection_model = null ; 
-      if (orderType == "purchase"){
-        selection_model = "purchase_taka_bills" ; 
-      } else if (orderType == "job"){
-        selection_model = "job_taka_bills" ; 
-      } else if (orderType == "yarn"){
-        selection_model = "yarn_bills" ; 
-      } else if (orderType == "bill_of_size_beam"){
-        selection_model = "receive_size_beam_bill"
-      } else if (orderType == "expenses"){
-        selection_model = "general_purchase_entries"
-      } else if (orderType == "rework") { 
-        selection_model = "job_rework_bill" ; 
+      let selection_model = null;
+      if (orderType == "purchase") {
+        selection_model = "purchase_taka_bills";
+      } else if (orderType == "job") {
+        selection_model = "job_taka_bills";
+      } else if (orderType == "yarn") {
+        selection_model = "yarn_bills";
+      } else if (orderType == "bill_of_size_beam") {
+        selection_model = "receive_size_beam_bill";
+      } else if (orderType == "expenses") {
+        selection_model = "general_purchase_entries";
+      } else if (orderType == "rework") {
+        selection_model = "job_rework_bill";
       }
       const temp = initialCreditorData?.map((element) => {
         const temp_bill = element?.bills?.filter((bill) => {
-          return bill?.model == selection_model ; 
-        })
+          return bill?.model == selection_model;
+        });
         return {
-          ...element, 
-          bills: temp_bill?.length > 0 ?temp_bill:[]
-        }
-      })
-      setCreditNoteList(temp) ; 
+          ...element,
+          bills: temp_bill?.length > 0 ? temp_bill : [],
+        };
+      });
+      setCreditNoteList(temp);
     }
-    
-  }, [orderType])
-
+  }, [orderType]);
 
   const grandTotal = useMemo(() => {
     if (creditNoteList && creditNoteList?.length) {
@@ -213,32 +232,32 @@ const SundryCreditor = () => {
 
   const ReteriveBillInformation = async (model, bill_id) => {
     const selectedBillData = {
-      model, 
-      bill_id
-    } ; 
-    let response ; 
-    switch (selectedBillData?.model){
+      model,
+      bill_id,
+    };
+    let response;
+    switch (selectedBillData?.model) {
       case "yarn_bills":
         response = await getYarnReceiveBillByIdRequest({
-          id : selectedBillData?.bill_id, 
-          params: {company_id: companyId}
-        }); 
-        setBillInformation(response?.data?.yarnReciveBill) ; 
-        setBillLayout(true) ; 
-        setBillModel(selectedBillData?.model) ;
-        return response?.data?.data ; 
+          id: selectedBillData?.bill_id,
+          params: { company_id: companyId },
+        });
+        setBillInformation(response?.data?.yarnReciveBill);
+        setBillLayout(true);
+        setBillModel(selectedBillData?.model);
+        return response?.data?.data;
     }
-  }
+  };
 
-  // ========== Debit note information model ============= // 
-  const [debitNoteModelOpen, setDebitNoteModelOpen] = useState(false) ; 
-  const [debitNoteSelection, setDebitNoteSelection] = useState([]) ; 
-  const [debitNoteModelData, setDebitNoteModelData] = useState(undefined) ; 
+  // ========== Debit note information model ============= //
+  const [debitNoteModelOpen, setDebitNoteModelOpen] = useState(false);
+  const [debitNoteSelection, setDebitNoteSelection] = useState([]);
+  const [debitNoteModelData, setDebitNoteModelData] = useState(undefined);
 
-  // ========= Credit note information model =============== // 
-  const [creditNoteMoelOpen, setCreditNoteModelOpen] = useState(false) ; 
-  const [creditNoteSelection, setCreditNoteSelection] = useState([]) ; 
-  const [creditNoteModelData, setCreditNoteModelData] = useState(undefined) ;
+  // ========= Credit note information model =============== //
+  const [creditNoteMoelOpen, setCreditNoteModelOpen] = useState(false);
+  const [creditNoteSelection, setCreditNoteSelection] = useState([]);
+  const [creditNoteModelData, setCreditNoteModelData] = useState(undefined);
 
   return (
     <>
@@ -288,32 +307,32 @@ const SundryCreditor = () => {
             </Button>
           ) : null}
 
-        <Flex>
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Supplier
-            </Typography.Text>
-            <Select
-              allowClear
-              placeholder="Select supplier"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-              }}
-              className="min-w-40"
-              value={supplier}
-              onChange={(selectedValue) => setSupplier(selectedValue)}
-              loading={isLoadingSupplierList}
-              options={supplierListRes?.rows?.map((item) => {
-                return {
-                  label: item?.supplier?.supplier_company,
-                  value: item?.id,
-                };
-              })}
-            />
-          </Flex>
+          <Flex>
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Supplier
+              </Typography.Text>
+              <Select
+                allowClear
+                placeholder="Select supplier"
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                value={supplier}
+                onChange={(selectedValue) => setSupplier(selectedValue)}
+                loading={isLoadingSupplierList}
+                options={supplierListRes?.rows?.map((item) => {
+                  return {
+                    label: item?.supplier?.supplier_company,
+                    value: item?.id,
+                  };
+                })}
+              />
+            </Flex>
 
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
@@ -342,67 +361,87 @@ const SundryCreditor = () => {
               <DatePicker value={fromDate} onChange={setFromDate} />
             </Flex>
             <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">To</Typography.Text>
+              <Typography.Text className="whitespace-nowrap">
+                To
+              </Typography.Text>
               <DatePicker value={toDate} onChange={setToDate} />
             </Flex>
           </Flex>
         </Flex>
 
-      {isLoadingSundryDebtor ? (
-        <Flex
-          style={{
-            minHeight: "200px",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Spin />
-        </Flex>
-      ) : (
-        <table
-          style={{ fontSize: "12px", borderColor: "black" }}
-          border={1}
-          // cellSpacing={0}
-          cellPadding={6}
-          className="custom-table"
-        >
-          <thead>
-            {/* <!-- Table Header Row --> */}
-            <tr>
-              <th>Date</th>
-              <th>Bill No</th>
-              <th>Type</th>
-              <th>Taka/Crtn</th>
-              <th>Mtr/KG</th>
-              <th>Bill Amount</th>
-              <th>Due Day</th>
-              <th style={{ width: "105px" }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sundryCreditorData ? (
-              sundryCreditorData?.map((data, index) => (
-                <TableWithAccordion
-                  key={index}
-                  data={data}
-                  company={company}
-                  selectedRecords={selectedRecords}
-                  storeRecord={storeRecord}
-                />
-              ))
-            ) : (
+        {isLoadingSundryDebtor ? (
+          <Flex
+            style={{
+              minHeight: "200px",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Spin />
+          </Flex>
+        ) : (
+          <table
+            style={{ fontSize: "12px", borderColor: "black" }}
+            border={1}
+            // cellSpacing={0}
+            cellPadding={6}
+            className="custom-table"
+          >
+            <thead>
+              {/* <!-- Table Header Row --> */}
               <tr>
-                <td colSpan={12} style={{ textAlign: "center" }}>
-                  No Data Found
-                </td>
+                <th>Date</th>
+                <th>Bill No</th>
+                <th>Type</th>
+                <th>Taka/Crtn</th>
+                <th>Mtr/KG</th>
+                <th>Bill Amount</th>
+                <th>Due Date</th>
+                <th>Due Day</th>
+                <th>Int. Payable</th>
+                <th style={{ width: "105px" }}>Action</th>
               </tr>
-            )}
+            </thead>
+            <tbody>
+              {sundryCreditorData ? (
+                sundryCreditorData?.map((data, index) => (
+                  <TableWithAccordion
+                    key={index}
+                    data={data}
+                    companyId={companyId}
+                    selectedRecords={selectedRecords}
+                    storeRecord={storeRecord}
+                    ReteriveBillInformation={async (model, bill_id) => {
+                      await ReteriveBillInformation(model, bill_id);
+                    }}
+                    handleDebitNoteClick={(bill, data) => {
+                      setDebitNoteModelOpen(true);
+                      setDebitNoteSelection([bill]);
+                      setDebitNoteModelData(data);
+                    }}
+                    handleCreditNoteClick={(bill, data) => {
+                      setCreditNoteModelOpen(true);
+                      setCreditNoteSelection([bill]);
+                      setCreditNoteModelData(data);
+                    }}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={12} style={{ textAlign: "center" }}>
+                    No Data Found
+                  </td>
+                </tr>
+              )}
 
               <tr style={{ backgroundColor: "white" }}>
                 <td colSpan={11}></td>
               </tr>
 
-              <tr className="sundary-total" style={{ backgroundColor: "white" }}>
+              <tr
+                className="sundary-total"
+                style={{ backgroundColor: "white" }}
+              >
                 <td>
                   <b>Grand Total</b>
                 </td>
@@ -427,10 +466,10 @@ const SundryCreditor = () => {
       {billLayout ? (
         <>
           {billModel === "yarn_bills" ? (
-            <ViewYarnReceiveChallan 
-              details={billInformation} 
-              isOpen = {billLayout}
-              setLayout = {setBillLayout}
+            <ViewYarnReceiveChallan
+              details={billInformation}
+              isOpen={billLayout}
+              setLayout={setBillLayout}
             />
           ) : null}
         </>
@@ -445,7 +484,7 @@ const SundryCreditor = () => {
           setDebitNoteSelection={setDebitNoteSelection}
         />
       )}
-      
+
       {creditNoteMoelOpen && (
         <SunadryCreditNoteGenerate
           open={creditNoteMoelOpen}
@@ -455,9 +494,6 @@ const SundryCreditor = () => {
           setDebitNoteSelection={setCreditNoteModelData}
         />
       )}
-
-      
-
     </>
   );
 };
@@ -466,9 +502,12 @@ export default SundryCreditor;
 
 const TableWithAccordion = ({
   data,
-  company,
+  companyId,
   selectedRecords,
   storeRecord,
+  ReteriveBillInformation,
+  handleDebitNoteClick,
+  handleCreditNoteClick,
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(null);
 
@@ -569,7 +608,9 @@ const TableWithAccordion = ({
         className="sundary-header"
       >
         <td></td>
-        <td colSpan={2}>{String(data?.first_name + " " + data?.last_name).toUpperCase()}</td>
+        <td colSpan={2}>
+          {String(data?.first_name + " " + data?.last_name).toUpperCase()}
+        </td>
         <td colSpan={4}>{String(data?.address || "").toUpperCase()}</td>
         <td></td>
         <td></td>
@@ -584,18 +625,20 @@ const TableWithAccordion = ({
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
               const isChecked = selectedRecords?.includes(bill?.bill_id);
-              const dueDate = bill?.due_date == null?
-                bill?.model == "purchase_taka_bills"?generatePurchaseBillDueDate(bill?.bill_date):
-                generateJobBillDueDate(bill?.bill_date)
-              :moment(bill?.due_date).format("DD-MM-YYYY") ;
-              const dueDays = calculateDaysDifference(dueDate) ; 
-              const interestAmount = CalculateInterest(dueDays, bill?.amount) ; 
-              
-              const paid_amount = +bill?.paid_amount; 
-              const debit_note_amount = +bill?.debit_note_net_amount ; 
-              const bill_amount = +bill?.amount ; 
+              const dueDate =
+                bill?.due_date == null
+                  ? bill?.model == "purchase_taka_bills"
+                    ? generatePurchaseBillDueDate(bill?.bill_date)
+                    : generateJobBillDueDate(bill?.bill_date)
+                  : moment(bill?.due_date).format("DD-MM-YYYY");
+              const dueDays = calculateDaysDifference(dueDate);
+              const interestAmount = CalculateInterest(dueDays, bill?.amount);
 
-              const net_amount = bill_amount - debit_note_amount - paid_amount ; 
+              const paid_amount = +bill?.paid_amount;
+              const debit_note_amount = +bill?.debit_note_net_amount;
+              const bill_amount = +bill?.amount;
+
+              const net_amount = bill_amount - debit_note_amount - paid_amount;
 
               return (
                 <tr
@@ -612,81 +655,138 @@ const TableWithAccordion = ({
                     <div>
                       {bill?.bill_no || ""}
                       {bill?.debit_note_id !== null && (
-                        <div style={{
-                          fontSize: 12, 
-                          color: "red", 
-                          cursor: "pointer"
-                        }}>
-                          <Tooltip title = {`DEBIT NOTE - ${bill?.debit_note_number}`}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "red",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Tooltip
+                            title={`DEBIT NOTE - ${bill?.debit_note_number}`}
+                          >
                             ( {bill?.debit_note_number} )
                           </Tooltip>
                         </div>
                       )}
                       {bill?.credit_note_id !== null && (
-                        <div style={{
-                          fontSize: 12,
-                          color: "green", 
-                          cursor: "pointer"
-                        }}>
-                          <Tooltip title = {`CRDIT NOTE - ${bill?.credit_note_number}`}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "green",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Tooltip
+                            title={`CRDIT NOTE - ${bill?.credit_note_number}`}
+                          >
                             ( {bill?.credit_note_number} )
                           </Tooltip>
                         </div>
                       )}
                     </div>
                   </td>
-                  <td style={{
-                    fontWeight: 600
-                  }}>
-                    {bill?.model === "job_taka_bills" ? "JOB TAKA" :
-                    bill?.model === "receive_size_beam_bill" ? "SIZE BEAM" :
-                    bill?.model === "yarn_bills" ? "YARN BILL" :
-                    bill?.model === "general_purchase_entries" ? "GENERAL PURCHASE" :
-                    bill?.model === "purchase_taka_bills" ? "PURCHASE TAKA" :
-                    bill?.model === "job_rework_bill" ? "REWORK BILL" : ""}
+                  <td
+                    style={{
+                      fontWeight: 600,
+                    }}
+                  >
+                    {bill?.model === "job_taka_bills"
+                      ? "JOB TAKA"
+                      : bill?.model === "receive_size_beam_bill"
+                      ? "SIZE BEAM"
+                      : bill?.model === "yarn_bills"
+                      ? "YARN BILL"
+                      : bill?.model === "general_purchase_entries"
+                      ? "GENERAL PURCHASE"
+                      : bill?.model === "purchase_taka_bills"
+                      ? "PURCHASE TAKA"
+                      : bill?.model === "job_rework_bill"
+                      ? "REWORK BILL"
+                      : ""}
                   </td>
                   <td>{bill?.taka || 0}</td>
 
                   <td>{bill?.meters || 0}</td>
-                  <td>{bill?.amount || 0}</td>
-                  <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td>
+                  <td>
+                    <Tooltip
+                      title={`${bill_amount} - ${debit_note_amount} - ${paid_amount} = ${net_amount}`}
+                    >
+                      {net_amount || 0}
+                    </Tooltip>
+                  </td>
+                  {/* <td>{calculateDueDays(bill?.createdAt, bill?.due_days)}</td> */}
                   {/* <td></td> */}
+                  <td>{dueDate}</td>
+                  <td className={dueDays != 0 ? "sundary-due-date" : ""}>
+                    {dueDays == 0 ? 0 : `+${dueDays}D`}
+                  </td>
+                  <td
+                    className={interestAmount !== 0 ? "sundary-due-date" : ""}
+                  >
+                    {/* If found any credit note than show credit note amount rather than calculate interest amount  */}
+                    {bill?.credit_note_id !== null
+                      ? parseFloat(bill?.credit_note_net_amount).toFixed(2)
+                      : interestAmount}
+                  </td>
                   <td>
                     <Space>
-                      <Button type="primary">
+                      <Button
+                        type="primary"
+                        onClick={() => onClickViewHandler(bill)}
+                      >
                         <EyeOutlined />
                       </Button>
-                      
-                      {bill?.credit_note_id == null?<>
-                        <Button
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Checkbox
-                            checked={
-                              selectedRecords?.includes(bill?.bill_id) || false
-                            }
-                            onChange={(e) => storeRecord(e, bill)}
+
+                      <Button
+                        type="primary"
+                        onClick={async () => {
+                          await ReteriveBillInformation(
+                            bill?.model,
+                            bill?.bill_id
+                          );
+                        }}
+                      >
+                        <EyeOutlined />
+                      </Button>
+
+                      {bill?.credit_note_id == null ? (
+                        <>
+                          <Button
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Checkbox
+                              checked={
+                                selectedRecords?.includes(bill?.bill_id) ||
+                                false
+                              }
+                              onChange={(e) => storeRecord(e, bill)}
+                            />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <TabletFilled
+                            style={{ color: "blue" }}
+                            onClick={() => {
+                              handleCreditNoteClick(bill, data);
+                            }}
                           />
-                        </Button>
-                      </>:<>
-                        <TabletFilled style={{color: "blue"}}
-                          onClick={() => {
-                            handleCreditNoteClick(bill, data) ;
-                          }}
-                        /> 
-                      </>}
+                        </>
+                      )}
 
                       {bill?.debit_note_id !== null && (
                         <>
-                          <TabletFilled 
-                            style={{color: "gray"}} 
+                          <TabletFilled
+                            style={{ color: "gray" }}
                             onClick={() => {
-                              handleDebitNoteClick(bill, data)
-                            }}/>
+                              handleDebitNoteClick(bill, data);
+                            }}
+                          />
                         </>
                       )}
                     </Space>
@@ -697,9 +797,7 @@ const TableWithAccordion = ({
           ) : (
             <tr>
               <td colSpan={12} style={{ textAlign: "center" }}>
-                <Empty
-                  description = {"No bills found"}
-                />
+                <Empty description={"No bills found"} />
               </td>
             </tr>
           )}
