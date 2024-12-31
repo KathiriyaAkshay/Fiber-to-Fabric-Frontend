@@ -12,6 +12,7 @@ import {
   TimePicker,
   message,
 } from "antd";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
@@ -26,6 +27,7 @@ import {
   getLoadedMachineListRequest,
   getPasarelaBeamListRequest,
 } from "../../api/requests/beamCard";
+import { getEmployeeListRequest } from "../../api/requests/users";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -43,8 +45,14 @@ const addJobTakaSchemaResolver = yupResolver(
     date: yup.string().required("Please enter date."),
     time: yup.string().required("Please enter time."),
     remark: yup.string().required("Please enter remark."),
+    pissing_user: yup.string().when("beam_type", {
+      is: (value) => value === "primary(pissing)",
+      then: (schema) => schema.required("Please select pasaria user."),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   })
 );
+
 
 const AddBeamCard = () => {
   const queryClient = useQueryClient();
@@ -82,6 +90,8 @@ const AddBeamCard = () => {
   });
 
   async function onSubmit(data) {
+    console.log(data);
+    
     const newData = {
       loaded_beam_id: +data.beam_no,
       machine_name: data.machine_name,
@@ -97,6 +107,10 @@ const AddBeamCard = () => {
       peak: +data.peak,
       read: +data.read,
     };
+
+    if (beam_type == "primary(pissing)"){
+      newData["pissing_user_id"] = +data?.pissing_user
+    }
     await AddNewBeam(newData);
   }
 
@@ -131,9 +145,9 @@ const AddBeamCard = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, quality_id, beam_no } = watch();
-  // ------------------------------------------------------------------------------------------
+  const { machine_name, quality_id, beam_no, beam_type } = watch();
 
+  // ------------------------------------------------------------------------------------------
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -184,17 +198,25 @@ const AddBeamCard = () => {
         "pasarela",
         "beam",
         "list",
-        { company_id: companyId, machine_name, quality_id },
+        { company_id: companyId, machine_name, quality_id, beam_type },
       ],
       queryFn: async () => {
         if (machine_name && quality_id) {
+          let params = {
+            company_id: companyId, machine_name, quality_id
+          }
+
+          if (beam_type == "primary(pissing)") {
+            params["is_pissing"] = true
+          }
+
           const res = await getPasarelaBeamListRequest({
-            params: { company_id: companyId, machine_name, quality_id },
+            params: params,
           });
           return res.data?.data;
         }
       },
-      enabled: Boolean(companyId),
+      enabled: Boolean(companyId && beam_type),
       initialData: { rows: [], machineDetail: {} },
     }
   );
@@ -247,31 +269,31 @@ const AddBeamCard = () => {
       setValue("jbn_id", selectedBeamNo.jbn_id);
 
       if (selectedBeamNo.non_pasarela_beam_detail) {
-        setValue("meter", selectedBeamNo.non_pasarela_beam_detail.meters);
+        setValue("meter", selectedBeamNo.non_pasarela_beam_detail.meters || selectedBeamNo.non_pasarela_beam_detail.meter);
         setValue("peak", selectedBeamNo.peak || 0);
         setValue("read", selectedBeamNo.read || 0);
 
         setValue("taka", selectedBeamNo.non_pasarela_beam_detail.taka);
         setValue("pano", selectedBeamNo.non_pasarela_beam_detail.pano);
-        setValue("tar", selectedBeamNo.non_pasarela_beam_detail.ends_or_tars);
+        setValue("tar", selectedBeamNo.non_pasarela_beam_detail.ends_or_tars || selectedBeamNo.non_pasarela_beam_detail.tars);
       }
       if (selectedBeamNo.job_beam_receive_detail) {
-        setValue("meter", selectedBeamNo.job_beam_receive_detail.meters);
+        setValue("meter", selectedBeamNo.job_beam_receive_detail.meters || selectedBeamNo.job_beam_receive_detail.meter);
         setValue("peak", selectedBeamNo.peak || 0);
         setValue("read", selectedBeamNo.read || 0);
 
         setValue("taka", selectedBeamNo.job_beam_receive_detail.taka);
         setValue("pano", selectedBeamNo.job_beam_receive_detail.pano);
-        setValue("tar", selectedBeamNo.job_beam_receive_detail.ends_or_tars);
+        setValue("tar", selectedBeamNo.job_beam_receive_detail.ends_or_tars || selectedBeamNo.job_beam_receive_detail.tars);
       }
       if (selectedBeamNo.recieve_size_beam_detail) {
-        setValue("meter", selectedBeamNo.recieve_size_beam_detail.meters);
+        setValue("meter", selectedBeamNo.recieve_size_beam_detail.meters || selectedBeamNo.recieve_size_beam_detail.meter);
         setValue("peak", selectedBeamNo.peak || 0);
         setValue("read", selectedBeamNo.read || 0);
 
         setValue("taka", selectedBeamNo.recieve_size_beam_detail.taka);
         setValue("pano", selectedBeamNo.recieve_size_beam_detail.pano);
-        setValue("tar", selectedBeamNo.recieve_size_beam_detail.ends_or_tars);
+        setValue("tar", selectedBeamNo.recieve_size_beam_detail.ends_or_tars || selectedBeamNo.recieve_size_beam_detail.tars);
       }
     }
   }, [pasarelaBeamList, beam_no, setValue]);
@@ -279,6 +301,41 @@ const AddBeamCard = () => {
   useEffect(() => {
     company && setValue("company_name", company.company_name);
   }, [company, setValue]);
+
+  // Get Employee dropdown list ===================================
+  const [employeeDropDownOption, setEmployeeDropDownOption] = useState([]);
+  const BEAM_PASARIA_EMPLOYEE = "BEAM pasaria";
+  const BEAM_WRAPER_EMPLOYEE = "BEAM warpar";
+
+  const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
+    queryKey: ["employee", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+    initialData: { rows: [], count: 0 },
+  });
+
+  useEffect(() => {
+    if (beam_type !== undefined && employeeList?.rows?.length > 0) {
+      let temp_employee = [];
+      let employee_type = beam_type == "primary(pissing)" ? BEAM_PASARIA_EMPLOYEE : BEAM_WRAPER_EMPLOYEE;
+      console.log("Runn this functionality");
+
+      employeeList?.rows?.map((element) => {
+        if (element?.employer?.employee_type?.salary_type?.includes(employee_type)) {
+          temp_employee.push(element)
+        }
+      })
+      console.log(temp_employee);
+
+      setEmployeeDropDownOption(temp_employee);
+    }
+  }, [beam_type, employeeList]);
 
   return (
     <div className="flex flex-col p-4">
@@ -328,7 +385,7 @@ const AddBeamCard = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={beam_type == "primary(pissing)" ? 4 : 6}>
             <Form.Item
               label="Beam Type"
               name={`beam_type`}
@@ -366,7 +423,41 @@ const AddBeamCard = () => {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          {beam_type == "primary(pissing)" && (
+            <Col span={4}>
+              <Form.Item
+                label="Pasaria Employee"
+                name={`pissing_user`}
+                validateStatus={errors.pissing_user ? "error" : ""}
+                help={errors.pissing_user && errors.pissing_user.message}
+                required={true}
+                wrapperCol={{ sm: 24 }}
+              >
+                <Controller
+                  control={control}
+                  name="pissing_user"
+                  render={({ field }) => {
+                    return (
+                      <Select
+                        {...field}
+                        placeholder="Select Employee"
+                        options={employeeDropDownOption.map(
+                          ({ first_name, last_name, id }) => {
+                            return {
+                              label: `${first_name} ${last_name}`,
+                              value: id,
+                            };
+                          }
+                        )}
+                      />
+                    );
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          )}
+
+          <Col span={beam_type == "primary(pissing)" ? 4 : 6}>
             <Form.Item
               label="Machine No"
               name="machine_no"
@@ -398,14 +489,17 @@ const AddBeamCard = () => {
               />
             </Form.Item>
           </Col>
+
         </Row>
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+        // style={{
+        //   padding: "12px",
+        // }}
         >
+
+
           <Col span={12}>
             <Form.Item
               label="Select Quality"
@@ -451,20 +545,57 @@ const AddBeamCard = () => {
                 control={control}
                 name="beam_no"
                 render={({ field }) => (
+                  // <Select
+                  //   {...field}
+                  //   loading={isLoadingPasarelaBeam}
+                  //   placeholder="Select Beam No"
+                  //   options={pasarelaBeamList?.rows?.map(({ beam_no, id }) => {
+                  //     return { label: beam_no, value: id };
+                  //   })}
+                  //   style={{
+                  //     textTransform: "capitalize",
+                  //   }}
+                  //   dropdownStyle={{
+                  //     textTransform: "capitalize",
+                  //   }}
+                  // />
+
                   <Select
                     {...field}
                     loading={isLoadingPasarelaBeam}
                     placeholder="Select Beam No"
-                    options={pasarelaBeamList?.rows?.map(({ beam_no, id }) => {
-                      return { label: beam_no, value: id };
-                    })}
                     style={{
                       textTransform: "capitalize",
                     }}
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                  />
+                    onSelect={(value) => {
+                      console.log("Selected value:", value); // Handle selection
+                    }}
+                  >
+                    {pasarelaBeamList?.rows?.map((element) => {
+                      let beamObject = element?.job_beam_receive_detail || element?.non_pasarela_beam_detail || element?.recieve_size_beam_detail ; 
+                      return (
+                        <Select.Option key={element?.id} value={element?.id}>
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <span>{element?.beam_no}</span>
+                            {beamObject?.supplier_beam_no != null && beamObject?.supplier_beam_no !== undefined && (
+                              <div style={{
+                                marginLeft: 10,
+                                color: "blue", 
+                                fontWeight: 600
+                              }}>
+                                ({beamObject?.supplier_beam_no})
+                              </div>
+                            )}
+                          </div>
+                        </Select.Option>
+                      )
+                    }
+                    )}
+                  </Select>
+
                 )}
               />
             </Form.Item>
@@ -473,9 +604,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+        // style={{
+        //   padding: "12px",
+        // }}
         >
           <Col span={12}>
             <Form.Item
@@ -507,7 +638,11 @@ const AddBeamCard = () => {
                 control={control}
                 name="taka"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number"
+                    {...field}
+                    placeholder="12"
+                    readOnly={beam_no !== undefined ? true : false}
+                  />
                 )}
               />
             </Form.Item>
@@ -526,7 +661,7 @@ const AddBeamCard = () => {
                 control={control}
                 name="meter"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number" {...field} placeholder="12" readOnly={beam_no !== undefined ? true : false} />
                 )}
               />
             </Form.Item>
@@ -535,9 +670,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+        // style={{
+        //   padding: "12px",
+        // }}
         >
           <Col span={6}>
             <Form.Item
@@ -552,7 +687,7 @@ const AddBeamCard = () => {
                 control={control}
                 name="peak"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number" {...field} placeholder="12" readOnly={beam_no !== undefined ? true : false} />
                 )}
               />
             </Form.Item>
@@ -571,7 +706,7 @@ const AddBeamCard = () => {
                 control={control}
                 name="read"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number" {...field} placeholder="12" readOnly={beam_no !== undefined ? true : false} />
                 )}
               />
             </Form.Item>
@@ -590,7 +725,7 @@ const AddBeamCard = () => {
                 control={control}
                 name="pano"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number" {...field} placeholder="12" readOnly={beam_no !== undefined ? true : false} />
                 )}
               />
             </Form.Item>
@@ -609,7 +744,7 @@ const AddBeamCard = () => {
                 control={control}
                 name="tar"
                 render={({ field }) => (
-                  <Input type="number" {...field} placeholder="12" />
+                  <Input type="number" {...field} placeholder="12" readOnly={beam_no !== undefined ? true : false} />
                 )}
               />
             </Form.Item>
@@ -618,9 +753,9 @@ const AddBeamCard = () => {
 
         <Row
           gutter={18}
-          // style={{
-          //   padding: "12px",
-          // }}
+        // style={{
+        //   padding: "12px",
+        // }}
         >
           <Col span={6}>
             <Form.Item
