@@ -217,6 +217,7 @@ const AddBeamStockReport = () => {
               meters: +data[`meter_${fieldNumber}`],
               pano: +data[`pano_${fieldNumber}`],
               taka: +data[`taka_${fieldNumber}`],
+              createdAt: dayjs(new Date())
             };
           });
         } else {
@@ -227,6 +228,7 @@ const AddBeamStockReport = () => {
               meters: +data[`meter_${fieldNumber}`],
               pano: +data[`pano_${fieldNumber}`],
               taka: +data[`taka_${fieldNumber}`],
+              createdAt: dayjs(new Date())
             };
           });
         }
