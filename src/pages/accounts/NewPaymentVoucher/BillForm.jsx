@@ -798,9 +798,9 @@ const BillForm = () => {
 
                 let bill_net_amount = +bill?.net_amount ; 
                 let debit_note_amount = +bill?.debit_note_amount || 0; 
-                let bill_deducation_amount = +bill_net_amount - +debit_note_amount ; 
-                let bill_remaing_amount = bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment ; 
-                bill_deducation_amount = +bill_deducation_amount - +bill_remaing_amount ; 
+                let bill_deducation_amount = parseFloat(+bill_net_amount - +debit_note_amount).toFixed(2) ; 
+                let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
+                bill_deducation_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2) ; 
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>

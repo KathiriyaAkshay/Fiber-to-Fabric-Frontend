@@ -404,15 +404,12 @@ const SundryDebitor = () => {
     if (selectedBill?.length > 0) {
       let totalAmount = 0;
       selectedBill?.map((bill) => {
-        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
-        let credit_note_amount =
-          parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
-        let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0;
 
-        let finalAmount = total_amount - paid_amount - credit_note_amount;
-        finalAmount = parseFloat(finalAmount).toFixed(2);
-
-        totalAmount += +finalAmount;
+        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Bill total payment 
+        let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Bill credit note amount
+        let bill_deducation_amount = +total_amount - +credit_note_amount ; 
+        let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
+        totalAmount += +bill_remaing_amount;
       });
       setTotalBillAmount(totalAmount);
     }
@@ -768,6 +765,7 @@ const SundryDebitor = () => {
         />
       )}
 
+      {/* ======== Bill Payment model =========  */}
       {billModelOpen && (
         <BillPaymentModel
           visible={billModelOpen}
@@ -960,15 +958,20 @@ const TableWithAccordion = ({
         <>
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
+
+              // Bill due date calculation 
               let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
               let dueDays = isNaN(calculateDaysDifference(dueDate))
                 ? 0
                 : calculateDaysDifference(dueDate);
+              
+              // Bill date calculation
               let billDate = moment(bill?.createdAt).format("DD-MM-YYYY");
               let billDays = isNaN(calculateDaysDifference(billDate))
                 ? 0
                 : calculateDaysDifference(billDate);
-              let model =
+              
+                let model =
                 bill?.model == "sale_bills"
                   ? "SALE BILL"
                   : bill?.model == "yarn_sale_bills"
@@ -986,6 +989,7 @@ const TableWithAccordion = ({
                   : bill?.model == "job_gray_sale_bill"
                   ? "JOB GRAY SALE"
                   : "";
+                  
               let isChecked =
                 selectedInterestBill?.filter(
                   (item) =>
@@ -993,30 +997,36 @@ const TableWithAccordion = ({
                 )?.length > 0
                   ? true
                   : false;
-              let isBillChecked =
+              
+                  let isBillChecked =
                 selectedBill?.filter(
                   (item) =>
                     item?.bill_id == bill?.bill_id && item?.model == bill?.model
                 )?.length > 0
                   ? true
                   : false;
-              let debiteNoteChecked =
+              
+                  let debiteNoteChecked =
                 debitNoteSelection?.filter(
                   (item) =>
                     item?.bill_id == bill?.bill_id && item?.model == bill?.model
                 )?.length > 0
                   ? true
                   : false;
-              let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
-              let credit_note_amount =
-                parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
-              let paid_amount =
-                parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0;
-              let finalAmount = total_amount - paid_amount - credit_note_amount;
+              
+              let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
+              let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+              let bill_deducation_amount = +total_amount - +credit_note_amount ; 
+              
+              let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0; // Paid amount
+              
               let interest_amount = 0;
               if (bill?.credit_note_id == null) {
                 interest_amount = CalculateInterest(dueDays, bill?.amount);
               }
+              
+              let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
+              let bill_paid_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2);
 
               return (
                 <tr key={index + "_bill"} className="sundary-data">
@@ -1065,15 +1075,14 @@ const TableWithAccordion = ({
                   <td>
                     {bill?.model == "credit_notes" ? "-" : bill?.meter || "-"}
                   </td>
-
+                  
+                  {/* =========== Bill amount information =========  */}
                   <td>
                     <Tooltip
-                      title={`${total_amount} - ${credit_note_amount} - ${paid_amount} = ${parseFloat(
-                        finalAmount
-                      ).toFixed(2)}`}
+                      title={`${total_amount} - ${credit_note_amount} - ${bill_paid_amount} = ${parseFloat(bill_remaing_amount).toFixed(2)}`}
                     >
                       <div>
-                        {parseFloat(finalAmount).toFixed(2) || 0}
+                        {parseFloat(bill_remaing_amount).toFixed(2) || 0}
                         {paid_amount != 0 && (
                           <div
                             style={{
@@ -1192,7 +1201,8 @@ const TableWithAccordion = ({
                       )}
                     </Flex>
                   </td>
-
+                  
+                  {/* Bill Payment checkbox selection  */}
                   <td>
                     {!bill?.is_paid && (
                       <Checkbox
@@ -1203,7 +1213,8 @@ const TableWithAccordion = ({
                       />
                     )}
                   </td>
-
+                  
+                  {/* Bill Interest payment checkbox selection  */}
                   <td>
                     {bill?.interest_paid_date == null &&
                       CalculateInterest(dueDays, bill?.amount) !== 0 && (
