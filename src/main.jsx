@@ -161,6 +161,7 @@ import Turnover from "./pages/accounts/reports/turnover";
 import Gstr1 from "./pages/accounts/reports/gstr1";
 import Gstr2 from "./pages/accounts/reports/gstr2";
 import GstrPrint from "./pages/accounts/reports/gstrPrint";
+import GstrPrint2 from "./pages/accounts/reports/gstr2Print";
 import LiveStockReport from "./pages/accounts/reports/liveStockReport";
 import PurchaseReport from "./pages/accounts/reports/purchaseReport";
 import SalesReport from "./pages/accounts/reports/salesReport";
@@ -815,6 +816,10 @@ const router = createBrowserRouter([
               {
                 path: "gstr-report/print/:key",
                 element: <GstrPrint />,
+              },
+              {
+                path: "gstr-report2/print/:key", 
+                element: <GstrPrint2/>
               },
               {
                 path: "gstr-1-report",

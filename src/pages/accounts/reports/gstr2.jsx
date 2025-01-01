@@ -16,6 +16,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { useQuery } from "@tanstack/react-query";
 import { getGstr2ReportService } from "../../../api/requests/accounts/reports";
+import moment from "moment";
 
 const Gstr2 = () => {
   const { companyListRes } = useContext(GlobalContext);
@@ -85,8 +86,6 @@ const Gstr2 = () => {
     },
     enabled: isSubmitted,
   });
-  console.log({ gstr2Data });
-
   const data = useMemo(() => {
     if (gstr2Data && Object.keys(gstr2Data).length) {
       //
@@ -153,7 +152,7 @@ const Gstr2 = () => {
       JSON.stringify(selectedCompany)
     );
 
-    window.open(`gstr-report/print/${record.key}`);
+    window.open(`gstr-report2/print/${record.key}`);
   }
 
   useEffect(() => {
@@ -166,6 +165,10 @@ const Gstr2 = () => {
     setFromDate(firstDayOfMonth);
     setToDate(today);
   }, []);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
 
   return (
     <div className="flex flex-col p-4">
@@ -208,6 +211,7 @@ const Gstr2 = () => {
               <DatePicker
                 value={fromDate}
                 onChange={(selectedDate) => setFromDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -217,6 +221,7 @@ const Gstr2 = () => {
               <DatePicker
                 value={toDate}
                 onChange={(selectedDate) => setToDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -247,7 +252,9 @@ const Gstr2 = () => {
               </p>
               <p>GSTR-2</p>
               {fromDate && toDate ? (
-                <p>
+                <p style={{
+                  fontWeight: 600
+                }}>
                   {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
                   {toDate && dayjs(toDate).format("DD-MM-YYYY")}
                 </p>
