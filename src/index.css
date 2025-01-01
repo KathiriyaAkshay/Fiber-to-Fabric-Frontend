@@ -1329,3 +1329,39 @@ h2 {
 .production-taka-info-quality{
   font-weight: 600;
 }
+
+.ui-box {
+  background-color: #fff6d5;
+  border: 1px solid #d2be7f;
+  border-radius: 5px;
+  padding: 20px;
+  width: fit-content;
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); */
+  padding-top: 0px;
+  padding-left: 15px;
+  padding-right: 15px;
+  cursor: pointer;
+}
+
+.heading {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #8a6d3b;
+}
+
+.details-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #5a4a29;
+}
+
+.details-list li {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.details-list span {
+  font-weight: bold;
+  color: #333;
+}

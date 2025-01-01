@@ -16,10 +16,11 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as yup from "yup";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   getYarnStockCompanyByIdRequest,
   updateYarnStockCompanyRequest,
+  yarnStockWarningRequest,
 } from "../../../api/requests/yarnStock";
 import {
   LUSTER_TYPE_LIST,
@@ -86,6 +87,7 @@ function UpdateYarnStockCompany() {
     },
   });
 
+  // Yarn company details information
   const { data: ysCompanyDetails } = useQuery({
     queryKey: ["yarn-stock", "company", "get", id],
     queryFn: async () => {
@@ -99,6 +101,43 @@ function UpdateYarnStockCompany() {
     },
     enabled: Boolean(companyId),
   });
+
+  // Yarn company warning related details information 
+  const [isDetailsEdit, setIsDetailsEdit] = useState(true); 
+  const { data: yarnWarningDetails } = useQuery({
+    queryKey: ["yarn-stock", "company", "warning"],
+    queryFn: async () => {
+      const res = await yarnStockWarningRequest({
+        params: {
+          company_id: companyId,
+          yarn_company_id: id
+        }
+      })
+      return res?.data?.data;
+    },
+    enabled: Boolean(companyId)
+  })
+
+  useEffect(() => {
+    if (yarnWarningDetails !== undefined){
+      let allStockcount = [];
+      allStockcount.push(yarnWarningDetails?.total_challan) ; 
+      allStockcount.push(yarnWarningDetails?.total_order) ; 
+      allStockcount.push(yarnWarningDetails?.sale_total) ; 
+      allStockcount.push(yarnWarningDetails?.quality_involved) ; 
+      allStockcount.push(yarnWarningDetails?.yarnSentCount); 
+      allStockcount.push(yarnWarningDetails?.yarn_stock_report || 0) ; 
+      allStockcount.push(yarnWarningDetails?.send_beam_pipe_order || 0)
+
+      allStockcount = [...new Set(allStockcount)]
+      
+      if (allStockcount?.length == 1 && allStockcount[0] == 0){
+        setIsDetailsEdit(true) ; 
+      } else {
+        setIsDetailsEdit(false);
+      }
+    }
+  }, [yarnWarningDetails])
 
   async function onSubmit(data) {
     await updateYSC({ ...data, yarn_company_name: undefined });
@@ -220,6 +259,7 @@ function UpdateYarnStockCompany() {
                     placeholder="Select Yarn Company Type"
                     {...field}
                     options={YARN_FIBER_TYPE_LIST}
+                    disabled = {!isDetailsEdit}
                   />
                 )}
               />
@@ -271,6 +311,7 @@ function UpdateYarnStockCompany() {
                     placeholder="Select Luster Type"
                     {...field}
                     options={LUSTER_TYPE_LIST}
+                    disabled = {!isDetailsEdit}
                   />
                 )}
               />
@@ -299,6 +340,7 @@ function UpdateYarnStockCompany() {
                         .toUpperCase()
                         .indexOf(inputValue.toUpperCase()) !== -1
                     }
+                    disabled = {!isDetailsEdit}
                   />
                 )}
               />
@@ -312,7 +354,7 @@ function UpdateYarnStockCompany() {
               validateStatus={errors.yarn_count ? "error" : ""}
               help={errors.yarn_count && errors.yarn_count.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -324,6 +366,7 @@ function UpdateYarnStockCompany() {
                     type="number"
                     min={0}
                     step={0.01}
+                    readOnly = {!isDetailsEdit}
                   />
                 )}
               />
@@ -349,6 +392,7 @@ function UpdateYarnStockCompany() {
                     type="number"
                     min={0}
                     step={0.01}
+                    readOnly = {!isDetailsEdit}
                   />
                 )}
               />
@@ -374,6 +418,7 @@ function UpdateYarnStockCompany() {
                     type="number"
                     min={0}
                     step={0.01}
+                    readOnly = {!isDetailsEdit}
                   />
                 )}
               />
@@ -447,6 +492,49 @@ function UpdateYarnStockCompany() {
             </Form.Item>
           </Col>
         </Row>
+
+        <div class="ui-box">
+          <p class="heading">
+            ▼ If you want to edit these details, remove the entries from the following places.
+          </p>
+          <ul class="details-list" >
+            
+            {/* Yarn challan information  */}
+            {yarnWarningDetails?.total_challan > 0 && (
+              <li>Total Yarn Receive Challan: <span>{yarnWarningDetails?.total_challan || 0}</span></li>
+            )}
+
+            {/* Yarn order information  */}
+            {yarnWarningDetails?.total_order > 0 && (
+              <li>Total Yarn Order: <span>{yarnWarningDetails?.total_order || 0}</span></li>
+            )}
+
+            {/* Total sale order information  */}
+            {yarnWarningDetails?.sale_total > 0 && (
+              <li>Total Yarn sale challan: <span>{yarnWarningDetails?.sale_total}</span></li>
+            )}
+
+            {/* Quality involved related information  */}
+            {yarnWarningDetails?.quality_involved > 0 && (
+              <li>Quality Involved: <span>{yarnWarningDetails?.quality_involved}</span></li>
+            )}
+
+            {/* Yarn sent count information  */}
+            {yarnWarningDetails?.yarnSentCount > 0 && (
+              <li>Total Yarn Sent: <span>{yarnWarningDetails?.yarnSentCount}</span></li>
+            )}
+
+            {/* Yarn stock report count information  */}
+            {yarnWarningDetails?.yarn_stock_report > 0 && (
+              <li>Total Yarn Stock Report: <span>{yarnWarningDetails?.yarn_stock_report}</span></li>
+            )}
+
+            {/* Total Send beam pipe order information */}
+            {yarnWarningDetails?.send_beam_pipe_order > 0 && (
+              <li>Total Send Beam Pipe Order: <span>{yarnWarningDetails?.send_beam_pipe_order}</span></li>
+            )}
+          </ul>
+        </div>
 
         <Flex gap={10} justify="flex-end">
           <Button type="primary" htmlType="submit">
