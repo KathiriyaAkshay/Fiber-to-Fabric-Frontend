@@ -14,6 +14,7 @@ import {
   PDFDownloadLink,
   // PDFViewer,
   Font,
+  render,
 } from "@react-pdf/renderer";
 import { DownloadOutlined } from "@ant-design/icons";
 import { FileExcelFilled } from "@ant-design/icons";
@@ -31,9 +32,6 @@ function getFileName(input) {
 
 const GstrPrint = () => {
   const { key } = useParams();
-
-  console.log("Key information ====================", key);
-
 
   const ComponentRef = useRef();
   const pageStyle = `
@@ -329,21 +327,101 @@ const GstrPrint = () => {
       dataIndex: "gst_no",
       key: "gst_no",
       render: (text, record) => {
-        return(
-          <div>
-            Party company
-          </div>
-        )
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.supplier_company}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.company_name}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.supplier_company}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.supplier_company}
+            </div>
+          )
+        }
       }
     },
     {
       title: "GST No", 
-      dataIndex: "gst_no"
+      dataIndex: "gst_no", 
+      render: (text, record) => {
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.user?.gst_no}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.company_gst_number}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.user?.gst_no}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.user?.gst_no}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Place of Supply",
       dataIndex: "place_of_supply",
       key: "place_of_supply",
+      render: (text, record) => {
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.user?.address}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.delivery_address}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.user?.address}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.user?.address}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Meter/KG",
@@ -353,13 +431,17 @@ const GstrPrint = () => {
         if (record?.model == "yarn_sale_bills"){
           return(
             <div>
-              {record?.yarn_sale?.kg}
+              {record?.yarn_sale?.kg} <span style={{
+                fontWeight: 600
+              }}>KG</span>
             </div>
           )
         } else if (record?.model == "job_work_bills"){
           return(
             <div>
-              {record?.job_work?.kg}
+              {record?.job_work?.kg} <span style={{
+                fontWeight: 600
+              }}>KG</span>
             </div>
           )
         } else if (record?.model == "beam_sale_bill"){
@@ -402,7 +484,20 @@ const GstrPrint = () => {
             </div>
           )
         } else {
+          // Beam sale bill handler 
+          let yarn_stock_company = undefined ; 
 
+          record?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
+            if (element?.inhouse_waraping_detail?.is_primary){
+              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
+            }
+          })
+
+          return(
+            <div>
+              {yarn_stock_company?.hsn_no || "----"}
+            </div>
+          )
         }
       }
     },
@@ -531,21 +626,101 @@ const GstrPrint = () => {
       dataIndex: "gst_no",
       key: "gst_no",
       render: (text, record) => {
-        return(
-          <div>
-            Party company
-          </div>
-        )
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.supplier_company}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.company_name}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.supplier_company}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.supplier_company}
+            </div>
+          )
+        } 
       }
     },
     {
       title: "GST No", 
-      dataIndex: "gst_no"
+      dataIndex: "gst_no", 
+      render: (text, record) => {
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.user?.gst_no}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.company_gst_number}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.user?.gst_no}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.user?.gst_no}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Place of Supply",
       dataIndex: "place_of_supply",
       key: "place_of_supply",
+      render: (text, record) => {
+        let bill_model = record?.model ; 
+        
+        if (bill_model == "yarn_sale_bills"){
+          return(
+            <div>
+              {record?.yarn_sale?.supplier?.user?.address}
+            </div>
+          )
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          return(
+            <div>
+              {record?.party?.delivery_address}
+            </div>
+          ) 
+        } else if (bill_model == "beam_sale_bill"){
+          return(
+            <div>
+              {record?.beam_sale?.supplier?.user?.address}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.job_work?.supplier?.user?.address}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Meter/KG",
@@ -555,13 +730,17 @@ const GstrPrint = () => {
         if (record?.model == "yarn_sale_bills"){
           return(
             <div>
-              {record?.yarn_sale?.kg}
+              {record?.yarn_sale?.kg} <span style={{
+                fontWeight: 600
+              }}>KG</span>
             </div>
           )
         } else if (record?.model == "job_work_bills"){
           return(
             <div>
-              {record?.job_work?.kg}
+              {record?.job_work?.kg} <span style={{
+                fontWeight: 600
+              }}>KG</span>
             </div>
           )
         } else if (record?.model == "beam_sale_bill"){
@@ -604,7 +783,20 @@ const GstrPrint = () => {
             </div>
           )
         } else {
+          // Beam sale bill handler 
+          let yarn_stock_company = undefined ; 
 
+          record?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
+            if (element?.inhouse_waraping_detail?.is_primary){
+              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
+            }
+          })
+
+          return(
+            <div>
+              {yarn_stock_company?.hsn_no || "----"}
+            </div>
+          )
         }
       }
     },
@@ -754,21 +946,70 @@ const GstrPrint = () => {
       title: "Company Name",
       dataIndex: "company_name",
       key: "company_name",
+      render: (text, record) => {
+        return(
+          <div>{selectedCompany?.company_name}</div>
+        )
+      }
     },
     {
       title: "Supplier/Party Company",
       dataIndex: "party_company",
       key: "party_company",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>{record?.party?.company_name}</div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.supplier_company || "-"}
+            </div>
+          )
+        }
+
+      }
     },
     {
       title: "No of GSTIN (2)",
       dataIndex: "gstin_count",
       key: "gstin_count",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>
+              {record?.party?.user?.gst_no}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.user?.gst_no}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Place of Supply",
       dataIndex: "place_of_supply",
       key: "place_of_supply",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>
+              {record?.party?.delivery_address}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.user?.address}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Amount",
@@ -777,9 +1018,19 @@ const GstrPrint = () => {
       render: (text, record) => {
         let amount = text
         if (amount == null){
+          let details = record?.credit_note_details || record?.debit_note_details ; 
+          let totalAmount = 0 ; 
+          details?.map((element) => {
+            totalAmount += +element?.amount || 0; 
+          })
 
+          return(
+            <div>
+              {parseFloat(totalAmount).toFixed(2)}
+            </div>
+          )
+          
         }
-        
         return(
           <div>
             {text}
@@ -829,20 +1080,289 @@ const GstrPrint = () => {
       key: "net_amount",
     },
   ];
+
+  // HSN Wise Summary related data information ==========================
+  const HSNWiseSummaryColumns = [
+    {
+      title: 'No',
+      dataIndex: 'no',
+      key: 'no',
+      className: "gstr-index-column ", 
+      render: (text, record, index) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {index + 1}
+          </div>
+        )
+      }
+    },
+    {
+      title: 'Company Name',
+      dataIndex: 'companyName',
+      key: 'companyName',
+      render: (text, record) => {
+        return(
+          <div>{selectedCompany?.company_name}</div>
+        )
+      }
+      
+    },
+    {
+      title: 'HSN',
+      dataIndex: 'hsn',
+      key: 'hsn',
+    },
+    {
+      title: 'Meter/KG',
+      dataIndex: 'meter',
+      key: 'meter',
+      render: (text, record) => {
+        if (record?.type == "yarn_sale_bills"){ 
+          return(
+            <div>
+              {record?.kg} 
+            </div>
+          )
+        } else if (record?.type == "job_work_bills"){
+          return(
+            <div>
+              {record?.kg}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.meter}
+            </div>
+          )
+        }
+      }
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+    },
+    {
+      title: 'GST Rate',
+      dataIndex: 'gstRate',
+      key: 'gstRate',
+      render: (text, record) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {text}
+          </div>
+        )
+      }
+    },
+    {
+      title: 'SGST',
+      dataIndex: 'sgst',
+      key: 'sgst',
+    },
+    {
+      title: 'CGST',
+      dataIndex: 'cgst',
+      key: 'cgst',
+    },
+    {
+      title: 'IGST',
+      dataIndex: 'igst',
+      key: 'igst',
+    },
+    {
+      title: 'Net Amount',
+      dataIndex: 'netAmount',
+      key: 'netAmount',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+      render: (text, record) => {
+        let model = undefined ;
+        let bill_model = text;  
+        if (bill_model == "yarn_sale_bills"){
+          model = "Yarn sale"
+        } else if (bill_model == "beam_sale_bill"){
+          model = "Beam sale" ; 
+        } else if (bill_model == "sale_bills") {
+          model = "Grey Job Sale"
+        } else if (bill_model == "job_gray_sale_bill"){
+          model = "Inhouse"
+        } else {
+          model = "Job Work"
+        }
+        return(
+          <div style={{
+            color : bill_model == "sale_bills"?SALE_TAG_COLOR:
+              bill_model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
+              bill_model == "job_gray_sale_bill"?SALE_TAG_COLOR:
+              bill_model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR: "gray",
+            fontWeight: 600
+          }}>
+            {model}
+          </div>
+        )
+      }
+    },
+  ];
+  const [b2bInvoiceHsnSummary, setB2bInvoiceHsnSummary] = useState([]) ; 
+
+  useEffect(() => {
+    if (reportData !== undefined && Object.entries(reportData)?.length > 0 ){
+      let HSNB2BInvoices = [] ; 
+
+      const groupedData = reportData?.b2b_invoice?.reduce((acc, item) => {
+        if (!acc[item.model]) {
+          acc[item.model] = {};
+        }
+
+        let HSN_number = undefined;  
+        let bill_model = item?.model ; 
+
+        if (bill_model == "yarn_sale_bills"){
+          HSN_number = item?.yarn_sale?.yarn_stock_company?.hsn_no ; 
+        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+          HSN_number = item?.inhouse_quality?.vat_hsn_no ; 
+        } else if (bill_model == "job_work_bills"){
+          HSN_number = item?.job_work?.yarn_stock_company?.hsn_no ; 
+        } else{
+          let yarn_stock_company = undefined ; 
+          item?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
+            if (element?.inhouse_waraping_detail?.is_primary){
+              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
+            }
+          })
+          HSN_number = yarn_stock_company?.hsn_no; 
+        }
+      
+        if (!acc[item.model][HSN_number]) {
+          acc[item.model][HSN_number] = [];
+        }
+      
+        acc[item.model][HSN_number].push(item);
+      
+        return acc;
+      }, {});
+
+      Object.entries(groupedData).forEach(([key, value]) => {
+        
+        Object.entries(value).forEach(([hsn_number, bills]) => {
+          let GST_Rate_Wise_data = {} ; 
+
+          bills?.map((element) => {
+            let GST_Rate = 0 ;
+            let total_meter = 0 ; 
+            let total_kg = 0 ; 
+
+            if (key == "yarn_sale_bill"){
+              total_kg = +element?.yarn_sale?.kg ; 
+            } else if (key == "job_work_bills"){
+              total_kg += +element?.job_work?.kg ; 
+            } else if (key == "beam_sale_bill"){
+              total_meter += element?.beam_sale?.total_meter ; 
+            } else {
+              total_meter += +element?.total_meter ; 
+            }
+            
+            let total_amount = +element?.amount ; 
+            let SGST_amount = +element?.SGST_amount ; 
+            let CGST_amount = +element?.CGST_amount ;
+            let IGST_amount = +element?.ISGT_amount || 0 ;
+            
+            GST_Rate = ((SGST_amount + CGST_amount + IGST_amount) / total_amount)*100;
+            GST_Rate = Math.round(GST_Rate) ; 
+            GST_Rate = isNaN(GST_Rate)?0:GST_Rate;  
+
+            let total_net_amount = +element?.net_amount;  
+
+            // Initialize the GST_Rate entry if it doesn't exist
+            if (!GST_Rate_Wise_data[GST_Rate]) {
+              GST_Rate_Wise_data[GST_Rate] = {
+                total_amount: 0,
+                total_sgst: 0,
+                total_cgst: 0,
+                total_igst: 0,
+                total_net_amount: 0,
+                total_meter: 0,
+                total_kg: 0
+              };
+            }
+
+            // Reference the object for the given GST_Rate
+            const total_info = GST_Rate_Wise_data[GST_Rate];
+
+            // Create a mapping of fields to their values
+            const fieldValues = {
+              total_amount,
+              total_cgst: CGST_amount,
+              total_sgst: SGST_amount,
+              total_igst: IGST_amount,
+              total_net_amount,
+              total_meter,
+              total_kg
+            };
+
+            // Update the fields dynamically
+            for (const [key, value] of Object.entries(fieldValues)) {
+              total_info[key] += +value; // Ensure numeric addition
+            }
+          })
+
+          Object.entries(GST_Rate_Wise_data).forEach(([gst_rate, value]) => {
+            let total_meter = value?.total_meter; 
+            let total_kg = value?.total_kg; 
+            let total_sgst = value?.total_sgst ; 
+            let total_cgst = value?.total_cgst ; 
+            let total_igst = value?.total_igst ; 
+            let total_net_amount = value?.total_net_amount; 
+            let total_amount = value?.total_amount ; 
+
+            HSNB2BInvoices.push({
+              hsn: hsn_number, 
+              meter: total_meter, 
+              kg: total_kg, 
+              amount: total_amount, 
+              gstRate: gst_rate, 
+              sgst: total_sgst, 
+              cgst: total_cgst, 
+              igst: total_igst, 
+              netAmount: total_net_amount, 
+              type: key
+            })
+          }) 
+          
+        })
+      })
+      setB2bInvoiceHsnSummary(HSNB2BInvoices) ; 
+    }
+  }, [reportData])
+
   
   
   const RenderTableList = () => {
     return (
       <div className="printable-table-div">
-        {/* Table of B2B */}
-        {key === "1" || key === "3" ? (
+        
+        {key === "1" ? (
           <>
             <div style={{
               fontWeight: 600, 
               fontSize: 20, 
               marginBottom: 10
             }}>
-              B2B Invoices
+              B2B Invoices  |
+              <span style={{
+                marginLeft: 10,
+                color: "blue"
+              }}>
+                {reportData?.b2b_invoice?.length} Bills
+              </span>
             </div>
 
             {/* ============== B2B invoice information table =============  */}
@@ -850,6 +1370,82 @@ const GstrPrint = () => {
               columns={B2BInvoiceColumn}
               dataSource={reportData?.b2b_invoice}
               pagination={false}
+              summary={() => {
+                let total_meter = 0 ; 
+                let total_kg = 0 ;
+                let total_amount = 0 ; 
+                let total_sgst = 0 ; 
+                let total_cgst = 0 ; 
+                let total_igst = 0 ; 
+                let total_net_amount = 0 ;
+
+                reportData?.b2b_invoice?.map((element) => {
+                  let bill_model = element?.model ; 
+                  
+                  // Count Meter and KG
+                  if (bill_model == "yarn_sale_bills"){
+                    total_kg += +element?.yarn_sale?.kg ; 
+                  } else if (bill_model == "job_work_bills"){
+                    total_kg += +element?.job_work?.kg ; 
+                  } else if (bill_model == "beam_sale_bill"){
+                    total_meter += +element?.beam_sale?.total_meter ; 
+                  } else {
+                    total_meter += +element?.total_meter || 0 ;
+                  }
+
+                  // Count total Amount 
+                  total_amount += +element?.amount; 
+                  total_sgst += +element?.SGST_amount ; 
+                  total_cgst += +element?.CGST_amount ; 
+                  total_igst += +element?.IGST_amount ; 
+                  total_net_amount += +element?.net_amount ; 
+                })
+
+                total_amount = parseFloat(total_amount).toFixed(2); 
+                total_sgst = parseFloat(total_sgst).toFixed(2); 
+                total_cgst = parseFloat(total_cgst).toFixed(2) ; 
+                total_igst = parseFloat(total_igst).toFixed(2) ; 
+                total_net_amount = parseFloat(total_net_amount).toFixed(2) ; 
+ 
+                return(
+                  <>
+                    <Table.Summary.Row key={"total"}>
+                      <Table.Summary.Cell>
+                        <Text>
+                          Total
+                        </Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_meter} M / {total_kg} KG
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_sgst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_cgst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_igst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_net_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                )
+              }}
             />
 
             <div style={{
@@ -860,6 +1456,14 @@ const GstrPrint = () => {
               ◈ Zero tax rate invoice are found and removed in this report is are as follow: 
             </div>
 
+            <div style={{
+              marginTop: 7,
+              fontSize: 15, 
+              fontWeight: 600
+            }}>
+              Total {reportData?.skip_b2b_bills?.length} Bills
+            </div>
+
             <Table
               style={{
                 marginTop: 15
@@ -867,71 +1471,258 @@ const GstrPrint = () => {
               columns={NoTaxInvoiceColumn}
               dataSource={reportData?.skip_b2b_bills}
               pagination={false}
-            />
+              summary={() => {
 
+                let total_meter = 0 ; 
+                let total_kg = 0 ;
+                let total_amount = 0 ; 
+                let total_sgst = 0 ; 
+                let total_cgst = 0 ; 
+                let total_igst = 0 ; 
+                let total_net_amount = 0 ;
+
+                reportData?.skip_b2b_bills?.map((element) => {
+                  let bill_model = element?.model ; 
+                  
+                  // Count Meter and KG
+                  if (bill_model == "yarn_sale_bills"){
+                    total_kg += +element?.yarn_sale?.kg ; 
+                  } else if (bill_model == "job_work_bills"){
+                    total_kg += +element?.job_work?.kg ; 
+                  } else if (bill_model == "beam_sale_bill"){
+                    total_meter += +element?.beam_sale?.total_meter ; 
+                  } else {
+                    total_meter += +element?.total_meter || 0 ;
+                  }
+
+                  // Count total Amount 
+                  total_amount += +element?.amount; 
+                  total_sgst += +element?.SGST_amount ; 
+                  total_cgst += +element?.CGST_amount ; 
+                  total_igst += +element?.IGST_amount ; 
+                  total_net_amount += +element?.net_amount ; 
+                })
+
+                total_amount = parseFloat(total_amount).toFixed(2); 
+                total_sgst = parseFloat(total_sgst).toFixed(2); 
+                total_cgst = parseFloat(total_cgst).toFixed(2) ; 
+                total_igst = parseFloat(total_igst).toFixed(2) ; 
+                total_net_amount = parseFloat(total_net_amount).toFixed(2) ;
+                
+                return(
+                  <>
+                    <Table.Summary.Row key={"total"}>
+                      <Table.Summary.Cell>
+                        <Text>
+                          Total
+                        </Text>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_meter} M / {total_kg} KG
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_sgst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_cgst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_igst}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_net_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                )
+              }}
+            />
 
           </>
         ) : null}
 
-        {key === "3" ? <br /> : null}
+        {key === "3" ? (
+          <>
+            <div style={{
+              color: "#1677FF", 
+              marginBottom: 6, 
+              fontWeight: 600, 
+              fontSize: 18
+            }}>
+              HSN-wise Summary
+            </div>
+
+            <div style={{
+              fontSize: 16, 
+              marginBottom: 10, 
+            }}>
+              B2B Invoices  | <span style={{
+                color: "blue"
+              }}>
+              {b2bInvoiceHsnSummary?.length} Bills
+              </span>
+            </div>
+
+            <Table
+              columns={HSNWiseSummaryColumns}
+              dataSource={b2bInvoiceHsnSummary || []}
+              pagination = {false}
+              summary={() => {
+                
+                let total_meter = 0; 
+                let total_kg = 0 ; 
+                let total_sgst = 0 ;
+                let total_cgst = 0 ; 
+                let total_isgt = 0 ; 
+                let total_amount = 0 ; 
+                let total_net_amount = 0 ;
+
+                b2bInvoiceHsnSummary?.map((element) => {
+                  console.log(element?.meter);
+                  
+                  total_meter += isNaN(element?.meter)?0:+element?.meter ; 
+                  total_kg += +element?.kg;  
+                  total_sgst += +element?.sgst; 
+                  total_cgst += +element?.cgst ; 
+                  total_isgt += +element?.igst; 
+                  total_net_amount += +element?.netAmount ; 
+                  total_amount += +element?.amount; 
+                })
+
+                return(
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      Total
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_meter} M / {total_kg} KG
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_amount}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_sgst}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_cgst}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_isgt}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_net_amount}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                )
+              }}
+            />
+          </>
+        ):null}
 
         {/* Table of Debit Credit */}
-        {key === "2" || key === "3" ? (
+        {key === "2" ? (
           <>
             <div style={{
               fontWeight: 600, 
               fontSize: 20, 
               marginBottom: 10
             }}>
-              Credit/Debit Note
+              Credit/Debit Note :
+              <span style={{
+                color: "blue", 
+                marginLeft: 5
+              }}>
+                { reportData?.credit_debit_note?.length} Notes
+              </span>
             </div>
             <Table
               columns={DebiteNoteCreditNoteColumns}
               dataSource={reportData?.credit_debit_note}
               pagination = {false}
+              summary={() => {
+                let total_amount = 0 ;
+                let total_sgst_amount = 0 ;
+                let total_cgst_amount = 0 ; 
+                let total_igst_amount = 0 ; 
+                let total_net_amount = 0 ; 
+
+                reportData?.credit_debit_note?.map((element) => {
+
+                  // Total amount related information
+                  if (element?.amount == null){
+                    let details = element?.credit_note_details || element?.debit_note_details ; 
+                    let totalAmount = 0 ; 
+                    details?.map((record) => {
+                      totalAmount += +record?.amount || 0; 
+                    })
+                    total_amount += +totalAmount ; 
+
+                  } else {
+                    total_amount += +element?.amount ; 
+                  }
+
+                  total_sgst_amount += +element?.SGST_amount ; 
+                  total_cgst_amount += +element?.CGST_amount ; 
+                  total_igst_amount += +element?.IGST_amount ; 
+                  total_net_amount += +element?.net_amount ; 
+
+                })
+
+                total_amount = parseFloat(total_amount).toFixed(2) ; 
+                total_sgst_amount = parseFloat(total_amount).toFixed(2) ; 
+                total_cgst_amount = parseFloat(total_cgst_amount).toFixed(2) ; 
+                total_igst_amount = parseFloat(total_igst_amount).toFixed(2) ; 
+                total_net_amount = parseFloat(total_net_amount).toFixed(2) ; 
+
+                return(
+                  <>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        Total
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_sgst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_cgst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_igst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_net_amount}
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                )
+              }}
             />
-            {/* <table className="printable_table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Debit/Credit</th>
-                  <th>Type</th>
-                  <th>Date</th>
-                  <th>Company Name</th>
-                  <th>Supplier/Party Company</th>
-                  <th>No of GSTIN (2)</th>
-                  <th>Place of Supply</th>
-                  <th>Amount</th>
-                  <th>SGST</th>
-                  <th>CGST</th>
-                  <th>IGST</th>
-                  <th>Net Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reportData?.credit_debit_note?.map((item, index) => {
-                  return (
-                    <tr key={index + "_" + key}>
-                      <td>{index + 1}</td>
-                      <td>
-                        {item?.debit_note_number || item?.credit_note_number}
-                      </td>
-                      <td>{item?.debit_note_type || item?.credit_note_type}</td>
-                      <td>{dayjs(item?.createdAt).format("DD-MM-YYYY")}</td>
-                      <td>{selectedCompany?.company_name}</td>
-                      <td>{""}</td>
-                      <td>{selectedCompany?.gst_no}</td>
-                      <td>{""}</td>
-                      <td>{item?.amount}</td>
-                      <td>{item?.SGST_amount}</td>
-                      <td>{item?.CGST_amount}</td>
-                      <td>{item?.IGST_amount}</td>
-                      <td>{item?.net_amount}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table> */}
           </>
         ) : null}
       </div>

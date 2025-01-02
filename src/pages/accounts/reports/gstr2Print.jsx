@@ -333,86 +333,54 @@ const GstrPrint2 = () => {
     },
     {
       title: "Party Company",
-      dataIndex: "gst_no",
-      key: "gst_no",
+      dataIndex: "party_company",
       render: (text, record) => {
-        return(
-          <div>
-            Party company
-          </div>
-        )
+        if (record?.model == "purchase_taka_bills"){
+          return(
+            <div>
+              {record?.purchase_taka_challan?.supplier?.supplier_company}
+            </div>
+          )
+        } else if (record?.model == "job_taka_bills"){
+          return(
+            <div>
+              {record?.job_taka_challan?.supplier?.supplier_company}
+            </div>  
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.supplier_company}
+            </div>
+          )
+        }
       }
     },
     {
       title: "GST No", 
-      dataIndex: "gst_no"
+      dataIndex: "gst_no", 
+      render: (text, record) => {
+        if (record?.model == "purchase_taka_bills"){
+          return(
+            <div>
+              {record?.purchase_taka_challan?.supplier?.user?.gst_no}
+            </div>
+          )
+        } else if (record?.model == "job_taka_bills"){
+          return(
+            <div>
+              {record?.job_taka_challan?.supplier?.user?.gst_no}
+            </div>  
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.user?.gst_no}
+            </div>
+          )
+        }
+      }
     },
-    // {
-    //   title: "Place of Supply",
-    //   dataIndex: "place_of_supply",
-    //   key: "place_of_supply",
-    // },
-    // {
-    //   title: "Meter/KG",
-    //   dataIndex: "total_meter",
-    //   key: "total_meter",
-    //   render: (text, record) => {
-    //     if (record?.model == "yarn_sale_bills"){
-    //       return(
-    //         <div>
-    //           {record?.yarn_sale?.kg}
-    //         </div>
-    //       )
-    //     } else if (record?.model == "job_work_bills"){
-    //       return(
-    //         <div>
-    //           {record?.job_work?.kg}
-    //         </div>
-    //       )
-    //     } else if (record?.model == "beam_sale_bill"){
-    //       return(
-    //         <div>
-    //           {record?.beam_sale?.total_meter}
-    //         </div>
-    //       )
-    //     }else {
-    //       return(
-    //         <div>
-    //           {record?.total_meter || "Keyur"}
-    //         </div>
-    //       )
-    //     }
-    //   }
-    // },
-    // {
-    //   title: "HSN",
-    //   dataIndex: "hsn",
-    //   key: "hsn",
-    //   render: (text, record) => {
-    //     let bill_model = record?.model ; 
-    //     if (bill_model == "yarn_sale_bills"){
-    //       return(
-    //         <div>
-    //           {record?.yarn_sale?.yarn_stock_company?.hsn_no}
-    //         </div>
-    //       )
-    //     } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
-    //       return(
-    //         <div>
-    //           {record?.inhouse_quality?.vat_hsn_no}
-    //         </div>
-    //       )
-    //     } else if (bill_model == "job_work_bills"){
-    //       return(
-    //         <div>
-    //           {record?.job_work?.yarn_stock_company?.hsn_no}
-    //         </div>
-    //       )
-    //     } else {
-
-    //     }
-    //   }
-    // },
     {
       title: "Amount",
       dataIndex: "amount",
@@ -477,197 +445,6 @@ const GstrPrint2 = () => {
               bill_model == "receive_size_beam_bill"?BEAM_RECEIVE_TAG_COLOR:
               bill_model == "yarn_bills"?YARN_SALE_BILL_TAG_COLOR:
               bill_model == "job_taka_bills"?JOB_TAG_COLOR: "gray",
-            fontWeight: 600
-          }}>
-            {model}
-          </div>
-        )
-      }
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (text, record) => {
-        let is_paid = record?.is_paid ;
-        return(
-          <div style = {{
-            color: is_paid == false?"red":"green", 
-            fontWeight: 600 
-          }}>
-            {is_paid == false?"Unpaid":"Paid"}
-          </div>
-        ) 
-      }
-    },
-  ];
-
-  // NoTax invoice related table columns ================================
-  const NoTaxInvoiceColumn = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      className : "gstr-index-column", 
-      render: (text, record, index) => {
-        return(
-          <div style={{
-            fontWeight: 600
-          }}>{index + 1}</div>
-        )
-      }
-    },
-    {
-      title: "Bill No.",
-      dataIndex: "invoice_no",
-      key: "invoice_no",
-      render: (text, record) => {
-        return(
-          <div style={{
-            color: "red", 
-            fontWeight: 600
-          }}>
-            {text}
-          </div>
-        )
-      }
-    },
-    {
-      title: "Bill Date",
-      dataIndex: "bill_date",
-      key: "bill_date",
-      render: (text) => dayjs(text).format("DD-MM-YYYY"),
-    },
-    {
-      title: "Company Name",
-      dataIndex: "company_name",
-      key: "company_name",
-      render: (text, record) => {
-        return(
-          <div>{selectedCompany?.company_name}</div>
-        )
-      }
-    },
-    {
-      title: "Party Company",
-      dataIndex: "gst_no",
-      key: "gst_no",
-      render: (text, record) => {
-        return(
-          <div>
-            Party company
-          </div>
-        )
-      }
-    },
-    {
-      title: "GST No", 
-      dataIndex: "gst_no"
-    },
-    {
-      title: "Place of Supply",
-      dataIndex: "place_of_supply",
-      key: "place_of_supply",
-    },
-    {
-      title: "Meter/KG",
-      dataIndex: "total_meter",
-      key: "total_meter",
-      render: (text, record) => {
-        if (record?.model == "yarn_sale_bills"){
-          return(
-            <div>
-              {record?.yarn_sale?.kg}
-            </div>
-          )
-        } else if (record?.model == "job_work_bills"){
-          return(
-            <div>
-              {record?.job_work?.kg}
-            </div>
-          )
-        } else if (record?.model == "beam_sale_bill"){
-          return(
-            <div>
-              {record?.beam_sale?.total_meter}
-            </div>
-          )
-        }else {
-          return(
-            <div>
-              {record?.total_meter || "Keyur"}
-            </div>
-          )
-        }
-      }
-    },
-    {
-      title: "HSN",
-      dataIndex: "hsn",
-      key: "hsn",
-      render: (text, record) => {
-        let bill_model = record?.model ; 
-        if (bill_model == "yarn_sale_bills"){
-          return(
-            <div>
-              {record?.yarn_sale?.yarn_stock_company?.hsn_no}
-            </div>
-          )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
-          return(
-            <div>
-              {record?.inhouse_quality?.vat_hsn_no}
-            </div>
-          )
-        } else if (bill_model == "job_work_bills"){
-          return(
-            <div>
-              {record?.job_work?.yarn_stock_company?.hsn_no}
-            </div>
-          )
-        } else {
-
-        }
-      }
-    },
-    {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-    },
-    {
-      title: "SGST",
-      dataIndex: "SGST_amount",
-      key: "SGST_amount",
-    },
-    {
-      title: "CGST",
-      dataIndex: "CGST_amount",
-      key: "CGST_amount",
-    },
-    {
-      title: "IGST",
-      dataIndex: "IGST_amount",
-      key: "IGST_amount",
-    },
-    {
-      title: "Net Amount",
-      dataIndex: "net_amount",
-      key: "net_amount",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      render: (text, record) => {
-        let model = undefined ;
-        let bill_model = record?.model ;  
-        return(
-          <div style={{
-            color : bill_model == "sale_bills"?SALE_TAG_COLOR:
-              bill_model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-              bill_model == "job_gray_sale_bill"?SALE_TAG_COLOR:
-              bill_model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR: "gray",
             fontWeight: 600
           }}>
             {model}
@@ -765,21 +542,70 @@ const GstrPrint2 = () => {
       title: "Company Name",
       dataIndex: "company_name",
       key: "company_name",
+      render: (text, record) => {
+        return(
+          <div>{selectedCompany?.company_name}</div>
+        )
+      }
     },
     {
       title: "Supplier/Party Company",
       dataIndex: "party_company",
       key: "party_company",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>{record?.party?.company_name}</div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.supplier_company || "-"}
+            </div>
+          )
+        }
+
+      }
     },
     {
       title: "No of GSTIN (2)",
       dataIndex: "gstin_count",
       key: "gstin_count",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>
+              {record?.party?.user?.gst_no}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.user?.gst_no || "-"}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Place of Supply",
       dataIndex: "place_of_supply",
       key: "place_of_supply",
+      render: (text, record) => {
+        if (record?.party !== null){
+          return(
+            <div>
+              {record?.party?.delivery_address}
+            </div>
+          )
+        } else {
+          return(
+            <div>
+              {record?.supplier?.user?.address || "-"}
+            </div>
+          )
+        }
+      }
     },
     {
       title: "Amount",
@@ -788,9 +614,19 @@ const GstrPrint2 = () => {
       render: (text, record) => {
         let amount = text
         if (amount == null){
+          let details = record?.credit_note_details || record?.debit_note_details ; 
+          let totalAmount = 0 ; 
+          details?.map((element) => {
+            totalAmount += +element?.amount || 0; 
+          })
 
+          return(
+            <div>
+              {parseFloat(totalAmount).toFixed(2)}
+            </div>
+          )
+          
         }
-        
         return(
           <div>
             {text}
@@ -861,26 +697,63 @@ const GstrPrint2 = () => {
               columns={B2BInvoiceColumn}
               dataSource={reportData?.b2b_invoice}
               pagination={false}
-            />
+              summary={() => {
+                let total_amount = 0 ; 
+                let total_cgst = 0 ; 
+                let total_sgst = 0 ; 
+                let total_igst = 0 ; 
+                let total_net_amount = 0 ; 
 
-            {/* <div style={{
-              fontWeight: 600,
-              color: "red", 
-              marginTop: 20
-            }}>
-              ◈ Zero tax rate invoice are found and removed in this report is are as follow: 
-            </div>
+                reportData?.b2b_invoice?.map((element) => {
+                  if (element?.model == "yarn_bills"){
+                    total_amount += +element?.discount_brokerage_amount ; 
+                  } else {
+                    total_amount += element?.amount ; 
+                  }
 
-            <Table
-              style={{
-                marginTop: 15
+                  total_cgst += +element?.CGST_amount ; 
+                  total_sgst += +element?.SGST_amount ; 
+                  total_igst += +element?.IGST_amount ; 
+                  total_net_amount += +element?.net_amount ; 
+                })
+
+                total_amount = parseFloat(total_amount).toFixed(2) ; 
+                total_sgst = parseFloat(total_sgst).toFixed(2) ; 
+                total_cgst = parseFloat(total_cgst).toFixed(2) ; 
+                total_igst = parseFloat(total_igst).toFixed(2) ; 
+                total_net_amount = parseFloat(total_net_amount).toFixed(2) ; 
+
+                return(
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      Total
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_amount}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_sgst}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_cgst}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_igst}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {total_net_amount}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                )
               }}
-              columns={NoTaxInvoiceColumn}
-              dataSource={reportData?.skip_b2b_bills}
-              pagination={false}
-            /> */}
-
-
+            />
           </>
         ) : null}
 
@@ -894,12 +767,84 @@ const GstrPrint2 = () => {
               fontSize: 20, 
               marginBottom: 10
             }}>
-              Credit/Debit Note
+              Credit/Debit Note :<span style={{
+                color: "blue", 
+                marginLeft: 10
+              }}>
+                {reportData?.credit_debit_note?.length} Notes
+              </span>
             </div>
             <Table
               columns={DebiteNoteCreditNoteColumns}
               dataSource={reportData?.credit_debit_note}
               pagination = {false}
+              summary={() => {
+                let total_amount = 0 ;
+                let total_sgst_amount = 0 ;
+                let total_cgst_amount = 0 ; 
+                let total_igst_amount = 0 ; 
+                let total_net_amount = 0 ; 
+
+                reportData?.credit_debit_note?.map((element) => {
+
+                  // Total amount related information
+                  if (element?.amount == null){
+                    let details = element?.credit_note_details || element?.debit_note_details ; 
+                    let totalAmount = 0 ; 
+                    details?.map((record) => {
+                      totalAmount += +record?.amount || 0; 
+                    })
+                    total_amount += +totalAmount ; 
+
+                  } else {
+                    total_amount += +element?.amount ; 
+                  }
+
+                  total_sgst_amount += +element?.SGST_amount ; 
+                  total_cgst_amount += +element?.CGST_amount ; 
+                  total_igst_amount += +element?.IGST_amount ; 
+                  total_net_amount += +element?.net_amount ; 
+
+                })
+
+                total_amount = parseFloat(total_amount).toFixed(2) ; 
+                total_sgst_amount = parseFloat(total_amount).toFixed(2) ; 
+                total_cgst_amount = parseFloat(total_cgst_amount).toFixed(2) ; 
+                total_igst_amount = parseFloat(total_igst_amount).toFixed(2) ; 
+                total_net_amount = parseFloat(total_net_amount).toFixed(2) ; 
+
+                return(
+                  <>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell>
+                        Total
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell></Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_sgst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_cgst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_igst_amount}
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell>
+                        {total_net_amount}
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </>
+                )
+              }}
             />
           </>
         ) : null}

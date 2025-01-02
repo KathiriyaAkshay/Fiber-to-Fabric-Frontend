@@ -1,7 +1,10 @@
 import { Button, DatePicker, Flex, Select, Table, Typography } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
+import { useQuery } from "@tanstack/react-query";
+import { getGstr1ReportService } from "../../../api/requests/accounts/reports";
+import moment from "moment";
 
 const Gstr3 = () => {
   const { companyListRes } = useContext(GlobalContext);
@@ -13,17 +16,11 @@ const Gstr3 = () => {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const submitHandler = () => {
-    if (company && companyListRes) {
-      const companyData = companyListRes?.rows?.find(
-        ({ id }) => id === company
-      );
-      console.log({ companyData });
-      setSelectedCompany(companyData);
-    }
-    setIsSubmitted(true);
-  };
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }   
 
+  // Sale summary related columns ==========================
   const saleSummaryColumns = [
     { title: "Sales Summary", dataIndex: "key", key: "key" },
     {
@@ -54,6 +51,102 @@ const Gstr3 = () => {
     { title: "Total Amt", dataIndex: "total_amt", key: "total_amt" },
     { title: "Round off", dataIndex: "round_off", key: "round_off" },
   ];
+
+  // Sale Summary data =======================================
+  const [saleSummaryData, setSaleSummaryData] = useState([]) ; 
+
+  const {data: gstr1Data, isFetching: isLoadingGstr1} = useQuery({
+    queryKey: ["gstr-1", "report", "data"], 
+    queryFn: async () => {
+      const res = await getGstr1ReportService({
+        params: {
+          company_id: company, 
+          from: dayjs(fromDate).format("YYYY-MM-DD"),
+          to: dayjs(toDate).format("YYYY-MM-DD"),
+        }
+      }); 
+      setIsSubmitted(false); 
+      return res?.data?.data ; 
+    }, 
+    enabled: isSubmitted
+  }); 
+
+  useEffect(() => {
+    if (gstr1Data !== undefined){
+      const groupedData = gstr1Data?.b2b_invoice?.reduce((acc, item) => {
+        // Group by model (e.g. "yarn_sale_bills")
+        if (!acc[item.model]) {
+          acc[item.model] = {};
+        }
+      
+        // Group by SGST inside each model group
+        if (!acc[item.model][item.SGST_value]) {
+          acc[item.model][item.SGST_value] = [];
+        }
+      
+        // Group by CGST inside SGST group
+        if (!acc[item.model][item.SGST_value][item.CGST_value]) {
+          acc[item.model][item.SGST_value][item.CGST_value] = [];
+        }
+      
+        // Add the item to the respective SGST and CGST group
+        acc[item.model][item.SGST_value][item.CGST_value].push(item);
+      
+        return acc;
+      }, {});
+
+      let temp_data = [] ; 
+      Object.entries(groupedData).forEach(([key, value]) => {
+        let bill_name = undefined; 
+        let bill_model = undefined ; 
+        let total_bill_amount = 0 ;
+        let total_sgst_amount = 0 ;
+        let total_cgst_amount = 0 ;
+        let total_igst_amount = 0 
+        let total_net_amount = 0 ;
+        let total_round_off_amount = 0 ;
+
+        if (key == "yarn_sale_bills"){
+          bill_model = "YARN SALE (GST) %"
+        } else if (key == "sale_bills"){
+          bill_model = "GREY SALE (GST) %"
+        } else if (key == "job_grey_sale_bill"){
+          bill_model = "JOB GREY SALE (GST) %"
+        } else if (key == "beam_sale_bill"){
+          bill_model = "BEAM SALE (GST) %"
+        } else {
+          bill_model = "JOB WORK SALE (GST) %"
+        }; 
+
+        Object.entries(value).forEach(([sgst, cgst_data]) => {
+          
+          Object.entries(cgst_data).forEach(([cgst, bills]) => {
+            bill_name = `${bill_model} ( ${sgst} + ${cgst} )` ; 
+            temp_data.push({
+              key: `${bill_model} ( ${sgst} + ${cgst} )`
+            })
+            bills?.map((element) => {
+              console.log(element);
+            })
+          });
+        });
+      }); 
+      setSaleSummaryData(temp_data) ; 
+    }
+
+  }, [gstr1Data, isLoadingGstr1]) ; 
+
+  const submitHandler = () => {
+    if (company && companyListRes) {
+      const companyData = companyListRes?.rows?.find(
+        ({ id }) => id === company
+      );
+      console.log({ companyData });
+      setSelectedCompany(companyData);
+    }
+    setIsSubmitted(true);
+  };
+
 
   const saleReturnSummaryColumns = [
     { title: "Sales Return Summary", dataIndex: "key", key: "key" },
@@ -189,6 +282,7 @@ const Gstr3 = () => {
               <DatePicker
                 value={fromDate}
                 onChange={(selectedDate) => setFromDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -198,6 +292,7 @@ const Gstr3 = () => {
               <DatePicker
                 value={toDate}
                 onChange={(selectedDate) => setToDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
 
@@ -256,7 +351,7 @@ const Gstr3 = () => {
             <Table
               style={{ border: "1px solid #ccc" }}
               columns={saleSummaryColumns}
-              dataSource={[]}
+              dataSource={saleSummaryData}
               pagination={false}
               summary={(pageData) => {
                 return (
