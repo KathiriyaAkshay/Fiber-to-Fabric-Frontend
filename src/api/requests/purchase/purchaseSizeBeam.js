@@ -76,3 +76,7 @@ export function deleteGeneralPurchaseRequest({ id, params }) {
     params,
   });
 }
+
+export function returnPuchaseBeamRequest({data, params}){
+  return api.post(`order-master/recive-size-beam/return/create`, data, {params})
+}
