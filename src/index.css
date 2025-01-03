@@ -1365,3 +1365,14 @@ h2 {
   font-weight: bold;
   color: #333;
 }
+
+.gstr3b-report-title{
+  color: green;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.tax-total-amount-row td{
+  color: green !important;
+}
