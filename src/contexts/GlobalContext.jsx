@@ -25,6 +25,10 @@ const GlobalContextProvider = (props) => {
     }
   }, [companyListRes]);
 
+  useEffect(() => {
+    localStorage.setItem("currentYearEnd", JSON.stringify(currentYearEnd));
+  }, []);
+
   return (
     <GlobalContext.Provider
       value={{

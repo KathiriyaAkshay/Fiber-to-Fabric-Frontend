@@ -15,8 +15,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentUser } from "../../../api/hooks/auth";
-import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import { usePagination } from "../../../hooks/usePagination";
 import { getSizeBeamOrderListRequest } from "../../../api/requests/orderMaster";
@@ -32,7 +30,7 @@ function SizeBeamOrderList() {
   const navigate = useNavigate();
   const [monthStartDate, monthEndDate] = currentMonthStartDateEndDate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  const { company, companyId, financialYearEnd } = useContext(GlobalContext);
+  const { companyId, financialYearEnd } = useContext(GlobalContext);
   const [fromDate, setFromDate] = useState(dayjs(monthStartDate));
   const [toDate, setToDate] = useState(dayjs(monthEndDate));
   const debouncedFromDate = useDebounce(
@@ -234,7 +232,7 @@ function SizeBeamOrderList() {
       title: "Order Status",
       dataIndex: "status",
       key: "status",
-      render: (text, record) =>
+      render: (text) =>
         text == "FINISHED" ? (
           <>
             <Tag color="green">{text}</Tag>
@@ -249,7 +247,7 @@ function SizeBeamOrderList() {
       title: "Print Challan",
       dataIndex: "print_challan_status",
       key: "print_challan_status",
-      render: (text, record) =>
+      render: (text) =>
         text == "PRINTED" ? (
           <>
             <Tag color="green">{text}</Tag>
@@ -265,13 +263,13 @@ function SizeBeamOrderList() {
       render: (sizeBeamOrder, record) => {
         const {
           id,
-          order_date,
-          total_pipe,
+          // order_date,
+          // total_pipe,
           pending_meter,
-          status,
-          print_challan_status,
-          company = {},
-          yarn_stock_company = {},
+          // status,
+          // print_challan_status,
+          // company = {},
+          // yarn_stock_company = {},
         } = sizeBeamOrder;
 
         let total_meter = 0;
