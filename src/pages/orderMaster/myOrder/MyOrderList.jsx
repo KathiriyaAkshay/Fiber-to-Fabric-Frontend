@@ -375,7 +375,11 @@ const MyOrderList = () => {
             <DeleteMyOrder details={details} />
 
             {orderType === "taka(inhouse)" && (
-              <Button>
+              <Button
+                onClick={() =>
+                  navigate("/order-master/schedule-delivery-list/add")
+                }
+              >
                 <ClockCircleOutlined />
               </Button>
             )}
