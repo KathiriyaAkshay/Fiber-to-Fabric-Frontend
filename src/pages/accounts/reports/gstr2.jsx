@@ -34,7 +34,6 @@ const Gstr2 = () => {
       const companyData = companyListRes?.rows?.find(
         ({ id }) => id === company
       );
-      console.log({ companyData });
       setSelectedCompany(companyData);
     }
     setIsSubmitted(true);
@@ -71,7 +70,11 @@ const Gstr2 = () => {
     },
   ];
 
-  const { data: gstr2Data, isFetching: isLoadingGstr2 } = useQuery({
+  const {
+    data: gstr2Data,
+    isFetching: isLoadingGstr2,
+    isError,
+  } = useQuery({
     queryKey: ["gstr-1", "report", "data"],
     queryFn: async () => {
       const res = await getGstr2ReportService({
@@ -86,6 +89,13 @@ const Gstr2 = () => {
     },
     enabled: isSubmitted,
   });
+
+  useEffect(() => {
+    if (isError) {
+      setIsSubmitted(false);
+    }
+  }, [isError]);
+
   const data = useMemo(() => {
     if (gstr2Data && Object.keys(gstr2Data).length) {
       //

@@ -46,8 +46,6 @@ export function deleteYarnOrderRequest({ id, params }) {
   return api.delete(`/order-master/yarn-order/delete/${id}`, { params });
 }
 
-
-
 // yarn order advance
 export function createYarnOrderAdvanceRequest({ id, data, params }) {
   return api.post(`/order-master/yarn-order/advances/create/${id}`, data, {
@@ -88,4 +86,28 @@ export function updateSizeBeamOrderRequest({ id, data, params }) {
 
 export function deleteSizeBeamOrderRequest({ id, params }) {
   return api.delete(`/order-master/size-beam-order/delete/${id}`, { params });
+}
+
+// schedule delivery
+
+export function getScheduleDeliveryListRequest({ params }) {
+  return api.get(`/order-master/schedule-delivery/list`, { params });
+}
+
+export function createScheduleDeliveryRequest({ data, params }) {
+  return api.post(`/order-master/schedule-delivery/create`, data, { params });
+}
+
+export function getScheduleDeliveryByIdRequest({ params }) {
+  return api.get(`/order-master/schedule-delivery/get`, { params });
+}
+
+export function deleteScheduleDeliveryRequest({ id, params }) {
+  return api.delete(`/order-master/schedule-delivery/delete/${id}`, { params });
+}
+
+export function updateScheduleDeliveryRequest({ id, data, params }) {
+  return api.patch(`/order-master/schedule-delivery/update/${id}`, data, {
+    params,
+  });
 }

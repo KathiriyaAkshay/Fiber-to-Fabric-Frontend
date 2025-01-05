@@ -25,7 +25,10 @@ function YearSelection() {
       ]}
       className="w-32 text-primary"
       value={financialYearEnd}
-      onChange={setFinancialYearEnd}
+      onChange={(_, selected) => {
+        setFinancialYearEnd(selected.value);
+        localStorage.setItem("currentYearEnd", JSON.stringify(selected.value));
+      }}
     />
   );
 }

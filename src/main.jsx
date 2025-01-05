@@ -181,6 +181,7 @@ import BeamSaleBillList from "./pages/sale/bill/beamSale/beamSaleBillList";
 import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverageReport";
 import Gstr3 from "./pages/accounts/reports/gstr3";
 import ParticularLedgerReport from "./pages/accounts/reports/particularLedgerReport";
+import LedgerReport from "./pages/accounts/reports/ledgerReport";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -231,7 +232,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "/dashboard", element: <Dashboard /> },
       { path: "/print", element: <PrintPage /> },
-      { path: "/report-list", element: <GstrReportListing/>},
+      { path: "/report-list", element: <GstrReportListing /> },
       {
         path: "/print-cashbook-statement",
         element: <PrintCashBookStatement />,
@@ -491,7 +492,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "beam-sales-bill-list",
-                element: <BeamSaleBillList/>,
+                element: <BeamSaleBillList />,
               },
               {
                 path: "job-grey-sales-bill-list",
@@ -807,7 +808,7 @@ const router = createBrowserRouter([
               },
               {
                 path: "ledger-report",
-                element: <div>ledger-report</div>,
+                element: <LedgerReport />,
               },
               {
                 path: "particular-ledger-report",

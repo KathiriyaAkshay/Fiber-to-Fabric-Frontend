@@ -38,8 +38,8 @@ const Gstr1 = () => {
   }
 
   const submitHandler = () => {
-    if (company == null || company == undefined){
-      message.warning("Please, Select company first") ; 
+    if (company == null || company == undefined) {
+      message.warning("Please, Select company first");
     } else {
       if (company && companyListRes) {
         const companyData = companyListRes?.rows?.find(
@@ -51,21 +51,26 @@ const Gstr1 = () => {
     }
   };
 
-  // =========== GSTR-1 Report columns ================== // 
+  // =========== GSTR-1 Report columns ================== //
   const columns = [
-    { 
-      title: "Sl No.", 
-      dataIndex: "key", 
-      key: "key" 
+    {
+      title: "Sl No.",
+      dataIndex: "key",
+      key: "key",
     },
     {
       title: "Particulars",
       dataIndex: "particulars",
       key: "particulars",
       render: (text, record) => (
-        <a onClick={() => printHandler(record, text)} style={{
-          fontWeight: 600
-        }}>{text}</a>
+        <a
+          onClick={() => printHandler(record, text)}
+          style={{
+            fontWeight: 600,
+          }}
+        >
+          {text}
+        </a>
       ),
     },
     {
@@ -78,59 +83,53 @@ const Gstr1 = () => {
       dataIndex: "taxable_amount",
       key: "taxable_amount",
     },
-    { 
-      title: "Central Tax", 
-      dataIndex: "central_tax", 
-      key: "central_tax", 
-      render: (text, record) => {
-        return(
-          <div>{parseFloat(text).toFixed(2)}</div>
-        )
-      }
+    {
+      title: "Central Tax",
+      dataIndex: "central_tax",
+      key: "central_tax",
+      render: (text) => {
+        return <div>{parseFloat(text).toFixed(2)}</div>;
+      },
     },
-    { 
-      title: "State Tax", 
-      dataIndex: "state_tax", 
-      key: "state_tax" , 
-      render: (text, record) => {
-        return(
-          <div>{parseFloat(text).toFixed(2)}</div>
-        )
-      }
+    {
+      title: "State Tax",
+      dataIndex: "state_tax",
+      key: "state_tax",
+      render: (text) => {
+        return <div>{parseFloat(text).toFixed(2)}</div>;
+      },
     },
     {
       title: "Integrated Tax",
       dataIndex: "integrated_tax",
       key: "integrated_tax",
-      render: (text, record) => {
-        return(
-          <div>{parseFloat(text).toFixed(2)}</div>
-        )
-      }
+      render: (text) => {
+        return <div>{parseFloat(text).toFixed(2)}</div>;
+      },
     },
-    { 
-      title: "Tax Amount", 
-      dataIndex: "tax_amount", 
-      key: "tax_amount" , 
-      render: (text, record) => {
-        return(
-          <div>{parseFloat(text).toFixed(2)}</div>
-        )
-      }
+    {
+      title: "Tax Amount",
+      dataIndex: "tax_amount",
+      key: "tax_amount",
+      render: (text) => {
+        return <div>{parseFloat(text).toFixed(2)}</div>;
+      },
     },
     {
       title: "Invoice Amount",
       dataIndex: "invoice_amount",
       key: "invoice_amount",
-      render: (text, record) => {
-        return(
-          <div>{parseFloat(text).toFixed(2)}</div>
-        )
-      }
+      render: (text) => {
+        return <div>{parseFloat(text).toFixed(2)}</div>;
+      },
     },
   ];
 
-  const { data: gstr1Data, isFetching: isLoadingGstr1 } = useQuery({
+  const {
+    data: gstr1Data,
+    isFetching: isLoadingGstr1,
+    isError,
+  } = useQuery({
     queryKey: ["gstr-1", "report", "data"],
     queryFn: async () => {
       const res = await getGstr1ReportService({
@@ -145,6 +144,12 @@ const Gstr1 = () => {
     },
     enabled: isSubmitted,
   });
+
+  useEffect(() => {
+    if (isError) {
+      setIsSubmitted(false);
+    }
+  }, [isError]);
 
   const data = useMemo(() => {
     if (gstr1Data && Object.keys(gstr1Data).length) {
@@ -280,7 +285,7 @@ const Gstr1 = () => {
               />
             </Flex>
 
-            <Button onClick={submitHandler} color="green" >
+            <Button onClick={submitHandler} color="green">
               SUBMIT
             </Button>
             <ConfirmGstModal />
@@ -295,7 +300,6 @@ const Gstr1 = () => {
           </Flex>
         ) : gstr1Data && Object.keys(gstr1Data).length ? (
           <div className="border p-4 rounded-lg shadow">
-
             {/* GSTR1 Report information  */}
             <div className="text-center mb-4">
               <h2 className="text-xl font-bold">
@@ -309,24 +313,28 @@ const Gstr1 = () => {
               </p>
               <p>GSTR-1</p>
               {fromDate && toDate ? (
-                <p style={{
-                  fontWeight: 600
-                }}>
+                <p
+                  style={{
+                    fontWeight: 600,
+                  }}
+                >
                   {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
                   {toDate && dayjs(toDate).format("DD-MM-YYYY")}
                 </p>
               ) : null}
             </div>
-            
+
             <Flex justify="space-between">
               <div>
                 <span className="font-semibold">GSTIN/UIN:</span>{" "}
                 {selectedCompany?.gst_no || ""}
               </div>
               {fromDate && toDate ? (
-                <div style={{
-                  fontWeight: 600
-                }}>
+                <div
+                  style={{
+                    fontWeight: 600,
+                  }}
+                >
                   {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
                   {toDate && dayjs(toDate).format("DD-MM-YYYY")}
                 </div>
@@ -340,17 +348,17 @@ const Gstr1 = () => {
               <div>Vouchers Count</div>
             </Flex>
             <hr className="border-x-gray-100" />
-            
+
             <Flex justify="space-between" className="text-sm">
               <div>Total Vouchers</div>
               <div style={{ marginRight: "1rem" }}>{totalVoucher}</div>
             </Flex>
-            
+
             {/* <Flex justify="space-between" className="text-sm">
               <div>Included in Return</div>
               <div style={{ marginRight: "1rem" }}>{totalVoucher}</div>
             </Flex> */}
-            
+
             <hr className="border-x-gray-100" />
 
             <div className="my-4">
@@ -371,22 +379,37 @@ const Gstr1 = () => {
                           <strong>{totalVoucher}</strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={2}>
-                          <strong>{parseFloat(totalData?.taxable_amount).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.taxable_amount).toFixed(2) ||
+                              0}
+                          </strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={3}>
-                          <strong>{parseFloat(totalData?.central_tax).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.central_tax).toFixed(2) || 0}
+                          </strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={4}>
-                          <strong>{parseFloat(totalData?.state_tax).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.state_tax).toFixed(2) || 0}
+                          </strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={5}>
-                          <strong>{parseFloat(totalData?.integrated_tax).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.integrated_tax).toFixed(2) ||
+                              0}
+                          </strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={6}>
-                          <strong>{parseFloat(totalData?.tax_amount).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.tax_amount).toFixed(2) || 0}
+                          </strong>
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={6}>
-                          <strong>{parseFloat(totalData?.invoice_amount).toFixed(2) || 0}</strong>
+                          <strong>
+                            {parseFloat(totalData?.invoice_amount).toFixed(2) ||
+                              0}
+                          </strong>
                         </Table.Summary.Cell>
                       </Table.Summary.Row>
                     </Table.Summary>
@@ -394,11 +417,20 @@ const Gstr1 = () => {
                 }}
               />
             </div>
-            <div className="mt-4 text-red-500 text-sm" style={{
-              fontWeight: 600
-            }}>
+            <div
+              className="mt-4 text-red-500 text-sm"
+              style={{
+                fontWeight: 600,
+              }}
+            >
               <p>
-                Zero tax rate invoice : {gstr1Data?.skip_b2b_bills?.map((element) => element?.invoice_no || element?.bill_no).join(",")} {gstr1Data?.skip_b2b_bills?.length == 0?"Not Found any Invoice":""}
+                Zero tax rate invoice :{" "}
+                {gstr1Data?.skip_b2b_bills
+                  ?.map((element) => element?.invoice_no || element?.bill_no)
+                  .join(",")}{" "}
+                {gstr1Data?.skip_b2b_bills?.length == 0
+                  ? "Not Found any Invoice"
+                  : ""}
               </p>
             </div>
           </div>
