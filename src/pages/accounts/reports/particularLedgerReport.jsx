@@ -2,19 +2,19 @@ import {
   Button,
   Flex,
   Select,
-  Spin,
-  Table,
   Typography,
   DatePicker,
   Checkbox,
+  Spin,
 } from "antd";
 import { FilePdfOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { usePagination } from "../../../hooks/usePagination";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import { getMyOrderListRequest } from "../../../api/requests/orderMaster";
 import dayjs from "dayjs";
+import { getParticularLedgerReportService } from "../../../api/requests/accounts/reports";
+import { getParticularListRequest } from "../../../api/requests/accounts/particular";
+import { PARTICULAR_OPTIONS } from "../../../constants/account";
 
 const ENTRY_TYPE = [
   { label: "Cashbook", value: "cashbook" },
@@ -22,67 +22,72 @@ const ENTRY_TYPE = [
 ];
 
 const ParticularLedgerReport = () => {
-  const { companyId, companyListRes } = useContext(GlobalContext);
+  const { companyId } = useContext(GlobalContext);
 
+  const [isShowAll, setIsShowAll] = useState(false);
   const [entryType, setEntryType] = useState(null);
-  const [selectedCompany, setSelectedCompany] = useState(companyId);
+  // const [selectedCompany, setSelectedCompany] = useState(companyId);
   const [particular, setParticular] = useState(null);
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
+  const [particularOptions, setParticularOptions] = useState([]);
 
-  //   const debouncedMachine = useDebounce(machine, 500);
-  //   const debouncedStatus = useDebounce(status, 500);
-  //   const debouncedOrderType = useDebounce(orderType, 500);
-  //   const debouncedBroker = useDebounce(broker, 500);
-  //   const debouncedQuality = useDebounce(quality, 500);
-  //   const debouncedParty = useDebounce(party, 500);
-
-  const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-
-  const { data: myOrderList, isLoading } = useQuery({
+  const { data: particularLedgerReportData, isLoading } = useQuery({
     queryKey: [
       "myOrder",
       "list",
       {
         company_id: companyId,
-        page,
-        pageSize,
+        from_date: dayjs(fromDate).format("YYYY-MM-DD"),
+        to_date: dayjs(toDate).format("YYYY-MM-DD"),
+        entry_type: entryType,
+        particular_type: particular,
+        show_all: isShowAll ? 1 : 0,
       },
     ],
     queryFn: async () => {
-      const res = await getMyOrderListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-        },
+      const params = {
+        company_id: companyId,
+        entry_type: entryType,
+        particular_type: particular,
+        show_all: isShowAll ? 1 : 0,
+      };
+      if (fromDate && toDate) {
+        params.from_date = dayjs(fromDate).format("YYYY-MM-DD");
+        params.to_date = dayjs(toDate).format("YYYY-MM-DD");
+      }
+      const res = await getParticularLedgerReportService({
+        params,
       });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
+  console.log({ particularLedgerReportData });
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = myOrderList?.row?.map((order, index) => {
-      const companyName =
-        order.order_type === "job"
-          ? order.party.party.company_name
-          : order.party.party.company_name; // supplier company should be here in else part.
-      return [
-        index + 1,
-        order.order_no,
-        dayjs(order.order_date).format("DD-MM-YYYY"),
-        companyName,
-        `${order.inhouse_quality.quality_name} (${order.inhouse_quality.quality_weight}KG)`,
-        order.pending_taka,
-        order.delivered_taka,
-        order.pending_meter,
-        order.delivered_meter,
-        order.status,
-      ];
-    });
+    const body = particularLedgerReportData?.ledgerReport?.map(
+      (order, index) => {
+        const companyName =
+          order.order_type === "job"
+            ? order.party.party.company_name
+            : order.party.party.company_name; // supplier company should be here in else part.
+        return [
+          index + 1,
+          order.order_no,
+          dayjs(order.order_date).format("DD-MM-YYYY"),
+          companyName,
+          `${order.inhouse_quality.quality_name} (${order.inhouse_quality.quality_weight}KG)`,
+          order.pending_taka,
+          order.delivered_taka,
+          order.pending_meter,
+          order.delivered_meter,
+          order.status,
+        ];
+      }
+    );
 
     const tableTitle = [
       "ID",
@@ -106,98 +111,34 @@ const ParticularLedgerReport = () => {
     window.open("/print");
   }
 
-  const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-      key: "id",
-      render: (text, record, index) => page * pageSize + index + 1,
+  // get particular list API
+  const { data: particularRes, isLoading: isLoadingParticular } = useQuery({
+    queryKey: [
+      "dropdown/passbook_particular_type/list",
+      { company_id: companyId },
+    ],
+    queryFn: async () => {
+      const res = await getParticularListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
     },
-    {
-      title: "Date",
-      width: 150,
-      render: (details) => {
-        return dayjs(details.createdAt).format("DD-MM-YYYY");
-      },
-    },
-    {
-      title: "Company",
-      dataIndex: "company_name",
-      key: "company_name",
-    },
-    {
-      title: "Passbook / Cashbook",
-      render: (details) => {
-        if (details.party) {
-          return `${details.party.first_name} ${details.party.last_name}`;
-        } else {
-          return `${details.supplier_name}`;
-        }
-      },
-    },
-    {
-      title: "Remark/Bill No.",
-      dataIndex: "machine_name",
-      key: "machine_name",
-    },
-    {
-      title: "Debit",
-      dataIndex: "debit",
-      key: "debit",
-    },
-    {
-      title: "Credit",
-      dataIndex: "credit",
-      key: "credit",
-    },
-    {
-      title: "Balance",
-      dataIndex: "balance",
-      key: "balance",
-    },
-  ];
+    enabled: Boolean(companyId),
+  });
 
-  function renderTable() {
-    if (isLoading) {
-      return (
-        <Spin tip="Loading" size="large">
-          <div className="p-14" />
-        </Spin>
-      );
+  useEffect(() => {
+    if (particularRes) {
+      const data = particularRes.rows.map(({ particular_name }) => {
+        return {
+          label: particular_name,
+          value: particular_name,
+        };
+      });
+
+      setParticularOptions([...PARTICULAR_OPTIONS, ...data]);
     }
+  }, [particularRes]);
 
-    return (
-      <Table
-        dataSource={[]}
-        columns={columns}
-        rowKey={"id"}
-        pagination={{
-          current: page + 1,
-          pageSize: pageSize,
-          total: myOrderList?.row?.count || 0,
-          showSizeChanger: true,
-          onShowSizeChange: onShowSizeChange,
-          onChange: onPageChange,
-        }}
-        summary={() => {
-          return (
-            <Table.Summary.Row>
-              <Table.Summary.Cell index={1}>
-                <b>Total</b>
-              </Table.Summary.Cell>
-              <Table.Summary.Cell index={2}></Table.Summary.Cell>
-              <Table.Summary.Cell index={3}></Table.Summary.Cell>
-              <Table.Summary.Cell index={4}></Table.Summary.Cell>
-              <Table.Summary.Cell index={5}></Table.Summary.Cell>
-              <Table.Summary.Cell index={6}>0</Table.Summary.Cell>
-              <Table.Summary.Cell index={7}>0</Table.Summary.Cell>
-              <Table.Summary.Cell index={8}></Table.Summary.Cell>
-            </Table.Summary.Row>
-          );
-        }}
-      />
-    );
-  }
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -207,12 +148,17 @@ const ParticularLedgerReport = () => {
 
         <Flex align="center" gap={10}>
           <Flex align="center">
-            <Checkbox>Show All Entry</Checkbox>
+            <Checkbox
+              checked={isShowAll}
+              onChange={(e) => setIsShowAll(e.target.checked)}
+            >
+              Show All Entry
+            </Checkbox>
           </Flex>
           <Button
             icon={<FilePdfOutlined />}
             type="primary"
-            disabled={!myOrderList?.row?.length}
+            disabled={!particularLedgerReportData?.ledgerReport?.length}
             onClick={downloadPdf}
             className="flex-none"
           />
@@ -238,7 +184,7 @@ const ParticularLedgerReport = () => {
             className="min-w-40"
           />
         </Flex>
-        <Flex align="center" gap={10}>
+        {/* <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Company
           </Typography.Text>
@@ -261,23 +207,27 @@ const ParticularLedgerReport = () => {
             className="min-w-40"
             allowClear
           />
-        </Flex>
+        </Flex> */}
+        {/* Particular selection  */}
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Particular
           </Typography.Text>
           <Select
-            placeholder="Select particular"
-            value={particular}
-            onChange={setParticular}
-            options={[]}
+            allowClear
+            showSearch
+            placeholder="Select Particular"
             dropdownStyle={{
               textTransform: "capitalize",
             }}
             style={{
               textTransform: "capitalize",
+              minWidth: "200px",
             }}
-            className="min-w-40"
+            loading={isLoadingParticular}
+            options={particularOptions}
+            value={particular}
+            onChange={setParticular}
           />
         </Flex>
         <Flex align="center" gap={10}>
@@ -289,48 +239,66 @@ const ParticularLedgerReport = () => {
           <DatePicker value={toDate} onChange={setToDate} />
         </Flex>
       </div>
-      {/* {renderTable()} */}
 
-      <table className="statement-passbook-table">
-        <thead>
-          <tr>
-            <td>ID</td>
-            <td>Date</td>
-            <td>Company</td>
-            <td>Passbook / Cashbook</td>
-            <td>Remark/Bill No.</td>
-            <td>Debit</td>
-            <td>Credit</td>
-            <td>Balance</td>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 5 }).map((_, index) => {
-            return (
-              <tr key={index} className={index % 2 ? "red" : "green"}>
-                <td>{index + 1}</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
+      {isLoading ? (
+        <Flex
+          justify="center"
+          align="center"
+          style={{ height: "200px", width: "100%" }}
+        >
+          <Spin />
+        </Flex>
+      ) : (
+        <table className="statement-passbook-table">
+          <thead>
+            <tr>
+              <td>ID</td>
+              <td>Date</td>
+              <td>Company</td>
+              <td>Passbook / Cashbook</td>
+              <td>Remark/Bill No.</td>
+              <td>Debit</td>
+              <td>Credit</td>
+              <td>Balance</td>
+            </tr>
+          </thead>
+          <tbody>
+            {particularLedgerReportData &&
+            particularLedgerReportData?.ledgerReport.length ? (
+              particularLedgerReportData?.ledgerReport?.map((_, index) => {
+                return (
+                  <tr key={index} className={index % 2 ? "red" : "green"}>
+                    <td>{index + 1}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={8} style={{ textAlign: "center" }}>
+                  No records found
+                </td>
               </tr>
-            );
-          })}
-          <tr>
-            <td>Total</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-          </tr>
-        </tbody>
-      </table>
+            )}
+            <tr>
+              <td>Total</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>0</td>
+              <td>0</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

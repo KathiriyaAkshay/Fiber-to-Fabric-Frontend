@@ -1,6 +1,5 @@
 import { api } from "../..";
 
-
 export function getPassbookCashbookReportService({ params }) {
   return api.get(`/account/report/passbook-cashbook/report`, { params });
 }
@@ -31,7 +30,9 @@ export function getOpeningStockReportService({ params }) {
 }
 
 export function createOpeningStockRequest({ data, params }) {
-  return api.post(`/account/report/live-stock/opening/report/create`, data, { params });
+  return api.post(`/account/report/live-stock/opening/report/create`, data, {
+    params,
+  });
 }
 
 export function getCurrentStockReportService({ params }) {
@@ -39,7 +40,9 @@ export function getCurrentStockReportService({ params }) {
 }
 
 export function createCurrentStockRequest({ data, params }) {
-  return api.post(`/account/report/live-stock/current/report/create`, data, { params });
+  return api.post(`/account/report/live-stock/current/report/create`, data, {
+    params,
+  });
 }
 
 // PURCHASE REPORT---------------------------
@@ -52,4 +55,16 @@ export function getAccountPurchaseReportService({ params }) {
 
 export function getAccountSalesReportService({ params }) {
   return api.get(`/account/reports/sale/report`, { params });
+}
+
+// Particular ledger REPORT---------------------------
+
+export function getParticularLedgerReportService({ params }) {
+  return api.get(`/account/report/particular-ledger/get`, { params });
+}
+
+//  ledger REPORT---------------------------
+
+export function getLedgerReportService({ params }) {
+  return api.get(`/account/report/ledger/generate`, { params });
 }
