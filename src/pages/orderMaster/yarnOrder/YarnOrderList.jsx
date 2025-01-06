@@ -317,6 +317,8 @@ function YarnOrderList() {
           approx_amount,
           id,
           has_advance_payment_count,
+          supplier_name, 
+          status
         } = yarnOrder;
 
         const {
@@ -332,6 +334,8 @@ function YarnOrderList() {
 
         return (
           <Space>
+
+            {/* Yarn order information model  */}
             <GridInformationModel
               title="Yarn Order Details"
               details={[
@@ -344,7 +348,7 @@ function YarnOrderList() {
                   label: "Order Date",
                   value: dayjs(order_date).format("DD-MM-YYYY"),
                 },
-                { label: "Supplier Name", value: supplierName },
+                { label: "Supplier Name", value: supplier_name },
                 { label: "Order No.", value: order_no },
                 { label: "Lot No.", value: lot_no },
                 { label: "Yarn Grade", value: yarn_grade },
@@ -360,20 +364,29 @@ function YarnOrderList() {
               ]}
             />
 
-            {quantity == pending_quantity && (
-              <Button
-                onClick={() => {
-                  navigateToUpdate(id);
-                }}
-              >
-                <EditOutlined />
-              </Button>
-            )}
+            {status == "PENDING" && (
+              <>
+            
+                {quantity == pending_quantity && (
+                  <Button
+                    onClick={() => {
+                      navigateToUpdate(id);
+                    }}
+                  >
+                    <EditOutlined />
+                  </Button>
+                )}
 
-            {!has_advance_payment_count && (
-              <DeleteYarnOrderButton data={yarnOrder} />
+                {!has_advance_payment_count && (
+                  <DeleteYarnOrderButton data={yarnOrder} />
+                )}
+
+                {/* ===== Yarn order related information model ======  */}
+                
+                <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
+              </>
             )}
-            <YarnOrderAdvanceModal yarnOrder={yarnOrder} />
+            
           </Space>
         );
       },

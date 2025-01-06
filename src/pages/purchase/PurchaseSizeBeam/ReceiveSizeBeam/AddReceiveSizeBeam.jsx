@@ -312,7 +312,10 @@ function AddReceiveSizeBeam() {
 
         <Flex className="mt-3" gap={20}>
           <Flex>
-            <div className="font-weight-bold">Total meter: {totalMeter}</div>
+            <div className="font-weight-bold" style={{
+              color: "blue", 
+              fontWeight: 600
+            }}>Total meter: {totalMeter}</div>
           </Flex>
           <Flex>
             <div>Pending meter: {pendingMeter}</div>

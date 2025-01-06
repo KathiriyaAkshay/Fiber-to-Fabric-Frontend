@@ -97,10 +97,12 @@ function CompanyBankList({ company, query, setBankDetailModal }) {
 
   return (
     <Table 
-      style={{width: "80%",marginRight: "auto", marginTop: "2rem"}} 
+      style={{width: "80%",marginRight: "auto", marginTop: "1rem", marginBottom :"1rem"}} 
       dataSource={bankList?.rows || []} 
       columns={columns} 
-      rowKey={"id"}/>
+      rowKey={"id"}
+      pagination = {false}
+    />
   );
 }
 

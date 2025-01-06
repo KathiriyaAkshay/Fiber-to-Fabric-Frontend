@@ -236,16 +236,22 @@ function ReceiveSizeBeamList() {
     {
       title: "Beam Type",
       dataIndex: "beam_type",
-      key: "receive_cartoon_pallet",
+      render: (text, record) => {
+        return(
+          <div>
+            {String(text).toUpperCase()}
+          </div>
+        )
+      }
     },
     {
       title: "Bill status",
       dataIndex: "bill_status",
       render: (text) =>
         text == "pending" ? (
-          <Tag color="red">Pending</Tag>
+          <Tag color="red">{String("Pending").toUpperCase()}</Tag>
         ) : (
-          <Tag color="green">{text}</Tag>
+          <Tag color="green">{String(text).toUpperCase()}</Tag>
         ),
     },
     {
