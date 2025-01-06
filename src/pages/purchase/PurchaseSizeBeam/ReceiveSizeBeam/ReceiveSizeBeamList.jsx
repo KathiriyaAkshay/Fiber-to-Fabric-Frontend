@@ -29,6 +29,7 @@ import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
+import ReturnPurchaseBeamChallan from "../../../../components/sale/challan/beamSale/returnPurchaseBeamChallan";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -260,12 +261,18 @@ function ReceiveSizeBeamList() {
         let totalTaka = 0;
         let totalMeter = 0;
         let beam_info_list = [];
-
+        let is_return_possible = [] ; 
+        
         details?.recieve_size_beam_details?.map((element) => {
+          
           totalTaka = Number(totalTaka) + Number(element?.taka);
           totalMeter = Number(totalMeter) + Number(element?.meters);
           beam_info_list.push(element);
+
+          is_return_possible.push(element?.is_return); 
         });
+
+        is_return_possible = [...new Set(is_return_possible)] ; 
 
         return (
           <Space>
@@ -320,9 +327,21 @@ function ReceiveSizeBeamList() {
             <SizeBeamChallanModal
               details={details}
               mode={details?.bill_status == "pending" ? "CREATE" : "VIEW"}
+              isEyeButton={true}
             />
 
             <BeamCardInformationModel data={beam_info_list} />
+
+            {/* Beam return related option  */}
+            {(is_return_possible?.length > 1 || is_return_possible[0] == false) && (
+              details?.bill_status != "pending" && (
+                  <ReturnPurchaseBeamChallan
+                    details = {details} 
+                  />
+              )
+            )}
+
+
           </Space>
         );
       },

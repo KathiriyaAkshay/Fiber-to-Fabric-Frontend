@@ -202,20 +202,6 @@ const BeamSaleList = () => {
       title: "Total Meter",
       dataIndex: "total_meter",
       key: "total_meter",
-      // render: (detail) => {
-      //   const { job_beam_sent_details } = detail;
-      //   let totalMeter = 0;
-      //   job_beam_sent_details?.map((item) => {
-      //     const obj =
-      //       item.loaded_beam.non_pasarela_beam_detail ||
-      //       item.loaded_beam.recieve_size_beam_detail ||
-      //       item.loaded_beam.job_beam_receive_detail;
-
-      //     totalMeter += obj.meters;
-      //   });
-
-      //   return totalMeter;
-      // },
     },
     {
       title: "Total Weight",

@@ -289,7 +289,7 @@ const MyOrderList = () => {
       key: "status",
       render: (text) =>
         text == "complete" ? (
-          <Tag color="green">{text}</Tag>
+          <Tag color="green">{String(text).toUpperCase()}</Tag>
         ) : (
           <Tag color="red">{String(text).toUpperCase()}</Tag>
         ),
@@ -363,6 +363,7 @@ const MyOrderList = () => {
                 },
               ]}
             />
+            
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -370,7 +371,9 @@ const MyOrderList = () => {
             >
               <EditOutlined />
             </Button>
+            
             <DeleteMyOrder details={details} />
+
             {orderType === "taka(inhouse)" && (
               <Button
                 onClick={() =>

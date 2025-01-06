@@ -36,7 +36,9 @@ const addYSCSchemaResolver = yupResolver(
     yarn_count: yup.string(),
     yarn_denier: yup.string().required("Please enter yarn denier"),
     filament: yup.string().required("Please enter filament"),
-    hsn_no: yup.string().required("Please enter HSN No"),
+    hsn: yup.string()
+    .matches(/^\d{4}(\d{2}(\d{2})?)?$/, 'HSN must be 4, 6, or 8 digits')
+    .required('HSN is required'),
     avg_daily_stock: yup.string().required("Please enter average daily stock"),
     // stock_date: yup.string().required("Please enter stock date"),
     // company_id: yup.string().required("Please enter company id"),
@@ -144,6 +146,13 @@ function AddYarnStockCompany() {
                   <Input {...field} placeholder="Company Name" />
                 )}
               />
+              <div style={{
+                color: "blue", 
+                fontSize: 14,
+                fontWeight: 600
+              }}>
+                For ex. Wellknown, Durga, Reliance, Garden etc.
+              </div>
             </Form.Item>
           </Col>
 

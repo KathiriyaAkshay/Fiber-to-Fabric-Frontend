@@ -8,6 +8,7 @@ export function getMonthlyTransactionReportService({ params }) {
   return api.get(`/account/report/monthly-transaction/report`, { params });
 }
 
+// Company wise turn over report information
 export function getTurnoverReportService({ params }) {
   return api.get(`/account/report/turnover/report`, { params });
 }

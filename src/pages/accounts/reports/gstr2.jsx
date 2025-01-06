@@ -117,18 +117,6 @@ const Gstr2 = () => {
         voucher_count:
           (gstr2Data?.b2b_totals?.voucher_count || 0) -
           (gstr2Data?.debit_credit_totals?.voucher_count || 0),
-        // central_tax:
-        //   (gstr2Data?.b2b_totals?.central_tax || 0) -
-        //   (gstr2Data?.debit_credit_totals?.central_tax || 0),
-        // integrated_tax:
-        //   (gstr2Data?.b2b_totals?.integrated_tax || 0) -
-        //   (gstr2Data?.debit_credit_totals?.integrated_tax || 0),
-        // invoice_amount:
-        //   (gstr2Data?.b2b_totals?.invoice_amount || 0) -
-        //   (gstr2Data?.debit_credit_totals?.invoice_amount || 0),
-        // state_tax:
-        //   (gstr2Data?.b2b_totals?.state_tax || 0) -
-        //   (gstr2Data?.debit_credit_totals?.state_tax || 0),
         tax_amount:
           (gstr2Data?.b2b_totals?.tax_amount || 0) -
           (gstr2Data?.debit_credit_totals?.tax_amount || 0),
