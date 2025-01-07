@@ -10,13 +10,15 @@ import {
 } from "antd";
 import { FilePdfOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import dayjs from "dayjs";
 import { getLedgerReportService } from "../../../api/requests/accounts/reports";
 import { getParticularListRequest } from "../../../api/requests/accounts/particular";
 import { PARTICULAR_OPTIONS } from "../../../constants/account";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../constants/tag";
+import { formatString } from "../../../utils/mutationUtils";
+import dayjs from "dayjs";
+import _ from "lodash";
 
 const BILL_TYPE = [
   { label: "GST", value: "gst" },
@@ -25,9 +27,9 @@ const BILL_TYPE = [
 ];
 
 const LedgerReport = () => {
-  const { companyListRes } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
 
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [selectedCompany, setSelectedCompany] = useState(companyId);
   const [selectedCompanyData, setSelectedCompanyData] = useState(null);
   const [particular, setParticular] = useState(null);
   //   const [partySupplier, setPartySupplier] = useState(null);
@@ -56,45 +58,43 @@ const LedgerReport = () => {
       setSelectedCompanyData(companyData);
     }
     setIsSubmitted(true);
+
+    setTimeout(refetch, 100);
   };
 
   const {
     data: ledgerReportData,
-    isLoading,
+    isFetching,
     isError,
+    refetch,
   } = useQuery({
-    queryKey: [
-      "ledger-report",
-      "list",
-      {
-        isSubmitted,
-      },
-    ],
+    queryKey: ["ledger-report", "list"],
     queryFn: async () => {
-      const params = {
-        company_id: selectedCompany,
-        bill_type: billType,
-      };
-      if (particular) {
-        const data = particular.split("-");
-        if (data[0] === "particular") {
-          params.particular_type = data[1];
-        } else if (data[0] === "party" || data[0] === "supplier") {
-          params.id = +data[1];
-          params.particular_type = data[0];
+      if (isSubmitted) {
+        const params = {
+          company_id: selectedCompany,
+          bill_type: billType,
+        };
+        if (particular) {
+          const data = particular.split("-");
+          if (data[0] === "particular") {
+            params.particular_type = data[1];
+          } else if (data[0] === "party" || data[0] === "supplier") {
+            params.id = +data[1];
+            params.particular_type = data[0];
+          }
         }
+        if (fromDate && toDate) {
+          params.from_date = dayjs(fromDate).format("YYYY-MM-DD");
+          params.to_date = dayjs(toDate).format("YYYY-MM-DD");
+        }
+        const res = await getLedgerReportService({
+          params,
+        });
+        setIsSubmitted(false);
+        return res.data?.data?.groupedResults;
       }
-      if (fromDate && toDate) {
-        params.from_date = dayjs(fromDate).format("YYYY-MM-DD");
-        params.to_date = dayjs(toDate).format("YYYY-MM-DD");
-      }
-      const res = await getLedgerReportService({
-        params,
-      });
-      setIsSubmitted(false);
-      return res.data?.data;
     },
-    enabled: Boolean(isSubmitted),
   });
 
   useEffect(() => {
@@ -102,6 +102,22 @@ const LedgerReport = () => {
       setIsSubmitted(false);
     }
   }, [isError]);
+
+  useEffect(() => {
+    // Get the current date
+    const today = dayjs();
+
+    // Determine the start of the financial year
+    const currentYear = today.year();
+    const financialYearStart =
+      today.month() < 3
+        ? dayjs(`${currentYear - 1}-04-01`) // Previous year April 1st
+        : dayjs(`${currentYear}-04-01`); // Current year April 1st
+
+    // Set the initial state
+    setFromDate(financialYearStart);
+    setToDate(today);
+  }, []);
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -162,6 +178,158 @@ const LedgerReport = () => {
     enabled: Boolean(selectedCompany),
   });
 
+  const formattedData = useMemo(() => {
+    if (ledgerReportData && !_.isEmpty(ledgerReportData)) {
+      return Object.keys(ledgerReportData);
+    }
+  }, [ledgerReportData]);
+
+  const particularInformation = useMemo(() => {
+    if (particular) {
+      if (particular.includes("supplier")) {
+        const userId = particular.split("-")[1];
+        const supplier = particularRes?.supplier?.find(
+          (supplier) => supplier.user_id === +userId
+        );
+        return (
+          <>
+            <h3 className="text-xl font-bold">
+              {supplier.supplier_name || ""}
+            </h3>
+            <p className="text-gray-400 w-80 m-auto text-center text-sm">
+              {supplier?.user?.address || ""}
+            </p>
+          </>
+        );
+      } else if (particular.includes("party")) {
+        const userId = particular.split("-")[1];
+        const party = particularRes?.parties?.find(
+          (party) => party.user_id === +userId
+        );
+        return (
+          <>
+            <h3 className="text-xl font-bold">
+              {party.user.first_name || ""} {party.user.last_name || ""}
+            </h3>
+            <p className="text-gray-400 w-80 m-auto text-center text-sm">
+              {party?.user?.address || ""}
+            </p>
+          </>
+        );
+      } else if (particular.includes("particular")) {
+        return "particular";
+      }
+    } else {
+      return "";
+    }
+  }, [particular, particularRes?.parties, particularRes?.supplier]);
+
+  let openingBalance = 0;
+  const getSingleRowData = (data) => {
+    const billData = [];
+
+    data.forEach((bill) => {
+      let particulars = "";
+      let vchType = "";
+      let vchNo = "";
+      let credit = 0;
+      let debit = 0;
+      let cumulativeBalance = 0;
+
+      const isCredit = [
+        "purchase_taka_bills",
+        "general_purchase_entries",
+        "yarn_bills",
+        "receive_size_beam_bill",
+        "job_rework_bill",
+        "job_work_bills",
+        "credit_notes",
+        "debit_notes",
+      ].includes(bill.model);
+
+      const isDebit = [
+        "sale_bills",
+        "job_gray_sale_bill",
+        "beam_sale_bill",
+        "yarn_sale_bills",
+      ].includes(bill.model);
+
+      credit = isCredit ? bill.amount : 0;
+      debit = isDebit ? bill.amount : 0;
+      cumulativeBalance = +openingBalance + +credit - +debit;
+      openingBalance = +cumulativeBalance;
+
+      particulars = (
+        <Flex gap={12}>
+          <p style={{ margin: 0, fontWeight: "500" }}>
+            {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString(bill.model)}
+          </p>
+          <span
+            style={{
+              margin: 0,
+              textAlign: "right",
+              color: "blue",
+              borderBottom: "1px solid blue",
+              cursor: "pointer",
+            }}
+          >
+            New Ref: {bill.bill_no}
+          </span>
+        </Flex>
+      );
+      vchType = formatString(bill.model);
+
+      billData.push({
+        particulars,
+        vchType,
+        vchNo,
+        credit,
+        debit,
+        cumulativeBalance,
+      });
+    });
+
+    return billData;
+  };
+
+  const closingBalance = useMemo(() => {
+    let totalCredit = 0;
+    let totalDebit = 0;
+
+    if (formattedData && formattedData.length) {
+      formattedData.forEach((date) => {
+        const data = ledgerReportData[date];
+        data.forEach((bill) => {
+          const isCredit = [
+            "purchase_taka_bills",
+            "general_purchase_entries",
+            "yarn_bills",
+            "receive_size_beam_bill",
+            "job_rework_bill",
+            "job_work_bills",
+            "credit_notes",
+            "debit_notes",
+          ].includes(bill.model);
+
+          const isDebit = [
+            "sale_bills",
+            "job_gray_sale_bill",
+            "beam_sale_bill",
+            "yarn_sale_bills",
+          ].includes(bill.model);
+
+          const credit = isCredit ? bill.amount : 0;
+          const debit = isDebit ? bill.amount : 0;
+
+          totalCredit = isCredit ? +totalCredit + +credit : totalCredit;
+          totalDebit = isDebit ? +totalDebit + +debit : totalDebit;
+        });
+      });
+    }
+
+    return { totalCredit, totalDebit };
+  }, [formattedData, ledgerReportData]);
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -197,7 +365,7 @@ const LedgerReport = () => {
               allowClear
             />
           </Flex>
-          {/* Particular selection  */}
+
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Particular
@@ -216,7 +384,6 @@ const LedgerReport = () => {
               }}
               loading={isLoadingParticular}
               value={particular}
-              //   onChange={(_, value) => setParticular(value)}
               onChange={setParticular}
             >
               {particularRes &&
@@ -241,8 +408,8 @@ const LedgerReport = () => {
 
               {particularRes?.parties?.map((party) => (
                 <Select.Option
-                  key={`party-${party?.id}`}
-                  value={`party-${party?.id}`}
+                  key={`party-${party?.user_id}`}
+                  value={`party-${party?.user_id}`}
                 >
                   <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
                   <span>
@@ -254,8 +421,8 @@ const LedgerReport = () => {
 
               {particularRes?.supplier?.map((supplier) => (
                 <Select.Option
-                  key={`supplier-${supplier?.id}`}
-                  value={`supplier-${supplier?.id}`}
+                  key={`supplier-${supplier?.user_id}`}
+                  value={`supplier-${supplier?.user_id}`}
                 >
                   <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                   <span>
@@ -311,7 +478,7 @@ const LedgerReport = () => {
       </div>
 
       <div style={{ padding: "28px", border: "4px dashed #194A6D" }}>
-        {isLoading ? (
+        {isFetching ? (
           <Flex
             justify="center"
             align="center"
@@ -321,28 +488,33 @@ const LedgerReport = () => {
           </Flex>
         ) : (
           <>
-            <div className="text-center mb-4">
-              <h2 className="text-xl font-bold">
-                {selectedCompanyData?.company_name || ""}
-              </h2>
-              <p className="text-gray-400 w-80 m-auto text-center text-sm">
-                {selectedCompanyData?.address_line_1 || ""}
-              </p>
-              <p className="text-gray-400 w-80 m-auto text-center text-sm">
-                {selectedCompanyData?.address_line_2 || ""}
-              </p>
-              {fromDate && toDate ? (
-                <p
-                  style={{
-                    fontWeight: 600,
-                  }}
-                >
-                  {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
-                  {toDate && dayjs(toDate).format("DD-MM-YYYY")}
+            {formattedData && formattedData.length ? (
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold">
+                  {selectedCompanyData?.company_name || ""}
+                </h2>
+                <p className="text-gray-400 w-80 m-auto text-center text-sm">
+                  {selectedCompanyData?.address_line_1 || ""}
                 </p>
-              ) : null}
-              <hr className="border-dashed" />
-            </div>
+                <p className="text-gray-400 w-80 m-auto text-center text-sm">
+                  {selectedCompanyData?.address_line_2 || ""}
+                </p>
+
+                {particularInformation || null}
+
+                {fromDate && toDate ? (
+                  <p
+                    style={{
+                      fontWeight: 600,
+                    }}
+                  >
+                    {fromDate && dayjs(fromDate).format("DD-MM-YYYY")} to{" "}
+                    {toDate && dayjs(toDate).format("DD-MM-YYYY")}
+                  </p>
+                ) : null}
+                <hr className="border-dashed" />
+              </div>
+            ) : null}
 
             <table
               className="custom-table"
@@ -358,7 +530,7 @@ const LedgerReport = () => {
               <thead>
                 <tr>
                   <td>Date</td>
-                  <td>Particulars</td>
+                  <td style={{ width: "300px" }}>Particulars</td>
                   <td>Vch Type</td>
                   <td>Vch No.</td>
                   <td>Debit</td>
@@ -367,19 +539,81 @@ const LedgerReport = () => {
                 </tr>
               </thead>
               <tbody>
-                {ledgerReportData && ledgerReportData?.groupedResults.length ? (
-                  ledgerReportData?.groupedResults?.map((_, index) => {
+                <tr
+                  style={{
+                    border: "0px solid #ccc",
+                  }}
+                >
+                  <td style={{ textAlign: "center" }}>
+                    {dayjs(fromDate).format("DD-MM-YYYY")}
+                  </td>
+                  <td colSpan={3} style={{ border: "0px solid #ccc" }}>
+                    Opening Balance
+                  </td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      borderBottom: "1px solid #ccc",
+                      textAlign: "center",
+                    }}
+                  >
+                    0
+                  </td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      borderBottom: "1px solid #ccc",
+                      textAlign: "center",
+                    }}
+                  >
+                    0
+                  </td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      borderBottom: "1px solid #ccc",
+                      textAlign: "center",
+                    }}
+                  >
+                    0
+                  </td>
+                </tr>
+                {formattedData && formattedData.length ? (
+                  formattedData?.map((date, index) => {
+                    const data = ledgerReportData[date];
+                    const billData = getSingleRowData(data);
+
                     return (
-                      <tr key={index} className={index % 2 ? "red" : "green"}>
-                        <td>{index + 1}</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                      </tr>
+                      <>
+                        <tr key={index}>
+                          <td style={{ textAlign: "center" }}>{date}</td>
+                          <td>{}</td>
+                          <td>{}</td>
+                          <td>{}</td>
+                          <td>{}</td>
+                          <td>{}</td>
+                          <td>{}</td>
+                        </tr>
+                        {billData.map((row, index) => {
+                          return (
+                            <tr key={index + "sub_row"}>
+                              <td></td>
+                              <td>{row.particulars}</td>
+                              <td>{row.vchType}</td>
+                              <td>{row.vchNo}</td>
+                              <td style={{ textAlign: "center" }}>
+                                {row.debit}
+                              </td>
+                              <td style={{ textAlign: "center" }}>
+                                {row.credit}
+                              </td>
+                              <td style={{ textAlign: "center" }}>
+                                {row.cumulativeBalance.toFixed(2)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </>
                     );
                   })
                 ) : (
@@ -389,7 +623,7 @@ const LedgerReport = () => {
                     </td>
                   </tr>
                 )}
-                <tr
+                {/* <tr
                   style={{
                     border: "0px solid #ccc",
                   }}
@@ -425,7 +659,7 @@ const LedgerReport = () => {
                       textAlign: "center",
                     }}
                   ></td>
-                </tr>
+                </tr> */}
                 <tr
                   style={{
                     border: "0px solid #ccc",
@@ -442,7 +676,7 @@ const LedgerReport = () => {
                       textAlign: "center",
                     }}
                   >
-                    0
+                    {closingBalance.totalDebit}
                   </td>
                   <td
                     style={{
@@ -451,7 +685,7 @@ const LedgerReport = () => {
                       textAlign: "center",
                     }}
                   >
-                    0
+                    {closingBalance.totalCredit}
                   </td>
                   <td
                     style={{
@@ -464,10 +698,42 @@ const LedgerReport = () => {
                 <tr style={{ border: "0px solid #ccc" }}>
                   <td
                     colSpan={4}
-                    style={{ border: "0px solid #ccc", textAlign: "center" }}
+                    style={{
+                      border: "0px solid #ccc",
+                      textAlign: "center",
+                    }}
                   >
                     Closing Balance
                   </td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      textAlign: "center",
+                      borderBottom: "1px solid #ccc",
+                    }}
+                  ></td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      textAlign: "center",
+                      borderBottom: "1px solid #ccc",
+                    }}
+                  >
+                    {closingBalance.totalCredit - closingBalance.totalDebit}
+                  </td>
+                  <td
+                    style={{
+                      border: "0px solid #ccc",
+                      textAlign: "center",
+                      borderBottom: "1px solid #ccc",
+                    }}
+                  ></td>
+                </tr>
+                <tr style={{ border: "0px solid #ccc" }}>
+                  <td
+                    colSpan={4}
+                    style={{ border: "0px solid #ccc", textAlign: "center" }}
+                  ></td>
                   <td style={{ border: "0px solid #ccc", textAlign: "center" }}>
                     0
                   </td>

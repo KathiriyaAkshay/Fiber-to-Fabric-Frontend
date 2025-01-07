@@ -6,10 +6,11 @@ import {
   DatePicker,
   Checkbox,
   Spin,
+  Tag,
 } from "antd";
-import { FilePdfOutlined } from "@ant-design/icons";
+import { FilePdfOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { getParticularLedgerReportService } from "../../../api/requests/accounts/reports";
@@ -17,37 +18,42 @@ import { getParticularListRequest } from "../../../api/requests/accounts/particu
 import { PARTICULAR_OPTIONS } from "../../../constants/account";
 
 const ENTRY_TYPE = [
+  { label: "Cashbook / Passbook", value: "both" },
   { label: "Cashbook", value: "cashbook" },
   { label: "Passbook", value: "passbook" },
 ];
 
 const ParticularLedgerReport = () => {
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
 
   const [isShowAll, setIsShowAll] = useState(false);
-  const [entryType, setEntryType] = useState(null);
-  // const [selectedCompany, setSelectedCompany] = useState(companyId);
+  const [entryType, setEntryType] = useState("both");
+  const [company, setCompany] = useState(companyId);
   const [particular, setParticular] = useState(null);
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [particularOptions, setParticularOptions] = useState([]);
 
-  const { data: particularLedgerReportData, isLoading } = useQuery({
+  const {
+    data: particularLedgerReportData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: [
-      "myOrder",
+      "particular-ledger-report",
       "list",
-      {
-        company_id: companyId,
-        from_date: dayjs(fromDate).format("YYYY-MM-DD"),
-        to_date: dayjs(toDate).format("YYYY-MM-DD"),
-        entry_type: entryType,
-        particular_type: particular,
-        show_all: isShowAll ? 1 : 0,
-      },
+      // {
+      //   company_id: company,
+      //   from_date: dayjs(fromDate).format("YYYY-MM-DD"),
+      //   to_date: dayjs(toDate).format("YYYY-MM-DD"),
+      //   entry_type: entryType,
+      //   particular_type: particular,
+      //   show_all: isShowAll ? 1 : 0,
+      // },
     ],
     queryFn: async () => {
       const params = {
-        company_id: companyId,
+        company_id: company,
         entry_type: entryType,
         particular_type: particular,
         show_all: isShowAll ? 1 : 0,
@@ -63,7 +69,6 @@ const ParticularLedgerReport = () => {
     },
     enabled: Boolean(companyId),
   });
-  console.log({ particularLedgerReportData });
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -126,6 +131,30 @@ const ParticularLedgerReport = () => {
     enabled: Boolean(companyId),
   });
 
+  const TOTAL = useMemo(() => {
+    let totalCredit = 0;
+    let totalDebit = 0;
+    if (
+      particularLedgerReportData &&
+      particularLedgerReportData?.ledgerReport?.length
+    ) {
+      particularLedgerReportData?.ledgerReport?.forEach((item) => {
+        const debit = item.is_withdraw ? item.amount : 0.0;
+        const credit = !item.is_withdraw ? item.amount : 0.0;
+
+        totalCredit += credit;
+        totalDebit += debit;
+      });
+    }
+    return { totalCredit, totalDebit };
+  }, [particularLedgerReportData]);
+
+  const onClickFilterHandler = () => {
+    if (entryType && company && particular && fromDate && toDate) {
+      refetch();
+    }
+  };
+
   useEffect(() => {
     if (particularRes) {
       const data = particularRes.rows.map(({ particular_name }) => {
@@ -138,6 +167,22 @@ const ParticularLedgerReport = () => {
       setParticularOptions([...PARTICULAR_OPTIONS, ...data]);
     }
   }, [particularRes]);
+
+  useEffect(() => {
+    // Get the current date
+    const today = dayjs();
+
+    // Determine the start of the financial year
+    const currentYear = today.year();
+    const financialYearStart =
+      today.month() < 3
+        ? dayjs(`${currentYear - 1}-04-01`) // Previous year April 1st
+        : dayjs(`${currentYear}-04-01`); // Current year April 1st
+
+    // Set the initial state
+    setFromDate(financialYearStart);
+    setToDate(today);
+  }, []);
 
   return (
     <div className="flex flex-col p-4">
@@ -184,13 +229,14 @@ const ParticularLedgerReport = () => {
             className="min-w-40"
           />
         </Flex>
-        {/* <Flex align="center" gap={10}>
+        <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
             Company
           </Typography.Text>
           <Select
+            allowClear
             placeholder="Select Company"
-            value={selectedCompany}
+            value={company}
             options={companyListRes?.rows?.map((company) => {
               return {
                 label: company?.company_name,
@@ -200,14 +246,13 @@ const ParticularLedgerReport = () => {
             dropdownStyle={{
               textTransform: "capitalize",
             }}
-            onChange={setSelectedCompany}
+            onChange={setCompany}
             style={{
               textTransform: "capitalize",
             }}
             className="min-w-40"
-            allowClear
           />
-        </Flex> */}
+        </Flex>
         {/* Particular selection  */}
         <Flex align="center" gap={10}>
           <Typography.Text className="whitespace-nowrap">
@@ -238,6 +283,13 @@ const ParticularLedgerReport = () => {
           <Typography.Text className="whitespace-nowrap">To</Typography.Text>
           <DatePicker value={toDate} onChange={setToDate} />
         </Flex>
+        <Flex align="center" gap={10}>
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={onClickFilterHandler}
+          />
+        </Flex>
       </div>
 
       {isLoading ? (
@@ -265,17 +317,35 @@ const ParticularLedgerReport = () => {
           <tbody>
             {particularLedgerReportData &&
             particularLedgerReportData?.ledgerReport.length ? (
-              particularLedgerReportData?.ledgerReport?.map((_, index) => {
+              particularLedgerReportData?.ledgerReport?.map((row, index) => {
+                const debit = row.is_withdraw ? row.amount : 0.0;
+                const credit = !row.is_withdraw ? row.amount : 0.0;
+                const selectedCompany = companyListRes.rows.find(
+                  ({ id }) => id === row.company_id
+                );
+                const model =
+                  row.model === "passbook_audit" ? "Passbook" : "Cashbook";
+
                 return (
-                  <tr key={index} className={index % 2 ? "red" : "green"}>
+                  <tr key={index} className={row.is_withdraw ? "red" : "green"}>
                     <td>{index + 1}</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
+                    <td>{dayjs(row.cheque_date).format("DD-MM-YYYY")}</td>
+                    <td>{selectedCompany?.company_name || "-"}</td>
+                    <td>
+                      <Tag color={row.is_withdraw ? "red" : "green"}>
+                        {model}
+                      </Tag>
+                    </td>
+                    <td>{row.remarks}</td>
+                    <td>
+                      <Typography style={{ color: "red" }}>{debit}</Typography>
+                    </td>
+                    <td>
+                      <Typography style={{ color: "green" }}>
+                        {credit}
+                      </Typography>
+                    </td>
+                    <td>{row.balance}</td>
                   </tr>
                 );
               })
@@ -292,8 +362,8 @@ const ParticularLedgerReport = () => {
               <td></td>
               <td></td>
               <td></td>
-              <td>0</td>
-              <td>0</td>
+              <td>{TOTAL.totalDebit}</td>
+              <td>{TOTAL.totalCredit}</td>
               <td></td>
             </tr>
           </tbody>
