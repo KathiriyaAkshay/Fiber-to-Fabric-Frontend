@@ -33,6 +33,8 @@ import {
 } from "../../../../api/requests/job/sent/yarnSent";
 import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -263,7 +265,7 @@ const UpdateYarnSent = () => {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -310,32 +312,6 @@ const UpdateYarnSent = () => {
     enabled: Boolean(companyId),
   });
 
-  // useEffect(() => {
-  //   // set options for denier selection on yarn stock company select
-  //   yscdListRes?.yarnCompanyList?.forEach((ysc) => {
-  //     // const { yarn_company_name: name = "", yarn_details = [] } = ysc;
-  //     const { yarn_details = [] } = ysc;
-  //     // if (name === yarn_company_name) {
-  //     const options = yarn_details?.map(
-  //       ({
-  //         yarn_company_id = 0,
-  //         filament = 0,
-  //         yarn_denier = 0,
-  //         luster_type = "",
-  //         yarn_color = "",
-  //       }) => {
-  //         return {
-  //           label: `${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`,
-  //           value: yarn_company_id,
-  //         };
-  //       }
-  //     );
-  //     if (options?.length) {
-  //       setDenierOptions(options);
-  //     }
-  //     // }
-  //   });
-  // }, [yscdListRes?.yarnCompanyList]);
 
   useEffect(() => {
     if (yarnSentDetails) {
@@ -444,7 +420,7 @@ const UpdateYarnSent = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />

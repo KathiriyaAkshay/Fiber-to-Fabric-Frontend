@@ -31,21 +31,16 @@ import { getYarnSentListRequest } from "../../../../api/requests/job/sent/yarnSe
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import {
   getDropdownSupplierListRequest,
-  // getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import DeleteYarnSent from "../../../../components/job/yarnSent/DeleteYarnSent";
 const { Title, Text } = Typography;
 import ReactToPrint from "react-to-print";
 import moment from "moment";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const YarnSentList = () => {
   const { company, companyId } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState("");
@@ -68,7 +63,7 @@ const YarnSentList = () => {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -121,31 +116,6 @@ const YarnSentList = () => {
       enabled: Boolean(companyId),
     });
 
-  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-  //   queryKey: ["party", "list", { company_id: companyId }],
-  //   queryFn: async () => {
-  //     const res = await getPartyListRequest({
-  //       params: { company_id: companyId },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
-
-  // const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
-  //   queryKey: [
-  //     "vehicle",
-  //     "list",
-  //     { company_id: companyId, page: 0, pageSize: 99999 },
-  //   ],
-  //   queryFn: async () => {
-  //     const res = await getVehicleUserListRequest({
-  //       params: { company_id: companyId, page: 0, pageSize: 99999 },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(companyId),
-  // });
 
   const { data: jobYarnSentList, isLoading } = useQuery({
     queryKey: [
@@ -282,6 +252,13 @@ const YarnSentList = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Party Name",
@@ -306,7 +283,13 @@ const YarnSentList = () => {
     {
       title: "Quality Name",
       render: (detail) => {
-        return `${detail.inhouse_quality.quality_name} - (${detail.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {getDisplayQualityName(detail?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -418,9 +401,9 @@ const YarnSentList = () => {
               value={quality}
               loading={isLoadingInHouseQualityList}
               options={inHouseQualityList?.rows?.map(
-                ({ id = 0, quality_name = "" }) => ({
-                  label: quality_name,
-                  value: id,
+                (element) => ({
+                  label: getDisplayQualityName(element),
+                  value: element?.id,
                 })
               )}
               dropdownStyle={{
@@ -531,6 +514,13 @@ const ViewYarnSentDetailsModal = ({
       title: "No",
       dataIndex: "no",
       key: "no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Company name",
@@ -566,7 +556,7 @@ const ViewYarnSentDetailsModal = ({
       temp.push({
         no: index + 1,
         company_name: element?.yarn_stock_company?.yarn_company_name,
-        dennier: `${element?.yarn_stock_company?.yarn_type}-${element?.yarn_stock_company?.yarn_Sub_type}-${element?.yarn_stock_company?.yarn_color}`,
+        dennier: `${element?.yarn_stock_company?.yarn_denier}/${element?.yarn_stock_company?.yarn_count} (${element?.yarn_stock_company?.yarn_type}-${element?.yarn_stock_company?.yarn_Sub_type}-${element?.yarn_stock_company?.yarn_color})`,
         kg: element?.kg,
         cartoon: element?.cartoon,
         remark: "",
@@ -660,6 +650,9 @@ const ViewYarnSentDetailsModal = ({
                     TO: {details?.supplier?.supplier_company}
                   </Title>
                   <div className="header-card-text">
+                    <div style={{fontWeight: 600}}>
+                      {String(details?.supplier?.supplier_name).toUpperCase()}
+                    </div>
                     <Text strong>
                       Address: {details?.supplier?.user?.address}
                     </Text>
