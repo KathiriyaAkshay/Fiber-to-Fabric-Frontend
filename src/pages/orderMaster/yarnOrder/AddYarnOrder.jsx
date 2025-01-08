@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 import { disabledFutureDate } from "../../../utils/date";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
+import { YARN_SUPPLIER_TYPE } from "../../../constants/supplier";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -81,7 +82,7 @@ function AddYarnOrder() {
     queryKey: ["supplier", "list", { company_id: companyId, supplier_type: "yarn" }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId, supplier_type: "yarn" },
+        params: { company_id: companyId, supplier_type: YARN_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -161,6 +162,8 @@ function AddYarnOrder() {
     rate,
     credit_days,
     yarn_stock_company_id,
+    pending_quantity, 
+    pending_cartoon
   } = watch();
 
   useEffect(() => {
@@ -389,6 +392,7 @@ function AddYarnOrder() {
           gutter={18}
           style={{
             padding: "12px",
+            marginTop: "-20px"
           }}
         >
           <Col span={6}>
@@ -446,7 +450,7 @@ function AddYarnOrder() {
           </Col>
 
           <Col span={24}>
-            <p className="text-lg font-medium text-primary">Order Data</p>
+            <p className="text-lg font-medium text-primary" style={{fontWeight: 600}}>Order Data</p>
           </Col>
 
           <Col span={6}>
@@ -787,9 +791,12 @@ function AddYarnOrder() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading={isPending}>
-            Create
-          </Button>
+
+          {pending_cartoon !== 0 && pending_quantity !== 0 && (
+            <Button type="primary" htmlType="submit" loading={isPending}>
+              Create
+            </Button>
+          )}
         </Flex>
       </Form>
     </div>

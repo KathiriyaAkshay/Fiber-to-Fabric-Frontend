@@ -25,6 +25,7 @@ import UpdateYarnChallanModel from "../../../../components/purchase/receive/yarn
 import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { YARN_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 const YarnBillList = () => {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -48,14 +49,22 @@ const YarnBillList = () => {
   const [status, setStatus] = useState();
   const debounceStatus = useDebounce(status, 600);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", 
+      { 
+        company_id: companyId, 
+        supplier_type: YARN_SUPPLIER_TYPE
+      }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: YARN_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -231,6 +240,8 @@ const YarnBillList = () => {
     },
     {
       title: "Action",
+      fixed: "right",
+      width: 170,
       render: (record) => {
         return (
           <Space>
@@ -429,6 +440,9 @@ const YarnBillList = () => {
         dataSource={yarnBillData?.row || []}
         columns={columns}
         rowKey={"id"}
+        scroll={{
+          x: 1500,
+        }}
         pagination={{
           current: page + 1,
           pageSize: pageSize,
@@ -492,9 +506,6 @@ const YarnBillList = () => {
             <h3 className="m-0 text-primary">Yarn Bill List </h3>
 
             <Flex style={{ marginLeft: "10px" }} gap={"10px"}>
-              {/* <Button type="primary" icon={<PlusCircleFilled />}>
-                Advance Bill payment
-              </Button> */}
               <Button
                 onClick={SummaryGeneration}
                 type="primary"
@@ -508,7 +519,7 @@ const YarnBillList = () => {
             <Flex align="center" gap={10}>
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
-                  payment status
+                  Payment status
                 </Typography.Text>
                 <Select
                   placeholder="Payment status"
@@ -565,6 +576,7 @@ const YarnBillList = () => {
                   format="YYYY-MM-DD"
                   value={fromDate}
                   onChange={setFromDate}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
 
@@ -580,6 +592,7 @@ const YarnBillList = () => {
                   format="YYYY-MM-DD"
                   value={toDate}
                   onChange={setToDate}
+                  disabledDate={disabledFutureDate}
                 />
               </Flex>
 

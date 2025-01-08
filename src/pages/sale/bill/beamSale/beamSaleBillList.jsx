@@ -146,6 +146,16 @@ const BeamSaleBillList = () => {
         },
       },
       {
+        title: "Bill No", 
+        render: (text, record) => {
+          return(
+            <div>
+              {record?.beam_sale_bill?.E_way_bill_no}
+            </div>
+          )
+        }
+      }, 
+      {
         title: "Total Beam",
         render: (record) => {
           return `${record.beam_sale_details?.length}`;

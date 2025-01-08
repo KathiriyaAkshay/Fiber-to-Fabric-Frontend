@@ -133,14 +133,15 @@ const ViewYarnReceiveChallan = ({
                 <Col span={24}>
                   <Typography.Text>To,</Typography.Text>
                   <Typography.Text className="block font-bold">
-                    {details?.supplier?.supplier?.supplier_name}(
-                    {details?.supplier?.supplier?.supplier_company})
+                    {String(details?.supplier?.supplier?.supplier_name).toUpperCase()} 
+                    <br></br>
+                    ({details?.supplier?.supplier?.supplier_company})
                   </Typography.Text>
                 </Col>
               </Row>
               <Row>
                 <Col span={24}>
-                  <Typography.Text>Gst In</Typography.Text>
+                  <Typography.Text style={{fontWeight: 600}}>Gst In</Typography.Text>
                   <Typography.Text className="block">
                     {details?.supplier?.gst_no}
                   </Typography.Text>
@@ -148,7 +149,7 @@ const ViewYarnReceiveChallan = ({
               </Row>
               <Row>
                 <Col span={24}>
-                  <Typography.Text>Invoice No</Typography.Text>
+                  <Typography.Text style={{fontWeight: 600}}>Invoice No</Typography.Text>
                   <Typography.Text className="block">
                     {details?.invoice_no}
                   </Typography.Text>
@@ -166,7 +167,7 @@ const ViewYarnReceiveChallan = ({
               </Row>
               <Row>
                 <Col span={24}>
-                  <Typography.Text>Gst In</Typography.Text>
+                  <Typography.Text style={{fontWeight: 600}}>Gst In</Typography.Text>
                   <Typography.Text className="block">
                     {company?.gst_no}
                   </Typography.Text>
@@ -174,7 +175,7 @@ const ViewYarnReceiveChallan = ({
               </Row>
               <Row>
                 <Col span={24}>
-                  <Typography.Text>Bill Date</Typography.Text>
+                  <Typography.Text style={{fontWeight: 600}}>Bill Date</Typography.Text>
                   <Typography.Text className="block">
                     {moment(details?.bill_date).format("DD-MM-YYYY")}
                   </Typography.Text>

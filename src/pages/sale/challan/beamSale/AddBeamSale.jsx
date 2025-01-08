@@ -133,13 +133,9 @@ const AddBeamSale = () => {
       supplier_id: +data.supplier_id,
       vehicle_id: +data.vehicle_id,
       challan_no: data.challan_no,
-      // createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
       machine_name: data.machine_name,
-      // quality_group: data.quality_group,
       beam_type: data.beam_type,
       quality_id: +data.quality_id,
-      // delivery_charge: +(+data.delivery_charge).toFixed(2),
-      // power_cost_per_meter: +(+data.power_cost_per_meter).toFixed(2),
       enter_weight: +data.enter_weight,
       total_meter: +data.total_meter,
       inhouse_warp_ids: inhouseWarpIds,
@@ -447,6 +443,7 @@ const AddBeamSale = () => {
               gutter={18}
               style={{
                 padding: "12px",
+                paddingTop: "0px"
               }}
             >
               {weftDenierDetails.map(
@@ -468,7 +465,7 @@ const AddBeamSale = () => {
                 }
               )}
             </Row>
-            <Divider />
+            <Divider style={{marginTop: 5, marginBottom: 5}} />
           </>
         ) : null}
 
@@ -667,37 +664,6 @@ const AddBeamSale = () => {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={4}>
-            <Form.Item
-              label={"Quality Group"}
-              name="quality_group"
-              validateStatus={errors.quality_group ? "error" : ""}
-              help={errors.quality_group && errors.quality_group.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="quality_group"
-                render={({ field }) => {
-                  return (
-                    <Select
-                      allowClear
-                      placeholder="Select group"
-                      {...field}
-                      options={QUALITY_GROUP_OPTION_LIST}
-                      onChange={(value) => {
-                        field.onChange(value);
-                        resetField("quality_id");
-                      }}
-                    />
-                  );
-                }}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={6}>
             <Form.Item
               label="Select Quality"
@@ -784,7 +750,8 @@ const AddBeamSale = () => {
                       taka,
                       meters,
                       weight,
-                      tars
+                      tars, 
+                      meter 
                     },
                     index
                   ) => {
@@ -803,13 +770,13 @@ const AddBeamSale = () => {
                             }
                           />
                         </td>
-                        <td width={150} style={{ textAlign: "center" }}>
+                        <td width={150} style={{ textAlign: "center", fontWeight: 600 }}>
                           {beam_no}
                         </td>
                         <td style={{ textAlign: "center" }}>{ends_or_tars || tars}</td>
                         <td style={{ textAlign: "center" }}>{pano}</td>
                         <td style={{ textAlign: "center" }}>{taka}</td>
-                        <td style={{ textAlign: "center" }}>{meters}</td>
+                        <td style={{ textAlign: "center" }}>{meters || meter}</td>
                       </tr>
                     );
                   }

@@ -26,6 +26,7 @@ import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
+import { YARN_SUPPLIER_TYPE } from "../../../constants/supplier";
 
 const addYarnOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -89,7 +90,7 @@ function UpdateYarnOrder() {
     queryKey: ["supplier", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: YARN_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },

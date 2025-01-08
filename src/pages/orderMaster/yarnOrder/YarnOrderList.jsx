@@ -28,6 +28,7 @@ import GridInformationModel from "../../../components/common/modal/gridInformati
 import useDebounce from "../../../hooks/useDebounce";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import { getSupplierListRequest } from "../../../api/requests/users";
+import { YARN_SUPPLIER_TYPE } from "../../../constants/supplier";
 
 function YarnOrderList() {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ function YarnOrderList() {
     queryKey: ["supplier", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: YARN_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },

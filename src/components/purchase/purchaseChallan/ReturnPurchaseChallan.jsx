@@ -387,9 +387,11 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
                   color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index]?.taka_no}
                 </Col>
+
                 <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index]?.meter}
                 </Col>
+                
                 <Col span={1} style={{ textAlign: "center" }}>
                   {details?.purchase_challan_details[index + 12]
                     ?.is_returned === false && (
@@ -401,15 +403,19 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
                     />
                   )}
                 </Col>
+                
                 <Col span={1} style={{ textAlign: "center" }}>
                   {index + 13}
                 </Col>
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
+                
+                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index + 12]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index + 12]?.taka_no}
                 </Col>
-                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index]?.is_returned?"red":"black"  }}>
+                
+                <Col span={5} style={{ textAlign: "center", color: details?.purchase_challan_details[index + 12]?.is_returned?"red":"black"  }}>
                   {details?.purchase_challan_details[index + 12]?.meter}
                 </Col>
+              
               </Row>
             );
           })}
@@ -454,13 +460,13 @@ const ReturnPurchaseChallan = ({ details, companyId }) => {
 
           <Row className="p-3 border-0" style={{ borderBottom: "1px dashed" }}>
             <Col span={3} style={{ textAlign: "center" }}>
-              <strong>RETURN TAKA:</strong>
+              <strong style={{color: "red"}}>RETURN TAKA:</strong>
             </Col>
             <Col span={4} style={{ textAlign: "center" }}>
               {selectedPurchaseId?.length}
             </Col>
             <Col span={3} style={{ textAlign: "right" }}>
-              <strong>RETURN METER::</strong>
+              <strong style={{color: "red"}}>RETURN METER::</strong>
             </Col>
             <Col span={6} style={{ textAlign: "center" }}>
               {totalReturnMeter}

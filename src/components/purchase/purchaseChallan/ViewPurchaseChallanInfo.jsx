@@ -94,7 +94,7 @@ const ViewPurchaseChallanInfo = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Purchase Return Challan
+            Purchase Challan
           </Typography.Text>
         }
         open={isOpen}

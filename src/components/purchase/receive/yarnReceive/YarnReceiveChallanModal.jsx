@@ -27,6 +27,7 @@ import { getYarnOrderListRequest } from "../../../../api/requests/orderMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import { disabledFutureDate, disabledPastDate } from "../../../../utils/date";
+import { YARN_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -126,15 +127,14 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       "dropdown/supplier/list",
       {
         company_id: companyId,
-        // supplier_name: supplierName,
-        // supplier_type: "yarn",
+        supplier_type: YARN_SUPPLIER_TYPE,
       },
     ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: {
           company_id: companyId,
-          // supplier_type: "yarn",
+          supplier_type: YARN_SUPPLIER_TYPE,
         },
       });
       return res.data?.data?.supplierList;
@@ -205,6 +205,7 @@ const YarnReceiveChallanModal = ({ details = [] }) => {
       SGST_value: 6,
       TCS_value: 6,
       round_off_amount: 0,
+      discount_brokerage_value: 0
     },
   });
 

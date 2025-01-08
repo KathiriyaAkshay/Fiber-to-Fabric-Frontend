@@ -186,11 +186,10 @@ const AddPurchaseTaka = () => {
       hasError = 1;
       return;
     }
-    console.log(purchase_challan_detail, newData);
 
-    // if (!hasError) {
-    //   await AddPurchaseTaka(newData);
-    // }
+    if (!hasError) {
+      await AddPurchaseTaka(newData);
+    }
   }
 
   const {

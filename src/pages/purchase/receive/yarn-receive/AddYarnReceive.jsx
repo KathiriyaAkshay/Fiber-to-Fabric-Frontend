@@ -23,8 +23,7 @@ import { createYarnReceiveRequest } from "../../../../api/requests/purchase/yarn
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
 import moment from "moment";
-import { MinusCircleFilled } from "@ant-design/icons";
-import { PlusOutlined, MinusCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 
 const addYarnReceiveSchemaResolver = yupResolver(
   yup.object().shape({
@@ -32,11 +31,6 @@ const addYarnReceiveSchemaResolver = yupResolver(
     yarn_company_name: yup.string().required("Please select yarn company"),
     yarn_stock_company_id: yup.string().required("Please select Denier"),
     lot_no: yup.string().required("Please enter lot no"),
-    // challan_no: yup.string().required("Please enter lot no"),
-    // receive_quantity: yup.string().required("Please enter recieve quantity"),
-    // receive_cartoon_pallet: yup
-    //   .string()
-    //   .required("Please enter receive cartoon/pallet"),
     items: yup.array().of(
       yup.object().shape({
         challan_no: yup.string().required("Please enter challan no"),
@@ -151,6 +145,8 @@ function AddYarnReceive() {
 
     challanArray.forEach((item, index) => {
       if (index == indexValue) {
+        console.log(getValues(`challan_no_${index}`));
+        
         if (!getValues(`challan_no_${index}`)) {
           setError(`challan_no_${index}`, {
             type: "manual",
@@ -194,19 +190,56 @@ function AddYarnReceive() {
   const [totalReceiveCartoon, setTotalReceiveCartoon] = useState(0) ; 
 
   async function onSubmit(data) {
-    
-    const ChallanDetails = challanArray.map((field, index) => {
-      return {
-        challan_date: data?.challan_date, 
-        yarn_stock_company_id: data?.yarn_stock_company_id, 
-        lot_no: data?.lot_no, 
-        challan_no: data[`challan_no_${index}`],
-        receive_quantity: data[`receive_quantity_${index}`], 
-        receive_cartoon_pallet : data[`receive_cartoon_pallet_${index}`]
+    let isValid = true ;  
+
+    challanArray.forEach((item, index) => {
+      clearErrors(`challan_no_${index}`);
+      clearErrors(`receive_quantity_${index}`);
+      clearErrors(`receive_cartoon_pallet_${index}`);
+    });
+
+    challanArray.forEach((item, index) => {
+      if (!getValues(`challan_no_${index}`)) {
+        setError(`challan_no_${index}`, {
+          type: "manual",
+          message: "Please, Enter challan number",
+        });
+        isValid = false;
+        return ; 
+      }
+      if (!getValues(`receive_quantity_${index}`)) {
+        setError(`receive_quantity_${index}`, {
+          type: "manual",
+          message: "Please, Enter Receive quantity",
+        });
+        isValid = false;
+        return ; 
+      }
+      if (!getValues(`receive_cartoon_pallet_${index}`)) {
+        setError(`receive_cartoon_pallet_${index}`, {
+          type: "manual",
+          message: "Please, Enter Receive cartoon quantity",
+        });
+        isValid = false;
+        return ; 
       }
     })
+
+    if (isValid){
+      const ChallanDetails = challanArray.map((field, index) => {
+        return {
+          challan_date: data?.challan_date, 
+          yarn_stock_company_id: data?.yarn_stock_company_id, 
+          lot_no: data?.lot_no, 
+          challan_no: data[`challan_no_${index}`],
+          receive_quantity: data[`receive_quantity_${index}`], 
+          receive_cartoon_pallet : data[`receive_cartoon_pallet_${index}`]
+        }
+      })
+      
+      await createYarnReceive(ChallanDetails);
+    }
     
-    await createYarnReceive(ChallanDetails);
 
   }
 
@@ -481,6 +514,7 @@ function AddYarnReceive() {
                         <Button
                           style={{ marginTop: "1.9rem" }}
                           icon={<DeleteOutlined />}
+                          danger
                           type="primary"
                           onClick={DeleteChallanRow.bind(null, field)}
                           className="flex-none"
@@ -507,10 +541,16 @@ function AddYarnReceive() {
 
         <Row>
           <Col span={6}></Col>
-          <Col span={6}>
+          <Col span={6} style={{
+            fontWeight: 600,
+            color: "blue"
+          }}>
             Total Receive quantity : {totalReceiveQuantity}
           </Col>
-          <Col span={6}>
+          <Col span={6} style={{
+            fontWeight: 600, 
+            color: "blue"
+          }}>
             Total Receive cartoon : {totalReceiveCartoon}
           </Col>
         </Row>

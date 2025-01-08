@@ -929,6 +929,11 @@ const SizeBeamChallanModal = ({
                 className="p-2 border-0 border-r border-solid"
               ></Col>
               <Col span={7} className="p-2 border-0 border-r border-solid">
+                <div style={{
+                  fontWeight: 600, 
+                  color: "red", 
+                  marginBottom: 5
+                }}>Due Date:</div>
                 <Form.Item
                   name="due_date"
                   validateStatus={errors.due_date ? "error" : ""}

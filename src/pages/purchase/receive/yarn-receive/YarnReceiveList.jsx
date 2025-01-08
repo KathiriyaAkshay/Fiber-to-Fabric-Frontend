@@ -27,6 +27,7 @@ import YarnReturnModel from "../../../../components/purchase/receive/yarnReceive
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { useMemo } from "react";
 import { currentMonthStartDateEndDate } from "../../../../utils/date";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 function YarnReceiveList() {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -61,7 +62,7 @@ function YarnReceiveList() {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
