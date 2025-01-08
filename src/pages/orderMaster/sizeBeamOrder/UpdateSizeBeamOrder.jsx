@@ -27,6 +27,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import { getYSCDropdownList } from "../../../api/requests/reports/yarnStockReport";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../utils/date";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../constants/supplier";
 
 const updateSizeBeamOrderSchemaResolver = yupResolver(
   yup.object().shape({
@@ -110,6 +111,7 @@ function UpdateSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
 
+  // Size beam order details api ======================================
   const { data: sizeBeamOrderDetails } = useQuery({
     queryKey: [
       "order-master/size-beam-order/get",
@@ -126,6 +128,7 @@ function UpdateSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
 
+  // Supplier dropdown related api ====================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -133,7 +136,7 @@ function UpdateSizeBeamOrder() {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },

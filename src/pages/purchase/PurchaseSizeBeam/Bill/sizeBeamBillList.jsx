@@ -23,6 +23,8 @@ import { getSupplierListRequest } from "../../../../api/requests/users";
 import { FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 function SizeBeamBillList() {
   const { companyId, company, financialYearEnd } = useContext(GlobalContext);
@@ -65,12 +67,13 @@ function SizeBeamBillList() {
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Supplier dropdown request ====================================
   const { data: supplierListRes, isLoading: isLoadingSupplierList } = useQuery({
     queryKey: ["supplier", "list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -177,6 +180,13 @@ function SizeBeamBillList() {
     {
       title: "Bill No",
       dataIndex: "bill_number",
+      return: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Supplier Name",
@@ -196,7 +206,11 @@ function SizeBeamBillList() {
       title: "Quality",
       dataIndex: "quality_name",
       render: (text, record) => {
-        return <div>{record?.inhouse_quality?.quality_name}</div>;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(record?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -444,9 +458,9 @@ function SizeBeamBillList() {
               value={quality}
               loading={isLoadingInHouseQualityList}
               options={inHouseQualityList?.rows?.map(
-                ({ id = 0, quality_name = "" }) => ({
-                  label: quality_name,
-                  value: id,
+                (element) => ({
+                  label: getDisplayQualityName(element),
+                  value: element?.id,
                 })
               )}
               dropdownStyle={{

@@ -170,6 +170,8 @@ const BeamPipeChallanModel = ({ details }) => {
                                     <br />
                                     <Typography.Text>{details?.supplier?.supplier_name}</Typography.Text>
                                     <br />
+                                    <Typography.Text style={{fontWeight: 600}}>{String(details?.supplier?.supplier_company).toUpperCase()}</Typography.Text>
+                                    <br />
                                     <Typography.Text>{details?.supplier?.user?.address}</Typography.Text>
                                 </div>
 

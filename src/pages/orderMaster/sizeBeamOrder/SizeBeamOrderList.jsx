@@ -199,6 +199,16 @@ function SizeBeamOrderList() {
       key: "yarn_stock_company.yarn_company_name",
     },
     {
+      title: "Yarn Company", 
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.yarn_stock_company?.yarn_company_name}
+          </div>
+        )
+      }
+    }, 
+    {
       title: "Purchase company",
       dataIndex: ["company", "company_name"],
       key: "company.company_name",
@@ -303,6 +313,10 @@ function SizeBeamOrderList() {
     },
   ];
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   function renderTable() {
     if (isLoading) {
       return (
@@ -366,7 +380,7 @@ function SizeBeamOrderList() {
               onChange={setToDate}
               className="min-w-40"
               format={"DD-MM-YYYY"}
-              // disabledDate={disableFutureDates}
+              disabledDate={disableFutureDates}
             />
           </Flex>
         </Flex>

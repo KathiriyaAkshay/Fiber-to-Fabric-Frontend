@@ -19,6 +19,9 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
     const { companyListRes, companyId } = useContext(GlobalContext);
     const [companyInfo, setCompanyInfo] = useState({});
     const [selectedBeamId, setSelectedBeamId] = useState([]);
+    const [totalWeight, setTotalWeight] = useState(undefined) ; 
+    const [returnMeter, setReturnMeter] = useState(undefined) ; 
+    const [returnWeight, setReturnWeight] = useState(undefined) ; 
 
     useEffect(() => {
         companyListRes?.rows?.map((element) => {
@@ -27,6 +30,16 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
             }
         })
     }, [details, companyListRes]);
+
+    useEffect(() => {
+        if (details){
+            let temp_total_weight = 0 ; 
+            details?.recieve_size_beam_details?.map((element) => {
+                temp_total_weight += +element?.net_weight ; 
+            })
+            setTotalWeight(temp_total_weight) ; 
+        }
+    }, [details])
 
     const handleSelectBeamChallan = (event, index) => {
         if (event.  target.checked) {
@@ -41,6 +54,21 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
             })
         }
     }
+
+    useEffect(() => {
+        if (selectedBeamId?.length > 0){
+            let temp_total_meter = 0 ; 
+            let temp_total_weight = 0 ; 
+            selectedBeamId?.map((item) => {
+                let temp = details?.recieve_size_beam_details?.find((element) => element?.id == item) ; 
+                temp_total_meter += +temp?.meters;
+                temp_total_weight += +temp?.net_weight ; 
+            })
+            setReturnMeter(temp_total_meter) ; 
+            setReturnWeight(temp_total_weight) ; 
+            
+        }
+    }, [selectedBeamId])
 
     const { mutateAsync: returnBeamSaleChallan, isPending } = useMutation({
         mutationFn: async (data) => {
@@ -76,8 +104,6 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
         if (selectedBeamId?.length == 0){
             message.warning("Please, Select at least one beam for return") ; 
         }   else {
-            console.log(details);
-            
             let beam_sale_ids = selectedBeamId ;
             let requestPayload = {
                 "size_beam_order_id": details?.size_beam_order?.id,
@@ -86,7 +112,7 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
                 "supplier_id": details?.supplier?.id,
                 "beam_type": details?.beam_type,
                 "createdAt": dayjs(new Date())
-              }
+            }
             await returnBeamSaleChallan(requestPayload)
         }
     }
@@ -192,7 +218,8 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
                         }}
                     >
                         <Col span={12}>
-                            <p><strong>M/S :</strong> {details?.supplier?.supplier?.supplier_company}({details?.supplier?.supplier?.supplier_name})</p>
+                            <p><strong>M/S :</strong> {details?.supplier?.supplier?.supplier_name}
+                            <div style={{fontWeight: 600}}>({details?.supplier?.supplier?.supplier_company})</div></p>
                             <p>{details?.supplier?.user?.address}</p>
                             <p><strong>GST :</strong> {details?.supplier?.gst_no}</p>
                             <p><strong>E-Way Bill No :</strong></p>
@@ -210,16 +237,16 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
                             paddingBottom: 15,
                         }}
                     >
-                        <Col span={8}>
+                        <Col span={5}>
                             <strong>DESCRIPTION OF GOODS:</strong>
                         </Col>
                         <Col span={10}>
-                            <strong>
+                            <div>
                                 {String(details?.machine_name).toUpperCase()} 
                                 <span style={{marginLeft: 10}}>
                                     ( {details?.inhouse_quality?.quality_name} / { details?.inhouse_quality?.quality_weight}KG )
                                 </span>
-                            </strong>
+                            </div>
                         </Col>
                     </Row>
                     <div style={{ height: 400 }}>
@@ -266,15 +293,20 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
                                     }}
                                 >
                                     <Col span={3}>
-                                        {index + 1}
-                                        {!isReturn && (
-                                            <Checkbox
-                                                style={{ marginLeft: 10 }}
-                                                onChange={(e) => {
-                                                    handleSelectBeamChallan(e, index)
-                                                }}
-                                            />
-                                        )}
+                                        <Flex>
+                                            {!isReturn && (
+                                                <Checkbox
+                                                    onChange={(e) => {
+                                                        handleSelectBeamChallan(e, index)
+                                                    }}
+                                                />
+                                            )}
+                                            <div style={{
+                                                marginLeft: 10
+                                            }}>
+                                                {index + 1}
+                                            </div>
+                                        </Flex>
                                     </Col>
                                     <Col span={3} style={{
                                         fontWeight: 600, 
@@ -323,21 +355,43 @@ const ReturnPurchaseBeamChallan = ({ details }) => {
                         }}
                     >
                         <Col span={4}>
-                            <strong>TOTAL Meter:</strong>
+                            <strong style={{color: "red"}}>Return Meter:</strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.total_meter}</strong>
+                            <div>{returnMeter || 0}</div>
                         </Col>
                         <Col span={4}>
-                            <strong>TOTAL Weight:</strong>
+                            <strong style={{color: "red"}}>Return Weight:</strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.enter_weight}</strong>
+                            <div>{returnWeight || 0}</div>
+                        </Col>
+                    </Row>
+
+                    <Row
+                        gutter={24}
+                        style={{
+                            borderTop: "1px dashed",
+                            paddingTop: 8,
+                            paddingBottom: 8,
+                        }}
+                    >
+                        <Col span={4}>
+                            <strong>Total Meter:</strong>
+                        </Col>
+                        <Col span={4}>
+                            <div>{details?.total_meter}</div>
+                        </Col>
+                        <Col span={4}>
+                            <strong>Total Weight:</strong>
+                        </Col>
+                        <Col span={4}>
+                            <div>{totalWeight}</div>
                         </Col>
                     </Row>
 
                     <Row gutter={24} style={{ borderTop: "1px dashed", paddingTop: 15 }}>
-                        <Col span={4}>TERMS OF SALES:</Col>
+                        <Col span={4} style={{fontWeight: 600}}>TERMS OF SALES:</Col>
                     </Row>
 
                     <Row gutter={[16, 16]} style={{ marginTop: 15 }}>

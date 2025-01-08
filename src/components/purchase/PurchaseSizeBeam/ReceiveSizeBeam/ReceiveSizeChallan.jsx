@@ -128,12 +128,19 @@ const SizeBeamChallanModal = ({
   useEffect(() => {
     let tempTotalTaka = 0;
     let tempNetWeight = 0;
-    details?.recieve_size_beam_details?.map((element) => {
-      tempTotalTaka = tempTotalTaka + element?.taka;
-      tempNetWeight = tempNetWeight + element?.net_weight;
-    });
+    if (details?.recieve_size_beam_details !== undefined){
+      details?.recieve_size_beam_details?.map((element) => {
+        tempTotalTaka = tempTotalTaka + element?.taka;
+        tempNetWeight = tempNetWeight + element?.net_weight;
+      });
+    } else {
+      details?.receive_size_beam_bill?.receive_size_beam?.recieve_size_beam_details?.map((element) => {
+        tempTotalTaka = tempTotalTaka + element?.taka;
+        tempNetWeight = tempNetWeight + element?.net_weight;
+      });
+    }
     setTotalTaka(tempTotalTaka);
-    setTotalMeter(details?.total_meter);
+    setTotalMeter(details?.total_meter || details?.receive_size_beam_bill?.receive_size_beam?.total_meter);
     setTotalKG(tempNetWeight);
   }, []);
 
@@ -379,7 +386,9 @@ const SizeBeamChallanModal = ({
                   </Col>
                   <Col
                     span={16}
-                  >{`${details?.supplier?.first_name} ${details?.supplier?.last_name}`}</Col>
+                  >
+                    {`${details?.supplier?.first_name !== undefined?`${details?.supplier?.first_name} ${details?.supplier?.last_name}`:`${details?.receive_size_beam_bill?.supplier?.supplier_name}`}`}
+                  </Col>
                 </Row>
                 <Row gutter={12} className="flex-grow w-full mt-3">
                   <Col span={8} className="font-medium">
@@ -498,7 +507,7 @@ const SizeBeamChallanModal = ({
 
             <Row>
               <Col span={4} className="p-2 border-0 border-r border-solid">
-                {details?.challan_no}
+                {details?.challan_no == undefined?details?.receive_size_beam_bill?.receive_size_beam?.challan_no:details?.challan_no}
               </Col>
               <Col span={4} className="p-2 border-0 border-r border-solid">
                 {totalTaka}

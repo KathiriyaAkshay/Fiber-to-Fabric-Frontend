@@ -25,16 +25,14 @@ import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMa
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import {
-  // createReceiveSizeBeamRequest,
   updateReceiveSizeBeamRequest,
 } from "../../../../api/requests/purchase/purchaseSizeBeam";
-// import { getSizeBeamOrderListRequest } from "../../../../api/requests/orderMaster";
-// import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
 import { getReceiveSizeBeamOrderRequest } from "../../../../api/requests/purchase/yarnReceive";
 import UpdateSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/UpdateSizeBeamDetails";
 import { getSizeBeamOrderByIdRequest } from "../../../../api/requests/orderMaster";
 import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -75,7 +73,6 @@ function UpdateReceiveSizeBeam() {
   const { companyId } = useContext(GlobalContext);
   const [totalMeter, setTotalMeter] = useState(0);
   const [pendingMeter, setPendingMeter] = useState(0);
-  const [is_beam_stock_added, set_is_beam_stock_added] = useState(false);
   const [deletedRecords, setDeletedRecords] = useState([]);
   const [orderOptions, setOrderOptions] = useState([]);
 
@@ -353,31 +350,22 @@ function UpdateReceiveSizeBeam() {
         <GoBackButton />
         <Flex style={{ width: "100%" }}>
           <h3 className="m-0 text-primary">Update Receive size beam</h3>
-          <div
-            style={{
-              marginLeft: "auto",
-              marginTop: "auto",
-              marginBottom: "auto",
-            }}
-          >
-            <Checkbox
-              style={{ color: "red" }}
-              value={is_beam_stock_added}
-              onChange={set_is_beam_stock_added}
-            >
-              Do you want to add this beam to Beam stock ?
-            </Checkbox>
-          </div>
         </Flex>
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         <Flex className="mt-3" gap={20}>
           <Flex>
-            <div className="font-weight-bold">
+            <div className="font-weight-bold" style={{
+              color: "blue", 
+              fontWeight: 600
+            }}>
               Total meter: {receiveSizeBeamDetails?.total_meter}
             </div>
           </Flex>
-          <Flex>
+          <Flex style={{
+            color: "red", 
+            fontWeight: 600
+          }}>
             <div>Pending meter: {pendingMeter}</div>
           </Flex>
         </Flex>
@@ -451,9 +439,9 @@ function UpdateReceiveSizeBeam() {
                       allowClear={true}
                       loading={isLoadingInHouseQualityList}
                       options={inHouseQualityList?.rows?.map(
-                        ({ id = 0, quality_name = "" }) => ({
-                          label: quality_name,
-                          value: id,
+                        (element) => ({
+                          label: getDisplayQualityName(element),
+                          value: element?.id,
                         })
                       )}
                     />

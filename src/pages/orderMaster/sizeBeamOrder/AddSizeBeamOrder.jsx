@@ -26,6 +26,7 @@ import { initialOrderDetail } from "../../../constants/orderMaster";
 import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 import moment from "moment/moment";
 import { getCompanyMachineListRequest } from "../../../api/requests/machine";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../constants/supplier";
 
 const addSizeBeamOrderSchema = yup.object().shape({
   order_date: yup.string().required("Please select order date"),
@@ -93,7 +94,7 @@ function AddSizeBeamOrder() {
     enabled: Boolean(companyId),
   });
   
-
+  // Dropdown supplier related api =============================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
@@ -101,7 +102,7 @@ function AddSizeBeamOrder() {
     queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },

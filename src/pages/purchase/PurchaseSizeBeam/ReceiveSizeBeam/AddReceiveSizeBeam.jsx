@@ -30,6 +30,7 @@ import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import ReceiveSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBeam/ReceiveSizeBeam/ReceiveSizeBeamDetail";
 import moment from "moment/moment";
 import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -187,7 +188,6 @@ function AddReceiveSizeBeam() {
     });
     requestData["beam_details"] = beamData;
     requestData["is_beam_stock_added"] = is_beam_stock_added ; 
-
     await createReceiveSizeBeam(requestData);
   }
 
@@ -300,10 +300,14 @@ function AddReceiveSizeBeam() {
           <h3 className="m-0 text-primary">Add Receive size beam</h3>
           <div style={{marginLeft: "auto", marginTop: "auto", marginBottom: "auto"}}>
             <Checkbox
-              style={{color: "red"}}
-              value={is_beam_stock_added}
-              onChange={set_is_beam_stock_added}
-            >Do you want to add this beam to Beam stock ?</Checkbox>
+              style={{ color: "red" }}
+              checked={is_beam_stock_added}
+              onChange={(event) => {
+                set_is_beam_stock_added(event.target.checked);
+              }}
+            >
+              Do you want to add this beam to Beam stock?
+            </Checkbox>
           </div>
         </Flex>
 
@@ -318,7 +322,10 @@ function AddReceiveSizeBeam() {
             }}>Total meter: {totalMeter}</div>
           </Flex>
           <Flex>
-            <div>Pending meter: {pendingMeter}</div>
+            <div style={{
+              color: "red", 
+              fontWeight: 600
+            }}>Pending meter: {pendingMeter}</div>
           </Flex>
         </Flex>
 
@@ -419,9 +426,9 @@ function AddReceiveSizeBeam() {
                     allowClear={true}
                     loading={isLoadingInHouseQualityList}
                     options={inHouseQualityList?.rows?.map(
-                      ({ id = 0, quality_name = "" }) => ({
-                        label: quality_name,
-                        value: id,
+                      (element) => ({
+                        label: getDisplayQualityName(element),
+                        value: element?.id,
                       })
                     )}
                   />

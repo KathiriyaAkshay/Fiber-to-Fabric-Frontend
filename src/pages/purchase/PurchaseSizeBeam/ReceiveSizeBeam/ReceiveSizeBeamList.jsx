@@ -30,6 +30,7 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
 import ReturnPurchaseBeamChallan from "../../../../components/sale/challan/beamSale/returnPurchaseBeamChallan";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 function ReceiveSizeBeamList() {
   const [search, setSearch] = useState("");
@@ -173,13 +174,29 @@ function ReceiveSizeBeamList() {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {text}
+          </div>
+        )
+      }
     },
     {
-      title: "Quantity KG",
+      title: "Quantity",
       dataIndex: "inhouse_quality",
       key: "inhouse_quality",
-      render: (text, record) =>
-        `${record?.inhouse_quality?.quality_name} - ${record?.inhouse_quality?.quality_weight}KG`,
+      render: (text, record) => {
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {getDisplayQualityName(record?.inhouse_quality)}
+          </div>
+        )
+      }
     },
     {
       title: "Supplier",
@@ -286,7 +303,7 @@ function ReceiveSizeBeamList() {
                 },
                 {
                   label: "Quality Name	",
-                  value: `${details?.inhouse_quality?.quality_name} - ${details?.inhouse_quality?.quality_weight}`,
+                  value: getDisplayQualityName(details?.inhouse_quality),
                 },
                 {
                   label: "Supplier Name",
@@ -501,9 +518,9 @@ function ReceiveSizeBeamList() {
               value={quality}
               loading={isLoadingInHouseQualityList}
               options={inHouseQualityList?.rows?.map(
-                ({ id = 0, quality_name = "" }) => ({
-                  label: quality_name,
-                  value: id,
+                (element) => ({
+                  label: getDisplayQualityName(element),
+                  value: element?.id,
                 })
               )}
               dropdownStyle={{
