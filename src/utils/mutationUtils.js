@@ -9,9 +9,13 @@ export function mutationOnErrorHandler({ error, message }) {
     }
   }
 }
+export function formatString(input) {
+  const formatted = input.replace(/_/g, " "); // Remove underscores
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
+}
 
 export function capitalizeFirstCharacter(str) {
-  if (typeof str !== 'string' || str.length === 0) {
+  if (typeof str !== "string" || str.length === 0) {
     throw new Error("Input must be a non-empty string");
   }
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -26,8 +30,12 @@ export function calculateTimeDifference(futureDate) {
 
   // Calculate difference in days, hours, and minutes
   const days = Math.floor(differenceInMilliseconds / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((differenceInMilliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
+  const hours = Math.floor(
+    (differenceInMilliseconds % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+  const minutes = Math.floor(
+    (differenceInMilliseconds % (1000 * 60 * 60)) / (1000 * 60)
+  );
 
   return { days, hours, minutes };
 }
@@ -48,5 +56,4 @@ export const localStorageHandler = (key, name, payload) => {
     default:
       break;
   }
-
-}
+};
