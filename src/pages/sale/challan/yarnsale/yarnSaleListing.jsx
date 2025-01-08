@@ -136,6 +136,13 @@ function YarnSaleChallanList() {
     {
       title: "Challan No",
       dataIndex: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Yarn Company",
@@ -144,8 +151,15 @@ function YarnSaleChallanList() {
     {
       title: "Dennier",
       dataIndex: ["yarn_stock_company"],
-      render: (text) =>
-        `${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`,
+      render: (text) =>{
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {`${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`}
+          </div>
+        )
+      }
     },
     {
       title: "Cartoon",

@@ -70,20 +70,6 @@ const YarnSalesBillList = () => {
     enabled: Boolean(companyId),
   });
 
-  const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
-    queryKey: [
-      "vehicle",
-      "list",
-      { company_id: companyId, page: 0, pageSize: 99999 },
-    ],
-    queryFn: async () => {
-      const res = await getVehicleUserListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
 
   const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
     useQuery({
@@ -133,7 +119,19 @@ const YarnSalesBillList = () => {
       render: (text) => moment(text).format("DD-MM-YYYY"),
     },
     {
-      title: "Party Company name",
+      title: "Bill Number", 
+      render: (text, record) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {record?.yarn_sale_bill?.invoice_no}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Party",
       dataIndex: ["supplier", "supplier_company"],
     },
     {
@@ -149,8 +147,15 @@ const YarnSalesBillList = () => {
     {
       title: "Dennier",
       dataIndex: ["yarn_stock_company"],
-      render: (text) =>
-        `${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`,
+      render: (text) =>{
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {`${text?.yarn_count}C/${text?.filament}F - ( ${text?.yarn_type}(${text?.yarn_Sub_type}) - ${text?.yarn_color} )`}
+          </div>
+        )
+      }
     },
 
     {
@@ -373,16 +378,19 @@ const YarnSalesBillList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  {yarnSaleBillListData?.total_bill_kgs}
                 </Table.Summary.Cell>
-                <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  {yarnSaleBillListData?.total_bill_amount}
+                  {parseFloat(yarnSaleBillListData?.total_bill_kgs).toFixed(2)}
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {parseFloat(yarnSaleBillListData?.total_bill_amount).toFixed(2)}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell />
+                <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
             </>
           );
@@ -436,34 +444,6 @@ const YarnSalesBillList = () => {
                   textTransform: "capitalize",
                 }}
                 onChange={setParty}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                allowClear
-                className="min-w-40"
-              />
-            </Flex>
-            <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Vehicle
-              </Typography.Text>
-              <Select
-                placeholder="Select Vehicle"
-                value={vehicle}
-                loading={isLoadingVehicleList}
-                options={vehicleListRes?.vehicleList?.rows?.map((vehicle) => ({
-                  label:
-                    vehicle.first_name +
-                    " " +
-                    vehicle.last_name +
-                    " " +
-                    `| ( ${vehicle?.username})`,
-                  value: vehicle.id,
-                }))}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={setVehicle}
                 style={{
                   textTransform: "capitalize",
                 }}

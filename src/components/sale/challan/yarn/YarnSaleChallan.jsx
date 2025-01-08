@@ -381,7 +381,7 @@ const YarnSaleChallanModel = ({
                   M/s.
                 </Typography.Text>
               </Col>
-              <Col span={8} className="flex items-right justify-center border">
+              <Col span={8} className="flex items-left border">
                 <Typography.Text className="text-left">
                   <strong>{details?.supplier?.supplier_name}</strong> <br></br>{details?.supplier?.user?.address}
                 </Typography.Text>
@@ -392,7 +392,7 @@ const YarnSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center text-left">
+                <Typography.Text className="font-semibold text-left">
                   {details.challan_no}
                 </Typography.Text>
               </Col>

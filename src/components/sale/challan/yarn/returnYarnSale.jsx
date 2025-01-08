@@ -65,7 +65,6 @@ const ReturnYarnSale = ({ details }) => {
     const { cartoons, kg } = watch();
 
     // Create yarn sale return 
-
     const { mutateAsync: generateReturnYarnSale, isPending } = useMutation({
         mutationFn: async (data) => {
           const res = await returnYarnSaleChallanRequest({
@@ -233,13 +232,13 @@ const ReturnYarnSale = ({ details }) => {
                         </Row>
 
                         <Row className="p-2 pt-2 border-0 border-b border-solid">
-                            <Col span={8} className="flex items-center justify-left border">
+                            <Col span={5} className="flex items-center justify-left border">
                                 <Typography.Text className="font-semibold">
                                     DESCRIPTION OF GOODS :
                                 </Typography.Text>
                             </Col>
                             <Col span={8} className="flex items-center justify-left border">
-                                <Typography.Text className="font-semibold">
+                                <Typography.Text>
                                     {details?.yarn_stock_company?.yarn_company_name} ({details?.yarn_stock_company?.yarn_count})
                                 </Typography.Text>
                             </Col>
@@ -336,10 +335,10 @@ const ReturnYarnSale = ({ details }) => {
                             </Col>
                             <Col span={7} className="flex items-center justify-center border">
                             </Col>
-                            <Col span={5} className="flex items-center justify-center border">
+                            <Col span={5} className="flex items-center justify-center border font-semibold">
                                 {cartoons}
                             </Col>
-                            <Col span={5} className="flex items-center justify-center border">
+                            <Col span={5} className="flex items-center justify-center border font-semibold">
                                 {kg}
                             </Col>
                         </Row>
@@ -351,7 +350,7 @@ const ReturnYarnSale = ({ details }) => {
                                 </Typography.Text>
                             </Col>
                             <Col span={4} className="flex items-center justify-center border " >
-                                {cartoons}
+                                {details?.cartoon}
                             </Col>
                             <Col span={3} className="flex items-center justify-center border" >
                                 <Typography.Text className="font-semibold">
@@ -359,7 +358,7 @@ const ReturnYarnSale = ({ details }) => {
                                 </Typography.Text>
                             </Col>
                             <Col span={4} className="flex items-center justify-center border " >
-                                {kg}
+                                {details?.kg}
                             </Col>
                         </Row>
 
@@ -411,9 +410,11 @@ const ReturnYarnSale = ({ details }) => {
                     </Flex>
 
                     <Space style={{marginTop: "10px"}}>
-                        <Button htmlType="submit" type="primary" style={{marginLeft: "auto"}} loading = {isPending}>
-                            RETURN YARN SALE
-                        </Button>
+                        {details?.cartoon >= cartoons && details?.kg >= kg && (
+                            <Button htmlType="submit" danger style={{marginLeft: "auto"}} loading = {isPending}>
+                                RETURN YARN SALE
+                            </Button>
+                        )}
                     </Space>
 
                 </Form>

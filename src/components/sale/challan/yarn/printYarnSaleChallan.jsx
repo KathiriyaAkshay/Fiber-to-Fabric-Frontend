@@ -163,8 +163,8 @@ const PrintYarnSaleChallan = ({
           >
             <Col span={12}>
               <p>
-                <strong>M/S :</strong> {details?.supplier?.supplier_company}(
-                {details?.supplier?.supplier_name})
+                <strong>M/S :</strong> {details?.supplier?.supplier_name}<br/>
+                <div style={{fontWeight: 600}}>({details?.supplier?.supplier_name})</div>
               </p>
               <p>{details?.supplier?.user?.address}</p>
               <p>
@@ -196,11 +196,11 @@ const PrintYarnSaleChallan = ({
               paddingBottom: 15,
             }}
           >
-            <Col span={8}>
+            <Col span={6}>
               <strong>DESCRIPTION OF GOODS:</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.yarn_stock_company?.yarn_company_name}</strong>
+              <div>{String(details?.yarn_stock_company?.yarn_company_name).toUpperCase()}</div>
             </Col>
           </Row>
           <div style={{ height: 400 }}>
