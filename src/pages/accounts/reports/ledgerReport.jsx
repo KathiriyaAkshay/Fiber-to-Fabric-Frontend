@@ -544,11 +544,16 @@ const LedgerReport = () => {
                     border: "0px solid #ccc",
                   }}
                 >
-                  <td style={{ textAlign: "center" }}>
-                    {dayjs(fromDate).format("DD-MM-YYYY")}
-                  </td>
-                  <td colSpan={3} style={{ border: "0px solid #ccc" }}>
-                    Opening Balance
+                  {formattedData && formattedData.length ? (
+                    <td style={{ textAlign: "center" }}>
+                      {dayjs(fromDate).format("DD-MM-YYYY")}
+                    </td>
+                  ) : null}
+                  <td
+                    colSpan={formattedData && formattedData.length ? 3 : 4}
+                    style={{ border: "0px solid #ccc", textAlign: "center" }}
+                  >
+                    <b>Opening Balance</b>
                   </td>
                   <td
                     style={{
@@ -578,51 +583,58 @@ const LedgerReport = () => {
                     0
                   </td>
                 </tr>
-                {formattedData && formattedData.length ? (
-                  formattedData?.map((date, index) => {
-                    const data = ledgerReportData[date];
-                    const billData = getSingleRowData(data);
+                {formattedData && formattedData.length
+                  ? formattedData?.map((date, index) => {
+                      const data = ledgerReportData[date];
+                      const billData = getSingleRowData(data);
 
-                    return (
-                      <>
-                        <tr key={index}>
-                          <td style={{ textAlign: "center" }}>{date}</td>
-                          <td>{}</td>
-                          <td>{}</td>
-                          <td>{}</td>
-                          <td>{}</td>
-                          <td>{}</td>
-                          <td>{}</td>
-                        </tr>
-                        {billData.map((row, index) => {
-                          return (
-                            <tr key={index + "sub_row"}>
-                              <td></td>
-                              <td>{row.particulars}</td>
-                              <td>{row.vchType}</td>
-                              <td>{row.vchNo}</td>
-                              <td style={{ textAlign: "center" }}>
-                                {row.debit}
-                              </td>
-                              <td style={{ textAlign: "center" }}>
-                                {row.credit}
-                              </td>
-                              <td style={{ textAlign: "center" }}>
-                                {row.cumulativeBalance.toFixed(2)}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: "center" }}>
-                      No records found
-                    </td>
-                  </tr>
-                )}
+                      return (
+                        <>
+                          <tr key={index}>
+                            <td style={{ textAlign: "center" }}>{date}</td>
+                            <td>{}</td>
+                            <td>{}</td>
+                            <td>{}</td>
+                            <td>{}</td>
+                            <td>{}</td>
+                            <td>{}</td>
+                          </tr>
+                          {billData.map((row, index) => {
+                            return (
+                              <tr key={index + "sub_row"}>
+                                <td style={{ border: "0px" }}></td>
+                                <td style={{ border: "0px" }}>
+                                  {row.particulars}
+                                </td>
+                                <td style={{ border: "0px" }}>{row.vchType}</td>
+                                <td style={{ border: "0px" }}>{row.vchNo}</td>
+                                <td
+                                  style={{ textAlign: "center", border: "0px" }}
+                                >
+                                  {row.debit}
+                                </td>
+                                <td
+                                  style={{ textAlign: "center", border: "0px" }}
+                                >
+                                  {row.credit}
+                                </td>
+                                <td
+                                  style={{ textAlign: "center", border: "0px" }}
+                                >
+                                  {row.cumulativeBalance.toFixed(2)}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </>
+                      );
+                    })
+                  : // <tr>
+                    //   <td colSpan={7} style={{ textAlign: "center" }}>
+                    //     No records found
+                    //   </td>
+                    // </tr>
+                    null}
                 {/* <tr
                   style={{
                     border: "0px solid #ccc",
@@ -703,7 +715,7 @@ const LedgerReport = () => {
                       textAlign: "center",
                     }}
                   >
-                    Closing Balance
+                    <b>Closing Balance</b>
                   </td>
                   <td
                     style={{
