@@ -6,6 +6,7 @@ const { Paragraph } = Typography;
 import ReactToPrint from "react-to-print";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
+import { getDisaplyWrapDennierName, getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const PrintBeamSaleChallan = ({
   details,
@@ -13,6 +14,8 @@ const PrintBeamSaleChallan = ({
   open = false,
   close,
 }) => {
+  console.log(details);
+  
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);
@@ -162,8 +165,8 @@ const PrintBeamSaleChallan = ({
           >
             <Col span={12}>
               <p>
-                <strong>M/S :</strong> {details?.supplier?.supplier_company}(
-                {details?.supplier?.supplier_name})
+                <strong>M/S :</strong><br/> {details?.supplier?.supplier_name}
+                <span style={{fontWeight: 600, marginLeft: 5}}>({details?.supplier?.supplier_company})</span>
               </p>
               <p>{details?.supplier?.user?.address}</p>
               <p>
@@ -195,8 +198,11 @@ const PrintBeamSaleChallan = ({
               paddingBottom: 15,
             }}
           >
-            <Col span={8}>
-              <strong>DESCRIPTION OF GOODS:</strong>
+            <Col span={20}>
+              <strong>DESCRIPTION OF GOODS: </strong>
+              <span style={{marginLeft: 5}}>
+                {details?.beam_sale_warp_deniers?.map((element) => getDisaplyWrapDennierName(element)).join(",")}
+              </span>
             </Col>
             <Col span={4}>
               <strong>{details?.yarn_stock_company?.yarn_company_name}</strong>
@@ -243,13 +249,12 @@ const PrintBeamSaleChallan = ({
                   key={index}
                   gutter={24}
                   style={{
-                    borderTop: "1px dashed",
                     paddingTop: 15,
                     paddingBottom: 15,
                   }}
                 >
                   <Col span={3}>{index + 1}</Col>
-                  <Col span={3}>{obj?.beam_no || 0}</Col>
+                  <Col span={3} style={{fontWeight: 600}}>{obj?.beam_no || 0}</Col>
                   <Col span={3}>{obj?.ends_or_tars || obj.tars || 0}</Col>
                   <Col span={3}>{obj?.pano || 0}</Col>
                   <Col span={4}>{obj?.taka || 0}</Col>
@@ -277,10 +282,10 @@ const PrintBeamSaleChallan = ({
               <strong></strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.total_meter}</strong>
+              <strong>{parseFloat(details?.total_meter).toFixed(2)}</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.enter_weight}</strong>
+              <strong>{parseFloat(details?.enter_weight).toFixed(2)}</strong>
             </Col>
           </Row>
 
@@ -296,18 +301,18 @@ const PrintBeamSaleChallan = ({
               <strong>TOTAL Meter:</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.total_meter}</strong>
+              <strong>{parseFloat(details?.total_meter).toFixed(2)}</strong>
             </Col>
             <Col span={4}>
               <strong>TOTAL Weight:</strong>
             </Col>
             <Col span={4}>
-              <strong>{details?.enter_weight}</strong>
+              <strong>{parseFloat(details?.enter_weight).toFixed(2)}</strong>
             </Col>
           </Row>
 
           <Row gutter={24} style={{ borderTop: "1px dashed", paddingTop: 15 }}>
-            <Col span={4}>TERMS OF SALES:</Col>
+            <Col span={4} style={{fontWeight: 600}}>TERMS OF SALES:</Col>
           </Row>
 
           <Row gutter={[16, 16]} style={{ marginTop: 15 }}>

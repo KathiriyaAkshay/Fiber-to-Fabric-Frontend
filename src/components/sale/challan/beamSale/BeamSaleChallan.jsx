@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -23,6 +23,7 @@ import {
   createBeamSaleChallanBillRequest,
   getBeamSaleChallanBillByIdRequest,
 } from "../../../../api/requests/sale/challan/beamSale";
+import { getDisaplyWrapDennierName } from "../../../../constants/nameHandler";
 
 const addSizeBeamReceive = yup.object().shape({
   E_way_bill_no: yup.string().required("Please enter invoice no."),
@@ -48,9 +49,20 @@ const BeamSaleChallanModel = ({
   handleCloseModal,
   MODE,
 }) => {
-  const details = { ...beamDetails, enter_weight: 10 };
+  const details = { ...beamDetails};
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId,companyListRes } = useContext(GlobalContext);
+  const [companyDetails, setCompanyDetails] = useState(undefined); 
+
+  useEffect(() => {
+    if (companyId){
+      const companyInfo = companyListRes?.rows?.find((item) => item?.id == companyId) ; 
+      console.log(companyInfo);
+      
+      setCompanyDetails(companyInfo) ; 
+    }
+  },[companyId])
+
   const disablePastDates = (current) => {
     return current && current < new Date().setHours(0, 0, 0, 0);
   };
@@ -152,10 +164,10 @@ const BeamSaleChallanModel = ({
       IGST_value: 0,
 
       SGST_amount: 0,
-      SGST_value: 0,
+      SGST_value: 6,
 
       CGST_amount: 0,
-      CGST_value: 0,
+      CGST_value: 6,
 
       round_off: 0,
     },
@@ -254,6 +266,7 @@ const BeamSaleChallanModel = ({
     }
   }, [yarnSalesBillDetail, setValue]);
 
+  const primaryWrapDennier = details?.beam_sale_warp_deniers?.find((element) => element?.inhouse_waraping_detail?.is_primary == true) ; 
   return (
     <>
       <Modal
@@ -316,12 +329,12 @@ const BeamSaleChallanModel = ({
             <Row className="p-2 border-0 border-b border-solid">
               <Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  GST IN: GST number information
+                  GST IN: {companyDetails?.gst_no}
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-center justify-center border">
                 <Typography.Text className="font-semibold text-center">
-                  PAN NO : ABHPP6021C
+                  PAN NO : {companyDetails?.pancard_no}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-center justify-center border">
@@ -366,9 +379,12 @@ const BeamSaleChallanModel = ({
                   M/s.
                 </Typography.Text>
               </Col>
-              <Col span={8} className="flex items-right justify-center border">
-                <Typography.Text className="font-semibold text-center">
-                  SUPPLIER_2 ADDRESS OF SUPPLIER OF SUPPLIER NAME 123
+              <Col span={8} className="flex items-left border">
+                <Typography.Text className="text-left">
+                    <div>
+                      <span>{details?.supplier?.supplier_name}<br/></span>
+                      <strong>{details?.supplier?.supplier_company}</strong>
+                    </div>
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
@@ -377,7 +393,7 @@ const BeamSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center text-left">
+                <Typography.Text>
                   {details.challan_no}
                 </Typography.Text>
               </Col>
@@ -389,8 +405,8 @@ const BeamSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center">
-                  24ABHPP6021C1Z4
+                <Typography.Text className="text-center">
+                  {details?.supplier?.user?.gst_no}
                 </Typography.Text>
               </Col>
               <Col span={4} className="flex items-right justify-center border">
@@ -402,7 +418,7 @@ const BeamSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center">
+                <Typography.Text className="text-center">
                   {details.challan_no}
                 </Typography.Text>
               </Col>
@@ -442,7 +458,7 @@ const BeamSaleChallanModel = ({
                 </Typography.Text>
               </Col>
               <Col span={8} className="flex items-right justify-left border">
-                <Typography.Text className="font-semibold text-center">
+                <Typography.Text className="text-center">
                   {details.vehicle.vehicle.vehicleNo}
                 </Typography.Text>
               </Col>
@@ -494,13 +510,13 @@ const BeamSaleChallanModel = ({
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {`${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`}
+                {details?.beam_sale_warp_deniers?.map((element) => getDisaplyWrapDennierName(element)).join(",")}
               </Col>
               <Col
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                HSN
+                {primaryWrapDennier?.inhouse_waraping_detail?.yarn_stock_company?.hsn_no}
               </Col>
               <Col
                 span={3}

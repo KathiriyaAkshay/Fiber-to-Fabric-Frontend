@@ -19,23 +19,22 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
   getBeamCardListRequest,
-  // getNonPasarelaBeamListRequest,
-  // getPasarelaBeamListRequest,
 } from "../../../../api/requests/beamCard";
-// import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { BEAM_TYPE_OPTION_LIST } from "../../../../constants/orderMaster";
 import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
 import { createBeamSaleChallanRequest } from "../../../../api/requests/sale/challan/beamSale";
+import moment from "moment";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -162,12 +161,8 @@ const AddBeamSale = () => {
       supplier_name: null,
       supplier_id: null,
       machine_name: null,
-      // quality_group: null,
       beam_type: null,
       quality_id: null,
-      // power_cost_per_meter: "",
-      // delivery_charge: "",
-
       total_meter: 0,
       enter_weight: 0,
     },
@@ -177,7 +172,8 @@ const AddBeamSale = () => {
     machine_name,
     quality_id,
     supplier_name,
-    beam_type /*quality_group*/,
+    beam_type, 
+    total_meter
   } = watch();
 
   // ------------------------------------------------------------------------------------------
@@ -278,7 +274,7 @@ const AddBeamSale = () => {
       const selectedQuality = dropDownQualityListRes.rows.find(
         ({ id }) => id === quality_id
       );
-      return selectedQuality.inhouse_weft_details;
+      return selectedQuality.inhouse_waraping_details;
     }
   }, [dropDownQualityListRes, quality_id]);
 
@@ -337,47 +333,6 @@ const AddBeamSale = () => {
     initialData: { rows: [] },
   });
 
-  // useQuery({
-  //   queryKey: [
-  //     "non-pasarela",
-  //     "beam",
-  //     "list",
-  //     {
-  //       company_id: companyId,
-  //       machine_name,
-  //       quality_id,
-  //       beam_type,
-  //       // quality_group,
-  //     },
-  //   ],
-  //   queryFn: async () => {
-  //     if (
-  //       machine_name &&
-  //       quality_id &&
-  //       beam_type !== "pasarela(primary)" &&
-  //       beam_type !== null
-  //     ) {
-  //       setBeamLoadIds([]);
-  //       setBeamTypeList();
-  //       resetField("enter_weight");
-  //       resetField("total_meter");
-  //       const params = {
-  //         company_id: companyId,
-  //         machine_name,
-  //         quality_id,
-  //         // is_job: quality_group === "job" ? true : false,
-  //       };
-  //       if (beam_type === "non-pasarela(secondary)") {
-  //         params.is_secondary = true;
-  //       }
-  //       const res = await getNonPasarelaBeamListRequest({ params });
-  //       setBeamTypeList(res.data?.data?.rows);
-  //     }
-  //   },
-  //   enabled: Boolean(companyId),
-  //   initialData: { rows: [] },
-  // });
-
   const handleInhouseWarpIdHandler = (value, id) => {
     if (value) {
       setInhouseWarpIds((prev) => {
@@ -427,6 +382,22 @@ const AddBeamSale = () => {
     }
   };
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+  // Calculate total weight ====================================================
+  useEffect(() => {
+    if (inhouseWarpIds?.length > 0 ){
+      let temp_total_weight = 0 ; 
+      inhouseWarpIds?.map((element) => {
+        let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+        temp_total_weight += (+wrapDetails?.warping_weight)*(+total_meter);   
+      })
+      setValue("enter_weight", temp_total_weight) ; 
+    }
+  }, [inhouseWarpIds, total_meter])
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center gap-5">
@@ -440,25 +411,31 @@ const AddBeamSale = () => {
           <>
             <h3> Select Warp Denier</h3>
             <Row
-              gutter={18}
+              gutter={24}
               style={{
                 padding: "12px",
                 paddingTop: "0px"
               }}
             >
               {weftDenierDetails.map(
-                ({ id, weft_weight, yarn_stock_company }, index) => {
+                ({ id, warping_weight, yarn_stock_company }, index) => {
                   const { yarn_denier, filament, luster_type, yarn_color } =
                     yarn_stock_company;
                   return (
-                    <Col key={index} span={5}>
+                    <Col key={index} span={7}>
                       <Checkbox
                         onChange={(e) =>
                           handleInhouseWarpIdHandler(e.target.checked, id)
                         }
                       >
-                        <Tag color="green">[{weft_weight}]</Tag>
+                        <Tag color="green">[{warping_weight}]</Tag>
                         {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                        <span style={{
+                          marginLeft: 5,
+                          fontWeight: 600
+                        }}>
+                          {yarn_stock_company?.yarn_company_name}
+                        </span>
                       </Checkbox>
                     </Col>
                   );
@@ -547,7 +524,7 @@ const AddBeamSale = () => {
                 control={control}
                 name="challan_date"
                 render={({ field }) => (
-                  <DatePicker {...field} style={{ width: "100%" }} />
+                  <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />
                 )}
               />
             </Form.Item>
@@ -686,7 +663,7 @@ const AddBeamSale = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />
@@ -844,52 +821,6 @@ const AddBeamSale = () => {
               </Col>
             </>
           )}
-
-          {/* <Col span={4}>
-            <Form.Item
-              label="Delivery Charge"
-              name="delivery_charge"
-              validateStatus={errors.delivery_charge ? "error" : ""}
-              help={errors.delivery_charge && errors.delivery_charge.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="delivery_charge"
-                render={({ field }) => (
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    type="number"
-                    placeholder="Add Delivery charge"
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
-          {/* <Col span={4}>
-            <Form.Item
-              label="Power Cost Per Meter"
-              name="power_cost_per_meter"
-              validateStatus={errors.power_cost_per_meter ? "error" : ""}
-              help={
-                errors.power_cost_per_meter &&
-                errors.power_cost_per_meter.message
-              }
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="power_cost_per_meter"
-                render={({ field }) => (
-                  <Input {...field} type="number" placeholder="0.25" />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
         </Row>
 
         <Flex gap={10} justify="flex-end">

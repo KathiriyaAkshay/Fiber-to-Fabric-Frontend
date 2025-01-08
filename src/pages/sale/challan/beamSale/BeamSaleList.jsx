@@ -1,4 +1,4 @@
-import { Button, Flex, Select, Spin, Table, Tag, Typography } from "antd";
+import { Button, Flex, Select, Spin, Table, Tag, Tooltip, Typography } from "antd";
 import {
   EditOutlined,
   FileTextOutlined,
@@ -21,8 +21,10 @@ import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/cha
 import DeleteBeamSale from "../../../../components/sale/challan/beamSale/DeleteBeamSale";
 import BeamSaleChallanModel from "../../../../components/sale/challan/beamSale/BeamSaleChallan";
 import PrintBeamSaleChallan from "../../../../components/sale/challan/beamSale/printBeamSaleChallan";
-import { UndoOutlined } from "@ant-design/icons";
 import ReturnBeamSaleChallan from "../../../../components/sale/challan/beamSale/returnBeamSaleChallan";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { getDisaplyWrapDennierName } from "../../../../constants/nameHandler";
 
 const BeamSaleList = () => {
   const navigate = useNavigate();
@@ -51,6 +53,7 @@ const BeamSaleList = () => {
   const debouncedBeamTypeDropDown = useDebounce(beamTypeDropDown, 500);
   const debouncedQuality = useDebounce(quality, 500);
 
+  // Machine list related dropdown api =======================================
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -63,6 +66,7 @@ const BeamSaleList = () => {
     enabled: Boolean(companyId),
   });
 
+  // Quality related dropdown api ===========================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -93,18 +97,23 @@ const BeamSaleList = () => {
         }
       },
       enabled: Boolean(companyId),
-    });
+  });
 
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
+  // Supplier related dropdown api ==========================================
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getPartyListRequest({
+      const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId },
       });
-      return res.data?.data;
+      return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
+
 
   const { data: beamSaleListData, isLoading: isLoadingBeamSale } = useQuery({
     queryKey: [
@@ -114,7 +123,7 @@ const BeamSaleList = () => {
         company_id: companyId,
         page,
         pageSize,
-        party_id: debouncedParty,
+        supplier_name: debouncedParty,
         machine_name: debouncedMachine,
         beam_type: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
@@ -126,7 +135,7 @@ const BeamSaleList = () => {
           company_id: companyId,
           page,
           pageSize,
-          party_id: debouncedParty,
+          supplier_name: debouncedParty,
           machine_name: debouncedMachine,
           beam_type: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
@@ -145,29 +154,6 @@ const BeamSaleList = () => {
   function navigateToUpdate(id) {
     navigate(`update/${id}`);
   }
-
-  // function downloadPdf() {
-  //   const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-
-  //   const body = beamSaleListData?.rows?.map((user, index) => {
-  //     const { quality_name, quality_group, production_type, is_active } = user;
-  //     return [
-  //       index + 1,
-  //       quality_name,
-  //       quality_group,
-  //       production_type,
-  //       is_active ? "Active" : "Inactive",
-  //     ];
-  //   });
-
-  //   downloadUserPdf({
-  //     body,
-  //     head: [["ID", "Quality Name", "Quality Group", "Product Type", "Status"]],
-  //     leftContent,
-  //     rightContent,
-  //     title: "Trading Quality List",
-  //   });
-  // }
 
   const columns = [
     {
@@ -195,9 +181,27 @@ const BeamSaleList = () => {
     {
       title: "Quality Name",
       render: (detail) => {
-        return `${detail?.inhouse_quality?.quality_name} - (${detail?.inhouse_quality?.quality_weight}KG)`;
+        return getDisplayQualityName(detail?.inhouse_quality)
       },
     },
+    {
+      title: "Dennier", 
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.beam_sale_warp_deniers?.map((element) => {
+              return(
+                <div style={{fontSize: 13}}>
+                  <Tooltip title = {getDisaplyWrapDennierName(element)}>
+                    {getDisaplyWrapDennierName(element)}
+                  </Tooltip>
+                </div>
+              )
+            })}
+          </div>
+        )
+      }
+    }, 
     {
       title: "Total Meter",
       dataIndex: "total_meter",
@@ -340,6 +344,7 @@ const BeamSaleList = () => {
                   <Typography.Text>{totalWeight}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
+                <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
             </>
           );
@@ -399,7 +404,7 @@ const BeamSaleList = () => {
                   dropDownQualityListRes &&
                   dropDownQualityListRes?.rows?.map((item) => ({
                     value: item.id,
-                    label: item.quality_name,
+                    label: getDisplayQualityName(item),
                   }))
                 }
                 dropdownStyle={{
@@ -421,15 +426,10 @@ const BeamSaleList = () => {
                 allowClear
                 placeholder="Select Party"
                 value={party}
-                loading={isLoadingPartyList}
-                options={partyUserListRes?.partyList?.rows?.map((party) => ({
-                  label:
-                    party.first_name +
-                    " " +
-                    party.last_name +
-                    " " +
-                    `| ( ${party?.username})`,
-                  value: party.id,
+                loading={isLoadingDropdownSupplierList}
+                options={dropdownSupplierListRes?.map((supervisor) => ({
+                  label: supervisor?.supplier_name,
+                  value: supervisor?.supplier_name,
                 }))}
                 dropdownStyle={{
                   textTransform: "capitalize",
@@ -461,13 +461,6 @@ const BeamSaleList = () => {
                 className="min-w-40"
               />
             </Flex>
-            {/* <Button
-              icon={<FilePdfOutlined />}
-              type="primary"
-              disabled={!beamSaleListData?.rows?.length}
-              onClick={downloadPdf}
-              className="flex-none"
-            /> */}
           </Flex>
         </div>
       </div>

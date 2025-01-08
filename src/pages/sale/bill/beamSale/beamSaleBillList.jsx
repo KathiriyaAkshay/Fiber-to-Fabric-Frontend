@@ -98,7 +98,6 @@ const BeamSaleBillList = () => {
             pageSize,
             supplier_name: debounceParty,
             end: financialYearEnd,
-            // vehicle_id: debouncedVehicle,
             bill_status: "confirmed",
             is_paid: debounceBillStatus,
           },
@@ -111,10 +110,7 @@ const BeamSaleBillList = () => {
               page,
               pageSize,
               supplier_name: debounceParty,
-            //   end: financialYearEnd,
-            //   vehicle_id: debouncedVehicle,
               bill_status: "confirmed",
-            //   is_paid: debounceBillStatus,
             },
           });
           return res.data?.data;

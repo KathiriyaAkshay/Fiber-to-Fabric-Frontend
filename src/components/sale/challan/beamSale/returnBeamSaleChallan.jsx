@@ -3,12 +3,11 @@ import { Button, Col, Flex, Modal, Row, Typography, Checkbox, message } from "an
 import { EyeOutlined, CloseOutlined, UndoOutlined } from "@ant-design/icons";
 import moment from "moment";
 const { Paragraph } = Typography;
-import ReactToPrint from "react-to-print";
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { returnBeamSaleChallanRequest } from "../../../../api/requests/sale/challan/beamSale";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QueryClient } from "@tanstack/react-query";
+import { getDisaplyWrapDennierName } from "../../../../constants/nameHandler";
 
 const ReturnBeamSaleChallan = ({ details }) => {
     const queryClient = useQueryClient() ; 
@@ -113,22 +112,13 @@ const ReturnBeamSaleChallan = ({ details }) => {
                 closeIcon={<CloseOutlined className="text-white" />}
                 title={
                     <Typography.Text className="text-xl font-medium text-white">
-                        Beam Sale
+                        Beam Sale Return
                     </Typography.Text>
                 }
                 open={isModelOpen}
                 footer={() => {
                     return (
                         <>
-                            {/* <ReactToPrint
-                        trigger={() => <Flex>
-                            <Button type="primary" style={{marginLeft: "auto", marginTop: 15}}>
-                                PRINT
-                            </Button>
-                        </Flex>}
-                        content={() => componentRef.current}
-                        pageStyle={pageStyle}
-                    /> */}
                             <div style={{
                                 paddingTop: 15
                             }}>
@@ -197,8 +187,10 @@ const ReturnBeamSaleChallan = ({ details }) => {
                         }}
                     >
                         <Col span={12}>
-                            <p><strong>M/S :</strong> {details?.supplier?.supplier_company}({details?.supplier?.supplier_name})</p>
-                            <p>{details?.supplier?.user?.address}</p>
+                            <p>
+                                <strong>M/S :</strong><br/> {details?.supplier?.supplier_name}
+                                <span style={{fontWeight: 600, marginLeft: 5}}>({details?.supplier?.supplier_company})</span>
+                            </p>                            <p>{details?.supplier?.user?.address}</p>
                             <p><strong>GST :</strong> {details?.supplier?.user?.gst_no}</p>
                             <p><strong>E-Way Bill No :</strong></p>
                         </Col>
@@ -216,8 +208,11 @@ const ReturnBeamSaleChallan = ({ details }) => {
                             paddingBottom: 15,
                         }}
                     >
-                        <Col span={8}>
+                        <Col span={20}>
                             <strong>DESCRIPTION OF GOODS:</strong>
+                            <span style={{marginLeft: 5}}>
+                                {details?.beam_sale_warp_deniers?.map((element) => getDisaplyWrapDennierName(element)).join(",")}
+                            </span>
                         </Col>
                         <Col span={4}>
                             <strong>{details?.yarn_stock_company?.yarn_company_name}</strong>
@@ -312,10 +307,10 @@ const ReturnBeamSaleChallan = ({ details }) => {
                             <strong></strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.total_meter}</strong>
+                            <strong>{parseFloat(details?.total_meter).toFixed(2)}</strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.enter_weight}</strong>
+                            <strong>{parseFloat(details?.enter_weight).toFixed(2)}</strong>
                         </Col>
                     </Row>
 
@@ -331,18 +326,18 @@ const ReturnBeamSaleChallan = ({ details }) => {
                             <strong>TOTAL Meter:</strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.total_meter}</strong>
+                            <strong>{parseFloat(details?.total_meter).toFixed(2)}</strong>
                         </Col>
                         <Col span={4}>
                             <strong>TOTAL Weight:</strong>
                         </Col>
                         <Col span={4}>
-                            <strong>{details?.enter_weight}</strong>
+                            <strong>{parseFloat(details?.enter_weight).toFixed(2)}</strong>
                         </Col>
                     </Row>
 
                     <Row gutter={24} style={{ borderTop: "1px dashed", paddingTop: 15 }}>
-                        <Col span={4}>TERMS OF SALES:</Col>
+                        <Col span={4} style={{fontWeight: 600}}>TERMS OF SALES:</Col>
                     </Row>
 
                     <Row gutter={[16, 16]} style={{ marginTop: 15 }}>
@@ -383,11 +378,6 @@ const ReturnBeamSaleChallan = ({ details }) => {
                         </Col>
                     </Row>
                 </Flex>
-                {/* <Flex>
-            <Button type="primary" style={{ marginLeft: "auto", marginTop: 15 }}>
-                PRINT
-            </Button>
-            </Flex> */}
             </Modal>
         </>
     );
