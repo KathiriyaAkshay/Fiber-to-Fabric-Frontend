@@ -78,14 +78,26 @@ const BillPaymentModel = ({
     setData((prevData) =>
       prevData.map((element, indexValue) => {
         if (indexValue === index) {
-          const totalAmount = element?.totalAmount || 0;
-          const partPayment = +value > +totalAmount ? 0 : +value;
-          const remainAmount = +totalAmount - +partPayment;
+
+          // Total bill amount
+          const total_amount = element?.totalAmount || 0; // Bill total payment
+          
+          // Credit note amount 
+          let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
+
+          // Bill Final amount
+          let bill_deducation_amount = +total_amount - +credit_note_amount ; 
+          
+          // Bill Remaing amount
+          let bill_remaing_amount = parseFloat(element?.part_payment == null?bill_deducation_amount:+element?.part_payment).toFixed(2) ; 
+
+          // const partPayment = +value > +totalAmount ? 0 : +value; // Bil
+          // const remainAmount = +totalAmount - +partPayment;
 
           return {
             ...element,
-            partAmount: partPayment,
-            remainingAmount: remainAmount,
+            partAmount: element?.part_payment,
+            remainingAmount: bill_remaing_amount,
           };
         } else {
           return { ...element };
@@ -138,6 +150,13 @@ const BillPaymentModel = ({
       title: "Sale return/Claim/Discount",
       dataIndex: "salesReturn",
       key: "salesReturn",
+      render: (text, record) => {
+        return(
+          <div>
+            {parseFloat(record?.credit_note_amount || 0)}
+          </div>
+        )
+      }
     },
     {
       title: "Total Amount",
@@ -261,8 +280,7 @@ const BillPaymentModel = ({
       },
     });
 
-  // Get last vocher number related information
-
+  // Get last vocher number related information ================================
   const { data: lastVoucherNo } = useQuery({
     queryKey: ["account/statement/last/voucher", { companyId }],
     queryFn: async () => {
@@ -335,7 +353,7 @@ const BillPaymentModel = ({
         is_credited: true,
         bill_details: bill_details,
       };
-      await addBillEntry({ data: requestPayload });
+      // await addBillEntry({ data: requestPayload });
     }
   };
 

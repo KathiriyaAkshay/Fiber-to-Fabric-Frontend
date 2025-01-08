@@ -296,6 +296,7 @@ function SizeBeamBillList() {
               details={{ receive_size_beam_bill: record }}
               mode={"VIEW"}
               isBill={true}
+              isEyeButton={true}
             />
 
             {record?.status == "unpaid" && record?.is_partial_payment == false && (

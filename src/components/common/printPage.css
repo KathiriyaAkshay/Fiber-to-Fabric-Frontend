@@ -42,6 +42,7 @@
   padding: 10px;
   overflow-y: hidden;
   height: 88vh;
+  overflow-y: auto  ;
 }
 
 .printable-main-div {
@@ -51,7 +52,6 @@
 }
 
 .printable-table-div {
-  height: 60vh;
   overflow-y: auto;
   border-top: 2px dotted #d5d5d5;
   padding-top: 15px;
@@ -75,6 +75,10 @@
 .total-information-td {
   background-color: #f2f2f2;
   font-weight: 600;
+}
+
+.gstr-index-column{
+  background-color: #f2f2f2;
 }
 
 @media print {

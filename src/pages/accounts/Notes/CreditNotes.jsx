@@ -178,14 +178,6 @@ const CreditNotes = () => {
       render: (text, record) => {
         if (creditNoteTypes == "other") {
           return <div>{record?.credit_note_details[0]?.invoice_no}</div>;
-        } else if (creditNoteTypes == "sale_return") {
-          return (
-            <div>
-              {record?.sale_challan_return?.sale_challan?.challan_no ||
-                record?.yarn_sale?.challan_no ||
-                "-"}
-            </div>
-          )
         } else if (creditNoteTypes == "sale_return"){
           return(
             <div>

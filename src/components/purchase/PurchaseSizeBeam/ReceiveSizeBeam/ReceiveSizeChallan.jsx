@@ -60,6 +60,10 @@ const addSizeBeamReceive = yup.object().shape({
   IGST_value: yup.string().required("Please enter IGST value"),
   IGST_amount: yup.string().required("Please enter IGST amount"),
   net_amount: yup.string().required("Please enter net amount"),
+  TDS_value: yup.string().required("Please, Enter TDS value"), 
+  TDS_amount: yup.string().required("Please, Enter TDS amount"),
+  TCS_value: yup.string().required("Please, Enter TCS value"), 
+  TCS_amount: yup.string().required("Please, Enter TCS amount")
 });
 
 const SizeBeamChallanModal = ({
@@ -97,6 +101,10 @@ const SizeBeamChallanModal = ({
       CGST_amount: 0,
       IGST_amount: 0,
       round_off: 0,
+      TCS_value: 0, 
+      TCS_amount: 0, 
+      TDS_amount: 0, 
+      TDS_value: 0
     },
   });
   const { companyId } = useContext(GlobalContext);
@@ -174,22 +182,44 @@ const SizeBeamChallanModal = ({
     let sgst = currentValues?.SGST_value;
     let cgst = currentValues?.CGST_value;
 
+    // Total IGST amount
     let igst_amount =
       (Number(currentValues?.freight_amount) * Number(igst)) / 100;
+
+    // Total SGST amount 
     let sgst_amount =
       (Number(currentValues?.freight_amount) * Number(sgst)) / 100;
+    
+    // Total CGST amount
     let cgst_amount =
       (Number(currentValues?.freight_amount) * Number(cgst)) / 100;
 
     setValue("IGST_amount", parseFloat(igst_amount).toFixed(2));
     setValue("SGST_amount", parseFloat(sgst_amount).toFixed(2));
     setValue("CGST_amount", parseFloat(cgst_amount).toFixed(2));
+
+    // Total TCS amount
+    let beforeTCS = +currentValues?.freight_amount +
+      +sgst_amount + 
+      +cgst_amount +
+      +igst_amount ; 
+
+    const TCS_amount = ((+beforeTCS * +currentValues?.TCS_value) / 100).toFixed(2) ; 
+
+    setValue("TCS_amount", TCS_amount) ; 
+
+    // Total TDS Amount
+    const TDS_amount = ((+beforeTCS * +currentValues?.TDS_value) / 100).toFixed(2) ; 
+    setValue("TDS_amount", TDS_amount) ; 
+
   }, [
     currentValues?.IGST_value,
     currentValues?.SGST_value,
     currentValues?.CGST_value,
     currentValues?.freight_amount,
     setValue,
+    currentValues?.TCS_value, 
+    currentValues?.TDS_value
   ]);
 
   const disablePastDates = (current) => {
@@ -229,6 +259,10 @@ const SizeBeamChallanModal = ({
 
   const onSubmit = async (values) => {
     let requestData = values;
+    requestData["tcs_value"] = +values?.TCS_value; 
+    requestData["tcs_amount"] = +values?.TCS_amount; 
+    requestData["tds_value"] = +values?.TDS_value; 
+    requestData["tds_amount"] = +values?.TDS_amount ; 
     requestData["bill_date"] = moment(values?.bill_date).format("YYYY-MM-DD");
     requestData["due_date"] = moment(values?.due_date).format("YYYY-MM-DD");
     requestData["SGST_amount"] = parseFloat(values?.SGST_amount).toFixed(2);
@@ -239,6 +273,10 @@ const SizeBeamChallanModal = ({
     requestData["total_meter"] = totalMeter;
     requestData["supplier_id"] = details?.supplier?.id;
     requestData["bill_number"] = values?.invoice_number;
+    delete requestData?.TCS_value; 
+    delete requestData?.TCS_amount ; 
+    delete requestData?.TDS_value; 
+    delete requestData?.TDS_amount ; 
     await createSizeBeamBill(requestData);
   };
 
@@ -596,6 +634,7 @@ const SizeBeamChallanModal = ({
               </Col>
             </Row>
 
+            {/* =========== SGST Amount ===========  */}
             <Row>
               <Col
                 span={4}
@@ -647,6 +686,8 @@ const SizeBeamChallanModal = ({
               </Col>
             </Row>
 
+            {/* ============= CGST Amount ================= */}
+
             <Row>
               <Col
                 span={4}
@@ -697,6 +738,8 @@ const SizeBeamChallanModal = ({
               </Col>
             </Row>
 
+            {/* ============== IGST Amount ============  */}
+
             <Row>
               <Col
                 span={4}
@@ -744,6 +787,110 @@ const SizeBeamChallanModal = ({
               </Col>
               <Col span={4} className="p-2 font-medium">
                 {currentValues?.IGST_amount}
+              </Col>
+            </Row>
+
+            {/* ============= TCS Amount calculation ==============  */}
+            
+            <Row>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid"
+              ></Col>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid "
+              ></Col>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid"
+              ></Col>
+              <Col span={3} className="p-2 border-0 border-r border-solid">
+                TCS ( % )
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  // label="Invoice No."
+                  name="TCS_value"
+                  validateStatus={errors.TCS_value ? "error" : ""}
+                  help={errors.TCS_value && errors.TCS_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TCS_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        readOnly={mode == "VIEW" ? true : false}
+                        placeholder="TCS"
+                        type="number"
+                        onChange={(e) => {
+                          setValue("TCS_value", e.target.value);
+                          let tempDiscount = parseFloat(
+                            (currentValues?.amount * e.target.value) / 100
+                          );
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2 font-medium">
+                {currentValues?.TCS_amount}
+              </Col>
+            </Row>
+            
+            {/* =========== TDS Amount related information =========  */}
+
+            <Row>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid"
+              ></Col>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid "
+              ></Col>
+              <Col
+                span={4}
+                className="p-2 border-0 border-r border-solid"
+              ></Col>
+              <Col span={3} className="p-2 border-0 border-r border-solid">
+                TDS ( % )
+              </Col>
+              <Col span={4} className="p-2 border-0 border-r border-solid">
+                <Form.Item
+                  // label="Invoice No."
+                  name="TDS_value"
+                  validateStatus={errors.TDS_value ? "error" : ""}
+                  help={errors.TDS_value && errors.TDS_value.message}
+                  required={true}
+                  // className="mb-0"
+                >
+                  <Controller
+                    control={control}
+                    name="TDS_value"
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        readOnly={mode == "VIEW" ? true : false}
+                        placeholder="TDS"
+                        type="number"
+                        onChange={(e) => {
+                          setValue("TDS_value", e.target.value);
+                          let tempDiscount = parseFloat(
+                            (currentValues?.amount * e.target.value) / 100
+                          );
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={4} className="p-2 font-medium">
+                {currentValues?.TDS_amount}
               </Col>
             </Row>
 

@@ -641,8 +641,14 @@ function AddYarnOrder() {
           </Col>
 
           <Col span={6}>
+            <div style={{
+              fontWeight: 600, 
+              color: "green", 
+              marginBottom: 7
+            }}>
+              Deliverd Quantity
+            </div>
             <Form.Item
-              label="Delivered Quantity"
               name="delivered_quantity"
               validateStatus={errors.delivered_quantity ? "error" : ""}
               help={
@@ -719,8 +725,15 @@ function AddYarnOrder() {
           </Col>
 
           <Col span={6}>
+            <div style={{
+              fontWeight: 600, 
+              color: "green", 
+              marginBottom: 7
+            }}>
+              Deliverd Cartoon
+            </div>
             <Form.Item
-              label="Delivered Cartoon"
+              className="Deluverd_cartoon"
               name="delivered_cartoon"
               validateStatus={errors.delivered_cartoon ? "error" : ""}
               help={

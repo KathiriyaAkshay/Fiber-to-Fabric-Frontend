@@ -46,20 +46,17 @@ const Turnover = () => {
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
   const { data: turnoverData, isLoading } = useQuery({
+    
     queryKey: [
       "saleChallan",
       "list",
       {
-        company_id: companyId,
-        page,
-        pageSize,
+        company_id: companyId
       },
     ],
     queryFn: async () => {
       const params = {
         company_id: companyId,
-        page,
-        pageSize,
       };
       const res = await getTurnoverReportService({ params });
       return res.data?.data;
@@ -75,58 +72,46 @@ const Turnover = () => {
       render: (_, record, index) => index + 1,
     },
     {
-      title: "Company Name",
-      dataIndex: "company_name",
+      title: "Type",
+      dataIndex: "key",
       key: "company_name",
       sorter: {
         compare: (a, b) => {
           return a?.company_name - b?.company_name;
         },
       },
+      render: (text, record) => {
+        return(
+          <div>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Sales meter",
       dataIndex: "sales_meters",
       key: "sales_meters",
-      render: (text) => text || 0,
-      sorter: {
-        compare: (a, b) => {
-          return a?.sales_meters - b?.sales_meters;
-        },
+      render: (text, record) => {
+       return(
+        <div>
+          {record?.total_meter}
+        </div>
+       )
       },
     },
     {
-      title: "Sales",
-      dataIndex: "sales",
+      title: "Taka",
+      dataIndex: "total_taka",
       key: "sales",
-      render: (text) => text || 0,
-      sorter: {
-        compare: (a, b) => {
-          return a?.sales - b?.sales;
-        },
-      },
     },
     {
-      title: "Month Limit",
-      dataIndex: "month_limit",
-      key: "month_limit",
-      render: (text) => text || 0,
-      sorter: {
-        compare: (a, b) => {
-          return (a?.month_limit || 0) - (b?.month_limit || 0);
-        },
-      },
+      title: "Total Amount",
+      dataIndex: "total_amount",
     },
     {
-      title: "Year Limit",
-      dataIndex: "year_limit",
-      key: "year_limit",
-      render: (text) => text || 0,
-      sorter: {
-        compare: (a, b) => {
-          return (a?.year_limit || 0) - (b?.year_limit || 0);
-        },
-      },
+      title: "Total Net Amount",
+      dataIndex: "total_net_amount",
     },
   ];
 
@@ -140,52 +125,171 @@ const Turnover = () => {
     }
 
     return (
-      <Table
-        dataSource={turnoverData || []}
-        columns={columns}
-        rowKey={"id"}
-        pagination={{
-          current: page + 1,
-          pageSize: pageSize,
-          total: turnoverData ? turnoverData?.length : 0,
-          showSizeChanger: true,
-          onShowSizeChange: onShowSizeChange,
-          onChange: onPageChange,
-        }}
-        summary={(pageData) => {
-          let totalSaleMeter = 0;
-          let totalSales = 0;
-          let totalMonthLimit = 0;
-          let totalYearLimit = 0;
+      <div style={{
+      }}>
+        {turnoverData && turnoverData?.map((element) => {
+          let tableData = [] ; 
+          
+          tableData.push({
+            key: "Sale Meter", 
+            ...element?.sale_bill_analitics
+          })
 
-          pageData.forEach((row) => {
-            totalSaleMeter += +row.sales_meters || 0;
-            totalSales += +row.sales || 0;
-            totalMonthLimit += +row.month_limit || 0;
-            totalYearLimit += +row.year_limit || 0;
-          });
-          return (
+          tableData.push({
+            key: "Gray Sale Meter", 
+            ...element?.gray_sale_bill_analitics
+          })
+
+          tableData.push({
+            key: "Sale Return", 
+            ...element?.credit_note_analitics
+          }) 
+
+          tableData.push({
+            key: "Discount Note", 
+            ...element?.discount_note_analitics
+          })
+
+          return(
             <>
-              <Table.Summary.Row className="font-semibold">
-                <Table.Summary.Cell>Total</Table.Summary.Cell>
-                <Table.Summary.Cell />
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalSaleMeter}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalSales}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalMonthLimit}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalYearLimit}</Typography.Text>
-                </Table.Summary.Cell>
-              </Table.Summary.Row>
+              <div style={{
+              }}>
+                <Flex style={{
+                  gap: 10, 
+                  marginBottom: 20, 
+                  paddingTop: 15
+                }}>
+                  {/* Company name information  */}
+                  <div style={{
+                    color: "#000"
+                  }}>
+                    <span style={{
+                      fontWeight: 600
+                    }}>Company </span> : {element?.company_name} | 
+                  </div>
+                  
+                  {/* Month transaction limit related information  */}
+                  <div style={{
+                    color: "#000"
+                  }}>
+                    <span style={{
+                      fontWeight: 600
+                    }}>Monthly limit </span> : {element?.month_limit} |
+                  </div>
+
+                  {/* Yearly transaction limit related information  */}
+                  <div style={{
+                    color: "#000"
+                  }}>
+                    <span style={{
+                      fontWeight: 600
+                    }}>Yearly limit </span> : {element?.year_limit}
+                  </div>
+                </Flex>
+                
+                {/* ==== Data information ====  */}
+                <Table
+                  dataSource={tableData || []}
+                  columns={columns}
+                  rowKey={"id"}
+                  pagination = {false}
+                  summary={() => {
+                    
+                    let total_amount_without_gst = +element?.sale_bill_analitics?.total_amount + +element?.gray_sale_bill_analitics?.total_amount ;
+                    let total_amount_with_gst = +element?.sale_bill_analitics?.total_net_amount + +element?.sale_bill_analitics?.total_net_amount ; 
+
+                    return(
+                      <Table.Summary>
+                        
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <strong style={{color: "green"}}>
+                              {"Total sale => "}
+                            </strong>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Flex>
+                              <div>
+                                {parseFloat(total_amount_without_gst).toFixed(2)} <span style={{fontWeight: 400}}>Without GST</span>
+                              </div>
+                              <div style={{
+                                fontWeight: 600, 
+                                marginLeft: 5, 
+                                marginRight: 5
+                              }}>
+                                |
+                              </div>
+                              <div>
+                                {parseFloat(total_amount_with_gst).toFixed(2)} <span style={{fontWeight: 400}}>With GST</span>
+                              </div>
+                            </Flex>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                        </Table.Summary.Row>
+
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <strong style={{color: "green"}}>
+                              {"Return => "}
+                            </strong>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Flex>
+                              <div>
+                                {element?.credit_note_analitics?.total_amount} <span style={{fontWeight: 400}}>Without GST</span>
+                              </div>
+                              <div style={{fontWeight: 600, marginLeft: 5, marginRight: 5}}>
+                                |
+                              </div>
+                              <div>
+                                {element?.credit_note_analitics?.total_net_amount} <span style={{fontWeight: 400}}>Without GST</span>
+                              </div>
+                            </Flex>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                        </Table.Summary.Row>
+                        
+                        <Table.Summary.Row>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <strong style={{color: "green"}}>
+                              {"Discount => "}
+                            </strong>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell>
+                            <Flex>
+                              <div>
+                                {element?.discount_note_analitics?.total_amount} <span style={{fontWeight: 400}}>Without GST</span>
+                              </div>
+                              <div style={{fontWeight: 600, marginLeft: 5, marginRight: 5}}>
+                                |
+                              </div>
+                              <div>
+                                {element?.discount_note_analitics?.total_net_amount} <span style={{fontWeight: 400}}>Without GST</span>
+                              </div>
+                            </Flex>
+                          </Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                          <Table.Summary.Cell></Table.Summary.Cell>
+                        </Table.Summary.Row>
+                      </Table.Summary>
+                    )
+
+                  }}
+                />
+              </div>
             </>
-          );
-        }}
-      />
+          )
+        })}        
+
+      </div>
     );
   }
 
@@ -194,7 +298,9 @@ const Turnover = () => {
       <div className="flex flex-col p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
-            <h3 className="m-0 text-primary">Company wise turnover</h3>
+            <h3 className="m-0 text-primary" style={{
+              marginLeft: -15
+            }}>Company wise turnover</h3>
             <Button
               onClick={() => setIsModalOpen(true)}
               icon={<PlusCircleOutlined />}
@@ -252,7 +358,6 @@ const EditCompanyTurnOver = ({ isModalOpen, setIsModalOpen }) => {
   });
 
   const onSubmit = async (data) => {
-    console.table("🧑‍💻 || data:", data);
     const payload = {
       month_limit: +data.month_limit,
       year_limit: +data.year_limit,
@@ -289,11 +394,6 @@ const EditCompanyTurnOver = ({ isModalOpen, setIsModalOpen }) => {
     <>
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
-        // title={
-        //   <Typography.Text className="text-xl font-medium text-white">
-        //     Edit Entry
-        //   </Typography.Text>
-        // }
         title={"Turnover"}
         open={isModalOpen}
         footer={null}

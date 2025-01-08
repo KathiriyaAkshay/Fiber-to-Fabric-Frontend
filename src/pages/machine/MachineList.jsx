@@ -77,21 +77,25 @@ function MachineList() {
       title: "Machine Name",
       dataIndex: "machine_name",
       key: "machine_name",
+      sorter: (a, b) => a.machine_name.localeCompare(b.machine_name)
     },
     {
       title: "No of Machine",
       dataIndex: "no_of_machines",
       key: "no_of_machines",
+      sorter: (a, b) => a.no_of_machines.localeCompare(b.no_of_machines)
     },
     {
       title: "No of Employee",
       dataIndex: "no_of_employees",
       key: "no_of_employees",
+      sorter: (a, b) => a.no_of_employees.localeCompare(b.no_of_employees)
     },
     {
       title: "Machine Type",
       dataIndex: "machine_type",
       key: "machine_type",
+      sorter: (a, b) => a.machine_type.localeCompare(b.machine_type)
     },
     {
       title: "Action",
@@ -116,7 +120,6 @@ function MachineList() {
             >
               <EditOutlined />
             </Button>
-            {/* <DeleteMachine details={machineDetails} /> */}
           </Space>
         );
       },

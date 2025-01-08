@@ -798,9 +798,9 @@ const BillForm = () => {
 
                 let bill_net_amount = +bill?.net_amount ; 
                 let debit_note_amount = +bill?.debit_note_amount || 0; 
-                let bill_deducation_amount = +bill_net_amount - +debit_note_amount ; 
-                let bill_remaing_amount = bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment ; 
-                bill_deducation_amount = +bill_deducation_amount - +bill_remaing_amount ; 
+                let bill_deducation_amount = parseFloat(+bill_net_amount - +debit_note_amount).toFixed(2) ; 
+                let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
+                bill_deducation_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2) ; 
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
@@ -916,9 +916,13 @@ const BillForm = () => {
                         disabled={!isBillSelected}
                         value={isBillSelected? isBillSelected?.tds :""}
                         onChange={(e) =>{
-                          let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
+
+                          // Calculate current paid amount
+                          let exist_remaing_amount = (isBillSelected?.exists_part_payment == null || isBillSelected?.exists_part_payment == undefined)?
+                            +isBillSelected?.net_amount: +isBillSelected?.exists_part_payment || 0 ; 
                           let current_remaing_amount = isBillSelected?.part_payment || 0; 
                           let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+
 
                           if (e.target.value > paid_amount){
                             message.warning("Please, Provide valid TDS amount") ; 
@@ -934,7 +938,7 @@ const BillForm = () => {
                       <Input
                         type="number"
                         name="less_percentage"
-                        style={{ width: "100%", color:"red", fontWeight: 600 }}
+                        style={{ width: "100%", color:"red" }}
                         disabled={!isBillSelected}
                         value={
                           isBillSelected ? isBillSelected?.less_percentage : ""
@@ -943,7 +947,9 @@ const BillForm = () => {
                           
                           // Handle Functionality if user enter less percentage than plus percentage must be zero
                           // If Plus percentage have value than less percentage will be zero
-                          let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
+
+                          let exist_remaing_amount = (isBillSelected?.exists_part_payment == null || isBillSelected?.exists_part_payment == undefined)?
+                            +isBillSelected?.net_amount: +isBillSelected?.exists_part_payment || 0 ; 
                           let current_remaing_amount = isBillSelected?.part_payment || 0; 
                           let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
                           if (e.target.value > paid_amount){
@@ -960,7 +966,7 @@ const BillForm = () => {
                       <Input
                         type="number"
                         name="plus_percentage"
-                        style={{ width: "100%" }}
+                        style={{ width: "100%", color: "green" }}
                         disabled={!isBillSelected}
                         value={
                           isBillSelected ? isBillSelected?.plus_percentage : ""

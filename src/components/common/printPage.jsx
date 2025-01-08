@@ -228,6 +228,9 @@ const PrintPage = () => {
 
   useEffect(() => {
     let page_title = localStorage.getItem("print-title");
+    console.log("Page title information");
+    console.log(page_title);
+    
     setOrderTitle(page_title);
 
     let page_data = JSON.parse(localStorage.getItem("print-array"));
@@ -251,7 +254,7 @@ const PrintPage = () => {
     <Document>
       <Page size="A3" style={printPageStyle.page}>
         <View style={[printPageStyle.section]}>
-          <Text style={[printPageStyle.title]}>Yarn Order List</Text>
+          <Text style={[printPageStyle.title]}>{orderTitle}</Text>
         </View>
         <View style={[printPageStyle.companyInfo]}>
           <View style={printPageStyle.rightColumn}>

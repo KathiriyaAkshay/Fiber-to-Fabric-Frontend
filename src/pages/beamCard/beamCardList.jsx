@@ -982,14 +982,17 @@ const BeamCardViewDetailModal = ({
               <Row id="row" className="beam-details-information-div">
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
-                    Warper Employee Name (P)
+                    Warper Employee Name (P) : 
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>-</Typography.Text>
+                  <Typography.Text>
+                    {details?.warper_user !== null?`${details?.warper_user?.first_name} ${details?.warper_user?.last_name}`:"-"}
+                  </Typography.Text>
                 </Col>
               </Row>
 
+              {/* Wraper employee name information ================ */}
               <Row
                 id="row"
                 className="beam-details-information-div beam-details-other-div"
@@ -1000,10 +1003,13 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>-</Typography.Text>
+                  <Typography.Text>
+                    {details?.pasarela_user !== null?`${details?.pasarela_user?.first_name} ${details?.pasarela_user?.last_name}`:"-"}
+                  </Typography.Text>
                 </Col>
               </Row>
 
+              {/* Beam pasaria employee information  */}
               <Row id="row" className="beam-details-information-div">
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -1012,6 +1018,20 @@ const BeamCardViewDetailModal = ({
                 </Col>
                 <Col span={6}>
                   <Typography.Text>-</Typography.Text>
+                </Col>
+              </Row>
+
+              {/* Pissing employee name information  */}
+              <Row id="row" className="beam-details-information-div">
+                <Col span={12}>
+                  <Typography.Text className="font-medium beam-card-info-title">
+                    Pissing Employee Name :
+                  </Typography.Text>
+                </Col>
+                <Col span={6}>
+                  <Typography.Text>
+                    {details?.pissing_user?.first_name} {details?.pissing_user?.last_name}
+                  </Typography.Text>
                 </Col>
               </Row>
             </Col>
@@ -1024,9 +1044,12 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>-</Typography.Text>
+                  <Typography.Text>
+                      -
+                  </Typography.Text>
                 </Col>
               </Row>
+
               <Row
                 id="row"
                 className="beam-details-information-div beam-details-other-div"
@@ -1037,9 +1060,10 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>-</Typography.Text>
+                   <Typography.Text>-</Typography.Text>
                 </Col>
               </Row>
+
               <Row id="row" className="beam-details-information-div">
                 <Col span={12}>
                   <Typography.Text className="font-medium beam-card-info-title">
@@ -1047,10 +1071,27 @@ const BeamCardViewDetailModal = ({
                   </Typography.Text>
                 </Col>
                 <Col span={6}>
-                  <Typography.Text>-</Typography.Text>
+                  <Typography.Text>
+                  {details?.pasarela_date !== null?dayjs(details?.pasarela_date).format("DD-MM-YYYY hh:mm:ss a"):"--"}
+                  </Typography.Text>
+                </Col>
+              </Row>
+              
+              {/* Primary pissing date information  */}
+              <Row id="row" className="beam-details-information-div">
+                <Col span={12}>
+                  <Typography.Text className="font-medium beam-card-info-title">
+                    Primary Pissing Date
+                  </Typography.Text>
+                </Col>
+                <Col span={6}>
+                  <Typography.Text>
+                    {details?.pissing_date !== null?dayjs(details?.pissing_date).format("DD-MM-YYYY hh:mm:ss a"):"--" }
+                  </Typography.Text>
                 </Col>
               </Row>
             </Col>
+
           </Row>
 
           <Divider style={{ marginTop: 10 }} />

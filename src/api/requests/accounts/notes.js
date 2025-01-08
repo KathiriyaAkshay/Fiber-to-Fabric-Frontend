@@ -27,7 +27,7 @@ export function creditNoteDropDownRequest({ params }) {
 }
 
 export function deleteCreditNoteRequest({ id, params }) {
-  return api.delete(`/account/credit-notes/delete/${id}`, { params });
+return api.delete(`/account/credit-notes/delete/${id}`, { params });
 }
 
 export function getCreditNoteByIdRequest({id, params}){

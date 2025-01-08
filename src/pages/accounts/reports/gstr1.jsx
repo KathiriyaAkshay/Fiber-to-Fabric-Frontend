@@ -26,6 +26,10 @@ const Gstr1 = () => {
   const [company, setCompany] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   // const [isParticularOpen, setIsParticularOpen] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 

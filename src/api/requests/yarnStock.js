@@ -34,6 +34,10 @@ export function deleteYSCompanyRequest({ id, params }) {
   return api.delete(`yarn-stock/company/delete/${id}`, { params });
 }
 
+export function yarnStockWarningRequest({params}) {
+  return api.get(`yarn-stock/yarn-company/entries/detail`, {params}); 
+}
+
 // yarn stock report
 
 export function createYarnStockReportRequest({ data }) {
