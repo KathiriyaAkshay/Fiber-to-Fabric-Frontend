@@ -848,7 +848,7 @@ const AddPurchaseTaka = () => {
 
           <Col span={3} style={{ textAlign: "center" }}>
             <div style={{textAlign: "left", fontSize: 12}}>Pending Taka</div>
-            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka}</Typography>
+            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka || 0}</Typography>
           </Col>
         </Row>
 

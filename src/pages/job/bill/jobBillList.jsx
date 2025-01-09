@@ -15,8 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../api/hooks/auth";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../api/requests/users";
@@ -27,12 +25,12 @@ import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
 import moment from "moment";
 import PartialPaymentInformation from "../../../components/accounts/payment/partialPaymentInformation";
 import { addDaysToDate } from "../../accounts/reports/utils";
+import { JOB_QUALITY_TYPE } from "../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const JobBillList = () => {
   const { companyId } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
-
-  // const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [isPaid, setIsPaid] = useState();
@@ -114,6 +112,7 @@ const JobBillList = () => {
     return current && current > moment().endOf("day");
   }
 
+  // Dropdown quality name =====================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -124,6 +123,7 @@ const JobBillList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -133,21 +133,23 @@ const JobBillList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: JOB_QUALITY_TYPE
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Supplier dropdown api =================================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -226,6 +228,17 @@ const JobBillList = () => {
       },
     },
     {
+      title: "Bill No",
+      dataIndex: ["job_taka_bill", "invoice_no"],
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
+    },
+    {
       title: "Order No",
       dataIndex: ["gray_order", "order_no"],
       key: "order_no",
@@ -236,13 +249,13 @@ const JobBillList = () => {
       key: "supplier_name",
     },
     {
-      title: "Bill No",
-      dataIndex: ["job_taka_bill", "invoice_no"],
-    },
-    {
       title: "Quality Name",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -415,18 +428,6 @@ const JobBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-          <Radio.Group
-            name="filter"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-          >
-            <Flex align="center" gap={10}>
-              <Radio value={"current"}> Current</Radio>
-              <Radio value={"previous"}> Previous </Radio>
-            </Flex>
-          </Radio.Group>
-        </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
@@ -439,30 +440,6 @@ const JobBillList = () => {
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
-              {/* <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Company
-              </Typography.Text>
-              <Select
-                allowClear
-                placeholder="Select Quality"
-                value={companyFilter}
-                options={companyListRes?.rows?.map(
-                  ({ company_name = "", id = "" }) => ({
-                    label: company_name,
-                    value: id,
-                  })
-                )}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={setCompanyFilter}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Quality
@@ -476,7 +453,7 @@ const JobBillList = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item),
                     }))
                   }
                   dropdownStyle={{
@@ -547,6 +524,7 @@ const JobBillList = () => {
                   textTransform: "capitalize",
                 }}
                 className="min-w-40"
+                allowClear
               />
             </Flex>
             {/* <Flex align="center" gap={10}>

@@ -9,6 +9,7 @@ import {
   Table,
   Tag,
   Typography,
+  Tooltip
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -16,8 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../api/hooks/auth";
 import { getJobTakaDetailListRequest } from "../../../api/requests/job/jobTaka";
 import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
@@ -26,13 +25,13 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../constants/tag";
 import { disabledFutureDate } from "../../../utils/date";
+import { JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
+import { JOB_QUALITY_TYPE } from "../../../constants/supplier";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const JobTakaList = () => {
   const { companyId } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
-
-  // const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [type, setType] = useState();
@@ -54,6 +53,7 @@ const JobTakaList = () => {
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
+  // Dropdown quality list api ==================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -64,6 +64,7 @@ const JobTakaList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -73,21 +74,23 @@ const JobTakaList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: JOB_QUALITY_TYPE
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Dropdown supplier list api =======================================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -200,26 +203,6 @@ const JobTakaList = () => {
     localStorage.setItem("print-title", "Job Taka List");
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
-
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Purchase Challan No",
-    //       "Quality",
-    //       "Taka No.",
-    //       "Meter",
-    //       "weight",
-    //       "Average",
-    //       "Date",
-    //       "Status",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Job Taka List",
-    // });
     window.open("/print");
   }
 
@@ -231,21 +214,50 @@ const JobTakaList = () => {
       render: (text, record, index) => index + 1,
     },
     {
+      title: "Taka No",
+      dataIndex: "taka_no",
+      key: "taka_no",
+      render: (text, record) => {
+        return(
+          <div>
+            <Tag color="#108ee9">
+              {text}
+            </Tag>
+          </div>
+        )
+      }
+    },
+    {
       title: "Quality Name",
       render: (details) => {
-        return `${details.job_taka_challan.inhouse_quality.quality_name} (${details.job_taka_challan.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{fontSize:13}}>
+            {getDisplayQualityName(details.job_taka_challan.inhouse_quality)}
+          </div>
+        )
       },
+    },
+    {
+      title: "Supplier", 
+      render: (text, record) => {
+        return(
+          <div style={{fontSize: 13}}>
+            {record?.job_taka_challan?.supplier?.supplier_name}
+          </div>
+        )
+      }
     },
     {
       title: "Job Challan No",
       render: (details) => {
-        return details.job_taka_challan.challan_no;
+        return(
+          <div style={{cursor: "pointer"}}>
+            <Tooltip title = {`Gray order - ${details?.job_taka_challan?.gray_order?.order_no}`}>
+              {details?.job_taka_challan?.challan_no} | <span style={{fontWeight: 600}}>{details?.job_taka_challan?.gray_order?.order_no}</span>
+            </Tooltip>
+          </div>
+        )
       },
-    },
-    {
-      title: "Taka No",
-      dataIndex: "taka_no",
-      key: "taka_no",
     },
     {
       title: "Meter",
@@ -310,7 +322,7 @@ const JobTakaList = () => {
               details={[
                 {
                   label: "Quality Name",
-                  value: details.job_taka_challan.inhouse_quality.quality_name,
+                  value: getDisplayQualityName(details.job_taka_challan.inhouse_quality),
                 },
                 {
                   label: "Date",
@@ -380,22 +392,28 @@ const JobTakaList = () => {
 
           return (
             <>
+              
+              {/* Particular page total information  */}
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalMeter}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalWeight}</Typography.Text>
+                  <Typography.Text>{parseFloat(totalMeter).toFixed(2)}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{parseFloat(totalWeight).toFixed(2)}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
               </Table.Summary.Row>
+
+              {/* All data total information  */}
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>
                   Grand <br /> Total
@@ -404,14 +422,14 @@ const JobTakaList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
-                  <Typography.Text>
-                    {jobTakaList?.total_meters || 0}
-                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>
-                    {jobTakaList?.total_weight || 0}
+                    {parseFloat(jobTakaList?.total_meters).toFixed(2) || 0}
                   </Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  {parseFloat(jobTakaList?.total_weight).toFixed(2) || 0}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -428,18 +446,6 @@ const JobTakaList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-          <Radio.Group
-            name="filter"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-          >
-            <Flex align="center" gap={10}>
-              <Radio value={"current"}> Current</Radio>
-              <Radio value={"previous"}> Previous </Radio>
-            </Flex>
-          </Radio.Group>
-        </div> */}
 
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
@@ -487,7 +493,7 @@ const JobTakaList = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item.quality_name),
                     }))
                   }
                   dropdownStyle={{

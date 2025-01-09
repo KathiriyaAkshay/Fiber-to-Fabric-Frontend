@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const { Text } = Typography;
 
@@ -164,8 +165,10 @@ const ViewJobTakaInfo = ({
                 <Col span={24}>
                   <Text>To,</Text>
                   <Text className="block font-bold">
-                    {details?.supplier?.supplier_company}(
-                    {details?.supplier?.supplier_name})
+                    <div>
+                      {String(details?.supplier?.supplier_company).toUpperCase()}  
+                    </div>
+                    ({details?.supplier?.supplier_name})
                   </Text>
                   <Text className="block">
                     {details?.supplier?.user?.address}
@@ -174,13 +177,13 @@ const ViewJobTakaInfo = ({
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>Challan</Text>
+                  <Text style={{fontWeight: 600}}>Challan</Text>
                   <Text className="block">{details?.challan_no}</Text>
                 </Col>
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>GST</Text>
+                  <Text style={{fontWeight: 600}}>GST</Text>
                   <Text className="block">
                     {details?.supplier?.user?.gst_no}
                   </Text>
@@ -223,12 +226,11 @@ const ViewJobTakaInfo = ({
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description of Goods:</Col>
+            <Col span={6} style={{fontWeight: 600}}>Description of Goods:</Col>
             <Col span={6} style={{ textAlign: "left" }}>
-              {details?.inhouse_quality?.quality_name} (
-              {details?.inhouse_quality?.quality_weight}KG)
+              {getDisplayQualityName(details?.inhouse_quality)}
             </Col>
-            <Col span={6}>Date:</Col>
+            <Col span={6} style={{fontWeight: 600}}>Date:</Col>
             <Col span={6}>
               {dayjs(details?.created_at).format("DD-MM-YYYY")}
             </Col>
@@ -237,28 +239,22 @@ const ViewJobTakaInfo = ({
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderBottom: 0 }}
           >
-            <Col span={1} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <strong>No</strong>
-            </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              <strong>Quality</strong>
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
               <strong>Taka No</strong>
             </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
             </Col>
-            <Col span={1} style={{ textAlign: "center" }}>
+            <Col span={3} style={{ textAlign: "center" }}>
               <strong>No</strong>
-            </Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              <strong>Quality</strong>
             </Col>
             <Col span={3} style={{ textAlign: "center" }}>
               <strong>TAKA NO</strong>
             </Col>
-            <Col span={3} style={{ textAlign: "center" }}>
+            <Col span={5} style={{ textAlign: "center" }}>
               <strong>Meter</strong>
             </Col>
           </Row>
@@ -270,50 +266,27 @@ const ViewJobTakaInfo = ({
                 className="p-3 border-0"
                 style={{ borderTop: 0 }}
               >
-                <Col span={1} style={{ textAlign: "center" }}>
+                <Col span={3} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 1}
-                </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {index < details?.job_challan_details?.length
-                    ? details?.inhouse_quality?.quality_name
-                    : ""}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
                   {details?.job_challan_details[index]?.taka_no}
                 </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center" }}>
                   {details?.job_challan_details[index]?.meter}
                 </Col>
-                <Col span={1} style={{ textAlign: "center" }}>
+                <Col span={3} style={{ textAlign: "center", fontWeight: 600 }}>
                   {index + 13}
-                </Col>
-                <Col span={5} style={{ textAlign: "center" }}>
-                  {index + 13 < details?.job_challan_details?.length
-                    ? details?.inhouse_quality?.quality_name
-                    : ""}
                 </Col>
                 <Col span={3} style={{ textAlign: "center" }}>
                   {details?.job_challan_details[index + 12]?.taka_no}
                 </Col>
-                <Col span={3} style={{ textAlign: "center" }}>
+                <Col span={5} style={{ textAlign: "center" }}>
                   {details?.job_challan_details[index + 12]?.meter}
                 </Col>
               </Row>
             );
           })}
-
-          <Row className="p-3 border-0" style={{ borderTop: 0 }}>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              <strong>{totalTaka1}</strong>
-            </Col>
-            <Col span={2} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}></Col>
-            <Col span={5} style={{ textAlign: "center" }}>
-              <strong>{totalTaka2}</strong>
-            </Col>
-          </Row>
 
           <Row
             className="p-3 border-0"

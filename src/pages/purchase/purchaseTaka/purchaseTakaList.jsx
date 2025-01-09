@@ -17,9 +17,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../hooks/usePagination";
 import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
-// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../api/hooks/auth";
 import dayjs from "dayjs";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
@@ -31,14 +28,11 @@ import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../constants/tag";
 import { PURCHASE_SUPPLIER_TYPE } from "../../../constants/supplier";
 import { PURCHASE_QUALITY_TYPE } from "../../../constants/supplier";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
-import { render } from "react-dom";
 
 const PurchaseTakaList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
   const navigate = useNavigate();
 
-  // const [state, setState] = useState("current");
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [type, setType] = useState();
@@ -238,7 +232,7 @@ const PurchaseTakaList = () => {
       title: "Quality Name",
       render: (details) => {
         return(
-          <div>
+          <div style={{fontSize: 13}}>
             {getDisplayQualityName(details?.purchase_taka_challan?.inhouse_quality)}
           </div>
         )

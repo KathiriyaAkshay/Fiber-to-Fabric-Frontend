@@ -25,6 +25,7 @@ import {
   addJobTakaBillRequest,
   getJobTakaBillByIdRequest,
 } from "../../../api/requests/job/bill/jobBill";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -193,10 +194,10 @@ const JobTakaChallanModal = ({
       rate: 0,
       amount: 0,
 
-      SGST_value: 0,
+      SGST_value: 2.5,
       SGST_amount: 0,
 
-      CGST_value: 0,
+      CGST_value: 2.5,
       CGST_amount: 0,
 
       IGST_value: 0,
@@ -330,15 +331,12 @@ const JobTakaChallanModal = ({
     }
   }, [jobTakasBillDetail, setValue]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <>
-      {/* <Button
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
-      >
-        <FileTextOutlined />
-      </Button> */}
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -380,8 +378,10 @@ const JobTakaChallanModal = ({
                   </Col>
                   <Col span={24}>
                     <Text>
-                      {details?.supplier?.supplier_company}(
-                      {details?.supplier?.supplier_name})
+                      <div style={{fontWeight: 600}}>
+                        {String(details?.supplier?.supplier_company).toUpperCase()}
+                      </div>
+                      ({details?.supplier?.supplier_name})
                     </Text>
                   </Col>
                   <Col span={24} className="mt-1">
@@ -450,6 +450,7 @@ const JobTakaChallanModal = ({
                             format="DD-MM-YYYY"
                             // style={{ marginLeft: "10px" }}
                             disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                            disabledDate={disabledFutureDate}
                           />
                         )}
                       />
@@ -499,7 +500,7 @@ const JobTakaChallanModal = ({
                 span={6}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}
+                {getDisplayQualityName(details?.inhouse_quality)}
               </Col>
               <Col
                 span={4}

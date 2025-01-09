@@ -36,8 +36,6 @@ const FieldTable = ({
   const CalculateTableWiseTotal = (index) => {
     let TOTAL_ROWS = 12 ;
     let array = Array.from({ length: TOTAL_ROWS }, (_, i) => i + index * TOTAL_ROWS);
-    console.log("Run this function =============");
-    console.log(array);
     
     let total_taka = 0;
     let total_meter = 0;

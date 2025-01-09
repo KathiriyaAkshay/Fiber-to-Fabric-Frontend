@@ -22,11 +22,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getJobTakaListRequest } from "../../../../api/requests/job/jobTaka";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -36,6 +31,10 @@ import dayjs from "dayjs";
 import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
 import ViewJobTakaInfo from "../../../../components/job/jobTaka/viewJobTakaInfo";
 import moment from "moment";
+import { JOB_ORDER_TYPE } from "../../../../constants/supplier";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const JobChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -77,6 +76,7 @@ const JobChallanList = () => {
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
+  // Dropdown quality list related api ==========================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -87,6 +87,7 @@ const JobChallanList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -96,44 +97,28 @@ const JobChallanList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: JOB_QUALITY_TYPE
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
+  // Dropdown supplier list related api =========================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
-
-  //   const dropDownSupplierCompanyOption = useMemo(() => {
-  //     if (
-  //       debouncedSupplier &&
-  //       dropdownSupplierListRes &&
-  //       dropdownSupplierListRes.length
-  //     ) {
-  //       const obj = dropdownSupplierListRes.filter((item) => {
-  //         return item.supplier_name === debouncedSupplier;
-  //       })[0];
-
-  //       return obj?.supplier_company?.map((item) => {
-  //         return { label: item.supplier_company, value: item.supplier_id };
-  //       });
-  //     } else {
-  //       return [];
-  //     }
-  //   }, [debouncedSupplier, dropdownSupplierListRes]);
 
   const { data: jobChallanList, isLoading } = useQuery({
     queryKey: [
@@ -268,13 +253,21 @@ const JobChallanList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
       title: "Challan No",
       render: (details) => {
-        return details.challan_no;
+        return(
+          <div style={{fontWeight: 600}}>
+            {details?.challan_no}
+          </div>
+        )
       },
     },
     {
@@ -328,6 +321,7 @@ const JobChallanList = () => {
         return (
           <Space>
             <ViewJobTakaInfo details={details} />
+
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);
@@ -335,7 +329,9 @@ const JobChallanList = () => {
             >
               <EditOutlined />
             </Button>
+            
             <DeleteJobTaka details={details} />
+            
             <Button
               onClick={() => {
                 let MODE;
@@ -356,6 +352,7 @@ const JobChallanList = () => {
             >
               <FileTextOutlined />
             </Button>
+            
             <Button
               onClick={() => {
                 localStorage.setItem(
@@ -605,6 +602,8 @@ const JobChallanList = () => {
         </div>
         {renderTable()}
       </div>
+
+      {/* Job Challan information  */}
       {jobTakaChallanModal.isModalOpen && (
         <JobTakaChallanModal
           details={jobTakaChallanModal.details}

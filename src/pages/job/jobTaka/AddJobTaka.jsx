@@ -29,6 +29,8 @@ import FieldTable from "../../../components/fieldTable";
 import moment from "moment/moment";
 import { checkUniqueTakaNoRequest } from "../../../api/requests/purchase/purchaseTaka";
 import AlertModal from "../../../components/common/modal/alertModal";
+import { JOB_ORDER_TYPE, JOB_QUALITY_TYPE, JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
+import { MY_ORDER_PENDING_STATUS } from "../../../constants/supplier";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -61,7 +63,11 @@ const AddJobTaka = () => {
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
+  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined) ; 
+
   const [pendingTaka, setPendingTaka] = useState("");
+  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined) ; 
+
   const [pendingWeight, setPendingWeight] = useState("");
 
   const [isAlertOpen, setIsAlertOpen] = useState(false);
@@ -220,6 +226,7 @@ const AddJobTaka = () => {
   });
   const { supplier_name, gray_order_id, supplier_id, total_weight, total_meter, total_taka } = watch();
 
+  // Dropdown quality api ===================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -230,6 +237,7 @@ const AddJobTaka = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -239,33 +247,36 @@ const AddJobTaka = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: JOB_QUALITY_TYPE
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
-
-  const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
-    useQuery({
-      queryKey: ["party", "list", { company_id: companyId, order_type: "job" }],
-      queryFn: async () => {
-        const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "job" },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
+    
+    // Gray order selection dropdown api ==================================================
+    const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
+      useQuery({
+        queryKey: ["party", "list", { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS }],
+        queryFn: async () => {
+          const res = await getMyOrderListRequest({
+            params: { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
+          });
+          return res.data?.data;
+        },
+        enabled: Boolean(companyId),
     });
 
+  // Supplier dropdown api =========================================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -328,21 +339,22 @@ const AddJobTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setSelectedOrder(order);
-      setValue("total_meter", order.total_meter);
-      setValue("total_taka", order.total_taka);
-      setValue("total_weight", order.weight);
-      setValue(
-        "broker_name",
-        `${order.broker.first_name} ${order.broker.last_name}`
-      );
-      setValue("broker_id", order.broker.id);
-      setValue("quality_id", order.inhouse_quality.id);
-      setValue("supplier_name", order.supplier_name);
-      setValue("pending_meter", order.pending_meter);
-
-      setPendingMeter(order.pending_meter);
-      setPendingTaka(order.pending_taka);
+      if (order){
+        setSelectedOrder(order);
+        setValue("total_meter", order.total_meter);
+        setValue("total_taka", order.total_taka);
+        setValue("total_weight", order.weight);
+        setValue(
+          "broker_name",
+          `${order.broker.first_name} ${order.broker.last_name}`
+        );
+        setValue("broker_id", order.broker.id);
+        setValue("quality_id", order.inhouse_quality.id);
+        setValue("supplier_name", order.supplier_name);
+        setValue("pending_meter", order.pending_meter);
+        setInitialPendingMeter(isNaN(order.pending_meter)?0:+order?.pending_meter || 0);
+        setInitialPendingTaka(isNaN(order.pending_taka)?0:order.pending_taka || 0);
+      }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -393,25 +405,19 @@ const AddJobTaka = () => {
   };
 
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined){
-      setPendingMeter(+total_meter - totalMeter) ; 
+    if (initialPendingMeter !== undefined) {
+      setPendingMeter(+initialPendingMeter - totalMeter);
+      
     }
-    if (total_weight !== "" && total_weight !== undefined){
-      setPendingWeight(+total_weight - (totalWeight || 0)) ; 
+    if (initialPendingTaka !== undefined) {
+      setPendingTaka(+initialPendingTaka - totalTaka);
     }
-
-    if (total_taka !== "" && total_taka !== undefined){
-      setPendingTaka(+total_taka - totalTaka) ; 
-    }
-    
   }, [
-    total_meter, 
-    total_weight, 
-    total_taka, 
-    totalTaka, 
-    totalWeight, 
-    totalMeter
-  ])
+    initialPendingMeter, 
+    initialPendingTaka, 
+    totalTaka,
+    totalMeter,
+  ]);
 
   const onConfirmHandler = () => {
     const purchaseChallanDetailArr = Array.from(
@@ -448,39 +454,6 @@ const AddJobTaka = () => {
             padding: "12px 12px 0px 12px",
           }}
         >
-          {/* <Col span={6}>
-            <Form.Item
-              label="Company"
-              name="company_id"
-              validateStatus={errors.company_id ? "error" : ""}
-              help={errors.company_id && errors.company_id.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="company_id"
-                render={({ field }) => (
-                  <Select
-                    {...field}
-                    loading={isLoadingGrayOrderList}
-                    placeholder="Select Company"
-                    options={companyListRes?.rows?.map((company) => ({
-                      label: company.company_name,
-                      value: company.id,
-                    }))}
-                    style={{
-                      textTransform: "capitalize",
-                    }}
-                    dropdownStyle={{
-                      textTransform: "capitalize",
-                    }}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
-
           <Col span={6}>
             <Form.Item
               label="Challan Date"
@@ -703,25 +676,6 @@ const AddJobTaka = () => {
               />
             </Form.Item>
           </Col>
-
-          {/* <Col span={6}>
-            <Form.Item
-              label="Gst State"
-              name="gst_state"
-              validateStatus={errors.gst_state ? "error" : ""}
-              help={errors.gst_state && errors.gst_state.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_state"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST State" />
-                )}
-              />
-            </Form.Item>
-          </Col> */}
         </Row>
 
         <Row
@@ -855,39 +809,27 @@ const AddJobTaka = () => {
           </Col>
         </Row>
 
-        {pendingMeter && pendingTaka ? (
-          <Row
-            gutter={18}
-            style={{
-              padding: "0px 12px",
-            }}
-          >
-            <Col span={6}></Col>
-            <Col span={6} style={{ textAlign: "end" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                Pending
-              </Typography>
-            </Col>
+        {/* Show Pending taka and Pending meter related information  */}
+        <Row
+          gutter={18}
+          style={{
+            padding: "0px 12px",
+            marginTop: -10,
+          }}
+        >
+          <Col span={12}></Col>
+          <Col span={3} style={{ textAlign: "center" }}>
+            <div style={{textAlign: "left", fontSize: 12}}>Pending Meter</div>
+            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+              {pendingMeter || 0}
+            </Typography>
+          </Col>
 
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                {pendingMeter}
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                {pendingWeight}
-              </Typography>
-            </Col>
-
-            <Col span={3} style={{ textAlign: "start" }}>
-              <Typography style={{ color: "red", paddingLeft: "10px" }}>
-                {pendingTaka}
-              </Typography>
-            </Col>
-          </Row>
-        ) : null}
+          <Col span={3} style={{ textAlign: "center" }}>
+            <div style={{textAlign: "left", fontSize: 12}}>Pending Taka</div>
+            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka || 0}</Typography>
+          </Col>
+        </Row>
 
         <Divider style={{marginTop: 5}} />
 
