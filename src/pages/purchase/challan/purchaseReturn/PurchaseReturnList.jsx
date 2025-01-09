@@ -19,10 +19,6 @@ import { useQuery } from "@tanstack/react-query";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import useDebounce from "../../../../hooks/useDebounce";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
 import dayjs from "dayjs";
 import DeleteReworkChallan from "../../../../components/job/challan/reworkChallan/DeleteReworkChallan";
 import { getPruchaseReturnListRequest } from "../../../../api/requests/purchase/purchaseReturn";
@@ -31,23 +27,32 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import DebitNote from "../../../../components/purchase/purchaseReturn/DebitNote";
 import moment from "moment/moment";
 import ParticularPurchaseReturnInfo from "../../../../components/purchase/purchaseReturn/particularPurchaseReturnInfo";
+import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const PurchaseReturnInformation = ({ item }) => {
-  const makeUniqueList = (items) => {
-    const filteredItems = items.filter(
-      (item) => item.purchased_return_id !== null
-    );
-    const grouped = filteredItems.reduce((acc, item) => {
-      const key = item.purchased_return_id;
-      if (!acc[key]) {
-        acc[key] = [];
+  const makeUniqueList = (itemsInfo) => {
+    
+    try {
+      const filteredItems = itemsInfo?.filter(
+        (item) => item.purchased_return_id !== null
+      );
+      
+      const grouped = filteredItems.reduce((acc, item) => {
+        const key = item.purchased_return_id;
+        if (!acc[key]) {
+          acc[key] = [];
       }
-      acc[key].push(item);
-      return acc;
-    }, {});
-
-    // Convert grouped object back into an array
-    return Object.values(grouped);
+        acc[key].push(item);
+        return acc;
+      }, {});
+  
+      // Convert grouped object back into an array
+      return Object.values(grouped);
+    } catch (error) {
+      return [] ;   
+    }
   };
 
   const uniqueList = makeUniqueList(
@@ -55,6 +60,16 @@ const PurchaseReturnInformation = ({ item }) => {
   );
 
   const columns = [
+    {
+      title: "ID", 
+      render: (text, record, index) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {index + 1}
+          </div>
+        )
+      }
+    }, 
     {
       title: "Return Taka",
       render: (text, record) => {
@@ -89,6 +104,7 @@ const PurchaseReturnInformation = ({ item }) => {
         })
         return(
           <Space>
+            <DebitNote/>
             <ParticularPurchaseReturnInfo
               details={{ ...item, new_challan_details: record }}
             />
@@ -110,7 +126,10 @@ const PurchaseReturnInformation = ({ item }) => {
           dataSource={uniqueList}
           columns={columns}
           pagination={false}
-          className="sub-table"
+          className="return-taka-info-table"
+          style={{
+            width: "50%"
+          }}
         />
       </div>
     </>
@@ -140,10 +159,10 @@ const PurchaseReturnList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -160,6 +179,7 @@ const PurchaseReturnList = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -169,6 +189,7 @@ const PurchaseReturnList = () => {
             page: 0,
             pageSize: 99999,
             is_active: 1,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;
@@ -315,7 +336,13 @@ const PurchaseReturnList = () => {
       title: "Quality",
       dataIndex: ["purchase_taka_challan", "inhouse_quality"],
       key: "inhouse_quality",
-      render: (text) => `${text?.quality_name} (${text?.quality_weight})`,
+      render: (text) => {
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(text)}
+          </div>
+        )
+      }
     },
     {
       title: "Order No",
@@ -333,22 +360,6 @@ const PurchaseReturnList = () => {
       render: (details) =>
         details?.purchase_taka_challan?.supplier?.supplier_company,
     },
-    // {
-    //   title: "Return Meter",
-    //   render: (text, record) => {
-    //     let data = record?.new_challan_details;
-    //     let return_meter = 0;
-    //     data?.map((element) => {
-    //       return_meter += +element?.meter;
-    //     })
-    //     return (
-    //       <div style={{
-    //         color: "red",
-    //         fontWeight: 600
-    //       }}>{return_meter}</div>
-    //     )
-    //   },
-    // },
     {
       title: "Total Taka",
       render: (details) => details?.purchase_taka_challan?.total_taka,
@@ -356,31 +367,7 @@ const PurchaseReturnList = () => {
     {
       title: "Total Meter",
       render: (details) => details?.purchase_taka_challan?.total_meter,
-    },
-    // {
-    //   title: "Return Date",
-    //   dataIndex: "return_date",
-    //   key: "return_date",
-    // },
-    {
-      title: "Action",
-      render: (details) => {
-        return (
-          <Space>
-            {/* <ParticularPurchaseReturnInfo details={details} /> */}
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DebitNote />
-            <DeleteReworkChallan details={details} />
-          </Space>
-        );
-      },
-    },
+    }
   ];
 
   function renderTable() {
@@ -466,7 +453,7 @@ const PurchaseReturnList = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item ),
                     }))
                   }
                   dropdownStyle={{

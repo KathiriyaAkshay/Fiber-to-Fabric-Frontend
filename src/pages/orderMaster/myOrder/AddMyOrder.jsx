@@ -42,6 +42,7 @@ import {
   getMyOrderQualityMeterRequest,
 } from "../../../api/requests/orderMaster";
 import { disableBeforeDate } from "../../../utils/date";
+import { JOB_QUALITY_TYPE, PURCHASE_QUALITY_TYPE, TAKA_INHOUSE_QUALITY_TYPE } from "../../../constants/supplier";
 
 const ORDER_TYPE = [
   { label: "Taka(In House)", value: "taka(inhouse)" },
@@ -110,6 +111,7 @@ const AddMyOrder = () => {
   });
 
   async function onSubmit(data) {
+    
     if (data.order_type === "taka(inhouse)") {
       if (!data.party_id) {
         setError("party_id", {
@@ -119,6 +121,7 @@ const AddMyOrder = () => {
         return;
       }
     }
+    
     if (data.order_type === "job" || data.order_type === "purchase/trading") {
       if (!data.supplier_name) {
         setError("supplier_name", {
@@ -128,12 +131,21 @@ const AddMyOrder = () => {
         return;
       }
     }
+
+    if (parseFloat(data.pending_taka) < 0){
+      message.warning("Please, Enter valid pending taka information") ; 
+      return ; 
+    }
+
+    if (parseFloat(data.pending_meter) < 0){
+      message.warning("Please, Enter valid pending meter information") ; 
+      return ; 
+    }
+
     const newData = {
       machine_name: data.machine_name,
       order_type: data.order_type,
       broker_id: parseInt(data.broker_id),
-      // party_id: parseInt(data.party_id),
-      // supplier_name: data.supplier_name,
       quality_id: parseInt(data.quality_id),
       order_date: dayjs(data.order_date).format("YYYY-MM-DD"),
       notes: data.notes,
@@ -230,6 +242,7 @@ const AddMyOrder = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          order_type: order_type
         },
       ],
       queryFn: async () => {
@@ -241,6 +254,8 @@ const AddMyOrder = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: order_type == "purchase/trading"?PURCHASE_QUALITY_TYPE:
+                order_type == "job"?JOB_QUALITY_TYPE:TAKA_INHOUSE_QUALITY_TYPE``
             },
           });
           return res.data?.data;

@@ -22,12 +22,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import useDebounce from "../../../hooks/useDebounce";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import moment from "moment";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -38,6 +32,9 @@ import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/Del
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import ViewPurchaseChallanInfo from "../../../../components/purchase/purchaseChallan/ViewPurchaseChallanInfo";
 import ReturnPurchaseChallan from "../../../../components/purchase/purchaseChallan/ReturnPurchaseChallan";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const PurchaseChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -69,7 +66,6 @@ const PurchaseChallanList = () => {
     return current && current > moment().endOf("day");
   }
 
-
   const [purchaseTakaChallanModal, setPurchaseTakaChallanModal] = useState({
     isModalOpen: false,
     details: null,
@@ -93,6 +89,7 @@ const PurchaseChallanList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -102,6 +99,7 @@ const PurchaseChallanList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;
@@ -113,10 +111,10 @@ const PurchaseChallanList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -239,6 +237,13 @@ const PurchaseChallanList = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Order No",
@@ -253,7 +258,11 @@ const PurchaseChallanList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {

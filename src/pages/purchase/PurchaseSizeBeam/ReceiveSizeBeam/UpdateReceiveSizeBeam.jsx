@@ -33,6 +33,7 @@ import UpdateSizeBeamDetail from "../../../../components/purchase/PurchaseSizeBe
 import { getSizeBeamOrderByIdRequest } from "../../../../api/requests/orderMaster";
 import { getLastBeamNumberRequest } from "../../../../api/requests/orderMaster";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
 
 const addReceiveSizeBeamSchemaResolver = yupResolver(
   yup.object().shape({
@@ -96,12 +97,14 @@ function UpdateReceiveSizeBeam() {
         "quality-master/inhouse-quality/list",
         {
           company_id: companyId,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
         const res = await getInHouseQualityListRequest({
           params: {
             company_id: companyId,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;

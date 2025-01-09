@@ -8,6 +8,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
@@ -27,6 +28,10 @@ import { getPurchaseTakaDetailListRequest } from "../../../api/requests/purchase
 import { disabledFutureDate } from "../../../utils/date";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../constants/tag";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../constants/supplier";
+import { PURCHASE_QUALITY_TYPE } from "../../../constants/supplier";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { render } from "react-dom";
 
 const PurchaseTakaList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -64,6 +69,7 @@ const PurchaseTakaList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -73,6 +79,7 @@ const PurchaseTakaList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;
@@ -84,10 +91,10 @@ const PurchaseTakaList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId,  supplier_type: PURCHASE_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -214,21 +221,50 @@ const PurchaseTakaList = () => {
       render: (text, record, index) => index + 1,
     },
     {
-      title: "Quality Name",
-      render: (details) => {
-        return `${details?.purchase_taka_challan?.inhouse_quality?.quality_name} (${details?.purchase_taka_challan?.inhouse_quality?.quality_weight}KG)`;
-      },
-    },
-    {
-      title: "Purchase Challan No",
-      render: (details) => {
-        return details?.purchase_taka_challan?.challan_no;
-      },
-    },
-    {
       title: "Taka No",
       dataIndex: "taka_no",
       key: "taka_no",
+      render: (text, record) => {
+        return(
+          <div>
+            <Tag color="#108ee9">
+              {text}
+            </Tag>
+          </div>
+        )
+      }
+    },
+    {
+      title: "Quality Name",
+      render: (details) => {
+        return(
+          <div>
+            {getDisplayQualityName(details?.purchase_taka_challan?.inhouse_quality)}
+          </div>
+        )
+      },
+    },
+    {
+      title: "Supplier", 
+      render: (text, record) => {
+        return(
+          <div>
+            {record?.purchase_taka_challan?.supplier?.supplier_name}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Purchase Challan No",
+      render: (details) => {
+        return(
+          <div style={{cursor: "pointer"}}>
+            <Tooltip title = {`Gray order - ${details?.purchase_taka_challan?.gray_order?.order_no}`}>
+              {details?.purchase_taka_challan?.challan_no} | <span style={{fontWeight: 600}}>{details?.purchase_taka_challan?.gray_order?.order_no}</span>
+            </Tooltip>
+          </div>
+        )
+      },
     },
     {
       title: "Meter",
@@ -299,7 +335,7 @@ const PurchaseTakaList = () => {
               details={[
                 {
                   label: "Quality Name",
-                  value: `${details?.purchase_taka_challan?.inhouse_quality?.quality_name} (${details?.purchase_taka_challan?.inhouse_quality?.quality_weight}KG)`,
+                  value: getDisplayQualityName(details?.purchase_taka_challan?.inhouse_quality),
                 },
                 {
                   label: "Date",
@@ -310,7 +346,7 @@ const PurchaseTakaList = () => {
                 { label: "Weight", value: details?.weight },
                 {
                   label: "Order Type",
-                  value: details?.purchase_taka_challan?.gray_order?.order_type,
+                  value: String(details?.purchase_taka_challan?.gray_order?.order_type).toUpperCase(),
                 },
                 { label: "Average", value: parseFloat(average).toFixed(2) },
                 {
@@ -483,7 +519,7 @@ const PurchaseTakaList = () => {
                   dropDownQualityListRes &&
                   dropDownQualityListRes?.rows?.map((item) => ({
                     value: item.id,
-                    label: item.quality_name,
+                    label: getDisplayQualityName(item),
                   }))
                 }
                 dropdownStyle={{

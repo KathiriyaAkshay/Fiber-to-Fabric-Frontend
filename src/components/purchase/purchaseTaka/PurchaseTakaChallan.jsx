@@ -25,6 +25,7 @@ import {
   getPurchaseTakaBillByIdRequest,
 } from "../../../api/requests/purchase/bill";
 import { ToWords } from "to-words";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -360,6 +361,11 @@ const PurchaseTakaChallanModal = ({
     });
   }, [details, companyListRes]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+
   return (
     <>
       {/* <Button
@@ -410,8 +416,10 @@ const PurchaseTakaChallanModal = ({
                   </Col>
                   <Col span={24}>
                     <Text>
-                      {details?.supplier?.supplier_name}(
-                      {details?.supplier?.supplier_company})
+                      <div style={{fontWeight: 600}}>
+                        {String(details?.supplier?.supplier_name).toUpperCase()}
+                      </div>
+                      ({details?.supplier?.supplier_company})
                     </Text>
                   </Col>
                   <Col span={24} className="mt-1">
@@ -475,11 +483,11 @@ const PurchaseTakaChallanModal = ({
                         render={({ field }) => (
                           <DatePicker
                             {...field}
-                            defaultValue={moment("31-05-2024", "DD-MM-YYYY")}
+                            defaultValue={moment(new Date()).format("DD-MM-YYYY")}
                             format="DD-MM-YYYY"
                             readOnly
-                            // style={{ marginLeft: "10px" }}
                             disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                            disabledDate={disabledFutureDate}
                           />
                         )}
                       />
@@ -528,8 +536,8 @@ const PurchaseTakaChallanModal = ({
               <Col
                 span={6}
                 className="p-2 font-medium border-0 border-r border-solid"
-              >
-                {`${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`}
+              > 
+                {getDisplayQualityName(details?.inhouse_quality)}
               </Col>
               <Col
                 span={4}

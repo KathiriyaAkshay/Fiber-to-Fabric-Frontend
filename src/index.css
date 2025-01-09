@@ -1376,3 +1376,7 @@ h2 {
 .tax-total-amount-row td{
   color: green !important;
 }
+
+.return-taka-info-table .ant-table-thead > tr> th{
+  /* background-color: red ; */
+}

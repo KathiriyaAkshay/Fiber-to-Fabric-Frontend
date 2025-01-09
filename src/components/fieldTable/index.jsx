@@ -24,6 +24,7 @@ const FieldTable = ({
   clearErrors,
   isUpdate,
 }) => {
+
   const [gt_total, set_gt_total] = useState({
     0: { total_taka: 0, total_meter: 0, total_weight: 0 },
     1: { total_taka: 0, total_meter: 0, total_weight: 0 },
@@ -31,8 +32,13 @@ const FieldTable = ({
     3: { total_taka: 0, total_meter: 0, total_weight: 0 },
   });
 
+  // ================ Tablewise total culculation handler ==================== //
   const CalculateTableWiseTotal = (index) => {
-    let array = Array.from({ length: 12 }, (_, index) => index + 1);
+    let TOTAL_ROWS = 12 ;
+    let array = Array.from({ length: TOTAL_ROWS }, (_, i) => i + index * TOTAL_ROWS);
+    console.log("Run this function =============");
+    console.log(array);
+    
     let total_taka = 0;
     let total_meter = 0;
     let total_weight = 0;
@@ -61,13 +67,6 @@ const FieldTable = ({
     }));
   };
 
-  useEffect(() => {
-    CalculateTableWiseTotal(0);
-    CalculateTableWiseTotal(1);
-    CalculateTableWiseTotal(2);
-    CalculateTableWiseTotal(3);
-  }, [getValues]);
-
   const activeNextField = (event, fieldNumber, indexTable) => {
     if (event.keyCode === 13) {
       const takaNo = getValues(`taka_no_${fieldNumber}`);
@@ -95,23 +94,6 @@ const FieldTable = ({
       }
     }
   };
-
-  // const removeCurrentField = (fieldNumber) => {
-  //   if (fieldNumber) {
-  //     if (fieldNumber > 1) {
-  //       setActiveField((prev) => prev - 1);
-  //     }
-
-  //     setValue(`taka_no_${fieldNumber}`, "");
-  //     setValue(`meter_${fieldNumber}`, "");
-  //     setValue(`weight_${fieldNumber}`, "");
-
-  //     clearErrors(`taka_no_${fieldNumber}`);
-  //     clearErrors(`meter_${fieldNumber}`);
-  //     clearErrors(`weight_${fieldNumber}`);
-  //   }
-  //   calculateTotalHandler();
-  // };
 
   const removeCurrentField = (fieldNumber) => {
     if (fieldNumber) {
@@ -179,12 +161,19 @@ const FieldTable = ({
     setTotalTaka(totalTaka);
     setTotalMeter(totalMeter);
     setTotalWeight(totalWeight);
+
+    CalculateTableWiseTotal(0);
+    CalculateTableWiseTotal(1);
+    CalculateTableWiseTotal(2);
+    CalculateTableWiseTotal(3);
   };
 
-  const calculateTotalHandler = useDebounceCallback(calculateTotal, 500);
+  const calculateTotalHandler = useDebounceCallback(calculateTotal, 300);
 
   return (
     <Row style={{ marginTop: "-20" }}>
+
+      {/* Table1 =====================  */}
       <Col span={6}>
         <table className="job-challan-details-table" border={1}>
           <thead>
@@ -387,9 +376,12 @@ const FieldTable = ({
               <td className="total-info-td-cell"></td>
             </tr>
           </tbody>
+          
         </table>
-      </Col>
 
+      </Col>
+      
+      {/* Table2 ====================================  */}
       <Col span={6}>
         <table border={1} className="job-challan-details-table">
           <thead>
@@ -591,7 +583,8 @@ const FieldTable = ({
           </tbody>
         </table>
       </Col>
-
+      
+      {/* Table3 ==================================  */}
       <Col span={6}>
         <table border={1} className="job-challan-details-table">
           <thead>
@@ -799,7 +792,8 @@ const FieldTable = ({
           </tbody>
         </table>
       </Col>
-
+      
+      {/* Table4 ===================================  */}
       <Col span={6}>
         <table border={1} className="job-challan-details-table">
           <thead>

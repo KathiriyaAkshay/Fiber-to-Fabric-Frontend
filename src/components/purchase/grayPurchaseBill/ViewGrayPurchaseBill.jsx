@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
 import ReactToPrint from "react-to-print";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const { Text } = Typography;
 
@@ -144,6 +145,9 @@ const ViewGrayPurchaseBill = ({ details }) => {
                 <Col span={24}>
                   <Text>To,</Text>
                   <Text className="block font-bold">
+                    <div>
+                      {String(details?.supplier?.supplier_name).toUpperCase()}
+                    </div>
                     {details?.supplier?.supplier_company}(
                     {details?.supplier?.supplier_name})
                   </Text>
@@ -154,13 +158,13 @@ const ViewGrayPurchaseBill = ({ details }) => {
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>Challan</Text>
+                  <Text style={{fontWeight: 600}}>Challan</Text>
                   <Text className="block">{details?.challan_no}</Text>
                 </Col>
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>GST</Text>
+                  <Text style={{fontWeight: 600}}>GST</Text>
                   <Text className="block">
                     {details?.supplier?.user?.gst_no}
                   </Text>
@@ -203,11 +207,9 @@ const ViewGrayPurchaseBill = ({ details }) => {
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description:</Col>
-            <Col span={6}>
-              {details?.inhouse_quality?.quality_name} (
-              {details?.inhouse_quality?.quality_weight}
-              KG)
+            <Col span={4} style={{fontWeight: 600}}>Description:</Col>
+            <Col span={8}>
+               {getDisplayQualityName(details?.inhouse_quality)}
             </Col>
             <Col span={6}>Date:</Col>
             <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>

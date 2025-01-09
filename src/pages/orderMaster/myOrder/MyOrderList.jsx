@@ -261,6 +261,13 @@ const MyOrderList = () => {
       title: "Pending Taka",
       dataIndex: "pending_taka",
       key: "pending_taka",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600, color: "red"}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Deliver Taka",
@@ -277,6 +284,13 @@ const MyOrderList = () => {
       title: "Pending Meter",
       dataIndex: "pending_meter",
       key: "pending_meter",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600, color: "red"}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Deliver Meter",
@@ -363,16 +377,22 @@ const MyOrderList = () => {
                 },
               ]}
             />
+
+            {details?.status == "pending" && (
+              <>
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                
+                <DeleteMyOrder details={details} />
+              
+              </>
+            )}
             
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            
-            <DeleteMyOrder details={details} />
 
             {orderType === "taka(inhouse)" && (
               <Button
@@ -383,6 +403,7 @@ const MyOrderList = () => {
                 <ClockCircleOutlined />
               </Button>
             )}
+            
             <Button>
               <RedoOutlined />
             </Button>

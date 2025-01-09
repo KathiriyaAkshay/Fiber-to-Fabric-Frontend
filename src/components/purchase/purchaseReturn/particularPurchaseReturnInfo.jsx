@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
 import ReactToPrint from "react-to-print";
 import { GlobalContext } from "../../../contexts/GlobalContext";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const { Text } = Typography;
 
@@ -150,7 +151,9 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
                 <Col span={24}>
                   <Text>To,</Text>
                   <Text className="block font-bold">
-                    {details?.purchase_taka_challan?.supplier?.supplier_company}
+                    <div>
+                      {String(details?.purchase_taka_challan?.supplier?.supplier_company).toUpperCase()}
+                    </div>
                     ({details?.purchase_taka_challan?.supplier?.supplier_name})
                   </Text>
                   <Text className="block">
@@ -160,7 +163,7 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>Challan</Text>
+                  <Text style={{fontWeight: 600}}>Challan</Text>
                   <Text className="block">
                     {details?.purchase_taka_challan?.challan_no}
                   </Text>
@@ -168,7 +171,7 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
               </Row>
               <Row>
                 <Col span={24}>
-                  <Text>GST</Text>
+                  <Text style={{fontWeight: 600}}>GST</Text>
                   <Text className="block">
                     {details?.purchase_taka_challan?.supplier?.user?.gst_no}
                   </Text>
@@ -212,11 +215,9 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
             className="p-4 border-0 border-b border-solid !m-0"
             style={{ borderTop: "1px dashed" }}
           >
-            <Col span={6}>Description:</Col>
+            <Col span={6} style={{fontWeight: 600}}>Description:</Col>
             <Col span={6}>
-              {details?.purchase_taka_challan?.inhouse_quality?.quality_name} (
-              {details?.purchase_taka_challan?.inhouse_quality?.quality_weight}
-              KG)
+              {getDisplayQualityName(details?.purchase_taka_challan?.inhouse_quality)}
             </Col>
             <Col span={6}>Date:</Col>
             <Col span={6}>{dayjs(details?.createdAt).format("DD-MM-YYYY")}</Col>

@@ -15,18 +15,19 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { getPurchaseTakaListRequest } from "../../../../api/requests/purchase/purchaseTaka";
 import dayjs from "dayjs";
-// import DeletePurchaseTaka from "../../../../components/purchase/purchaseTaka/DeletePurchaseTaka";
 import PurchaseTakaChallanModal from "../../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import moment from "moment";
 import ViewGrayPurchaseBill from "../../../../components/purchase/grayPurchaseBill/ViewGrayPurchaseBill";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { addDaysToDate } from "../../../accounts/reports/utils";
+import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const GrayPurchaseBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -63,6 +64,7 @@ const GrayPurchaseBillList = () => {
     }));
   };
 
+  // Quality list related dropdown ===========================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -73,6 +75,7 @@ const GrayPurchaseBillList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -82,44 +85,28 @@ const GrayPurchaseBillList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Dropdown supplier related information =========================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
-
-  //   const dropDownSupplierCompanyOption = useMemo(() => {
-  //     if (
-  //       debouncedSupplier &&
-  //       dropdownSupplierListRes &&
-  //       dropdownSupplierListRes.length
-  //     ) {
-  //       const obj = dropdownSupplierListRes.filter((item) => {
-  //         return item.supplier_name === debouncedSupplier;
-  //       })[0];
-
-  //       return obj?.supplier_company?.map((item) => {
-  //         return { label: item.supplier_company, value: item.supplier_id };
-  //       });
-  //     } else {
-  //       return [];
-  //     }
-  //   }, [debouncedSupplier, dropdownSupplierListRes]);
 
   const { data: grayPurchaseBillList, isLoading } = useQuery({
     queryKey: [
@@ -243,11 +230,24 @@ const GrayPurchaseBillList = () => {
       title: "Bill No",
       dataIndex: ["purchase_taka_bill", "invoice_no"],
       key: "bill_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{
+            fontSize:13
+          }}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -468,28 +468,6 @@ const GrayPurchaseBillList = () => {
           </div>
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
-              {/* <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Type
-              </Typography.Text>
-              <Select
-                allowClear
-                placeholder="Select Type"
-                value={type}
-                options={[
-                  { label: "In Stock", value: "in_stock" },
-                  { label: "Sold", value: "sold" },
-                ]}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                onChange={setType}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Supplier
@@ -509,27 +487,10 @@ const GrayPurchaseBillList = () => {
                   style={{
                     textTransform: "capitalize",
                   }}
+                  allowClear
                   className="min-w-40"
                 />
               </Flex>
-              {/* <Flex align="center" gap={10}>
-              <Typography.Text className="whitespace-nowrap">
-                Supplier Company
-              </Typography.Text>
-              <Select
-                placeholder="Select Company"
-                options={dropDownSupplierCompanyOption}
-                dropdownStyle={{
-                  textTransform: "capitalize",
-                }}
-                value={supplierCompany}
-                onChange={setSupplierCompany}
-                style={{
-                  textTransform: "capitalize",
-                }}
-                className="min-w-40"
-              />
-            </Flex> */}
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Quality
@@ -543,7 +504,7 @@ const GrayPurchaseBillList = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label:getDisplayQualityName(item),
                     }))
                   }
                   dropdownStyle={{

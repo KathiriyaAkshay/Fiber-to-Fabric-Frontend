@@ -25,6 +25,7 @@ import dayjs from "dayjs";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
 
 function SizeBeamBillList() {
   const { companyId, company, financialYearEnd } = useContext(GlobalContext);
@@ -52,6 +53,7 @@ function SizeBeamBillList() {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: PURCHASE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -61,6 +63,7 @@ function SizeBeamBillList() {
             page: 0,
             pageSize: 9999,
             is_active: 1,
+            production_type: PURCHASE_QUALITY_TYPE
           },
         });
         return res.data?.data;
