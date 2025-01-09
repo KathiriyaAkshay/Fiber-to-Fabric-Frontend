@@ -1377,6 +1377,8 @@ h2 {
   color: green !important;
 }
 
-.return-taka-info-table .ant-table-thead > tr> th{
-  /* background-color: red ; */
+.folding-taka-info{
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 3px;
 }

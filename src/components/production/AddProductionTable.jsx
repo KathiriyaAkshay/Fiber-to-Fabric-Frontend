@@ -1,5 +1,5 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Select } from "antd";
+import { Button, Form, Input, message, Select, Tag } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 
@@ -24,6 +24,9 @@ const AddProductionTable = ({
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalAvg, setTotalAvg] = useState(0);
+  const QUALITY_WISE_OPTION = "quality_wise"; 
+  const MACHINE_WISE_OPTION = "machine_wise" ; 
+  const MULTI_QUALITY_WISE_OPTION = "multi_quality_wise" ; 
 
   const numOfFields = useMemo(() => {
     if (production_filter === "machine_wise") {
@@ -339,8 +342,16 @@ const AddProductionTable = ({
                   {fieldNumber <= activeField
                     ? isNaN(lastProductionTaka?.taka_no)
                       ? 1
-                      : lastProductionTaka?.taka_no + fieldNumber
+                      : <>
+                        <div>
+                          {production_filter == QUALITY_WISE_OPTION && (
+                            <Tag color="#f50" style={{marginLeft: 5}}>A</Tag>
+                          )}
+                          {lastProductionTaka?.taka_no + fieldNumber}
+                        </div>
+                      </>
                     : ""}
+
                 </td>
 
                 <td width={150}>

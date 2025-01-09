@@ -40,12 +40,13 @@ import useDebounce from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
 import { getCurrentFinancialYearDates } from "../../utils/date";
 import dayjs from "dayjs";
+import { TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { companyId } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
   const financialYearData = getCurrentFinancialYearDates();
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
@@ -87,6 +88,7 @@ const InhouseProduction = () => {
   const debounceChallanNo = useDebounce(challanNo, 500);
   const debounceGrade = useDebounce(grade, 500);
   const debounceFoldingUser = useDebounce(foldingUser, 500);
+  const DEFAULT_TAKA_GRADE = "A" ; 
 
   const { mutateAsync: deleteProduction, isPending: deleteProductionPending } =
     useMutation({
@@ -127,6 +129,7 @@ const InhouseProduction = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: TAKA_INHOUSE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -136,6 +139,7 @@ const InhouseProduction = () => {
             page: 0,
             pageSize: 99999,
             is_active: 1,
+            production_type: TAKA_INHOUSE_QUALITY_TYPE  
           },
         });
         return res.data?.data;
@@ -365,14 +369,17 @@ const InhouseProduction = () => {
       key: "taka_no",
       render: (text, record) => {
         return (
-          <Badge
-            color={record.is_tp ? "blue" : "green"} // Custom color based on is_tp
-            text={
-              record.taka_no
-                ? `${record.taka_no} ${record.is_tp ? "(TP)" : ""}`
-                : "-"
-            }
-          />
+          <div>
+            <Tag color="#f50">{record?.grade || DEFAULT_TAKA_GRADE}</Tag>
+            <Badge
+              color={record.is_tp ? "blue" : "green"} // Custom color based on is_tp
+              text={
+                record.taka_no
+                  ? `${record.taka_no} ${record.is_tp ? "(TP)" : ""}`
+                  : "-"
+              }
+            />
+          </div>
         );
       },
     },
@@ -399,7 +406,7 @@ const InhouseProduction = () => {
         let meter = record?.meter;
         let weight = record?.weight;
         let average = (Number(weight) * 100) / Number(meter);
-        return <div>{average.toFixed(2)}</div>;
+        return <div>{isNaN(average.toFixed(2))?parseFloat(0).toFixed(2):average.toFixed(2)}</div>;
       },
     },
     {
@@ -412,11 +419,26 @@ const InhouseProduction = () => {
       render: (record) => {
         if (record?.status?.toLowerCase() === "rework") {
           if (record?.is_stock) {
-            return <Tag color="green">Re-work (In-Stock)</Tag>;
+            return (
+              <div>
+                {record?.folding_user_id !== null && <div className="folding-taka-info">Folding Taka</div>}
+                <Tag color="green">Re-work (In-Stock)</Tag>
+              </div>
+            )
           }
-          return <Tag color="red">Re-work</Tag>;
+          return (
+            <div>
+              {record?.folding_user_id !== null && <div className="folding-taka-info">Folding Taka</div>}
+              <Tag color="red">Re-work</Tag>
+            </div>
+          )
         } else if (record?.status?.toLowerCase() === "instock") {
-          return <Tag color="green">In-Stock</Tag>;
+          return (
+            <div>
+              {record?.folding_user_id !== null && <div className="folding-taka-info">Folding Taka</div>}
+              <Tag color="green">In-Stock</Tag>
+            </div>
+          )
         }
       },
     },
@@ -610,7 +632,7 @@ const InhouseProduction = () => {
                 dropDownQualityListRes &&
                 dropDownQualityListRes?.rows?.map((item) => ({
                   value: item.id,
-                  label: item.quality_name,
+                  label: getDisplayQualityName(item),
                 }))
               }
               dropdownStyle={{

@@ -31,6 +31,8 @@ import {
   getLoadedMachineListRequest,
 } from "../../api/requests/beamCard";
 import { disabledFutureDate } from "../../utils/date";
+import { TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const AddProduction = () => {
   const queryClient = useQueryClient();
@@ -287,6 +289,7 @@ const AddProduction = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: TAKA_INHOUSE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -298,6 +301,7 @@ const AddProduction = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: TAKA_INHOUSE_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -510,7 +514,7 @@ const AddProduction = () => {
                             dropDownQualityListRes &&
                             dropDownQualityListRes?.rows?.map((item) => ({
                               value: item.id,
-                              label: item.quality_name,
+                              label: getDisplayQualityName(item),
                             }))
                           }
                           onChange={(value) => {
