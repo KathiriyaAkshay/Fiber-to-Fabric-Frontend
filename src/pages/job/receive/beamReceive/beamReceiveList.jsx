@@ -8,11 +8,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -25,6 +20,9 @@ import dayjs from "dayjs";
 import { getPartyListRequest } from "../../../../api/requests/users";
 import BeamInformationModel from "../../../../components/common/modal/beamInfomrationModel";
 import BeamCardInformationModel from "../../../../components/common/modal/beamCardInformation";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const BeamReceiveList = () => {
   const navigate = useNavigate();
@@ -60,16 +58,16 @@ const BeamReceiveList = () => {
   });
 
   // Partylist dropdown
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getPartyListRequest({
-        params: { company_id: companyId },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(companyId),
-  });
+  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+  //   queryKey: ["party", "list", { company_id: companyId }],
+  //   queryFn: async () => {
+  //     const res = await getPartyListRequest({
+  //       params: { company_id: companyId },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(companyId),
+  // });
 
   // InHouse Quality dropdown
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -83,6 +81,7 @@ const BeamReceiveList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -94,6 +93,7 @@ const BeamReceiveList = () => {
               page: 0,
               pageSize: 9999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -272,11 +272,22 @@ const BeamReceiveList = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}   
+          </div>
+        )
+      }
     },
     {
       title: "Quality",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -328,6 +339,13 @@ const BeamReceiveList = () => {
       title: "Challan Beam Type",
       dataIndex: "challan_beam_type",
       key: "challan_beam_type",
+      render: (text, record) => {
+        return(
+          <div>
+            {String(text).toUpperCase()}
+          </div>
+        )
+      }
     },
     {
       title: "Action",
@@ -359,7 +377,7 @@ const BeamReceiveList = () => {
                 },
                 {
                   title: "Quality Name",
-                  value: `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
+                  value: getDisplayQualityName(details.inhouse_quality),
                 },
                 {
                   title: "Supplier Name",
@@ -379,7 +397,7 @@ const BeamReceiveList = () => {
                   value: totalTaka,
                 },
                 { title: "Total Meter", value: totalMeter },
-                { title: "Beam Type", value: details.challan_beam_type },
+                { title: "Beam Type", value: String(details.challan_beam_type).toUpperCase() },
               ]}
             />
             <Button
@@ -433,13 +451,13 @@ const BeamReceiveList = () => {
               <Table.Summary.Cell index={0} />
               <Table.Summary.Cell index={0} />
               <Table.Summary.Cell>
-                {beamReceiveListData?.total_taka || 0}
+                {parseFloat(beamReceiveListData?.total_taka).toFixed(2) || 0}
               </Table.Summary.Cell>
               <Table.Summary.Cell>
-                {beamReceiveListData?.total_meter || 0}
+                {parseFloat(beamReceiveListData?.total_meter).toFixed(2) || 0}
               </Table.Summary.Cell>
               <Table.Summary.Cell>
-                {beamReceiveListData?.total_beams || 0}
+                {parseFloat(beamReceiveListData?.total_beams).toFixed(2) || 0}
               </Table.Summary.Cell>
               <Table.Summary.Cell />
               <Table.Summary.Cell />
@@ -499,7 +517,7 @@ const BeamReceiveList = () => {
                 dropDownQualityListRes &&
                 dropDownQualityListRes?.rows?.map((item) => ({
                   value: item.id,
-                  label: item.quality_name,
+                  label: getDisplayQualityName(item),
                 }))
               }
               dropdownStyle={{
@@ -512,7 +530,7 @@ const BeamReceiveList = () => {
               className="min-w-40"
             />
           </Flex>
-          <Flex align="center" gap={10}>
+          {/* <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Party
             </Typography.Text>
@@ -539,7 +557,7 @@ const BeamReceiveList = () => {
               }}
               className="min-w-40"
             />
-          </Flex>
+          </Flex> */}
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Beam Type

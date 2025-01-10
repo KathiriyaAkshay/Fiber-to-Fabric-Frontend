@@ -33,6 +33,9 @@ import {
   getBeamSentByIdRequest,
   updateBeamSentRequest,
 } from "../../../../api/requests/job/sent/beamSent";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -157,7 +160,7 @@ const UpdateBeamSent = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, quality_id, supplier_name } = watch();
+  const { machine_name, quality_id, supplier_name, total_meter } = watch();
 
   // ------------------------------------------------------------------------------------------
 
@@ -176,14 +179,15 @@ const UpdateBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown supplier list related api ===========================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -220,6 +224,7 @@ const UpdateBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown quality list related api ===================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -231,6 +236,7 @@ const UpdateBeamSent = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -242,6 +248,7 @@ const UpdateBeamSent = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -257,7 +264,7 @@ const UpdateBeamSent = () => {
       const selectedQuality = dropDownQualityListRes.rows.find(
         ({ id }) => id === quality_id
       );
-      return selectedQuality.inhouse_weft_details;
+      return selectedQuality.inhouse_waraping_details;
     }
   }, [dropDownQualityListRes, quality_id]);
 
@@ -272,6 +279,18 @@ const UpdateBeamSent = () => {
       });
     }
   };
+
+    // Calculate total weight ======================================================
+    useEffect(() => {
+      if (inhouseWarpIds?.length > 0 ){
+        let temp_total_weight = 0 ; 
+        inhouseWarpIds?.map((element) => {
+          let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+          temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);   
+        })
+        setValue("total_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
+      }
+    }, [inhouseWarpIds, total_meter])
 
   const beamLoadIdHandler = (value, id, meter = 0, weight = 0) => {
     const totalMeter = +getValues("total_meter") || 0;
@@ -485,20 +504,27 @@ const UpdateBeamSent = () => {
                 }}
               >
                 {weftDenierDetails.map(
-                  ({ id, weft_weight, yarn_stock_company }, index) => {
+                  ({ id, warping_weight, yarn_stock_company }, index) => {
                     const { yarn_denier, filament, luster_type, yarn_color } =
                       yarn_stock_company;
 
                     return (
-                      <Col key={index} span={5}>
+                      <Col key={index} span={7}>
                         <Checkbox
                           checked={inhouseWarpIds?.includes(id)}
                           onChange={(e) =>
                             handleInhouseWarpIdHandler(e.target.checked, id)
                           }
                         >
-                          <Tag color="green">[{weft_weight}]</Tag>
+                          <Tag color="green">[{warping_weight}]</Tag>
                           {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                          <span style={{
+                            marginLeft: 5,
+                            fontWeight: 600, 
+                            fontSize:12 
+                          }}>
+                            {yarn_stock_company?.yarn_company_name}
+                          </span>
                         </Checkbox>
                       </Col>
                     );
@@ -677,7 +703,7 @@ const UpdateBeamSent = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       disabled
@@ -769,7 +795,7 @@ const UpdateBeamSent = () => {
                             }
                           />
                         </td>
-                        <td width={150} style={{ textAlign: "center" }}>
+                        <td width={150} style={{ textAlign: "center", fontWeight: 600 }}>
                           {beam_no}
                         </td>
                         <td style={{ textAlign: "center" }}>{ends_or_tars}</td>

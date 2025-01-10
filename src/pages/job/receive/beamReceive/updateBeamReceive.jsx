@@ -31,7 +31,6 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import dayjs from "dayjs";
 import {
@@ -39,6 +38,9 @@ import {
   getLastJobBeamReceiveNoRequest,
   updateJobBeamReceiveRequest,
 } from "../../../../api/requests/job/receive/beamReceive";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -240,14 +242,15 @@ const UpdateBeamReceive = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown supplier list related api =============================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -283,6 +286,7 @@ const UpdateBeamReceive = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -294,6 +298,7 @@ const UpdateBeamReceive = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -435,6 +440,11 @@ const UpdateBeamReceive = () => {
         jobBeamReceiveDetails[`meter_${index}`] = item.meter;
         jobBeamReceiveDetails[`is_running_${index}`] = item?.is_running ;
       });
+
+      console.log("Jobbeam receive details ==========================");
+      console.log(jobBeamReceiveDetails);
+      
+      
       reset({
         machine_name,
         quality_id,
@@ -531,7 +541,7 @@ const UpdateBeamReceive = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />
@@ -748,13 +758,6 @@ const UpdateBeamReceive = () => {
                       wrapperCol={{ sm: 24 }}
                     >
                       <Typography.Text style={{ fontWeight: "bold" }}>
-                        {/* {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
-                          ?.beam_no ||
-                          (lastBeamNo
-                            ? challan_beam_type === "non pasarela (secondary)"
-                              ? "SJBN-" + (lastBeamNo + index)
-                              : "JBN-" + (lastBeamNo + index)
-                            : 0)} */}
                         {beamReceiveDetails?.job_beam_receive_details[fieldNumber]
                           ?.beam_no ||getValues(`beam_no_${fieldNumber}`)}
                       </Typography.Text>

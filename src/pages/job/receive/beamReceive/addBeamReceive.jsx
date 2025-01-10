@@ -38,6 +38,9 @@ import {
   getLastJobBeamReceiveNoRequest,
 } from "../../../../api/requests/job/receive/beamReceive";
 import { disabledFutureDate } from "../../../../utils/date";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -58,13 +61,14 @@ const AddBeamReceive = () => {
   const navigate = useNavigate();
   const [fieldArray, setFieldArray] = useState([0]);
   const { companyId } = useContext(GlobalContext);
+  const [is_beam_stock_added, set_is_beam_stock_added] = useState(false) ; 
+
 
   function goBack() {
     navigate(-1);
   }
 
   // Create Beam receive handler ==========================================================
-
   const { mutateAsync: addNewBeamReceive, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addJobBeamReceiveRequest({
@@ -90,6 +94,7 @@ const AddBeamReceive = () => {
     },
   });
 
+  // Payload creation ==========================================
   async function onSubmit(data) {
     let hasError = 0;
 
@@ -160,6 +165,10 @@ const AddBeamReceive = () => {
           };
         }),
       };
+
+      console.log("New data infomration=============");
+      console.log(newData);
+      
       await addNewBeamReceive(newData);
     }
   }
@@ -188,10 +197,10 @@ const AddBeamReceive = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const { machine_name, supplier_name, challan_beam_type } = watch();
-  console.table("🧑‍💻 || challan_beam_type:", challan_beam_type);
 
   // ------------------------------------------------------------------------------------------
 
+  // Last beam number information api ===========================================
   const { data: lastBeamNo } = useQuery({
     queryKey: [
       "last",
@@ -201,10 +210,8 @@ const AddBeamReceive = () => {
     queryFn: async () => {
       if (challan_beam_type) {
         let beam_type = null;
-        let pasarela_beam_type = [
-          "pasarela (primary)",
-          "non pasarela (primary)",
-        ];
+
+        let pasarela_beam_type = ["pasarela (primary)","non pasarela (primary)"];
 
         if (pasarela_beam_type.includes(challan_beam_type)) {
           beam_type = "pasarela (primary)";
@@ -242,14 +249,15 @@ const AddBeamReceive = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown quality list ==========================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -274,6 +282,7 @@ const AddBeamReceive = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
+  // Dropdown supplier list api =====================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -285,6 +294,7 @@ const AddBeamReceive = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -296,6 +306,7 @@ const AddBeamReceive = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -401,7 +412,9 @@ const AddBeamReceive = () => {
           <h3 className="m-0 text-primary">Add New Beam Receive</h3>
         </div>
         <Form.Item name="fieldA" valuePropName="checked">
-          <Checkbox defaultChecked />
+          <Checkbox defaultChecked onChange={(event) => {
+            set_is_beam_stock_added(event.target.checked)
+          }} />
           {"  "}
           Do you want to add these beams to your Beam Stock ?
         </Form.Item>
@@ -472,7 +485,7 @@ const AddBeamReceive = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />

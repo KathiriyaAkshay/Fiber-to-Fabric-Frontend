@@ -18,7 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
@@ -34,7 +34,9 @@ import {
 } from "../../../../api/requests/users";
 import { addBeamSentRequest } from "../../../../api/requests/job/sent/beamSent";
 import { disabledFutureDate } from "../../../../utils/date";
-
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -147,6 +149,7 @@ const AddBeamSent = () => {
       total_meter: +data.total_meter, 
       total_weight: +data.total_weight
     };
+
     delete payload.challan_date;
     await addBeamSent(payload);
   }
@@ -179,7 +182,7 @@ const AddBeamSent = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, quality_id, supplier_name, beam_type, quality_group } =
+  const { machine_name, quality_id, supplier_name, beam_type, quality_group, total_meter } =
     watch();
 
   // ------------------------------------------------------------------------------------------
@@ -200,15 +203,15 @@ const AddBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
-  // Supplier user dropdown list request
+  // Supplier user dropdown list request ============================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -233,7 +236,7 @@ const AddBeamSent = () => {
     }
   }, [supplier_name, dropdownSupplierListRes]);
 
-  // Get Machine dropdown list request
+  // Get Machine dropdown list request ====================================================
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -246,7 +249,7 @@ const AddBeamSent = () => {
     enabled: Boolean(companyId),
   });
 
-  // Get Quality dropdown list request
+  // Get Quality dropdown list request ======================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -258,6 +261,7 @@ const AddBeamSent = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -269,6 +273,7 @@ const AddBeamSent = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -284,7 +289,7 @@ const AddBeamSent = () => {
         const selectedQuality = dropDownQualityListRes.rows.find(
           ({ id }) => id === quality_id
         );
-        return selectedQuality.inhouse_weft_details;
+        return selectedQuality.inhouse_waraping_details;
       }
     }, [dropDownQualityListRes, quality_id]);
 
@@ -354,6 +359,18 @@ const AddBeamSent = () => {
       });
     }
   };
+
+  // Calculate total weight ======================================================
+  useEffect(() => {
+    if (inhouseWarpIds?.length > 0 ){
+      let temp_total_weight = 0 ; 
+      inhouseWarpIds?.map((element) => {
+        let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+        temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);   
+      })
+      setValue("total_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
+    }
+  }, [inhouseWarpIds, total_meter])
 
   const beamLoadIdHandler = (value, id, meter = 0, weight = 0) => {
     const totalMeter = +getValues("total_meter") || 0;
@@ -498,18 +515,25 @@ const AddBeamSent = () => {
                 }}
               >
                 {weftDenierDetails.map(
-                  ({ id, weft_weight, yarn_stock_company }, index) => {
+                  ({ id, warping_weight, yarn_stock_company }, index) => {
                     const { yarn_denier, filament, luster_type, yarn_color } =
                       yarn_stock_company;
                     return (
-                      <Col key={index} span={5}>
+                      <Col key={index} span={7}>
                         <Checkbox
                           onChange={(e) =>
                             handleInhouseWarpIdHandler(e.target.checked, id)
                           }
                         >
-                          <Tag color="green">[{weft_weight}]</Tag>
+                          <Tag color="green">[{warping_weight}]</Tag>
                           {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                          <span style={{
+                            marginLeft: 5,
+                            fontWeight: 600, 
+                            fontSize:12 
+                          }}>
+                            {yarn_stock_company?.yarn_company_name}
+                          </span>
                         </Checkbox>
                       </Col>
                     );
@@ -530,7 +554,7 @@ const AddBeamSent = () => {
         >
           <Col span={4}>
             <Form.Item
-              label="Supplier Name"
+              label="Party Name"
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
               help={errors.supplier_name && errors.supplier_name.message}
@@ -544,7 +568,7 @@ const AddBeamSent = () => {
                   <Select
                     {...field}
                     loading={isLoadingDropdownSupplierList}
-                    placeholder="Select Supplier"
+                    placeholder="Select Party"
                     options={dropdownSupplierListRes?.map((supervisor) => ({
                       label: supervisor?.supplier_name,
                       value: supervisor?.supplier_name,
@@ -567,7 +591,7 @@ const AddBeamSent = () => {
 
           <Col span={4}>
             <Form.Item
-              label="Supplier Company"
+              label="Party Company"
               name="supplier_id"
               validateStatus={errors.supplier_id ? "error" : ""}
               help={errors.supplier_id && errors.supplier_id.message}
@@ -581,7 +605,7 @@ const AddBeamSent = () => {
                   <Select
                     {...field}
                     loading={isLoadingDropdownSupplierList}
-                    placeholder="Select Supplier Company"
+                    placeholder="Select Party Company"
                     options={dropDownSupplierCompanyOption}
                     style={{
                       textTransform: "capitalize",
@@ -684,7 +708,7 @@ const AddBeamSent = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />
@@ -747,7 +771,8 @@ const AddBeamSent = () => {
                     taka,
                     meters,
                     weight,
-                    tars
+                    tars, 
+                    meter
                   } = item;
 
                   return (
@@ -765,13 +790,13 @@ const AddBeamSent = () => {
                           }
                         />
                       </td>
-                      <td width={150} style={{ textAlign: "center" }}>
+                      <td width={150} style={{ textAlign: "center", fontWeight: 600 }}>
                         {beam_no}
                       </td>
                       <td style={{ textAlign: "center" }}>{ends_or_tars || tars}</td>
                       <td style={{ textAlign: "center" }}>{pano}</td>
                       <td style={{ textAlign: "center" }}>{taka}</td>
-                      <td style={{ textAlign: "center" }}>{meters}</td>
+                      <td style={{ textAlign: "center" }}>{meters || meter}</td>
                     </tr>
                   );
                 })

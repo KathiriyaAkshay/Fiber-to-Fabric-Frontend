@@ -80,7 +80,8 @@ const PurchaseTakaList = () => {
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Dropdown supplier list related api ==============================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,

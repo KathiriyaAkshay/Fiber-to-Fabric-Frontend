@@ -21,7 +21,6 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useEffect, useRef, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
@@ -36,8 +35,11 @@ import dayjs from "dayjs";
 import DeleteBeamSent from "../../../../components/job/beamSent/DeleteBeamSent";
 import moment from "moment";
 import ReactToPrint from "react-to-print";
-import { render } from "react-dom";
 const { Title, Text } = Typography;
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 
 const BeamSentList = () => {
   const navigate = useNavigate();
@@ -69,6 +71,7 @@ const BeamSentList = () => {
     enabled: Boolean(companyId),
   });
 
+  // Dropdown quality api =======================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -80,6 +83,7 @@ const BeamSentList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -91,6 +95,7 @@ const BeamSentList = () => {
               page: 0,
               pageSize: 9999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -100,6 +105,21 @@ const BeamSentList = () => {
       },
       enabled: Boolean(companyId),
     });
+
+  // Load dropdown supplier list related api =========================================
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
+    queryFn: async () => {
+      const res = await getDropdownSupplierListRequest({
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
+      });
+      return res.data?.data?.supplierList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
@@ -120,7 +140,7 @@ const BeamSentList = () => {
         company_id: companyId,
         page,
         pageSize,
-        party_id: debouncedParty,
+        supplier_name: debouncedParty,
         machine_name: debouncedMachine,
         beam_type: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
@@ -132,7 +152,7 @@ const BeamSentList = () => {
           company_id: companyId,
           page,
           pageSize,
-          party_id: debouncedParty,
+          supplier_name: debouncedParty,
           machine_name: debouncedMachine,
           beam_type: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
@@ -170,8 +190,8 @@ const BeamSentList = () => {
           obj?.meters !== undefined
             ? obj?.meters
             : obj?.meter != undefined
-            ? obj.meter
-            : 0;
+              ? obj.meter
+              : 0;
 
         totalWeight += obj ? obj?.net_weight : 0;
       });
@@ -240,11 +260,28 @@ const BeamSentList = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return (
+          <div style={{ fontWeight: 600 }}>
+            {text}
+          </div>
+        )
+      }
     },
     {
-      title: "Party Company Name",
+      title: "Party Company",
       dataIndex: ["supplier", "supplier_company"],
       key: ["supplier", "supplier_company"],
+    },
+    {
+      title: "Quality",
+      render: (text, record) => {
+        return (
+          <div style={{ fontSize: 13 }}>
+            {getDisplayQualityName(record?.inhouse_quality)}
+          </div>
+        )
+      }
     },
     {
       title: "Total Meter",
@@ -261,8 +298,8 @@ const BeamSentList = () => {
             obj?.meters !== undefined
               ? obj?.meters
               : obj?.meter != undefined
-              ? obj.meter
-              : 0;
+                ? obj.meter
+                : 0;
         });
 
         return totalMeter;
@@ -299,6 +336,8 @@ const BeamSentList = () => {
       render: (details) => {
         return (
           <Space>
+
+            {/* Beam sent view information */}
             <BeamSentViewDetailModal
               title="Beam Sent Details"
               details={details}
@@ -313,11 +352,13 @@ const BeamSentList = () => {
               <EditOutlined />
             </Button>
 
+            {/* Delete beam sent   */}
             <DeleteBeamSent details={details} />
 
-            <Button>
+            {/* <Button>
               <TruckOutlined />
-            </Button>
+            </Button> */}
+
           </Space>
         );
       },
@@ -356,8 +397,9 @@ const BeamSentList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  {beamSentListData?.total_meter || 0 }
+                  {beamSentListData?.total_meter || 0}
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   {parseFloat(beamSentListData?.total_weight).toFixed(2) || 0}
@@ -443,6 +485,30 @@ const BeamSentList = () => {
                 Party
               </Typography.Text>
               <Select
+                placeholder="Select Party"
+                loading={isLoadingDropdownSupplierList}
+                options={dropdownSupplierListRes?.map((supervisor) => ({
+                  label: supervisor?.supplier_name,
+                  value: supervisor?.supplier_name,
+                }))}
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                value={party}
+                onChange={setParty}
+                style={{
+                  textTransform: "capitalize",
+                }}
+                className="min-w-40"
+                allowClear
+              />
+            </Flex>
+
+            {/* <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Party
+              </Typography.Text>
+              <Select
                 allowClear
                 placeholder="Select Party"
                 value={party}
@@ -465,7 +531,7 @@ const BeamSentList = () => {
                 }}
                 className="min-w-40"
               />
-            </Flex>
+            </Flex> */}
 
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
@@ -533,7 +599,7 @@ const BeamSentViewDetailModal = ({
   }
 
   const [dataSource, setDataSource] = useState([]);
-  const [totalMeter, setTotalMeter] = useState(0) ; 
+  const [totalMeter, setTotalMeter] = useState(0);
 
   const getTakaDetailsObject = (details) => {
     if (details) {
@@ -541,7 +607,7 @@ const BeamSentViewDetailModal = ({
         details.non_pasarela_beam_detail ||
         details.recieve_size_beam_detail ||
         details.job_beam_receive_detail;
-  
+
       return object === null || object === undefined
         ? null
         : { ...object, meter: object?.meters || object?.meter };
@@ -549,21 +615,21 @@ const BeamSentViewDetailModal = ({
   };
 
   useEffect(() => {
-    let temp = [] ; 
+    let temp = [];
     let temp_total_meter = 0;
-    if (details?.job_beam_sent_details != undefined){
+    if (details?.job_beam_sent_details != undefined) {
       details?.job_beam_sent_details?.map((element) => {
-        let object = getTakaDetailsObject(element?.loaded_beam) ; 
+        let object = getTakaDetailsObject(element?.loaded_beam);
         temp.push({
           bno: object?.beam_no,
-          tars: object?.ends_or_tars || object?.tars, 
+          tars: object?.ends_or_tars || object?.tars,
           pano: object?.pano,
           meter: object?.meters || object?.meter,
           weight: object?.net_weight || 0
         })
         temp_total_meter += +object?.meters || +object?.meter
       })
-      setTotalMeter(temp_total_meter) ; 
+      setTotalMeter(temp_total_meter);
       setDataSource(temp);
     }
   }, [details])
@@ -689,6 +755,9 @@ const BeamSentViewDetailModal = ({
                     TO: {details?.supplier?.supplier_company}
                   </Title>
                   <div className="header-card-text">
+                    <div style={{ fontWeight: 600 }}>
+                      {String(details?.supplier?.supplier_name).toUpperCase()}
+                    </div>
                     <Text strong>
                       Address: {details?.supplier?.user?.address}
                     </Text>
@@ -744,7 +813,7 @@ const BeamSentViewDetailModal = ({
                 <Flex gap={2} justify="center">
                   <Text strong>Description of Goods:</Text>
                   <br />
-                  <Text>{details?.inhouse_quality?.quality_name}</Text>
+                  <Text>{getDisplayQualityName(details?.inhouse_quality)}</Text>
                   <br />
                 </Flex>
               </Col>
@@ -815,7 +884,6 @@ const BeamSentViewDetailModal = ({
           </Card>
 
           <div className="red-dotted-line"></div>
-
           <Card className="card-wrapper">
             <Row className="header-row">
               <Col span={11} className="header-col">
@@ -824,6 +892,9 @@ const BeamSentViewDetailModal = ({
                     TO: {details?.supplier?.supplier_company}
                   </Title>
                   <div className="header-card-text">
+                    <div style={{ fontWeight: 600 }}>
+                      {String(details?.supplier?.supplier_name).toUpperCase()}
+                    </div>
                     <Text strong>
                       Address: {details?.supplier?.user?.address}
                     </Text>
@@ -879,7 +950,7 @@ const BeamSentViewDetailModal = ({
                 <Flex gap={2} justify="center">
                   <Text strong>Description of Goods:</Text>
                   <br />
-                  <Text>{details?.inhouse_quality?.quality_name}</Text>
+                  <Text>{getDisplayQualityName(details?.inhouse_quality)}</Text>
                   <br />
                 </Flex>
               </Col>
@@ -919,7 +990,7 @@ const BeamSentViewDetailModal = ({
                       <Table.Summary.Cell />
                       <Table.Summary.Cell />
                       <Table.Summary.Cell>
-                        <Typography.Text>0</Typography.Text>
+                        <Typography.Text>{totalMeter}</Typography.Text>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell>
                         <Typography.Text>0</Typography.Text>
@@ -948,6 +1019,7 @@ const BeamSentViewDetailModal = ({
               </Col>
             </Row>
           </Card>
+
         </div>
       </Modal>
     </>

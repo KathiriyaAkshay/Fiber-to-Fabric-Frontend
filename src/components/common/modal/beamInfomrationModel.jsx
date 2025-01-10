@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Button, Flex, Modal, Typography, Input, Table, Form } from "antd";
 import { CloseOutlined } from "@ant-design/icons";
 import moment from "moment/moment";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { render } from "react-dom";
 
 const BeamInformationModel = ({ details, setBeamModel }) => {
-
-    console.log(details);
 
     const [beamDetails, setBeamDetails] = useState([]) ; 
     const [isModalOpen, setIsModalOpen] = useState(true); 
@@ -49,6 +49,13 @@ const BeamInformationModel = ({ details, setBeamModel }) => {
             title: 'Meter',
             dataIndex: 'meter',
             key: 'meter',
+            render: (text, record) => {
+                return(
+                    <div>
+                        {record?.meter || record?.meters}
+                    </div>
+                )
+            }
         },
     ];
     return (
@@ -109,7 +116,7 @@ const BeamInformationModel = ({ details, setBeamModel }) => {
                                 <Input readOnly placeholder="Supplier Company Name" value={details?.supplier?.supplier?.supplier_company} />
                             </Form.Item>
                             <Form.Item label="Quality Name">
-                                <Input readOnly placeholder="Quality Name" value={details?.inhouse_quality?.quality_name} />
+                                <Input readOnly placeholder="Quality Name" value={getDisplayQualityName(details?.inhouse_quality)} />
                             </Form.Item>
                             {/* <Form.Item label="Beam No">
                                 <Input placeholder="Beam No" />

@@ -392,9 +392,9 @@ const AddBeamSale = () => {
       let temp_total_weight = 0 ; 
       inhouseWarpIds?.map((element) => {
         let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
-        temp_total_weight += (+wrapDetails?.warping_weight)*(+total_meter);   
+        temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);  
       })
-      setValue("enter_weight", temp_total_weight) ; 
+      setValue("enter_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
     }
   }, [inhouseWarpIds, total_meter])
 
@@ -432,7 +432,8 @@ const AddBeamSale = () => {
                         {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
                         <span style={{
                           marginLeft: 5,
-                          fontWeight: 600
+                          fontWeight: 600, 
+                          fontSize: 12
                         }}>
                           {yarn_stock_company?.yarn_company_name}
                         </span>
