@@ -23,6 +23,8 @@ const FieldTable = ({
   getValues,
   clearErrors,
   isUpdate,
+  setCalculationTotalTaka, 
+  setCalculationTotalMeter
 }) => {
 
   const [gt_total, set_gt_total] = useState({
@@ -137,6 +139,8 @@ const FieldTable = ({
   );
 
   const calculateTotal = () => {
+    
+    // Calculate all taka total weight and total meter related information ================================
     const numOfFields = Array.from({ length: activeField }, (_, i) => i + 1);
 
     let totalTaka = 0;
@@ -154,6 +158,10 @@ const FieldTable = ({
       }
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
       totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
+      is_challan = getValues(`is_challan_${fieldNumber}`) || false ; 
+
+      console.log("is challan created related information", is_challan);
+      
     });
 
     setTotalTaka(totalTaka);

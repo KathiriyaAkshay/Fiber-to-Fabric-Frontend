@@ -34,6 +34,7 @@ import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaste
 import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder";
 import { ORDER_TYPE } from "../../../constants/orderMaster";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const ORDER_STATUS = [
   { label: "Pending", value: "pending" },
@@ -230,14 +231,35 @@ const MyOrderList = () => {
       title: "Order No",
       dataIndex: "order_no",
       key: "order_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Party / Supplier Name",
       render: (details) => {
         if (details.party) {
-          return `${details.party.first_name} ${details.party.last_name}`;
+          return(
+            <div>
+              <strong style={{fontSize: 12}}>Party</strong>
+              <div>
+                {`${details.party.first_name} ${details.party.last_name}`}
+              </div>
+            </div>
+          )
         } else {
-          return `${details.supplier_name}`;
+          return(
+            <div>
+              <strong style={{fontSize: 12}}>Supplier</strong>
+              <div>
+                {details?.supplier_name}
+              </div>
+            </div>
+          )
         }
       },
     },
@@ -249,7 +271,11 @@ const MyOrderList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return details?.inhouse_quality?.quality_name;
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {

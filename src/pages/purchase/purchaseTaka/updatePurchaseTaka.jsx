@@ -59,8 +59,12 @@ const UpdatePurchaseTaka = () => {
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
+  const [calculationTotalTaka, setCalculationTotalTaka] = useState(0);  
   const [totalTaka, setTotalTaka] = useState(0);
+
   const [totalMeter, setTotalMeter] = useState(0);
+  const [calculationTotalMeter, setCalculationTotalMeter] = useState(0) ; 
+
   const [totalWeight, setTotalWeight] = useState(0);
 
   const [activeField, setActiveField] = useState(0);
@@ -390,10 +394,6 @@ const UpdatePurchaseTaka = () => {
 
   useEffect(() => {
     if (purchaseDetails) {
-      console.log("Purchae challan details");
-      console.log(purchaseDetails);
-      
-      
       const {
         challan_no,
         delivery_address,
@@ -412,22 +412,26 @@ const UpdatePurchaseTaka = () => {
         purchase_challan_details,
       } = purchaseDetails;
 
+      console.log("Purchase details information", purchaseDetails);
+      
+
       setActiveField(purchase_challan_details.length + 1);
       let purchaseChallanDetails = {};
       let totalMeter = 0 ; 
       let totalWeight = 0 ; 
+
       purchase_challan_details.forEach((item, index) => {
         purchaseChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         purchaseChallanDetails[`meter_${index + 1}`] = item.meter;
         purchaseChallanDetails[`weight_${index + 1}`] = item.weight;
-        purchaseChallanDetails[`is_exists_taka_${index + 1}`] = true; 
+        purchaseChallanDetails[`is_challan_${index + 1}`] = true; 
         totalMeter += +item?.meter; 
         totalWeight += +item?.weight ; 
       });
       setTotalTaka(purchase_challan_details.length);
       setTotalMeter(totalMeter) ; 
       setTotalWeight(totalWeight) ;
-      setInitialPendingMeter(+purchaseDetails?.gray_order?.total_meter) ; 
+      setInitialPendingMeter(+purchaseDetails?.gray_order?.pending_meter) ; 
       setInitialPendingTaka(+purchase_challan_details?.length) ;
 
       reset({
@@ -894,6 +898,8 @@ const UpdatePurchaseTaka = () => {
           getValues={getValues}
           clearErrors={clearErrors}
           isUpdate={true}
+          setCalculationTotalMeter = {setCalculationTotalMeter}
+          setCalculationTotalTaka = {setCalculationTotalTaka}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>

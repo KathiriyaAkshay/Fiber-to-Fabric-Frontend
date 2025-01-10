@@ -31,6 +31,7 @@ import {
   getMyOrderByIdRequest,
   updateMyOrderRequest,
 } from "../../../api/requests/orderMaster";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const ORDER_TYPE = [
   { label: "Taka(In House)", value: "taka(inhouse)" },
@@ -45,13 +46,6 @@ const addYSCSchemaResolver = yupResolver(
     order_type: yup.string().required("Please select order type."),
     broker_id: yup.string().required("Please select broker."),
     party_id: yup.string().required("Please select party."),
-    // gray_stock_meter: yup.string().required("Please enter meter."),
-    // taka: yup.string().required("Please enter taka."),
-    // yarn_stock_total_kg: yup
-    //   .string()
-    //   .required("Please enter yarn stock total kg."),
-    // beam_stock: yup.string().required("Please enter beam stock."),
-    // remark: yup.string().required("Please enter remark."),
   })
 );
 
@@ -565,7 +559,7 @@ const UpdateMyOrder = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />

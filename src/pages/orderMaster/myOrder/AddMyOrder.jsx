@@ -43,6 +43,7 @@ import {
 } from "../../../api/requests/orderMaster";
 import { disableBeforeDate } from "../../../utils/date";
 import { JOB_QUALITY_TYPE, PURCHASE_QUALITY_TYPE, TAKA_INHOUSE_QUALITY_TYPE } from "../../../constants/supplier";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const ORDER_TYPE = [
   { label: "Taka(In House)", value: "taka(inhouse)" },
@@ -56,16 +57,6 @@ const addYSCSchemaResolver = yupResolver(
     quality_id: yup.string().required("Please select quality."),
     order_type: yup.string().required("Please select order type."),
     broker_id: yup.string().required("Please select broker."),
-    // party_id: yup.string().when("order_type", {
-    //   is: (val) => val === "taka(inhouse)",
-    //   then: () => yup.string().required("Please select party."),
-    //   otherwise: () => yup.string(),
-    // }),
-    // supplier_name: yup.string().when("order_type", {
-    //   is: (val) => val === "job" || val === "purchase/trading",
-    //   then: () => yup.string().required("Please select supplier."),
-    //   otherwise: () => yup.string(),
-    // }),
     notes: yup.string().required("Please, Enter order notes"),
     party_notes: yup.string().required("Please, Enter party notes"),
     weight: yup.string().required("Please, Enter weight"),
@@ -231,6 +222,7 @@ const AddMyOrder = () => {
 
   // ------------------------------------------------------------------------------------------
 
+  // Dropdown quality list related api =============================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -242,7 +234,7 @@ const AddMyOrder = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
-          order_type: order_type
+          production_type: order_type
         },
       ],
       queryFn: async () => {
@@ -266,25 +258,6 @@ const AddMyOrder = () => {
       enabled: Boolean(companyId),
     });
 
-  // const selectedQualityDetail = useMemo(() => {
-  //   if (quality_id && dropDownQualityListRes) {
-  //     const quality = dropDownQualityListRes.rows.find(
-  //       ({ id }) => id === quality_id
-  //     );
-  //     console.log({ quality });
-
-  //     return [
-  //       {
-  //         label: "Inhouse Stock",
-  //         value: "",
-  //       },
-  //       { label: "Purchase/Job Stock", value: "" },
-  //       { label: "Next Production Meter", value: "" },
-  //       { label: "Total", value: "" },
-  //       { label: "(-) Total Scheduled Delivery", value: "" },
-  //     ];
-  //   }
-  // }, [dropDownQualityListRes, quality_id]);
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -341,7 +314,7 @@ const AddMyOrder = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId, order_type }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: order_type }],
     queryFn: async () => {
       if (order_type === "job" || order_type === "purchase/trading") {
         const res = await getDropdownSupplierListRequest({
@@ -619,7 +592,7 @@ const AddMyOrder = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />
