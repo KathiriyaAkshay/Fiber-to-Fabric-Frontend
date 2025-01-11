@@ -37,6 +37,7 @@ import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { QUALITY_GROUP_OPTION_LIST } from "../../../../constants/yarnStockCompany";
 import { disabledFutureDate } from "../../../../utils/date";
 import { getBeamCardListRequest } from "../../../../api/requests/beamCard";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -126,9 +127,9 @@ const AddBeamStockReport = () => {
         "Number",
         { company_id: companyId },
       ]);
-
       const successMessage = res?.message;
       if (successMessage) {
+        message.success("Beam stock created successfully") ; 
         setFieldArray([]);
       }
       reset();
@@ -358,12 +359,19 @@ const AddBeamStockReport = () => {
   const BEAM_PASARIA_EMPLOYEE = "BEAM pasaria" ; 
   const BEAM_WRAPER_EMPLOYEE = "BEAM warpar"; 
 
+  // Dropdown employee list related api ========================================
   const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
-    queryKey: ["employee", "list", { company_id: companyId }],
+    queryKey: ["employee", "list", { company_id: companyId}],
     queryFn: async () => {
+      let employee_type = undefined ; 
+      if (beam_type == "pasarela (primary)"){
+        employee_type = BEAM_PASARIA_EMPLOYEE ; 
+      } else {
+        employee_type = BEAM_WRAPER_EMPLOYEE ; 
+      }
       const res = await getEmployeeListRequest({
         companyId,
-        params: { company_id: companyId},
+        params: { company_id: companyId, salary_type: employee_type},
       });
       return res.data?.data?.empoloyeeList;
     },
@@ -688,7 +696,7 @@ const AddBeamStockReport = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                           max_taka: item?.max_taka 
                         }))
                       }

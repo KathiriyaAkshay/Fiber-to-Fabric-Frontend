@@ -261,13 +261,13 @@ const ReturnYarnSale = ({ details }) => {
                                 </Typography.Text>
                             </Col>
                             <Col span={5} className="flex items-center justify-center border">
-                                <Typography.Text className="font-semibold">
-                                    Cartoon
-                                </Typography.Text>
+                                <Typography.Text className="font-semibold" style={{color: "red"}}>
+                                    Return Cartoon
+                                </Typography.Text><br/>
                             </Col>
                             <Col span={5} className="flex items-center justify-center border">
-                                <Typography.Text className="font-semibold">
-                                    KG
+                                <Typography.Text className="font-semibold" style={{color: "red"}}>
+                                    Return KG
                                 </Typography.Text>
                             </Col>
                         </Row>

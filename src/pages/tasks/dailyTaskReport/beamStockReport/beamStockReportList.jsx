@@ -4,18 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   getDailyBeamStockRequest,
-  // getTaskListRequest,
 } from "../../../../api/requests/task";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
 import { usePagination } from "../../../../hooks/usePagination";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useState } from "react";
 import { updateCompanyRequest } from "../../../../api/requests/company";
 import { useMutation } from "@tanstack/react-query";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 function BeamStockReportList() {
   const navigate = useNavigate();
@@ -179,6 +174,7 @@ function BeamStockReportList() {
     },
     {
       title: "N.pasarela secondary beam",
+      dataIndex: "non_pasarela_beam_count_secondary"
     },
   ];
 
