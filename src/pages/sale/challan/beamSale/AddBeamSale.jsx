@@ -123,10 +123,29 @@ const AddBeamSale = () => {
       message.error("At least one beam should be selected.");
       return;
     }
+    
     if (inhouseWarpIds.length == 0 ){
       message.warning("Please, Select inhouse wraper") ; 
       return ; 
     }
+
+    let ideal_inhouse_wrap_width = 0; 
+    inhouseWarpIds?.map((element) => {
+      let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+      ideal_inhouse_wrap_width += ((+wrapDetails?.warping_weight)) ; 
+    })
+
+    let beam_details = [] ; 
+    beamLoadIds?.map((element) => {
+      let beam = beamTypeList?.find((item) => +item?.beam_load_id == +element) ; 
+      let beamWeight = ((+ideal_inhouse_wrap_width)*beam?.meters) / 100 ; 
+      
+      beam_details.push({
+        "id": element, 
+        "weight": beamWeight
+      })
+    })
+    
 
     const payload = {
       supplier_id: +data.supplier_id,
@@ -138,7 +157,7 @@ const AddBeamSale = () => {
       enter_weight: +data.enter_weight,
       total_meter: +data.total_meter,
       inhouse_warp_ids: inhouseWarpIds,
-      beam_load_ids: beamLoadIds,
+      beam_load_ids: beam_details,
     };
     delete payload.challan_date;
     await addBeamSaleChallan(payload);
