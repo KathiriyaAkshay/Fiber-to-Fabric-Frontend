@@ -34,7 +34,9 @@ const toWords = new ToWords({
     },
 });
 
-const YarnSaleCreditNote = ({ details }) => {
+const YarnReceiveDebitNote = ({ details }) => {
+    console.log(details);
+    
     const [isModelOpen, setIsModalOpen] = useState(false);
     const componentRef = useRef() ; 
     const {companyListRes} = useContext(GlobalContext) ; 
@@ -69,7 +71,7 @@ const YarnSaleCreditNote = ({ details }) => {
                 closeIcon={<CloseOutlined className="text-white" />}
                 title={
                     <Typography.Text className="text-xl font-medium text-white">
-                        Credit Note
+                        Debit Note
                     </Typography.Text>
                 }
                 open={isModelOpen}
@@ -122,7 +124,7 @@ const YarnSaleCreditNote = ({ details }) => {
                             className="flex items-center justify-center border"
                         >
                             <Typography.Text className="font-semibold text-center">
-                                <h4>Credit Note</h4>
+                                <h4>Debit Note</h4>
                             </Typography.Text>
 
                         </Col>
@@ -143,7 +145,7 @@ const YarnSaleCreditNote = ({ details }) => {
                             span={6}
                             className="p-2 font-medium border-0 border-r border-solid"
                         >
-                            <span><strong>Credit Note No:- </strong>{details?.job_yarn_sale_return?.credit_note?.credit_note_number}</span>
+                            <span><strong>Debit Note No:- </strong>{details?.job_yarn_sale_return?.credit_note?.credit_note_number}</span>
                         </Col>
                         <Col
                             span={6}
@@ -158,9 +160,9 @@ const YarnSaleCreditNote = ({ details }) => {
                             <div style={{ display: 'flex', padding: '0 !important' }}>
                                 <strong>Party :-</strong>
                                 <div> 
-                                    {String(details?.supplier?.supplier_company).toUpperCase()}<br/>
-                                    {details?.supplier?.supplier_name}<br/>
-                                    {details?.supplier?.user?.address}
+                                    {String(details?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_company).toUpperCase()}<br/>
+                                    {details?.yarn_bill_detail?.yarn_bill?.supplier?.supplier?.supplier_name}<br/>
+                                    {details?.yarn_bill_detail?.yarn_bill?.supplier?.address}
                                 </div>
                             </div>
                         </Col>
@@ -341,4 +343,4 @@ const YarnSaleCreditNote = ({ details }) => {
     )
 }
 
-export default YarnSaleCreditNote; 
+export default YarnReceiveDebitNote; 

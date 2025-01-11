@@ -28,6 +28,7 @@ import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { useMemo } from "react";
 import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import YarnReceiveDebitNote from "../../../../components/sale/challan/yarn/yarnReceiveDebitNore";
 
 function YarnReceiveList() {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -224,7 +225,7 @@ function YarnReceiveList() {
             <Tag color="green">Received</Tag>
             <span
               style={{ fontSize: "13px" }}
-            >{`${record?.yarn_order?.rate} Rs`}</span>
+            >{`${record?.yarn_order?.rate || 0} Rs`}</span>
           </div>
         ),
     },
@@ -253,6 +254,10 @@ function YarnReceiveList() {
               <>
                 {!yarnReceiveDetails?.has_yarn_sale_return && (
                   <YarnReturnModel details={yarnReceiveDetails} />
+                )}
+
+                {yarnReceiveDetails?.has_yarn_sale_return && (
+                  <YarnReceiveDebitNote details={yarnReceiveDetails}/>
                 )}
               </>
             )}
