@@ -466,7 +466,7 @@ const BeamSentList = () => {
                   dropDownQualityListRes &&
                   dropDownQualityListRes?.rows?.map((item) => ({
                     value: item.id,
-                    label: item.quality_name,
+                    label: getDisplayQualityName(item),
                   }))
                 }
                 dropdownStyle={{

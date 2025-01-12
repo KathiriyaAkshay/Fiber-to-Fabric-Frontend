@@ -32,6 +32,8 @@ import {
   getBeamSaleChallanByIdRequest,
   updateBeamSaleChallanRequest,
 } from "../../../../api/requests/sale/challan/beamSale";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -109,6 +111,28 @@ const UpdateBeamSent = () => {
       message.error("At least one beam should be selected.");
       return;
     }
+
+    if (inhouseWarpIds.length == 0 ){
+      message.warning("Please, Select inhouse wraper") ; 
+      return ; 
+    }
+
+    let ideal_inhouse_wrap_width = 0; 
+    inhouseWarpIds?.map((element) => {
+      let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+      ideal_inhouse_wrap_width += ((+wrapDetails?.warping_weight)) ; 
+    })
+
+    let beam_details = [] ; 
+    beamLoadIds?.map((element) => {
+      let beam = beamTypeList?.find((item) => +item?.beam_load_id == +element) ; 
+      let beamWeight = ((+ideal_inhouse_wrap_width)*beam?.meters) / 100 ; 
+      
+      beam_details.push({
+        "id": element, 
+        "weight": beamWeight
+      })
+    })
     const payload = {
       supplier_id: +data.supplier_id,
       vehicle_id: +data.vehicle_id,
@@ -123,7 +147,7 @@ const UpdateBeamSent = () => {
       enter_weight: +data.enter_weight,
       total_meter: +data.total_meter,
       inhouse_warp_ids: inhouseWarpIds,
-      beam_load_ids: beamLoadIds,
+      beam_load_ids: beam_details,
     };
     delete payload.challan_date;
 
@@ -154,7 +178,7 @@ const UpdateBeamSent = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { machine_name, quality_id, supplier_name } = watch();
+  const { machine_name, quality_id, supplier_name, total_meter } = watch();
 
   // ------------------------------------------------------------------------------------------
 
@@ -250,13 +274,25 @@ const UpdateBeamSent = () => {
     });
 
   const weftDenierDetails = useMemo(() => {
-    if (quality_id && dropDownQualityListRes?.rows?.length) {
+    if (quality_id && dropDownQualityListRes.rows.length) {
       const selectedQuality = dropDownQualityListRes.rows.find(
         ({ id }) => id === quality_id
       );
-      return selectedQuality.inhouse_weft_details;
+      return selectedQuality.inhouse_waraping_details;
     }
   }, [dropDownQualityListRes, quality_id]);
+
+  // Calculate total weight ====================================================
+  useEffect(() => {
+    if (inhouseWarpIds?.length > 0 ){
+      let temp_total_weight = 0 ; 
+      inhouseWarpIds?.map((element) => {
+        let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+        temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);  
+      })
+      setValue("enter_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
+    }
+  }, [inhouseWarpIds, total_meter])
 
   //   useQuery({
   //     queryKey: [
@@ -482,20 +518,27 @@ const UpdateBeamSent = () => {
               }}
             >
               {weftDenierDetails.map(
-                ({ id, weft_weight, yarn_stock_company }, index) => {
+                ({ id, warping_weight, yarn_stock_company }, index) => {
                   const { yarn_denier, filament, luster_type, yarn_color } =
                     yarn_stock_company;
 
                   return (
-                    <Col key={index} span={5}>
+                    <Col key={index} span={7}>
                       <Checkbox
                         checked={inhouseWarpIds?.includes(id)}
                         onChange={(e) =>
                           handleInhouseWarpIdHandler(e.target.checked, id)
                         }
                       >
-                        <Tag color="green">[{weft_weight}]</Tag>
+                        <Tag color="green">[{warping_weight}]</Tag>
                         {`${yarn_denier}D/${filament}F (${luster_type} - ${yarn_color})`}
+                        <span style={{
+                          marginLeft: 5,
+                          fontWeight: 600, 
+                          fontSize: 12
+                        }}>
+                          {yarn_stock_company?.yarn_company_name}
+                        </span>
                       </Checkbox>
                     </Col>
                   );
@@ -760,7 +803,7 @@ const UpdateBeamSent = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       disabled

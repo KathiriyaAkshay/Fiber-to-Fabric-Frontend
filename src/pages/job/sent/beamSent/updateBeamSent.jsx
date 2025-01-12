@@ -303,17 +303,17 @@ const UpdateBeamSent = () => {
     }
   };
 
-    // Calculate total weight ======================================================
-    useEffect(() => {
-      if (inhouseWarpIds?.length > 0 ){
-        let temp_total_weight = 0 ; 
-        inhouseWarpIds?.map((element) => {
-          let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
-          temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);   
-        })
-        setValue("total_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
-      }
-    }, [inhouseWarpIds, total_meter])
+  // Calculate total weight ======================================================
+  useEffect(() => {
+    if (inhouseWarpIds?.length > 0 ){
+      let temp_total_weight = 0 ; 
+      inhouseWarpIds?.map((element) => {
+        let wrapDetails = weftDenierDetails?.find((item) => item?.id == element) ; 
+        temp_total_weight += ((+wrapDetails?.warping_weight)*(+total_meter)/ 100);   
+      })
+      setValue("total_weight", parseFloat(temp_total_weight).toFixed(2)) ; 
+    }
+  }, [inhouseWarpIds, total_meter])
 
   const beamLoadIdHandler = (value, id, meter = 0, weight = 0) => {
     const totalMeter = +getValues("total_meter") || 0;

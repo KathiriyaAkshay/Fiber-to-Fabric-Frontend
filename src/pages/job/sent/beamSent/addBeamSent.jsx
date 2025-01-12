@@ -32,7 +32,7 @@ import {
   getDropdownSupplierListRequest,
   getVehicleUserListRequest,
 } from "../../../../api/requests/users";
-import { addBeamSentRequest } from "../../../../api/requests/job/sent/beamSent";
+import { addBeamSentRequest, getLastBeamSentChallanRequest } from "../../../../api/requests/job/sent/beamSent";
 import { disabledFutureDate } from "../../../../utils/date";
 import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
@@ -41,7 +41,7 @@ import { getDisplayQualityName } from "../../../../constants/nameHandler";
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
     vehicle_id: yup.string().required("Please enter vehicle no."),
-    challan_no: yup.string().required("Please enter challan no."),
+    // challan_no: yup.string().required("Please enter challan no."),
     challan_date: yup.string().required("Please enter challan date."),
     supplier_name: yup.string().required("Please select supplier name."),
     supplier_id: yup.string().required("Please select supplier company name."),
@@ -153,7 +153,7 @@ const AddBeamSent = () => {
     const payload = {
       supplier_id: +data.supplier_id,
       vehicle_id: +data.vehicle_id,
-      challan_no: data.challan_no,
+      challan_no: String(beamSentChallan),
       createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
       machine_name: data.machine_name,
       quality_group: data.quality_group,
@@ -262,6 +262,26 @@ const AddBeamSent = () => {
         params: { company_id: companyId },
       });
       return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  // Get job beam sent last challan number request ====================================
+  const { data: beamSentChallan, isLoading: isBeamSentChallanLoading } = useQuery({
+    queryKey: ["beamsent", "challan", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getLastBeamSentChallanRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      
+      if (res?.data?.data?.last_challan_no == null || res?.data?.data?.last_challan_no == undefined){
+        return 1 ; 
+      }  else {
+        let challan_number = res?.data?.data?.last_challan_no ; 
+        challan_number = +challan_number + 1 ; 
+        return challan_number ; 
+      }
     },
     enabled: Boolean(companyId),
   });
@@ -495,7 +515,7 @@ const AddBeamSent = () => {
                 control={control}
                 name="challan_no"
                 render={({ field }) => (
-                  <Input {...field} placeholder="Challan No" />
+                  <Input {...field} value={beamSentChallan} placeholder="Challan No" readOnly />
                 )}
               />
             </Form.Item>

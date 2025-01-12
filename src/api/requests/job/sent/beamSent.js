@@ -21,3 +21,7 @@ export function getBeamSentByIdRequest({ id, params }) {
 export function deleteBeamSentRequest({ id, params }) {
     return api.delete(`/job/beam/sent/delete/${id}`, { params });
 }
+
+export function getLastBeamSentChallanRequest({params}){
+    return api.get(`/job/beam/sent/last-challan-no`, {params}) ; 
+}
