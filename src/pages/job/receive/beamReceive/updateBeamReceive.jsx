@@ -467,11 +467,6 @@ const UpdateBeamReceive = () => {
           </Button>
           <h3 className="m-0 text-primary">Edit Beam Receive</h3>
         </div>
-        <Form.Item name="fieldA" valuePropName="checked">
-          <Checkbox defaultChecked />
-          {"  "}
-          Do you want to add these beams to your Beam Stock ?
-        </Form.Item>
       </div>
       <Form
         layout="vertical"

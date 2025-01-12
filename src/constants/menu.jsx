@@ -290,37 +290,11 @@ export const menubarOptionsList = [
         label: (
           <Link
             className="text-current no-underline hover:text-current"
-            to="production/folding-production"
+            to="production/folding-production/add-folding-production"
           >
-            Folding Production
+            Add Folding Production
           </Link>
         ),
-        children: [
-          {
-            path: "add-folding-production",
-            key: "Add Folding Production",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="production/folding-production/add-folding-production"
-              >
-                Add Folding Production
-              </Link>
-            ),
-          },
-          {
-            path: "folding-production",
-            key: "Folding Production",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="production/inhouse-production"
-              >
-                Folding Production
-              </Link>
-            ),
-          },
-        ],
       },
     ],
   },

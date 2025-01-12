@@ -47,6 +47,7 @@ import { checkUniqueTakaNoRequest } from "../../api/requests/purchase/purchaseTa
 import { useDebounceCallback } from "../../hooks/useDebounce";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const disableFutureDates = (current) => {
   return current && current > new Date().setHours(0, 0, 0, 0);
@@ -99,6 +100,7 @@ const AddFoldingProduction = () => {
   const [weightPlaceholder, setWeightPlaceholder] = useState(null);
   const [finalMeter, setFinalMeter] = useState(null);
   const [actualMeterCopy, setActualMeterCopy] = useState(0);
+  const [currentPendingMeter, setCurrentPendingMeter] = useState(0);
   // const [actualWeight, setActualWeight] = useState(0);
 
   // ----------------------------------------------------------------------------------------------------------------------------------
@@ -172,7 +174,7 @@ const AddFoldingProduction = () => {
       quality_id: data.quality_id,
       beam_no: data.beam_no,
       beam_load_id: +data.beam_load_id, // running beam id -> take from selected machine no.
-      pending_meter: data.pending_meter,
+      pending_meter: currentPendingMeter || 0,
       createdAt: dayjs(data.createdAt).format("YYYY-MM-DD"),
       grade: data.grade,
       generate_qr_code: data.generate_qr_code,
@@ -210,8 +212,12 @@ const AddFoldingProduction = () => {
 
     payload = { ...payload, taka_details: takaDetails };
 
+    console.log("Payload information ========================");
+    console.log(payload);
+
+
     // console.log({ payload, takaDetails });
-    await addFoldingProduction(payload);
+    // await addFoldingProduction(payload);
   };
 
   const {
@@ -261,8 +267,8 @@ const AddFoldingProduction = () => {
     pis,
     is_tp,
     auto_taka_generate,
-    // weight,
     average,
+    pending_meter
   } = watch();
 
   // get folding user list
@@ -534,20 +540,27 @@ const AddFoldingProduction = () => {
     checkTakaNumberCheckHandler(value);
   }, 300);
 
-  const onChangeTakaNoHandler = (e, field) => {
-    const FROM = selectedUser?.folding_mending_user_detail?.from_taka_number;
-    const TO = selectedUser?.folding_mending_user_detail?.to_taka_number;
-    field.onChange(e.target.value);
-    if (+e.target.value < +FROM || +e.target.value > +TO) {
-      setError("taka_no", {
-        type: "manual",
-        message: "Invalid taka no.",
-      });
-    } else {
-      let status = debouncedCheckUniqueTakaHandler(+e.target.value);
-      clearErrors("taka_no");
-    }
-  };
+  const memoizedOnChangeTakaNoHandler = useMemo(() => {
+    const onChangeTakaNoHandler = useCallback((e, field) => {
+      const value = e.target.value;
+      const FROM = selectedUser?.folding_mending_user_detail?.from_taka_number;
+      const TO = selectedUser?.folding_mending_user_detail?.to_taka_number;
+
+      field.onChange(value);
+
+      if (+value < +FROM || +value > +TO) {
+        setError("taka_no", {
+          type: "manual",
+          message: "Invalid taka no.",
+        });
+      } else {
+        clearErrors("taka_no");
+        debouncedCheckUniqueTakaHandler(+value);
+      }
+    }, [selectedUser, debouncedCheckUniqueTakaHandler]);
+    return onChangeTakaNoHandler;
+  }, [selectedUser, debouncedCheckUniqueTakaHandler]);
+
 
   // Handle Auto taka generate related functionality handler =======================
   const GenerateTakaNumber = async () => {
@@ -633,6 +646,16 @@ const AddFoldingProduction = () => {
     }
   }, [pis, actual_meter, is_tp]);
 
+  useEffect(() => {
+    if (pending_meter !== undefined && pending_meter !== "") {
+      if (actual_meter !== undefined && actual_meter !== "") {
+
+        let temp_pending_meter = +pending_meter - +actual_meter;
+        setCurrentPendingMeter(temp_pending_meter);
+      }
+    }
+  }, [pending_meter, actual_meter]);
+
   return (
     <Form
       // form={form}
@@ -671,7 +694,7 @@ const AddFoldingProduction = () => {
               />
             </Space>
           </div>
-          <div style={{ marginLeft: "" }}>
+          {/* <div style={{ marginLeft: "" }}>
             <Controller
               control={control}
               name="generate_qr_code"
@@ -681,7 +704,7 @@ const AddFoldingProduction = () => {
                 </Checkbox>
               )}
             />
-          </div>
+          </div> */}
           <div style={{ marginLeft: "" }}>
             <Controller
               control={control}
@@ -813,9 +836,13 @@ const AddFoldingProduction = () => {
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
+                    filterOption={(input, option) =>
+                      option?.label.toLowerCase().includes(input.toLowerCase())
+                    }
                   />
                 )}
               />
+
             </Form.Item>
           </Col>
           <Col span={5}>
@@ -834,25 +861,17 @@ const AddFoldingProduction = () => {
                   <Input
                     {...field}
                     placeholder="Enter taka no."
-                    onChange={(e) => onChangeTakaNoHandler(e, field)}
+                    onChange={(e) => memoizedOnChangeTakaNoHandler(e, field)}
                     readOnly={auto_taka_generate ? true : false}
-                    addonAfter={
-                      errors.taka_no ? (
-                        <CloseOutlined style={{ color: "red" }} />
-                      ) : (
-                        <CheckOutlined style={{ color: "green" }} />
-                      )
-                    }
+                    addonAfter={errors.taka_no ? <CloseOutlined style={{ color: "red" }} /> : <CheckOutlined style={{ color: "green" }} />}
                   />
                 )}
               />
-              {selectedUser && !errors.taka_no ? (
+              {selectedUser && !errors.taka_no && (
                 <span style={{ color: "red" }}>
-                  Enter between{" "}
-                  {selectedUser?.folding_mending_user_detail?.from_taka_number}{" "}
-                  to {selectedUser?.folding_mending_user_detail?.to_taka_number}
+                  Enter between {selectedUser?.folding_mending_user_detail?.from_taka_number} to {selectedUser?.folding_mending_user_detail?.to_taka_number}
                 </span>
-              ) : null}
+              )}
             </Form.Item>
           </Col>
         </Row>
@@ -885,7 +904,7 @@ const AddFoldingProduction = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       style={{
@@ -961,6 +980,13 @@ const AddFoldingProduction = () => {
             </Form.Item>
           </Col>
         </Row>
+        <div style={{
+          marginTop: -15
+        }}>
+          <span style={{ fontWeight: 600, color: "red" }}>
+            Current Pending Mtr. ==== <span style={{ color: "#000" }}>{currentPendingMeter}</span>
+          </span>
+        </div>
         <Divider
           style={{
             marginTop: 0,
@@ -1545,9 +1571,19 @@ const ProductionMeterForm = ({
           control={control}
           name={`extra_meter`}
           render={({ field }) => (
-            <Input {...field} className="w-28 ml-1" placeholder="extra meter" />
+            <Input
+              {...field}
+              className="w-28 ml-1"
+              placeholder="extra meter"
+              onChange={(e) => {
+                console.log(e.target.value);
+                
+                field.onChange(value);
+              }}
+            />
           )}
         />
+
       </div>
     </div>
   );
