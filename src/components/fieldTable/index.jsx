@@ -162,7 +162,7 @@ const FieldTable = ({
 
       let taka_meter = +getValues(`meter_${fieldNumber}`) || 0 ; 
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
-      totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
+      // totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
       let is_challan = getValues(`is_challan_${fieldNumber}`) || false ; 
 
       if (!is_challan){
@@ -180,7 +180,7 @@ const FieldTable = ({
 
     setTotalTaka(totalTaka);
     setTotalMeter(totalMeter);
-    setTotalWeight(totalWeight);
+    // setTotalWeight(totalWeight);
 
     setCalculationTotalMeter(final_eneter_meter) ; 
     setCalculationTotalTaka(final_enter_taka) ; 

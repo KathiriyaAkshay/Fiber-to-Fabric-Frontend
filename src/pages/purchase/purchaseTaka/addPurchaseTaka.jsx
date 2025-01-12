@@ -56,7 +56,10 @@ const AddPurchaseTaka = () => {
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
+  const [calculationTotalTaka, setCalculationTotalTaka] = useState(0);
   const [totalTaka, setTotalTaka] = useState(0);
+
+  const [calculationTotalMeter, setCalculationTotalMeter] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
   const [totalWeight, setTotalWeight] = useState(0);
 
@@ -444,8 +447,6 @@ const AddPurchaseTaka = () => {
   };
 
   useEffect(() => {
-    console.log("Run this functionality");
-    
     if (initialPendingMeter !== undefined) {
       setPendingMeter(+initialPendingMeter - totalMeter);
       
@@ -872,6 +873,8 @@ const AddPurchaseTaka = () => {
           setTotalTaka={setTotalTaka}
           getValues={getValues}
           clearErrors={clearErrors}
+          setCalculationTotalMeter={setCalculationTotalMeter}
+          setCalculationTotalTaka={setCalculationTotalTaka}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>

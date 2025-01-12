@@ -31,6 +31,7 @@ import { checkUniqueTakaNoRequest } from "../../../api/requests/purchase/purchas
 import AlertModal from "../../../components/common/modal/alertModal";
 import { JOB_ORDER_TYPE, JOB_QUALITY_TYPE, JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
 import { MY_ORDER_PENDING_STATUS } from "../../../constants/supplier";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -57,16 +58,20 @@ const AddJobTaka = () => {
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
+  const [calculationTotalTaka, setCalculationTotalTaka] = useState(0);
   const [totalTaka, setTotalTaka] = useState(0);
+
+  const [calculationTotalMeter, setCalculationTotalMeter] = useState(0);
   const [totalMeter, setTotalMeter] = useState(0);
+
   const [totalWeight, setTotalWeight] = useState(0);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [pendingMeter, setPendingMeter] = useState("");
-  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined) ; 
+  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined);
 
   const [pendingTaka, setPendingTaka] = useState("");
-  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined) ; 
+  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined);
 
   const [pendingWeight, setPendingWeight] = useState("");
 
@@ -111,54 +116,69 @@ const AddJobTaka = () => {
       (_, i) => i + 1
     );
 
-    const job_challan_detail = [];
     let hasError = 0;
-    let all_taka_number = [] ; 
+    let all_taka_number = [];
+    const purchase_challan_detail = [];
+
     jobChallanDetailArr.forEach((field) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
 
-      if (isNaN(takaNo) || takaNo === "") {
+      if (
+        (takaNo === "" || takaNo === undefined) &&
+        (meter === "" || meter === undefined) &&
+        (weight === "" || weight === undefined)
+      ) {
+        // If all three are empty or undefined, return early without generating errors.
+        return;
+      }
+
+      // If any one of the fields has a value, validate each field individually.
+      if (isNaN(takaNo) || takaNo === "" || takaNo === undefined) {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
           message: "Taka No required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
-      if (isNaN(meter) || meter === "") {
+
+      if (isNaN(meter) || meter === "" || meter === undefined) {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
           message: "Meter required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
-      if (isNaN(weight) || weight === "") {
+
+      if (isNaN(weight) || weight === "" || weight === undefined) {
         message.error(`Enter weight for ${field} number row.`);
         setError(`weight_${field}`, {
           type: "manual",
           message: "Weight required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
 
+      // If all three fields are valid, process the data.
       if (
         !isNaN(data[`taka_no_${field}`]) &&
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
-        all_taka_number.push(data[`taka_no_${field}`])
-        job_challan_detail.push({
+        all_taka_number.push(data[`taka_no_${field}`]);
+        purchase_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
           weight: parseInt(data[`weight_${field}`]),
         });
       }
+
     });
 
     const newData = {
@@ -177,14 +197,14 @@ const AddJobTaka = () => {
       pending_weight: +pendingWeight,
       pending_taka: +pendingTaka,
       is_grey: true,
-      job_challan_detail: job_challan_detail,
+      job_challan_detail: purchase_challan_detail,
     };
 
-    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false){
-      message.error("Please, Enter all unique taka") ; 
+    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false) {
+      message.error("Please, Enter all unique taka");
       hasError = 1;
-      return ; 
-    } 
+      return;
+    }
 
     if (!hasError) {
       await AddJobTaka(newData);
@@ -254,18 +274,18 @@ const AddJobTaka = () => {
       },
       enabled: Boolean(companyId),
     });
-    
-    // Gray order selection dropdown api ==================================================
-    const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
-      useQuery({
-        queryKey: ["party", "list", { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS }],
-        queryFn: async () => {
-          const res = await getMyOrderListRequest({
-            params: { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
-          });
-          return res.data?.data;
-        },
-        enabled: Boolean(companyId),
+
+  // Gray order selection dropdown api ==================================================
+  const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
+    useQuery({
+      queryKey: ["party", "list", { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS }],
+      queryFn: async () => {
+        const res = await getMyOrderListRequest({
+          params: { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId),
     });
 
   // Supplier dropdown api =========================================================
@@ -330,16 +350,18 @@ const AddJobTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      setPendingMeter(+order.pending_meter);
-      setPendingTaka(+order.pending_taka);
-      setPendingWeight(+order.pending_weight || +order?.weight);
+      if (order) {
+        setPendingMeter(+order.pending_meter);
+        setPendingTaka(+order.pending_taka);
+        setPendingWeight(+order.pending_weight || +order?.weight);
+      }
     }
   }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      if (order){
+      if (order) {
         setSelectedOrder(order);
         setValue("total_meter", order.total_meter);
         setValue("total_taka", order.total_taka);
@@ -352,8 +374,8 @@ const AddJobTaka = () => {
         setValue("quality_id", order.inhouse_quality.id);
         setValue("supplier_name", order.supplier_name);
         setValue("pending_meter", order.pending_meter);
-        setInitialPendingMeter(isNaN(order.pending_meter)?0:+order?.pending_meter || 0);
-        setInitialPendingTaka(isNaN(order.pending_taka)?0:order.pending_taka || 0);
+        setInitialPendingMeter(isNaN(order.pending_meter) ? 0 : +order?.pending_meter || 0);
+        setInitialPendingTaka(isNaN(order.pending_taka) ? 0 : order.pending_taka || 0);
       }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
@@ -406,15 +428,15 @@ const AddJobTaka = () => {
 
   useEffect(() => {
     if (initialPendingMeter !== undefined) {
-      setPendingMeter(+initialPendingMeter - totalMeter);
-      
+      setPendingMeter(+initialPendingMeter - +totalMeter);
+
     }
     if (initialPendingTaka !== undefined) {
-      setPendingTaka(+initialPendingTaka - totalTaka);
+      setPendingTaka(+initialPendingTaka - +totalTaka);
     }
   }, [
-    initialPendingMeter, 
-    initialPendingTaka, 
+    initialPendingMeter,
+    initialPendingTaka,
     totalTaka,
     totalMeter,
   ]);
@@ -667,7 +689,7 @@ const AddJobTaka = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />
@@ -819,19 +841,19 @@ const AddJobTaka = () => {
         >
           <Col span={12}></Col>
           <Col span={3} style={{ textAlign: "center" }}>
-            <div style={{textAlign: "left", fontSize: 12}}>Pending Meter</div>
+            <div style={{ textAlign: "left", fontSize: 12 }}>Pending Meter</div>
             <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
               {pendingMeter || 0}
             </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "center" }}>
-            <div style={{textAlign: "left", fontSize: 12}}>Pending Taka</div>
+            <div style={{ textAlign: "left", fontSize: 12 }}>Pending Taka</div>
             <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka || 0}</Typography>
           </Col>
         </Row>
 
-        <Divider style={{marginTop: 5}} />
+        <Divider style={{ marginTop: 5 }} />
 
         <FieldTable
           errors={errors}
@@ -848,6 +870,8 @@ const AddJobTaka = () => {
           setTotalTaka={setTotalTaka}
           getValues={getValues}
           clearErrors={clearErrors}
+          setCalculationTotalMeter={setCalculationTotalMeter}
+          setCalculationTotalTaka={setCalculationTotalTaka}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>
