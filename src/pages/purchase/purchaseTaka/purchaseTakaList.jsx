@@ -129,7 +129,7 @@ const PurchaseTakaList = () => {
         supplier_name: debouncedSupplier,
         supplier_id: debouncedSupplierCompany,
         taka_no: debouncedTakaNo,
-        in_stock: debouncedType === "in_stock" ? true : false,
+        in_stock: debouncedType === "in_stock" ? "1" : "0",
       },
     ],
     queryFn: async () => {
@@ -145,7 +145,7 @@ const PurchaseTakaList = () => {
           taka_no: debouncedTakaNo,
           supplier_name: debouncedSupplier,
           supplier_id: debouncedSupplierCompany,
-          in_stock: debouncedType === "in_stock" ? true : false,
+          in_stock: debouncedType === "in_stock" ? "1" : "0",
         },
       });
       return res.data?.data;

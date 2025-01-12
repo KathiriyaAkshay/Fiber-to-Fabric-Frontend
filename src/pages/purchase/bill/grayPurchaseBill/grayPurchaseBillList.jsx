@@ -117,8 +117,8 @@ const GrayPurchaseBillList = () => {
         company_id: companyId,
         page,
         pageSize,
-        from: debouncedFromDate,
-        to: debouncedToDate,
+        bill_from: debouncedFromDate,
+        bill_to: debouncedToDate,
         quality_id: debouncedQuality,
         bill_no: debouncedBillNo,
         order_no: debouncedOrderNo,
@@ -133,8 +133,8 @@ const GrayPurchaseBillList = () => {
           company_id: companyId,
           page,
           pageSize,
-          from: debouncedFromDate,
-          to: debouncedToDate,
+          bill_from: dayjs(debouncedFromDate).format("YYYY-MM-DD"),
+          bill_to: dayjs(debouncedToDate).format("YYYY-MM-DD"),
           quality_id: debouncedQuality,
           bill_no: debouncedBillNo,
           order_no: debouncedOrderNo,
@@ -324,17 +324,6 @@ const GrayPurchaseBillList = () => {
         }
       
       } ,
-    },
-    {
-      title: "Bill Status",
-      dataIndex: "bill_status",
-      render: (text) => {
-        return text.toLowerCase() === "received" ? (
-          <Tag color="green">Received</Tag>
-        ) : (
-          <Tag color="red">Not Received</Tag>
-        );
-      },
     },
     {
       title: "Status",

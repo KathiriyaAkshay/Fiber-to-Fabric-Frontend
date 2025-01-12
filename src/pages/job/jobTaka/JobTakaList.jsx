@@ -34,7 +34,7 @@ const JobTakaList = () => {
   const navigate = useNavigate();
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
-  const [type, setType] = useState();
+  const [type, setType] = useState("in_stock");
   const [quality, setQuality] = useState();
   const [takaNo, setTakaNo] = useState("");
   const [challanNo, setChallanNo] = useState("");
