@@ -211,13 +211,7 @@ const AddFoldingProduction = () => {
     });
 
     payload = { ...payload, taka_details: takaDetails };
-
-    console.log("Payload information ========================");
-    console.log(payload);
-
-
-    // console.log({ payload, takaDetails });
-    // await addFoldingProduction(payload);
+    await addFoldingProduction(payload);
   };
 
   const {
@@ -1576,9 +1570,11 @@ const ProductionMeterForm = ({
               className="w-28 ml-1"
               placeholder="extra meter"
               onChange={(e) => {
-                console.log(e.target.value);
+                let extra_meter = +e.target.value ; 
+                if (extra_meter >= 0 && extra_meter <= 1){
+                  field.onChange(value);
+                }
                 
-                field.onChange(value);
               }}
             />
           )}
