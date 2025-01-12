@@ -146,6 +146,9 @@ const FieldTable = ({
     let totalTaka = 0;
     let totalMeter = 0;
     let totalWeight = 0;
+    
+    let final_enter_taka = 0 ;
+    let final_eneter_meter = 0 ; 
 
     numOfFields.forEach((fieldNumber) => {
       let taka_number = getValues(`taka_no_${fieldNumber}`);
@@ -156,17 +159,31 @@ const FieldTable = ({
       ) {
         totalTaka += 1;
       }
+
+      let taka_meter = +getValues(`meter_${fieldNumber}`) || 0 ; 
       totalMeter += +getValues(`meter_${fieldNumber}`) || 0;
       totalWeight += +getValues(`weight_${fieldNumber}`) || 0;
-      is_challan = getValues(`is_challan_${fieldNumber}`) || false ; 
+      let is_challan = getValues(`is_challan_${fieldNumber}`) || false ; 
 
-      console.log("is challan created related information", is_challan);
+      if (!is_challan){
+        if (
+          taka_number !== undefined &&
+          taka_number != null &&
+          taka_number != ""
+        ) {
+          final_enter_taka += 1; 
+        }
+        final_eneter_meter += +taka_meter ; 
+      }
       
     });
 
     setTotalTaka(totalTaka);
     setTotalMeter(totalMeter);
     setTotalWeight(totalWeight);
+
+    setCalculationTotalMeter(final_eneter_meter) ; 
+    setCalculationTotalTaka(final_enter_taka) ; 
 
     CalculateTableWiseTotal(0);
     CalculateTableWiseTotal(1);

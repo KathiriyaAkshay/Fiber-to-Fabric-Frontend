@@ -444,6 +444,8 @@ const AddPurchaseTaka = () => {
   };
 
   useEffect(() => {
+    console.log("Run this functionality");
+    
     if (initialPendingMeter !== undefined) {
       setPendingMeter(+initialPendingMeter - totalMeter);
       

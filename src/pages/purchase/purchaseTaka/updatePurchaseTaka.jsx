@@ -59,22 +59,22 @@ const UpdatePurchaseTaka = () => {
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
-  const [calculationTotalTaka, setCalculationTotalTaka] = useState(0);  
+  const [calculationTotalTaka, setCalculationTotalTaka] = useState(0);
   const [totalTaka, setTotalTaka] = useState(0);
 
   const [totalMeter, setTotalMeter] = useState(0);
-  const [calculationTotalMeter, setCalculationTotalMeter] = useState(0) ; 
+  const [calculationTotalMeter, setCalculationTotalMeter] = useState(0);
 
   const [totalWeight, setTotalWeight] = useState(0);
 
   const [activeField, setActiveField] = useState(0);
   const [selectedOrder, setSelectedOrder] = useState(null);
-  
-  const [pendingMeter, setPendingMeter] = useState("");
-  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined) ; 
 
-  const [pendingTaka, setPendingTaka] = useState("");
-  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined) ; 
+  const [pendingMeter, setPendingMeter] = useState(undefined);
+  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined);
+
+  const [pendingTaka, setPendingTaka] = useState(undefined);
+  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined);
 
   const [pendingWeight, setPendingWeight] = useState("");
 
@@ -130,55 +130,69 @@ const UpdatePurchaseTaka = () => {
       (_, i) => i + 1
     );
 
-    const purchase_challan_detail = [];
     let hasError = 0;
-    let all_taka_number = [] ;
+    let all_taka_number = [];
+    const purchase_challan_detail = [];
 
     purchaseChallanDetailArr.forEach((field) => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
 
-      if ((isNaN(takaNo) || takaNo === "") && (isNaN(meter) || meter === "") && (isNaN(weight) || weight === "") ) {
+      if (
+        (takaNo === "" || takaNo === undefined) &&
+        (meter === "" || meter === undefined) &&
+        (weight === "" || weight === undefined)
+      ) {
+        // If all three are empty or undefined, return early without generating errors.
+        return;
+      }
+
+      // If any one of the fields has a value, validate each field individually.
+      if (isNaN(takaNo) || takaNo === "" || takaNo === undefined) {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
           type: "manual",
           message: "Taka No required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
-      if (isNaN(meter) || meter === "") {
+
+      if (isNaN(meter) || meter === "" || meter === undefined) {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
           message: "Meter required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
-      if (isNaN(weight) || weight === "") {
+
+      if (isNaN(weight) || weight === "" || weight === undefined) {
         message.error(`Enter weight for ${field} number row.`);
         setError(`weight_${field}`, {
           type: "manual",
           message: "Weight required.",
         });
         hasError = 1;
-        return ; 
+        return;
       }
 
+      // If all three fields are valid, process the data.
       if (
         !isNaN(data[`taka_no_${field}`]) &&
         !isNaN(data[`meter_${field}`]) &&
         !isNaN(data[`weight_${field}`])
       ) {
-        all_taka_number.push(data[`taka_no_${field}`])
+        all_taka_number.push(data[`taka_no_${field}`]);
         purchase_challan_detail.push({
           taka_no: parseInt(data[`taka_no_${field}`]),
           meter: parseInt(data[`meter_${field}`]),
           weight: parseInt(data[`weight_${field}`]),
         });
       }
+
     });
 
     const newData = {
@@ -200,12 +214,11 @@ const UpdatePurchaseTaka = () => {
       purchase_challan_detail: purchase_challan_detail,
     };
 
-    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false){
-      message.error("Please, Enter all unique taka") ; 
+    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false) {
+      message.error("Please, Enter all unique taka");
       hasError = 1;
-      return ; 
+      return;
     }
-
     if (!hasError) {
       await updatePurchaseTaka(newData);
     }
@@ -281,7 +294,7 @@ const UpdatePurchaseTaka = () => {
       queryKey: [
         "party",
         "list",
-        { company_id: companyId, order_type: PURCHASE_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS  },
+        { company_id: companyId, order_type: PURCHASE_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
       ],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
@@ -356,7 +369,7 @@ const UpdatePurchaseTaka = () => {
   useEffect(() => {
     if (grayOrderListRes && gray_order_id) {
       const order = grayOrderListRes.row.find(({ id }) => gray_order_id === id);
-      if (order){
+      if (order) {
         setSelectedOrder(order);
         setValue("total_meter", order.total_meter);
         setValue("total_taka", order.total_taka);
@@ -411,29 +424,30 @@ const UpdatePurchaseTaka = () => {
         createdAt,
         purchase_challan_details,
       } = purchaseDetails;
-
-      console.log("Purchase details information", purchaseDetails);
-      
-
       setActiveField(purchase_challan_details.length + 1);
       let purchaseChallanDetails = {};
-      let totalMeter = 0 ; 
-      let totalWeight = 0 ; 
+      let totalMeter = 0;
+      let totalWeight = 0;
 
       purchase_challan_details.forEach((item, index) => {
         purchaseChallanDetails[`taka_no_${index + 1}`] = item.taka_no;
         purchaseChallanDetails[`meter_${index + 1}`] = item.meter;
         purchaseChallanDetails[`weight_${index + 1}`] = item.weight;
-        purchaseChallanDetails[`is_challan_${index + 1}`] = true; 
-        totalMeter += +item?.meter; 
-        totalWeight += +item?.weight ; 
+        purchaseChallanDetails[`is_challan_${index + 1}`] = true;
+        totalMeter += +item?.meter;
+        totalWeight += +item?.weight;
       });
-      setTotalTaka(purchase_challan_details.length);
-      setTotalMeter(totalMeter) ; 
-      setTotalWeight(totalWeight) ;
-      setInitialPendingMeter(+purchaseDetails?.gray_order?.pending_meter) ; 
-      setInitialPendingTaka(+purchase_challan_details?.length) ;
 
+      // Bottom total taka and total meter calculation related handler
+      setTotalTaka(purchase_challan_details.length);
+      setTotalMeter(totalMeter);
+      setTotalWeight(totalWeight);
+
+      // Pending taka and Pending Meter related data
+      setPendingMeter(purchaseDetails?.gray_order?.pending_meter || 0);
+      setInitialPendingMeter(purchaseDetails?.gray_order?.pending_meter || 0)
+      setPendingTaka(purchaseDetails?.gray_order?.pending_taka || 0)
+      setInitialPendingTaka(purchaseDetails?.gray_order?.pending_taka || 0)
       reset({
         challan_no,
         delivery_address,
@@ -456,18 +470,18 @@ const UpdatePurchaseTaka = () => {
 
   // Calculate pending meter and pending taka related information 
   useEffect(() => {
-      if (initialPendingMeter !== undefined) {
-        setPendingMeter(+initialPendingMeter - totalMeter);
-        
-      }
-      if (initialPendingTaka !== undefined) {
-        setPendingTaka(+initialPendingTaka - totalTaka);
-      }
-    }, [
-      initialPendingMeter, 
-      initialPendingTaka, 
-      totalTaka,
-      totalMeter,
+    if (calculationTotalMeter !== undefined && initialPendingMeter !== undefined) {
+      setPendingMeter(+initialPendingMeter - (calculationTotalMeter || 0));
+
+    }
+    if (calculationTotalTaka !== undefined && initialPendingTaka !== undefined) {
+      setPendingTaka(+initialPendingTaka - (calculationTotalTaka || 0));
+    }
+  }, [
+    calculationTotalMeter,
+    calculationTotalTaka,
+    initialPendingMeter,
+    initialPendingTaka
   ]);
 
   return (
@@ -868,19 +882,19 @@ const UpdatePurchaseTaka = () => {
           }}
         >
           <Col span={3} style={{ textAlign: "center" }}>
-            <div style={{textAlign: "left", fontSize: 12}}>Pending Meter</div>
+            <div style={{ textAlign: "left", fontSize: 12 }}>Pending Meter</div>
             <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
               {pendingMeter || 0}
             </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "center" }}>
-            <div style={{textAlign: "left", fontSize: 12}}>Pending Taka</div>
+            <div style={{ textAlign: "left", fontSize: 12 }}>Pending Taka</div>
             <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka}</Typography>
           </Col>
         </Row>
 
-        <Divider style={{marginTop: 0}} />
+        <Divider style={{ marginTop: 0 }} />
 
         <FieldTable
           errors={errors}
@@ -898,8 +912,8 @@ const UpdatePurchaseTaka = () => {
           getValues={getValues}
           clearErrors={clearErrors}
           isUpdate={true}
-          setCalculationTotalMeter = {setCalculationTotalMeter}
-          setCalculationTotalTaka = {setCalculationTotalTaka}
+          setCalculationTotalMeter={setCalculationTotalMeter}
+          setCalculationTotalTaka={setCalculationTotalTaka}
         />
 
         <Row style={{ marginTop: "20px" }} gutter={20}>
