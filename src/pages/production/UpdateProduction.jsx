@@ -13,7 +13,7 @@ import {
   Table,
   DatePicker,
   Tag,
-  Switch
+  Alert
 } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -30,13 +30,10 @@ import {
 } from "../../api/requests/production/inhouseProduction";
 import { getBeamCardListRequest } from "../../api/requests/beamCard";
 import { inhouseProductionDetailsRequest } from "../../api/requests/production/inhouseProduction";
-import { getOtherUserListRequest } from "../../api/requests/users";
-const { Text } = Typography;
-const { Option } = Select;
-import { USER_ROLES } from "../../constants/userRole";
 import { getEmployeeListRequest } from "../../api/requests/users";
 import moment from "moment";
 import dayjs from "dayjs";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const updateProductionSchema = yupResolver(
   yup.object().shape({
@@ -63,7 +60,7 @@ const UpdateProduction = () => {
   }
 
   // Particular production taka average report information ====================
-  const [foldingProductionTaka, setFoldingProductionTaka] = useState([]) ; 
+  const [foldingProductionTaka, setFoldingProductionTaka] = useState([]);
   const { data: foldingProductionTakaDetails, refetch } = useQuery({
     queryKey: ["production", "folding", "list"],
     queryFn: async () => {
@@ -78,10 +75,10 @@ const UpdateProduction = () => {
   });
 
   useEffect(() => {
-    if (foldingProductionTakaDetails){
+    if (foldingProductionTakaDetails) {
       setFoldingProductionTaka(foldingProductionTakaDetails?.folding_details)
     }
-  },[foldingProductionTakaDetails]);
+  }, [foldingProductionTakaDetails]);
 
   // Day handler handler ================ 
   const InputChangeHandler = (event, index) => {
@@ -122,11 +119,11 @@ const UpdateProduction = () => {
       prevTaka?.map((element, takaIndex) =>
         takaIndex === index
           ? {
-              ...element,
-              [foldingProductionTaka[0]?.user?.employer?.shift === "day"
-                ? "day_meter"
-                : "night_meter"]: event.target.value,
-            }
+            ...element,
+            [foldingProductionTaka[0]?.user?.employer?.shift === "day"
+              ? "day_meter"
+              : "night_meter"]: event.target.value,
+          }
           : element
       )
     );
@@ -155,27 +152,27 @@ const UpdateProduction = () => {
 
   const columns = [
     {
-      title: "ID", 
-      dataIndex: "id", 
+      title: "ID",
+      dataIndex: "id",
       render: (text, record, index) => {
-        return(
+        return (
           <div>
             {index + 1}
           </div>
         )
       }
-    }, 
+    },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
       render: (value, record, index) => {
-        return(
+        return (
           <div>
-            <DatePicker 
-              disabled = {record?.is_paid?true:false} 
-              value={dayjs(record?.createdAt)} 
-              defaultChecked = {record?.createdAt} 
+            <DatePicker
+              disabled={record?.is_paid ? true : false}
+              value={dayjs(record?.createdAt)}
+              defaultChecked={record?.createdAt}
               disabledDate={disabledFutureDate}
               onChange={(event) => {
                 InputChangeHandler(event, index)
@@ -189,10 +186,10 @@ const UpdateProduction = () => {
       title: "Employee name",
       dataIndex: "employeeName",
       key: "employeeName",
-      render: (value, record, index) =>{
-        return(
-          <Select 
-            disabled = {record?.is_paid?true:false}
+      render: (value, record, index) => {
+        return (
+          <Select
+            disabled={record?.is_paid ? true : false}
             value={record?.user?.id} style={{ width: "100%" }} placeholder="Select Employee"
             onChange={(event) => {
               EmployeeChangeHandler(event, index)
@@ -212,7 +209,7 @@ const UpdateProduction = () => {
       dataIndex: "takaNo",
       key: "takaNo",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {record?.taka_no || "-"}
           </div>
@@ -223,17 +220,17 @@ const UpdateProduction = () => {
       title: "Meter",
       dataIndex: "meter",
       key: "meter",
-      render: (value, record, index) =>{
-        return(
+      render: (value, record, index) => {
+        return (
           <>
             <Flex>
-              <Input style={{ width: "100%", marginTop: 4 }} 
-                placeholder="Meter" 
-                readOnly = {record?.is_paid?true:false}
-                defaultValue={value} 
-                value={record?.night_meter == 0?record?.day_meter:record?.night_meter}
+              <Input style={{ width: "100%", marginTop: 4 }}
+                placeholder="Meter"
+                readOnly={record?.is_paid ? true : false}
+                defaultValue={value}
+                value={record?.night_meter == 0 ? record?.day_meter : record?.night_meter}
                 onChange={(event) => {
-                  MeterChangeHandler(event,index)
+                  MeterChangeHandler(event, index)
                 }}
               />
             </Flex>
@@ -245,19 +242,19 @@ const UpdateProduction = () => {
       title: "Machine no",
       dataIndex: "machineNo",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {record?.machine_no}
           </div>
         )
-      } 
+      }
     },
     {
       title: "Beam no",
       dataIndex: "beamNo",
       key: "beamNo",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {productionDetail?.beam_no}
           </div>
@@ -268,11 +265,11 @@ const UpdateProduction = () => {
       title: "Paid Status",
       dataIndex: "is_paid",
       key: "is_paid",
-      render: (text, record) =>{
-        return(
+      render: (text, record) => {
+        return (
           <div>
-            <Tag color={record?.is_paid?"green":"red"}>
-              {record?.is_paid?"Paid":"Un-Paid"}
+            <Tag color={record?.is_paid ? "green" : "red"}>
+              {record?.is_paid ? "Paid" : "Un-Paid"}
             </Tag>
           </div>
         )
@@ -334,8 +331,8 @@ const UpdateProduction = () => {
 
     console.log("Payload information");
     console.log(newData);
-    
-    
+
+
 
     // await updateProduction(newData);
   };
@@ -367,7 +364,7 @@ const UpdateProduction = () => {
   });
 
   const UpdateReport = async () => {
-    let requestPayload = []; 
+    let requestPayload = [];
     foldingProductionTaka?.map((element) => {
       requestPayload.push({
         "id": element?.id,
@@ -378,7 +375,7 @@ const UpdateProduction = () => {
       })
     })
     await updateProductionReport(requestPayload)
-    
+
   }
 
   const {
@@ -436,10 +433,10 @@ const UpdateProduction = () => {
         // }
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Machinenumber dropdown list information ===========================
-  const {data: beamCardList, isLoading: isBeamCardListLoading} = useQuery({
+  const { data: beamCardList, isLoading: isBeamCardListLoading } = useQuery({
     queryKey: [
       "beamCard",
       "list",
@@ -447,37 +444,37 @@ const UpdateProduction = () => {
         company_id: companyId,
         quality_id: quality_id,
       },
-    ], 
+    ],
     queryFn: async () => {
       const res = await getBeamCardListRequest({
-        params:{
-          company_id: companyId, 
-          page: 0 ,
-          pageSize: 99999, 
-          quality_id: quality_id, 
+        params: {
+          company_id: companyId,
+          page: 0,
+          pageSize: 99999,
+          quality_id: quality_id,
           status: "running"
         }
-      }); 
+      });
 
-      return res?.data?.data ; 
-    }, 
+      return res?.data?.data;
+    },
     enabled: Boolean(companyId && quality_id)
   })
 
 
   useEffect(() => {
-    if (productionDetail?.id !== undefined){
+    if (productionDetail?.id !== undefined) {
       refetch();
     }
   }, [companyId, productionDetail])
 
 
-  const [machineListDropDown, setMachineListDropDown] = useState([]) ; 
-  const [changedBeamNumber, setChangedBeamNumber] = useState(null) ; 
-  const [changedPendingMeter, setChangedPendigMeter] = useState(null) ; 
- 
+  const [machineListDropDown, setMachineListDropDown] = useState([]);
+  const [changedBeamNumber, setChangedBeamNumber] = useState(null);
+  const [changedPendingMeter, setChangedPendigMeter] = useState(null);
+
   useEffect(() => {
-    let temp = [] ; 
+    let temp = [];
     beamCardList?.rows?.map((element) => {
 
       const obj =
@@ -486,14 +483,14 @@ const UpdateProduction = () => {
         element?.job_beam_receive_detail;
 
       temp.push({
-        label: element?.machine_no, 
-        value: element?.machine_no, 
-        beam_no: obj?.beam_no, 
+        label: element?.machine_no,
+        value: element?.machine_no,
+        beam_no: obj?.beam_no,
         pending_meter: obj?.pending_meter
       })
     })
-    setMachineListDropDown(temp) ; 
-  }, [beamCardList]) ; 
+    setMachineListDropDown(temp);
+  }, [beamCardList]);
 
   const avgWeight = useMemo(() => {
     if (
@@ -571,13 +568,36 @@ const UpdateProduction = () => {
     >
       <div className="flex flex-col gap-2 p-4">
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-          <div className="flex items-center gap-5">
-            <Button onClick={() => navigate(-1)}>
-              <ArrowLeftOutlined />
-            </Button>
-            <h3 className="m-0 text-primary">Edit Productions</h3>
-          </div>
+          
+          {/* Edit production title  */}
+          <Flex>
+            <div className="flex items-center gap-5">
+              <Button onClick={() => navigate(-1)}>
+                <ArrowLeftOutlined />
+              </Button>
+              <h3 className="m-0 text-primary">Edit Productions</h3>
+            </div>
+          </Flex>
+
+          {/* Taka information edit related functionality ` */}
+
+          <Flex gap={5} style={{justifyContent: "flex-start"}}>
+            <div style={{ marginTop: "auto", marginBottom: "auto" }}>
+              <Alert
+                type="warning"
+                message={
+                  <>
+                    <span style={{ fontWeight: 'bold', color: 'black' }}>This Taka is been </span>
+                    <strong>Sold</strong> or in <strong>Re-work</strong>.
+                    <span> You can not Edit Taka details!</span>
+                  </>
+                }
+                style={{ color: '#8a6d3b', borderColor: '#f1c40f' }}
+              />
+            </div>
+          </Flex>
         </div>
+
 
         <Row className="w-100" justify={"flex-start"} style={{ gap: "12px" }}>
           <Col span={6}>
@@ -603,12 +623,11 @@ const UpdateProduction = () => {
                           dropDownQualityListRes &&
                           dropDownQualityListRes?.rows?.map((item) => ({
                             value: item.id,
-                            label: item.quality_name,
+                            label: getDisplayQualityName(item),
                           }))
                         }
                         onChange={(value) => {
                           field.onChange(value);
-                          // handleQualityChange();
                         }}
                       />
                     </>
@@ -653,7 +672,7 @@ const UpdateProduction = () => {
         </Row>
 
         <Divider style={{
-          marginTop: -10, 
+          marginTop: -10,
           marginBottom: 0
         }} />
 
@@ -763,8 +782,8 @@ const UpdateProduction = () => {
                     options={machineListDropDown}
                     onChange={(value, details) => {
                       field.onChange(value);
-                      setChangedBeamNumber(details?.beam_no) ; 
-                      setChangedPendigMeter(details?.pending_meter) ; 
+                      setChangedBeamNumber(details?.beam_no);
+                      setChangedPendigMeter(details?.pending_meter);
                       // handleQualityChange();
                     }}
                   />
@@ -774,7 +793,7 @@ const UpdateProduction = () => {
           </Col>
         </Row>
 
-        <Row style={{ gap: "16px" }} className="w-100" justify={"start"}>
+        <Row style={{ gap: "16px", marginTop: "-10px" }} className="w-100" justify={"start"}>
           <Col span={6}>
             <Form.Item
               label="Average"
@@ -823,7 +842,7 @@ const UpdateProduction = () => {
                       }}
                       disabled
                     />
-                    <div style={{marginTop: "6px"}}>
+                    <div style={{ marginTop: "6px" }}>
                       {changedBeamNumber !== null && <span style={{
                         fontWeight: 600,
                         color: "green"
@@ -845,35 +864,38 @@ const UpdateProduction = () => {
 
         <Flex gap={10} justify="flex-end">
           <Button type="primary" htmlType="submit" loading={isPending}>
-            Update
+            Update Production Taka
           </Button>
         </Flex>
 
-        {/* Particular employee average report related information  */}
+        {/* ========== Particular employee average report related information ============  */}
         <div style={{
-          marginTop: -20
-        }}> 
+          marginTop: -40
+        }}>
           <h2 style={{
             textAlign: "left"
           }}>Employee Average Report
-            <span
-              style={{
-                color: "blue", 
-                paddingLeft: 10
-              }}>
-              {foldingProductionTaka && foldingProductionTaka[0]?.user?.employer?.shift == "day"?"Day Shift":"Night Shift"}
-            </span>
+            {foldingProductionTaka && foldingProductionTaka?.length > 0 && (
+              <span
+                style={{
+                  color: "blue",
+                  paddingLeft: 10
+                }}>
+                { foldingProductionTaka && 
+                  foldingProductionTaka[0]?.user?.employer?.shift == "day" ? "Day Shift" : "Night Shift"}
+              </span>
+            )}
           </h2>
-          
+
           <Table
             columns={columns}
             dataSource={foldingProductionTaka || []}
-            pagination = {false}
+            pagination={false}
           />
         </div>
 
         {foldingProductionTakaDetails?.folding_details?.length > 0 && (
-           <Flex gap={10} justify="flex-end">
+          <Flex gap={10} justify="flex-end">
             <Button type="primary" loading={isReportPending} onClick={UpdateReport}>
               Update Report
             </Button>

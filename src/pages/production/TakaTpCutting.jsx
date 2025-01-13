@@ -171,10 +171,6 @@ const TakaTpCutting = () => {
       render: (details) => {
         return (
           <Space>
-            {/* <ViewProductionDetailModal
-              title="Production Details"
-              details={details}
-            /> */}
             <Button
               onClick={() => {
                 navigateToUpdate(details.id);

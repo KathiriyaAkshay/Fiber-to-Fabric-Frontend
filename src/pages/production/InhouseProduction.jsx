@@ -14,6 +14,8 @@ import {
   Checkbox,
   message,
   Badge,
+  Tooltip,
+  Alert,
 } from "antd";
 import {
   BarcodeOutlined,
@@ -44,6 +46,20 @@ import { TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
 import { getDisplayQualityName } from "../../constants/nameHandler";
 import { USER_ROLES } from "../../constants/userRole";
 import { getOtherUserListRequest } from "../../api/requests/users";
+import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../constants/tag";
+
+const TakaInforamtion = () => {
+  return(
+    <div style="border: 1px solid #f1c40f; background-color: #fcf8e3; padding: 10px; border-radius: 5px; color: #8a6d3b; font-family: Arial, sans-serif; display: flex; align-items: center;">
+      <span style="margin-right: 10px; font-size: 18px; color: #f1c40f;">&#9888;</span>
+      <span>
+        This Taka is been <strong style="color: #8a6d3b;">Sold</strong> or in 
+        <strong style="color: #8a6d3b;">Re-work</strong>. You can not Edit Taka details!
+      </span>
+    </div>
+
+  )
+}
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
@@ -319,28 +335,6 @@ const InhouseProduction = () => {
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
 
-    // downloadUserPdf({
-    //   body,
-    //   head: [
-    //     [
-    //       "ID",
-    //       "Taka No",
-    //       "Meter",
-    //       "Weight",
-    //       "Machine No",
-    //       "Average",
-    //       "Status",
-    //       "Beam",
-    //       "Quality",
-    //       "Challan No",
-    //       "Party",
-    //     ],
-    //   ],
-    //   leftContent,
-    //   rightContent,
-    //   title: "Inhouse Production List",
-    // });
-
     window.open("/print");
   };
 
@@ -366,9 +360,13 @@ const InhouseProduction = () => {
         />
       ),
       render: (record) => {
-        return (
+        if (
           record?.status?.toLowerCase() === "instock" &&
-          !record.is_tp && (
+          !record.is_tp &&
+          record?.sale_challan == null &&
+          record?.is_folding == false
+        ) {
+          return (
             <Checkbox
               checked={selectedRecords.includes(record.id)}
               onChange={(e) => {
@@ -381,8 +379,10 @@ const InhouseProduction = () => {
                 }
               }}
             />
-          )
-        );
+          );
+        } else {
+          return "#"; // Render '#' or any other placeholder
+        }
       },
     },
     {
@@ -459,7 +459,7 @@ const InhouseProduction = () => {
           return (
             <div>
               {record?.folding_user_id !== null && <div className="folding-taka-info">Folding Taka</div>}
-              <Tag color="red">Re-work</Tag>
+              <Tag color="purple">Re-work</Tag>
             </div>
           )
         } else if (record?.status?.toLowerCase() === "instock") {
@@ -468,6 +468,14 @@ const InhouseProduction = () => {
               {record?.folding_user_id !== null && <div className="folding-taka-info">Folding Taka</div>}
               <Tag color="green">In-Stock</Tag>
             </div>
+          )
+        } else if (record?.sale_challan !== null) {
+          return(
+            <Tooltip title = {`Sale Challan - ${record?.sale_challan?.challan_no}`}>
+              <Tag color  = {"red"}>
+                {"Sold"}
+              </Tag>
+            </Tooltip>
           )
         } else {
           return(
@@ -516,7 +524,10 @@ const InhouseProduction = () => {
               </Button>
             )}
 
-            {details?.status?.toLowerCase() === "instock" && !details.is_tp && details?.sale_challan == null && (
+            { details?.status?.toLowerCase() === "instock" 
+              && !details.is_tp
+              && details?.sale_challan == null 
+              && details?.is_folding == false && (
               <DeleteProduction details={details} />
             )}
 
@@ -586,14 +597,14 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalMeter.toFixed(2) || 0}</b>
+                  <b>{parseFloat(totalMeter).toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalWeight.toFixed(2) || 0}</b>
+                  <b>{parseFloat(totalWeight).toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{totalAvg.toFixed(2) || 0}</b>
+                  <b>{parseFloat(totalAvg).toFixed(2) || 0}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -613,14 +624,14 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{productionList?.total_meters.toFixed(2)}</b>
+                  <b>{parseFloat(productionList?.total_meters).toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left">
-                  <b>{productionList?.total_weight?.toFixed(2)}</b>
+                  <b>{parseFloat(productionList?.total_weight)?.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0} align="left"></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}>
-                  <b>{productionList?.net_average?.toFixed(2)}</b>
+                  <b>{parseFloat(productionList?.net_average)?.toFixed(2)}</b>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
@@ -890,6 +901,22 @@ const InhouseProduction = () => {
         ) : null}
 
         <Flex gap={12}>
+          <Flex gap={5}>
+            <div style={{marginTop: "auto", marginBottom: "auto"}}>
+              <Alert
+                type="warning"
+                message={
+                  <>
+                    <span style={{ fontWeight: 'bold', color: 'black' }}>This Taka is been </span>
+                    <strong>Sold</strong> or in <strong>Re-work</strong>. 
+                    <span> You can not Edit Taka details!</span>
+                  </>
+                }
+                style={{color: '#8a6d3b', borderColor: '#f1c40f' }}
+              />            
+            </div>
+          </Flex>
+          
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
               Challan No:

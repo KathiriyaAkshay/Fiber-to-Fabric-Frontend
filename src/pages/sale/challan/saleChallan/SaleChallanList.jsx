@@ -9,6 +9,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import {
@@ -35,6 +36,7 @@ import SaleChallanBill from "../../../../components/sale/challan/saleChallan/Sal
 import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewChallan";
 import { disabledFutureDate } from "../../../../utils/date";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR } from "../../../../constants/tag";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -279,6 +281,13 @@ const SaleChallanList = () => {
       title: "Order No",
       dataIndex: ["gray_order", "order_no"],
       key: "order_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }, 
       sorter: {
         compare: (a, b) => {
           return a?.gray_order?.order_no - b?.gray_order?.order_no;
@@ -289,6 +298,17 @@ const SaleChallanList = () => {
       title: "Challan/Bill",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <Tooltip title = {record?.challan_type == "normal_challan"?
+            "Normal Challan"
+            :"Lotwise Challan"}>
+            <div style={{fontWeight: 600}}>
+              {text}
+            </div>
+          </Tooltip>
+        )
+      }, 
       sorter: {
         compare: (a, b) => {
           return a?.challan_no - b?.challan_no;
@@ -299,7 +319,18 @@ const SaleChallanList = () => {
       title: "Party Name",
       dataIndex: "party",
       key: "party",
-      render: (text) => `${text?.first_name || ""} ${text?.last_name || ""}`,
+      render: (text, record) => {
+        return(
+          <div>
+            <div style={{fontWeight: 600}}>
+              {String(`${text?.first_name || ""} ${text?.last_name || ""}`).toUpperCase()}
+            </div>
+            <div>
+              {record?.party?.party?.company_name}
+            </div>
+          </div>
+        )
+      },
       sorter: {
         compare: (a, b) => {
           return a?.party?.first_name - b?.party?.first_name;
@@ -309,7 +340,13 @@ const SaleChallanList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details?.inhouse_quality?.quality_name} (${details?.inhouse_quality?.quality_weight}KG)`;
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
       sorter: {
         compare: (a, b) => {
@@ -425,7 +462,7 @@ const SaleChallanList = () => {
               </>
             )}
             
-            {is_return_option == 0 && (
+            {is_return_option == 0 && String(details?.bill_status).toLowerCase() !== "pending" && (
               <ViewSaleChallan details={details} companyId={companyId} />
             )}
 
@@ -509,13 +546,13 @@ const SaleChallanList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalTaka}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{totalMeter}</Typography.Text>
-                </Table.Summary.Cell>
                 <Table.Summary.Cell />
+                <Table.Summary.Cell>
+                  <Typography.Text>{parseFloat(saleChallanList?.total_taka).toFixed(2) || 0}</Typography.Text>
+                </Table.Summary.Cell>
+                <Table.Summary.Cell>
+                  <Typography.Text>{parseFloat(saleChallanList?.total_meter).toFixed(2) || 0}</Typography.Text>
+                </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -611,7 +648,7 @@ const SaleChallanList = () => {
                   dropDownQualityListRes &&
                   dropDownQualityListRes?.rows?.map((item) => ({
                     value: item.id,
-                    label: item.quality_name,
+                    label: getDisplayQualityName(item),
                   }))
                 }
                 dropdownStyle={{
