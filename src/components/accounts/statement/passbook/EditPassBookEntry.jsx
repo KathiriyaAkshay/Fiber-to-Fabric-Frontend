@@ -153,9 +153,9 @@ const EditPassBookEntry = ({
       };
 
       const data = particularRes.rows.map(
-        ({ particular_name, is_cost_per_meter, head }) => {
+        ({ particular_name, label, is_cost_per_meter, head }) => {
           return {
-            label: particular_name,
+            label: label,
             value: particular_name,
             color: "#000",
             is_cost_per_meter,
@@ -171,7 +171,6 @@ const EditPassBookEntry = ({
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
   }
-
 
   return (
     <Modal
@@ -223,7 +222,13 @@ const EditPassBookEntry = ({
               control={control}
               name="voucher_date"
               render={({ field }) => {
-                return <DatePicker {...field} style={{ width: "100%" }} disabledDate={disabledFutureDate} />;
+                return (
+                  <DatePicker
+                    {...field}
+                    style={{ width: "100%" }}
+                    disabledDate={disabledFutureDate}
+                  />
+                );
               }}
             />
           </Form.Item>

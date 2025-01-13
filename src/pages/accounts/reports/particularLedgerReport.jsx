@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { getParticularLedgerReportService } from "../../../api/requests/accounts/reports";
 import { getParticularListRequest } from "../../../api/requests/accounts/particular";
 import { PARTICULAR_OPTIONS } from "../../../constants/account";
+import { useLocation } from "react-router-dom";
 
 const ENTRY_TYPE = [
   { label: "Cashbook / Passbook", value: "both" },
@@ -24,11 +25,13 @@ const ENTRY_TYPE = [
 ];
 
 const ParticularLedgerReport = () => {
+  const location = useLocation();
+  const { isSuspenseAccount } = location.state || {}; // Safely access state
   const { companyId, companyListRes } = useContext(GlobalContext);
 
   const [isShowAll, setIsShowAll] = useState(false);
   const [entryType, setEntryType] = useState("both");
-  const [company, setCompany] = useState(companyId);
+  const [company, setCompany] = useState(null);
   const [particular, setParticular] = useState(null);
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -39,18 +42,7 @@ const ParticularLedgerReport = () => {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: [
-      "particular-ledger-report",
-      "list",
-      // {
-      //   company_id: company,
-      //   from_date: dayjs(fromDate).format("YYYY-MM-DD"),
-      //   to_date: dayjs(toDate).format("YYYY-MM-DD"),
-      //   entry_type: entryType,
-      //   particular_type: particular,
-      //   show_all: isShowAll ? 1 : 0,
-      // },
-    ],
+    queryKey: ["particular-ledger-report", "list"],
     queryFn: async () => {
       const params = {
         company_id: company,
@@ -67,51 +59,51 @@ const ParticularLedgerReport = () => {
       });
       return res.data?.data;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company),
   });
 
   function downloadPdf() {
-    // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
-
     const body = particularLedgerReportData?.ledgerReport?.map(
-      (order, index) => {
-        const companyName =
-          order.order_type === "job"
-            ? order.party.party.company_name
-            : order.party.party.company_name; // supplier company should be here in else part.
+      (item, index) => {
+        const debit = item.is_withdraw ? item.amount : 0.0;
+        const credit = !item.is_withdraw ? item.amount : 0.0;
+        const selectedCompany = companyListRes.rows.find(
+          ({ id }) => id === item.company_id
+        );
+        const model = item.model === "passbook_audit" ? "Passbook" : "Cashbook";
+
         return [
           index + 1,
-          order.order_no,
-          dayjs(order.order_date).format("DD-MM-YYYY"),
-          companyName,
-          `${order.inhouse_quality.quality_name} (${order.inhouse_quality.quality_weight}KG)`,
-          order.pending_taka,
-          order.delivered_taka,
-          order.pending_meter,
-          order.delivered_meter,
-          order.status,
+          dayjs(item.cheque_date).format("YYYY-MM-DD"),
+          selectedCompany?.company_name,
+          model,
+          item.remarks,
+          debit,
+          credit,
+          item.balance,
         ];
       }
     );
 
     const tableTitle = [
       "ID",
-      "Order No",
-      "Order Date",
-      "Company Name",
-      "Quality",
-      "Pending Taka",
-      "Deliver Taka",
-      "Pending Meter",
-      "Deliver Meter",
-      "Status",
+      "Date",
+      "Company",
+      "Passbook/Cashbook",
+      "Remark/Bill No.",
+      "Debit",
+      "Credit",
+      "Balance",
     ];
+
+    let total = ["", "", "", "", "", TOTAL.totalDebit, TOTAL.totalCredit, ""];
 
     // Set localstorage item information
     localStorage.setItem("print-array", JSON.stringify(body));
-    localStorage.setItem("print-title", "Order List");
+    localStorage.setItem("print-title", "Particular Ledger Report");
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
-    localStorage.setItem("total-count", "0");
+    localStorage.setItem("total-count", "1");
+    localStorage.setItem("total-data", JSON.stringify(total));
 
     window.open("/print");
   }
@@ -120,15 +112,15 @@ const ParticularLedgerReport = () => {
   const { data: particularRes, isLoading: isLoadingParticular } = useQuery({
     queryKey: [
       "dropdown/passbook_particular_type/list",
-      { company_id: companyId },
+      { company_id: company || companyId },
     ],
     queryFn: async () => {
       const res = await getParticularListRequest({
-        params: { company_id: companyId },
+        params: { company_id: company || companyId },
       });
       return res.data?.data;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company || companyId),
   });
 
   const TOTAL = useMemo(() => {
@@ -157,16 +149,20 @@ const ParticularLedgerReport = () => {
 
   useEffect(() => {
     if (particularRes) {
-      const data = particularRes.rows.map(({ particular_name }) => {
+      const data = particularRes.rows.map(({ particular_name, label }) => {
         return {
-          label: particular_name,
+          label: label,
           value: particular_name,
         };
       });
 
       setParticularOptions([...PARTICULAR_OPTIONS, ...data]);
+
+      if (isSuspenseAccount) {
+        setParticular("suspense_account");
+      }
     }
-  }, [particularRes]);
+  }, [isSuspenseAccount, particularRes]);
 
   useEffect(() => {
     // Get the current date
@@ -301,73 +297,80 @@ const ParticularLedgerReport = () => {
           <Spin />
         </Flex>
       ) : (
-        <table className="statement-passbook-table">
-          <thead>
-            <tr>
-              <td>ID</td>
-              <td>Date</td>
-              <td>Company</td>
-              <td>Passbook / Cashbook</td>
-              <td>Remark/Bill No.</td>
-              <td>Debit</td>
-              <td>Credit</td>
-              <td>Balance</td>
-            </tr>
-          </thead>
-          <tbody>
-            {particularLedgerReportData &&
-            particularLedgerReportData?.ledgerReport.length ? (
-              particularLedgerReportData?.ledgerReport?.map((row, index) => {
-                const debit = row.is_withdraw ? row.amount : 0.0;
-                const credit = !row.is_withdraw ? row.amount : 0.0;
-                const selectedCompany = companyListRes.rows.find(
-                  ({ id }) => id === row.company_id
-                );
-                const model =
-                  row.model === "passbook_audit" ? "Passbook" : "Cashbook";
-
-                return (
-                  <tr key={index} className={row.is_withdraw ? "red" : "green"}>
-                    <td>{index + 1}</td>
-                    <td>{dayjs(row.cheque_date).format("DD-MM-YYYY")}</td>
-                    <td>{selectedCompany?.company_name || "-"}</td>
-                    <td>
-                      <Tag color={row.is_withdraw ? "red" : "green"}>
-                        {model}
-                      </Tag>
-                    </td>
-                    <td>{row.remarks}</td>
-                    <td>
-                      <Typography style={{ color: "red" }}>{debit}</Typography>
-                    </td>
-                    <td>
-                      <Typography style={{ color: "green" }}>
-                        {credit}
-                      </Typography>
-                    </td>
-                    <td>{row.balance}</td>
-                  </tr>
-                );
-              })
-            ) : (
+        <div style={{ maxHeight: "calc(100vh - 200px)", overflowY: "scroll" }}>
+          <table className="statement-passbook-table">
+            <thead style={{ position: "sticky", top: 0, zIndex: 9 }}>
               <tr>
-                <td colSpan={8} style={{ textAlign: "center" }}>
-                  No records found
-                </td>
+                <td>ID</td>
+                <td>Date</td>
+                <td>Company</td>
+                <td>Passbook / Cashbook</td>
+                <td>Remark/Bill No.</td>
+                <td>Debit</td>
+                <td>Credit</td>
+                <td>Balance</td>
               </tr>
-            )}
-            <tr>
-              <td>Total</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>{TOTAL.totalDebit}</td>
-              <td>{TOTAL.totalCredit}</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {particularLedgerReportData &&
+              particularLedgerReportData?.ledgerReport.length ? (
+                particularLedgerReportData?.ledgerReport?.map((row, index) => {
+                  const debit = row.is_withdraw ? row.amount : 0.0;
+                  const credit = !row.is_withdraw ? row.amount : 0.0;
+                  const selectedCompany = companyListRes.rows.find(
+                    ({ id }) => id === row.company_id
+                  );
+                  const model =
+                    row.model === "passbook_audit" ? "Passbook" : "Cashbook";
+
+                  return (
+                    <tr
+                      key={index}
+                      className={row.is_withdraw ? "red" : "green"}
+                    >
+                      <td>{index + 1}</td>
+                      <td>{dayjs(row.cheque_date).format("DD-MM-YYYY")}</td>
+                      <td>{selectedCompany?.company_name || "-"}</td>
+                      <td>
+                        <Tag color={row.is_withdraw ? "red" : "green"}>
+                          {model}
+                        </Tag>
+                      </td>
+                      <td>{row.remarks}</td>
+                      <td>
+                        <Typography style={{ color: "red" }}>
+                          {debit}
+                        </Typography>
+                      </td>
+                      <td>
+                        <Typography style={{ color: "green" }}>
+                          {credit}
+                        </Typography>
+                      </td>
+                      <td>{row.balance}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: "center" }}>
+                    No records found
+                  </td>
+                </tr>
+              )}
+              <tr>
+                <td>Total</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{TOTAL.totalDebit}</td>
+                <td>{TOTAL.totalCredit}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

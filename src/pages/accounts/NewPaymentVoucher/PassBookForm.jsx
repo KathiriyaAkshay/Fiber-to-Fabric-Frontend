@@ -16,7 +16,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import dayjs from "dayjs";
-import { CheckOutlined, EditOutlined } from "@ant-design/icons";
+import { CheckOutlined } from "@ant-design/icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import {
   ENTRY_TYPE_OPTIONS,
@@ -210,10 +210,12 @@ const PassBookForm = () => {
         color: "black",
       };
 
+      console.log(particularRes);
+
       const data = particularRes.rows.map(
-        ({ particular_name, is_cost_per_meter, head }) => {
+        ({ particular_name, label, is_cost_per_meter, head }) => {
           return {
-            label: particular_name,
+            label: label,
             value: particular_name,
             color: "#000",
             is_cost_per_meter,
@@ -251,9 +253,11 @@ const PassBookForm = () => {
     }
 
     const payload = {
-      particular_name: particularName,
+      particular_name: particularName.split(" ").join("_"),
       head: headName,
+      label: particularName,
     };
+
     await addNewParticular(payload);
   };
 
@@ -497,7 +501,11 @@ const PassBookForm = () => {
                     name="cheque_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
+                        <DatePicker
+                          disabledDate={disabledFutureDate}
+                          {...field}
+                          style={{ width: "100%" }}
+                        />
                       );
                     }}
                   />
@@ -536,7 +544,11 @@ const PassBookForm = () => {
                     name="voucher_date"
                     render={({ field }) => {
                       return (
-                        <DatePicker disabledDate={disabledFutureDate} {...field} style={{ width: "100%" }} />
+                        <DatePicker
+                          disabledDate={disabledFutureDate}
+                          {...field}
+                          style={{ width: "100%" }}
+                        />
                       );
                     }}
                   />

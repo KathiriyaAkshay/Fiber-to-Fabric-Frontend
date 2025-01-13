@@ -230,7 +230,7 @@ const PrintPage = () => {
     let page_title = localStorage.getItem("print-title");
     console.log("Page title information");
     console.log(page_title);
-    
+
     setOrderTitle(page_title);
 
     let page_data = JSON.parse(localStorage.getItem("print-array"));
