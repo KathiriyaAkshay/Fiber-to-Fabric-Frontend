@@ -87,7 +87,7 @@ const NewPaymentVoucher = () => {
         </Flex>
       </div>
 
-      <Divider style={{marginTop: 10, marginBottom: 10}} />
+      <Divider style={{ marginTop: 10, marginBottom: 10 }} />
 
       {renderForm}
     </div>

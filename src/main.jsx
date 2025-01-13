@@ -182,6 +182,7 @@ import EmployeeAverageReport from "./pages/accounts/salaryMaster/employeeAverage
 import Gstr3 from "./pages/accounts/reports/gstr3";
 import ParticularLedgerReport from "./pages/accounts/reports/particularLedgerReport";
 import LedgerReport from "./pages/accounts/reports/ledgerReport";
+import CostPerMeter from "./pages/accounts/costPerMeter";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -819,8 +820,8 @@ const router = createBrowserRouter([
                 element: <GstrPrint />,
               },
               {
-                path: "gstr-report2/print/:key", 
-                element: <GstrPrint2/>
+                path: "gstr-report2/print/:key",
+                element: <GstrPrint2 />,
               },
               {
                 path: "gstr-1-report",
@@ -887,7 +888,7 @@ const router = createBrowserRouter([
           },
           {
             path: "cost-per-meter",
-            element: <div>cost-per-meter</div>,
+            element: <CostPerMeter />,
           },
           {
             path: "salary-master",

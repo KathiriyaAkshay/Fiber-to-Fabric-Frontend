@@ -68,11 +68,11 @@ const PassBook = () => {
   const [isVerifyEntry, setIsVerifyEntry] = useState(null);
 
   useEffect(() => {
-    if (company?.company_bank_details?.length >0){
-      let option = company?.company_bank_details[0] ; 
-      setBank(option?.id)
+    if (company?.company_bank_details?.length > 0) {
+      let option = company?.company_bank_details[0];
+      setBank(option?.id);
     }
-  },[company])
+  }, [company]);
 
   const navigateToAdd = () => {
     navigate("/account/payment/add");
@@ -128,9 +128,9 @@ const PassBook = () => {
 
   useEffect(() => {
     if (particularRes) {
-      const data = particularRes.rows.map(({ particular_name }) => {
+      const data = particularRes.rows.map(({ particular_name, label }) => {
         return {
-          label: particular_name,
+          label: label,
           value: particular_name,
         };
       });
@@ -201,10 +201,9 @@ const PassBook = () => {
     window.open("/print-passbook-statement");
   }
 
-  function disabledFutureDate(current) {
-    return current && current > moment().endOf("day");
-  }
-  
+  // function disabledFutureDate(current) {
+  //   return current && current > moment().endOf("day");
+  // }
 
   return (
     <div className="flex flex-col gap-2 p-4">
@@ -218,7 +217,6 @@ const PassBook = () => {
           />
         </div>
         <Flex align="center" justify="flex-end" gap={10}>
-
           {/* Month selection  */}
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
@@ -328,8 +326,8 @@ const PassBook = () => {
                   textAlign: "center",
                   fontWeight: "bold",
                   fontSize: "16px",
-                  paddingTop: 20, 
-                  paddingBottom: 20
+                  paddingTop: 20,
+                  paddingBottom: 20,
                 }}
                 colSpan={9}
               >
@@ -345,8 +343,12 @@ const PassBook = () => {
                   return (
                     <tr
                       key={index + "_unverified"}
-                      className={row?.is_withdraw ? "red" :
-                        row?.particular_type == "OPENING BALANCE"?"opening-balance-entry":"green"
+                      className={
+                        row?.is_withdraw
+                          ? "red"
+                          : row?.particular_type == "OPENING BALANCE"
+                          ? "opening-balance-entry"
+                          : "green"
                       }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
@@ -427,73 +429,99 @@ const PassBook = () => {
                   : "No verified entry available"}
               </td>
             </tr>
-            
+
             {/* =========== Verified entries related information ===============  */}
             {verifiedEntries && verifiedEntries?.length
               ? verifiedEntries?.map((row, index) => {
                   return (
                     <tr
                       key={index + "_verified"}
-                      className={row?.is_withdraw ? "red" :
-                        row?.particular_type == "OPENING BALANCE"?"opening-balance-entry":"green"
+                      className={
+                        row?.is_withdraw
+                          ? "red"
+                          : row?.particular_type == "OPENING BALANCE"
+                          ? "opening-balance-entry"
+                          : "green"
                       }
                     >
                       <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
                       <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
                       <td>{row?.cheque_no || "----"}</td>
-                      <td style={{
-                        fontWeight: capitalizeFirstCharacter(row?.particular_type)
-                        .split("_")
-                        .join(" ") == "OPENING BALANCE"?600:500
-                      }}>
-
+                      <td
+                        style={{
+                          fontWeight:
+                            capitalizeFirstCharacter(row?.particular_type)
+                              .split("_")
+                              .join(" ") == "OPENING BALANCE"
+                              ? 600
+                              : 500,
+                        }}
+                      >
                         {capitalizeFirstCharacter(row?.particular_type)
                           .split("_")
                           .join(" ")}
 
-                        {row?.is_reverted && <span style={{
-                          fontSize: 12,
-                          fontWeight: 600
-                        }}> ( Reverse entry ) </span>}
+                        {row?.is_reverted && (
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {" "}
+                            ( Reverse entry ){" "}
+                          </span>
+                        )}
                       </td>
                       <td>
-                        {row?.is_reverted?
-                        <>
-                          <span style={{
-                            fontWeight: 600,
-                            color: "blue"
-                          }}>
-                            {row?.is_withdraw
+                        {row?.is_reverted ? (
+                          <>
+                            <span
+                              style={{
+                                fontWeight: 600,
+                                color: "blue",
+                              }}
+                            >
+                              {row?.is_withdraw
                                 ? row?.amount?.toFixed(2)
                                 : (0).toFixed(2)}
-                          </span>
-                        </>:<>
-                          <Typography style={{ color: "red", fontWeight: "600" }}>
-                            {row?.is_withdraw
-                              ? row?.amount?.toFixed(2)
-                              : (0).toFixed(2)}
-                          </Typography>
-                        </>}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Typography
+                              style={{ color: "red", fontWeight: "600" }}
+                            >
+                              {row?.is_withdraw
+                                ? row?.amount?.toFixed(2)
+                                : (0).toFixed(2)}
+                            </Typography>
+                          </>
+                        )}
                       </td>
                       <td>
-                        {row?.is_reverted?
-                          <span style={{
-                            fontWeight: 600,
-                            color: "blue"
-                          }}>
-                            {!row?.is_withdraw
-                              ? row?.amount?.toFixed(2)
-                              : (0).toFixed(2)}
-                          </span>
-                        :<>
-                          <Typography
-                            style={{ color: "green", fontWeight: "600" }}
+                        {row?.is_reverted ? (
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              color: "blue",
+                            }}
                           >
                             {!row?.is_withdraw
                               ? row?.amount?.toFixed(2)
                               : (0).toFixed(2)}
-                          </Typography>
-                        </>}
+                          </span>
+                        ) : (
+                          <>
+                            <Typography
+                              style={{ color: "green", fontWeight: "600" }}
+                            >
+                              {!row?.is_withdraw
+                                ? row?.amount?.toFixed(2)
+                                : (0).toFixed(2)}
+                            </Typography>
+                          </>
+                        )}
                       </td>
                       <td>{row?.balance}</td>
                       <td>{row.remarks}</td>
@@ -533,8 +561,7 @@ const PassBook = () => {
                     </tr>
                   );
                 })
-            : null}
-
+              : null}
 
             {/* Display totals and closing balance */}
             <tr>

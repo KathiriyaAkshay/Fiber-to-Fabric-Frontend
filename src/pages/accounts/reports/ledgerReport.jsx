@@ -19,6 +19,7 @@ import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../constants/tag";
 import { formatString } from "../../../utils/mutationUtils";
 import dayjs from "dayjs";
 import _ from "lodash";
+import { useNavigate } from "react-router-dom";
 
 const BILL_TYPE = [
   { label: "GST", value: "gst" },
@@ -27,6 +28,7 @@ const BILL_TYPE = [
 ];
 
 const LedgerReport = () => {
+  const navigate = useNavigate();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
   const [selectedCompany, setSelectedCompany] = useState(companyId);
@@ -465,6 +467,26 @@ const LedgerReport = () => {
       </div>
 
       <div className="flex items-center justify-end gap-3 mx-3 mb-3">
+        <Typography
+          style={{
+            color: "blue",
+            textDecoration: "underline",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            // localStorage.setItem(
+            //   "ledger-report-suspense",
+            //   JSON.stringify({ is: true })
+            // );
+            navigate("/account/reports/particular-ledger-report", {
+              state: { isSuspenseAccount: true },
+            });
+            // window.open(`${window.location.origin}`, "_blank");
+          }}
+        >
+          Suspense Account
+        </Typography>
         <Button type="primary" onClick={onClickSubmitHandler}>
           Submit
         </Button>
