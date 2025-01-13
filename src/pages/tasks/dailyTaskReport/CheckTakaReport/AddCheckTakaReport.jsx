@@ -24,6 +24,7 @@ import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { getEmployeeListRequest } from "../../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
 import moment from "moment";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addCheckTakaReportSchemaResolver = yupResolver(
   yup.object().shape({
@@ -274,9 +275,9 @@ function AddCheckTakaReport() {
                     allowClear={true}
                     loading={isLoadingInHouseQualityList}
                     options={inHouseQualityList?.rows?.map(
-                      ({ id = 0, quality_name = "" }) => ({
-                        label: quality_name,
-                        value: id,
+                      (item) => ({
+                        label: getDisplayQualityName(item),
+                        value: item?.id,
                       })
                     )}
                   />

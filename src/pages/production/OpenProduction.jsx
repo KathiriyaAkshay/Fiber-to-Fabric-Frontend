@@ -39,6 +39,10 @@ import { getLastProductionTakaRequest } from "../../api/requests/production/inho
 import { disabledFutureDate } from "../../utils/date";
 import AlertModal from "../../components/common/modal/alertModal";
 import { getLoadedMachineListRequest } from "../../api/requests/beamCard";
+import { getDisplayQualityName } from "../../constants/nameHandler";
+import { TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
+import { TAKA_IN_HOUSE_ORDER_TYPE } from "../../constants/supplier";
+import { MY_ORDER_PENDING_STATUS } from "../../constants/supplier";
 
 const OpenProduction = () => {
   const [form] = Form.useForm();
@@ -51,9 +55,11 @@ const OpenProduction = () => {
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalTaka, setTotalTaka] = useState(0);
 
+  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined) ; 
   const [pendingMeter, setPendingMeter] = useState("");
+
+  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined) ; 
   const [pendingTaka, setPendingTaka] = useState("");
-  const [pendingWeight, setPendingWeight] = useState("");
 
   // Opening Production related handler ==========================
   const { mutateAsync: addNewOpeningProduction, isPending } = useMutation({
@@ -71,9 +77,9 @@ const OpenProduction = () => {
       queryClient.invalidateQueries(["production", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("Opening production created successfully");
       }
-      navigate(-1);
+      navigate("/production/inhouse-production");
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
@@ -84,25 +90,34 @@ const OpenProduction = () => {
   const onSubmit = async (data) => {
     const array = Array.from({ length: activeField }, (_, i) => i + 1);
     if (data.is_create_challan) {
+
       let hasError = 0;
+      let taka_details = [] ; 
 
       array.map((fieldNumber) => {
         let meter = +data[`meter_${fieldNumber}`];
         let weight = +data[`weight_${fieldNumber}`];
         let machine_no = +data[`machine_no_${fieldNumber}`];
 
-        if (isNaN(meter) || meter == undefined || meter == "") {
+        // Check if all values are undefined or empty
+        if (
+          (meter == undefined || meter === "" || isNaN(meter)) &&
+          (weight == undefined || weight === "" || isNaN(weight)) &&
+          (machine_no == undefined || machine_no === "" || isNaN(machine_no))
+        ) {
+          return; // Skip processing for this case
+        }
+
+        if (isNaN(meter) || meter == undefined || meter === "") {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
           return;
-        } else if (isNaN(weight) || weight == undefined || weight == "") {
+        } else if (isNaN(weight) || weight == undefined || weight === "") {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
@@ -110,17 +125,24 @@ const OpenProduction = () => {
         } else if (
           isNaN(machine_no) ||
           machine_no == undefined ||
-          machine_no == ""
+          machine_no === ""
         ) {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
           return;
+        } else {
+          taka_details.push({
+            taka_no: data?.last_taka_no + fieldNumber,
+            meter: +data[`meter_${fieldNumber}`],
+            weight: +data[`weight_${fieldNumber}`],
+            machine_no: +data[`machine_no_${fieldNumber}`]
+          })
         }
       });
+
 
       if (hasError == 0) {
         const payload = {
@@ -132,7 +154,8 @@ const OpenProduction = () => {
           customer_gst: data.customer_gst_in,
           machine_name: data.machine_name,
           createdAt: dayjs(data.challan_date).format("YYYY-MM-DD"),
-
+          pending_meter: pendingMeter, 
+          pending_taka: pendingTaka,
           // pending_meter: data.pending_meter - totalMeter,
           // pending_weight: data.pending_weight - totalWeight,
           // pending_taka: data.pending_taka - totalTaka,
@@ -143,38 +166,38 @@ const OpenProduction = () => {
           total_meter: totalMeter,
           total_weight: totalWeight,
           total_taka: totalTaka,
-
-          production_details: array.map((fieldNumber) => {
-            return {
-              taka_no: data.last_taka_no + fieldNumber,
-              meter: +data[`meter_${fieldNumber}`],
-              weight: +data[`weight_${fieldNumber}`],
-              machine_no: data[`machine_no_${fieldNumber}`],
-            };
-          }),
+          production_details: taka_details,
         };
         await addNewOpeningProduction(payload);
       }
     } else {
+
       let hasError = 0;
+      let taka_details = [];
 
       array.map((fieldNumber) => {
         let meter = +data[`meter_${fieldNumber}`];
         let weight = +data[`weight_${fieldNumber}`];
         let machine_no = +data[`machine_no_${fieldNumber}`];
+        // Check if all values are undefined or empty
+        if (
+          (meter == undefined || meter === "" || isNaN(meter)) &&
+          (weight == undefined || weight === "" || isNaN(weight)) &&
+          (machine_no == undefined || machine_no === "" || isNaN(machine_no))
+        ) {
+          return; // Skip processing for this case
+        }
 
-        if (isNaN(meter) || meter == undefined || meter == "") {
+        if (isNaN(meter) || meter == undefined || meter === "") {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
           return;
-        } else if (isNaN(weight) || weight == undefined || weight == "") {
+        } else if (isNaN(weight) || weight == undefined || weight === "") {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
@@ -182,15 +205,21 @@ const OpenProduction = () => {
         } else if (
           isNaN(machine_no) ||
           machine_no == undefined ||
-          machine_no == ""
+          machine_no === ""
         ) {
           message.error(
-            `Please, Enter valid details for Taka ${
-              data.last_taka_no + fieldNumber
+            `Please, Enter valid details for Taka ${data.last_taka_no + fieldNumber
             }`
           );
           hasError = 1;
           return;
+        } else {
+          taka_details.push({
+            taka_no: data?.last_taka_no + fieldNumber,
+            meter: +data[`meter_${fieldNumber}`],
+            weight: +data[`weight_${fieldNumber}`],
+            machine_no: +data[`machine_no_${fieldNumber}`]
+          })
         }
       });
 
@@ -200,14 +229,7 @@ const OpenProduction = () => {
           machine_name: data.machine_name,
           quality_id: data.quality_id,
           createdAt: dayjs(data.date).format("YYYY-MM-DD"),
-          production_details: array.map((fieldNumber) => {
-            return {
-              taka_no: data.last_taka_no + fieldNumber,
-              meter: +data[`meter_${fieldNumber}`],
-              weight: +data[`weight_${fieldNumber}`],
-              machine_no: data[`machine_no_${fieldNumber}`],
-            };
-          }),
+          production_details: taka_details,
         };
 
         await addNewOpeningProduction(payload);
@@ -349,34 +371,34 @@ const OpenProduction = () => {
     }
   }, [partyUserListRes, party_id]);
 
-  // Gery order dropdown list
+  // Gery order dropdown list api =====================================
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
       queryKey: [
         "party",
         "list",
-        { company_id: companyId, order_type: "taka(inhouse)" },
+        { company_id: companyId, order_type: TAKA_IN_HOUSE_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
       ],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: "taka(inhouse)" },
+          params: { company_id: companyId, order_type: TAKA_IN_HOUSE_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
 
-  // Get Inhouse quality dropdown list
+  // Get Inhouse quality selection dropdown api =======================================
   const { data: allQualityListRes, isLoading: allQualityLoading } = useQuery({
     queryKey: [
       "allQualityListRes",
       "list",
       {
         company_id: companyId,
-        // machine_name: machine_name,
         page: 0,
         pageSize: 99999,
         is_active: 1,
+        production_type: TAKA_INHOUSE_QUALITY_TYPE
       },
     ],
     queryFn: async () => {
@@ -386,6 +408,7 @@ const OpenProduction = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: TAKA_INHOUSE_QUALITY_TYPE
         },
       });
       return res.data?.data;
@@ -393,6 +416,7 @@ const OpenProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // Get Dropdown quality list related dropdown api =============================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -404,6 +428,7 @@ const OpenProduction = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: TAKA_INHOUSE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -415,6 +440,7 @@ const OpenProduction = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: TAKA_INHOUSE_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -425,7 +451,7 @@ const OpenProduction = () => {
       enabled: Boolean(companyId),
     });
 
-  // Get Vehicle dropdown list
+  // Get Vehicle dropdown list ==============================================
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
     queryKey: [
       "vehicle",
@@ -441,7 +467,7 @@ const OpenProduction = () => {
     enabled: Boolean(companyId),
   });
 
-  // Get machinedropdown list
+  // Get machinedropdown list api =======================================================
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -454,13 +480,14 @@ const OpenProduction = () => {
     enabled: Boolean(companyId),
   });
 
+  // ===== Set Pending meter and Pending taka related meter information ===== //
   useEffect(() => {
     if (grayOrderListRes && order_id) {
       const order = grayOrderListRes.row.find(({ id }) => order_id === id);
-
-      setPendingMeter(+order.pending_meter - +totalMeter);
-      setPendingTaka(+order.pending_taka - +totalTaka);
-      setPendingWeight(+order.pending_weight - +totalWeight);
+      if (order){
+        setInitialPendingMeter(+order?.pending_meter) ; 
+        setInitialPendingTaka(+order?.pending_taka) ; 
+      }
     }
   }, [grayOrderListRes, order_id, totalMeter, totalTaka, totalWeight]);
 
@@ -482,6 +509,7 @@ const OpenProduction = () => {
         setValue("customer_gst_in", order?.party?.gst_no);
         setValue("party_id", order.party.id);
         setValue("company", order.party.id);
+
         trigger("quality_id");
         trigger("broker_name");
         trigger("delivery_address");
@@ -547,23 +575,18 @@ const OpenProduction = () => {
   };
 
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined) {
-      setPendingMeter(+total_meter - totalMeter);
-    }
-    if (total_weight !== "" && total_weight !== undefined) {
-      setPendingWeight(+total_weight - (totalWeight || 0));
+    if (totalMeter !== undefined && initialPendingMeter !== undefined) {
+      setPendingMeter(+initialPendingMeter - totalMeter);
     }
 
-    if (total_taka !== "" && total_taka !== undefined) {
-      setPendingTaka(+total_taka - totalTaka);
+    if (totalTaka !== undefined && initialPendingTaka !== undefined) {
+      setPendingTaka(+initialPendingTaka - totalTaka);
     }
   }, [
-    total_meter,
-    total_weight,
-    total_taka,
+    initialPendingMeter, 
     totalTaka,
-    totalWeight,
     totalMeter,
+    initialPendingTaka
   ]);
 
   return (
@@ -599,32 +622,16 @@ const OpenProduction = () => {
                   <Checkbox
                     {...field}
                     checked={field.value}
-                    // onChange={(e) => {
-                    //   reset();
-                    //   setTimeout(() => field.onChange(e.target.checked), 100);
-                    // }}
                     onChange={(e) => changeCreateChallanHandler(e, field)}
                   >
                     Create Challan
                   </Checkbox>
                 )}
               />
-
-              {/* <Controller
-              control={control}
-              name="year_type"
-              render={({ field }) => (
-                <Radio.Group {...field}>
-                  <Flex align="center" gap={10}>
-                    <Radio value={"current"}>Current Year</Radio>
-                    <Radio value={"previous"}>Previous Year</Radio>
-                  </Flex>
-                </Radio.Group>
-              )}
-            /> */}
             </div>
           </div>
 
+          {/* Is challan created related option handler  */}
           {is_create_challan == true ? (
             <>
               <Row className="w-100" justify={"flex-start"} gutter={12}>
@@ -824,12 +831,12 @@ const OpenProduction = () => {
                           <Select
                             {...field}
                             placeholder="Select Quality"
-                            loading={allQualityLoading}
+                            loading={dropDownQualityLoading}
                             options={
-                              allQualityListRes &&
-                              allQualityListRes?.rows?.map((item) => ({
+                              dropDownQualityListRes &&
+                              dropDownQualityListRes?.rows?.map((item) => ({
                                 value: item.id,
-                                label: item.quality_name,
+                                label: getDisplayQualityName(item),
                               }))
                             }
                             disabled
@@ -1044,7 +1051,7 @@ const OpenProduction = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={4}>
+                <Col span={6}>
                   <Form.Item
                     label="GST IN"
                     name="customer_gst_in"
@@ -1065,38 +1072,27 @@ const OpenProduction = () => {
                     />
                   </Form.Item>
                 </Col>
-                {/* All Pending information  */}
-                <Col span={2} style={{ textAlign: "end", marginTop: "-25px" }}>
-                  <Typography.Text style={{ color: "red", fontWeight: 600 }}>
-                    Pending
-                  </Typography.Text>
+
+                {/* ======= Pending meter and Pending taka related information =======  */}
+                <Col span={4} style={{ textAlign: "center" }}>
+                  <div style={{ textAlign: "left", fontSize: 13 }}>Pending Meter</div>
+                  <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+                    <div style={{fontSize: 15}}>
+                      {pendingMeter || 0}
+                    </div>
+                  </Typography>
                 </Col>
 
-                <Col
-                  span={4}
-                  style={{
-                    textAlign: "left",
-                    marginTop: "-25px",
-                    paddingLeft: "10px",
-                  }}
-                >
-                  <Typography.Text style={{ color: "red" }}>
-                    {pendingMeter || 0}
-                  </Typography.Text>
-                </Col>
-
-                <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
-                  <Typography.Text style={{ color: "red" }}>
-                    {pendingWeight || 0}
-                  </Typography.Text>
-                </Col>
-
-                <Col span={4} style={{ textAlign: "left", marginTop: "-25px" }}>
-                  <Typography.Text style={{ color: "red" }}>
-                    {pendingTaka || 0}
-                  </Typography.Text>
+                <Col span={6} style={{ textAlign: "center" }}>
+                  <div style={{ textAlign: "left", fontSize: 13 }}>Pending Taka</div>
+                  <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+                    <div style={{fontSize: 15}}>
+                      {pendingTaka || 0}
+                    </div>
+                  </Typography>
                 </Col>
               </Row>
+
             </>
           ) : (
             <Row
@@ -1104,7 +1100,7 @@ const OpenProduction = () => {
               style={{
                 justifyContent: "space-between",
                 alignItems: "center",
-                marginTop: "-15px",
+                marginTop: "-5px",
               }}
             >
               <Col span={8}>
@@ -1165,7 +1161,7 @@ const OpenProduction = () => {
                               dropDownQualityListRes &&
                               dropDownQualityListRes?.rows?.map((item) => ({
                                 value: item.id,
-                                label: item.quality_name,
+                                label: getDisplayQualityName(item),
                               }))
                             }
                           />
@@ -1240,7 +1236,7 @@ const OpenProduction = () => {
                       <DatePicker
                         {...field}
                         disabled
-                        // style={{ width: "100%" }}
+                      // style={{ width: "100%" }}
                       />
                     )}
                   />
@@ -1264,6 +1260,7 @@ const OpenProduction = () => {
             </Col>
           </Row>
 
+          {/* ====== Opening production taka entry related table =======  */}
           {quality_id != undefined && (
             <AddOpeningProductionTable
               errors={errors}

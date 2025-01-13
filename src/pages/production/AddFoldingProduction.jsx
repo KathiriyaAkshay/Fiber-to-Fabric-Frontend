@@ -15,6 +15,7 @@ import {
   message,
   Typography,
   Tooltip,
+  Modal,
 } from "antd";
 import {
   ArrowDownOutlined,
@@ -70,9 +71,6 @@ const getTakaDetailsObject = (details) => {
 
 const validationSchema = yupResolver(
   yup.object().shape({
-    // grade: yup.string().required(),
-    // generate_qr_code: yup.string().required(),
-    // auto_taka_generate: yup.string().required(),
     folding_user_id: yup.string().required(),
     machine_name: yup.string().required(),
     machine_no: yup.string().required(),
@@ -101,12 +99,12 @@ const AddFoldingProduction = () => {
   const [finalMeter, setFinalMeter] = useState(null);
   const [actualMeterCopy, setActualMeterCopy] = useState(0);
   const [currentPendingMeter, setCurrentPendingMeter] = useState(0);
-  // const [actualWeight, setActualWeight] = useState(0);
-
   // ----------------------------------------------------------------------------------------------------------------------------------
 
   const [fieldArray, setFieldArray] = useState([0, 1, 2]);
   const [isRunningBeamFound, setIsRunningBeamFound] = useState(null);
+  const [isbhidanOfMonthModalOpen, setIsBhidanOfMonthModalOpen] = useState(false) ;
+  const [isMoveToBhidanBeam, setIsMoveToBhidanBeam] = useState(false) ;  
 
   const addNewFieldRow = () => {
     const nextValue = fieldArray[fieldArray.length - 1] + 1;
@@ -650,6 +648,9 @@ const AddFoldingProduction = () => {
     }
   }, [pending_meter, actual_meter]);
 
+  
+
+
   return (
     <Form
       // form={form}
@@ -1147,7 +1148,17 @@ const AddFoldingProduction = () => {
         </Flex>
       </div>
 
-      {/* <TableListView company={company} /> */}
+      {/* Move to bhidan beam related conformation dialog box  */}
+      <Modal
+        title = "Beam Confirmation"
+        open = {isbhidanOfMonthModalOpen}
+        onOk={() => {setIsMoveToBhidanBeam(true)}}
+        onCancel={() => {setIsBhidanOfMonthModalOpen(false)}}
+        okText = "Move"
+        cancelText = "Cancel"
+      >
+        <p>Do you want to move this beam to the Bhidan Beam?</p>
+      </Modal>
     </Form>
   );
 };
@@ -1582,6 +1593,7 @@ const ProductionMeterForm = ({
 
       </div>
     </div>
+    
   );
 };
 

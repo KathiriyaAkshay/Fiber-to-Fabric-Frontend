@@ -112,7 +112,12 @@ body {
   position: sticky;
   bottom: 0;
   z-index: 10;
-  background-color: #ffffff;
+  background-color: #83b1ff;
+}
+
+.job-challan-table-total td{
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .production-table-div {
@@ -1381,4 +1386,13 @@ h2 {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 3px;
+}
+
+.production-pending-meter{
+  color: red !important;
+  font-weight:500;
+}
+
+.production-multiple-quality-input{
+  max-width: 220px;
 }

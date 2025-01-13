@@ -32,6 +32,7 @@ import { ORDER_TYPE } from "../../constants/orderMaster";
 import { createSaleChallanTakaDetailRequest } from "../../api/requests/sale/challan/challan";
 import { useDebounceCallback } from "../../hooks/useDebounce";
 import { disabledFutureDate } from "../../utils/date";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const addTakaTpCuttingResolver = yupResolver(
   yup.object().shape({
@@ -128,7 +129,7 @@ const AddTakaTpCutting = () => {
   });
   const { machine_name, from_type, to_type, option } = watch();
 
-  // Machinename dropdown list request
+  // Machinename dropdown list request api =============================
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -158,7 +159,7 @@ const AddTakaTpCutting = () => {
     enabled: Boolean(companyId),
   });
 
-  // Quality list related dropdown list 
+  // Quality list related dropdown list  ====================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -407,7 +408,7 @@ const AddTakaTpCutting = () => {
                           dropDownQualityListRes &&
                           dropDownQualityListRes?.rows?.map((item) => ({
                             value: item.id,
-                            label: item.quality_name,
+                            label: getDisplayQualityName(item),
                           }))
                         }
                       />

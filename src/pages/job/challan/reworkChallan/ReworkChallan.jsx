@@ -32,6 +32,9 @@ import DeleteReworkChallan from "../../../../components/job/challan/reworkChalla
 import ViewReworkChallanInfo from "../../../../components/job/challan/reworkChallan/ViewReworkChallan";
 import ReworkChallanModal from "../../../../components/job/challan/reworkChallan/ReworkChallanModal";
 import { disabledFutureDate } from "../../../../utils/date";
+import { JOB_REWORK_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const ReworkChallan = () => {
   const navigate = useNavigate();
@@ -66,15 +69,15 @@ const ReworkChallan = () => {
     }));
   };
 
-  // Supplier dropdown list
+  // Supplier dropdown list api ===================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -105,6 +108,7 @@ const ReworkChallan = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -116,6 +120,7 @@ const ReworkChallan = () => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -223,6 +228,13 @@ const ReworkChallan = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
+      render: (text, record) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {text}
+          </div>
+        )
+      }
     },
     {
       title: "Challan Date",
@@ -240,8 +252,13 @@ const ReworkChallan = () => {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
       key: ["inhouse_quality"],
-      render: (quality) =>
-        `${quality?.quality_name} (${quality?.quality_weight})`,
+      render: (text, record) => {
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(text)}
+          </div>
+        )
+      }
     },
     {
       title: "Total Taka",
@@ -496,7 +513,7 @@ const ReworkChallan = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item),
                     }))
                   }
                   dropdownStyle={{

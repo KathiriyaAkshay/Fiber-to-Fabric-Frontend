@@ -42,6 +42,8 @@ import { getCurrentFinancialYearDates } from "../../utils/date";
 import dayjs from "dayjs";
 import { TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
 import { getDisplayQualityName } from "../../constants/nameHandler";
+import { USER_ROLES } from "../../constants/userRole";
+import { getOtherUserListRequest } from "../../api/requests/users";
 
 const InhouseProduction = () => {
   const navigate = useNavigate();
@@ -147,6 +149,31 @@ const InhouseProduction = () => {
       enabled: Boolean(companyId),
     });
 
+  // Get Folding user dropdown related api ==========================
+  const { data: userListRes, isLoading: isLoadingUserList } = useQuery({
+    queryKey: [
+      "other-user",
+      "list",
+      {
+        company_id: companyId,
+        is_active: 1,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getOtherUserListRequest({
+        params: {
+          company_id: companyId,
+          is_active: 1,
+          role_id: USER_ROLES.FOLDING_USER.role_id,
+        },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  
+
   // Production taka list request ===============================
   const { data: productionList, isLoading } = useQuery({
     queryKey: [
@@ -165,7 +192,7 @@ const InhouseProduction = () => {
         toMachine: debounceToMachineNo,
         challanNo: debounceChallanNo,
         type: debounceType,
-        // folding_user_id: debounceFoldingUser,
+        folding_user_id: debounceFoldingUser,
         fromTaka: debounceFromTakaNo,
         toTaka: debounceToTakaNo,
       },
@@ -185,6 +212,7 @@ const InhouseProduction = () => {
         challanNo: debounceChallanNo,
         fromTaka: debounceFromTakaNo,
         toTaka: debounceToTakaNo,
+        folding_user_id: debounceFoldingUser
       };
 
       if (radioSelection == "sold") {
@@ -397,6 +425,13 @@ const InhouseProduction = () => {
       title: "Machine No",
       dataIndex: "machine_no",
       key: "machine_no",
+      render: (text, record) => {
+        return(
+          <div style={{textAlign: "center"}}>
+            {text} <span style={{fontWeight: 600}}>{(record?.beam_no !== null?` | ${record?.beam_no}`:"")}</span>
+          </div>
+        )
+      }
     },
     {
       title: "Average",
@@ -408,11 +443,6 @@ const InhouseProduction = () => {
         let average = (Number(weight) * 100) / Number(meter);
         return <div>{isNaN(average.toFixed(2))?parseFloat(0).toFixed(2):average.toFixed(2)}</div>;
       },
-    },
-    {
-      title: "Meter",
-      dataIndex: "meter",
-      key: "meter",
     },
     {
       title: "Status",
@@ -439,9 +469,26 @@ const InhouseProduction = () => {
               <Tag color="green">In-Stock</Tag>
             </div>
           )
+        } else {
+          return(
+            <Tag>
+              {String(record?.status).toUpperCase()}
+            </Tag>
+          )
         }
       },
     },
+    {
+      title: "Prod. Date", 
+      render: (text, record) => {
+        console.log(record);
+        return(
+          <div>
+            {dayjs(record?.production_date).format("DD-MM-YYYY")}
+          </div>
+        )
+      }
+    }, 
     {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
@@ -469,7 +516,7 @@ const InhouseProduction = () => {
               </Button>
             )}
 
-            {details?.status?.toLowerCase() === "instock" && !details.is_tp && (
+            {details?.status?.toLowerCase() === "instock" && !details.is_tp && details?.sale_challan == null && (
               <DeleteProduction details={details} />
             )}
 
@@ -552,6 +599,7 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
 
               {/* Total count information  */}
@@ -578,6 +626,7 @@ const InhouseProduction = () => {
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
                 <Table.Summary.Cell index={0}></Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
               </Table.Summary.Row>
             </>
           );
@@ -674,6 +723,10 @@ const InhouseProduction = () => {
               allowClear
               placeholder="Select Folding user"
               value={foldingUser}
+              options={userListRes?.userList?.map((user) => ({
+                label: `${user?.first_name} ${user?.last_name}`,
+                value: user?.id,
+              }))}
               onChange={setFoldingUser}
               dropdownStyle={{
                 textTransform: "capitalize",

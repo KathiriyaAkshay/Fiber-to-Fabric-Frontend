@@ -1,5 +1,5 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Select } from "antd";
+import { Button, Form, Input, message, Select } from "antd";
 import { Controller } from "react-hook-form";
 import { useDebounceCallback } from "../../hooks/useDebounce";
 
@@ -13,7 +13,6 @@ const AddOpeningProductionTable = ({
   setValue,
   lastOpeningProductionTaka,
   getValues,
-
   totalMeter,
   setTotalMeter,
   totalWeight,
@@ -27,10 +26,21 @@ const AddOpeningProductionTable = ({
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
-      setActiveField((prev) => prev + 1);
-      setTimeout(() => {
-        setFocus(`meter_${fieldNumber + 1}`);
-      }, 0);
+      let taka_meter = getValues(`meter_${fieldNumber}`) ; 
+      let taka_weight = getValues(`weight_${fieldNumber}`) ; 
+      let taka_machine_number = getValues(`machine_no_${fieldNumber}`) ; 
+      if (taka_meter == undefined || taka_meter == ""){
+        message.warning(`Please, Enter taka meter`) ; 
+      } else if (taka_weight == undefined || taka_weight == ""){
+        message.warning(`Please, Enter taka weight`) ; 
+      } else if (taka_machine_number == undefined || taka_machine_number == ""){
+        message.warning(`Please, taka machine number`) ; 
+      } else {
+        setActiveField((prev) => prev + 1);
+        setTimeout(() => {
+          setFocus(`meter_${fieldNumber + 1}`);
+        }, 0);
+      }
     }
   };
 
@@ -103,7 +113,7 @@ const AddOpeningProductionTable = ({
               <tr key={fieldNumber}>
                 <td
                   className="job-challan-taka-index-column job-production-index-column"
-                  style={{ textAlign: "center" }}
+                  style={{ textAlign: "center", color: "#FFF" }}
                 >
                   {fieldNumber}
                 </td>
@@ -141,7 +151,6 @@ const AddOpeningProductionTable = ({
                                 ? `${lastOpeningProductionTaka + fieldNumber}`
                                 : ""
                             }
-                            // disabled={fieldNumber > activeField}
                             disabled
                           />
                         );

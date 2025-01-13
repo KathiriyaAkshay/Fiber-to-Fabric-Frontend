@@ -247,7 +247,7 @@ const AddMyOrder = () => {
               pageSize: 99999,
               is_active: 1,
               production_type: order_type == "purchase/trading"?PURCHASE_QUALITY_TYPE:
-                order_type == "job"?JOB_QUALITY_TYPE:TAKA_INHOUSE_QUALITY_TYPE``
+                order_type == "job"?JOB_QUALITY_TYPE:TAKA_INHOUSE_QUALITY_TYPE
             },
           });
           return res.data?.data;

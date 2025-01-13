@@ -34,6 +34,9 @@ import moment from "moment/moment";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
+import { JOB_REWORK_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -222,7 +225,7 @@ const AddReworkChallan = () => {
   const { supplier_name, supplier_id, machine_name, quality_id, option } =
     watch();
 
-  // Machinelist dropdown list
+  // Machine list dropdown api ==================================================
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -239,6 +242,7 @@ const AddReworkChallan = () => {
   const [reworkChallanOption, setReworkChallanOption] = useState([
     { label: "Other", value: "Other" },
   ]);
+
   const { data: reworkOptionsListRes, isLoading: isLoadingReworkOptionList } =
     useQuery({
       queryKey: ["reworkOption", "dropDown", "list", { company_id: companyId }],
@@ -255,7 +259,7 @@ const AddReworkChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Dropdown quality list
+  // Dropdown quality list =================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -267,6 +271,7 @@ const AddReworkChallan = () => {
           pageSize: 9999,
           is_active: 1,
           machine_name: machine_name,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -278,6 +283,7 @@ const AddReworkChallan = () => {
               pageSize: 9999,
               is_active: 1,
               machine_name: machine_name,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -302,15 +308,15 @@ const AddReworkChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  // Dropdown supplier list request
+  // Dropdown supplier list request ===========================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -329,10 +335,14 @@ const AddReworkChallan = () => {
           params: { company_id: companyId },
         });
 
-        let challanNumber = Number(res?.data?.data?.challan_no) || 0;
-        challanNumber = challanNumber + 1;
-        setValue(`challan_no`, challanNumber);
-        return challanNumber;
+        if (res?.data?.data?.challan_no == null || res?.data?.data?.challan_no == undefined){
+          return 1 ; 
+        } else {
+          let challanNumber = Number(res?.data?.data?.challan_no) || 0;
+          challanNumber = challanNumber + 1;
+          setValue(`challan_no`, challanNumber);
+          return challanNumber;
+        }
       },
       enabled: Boolean(companyId),
     }
@@ -519,7 +529,7 @@ const AddReworkChallan = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       onChange={(value) => {
@@ -640,33 +650,6 @@ const AddReworkChallan = () => {
 
           <Col span={6}>
             <Form.Item
-              label="Gst In"
-              name="gst_in_2"
-              validateStatus={errors.gst_in_2 ? "error" : ""}
-              help={errors.gst_in_2 && errors.gst_in_2.message}
-              required={true}
-              wrapperCol={{ sm: 24 }}
-            >
-              <Controller
-                control={control}
-                name="gst_in_2"
-                render={({ field }) => (
-                  <Input {...field} placeholder="GST In" disabled />
-                )}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row
-          gutter={18}
-          style={{
-            padding: "12px",
-            marginTop: "-30px",
-          }}
-        >
-          <Col span={6}>
-            <Form.Item
               label="Select Supplier"
               name="supplier_name"
               validateStatus={errors.supplier_name ? "error" : ""}
@@ -729,6 +712,15 @@ const AddReworkChallan = () => {
               />
             </Form.Item>
           </Col>
+        </Row>
+
+        <Row
+          gutter={18}
+          style={{
+            padding: "12px",
+            marginTop: "-30px",
+          }}
+        >
 
           <Col span={6}>
             <Form.Item

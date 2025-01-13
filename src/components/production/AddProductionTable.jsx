@@ -1,7 +1,8 @@
 import { MinusCircleOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message, Select, Tag } from "antd";
+import { Button, Flex, Form, Input, message, Select, Tag, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const AddProductionTable = ({
   errors,
@@ -61,7 +62,6 @@ const AddProductionTable = ({
     if (event.keyCode === 13) {
       let meters = getValues(`meter_${fieldNumber}`);
       let production_meter = getValues(`production_meter_${fieldNumber}`) || 0;
-      console.table("🧑‍💻 || meters:", meters);
       let machine_number = getValues(`machine_no_${fieldNumber}`);
       let weight = getValues(`weight_${fieldNumber}`);
       let average = getValues(`average_${fieldNumber}`);
@@ -83,13 +83,13 @@ const AddProductionTable = ({
         return;
       } else {
         let pending_meter = Number(production_meter) - Number(meters);
-        setValue(`pending_meter_${fieldNumber}`, pending_meter);
+        setValue(`pending_meter_${fieldNumber}`, parseFloat(pending_meter).toFixed(2));
 
         let pending_precentage =
           (Number(pending_meter) * 100) / Number(production_meter);
         setValue(
           `pending_percentage_${fieldNumber}`,
-          pending_precentage.toFixed(2)
+          parseFloat(pending_precentage).toFixed(2)
         );
 
         setActiveField((prev) => prev + 1);
@@ -132,10 +132,10 @@ const AddProductionTable = ({
               `production_meter_${index - 1}`,
               current_taka_production_meter
             );
-            setValue(`pending_meter_${index - 1}`, current_taka_pending_meter);
+            setValue(`pending_meter_${index - 1}`, parseFloat(current_taka_pending_meter).toFixed(2));
             setValue(
               `pending_percentage_${index - 1}`,
-              current_taka_pending_precentage
+              parseFloat(current_taka_pending_precentage).toFixed(2)
             );
           } else {
             setValue(`meter_${index - 1}`, current_taka_meter);
@@ -149,14 +149,14 @@ const AddProductionTable = ({
             );
             setValue(
               `pending_meter_${index - 1}`,
-              Number(delete_taka_production_meter) - current_taka_meter
+              parseFloat(Number(delete_taka_production_meter) - current_taka_meter).toFixed(2)
             );
 
             let pending_precentage =
               ((Number(delete_taka_production_meter) - current_taka_meter) *
                 100) /
               Number(delete_taka_production_meter);
-            setValue(`pending_percentage_${index - 1}`, pending_precentage);
+            setValue(`pending_percentage_${index - 1}`, parseFloat(pending_precentage).toFixed(2));
             delete_taka_production_meter =
               Number(delete_taka_production_meter) - current_taka_meter;
           }
@@ -343,12 +343,24 @@ const AddProductionTable = ({
                     ? isNaN(lastProductionTaka?.taka_no)
                       ? 1
                       : <>
-                        <div>
-                          {production_filter == QUALITY_WISE_OPTION && (
-                            <Tag color="#f50" style={{marginLeft: 5}}>A</Tag>
-                          )}
-                          {lastProductionTaka?.taka_no + fieldNumber}
-                        </div>
+                        <Flex>
+                          
+                          <div>
+                            {/* Show by default grade to A in quality wise production information  */}
+                            {production_filter == QUALITY_WISE_OPTION && (
+                              <Tag color="#f50" style={{marginLeft: 5}}>A</Tag>
+                            )}
+
+                            {/* Show by default grade to A in multiple quality wise information  */}
+                            {production_filter == MULTI_QUALITY_WISE_OPTION && (
+                              <Tag color="#f50" style={{marginLeft: 5}}>A</Tag>
+                            )}
+                          </div>
+
+                          <div style={{marginTop: "auto", marginBottom: "auto"}}>
+                            {lastProductionTaka?.taka_no + fieldNumber}
+                          </div>
+                        </Flex>
                       </>
                     : ""}
 
@@ -460,23 +472,31 @@ const AddProductionTable = ({
                         marginBottom: "0px",
                         border: "0px solid !important",
                       }}
-                    >
+                    > 
                       <Controller
                         control={control}
                         name={`quality_${fieldNumber}`}
-                        render={({ field }) => (
-                          <Select
-                            {...field}
-                            disabled={true}
-                            options={
-                              dropDownQualityListRes &&
-                              dropDownQualityListRes?.rows?.map((item) => ({
-                                value: item.id,
-                                label: item.quality_name,
-                              }))
-                            }
-                          />
-                        )}
+                        render={({ field }) => {
+                          let selected_quality_id = getValues(`quality_${fieldNumber}`) ; 
+                          console.log("Selected quality id information", selected_quality_id);
+                          
+                          return(
+                            <Tooltip title = {getValues(`quality_${fieldNumber}`)}>
+                              <Select
+                                {...field}
+                                disabled={true}
+                                className="production-multiple-quality-input"
+                                options={
+                                  dropDownQualityListRes &&
+                                  dropDownQualityListRes?.rows?.map((item) => ({
+                                    value: item.id,
+                                    label: getDisplayQualityName(item),
+                                  }))
+                                }
+                              />
+                            </Tooltip>
+                          )
+                        }}
                       />
                     </Form.Item>
                   </td>
@@ -661,6 +681,7 @@ const AddProductionTable = ({
                       render={({ field }) => (
                         <Input
                           {...field}
+                          className="production-pending-meter"
                           type="number"
                           style={{
                             width: "100%",
@@ -699,6 +720,7 @@ const AddProductionTable = ({
                         <Input
                           {...field}
                           type="number"
+                          className="production-pending-meter"
                           style={{
                             width: "100%",
                             border: "0px solid",

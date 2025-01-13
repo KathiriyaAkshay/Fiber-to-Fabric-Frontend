@@ -27,6 +27,7 @@ import { getCheckTakaReportListRequest } from "../../../../api/requests/reports/
 import DeleteCheckTakaReportButton from "../../../../components/tasks/checkTakaReport/DeleteCheckTakaReportButton";
 import { formatDate } from "../../../../constants/time";
 import moment from "moment";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 function CheckTakaReportList() {
   const [search, setSearch] = useState("");
@@ -170,7 +171,13 @@ function CheckTakaReportList() {
       title: "Quality",
       dataIndex: "quality",
       key: "quality",
-      render: (text, record) => `${record?.inhouse_quality?.quality_name}`,
+      render: (text, record) => {
+        return(
+          <div>
+            {getDisplayQualityName(record?.inhouse_quality)}
+          </div>
+        )
+      }
     },
     {
       title: "Problem",

@@ -141,9 +141,11 @@ const AddProduction = () => {
             hasError = 1;
             message.error("Please, Provide Pis information");
           } else {
-            payload.grade = data.grade;
+            payload.grade = data.grade || "A";
             payload.pis = data.pis;
           }
+        } else {
+          payload.grade = "A" ; 
         }
         return payload;
       }
@@ -209,7 +211,7 @@ const AddProduction = () => {
     enabled: Boolean(companyId),
   });
 
-  // Get Beamcard list information
+  // Get Beamcard list information ===================================== 
   const { data: beamCardList } = useQuery({
     queryKey: [
       "beamCard",
@@ -310,7 +312,27 @@ const AddProduction = () => {
         }
       },
       enabled: Boolean(companyId),
-    });
+  });
+
+  // Load running machine number selection drpdown
+  // const {data: runningMachineNumberList, isLoading: isLoadingRnningMachineNumber} = useQuery({
+  //   queryKey: ["machine_number", "dropdown", {company_id: companyId, machine_name: machine_name}], 
+  //   queryFn: async () => {
+  //     if (machine_name){
+  //       const res = await getLoadedMachineListRequest({
+  //         params: {
+  //           company_id: companyId, 
+  //           machine_name: machine_name, 
+  //           page: 0, 
+  //           pageSize: 99999
+  //         }
+  //       })
+  
+  //       return res?.data?.data ; 
+  //     }
+  //   }, 
+  //   enabled: Boolean(companyId)
+  // })
 
   const avgWeight = useMemo(() => {
     if (
