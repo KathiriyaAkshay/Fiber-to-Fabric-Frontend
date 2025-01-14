@@ -10,10 +10,10 @@ import {
   SortDescendingOutlined,
 } from "@ant-design/icons";
 import moment from "moment";
-
-// const { Text } = Typography;
-
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 const ViewChallan = ({ details, isMutliple }) => {
+  console.log(details);
+  
   const [isModelOpen, setIsModalOpen] = useState(
     isMutliple == undefined ? false : true
   );
@@ -76,7 +76,10 @@ const ViewChallan = ({ details, isMutliple }) => {
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
-          <Typography.Text className=" font-medium text-white">
+          <Typography.Text
+            className="font-medium text-white"
+            style={{ fontSize: 18 }}
+          >
             Sale Challan
           </Typography.Text>
         }
@@ -178,6 +181,7 @@ const ViewChallan = ({ details, isMutliple }) => {
                   className="w-full border-collapse"
                   style={{ border: "1px solid", marginTop: 40 }}
                 >
+                  {/* ===== Company name =====  */}
                   <thead>
                     <tr
                       className="p-2"
@@ -190,6 +194,8 @@ const ViewChallan = ({ details, isMutliple }) => {
                       </th>
                     </tr>
                   </thead>
+
+                  {/* ===== Company contact number, mobile number and Pancard related information =====  */}
                   <tbody className="text-center">
                     <tr style={{ borderBottom: "1px solid" }}>
                       <td
@@ -209,25 +215,25 @@ const ViewChallan = ({ details, isMutliple }) => {
                         colSpan="1"
                         className="py-2 border-b border-gray-300 sale-challan-font"
                       >
-                        PHONE NO: {company?.company_contact}
+                        <strong>PHONE NO:</strong> {company?.company_contact}
                       </td>
                       <td
                         colSpan="1"
                         className="py-2 border-b border-gray-300 sale-challan-font"
                       >
-                        PAYMENT: -
+                        <strong>PAYMENT:</strong> -
                       </td>
                       <td
                         colSpan="1"
                         className="py-2 border-b border-gray-300 sale-challan-font"
                       >
-                        GST NO: {company?.gst_no}
+                        <strong>GST NO:</strong> {company?.gst_no}
                       </td>
                       <td
                         colSpan="1"
                         className="py-2 border-b border-gray-300 sale-challan-font"
                       >
-                        PAN NO: {company?.pancard_no}
+                        <strong>PAN NO:</strong> {company?.pancard_no}
                       </td>
                     </tr>
 
@@ -235,38 +241,75 @@ const ViewChallan = ({ details, isMutliple }) => {
                       className="bg-gray-100"
                       style={{ borderBottom: "1px solid" }}
                     >
-                      <th colSpan="4" className="py-2 text-center">
+                      <th colSpan="6" className="py-2 text-center">
                         {" "}
                         ❖ DELIVERY CHALLAN ❖{" "}
                       </th>
                     </tr>
 
-                    <tr style={{ borderBottom: "1px solid" }}>
+                    <tr style={{ borderBottom: "1px solid" }} >
+                      {/* First Section */}
                       <td
-                        colSpan="2"
+                        colSpan={"1"}
+                        style={{verticalAlign: "top"}}
                         className="py-2 border-b border-gray-300 sale-challan-font sale-challan-data"
                       >
-                        <p>M/S: BABAJI SILK FABRIC / H M SILK FABRIC</p>
                         <p>
-                          <span style={{ fontWeight: 600 }}>DELIVERY AT</span>:{" "}
-                          {element?.supplier?.user?.address}
+                          <div>
+                            <div>
+                              <span style={{ fontWeight: 600 }}>DELIVERY AT</span>:{" "}
+                            </div>
+                            <div>
+                              
+                            </div>
+                          </div>
+                          {element?.party?.party?.delivery_address}
+                        </p>
+                        <p>
+                          <span style={{ fontWeight: 600 }}>E-WAY BILL NO</span>: --
+                        </p>
+                        <p>
+                          <span style={{ fontWeight: 600 }}>VEHICLE NO</span>: 
+                          <span style={{marginLeft: 5}}>
+                            {element?.vehicle?.vehicle?.vehicleName}
+                            <strong style={{
+                              marginLeft: 4,
+                              marginRight: 4
+                            }}>|</strong>
+                            {element?.vehicle?.vehicle?.vehicleNo}
+                          </span>  
+                        </p>
+                      </td>
+
+                      {/* Second Section */}
+                      <td
+                        colSpan={"1"}
+                        style={{ borderLeft: "1px solid", paddingLeft: 10, verticalAlign: "top" }}
+                        className="py-2 border-b border-gray-300 sale-challan-font sale-challan-data"
+                      > 
+                        <div>
+                          <span>
+                            <span style={{fontWeight: 600}}>M/S:</span> {String(`${element?.party?.first_name} ${element?.party?.last_name}`).toUpperCase()}
+                          </span><br/>
+                          {element?.party?.party?.company_name}
+                        </div>
+
+                        <p style={{marginTop: 10}}>
+                          <div>
+                            <span style={{ fontWeight: 600 }}>DELIVERY AT</span>:{" "}
+                          </div>
+                          {element?.party?.party?.delivery_address}
                         </p>
                         <p>
                           <span style={{ fontWeight: 600 }}>GST</span>:{" "}
-                          {element?.supplier?.user?.gst_no}
-                        </p>
-                        <p>
-                          <span style={{ fontWeight: 600 }}>E-WAY BILL NO</span>
-                          :
-                        </p>
-                        <p>
-                          <span style={{ fontWeight: 600 }}>VEHICLE NO</span>::
-                          GJ 05 NW 2334
+                          {element?.party?.party?.company_gst_number}
                         </p>
                       </td>
+
+                      {/* Third Section */}
                       <td
-                        colSpan="2"
-                        style={{ borderLeft: "1px solid" }}
+                        colSpan={"2"}
+                        style={{ borderLeft: "1px solid", paddingLeft: 10 }}
                         className="py-2 border-b border-gray-300 sale-challan-font sale-challan-data"
                       >
                         <p>
@@ -278,10 +321,7 @@ const ViewChallan = ({ details, isMutliple }) => {
                           {element?.gray_order?.order_no}
                         </p>
                         <p>
-                          <span style={{ fontWeight: 600 }}>
-                            PARTY ORDER NO
-                          </span>
-                          :{" "}
+                          <span style={{ fontWeight: 600 }}>PARTY ORDER NO</span>:{" "}
                         </p>
                         <p>
                           <span style={{ fontWeight: 600 }}>DATE</span>:{" "}
@@ -289,13 +329,11 @@ const ViewChallan = ({ details, isMutliple }) => {
                         </p>
                         <p>
                           <span style={{ fontWeight: 600 }}>BROKER</span>:{" "}
-                          {`${element?.borker?.first_name} ${element?.broker?.last_name}`}
+                          {String(`${element?.broker?.first_name} ${element?.broker?.last_name}`).toUpperCase()}
                         </p>
                         <p>
-                          <span style={{ fontWeight: 600 }}>
-                            DESCRIPTION OF GOODS
-                          </span>
-                          : {element?.inhouse_quality?.quality_name}
+                          <span style={{ fontWeight: 600 }}>DESCRIPTION OF GOODS</span>:{" "}
+                          {getDisplayQualityName(element?.inhouse_quality)}
                         </p>
                       </td>
                     </tr>
@@ -649,6 +687,8 @@ const ViewChallan = ({ details, isMutliple }) => {
 
                     <tr className="sale-challan-taka-info final-total-count">
                       <td colSpan={1} className="">
+
+                        {/* Taka information header row  */}
                         <Row
                           justify={"space-between"}
                           className="w-full bg-gray-100"
@@ -675,12 +715,10 @@ const ViewChallan = ({ details, isMutliple }) => {
                                 { label: "PIS", value: "PIS" },
                               ]}
                             >
-                              {/* <Option value="MET">Option 1</Option>
-                              <Option value="KG">Option 2</Option>
-                              <Option value="PIS">Option 3</Option> */}
                             </Select>
                           </Col>
                         </Row>
+
                         {Array(12)
                           .fill(1)
                           .map((el, i) => (
@@ -751,9 +789,6 @@ const ViewChallan = ({ details, isMutliple }) => {
                                 { label: "PIS", value: "PIS" },
                               ]}
                             >
-                              {/* <Option value="MET">Option 1</Option>
-                              <Option value="KG">Option 2</Option>
-                              <Option value="PIS">Option 3</Option> */}
                             </Select>
                           </Col>
                         </Row>

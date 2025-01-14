@@ -30,13 +30,16 @@ import { getMyOrderListRequest } from "../../../../api/requests/orderMaster";
 import dayjs from "dayjs";
 import {
   createSaleChallanRequest,
-  // getSaleLastChallanNumberRequest,
 } from "../../../../api/requests/sale/challan/challan";
 import SaleChallanFieldTable from "../../../../components/sale/challan/saleChallan/SaleChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
 import { disabledFutureDate } from "../../../../utils/date";
 import { getPurchaseTakaByIdRequest } from "../../../../api/requests/purchase/purchaseTaka";
 import { getJobTakaByIdRequest } from "../../../../api/requests/job/jobTaka";
+import { MY_ORDER_PENDING_STATUS } from "../../../../constants/supplier";
+import { TAKA_IN_HOUSE_ORDER_TYPE } from "../../../../constants/supplier";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { getPartyListRequest } from "../../../../api/requests/users";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -47,7 +50,8 @@ const addJobTakaSchemaResolver = yupResolver(
     gst_in_2: yup.string().required("Please enter GST In."),
     challan_no: yup.string().required("Please enter challan no."),
     gray_order_id: yup.string().required("Please select order."),
-    supplier_id: yup.string().required("Please select supplier."),
+    party_id: yup.string().required("Please select party."),
+    party_name: yup.string().required("Please, Select party name"),
     vehicle_id: yup.string().required("Please select vehicle."),
     broker_id: yup.string().required("Please select broker."),
     quality_id: yup.string().required("Please select quality."),
@@ -72,9 +76,14 @@ const AddSaleChallan = () => {
   const [activeField, setActiveField] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Calculation pending data related information
+  // Calculation pending data related information ====================
+
+  const [initialPendingMeter, setInitialPendingMeter] = useState(undefined) ; 
   const [pendingMeter, setPendingMeter] = useState(0);
+
+  const [initialPendingTaka, setInitialPendingTaka] = useState(undefined) ; 
   const [pendingTaka, setPendingTaka] = useState(0);
+  
   const [pendingWeight, setPendingWeight] = useState(0);
 
   const navigate = useNavigate();
@@ -134,7 +143,18 @@ const AddSaleChallan = () => {
       const takaNo = data[`taka_no_${field}`];
       const meter = data[`meter_${field}`];
       const weight = data[`weight_${field}`];
-
+    
+      // Check if all fields are null, undefined, empty, or NaN
+      const areAllFieldsEmpty =
+        (takaNo === null || takaNo === undefined || takaNo === "" || isNaN(takaNo)) &&
+        (meter === null || meter === undefined || meter === "" || isNaN(meter)) &&
+        (weight === null || weight === undefined || weight === "" || isNaN(weight));
+    
+      if (areAllFieldsEmpty) {
+        // Skip this iteration if all fields are empty
+        return;
+      }
+    
       if ((isNaN(takaNo) || takaNo === "") && meter !== "" && weight !== "") {
         message.error(`Enter taka no for ${field} number row.`);
         setError(`taka_no_${field}`, {
@@ -144,7 +164,7 @@ const AddSaleChallan = () => {
         hasError = 1;
         return;
       }
-      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight != "") {
+      if ((isNaN(meter) || meter === "") && takaNo !== "" && weight !== "") {
         message.error(`Enter meter for ${field} number row.`);
         setError(`meter_${field}`, {
           type: "manual",
@@ -162,32 +182,33 @@ const AddSaleChallan = () => {
         hasError = 1;
         return;
       }
-
+    
       if (
-        data[`taka_no_${field}`] != "" &&
-        data[`meter_${field}`] != "" &&
-        data[`weight_${field}`] != ""
+        takaNo !== "" &&
+        meter !== "" &&
+        weight !== ""
       ) {
         let model = data[`model_${field}`];
-        let taka_number = data[`taka_no_${field}`];
-
-        if (model == "purchase/trading") {
+        let taka_number = takaNo;
+    
+        if (model === "purchase/trading") {
           purchased_taka_number.push(taka_number);
-        } else if (model == "taka(inhouse)") {
+        } else if (model === "taka(inhouse)") {
           sale_taka_number.push(taka_number);
         } else {
           job_taka_number.push(taka_number);
         }
-
+    
         sale_challan_detail.push({
           index: index + 1,
           taka_no: taka_number,
-          meter: parseInt(data[`meter_${field}`]),
-          weight: parseInt(data[`weight_${field}`]),
+          meter: parseInt(meter),
+          weight: parseInt(weight),
           model: model,
         });
       }
     });
+    
 
     if (sale_challan_detail?.length == 0) {
       message.error("Required at least one taka");
@@ -205,11 +226,11 @@ const AddSaleChallan = () => {
         broker_id: +data.broker_id,
         quality_id: +data.quality_id,
         vehicle_id: +data.vehicle_id,
-        supplier_id: +data.supplier_id,
+        // supplier_id: +data.supplier_id,
         delivery_note: data.delivery_note,
 
         pending_meter: +pendingMeter,
-        pending_weight: +pendingWeight,
+        pending_weight: +pendingWeight || 0,
         pending_taka: +pendingTaka,
 
         total_taka: +totalTaka,
@@ -300,47 +321,14 @@ const AddSaleChallan = () => {
     resolver: addJobTakaSchemaResolver,
   });
   const {
-    supplier_name,
     gray_order_id,
-    supplier_id,
     type,
     is_gray,
     quality_id,
-    total_meter,
-    total_weight,
-    total_taka,
+    party_name, 
+    party_id
   } = watch();
 
-  // Get last challan number for cash order
-  // const { data: lastChallanNumber, isLoading: lastChallanNumberLoading } =
-  //   useQuery({
-  //     queryKey: [
-  //       "sale",
-  //       "challan",
-  //       "last-invoice-no",
-  //       { company_id: companyId, is_grey: is_gray },
-  //     ],
-  //     queryFn: async () => {
-  //       if (is_gray == "false") {
-  //         const res = await getSaleLastChallanNumberRequest({
-  //           params: { company_id: companyId, is_gray: "0" },
-  //         });
-
-  //         let challan_number =
-  //           res?.data?.data?.saleChallan?.challan_no || "CH-1";
-  //         challan_number = challan_number.split("-");
-  //         let new_challan_number = 0;
-
-  //         if (challan_number?.length == 1) {
-  //           new_challan_number = `CH-${Number(challan_number[0]) + 1}`;
-  //         } else {
-  //           new_challan_number = `CH-${Number(challan_number[1]) + 1}`;
-  //         }
-  //         setValue("challan_no", new_challan_number);
-  //       }
-  //     },
-  //     enabled: Boolean(companyId && is_gray),
-  //   });
 
   // Vehicle dropdown list ===========================================================
   const { data: vehicleListRes, isLoading: isLoadingVehicleList } = useQuery({
@@ -358,7 +346,7 @@ const AddSaleChallan = () => {
     enabled: Boolean(companyId),
   });
 
-  // DropDown quality list
+  // DropDown quality list ===========================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -385,21 +373,17 @@ const AddSaleChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Dropdown greyorder list
+  // Greyorder dropdown list api =====================================================
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: ["party", "list", { company_id: companyId }],
+      queryKey: ["myorder", "list", { company_id: companyId }],
       queryFn: async () => {
         const params = {
           company_id: companyId,
+          status: MY_ORDER_PENDING_STATUS, 
+          order_type: TAKA_IN_HOUSE_ORDER_TYPE
         };
-        if (SALE_CHALLAN_ADD && SALE_CHALLAN_ADD?.model === "purchase") {
-          params.order_type = "purchase/trading";
-        } else if (SALE_CHALLAN_ADD && SALE_CHALLAN_ADD?.model === "job") {
-          params.order_type = "job";
-        } else {
-          params.order_type = "taka(inhouse)";
-        }
+       
         const res = await getMyOrderListRequest({
           params,
         });
@@ -408,36 +392,54 @@ const AddSaleChallan = () => {
       enabled: Boolean(companyId),
     });
 
-  // Dropdown supplier list
-  const {
-    data: dropdownSupplierListRes,
-    isLoading: isLoadingDropdownSupplierList,
-  } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+  // Dropdown party list api =======================================================
+  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+    queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getDropdownSupplierListRequest({
+      const res = await getPartyListRequest({
         params: { company_id: companyId },
       });
-      return res.data?.data?.supplierList;
+      return res.data?.data;
     },
     enabled: Boolean(companyId),
   });
+    
 
-  const dropDownSupplierCompanyOption = useMemo(() => {
+  const dropdownPartyCompanyOption = useMemo(() => {
     if (
-      supplier_name &&
-      dropdownSupplierListRes &&
-      dropdownSupplierListRes.length
+      party_name &&
+      partyUserListRes &&
+      partyUserListRes?.partyList?.rows.length
     ) {
-      resetField("supplier_id");
-      const obj = dropdownSupplierListRes.find((item) => {
-        return item.supplier_name === supplier_name;
+      resetField("party_id");
+
+      let party_company = [] ; 
+
+      const obj = partyUserListRes?.partyList?.rows.find((item) => {
+        return +item.id === +party_name;
       });
-      return obj?.supplier_company;
+
+      party_company.push({
+        label: obj?.party?.company_name, 
+        value: obj?.party?.user_id, 
+        party: obj?.party
+      })
+
+      if (obj){
+        obj?.sub_parties?.map((element) => {
+          party_company.push({
+            label: element?.party?.company_name, 
+            value: element?.party?.user_id, 
+            party: element?.party
+          })
+        })
+      }
+
+      return party_company
     } else {
       return [];
     }
-  }, [supplier_name, dropdownSupplierListRes, resetField]);
+  }, [party_name, partyUserListRes, resetField]);
 
   useEffect(() => {
     if (grayOrderListRes && grayOrderListRes?.row?.length && gray_order_id) {
@@ -456,12 +458,8 @@ const AddSaleChallan = () => {
         setValue("broker_id", order.broker.id);
         setValue("quality_id", order.inhouse_quality.id);
         setValue("supplier_name", order.supplier_name);
-
         setValue("delivery_address", order?.party?.party?.delivery_address);
-
-        // setPendingMeter(order.pending_meter);
-        // setPendingTaka(order.pending_taka);
-        // setPendingWeight(order.pending_weight);
+        setValue("party_name", order?.party?.id); 
       }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
@@ -476,27 +474,28 @@ const AddSaleChallan = () => {
   }, [companyListRes, companyId, setValue]);
 
   useEffect(() => {
-    if (supplier_id) {
-      const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
-        (item) => item.supplier_id === supplier_id
+    if (party_id) {
+      const selectedPartyCompany = dropdownPartyCompanyOption.find(
+        (item) => item.value === +party_id
       );
-      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
+      setValue("gst_in_2", selectedPartyCompany?.party?.company_gst_number);
+      setValue("delivery_address", selectedPartyCompany?.party?.delivery_address);
     }
-  }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
+  }, [party_id, dropdownPartyCompanyOption, setValue]);
 
-  // useEffect(() => {
-  //   if (grayOrderListRes && grayOrderListRes?.row?.length && gray_order_id) {
-  //     const order = grayOrderListRes?.row?.find(
-  //       ({ id }) => gray_order_id === id
-  //     );
+  useEffect(() => {
+    if (grayOrderListRes && grayOrderListRes?.row?.length && gray_order_id) {
+    
+      const order = grayOrderListRes?.row?.find(
+        ({ id }) => gray_order_id === id
+      );
 
-  //     if (order) {
-  //       setPendingMeter(+order.pending_meter - +totalMeter);
-  //       setPendingTaka(+order.pending_taka - +totalTaka);
-  //       setPendingWeight(+order.pending_weight - +totalWeight);
-  //     }
-  //   }
-  // }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
+      if (order) {
+        setInitialPendingMeter(+order?.pending_meter || 0) ;
+        setInitialPendingTaka(+order?.pending_taka || 0 ) ;  
+      }
+    }
+  }, [grayOrderListRes, gray_order_id, totalMeter, totalTaka, totalWeight]);
 
   // *******************************************************************
 
@@ -707,28 +706,30 @@ const AddSaleChallan = () => {
       });
     }
   }, [jobTakaDetails, reset]);
+  
+  // ====== Pending meter and Pending taka option handler ============ // 
   useEffect(() => {
-    if (total_meter !== "" && total_meter !== undefined) {
-      setPendingMeter(+total_meter - totalMeter);
-    }
-    if (total_weight !== "" && total_weight !== undefined) {
-      setPendingWeight(+total_weight - (totalWeight || 0));
+    if (totalMeter !== undefined && initialPendingMeter !== undefined) {
+      setPendingMeter(+initialPendingMeter - totalMeter);
     }
 
-    if (total_taka !== "" && total_taka !== undefined) {
-      setPendingTaka(+total_taka - totalTaka);
+    if (totalTaka !== undefined && initialPendingTaka !== undefined) {
+      setPendingTaka(+initialPendingTaka - totalTaka);
     }
   }, [
-    total_meter,
-    total_taka,
-    total_weight,
+    initialPendingMeter, 
     totalTaka,
     totalMeter,
-    totalWeight,
+    initialPendingTaka
   ]);
-
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col e-4" style={{
+      overflowX: "hidden", 
+      paddingLeft: 10,
+      paddingRight: 10, 
+      paddingBottom: 10, 
+      paddingTop: 10
+    }}>
       <div className="flex items-center justify-between gap-5">
         <div className="flex items-center gap-5">
           <Button onClick={goBack}>
@@ -889,7 +890,7 @@ const AddSaleChallan = () => {
           </Form.Item>
         </Col>
 
-        <Col span={12}>
+        <Col span={8}>
           <Form.Item
             label="Delivery Address"
             name="delivery_address"
@@ -995,7 +996,7 @@ const AddSaleChallan = () => {
                       dropDownQualityListRes &&
                       dropDownQualityListRes?.rows?.map((item) => ({
                         value: item.id,
-                        label: item.quality_name,
+                        label: getDisplayQualityName(item),
                       }))
                     }
                   />
@@ -1055,25 +1056,25 @@ const AddSaleChallan = () => {
       >
         <Col span={6}>
           <Form.Item
-            label="Select Supplier"
-            name="supplier_name"
-            validateStatus={errors.supplier_name ? "error" : ""}
-            help={errors.supplier_name && errors.supplier_name.message}
+            label="Select Party"
+            name="party_name"
+            validateStatus={errors.party_name ? "error" : ""}
+            help={errors.party_name && errors.party_name.message}
             required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller
               control={control}
-              name="supplier_name"
+              name="party_name"
               render={({ field }) => (
                 <Select
                   {...field}
-                  placeholder="Select Supplier"
-                  disabled={selectedOrder?.supplier_name ? true : false}
-                  loading={isLoadingDropdownSupplierList}
-                  options={dropdownSupplierListRes?.map((supervisor) => ({
-                    label: supervisor?.supplier_name,
-                    value: supervisor?.supplier_name,
+                  placeholder="Select Party"
+                  disabled = {true}
+                  loading={isLoadingPartyList}
+                  options={partyUserListRes?.partyList?.rows?.map((party) => ({
+                    label: `${party?.first_name} ${party?.last_name}`,
+                    value: party?.id,
                   }))}
                   style={{
                     textTransform: "capitalize",
@@ -1090,24 +1091,20 @@ const AddSaleChallan = () => {
         <Col span={6}>
           <Form.Item
             label="Company"
-            name="supplier_id"
-            validateStatus={errors.supplier_id ? "error" : ""}
-            help={errors.supplier_id && errors.supplier_id.message}
+            name="party_id"
+            validateStatus={errors.party_id ? "error" : ""}
+            help={errors.party_id && errors.party_id.message}
             required={true}
             wrapperCol={{ sm: 24 }}
           >
             <Controller
               control={control}
-              name="supplier_id"
+              name="party_id"
               render={({ field }) => (
                 <Select
                   {...field}
                   placeholder="Select Company"
-                  options={dropDownSupplierCompanyOption.map(
-                    ({ supplier_id, supplier_company }) => {
-                      return { label: supplier_company, value: supplier_id };
-                    }
-                  )}
+                  options={dropdownPartyCompanyOption}
                   style={{
                     textTransform: "capitalize",
                   }}
@@ -1187,28 +1184,26 @@ const AddSaleChallan = () => {
           }}
         >
           <Col span={6}></Col>
+          <Col span={6}></Col>
 
-          <Col span={6} style={{ textAlign: "end" }}>
-            <Typography style={{ color: "red" }}>Pending</Typography>
-          </Col>
-
-          <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>
-              {parseFloat(pendingMeter).toFixed(2)}
+          <Col span={3} style={{ textAlign: "end" }}>
+            <div style={{ textAlign: "left", fontSize: 13 }}>Pending Meter</div>
+            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+              <div style={{fontSize: 15}}>
+                {pendingMeter || 0}
+              </div>
             </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>
-              {parseFloat(pendingWeight).toFixed(2)}
+            <div style={{ textAlign: "left", fontSize: 13 }}>Pending Taka</div>
+            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+              <div style={{fontSize: 15}}>
+                {pendingTaka || 0}
+              </div>
             </Typography>
           </Col>
 
-          <Col span={3} style={{ textAlign: "left" }}>
-            <Typography style={{ color: "red", fontWeight: 600 }}>
-              {pendingTaka}
-            </Typography>
-          </Col>
         </Row>
       ) : null}
 
@@ -1345,7 +1340,7 @@ const AddSaleChallan = () => {
         />
       )}
 
-      <Row style={{ marginTop: "20px" }} gutter={20}>
+      <Row style={{ marginTop: "20px" }} gutter={18}>
         <Col span={6}>
           <Form.Item label="Total Taka">
             <Input value={totalTaka.toFixed(2)} disabled />

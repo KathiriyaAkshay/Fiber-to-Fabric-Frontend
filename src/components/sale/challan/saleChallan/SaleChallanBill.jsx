@@ -21,6 +21,7 @@ import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { ToWords } from "to-words";
 import { createSaleChallanBillRequest } from "../../../../api/requests/sale/challan/challan";
 import ReactToPrint from "react-to-print";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -69,6 +70,9 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
+
+  console.log(details);
+  
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -422,7 +426,14 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   M/s.
                 </Typography.Text>
                 <Typography.Text>
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <div>
+                    <div>
+                      <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong>
+                    </div>
+                    <div>
+                      {details?.party?.party?.company_name}
+                    </div>
+                  </div>
                 </Typography.Text>
                 <Typography.Text className="block">
                   {details?.party?.address}
@@ -494,7 +505,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {details?.broker?.first_name} {details?.broker?.last_name}
+                      {String(`${details?.broker?.first_name} ${details?.broker?.last_name}`).toUpperCase()}
                     </Typography.Text>
                   </Col>
                 </Row>
@@ -955,10 +966,20 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   ♦ DELIVERY AT:
                 </Typography.Text>
                 <Typography.Text className="block font-semibold mt-1">
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <div>
+                    <div>
+                      <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong>
+                    </div>
+                    <div>
+                      {details?.party?.party?.company_name}
+                    </div>
+                  </div>
                 </Typography.Text>
                 <Typography.Text className="block mt-1">
                   {details?.party?.address}
+                </Typography.Text>
+                <Typography.Text>
+                  <strong>Mobile : </strong>{details?.party?.mobile}
                 </Typography.Text>
               </Col>
               <Col span={6} className="flex justify-end items-start"></Col>

@@ -127,47 +127,6 @@ const SaleChallanFieldTable = ({
     }
   };
 
-  // const removeCurrentField = (fieldNumber, indexColumn) => {
-  //   if (fieldNumber) {
-  //     if (fieldNumber > 1) {
-  //       setActiveField((prev) => prev - 1);
-  //     }
-
-  //     setTotalTaka((prev) => prev - 1);
-  //     setTotalMeter((prev) => prev - (+getValues(`meter_${fieldNumber}`) || 0));
-  //     setTotalWeight(
-  //       (prev) => prev - (+getValues(`weight_${fieldNumber}`) || 0)
-  //     );
-
-  //     setTimeout(() => {
-  //       setValue(`taka_no_${fieldNumber}`, "");
-  //       setValue(`meter_${fieldNumber}`, "");
-  //       setValue(`weight_${fieldNumber}`, "");
-  //       setValue(`model_${fieldNumber}`, "");
-  //     }, 200);
-
-  //     setTimeout(() => {
-  //       setFocus(`taka_no_${fieldNumber + 1}`);
-  //     }, 10);
-
-  //     let temp_taka = gt_total[indexColumn]?.total_taka;
-  //     let temp_meter = gt_total[indexColumn]?.total_meter;
-  //     let temp_weight = gt_total[indexColumn]?.total_weight;
-
-  //     temp_taka = temp_taka - 1;
-  //     temp_meter = temp_meter - Number(getValues(`meter_${fieldNumber}`));
-  //     temp_weight = temp_weight - Number(getValues(`weight_${fieldNumber}`));
-
-  //     set_gt_total((prevState) => ({
-  //       ...prevState,
-  //       [indexColumn]: {
-  //         total_taka: temp_taka,
-  //         total_meter: temp_meter,
-  //         total_weight: temp_weight,
-  //       },
-  //     }));
-  //   }
-  // };
 
   const removeCurrentField = (fieldNumber, indexColumn) => {
     if (fieldNumber) {
@@ -451,7 +410,7 @@ const SaleChallanFieldTable = ({
                       <td className="job-challan-taka-index-column">
                         {fieldNumber}
                       </td>
-                      <td>
+                      <td className="sale-challan-taka-number">
                         <Form.Item
                           name={`taka_no_${fieldNumber}`}
                           validateStatus={
@@ -475,7 +434,9 @@ const SaleChallanFieldTable = ({
                                   width: "75px",
                                   border: "0px solid",
                                   borderRadius: "0px",
+                                  color:"red"
                                 }}
+                                className="sale-challan-taka-number"
                                 disabled={fieldNumber !== activeField}
                                 onKeyDown={(event) =>
                                   activeNextField(event, fieldNumber, 1)
@@ -786,144 +747,6 @@ const SaleChallanFieldTable = ({
             </tbody>
           </table>
         </Col>
-
-        {/* <Col span={6}>
-          <table border={1} className="job-challan-details-table">
-            <thead>
-              <th>#</th>
-              <th>Taka No</th>
-              <th>Meter</th>
-              <th>Weight</th>
-              <th>
-                <MinusCircleOutlined />
-              </th>
-            </thead>
-            <tbody>
-              {numOfFields
-                .slice(chunkSize * 3, chunkSize * 4)
-                .map((fieldNumber) => {
-                  return (
-                    <tr key={fieldNumber}>
-                      <td className="job-challan-taka-index-column">
-                        {fieldNumber}
-                      </td>
-                      <td>
-                        <Form.Item
-                          name={`taka_no_${fieldNumber}`}
-                          validateStatus={
-                            errors[`taka_no_${fieldNumber}`] ? "error" : ""
-                          }
-                          help={
-                            errors[`taka_no_${fieldNumber}`] &&
-                            errors[`taka_no_${fieldNumber}`].message
-                          }
-                          required={true}
-                          wrapperCol={{ sm: 24 }}
-                          style={{ marginBottom: "0px" }}
-                        >
-                          <Controller
-                            control={control}
-                            name={`taka_no_${fieldNumber}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                style={{
-                                  width: "75px",
-                                  border: "0px solid",
-                                  borderRadius: "0px",
-                                }}
-                                disabled={fieldNumber !== activeField}
-                                onKeyDown={(event) =>
-                                  activeNextField(event, fieldNumber, 3)
-                                }
-                              />
-                            )}
-                          />
-                        </Form.Item>
-                      </td>
-                      <td>
-                        <Form.Item
-                          name={`meter_${fieldNumber}`}
-                          validateStatus={
-                            errors[`meter_${fieldNumber}`] ? "error" : ""
-                          }
-                          help={
-                            errors[`meter_${fieldNumber}`] &&
-                            errors[`meter_${fieldNumber}`].message
-                          }
-                          required={true}
-                          wrapperCol={{ sm: 24 }}
-                          style={{ marginBottom: "0px" }}
-                        >
-                          <Controller
-                            control={control}
-                            name={`meter_${fieldNumber}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                style={{
-                                  width: "100px",
-                                  border: "0px solid",
-                                  borderRadius: "0px",
-                                }}
-                                disabled={fieldNumber !== activeField}
-                              />
-                            )}
-                          />
-                        </Form.Item>
-                      </td>
-                      <td>
-                        <Form.Item
-                          name={`weight_${fieldNumber}`}
-                          validateStatus={
-                            errors[`weight_${fieldNumber}`] ? "error" : ""
-                          }
-                          help={
-                            errors[`weight_${fieldNumber}`] &&
-                            errors[`weight_${fieldNumber}`].message
-                          }
-                          required={true}
-                          wrapperCol={{ sm: 24 }}
-                          style={{ marginBottom: "0px" }}
-                        >
-                          <Controller
-                            control={control}
-                            name={`weight_${fieldNumber}`}
-                            render={({ field }) => (
-                              <Input
-                                {...field}
-                                style={{
-                                  width: "100px",
-                                  border: "0px solid",
-                                  borderRadius: "0px",
-                                }}
-                                disabled={fieldNumber !== activeField}
-                              />
-                            )}
-                          />
-                        </Form.Item>
-                      </td>
-                      <td>
-                        <Button
-                          className="job-challan-taka-plus-option"
-                          icon={<MinusCircleOutlined />}
-                          disabled={fieldNumber > activeField}
-                          onClick={() => removeCurrentField(fieldNumber, 0)}
-                        ></Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              <tr>
-                <td className="job-challan-taka-index-column">GT</td>
-                <td className="total-info-td-cell">{gt_total["3"]?.total_taka}</td>
-                <td className="total-info-td-cell">{gt_total["3"]?.total_meter}</td>
-                <td className="total-info-td-cell">{gt_total["3"]?.total_weight}</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-        </Col> */}
       </Row>
     </>
   );

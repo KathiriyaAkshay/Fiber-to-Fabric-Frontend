@@ -1396,3 +1396,8 @@ h2 {
 .production-multiple-quality-input{
   max-width: 220px;
 }
+
+.sale-challan-taka-number{
+  color: red;
+  font-weight: 600;
+}
