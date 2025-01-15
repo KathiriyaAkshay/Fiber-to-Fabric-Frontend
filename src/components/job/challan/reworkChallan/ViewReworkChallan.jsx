@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useRef, useContext, useEffect } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import ReactToPrint from "react-to-print";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const { Text, Title } = Typography;
 
@@ -233,8 +234,14 @@ const ViewReworkChallanInfo = ({
                   </Col>
                   <Col span={20}>
                     <Text>
-                      {details?.supplier?.supplier_company} (
-                      {details?.supplier?.supplier_name})
+                      <div>
+                        <div style={{fontWeight: 600}}>
+                          {String(details?.supplier?.supplier_name).toUpperCase()}
+                        </div>  
+                        <div>
+                          {details?.supplier?.supplier_company}
+                        </div>
+                      </div>
                     </Text>
                   </Col>
                 </Row>
@@ -272,33 +279,6 @@ const ViewReworkChallanInfo = ({
                     <Text>{details?.challan_no}</Text>
                   </Col>
                 </Row>
-                {/* <Row>
-                  <Col span={24}>
-                    <Text>From,</Text>
-                    <Text className="block font-bold">
-                      {companyInfo?.company_name}
-                    </Text>
-                    <Text className="block">{`${companyInfo?.address_line_1} ${companyInfo?.address_line_2 == null
-                      ? ""
-                      : companyInfo?.address_line_2
-                      }, ${companyInfo?.city}, ${companyInfo?.state} - ${companyInfo?.pincode
-                      }, ${companyInfo?.country}`}</Text>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <Text>Broker</Text>
-                    <Text className="block font-bold">
-                      {details?.broker?.first_name} {details?.broker?.last_name}
-                    </Text>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col span={24}>
-                    <Text>GST</Text>
-                    <Text className="block">{companyInfo?.gst_no}</Text>
-                  </Col>
-                </Row> */}
               </Col>
             </Row>
             <Row
@@ -309,8 +289,7 @@ const ViewReworkChallanInfo = ({
                 <strong>Description:</strong>
               </Col>
               <Col span={9}>
-                {details?.inhouse_quality?.quality_name} (
-                {details?.inhouse_quality?.quality_weight}KG)
+                {getDisplayQualityName(details?.inhouse_quality)}
               </Col>
               <Col span={3}>
                 <strong>Date:</strong>

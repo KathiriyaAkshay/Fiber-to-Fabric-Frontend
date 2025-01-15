@@ -13,6 +13,8 @@ import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReceiveReworkTakaFieldTable from "../../../../components/job/challan/receiveReworkTaka/receiveReworkTakaFieldTable";
 import { addReceiveReworkTakaRequest } from "../../../../api/requests/job/challan/receiveReworkTaka";
 import AlertModal from "../../../../components/common/modal/alertModal";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -60,37 +62,96 @@ const AddReceiveReworkTaka = () => {
     },
     onError: (error) => {
       const errorMessage = error?.response?.data?.message || error.message;
-      message.error(errorMessage);
+      // message.error(errorMessage);
     },
   });
 
   async function onSubmit(data) {
     const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
+    let hasError = false; 
     const data2 = detailArray.map((field) => {
-      return {
-        taka_no: +data[`taka_no_${field}`],
-        meter: +data[`meter_${field}`],
-        received_meter: +data[`received_meter_${field}`],
-        short: +data[`short_${field}`],
-        received_weight: +data[`received_weight_${field}`],
-        average: +data[`average_${field}`],
-        tp: +data[`tp_${field}`],
-        pis: +data[`pis_${field}`],
-      };
+      const taka_no = +data[`taka_no_${field}`];
+      const meter = +data[`meter_${field}`];
+      const received_meter = +data[`received_meter_${field}`];
+      const short = +data[`short_${field}`];
+      const received_weight = +data[`received_weight_${field}`];
+      
+      const average = +data[`average_${field}`];
+      const tp = +data[`tp_${field}`];
+      const pis = +data[`pis_${field}`];
+
+      // Skip this iteration if all key values are empty
+      if (
+        (isNaN(taka_no) || taka_no == "" || taka_no == undefined || taka_no == null) &&
+        (isNaN(meter) || meter == "" || meter == undefined || meter == null) &&
+        (isNaN(received_meter) || received_meter == "" || received_meter == undefined || received_meter == null) &&
+        (isNaN(received_weight) || received_weight == "" || received_weight == undefined || received_weight == null)
+      ) {
+        return null; 
+      }
+
+      // Validation and warning messages
+      if (isNaN(taka_no) || taka_no === "" || taka_no === undefined || taka_no === null) {
+        message.warning(`Field 'taka_no' in row ${field} is required!`);
+        hasError = true ; 
+        return null;
+      }
+      if (isNaN(meter) || meter === "" || meter === undefined || meter === null) {
+        message.warning(`Field 'meter' in row ${field} is required!`);
+        hasError = true ; 
+        return null;
+      }
+      if (
+        isNaN(received_meter) ||
+        received_meter === "" ||
+        received_meter === undefined ||
+        received_meter === null || 
+        received_meter == 0
+      ) {
+        message.warning(`Field 'received_meter' in row ${field} is required!`);
+        hasError = true ; 
+        return null;
+      }
+      if (
+        isNaN(received_weight) ||
+        received_weight === "" ||
+        received_weight === undefined ||
+        received_weight === null || 
+        received_weight == 0
+      ) {
+        message.warning(`Field 'received_weight' in row ${field} is required!`);
+        hasError = true;
+        return null;
+      }
+
+      return { 
+        taka_no, 
+        meter, 
+        received_meter, 
+        short, 
+        received_weight, 
+        average, 
+        tp : tp || 0, 
+        pis: pis || 0 };
     });
 
+    // Remove all `null` rows from the array
+    const filteredData = data2.filter((row) => row !== null);
+
     let temp = [];
-    data2.map((element) => {
+    filteredData.map((element) => {
       temp.push({
         ...element,
         machine_name: data?.machine_name,
         quality_id: +data?.quality_id,
-        createdAt: dayjs(),
+        createdAt: dayjs(new Date()),
       });
     });
 
-    await AddReceiveReworkTakaHandler(temp);
+    if (!hasError){
+      await AddReceiveReworkTakaHandler(temp);
+    }
   }
 
   const {
@@ -124,7 +185,7 @@ const AddReceiveReworkTaka = () => {
     enabled: Boolean(companyId),
   });
 
-  // Quality dropdown list
+  // Quality dropdown list api ===============================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -136,6 +197,7 @@ const AddReceiveReworkTaka = () => {
           pageSize: 9999,
           is_active: 1,
           machine_name: machine_name,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -147,6 +209,7 @@ const AddReceiveReworkTaka = () => {
               pageSize: 9999,
               is_active: 1,
               machine_name: machine_name,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -285,7 +348,7 @@ const AddReceiveReworkTaka = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       onChange={(value) => {

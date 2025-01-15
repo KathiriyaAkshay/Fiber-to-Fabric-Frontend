@@ -25,6 +25,8 @@ import dayjs from "dayjs";
 import DeleteReceiveReworkTaka from "../../../../components/job/challan/receiveReworkTaka/DeleteReceiveReworkTaka";
 import moment from "moment/moment";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../../constants/tag";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_QUALITY_TYPE, JOB_REWORK_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 const ReceiveReworkTaka = () => {
   const navigate = useNavigate();
@@ -45,20 +47,22 @@ const ReceiveReworkTaka = () => {
   const { companyId } = useContext(GlobalContext);
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
 
+  // Supplier dropdown related api ==================================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
 
+  // Dropdown quality list api =======================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -69,6 +73,7 @@ const ReceiveReworkTaka = () => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -78,6 +83,7 @@ const ReceiveReworkTaka = () => {
             page: 0,
             pageSize: 99999,
             is_active: 1,
+            production_type: JOB_QUALITY_TYPE
           },
         });
         return res.data?.data;
@@ -145,14 +151,20 @@ const ReceiveReworkTaka = () => {
     },
     {
       title: "Date",
+      width: 110,
       render: (text, record) => {
         return moment(record?.createdAt).format("DD-MM-YYYY");
       },
     },
     {
-      title: "Rework Challan No",
+      title: "Re. Challan No",
+      width: 100, 
       render: (text, record) => {
-        return <div>{record.rework_challan_id || "-"}</div>;
+        return (
+          <div style={{fontWeight: 600}}>
+            {record?.job_rework_challan?.challan_no}
+          </div>
+        )
       },
     },
     {
@@ -164,11 +176,14 @@ const ReceiveReworkTaka = () => {
         if (record?.is_used_in_taka) {
           return (
             <div>
-              {text} <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>Sold</Tag>
+              <div>
+                <Tag color={SALE_CHALLAN_INFO_TAG_COLOR}>Sold</Tag> 
+                <span style={{fontWeight: 600}}>{text}</span>
+              </div>
             </div>
           );
         } else {
-          return <div>{text}</div>;
+          return <div style={{fontWeight: 600}}>{text}</div>;
         }
       },
     },
@@ -213,15 +228,30 @@ const ReceiveReworkTaka = () => {
       title: "Quality",
       dataIndex: ["inhouse_quality"],
       key: ["inhouse_quality"],
-      render: (quality) => (
-        <Tag color="green">{`${quality.quality_name} (${quality.quality_weight})`}</Tag>
-      ),
+      render: (text, record) => {
+        return(
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(record?.inhouse_quality)}
+          </div>
+        )
+      },
     },
     {
       title: "Supplier Name",
       dataIndex: "supplier",
       key: "supplier",
-      render: (supplier) => supplier?.supplier_name,
+      render: (supplier) => {
+        return(
+          <div>
+            <div style={{fontWeight: 600}}>
+              {String(supplier?.supplier_name).toUpperCase()}
+            </div>
+            <div>
+              {supplier?.supplier_company}
+            </div>
+          </div>
+        )
+      },
     },
     {
       title: "Action",
@@ -233,18 +263,19 @@ const ReceiveReworkTaka = () => {
               details={[
                 {
                   title: "Quality Name",
-                  value: `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`,
+                  value: getDisplayQualityName(details?.inhouse_quality),
                 },
-                { title: "Supplier Company Name", value: "BAKI" },
+                { title: "Supplier Name", value: String(details?.supplier?.supplier_name).toUpperCase() },
+                { title: "Supplier Company", value: details?.supplier?.supplier_company },
                 {
                   title: "Received Date",
                   value: dayjs(details.createdAt).format("DD-MM-YYYY"),
                 },
-                { title: "Ch. No", value: details.challan_no },
+                { title: "Ch. No", value: details.job_rework_challan?.challan_no },
                 { title: "Taka No", value: details.taka_no },
                 { title: "Meter", value: details.meter },
                 { title: "Received Meter", value: details.received_meter },
-                { title: "Weight", value: details.weight },
+                  
                 { title: "Received Weight", value: details.received_weight },
                 { title: "Average", value: details.average },
               ]}
@@ -288,9 +319,15 @@ const ReceiveReworkTaka = () => {
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
-              <Table.Summary.Cell></Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {parseFloat(receiveReworkTakaList?.total_meter).toFixed(2) || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {parseFloat(receiveReworkTakaList?.total_received_meter).toFixed(2) || 0}
+              </Table.Summary.Cell>
+              <Table.Summary.Cell>
+                {parseFloat(receiveReworkTakaList?.total_received_weight).toFixed(2) || 0}
+              </Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
               <Table.Summary.Cell></Table.Summary.Cell>
@@ -332,7 +369,7 @@ const ReceiveReworkTaka = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item),
                     }))
                   }
                   dropdownStyle={{

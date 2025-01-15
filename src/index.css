@@ -1405,3 +1405,7 @@ h2 {
 .bill-payment-model-tag{
   font-weight: 600;
 }
+
+.add-received-rework-challan-input{
+  background-color: #efefef;
+}

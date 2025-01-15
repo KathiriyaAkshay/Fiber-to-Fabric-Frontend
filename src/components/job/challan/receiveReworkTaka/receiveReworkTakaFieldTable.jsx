@@ -31,6 +31,31 @@ const ReceiveReworkTakaFieldTable = ({
 
   const activeNextField = (event, fieldNumber) => {
     if (event.keyCode === 13) {
+      // Retrieve the current field's values
+      const currentTakaValue = getValues(`taka_no_${fieldNumber}`);
+      const currentMeterValue = getValues(`meter_${fieldNumber}`);
+      const currentReceivedMeter = getValues(`received_meter_${fieldNumber}`);
+      const currentReceivedWeight = getValues(`received_weight_${fieldNumber}`);
+  
+      // Check if any of the required fields are empty, undefined, or null
+      if (!currentTakaValue) {
+        message.warning(`Please fill out the "Taka No." field for row ${fieldNumber}.`);
+        return;
+      }
+      if (!currentMeterValue) {
+        message.warning(`Please fill out the "Meter" field for row ${fieldNumber}.`);
+        return;
+      }
+      if (!currentReceivedMeter) {
+        message.warning(`Please fill out the "Received Meter" field for row ${fieldNumber}.`);
+        return;
+      }
+      if (!currentReceivedWeight) {
+        message.warning(`Please fill out the "Received Weight" field for row ${fieldNumber}.`);
+        return;
+      }
+  
+      // Proceed to add a new field row and reset values for the next fields
       setTotalFieldRow((prev) => prev + 1);
       setActiveField((prev) => prev + 1);
       setValue(`taka_no_${fieldNumber + 1}`, undefined);
@@ -41,6 +66,8 @@ const ReceiveReworkTakaFieldTable = ({
       setValue(`average_${fieldNumber + 1}`, null);
       setValue(`tp_${fieldNumber + 1}`, null);
       setValue(`pis_${fieldNumber + 1}`, null);
+  
+      // Focus the next field after a short delay
       setTimeout(() => {
         setFocus(`taka_no_${fieldNumber + 1}`);
       }, 20);
@@ -55,7 +82,6 @@ const ReceiveReworkTakaFieldTable = ({
     if (fieldNumber) {
       if (fieldNumber > 1) {
         setActiveField((prev) => prev - 1);
-        console.log("numberof field information", fieldNumber);
         let temp = numOfFields.filter((item) => item != fieldNumber);
         setNumOfFields(temp);
         setTotalFieldRow((prev) => prev - 1);
@@ -159,7 +185,7 @@ const ReceiveReworkTakaFieldTable = ({
             {numOfFields.map((fieldNumber) => {
               return (
                 <tr key={fieldNumber}>
-                  <td>
+                  <td className="add-received-rework-challan-input">
                     <Form.Item
                       name={`taka_no_${fieldNumber}`}
                       validateStatus={
@@ -187,7 +213,9 @@ const ReceiveReworkTakaFieldTable = ({
                               width: "100%",
                               border: "0px solid",
                               borderRadius: "0px",
+                              fontWeight: 600
                             }}
+                            className="add-received-rework-challan-input"
                             disabled={fieldNumber > activeField}
                             onChange={(e) => {
                               field.onChange(e);
@@ -199,7 +227,7 @@ const ReceiveReworkTakaFieldTable = ({
                       />
                     </Form.Item>
                   </td>
-                  <td>
+                  <td className="add-received-rework-challan-input">
                     <Form.Item
                       name={`meter_${fieldNumber}`}
                       validateStatus={
@@ -297,7 +325,7 @@ const ReceiveReworkTakaFieldTable = ({
                       />
                     </Form.Item>
                   </td>
-                  <td>
+                  <td className="add-received-rework-challan-input">
                     <Form.Item
                       name={`short_${fieldNumber}`}
                       validateStatus={
@@ -366,7 +394,7 @@ const ReceiveReworkTakaFieldTable = ({
                     </Form.Item>
                   </td>
 
-                  <td>
+                  <td className="add-received-rework-challan-input">
                     <Form.Item
                       name={`average_${fieldNumber}`}
                       validateStatus={
