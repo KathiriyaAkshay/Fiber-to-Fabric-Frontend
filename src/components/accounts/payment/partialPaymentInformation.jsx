@@ -145,7 +145,7 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
                     gap: 4, 
                     marginTop: 3
                 }}>
-                    <Tooltip title = {paid_amount}>
+                    <Tooltip title = {parseFloat(paid_amount) !== 0?`Paid amount : ${paid_amount}`:""}>
                         <div style={{ fontSize: '18px', color: 'green' }}>
                             <DollarOutlined />
                         </div>
@@ -157,6 +157,11 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
                             }}
                         >
                             Part Payment
+                            {parseFloat(paid_amount) !== 0 && (
+                                <div style={{fontSize: 10, color: "green"}}>
+                                    {`₹${parseFloat(paid_amount).toFixed(2)}/-`}
+                                </div>
+                            )}
                         </div>
                     </Tooltip>
                 </Flex>

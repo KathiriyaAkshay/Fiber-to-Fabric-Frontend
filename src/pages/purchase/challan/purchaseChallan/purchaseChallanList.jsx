@@ -35,6 +35,10 @@ import ReturnPurchaseChallan from "../../../../components/purchase/purchaseChall
 import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { PURCHASE_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT } from "../../../../constants/bill.model";
 
 const PurchaseChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -238,8 +242,8 @@ const PurchaseChallanList = () => {
       dataIndex: "challan_no",
       key: "challan_no",
       render: (text, record) => {
-        return(
-          <div style={{fontWeight: 600}}>
+        return (
+          <div style={{ fontWeight: 600 }}>
             {text}
           </div>
         )
@@ -258,8 +262,8 @@ const PurchaseChallanList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return(
-          <div style={{fontSize: 13}}>
+        return (
+          <div style={{ fontSize: 13 }}>
             {getDisplayQualityName(details?.inhouse_quality)}
           </div>
         )
@@ -289,12 +293,23 @@ const PurchaseChallanList = () => {
     {
       title: "Payment Status",
       dataIndex: "payment_status",
-      render: (text) => {
-        return text.toLowerCase() === "paid" ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (text, record) => {
+        return (
+          <div>
+
+            {record?.purchase_taka_bill?.is_partial_payment ? <>
+              <PartialPaymentInformation
+                bill_id={record?.purchase_taka_bill?.id}
+                bill_model={PURCHASE_TAKA_BILL_MODEL}
+                paid_amount={record?.purchase_taka_bill?.paid_amount}
+              />
+            </> : <>
+              <Tag className="bill-payment-model-tag" color={record?.purchase_taka_bill?.is_paid ? PAID_TAG_TEXT_COLOR : "red"}>
+                {String(record?.purchase_taka_bill?.is_paid ? PAID_TAG_TEXT : "Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {
@@ -319,14 +334,18 @@ const PurchaseChallanList = () => {
                 >
                   <EditOutlined />
                 </Button>
+
                 <DeletePurchaseTaka details={details} />
+                
                 <Button
                   onClick={() => {
                     let MODE;
-                    if (details.bill_status === "received") {
+                    if (details?.purchase_taka_bill?.is_paid) {
                       MODE = "VIEW";
-                    } else if (details.bill_status === "not_received") {
-                      MODE = "ADD";
+                    } else if (details.purchase_taka_bill?.is_partial_payment) {
+                      MODE = "VIEW";
+                    } else if (!details?.purchase_taka_bill?.is_paid) {
+                      MODE = "UPDATE";
                     }
                     setPurchaseTakaChallanModal((prev) => {
                       return {
@@ -342,9 +361,11 @@ const PurchaseChallanList = () => {
                 </Button>
               </>
             )}
-            {isShowReturn && (
+
+            {isShowReturn && details.purchase_taka_bill?.is_partial_payment == false  && (
               <ReturnPurchaseChallan details={details} companyId={companyId} />
             )}
+            
             <Button
               onClick={() => {
                 localStorage.setItem(

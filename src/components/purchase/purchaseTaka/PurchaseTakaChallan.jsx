@@ -87,9 +87,9 @@ const PurchaseTakaChallanModal = ({
 }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
-
   const [companyInfo, setCompanyInfo] = useState({});
-  console.log({ companyInfo });
+  console.log("MODE", MODE);
+  
 
   const { data: purchaseTakasBillDetail = null } = useQuery({
     queryKey: ["/purchase/taka/bill/get", MODE, { id: details.id }],
@@ -305,7 +305,7 @@ const PurchaseTakaChallanModal = ({
   //  CALCULATION END------------------------------------------------
 
   useEffect(() => {
-    if (purchaseTakasBillDetail) {
+    if (purchaseTakasBillDetail?.purchaseBill !== null) {
       setValue("invoice_no", purchaseTakasBillDetail.purchaseBill.invoice_no);
       setValue("rate", purchaseTakasBillDetail.purchaseBill.rate);
       setValue("amount", purchaseTakasBillDetail.purchaseBill.amount);
@@ -445,7 +445,7 @@ const PurchaseTakaChallanModal = ({
                             {...field}
                             placeholder="Invoice No."
                             style={{ width: "150px" }}
-                            disabled={MODE === "VIEW" || MODE === "UPDATE"}
+                            disabled={MODE === "VIEW"?true:false}
                           />
                         )}
                       />

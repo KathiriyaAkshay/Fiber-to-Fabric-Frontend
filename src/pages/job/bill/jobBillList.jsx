@@ -28,6 +28,7 @@ import { addDaysToDate } from "../../accounts/reports/utils";
 import { JOB_QUALITY_TYPE } from "../../../constants/supplier";
 import { JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR, JOB_TAKA_BILL_MODEL } from "../../../constants/bill.model";
 
 const JobBillList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -331,16 +332,6 @@ const JobBillList = () => {
       } ,
     },
     {
-      title: "Bill Status",
-      render: (details) => {
-        return details.bill_status === "received" ? (
-          <Tag color="green">Received</Tag>
-        ) : (
-          <Tag color="red">Not Received</Tag>
-        );
-      },
-    },
-    {
       title: "Payment Status",
       render: (text, record) => {
         return(
@@ -348,12 +339,12 @@ const JobBillList = () => {
             {record?.job_taka_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.job_taka_bill?.id}
-                bill_model={"job_taka_bills"}
+                bill_model={JOB_TAKA_BILL_MODEL}
                 paid_amount={record?.job_taka_bill?.paid_amount}
               />
             </>:<>
-              <Tag color = {record?.job_taka_bill?.is_paid?"green":"red"}>
-                {String(record?.job_taka_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              <Tag color = {record?.job_taka_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.job_taka_bill?.is_paid?PAID_TAG_TEXT:"Un-Paid").toUpperCase()}
               </Tag>
             </>}
           </div>
@@ -369,9 +360,11 @@ const JobBillList = () => {
             <Button
               onClick={() => {
                 let MODE;
-                if (details.payment_status === "paid") {
+                if (details.job_taka_bill?.is_paid === "paid") {
                   MODE = "VIEW";
-                } else if (details.payment_status === "not_paid") {
+                } else if (details?.job_taka_bill?.is_partial_payment){
+                  MODE = "VIEW" ; 
+                } else if (!details.job_taka_bill?.is_paid) {
                   MODE = "UPDATE";
                 }
                 setJobTakaChallanModal((prev) => {
@@ -386,14 +379,6 @@ const JobBillList = () => {
             >
               <FileTextOutlined />
             </Button>
-            {/* <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteJobTaka details={details} /> */}
           </Space>
         );
       },

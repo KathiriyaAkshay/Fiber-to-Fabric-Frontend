@@ -33,6 +33,9 @@ import moment from "moment/moment";
 import { getCompanyMachineListRequest } from "../../../../api/requests/machine";
 import ReworkChallanFieldTable from "../../../../components/job/challan/reworkChallan/reworkChallanFieldTable";
 import AlertModal from "../../../../components/common/modal/alertModal";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_REWORK_SUPPLIER_TYPE, JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -214,7 +217,7 @@ const UpdateReworkChallan = () => {
     queryFn: async () => {
       const res = await getCompanyMachineListRequest({
         companyId,
-        params: { company_id: companyId },
+        params: { company_id: companyId},
       });
       return res.data?.data?.machineList;
     },
@@ -246,6 +249,7 @@ const UpdateReworkChallan = () => {
           pageSize: 9999,
           is_active: 1,
           machine_name: machine_name,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -257,6 +261,7 @@ const UpdateReworkChallan = () => {
               pageSize: 9999,
               is_active: 1,
               machine_name: machine_name,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -286,10 +291,10 @@ const UpdateReworkChallan = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_REWORK_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -325,7 +330,7 @@ const UpdateReworkChallan = () => {
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
+      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no || "GST");
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
@@ -383,7 +388,7 @@ const UpdateReworkChallan = () => {
         company_id,
         challan_date: dayjs(createdAt),
         gst_in_1: selectedCompany.gst_no,
-        gst_in_2: supplier.user.gst_no,
+        gst_in_2: supplier.user.gst_no || "GST",
         challan_no,
         option,
         vehicle_id,
@@ -586,7 +591,7 @@ const UpdateReworkChallan = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                       onChange={(value) => {

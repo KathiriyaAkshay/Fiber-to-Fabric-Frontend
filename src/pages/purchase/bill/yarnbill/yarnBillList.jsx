@@ -26,6 +26,7 @@ import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { YARN_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import {PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR, YARN_RECEIVE_BILL_MODEL } from "../../../../constants/bill.model";
 
 const YarnBillList = () => {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -246,7 +247,9 @@ const YarnBillList = () => {
         return (
           <Space>
             <ViewYarnReceiveChallan details={record} />
-            {record?.is_paid == false && record?.is_partial_payment == false && (
+
+            { record?.is_paid == false 
+              && record?.is_partial_payment == false && (
               <>
                 <DeleteYarnBillButton details={record} />
                 <UpdateYarnChallanModel details={record} />
@@ -257,15 +260,15 @@ const YarnBillList = () => {
               <>
                 <PartialPaymentInformation
                   bill_id={record?.id}
-                  bill_model={"yarn_bills"}
+                  bill_model={YARN_RECEIVE_BILL_MODEL}
                   paid_amount={record?.paid_amount || "0.00"}
                 />
               </>
             )}
 
-            {record?.is_paid && (
-              <Tag color="#28a745">
-                PAID
+            {record?.is_paid  && (
+              <Tag color={PAID_TAG_TEXT_COLOR} className="bill-payment-model-tag">
+                {PAID_TAG_TEXT}
               </Tag>
             )}
           </Space>

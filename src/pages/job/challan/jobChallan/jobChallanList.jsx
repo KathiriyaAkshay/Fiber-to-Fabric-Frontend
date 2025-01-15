@@ -35,6 +35,9 @@ import { JOB_ORDER_TYPE } from "../../../../constants/supplier";
 import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { JOB_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 const JobChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -307,12 +310,22 @@ const JobChallanList = () => {
     },
     {
       title: "Payment Status",
-      render: (details) => {
-        return details.payment_status === "paid" ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Un-Paid</Tag>
-        );
+      render: (text, record) => {
+        return (
+          <div>
+            {record?.job_taka_bill?.is_partial_payment ? <>
+              <PartialPaymentInformation
+                bill_id={record?.job_taka_bill?.id}
+                bill_model={JOB_TAKA_BILL_MODEL}
+                paid_amount={record?.job_taka_bill?.paid_amount}
+              />
+            </> : <>
+              <Tag className="bill-payment-model-tag" color={record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT_COLOR : "red"}>
+                {String(record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT : "Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+          </div>
+        )
       },
     },
     {
@@ -322,36 +335,42 @@ const JobChallanList = () => {
           <Space>
             <ViewJobTakaInfo details={details} />
 
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            
-            <DeleteJobTaka details={details} />
-            
-            <Button
-              onClick={() => {
-                let MODE;
-                if (details.payment_status === "paid") {
-                  MODE = "VIEW";
-                } else if (details.payment_status === "not_paid") {
-                  MODE = "ADD";
-                }
-                setJobTakaChallanModal((prev) => {
-                  return {
-                    ...prev,
-                    isModalOpen: true,
-                    details: details,
-                    mode: MODE,
-                  };
-                });
-              }}
-            >
-              <FileTextOutlined />
-            </Button>
+            {details?.bill_status !== "received" && (
+              <>
+                <Button
+                  onClick={() => {
+                    navigateToUpdate(details.id);
+                  }}
+                >
+                  <EditOutlined />
+                </Button>
+                
+                <DeleteJobTaka details={details} />
+                
+                <Button
+                  onClick={() => {
+                    let MODE;
+                    if (details.payment_status === "paid") {
+                      MODE = "VIEW";
+                    } else if (details.payment_status === "not_paid") {
+                      MODE = "ADD";
+                    }
+                    setJobTakaChallanModal((prev) => {
+                      return {
+                        ...prev,
+                        isModalOpen: true,
+                        details: details,
+                        mode: MODE,
+                      };
+                    });
+                  }}
+                >
+                  <FileTextOutlined />
+                </Button>
+              
+              </>
+            )}
+
             
             <Button
               onClick={() => {

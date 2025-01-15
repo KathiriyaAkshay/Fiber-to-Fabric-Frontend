@@ -26,6 +26,8 @@ import PartialPaymentInformation from "../../../../components/accounts/payment/p
 import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
 import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
+import { RECEIVE_SIZE_BEAM_BILL_MODEL } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 function SizeBeamBillList() {
   const { companyId, company, financialYearEnd } = useContext(GlobalContext);
@@ -289,13 +291,13 @@ function SizeBeamBillList() {
                 {record?.is_partial_payment && (
                   <PartialPaymentInformation
                     bill_id={record?.id}
-                    bill_model={" "}
+                    bill_model={RECEIVE_SIZE_BEAM_BILL_MODEL}
                     paid_amount = {record?.paid_amount}
                   />
                 )}
               </div>
             </>:<>
-              <Tag color={text == "unpaid"?"red":"green"}>
+              <Tag color={text == "unpaid"?"red":PAID_TAG_TEXT_COLOR}>
                 {String(text).toUpperCase()}
               </Tag>
             </>}

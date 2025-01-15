@@ -31,6 +31,7 @@ import {
 import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, GENERAL_PURCHASE_ENTRY_TAG_COLOR, JOB_REWORK_BILL_TAG_COLOR, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, PURCHASE_YARN_BILL_TAG_COLOR } from "../../../constants/tag";
 import moment from "moment";
 import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
+import { CREDIT_NOTE_BILL_MODEL, CREDIT_NOTE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
 
 const { TextArea } = Input;
 const SUPPLIER_TYPES = [
@@ -790,11 +791,11 @@ const BillForm = () => {
                 );
 
                 const dueDate = bill?.due_date == null?
-                  bill?.model == "purchase_taka_bills"?generatePurchaseBillDueDate(bill?.bill_date):
+                  bill?.model == PURCHASE_TAKA_MODEL_NAME?generatePurchaseBillDueDate(bill?.bill_date):
                   generateJobBillDueDate(bill?.bill_date)
                   :moment(bill?.due_date).format("DD-MM-YYYY") ;
 
-                const dueDays = bill?.model == "credit_notes"?0:calculateDaysDifference(dueDate) ; 
+                const dueDays = bill?.model == CREDIT_NOTE_MODEL_NAME?0:calculateDaysDifference(dueDate) ; 
 
                 let bill_net_amount = +bill?.net_amount ; 
                 let debit_note_amount = +bill?.debit_note_amount || 0; 
@@ -815,17 +816,24 @@ const BillForm = () => {
                     
                     {/* Bill number and debit note number related information  */}
                     <td style={{ textAlign: "center", fontWeight: 600,
-                      color: bill?.model == "credit_notes"?"green":"#000"
+                      color: bill?.model == "credit_notes"?"green":"#000", 
+                      cursor: "pointer"
                      }}>
-                      <Tooltip title = {bill?.debit_note_number !== undefined?`Debit note : ${bill?.debit_note_number}`:""}>
+
+                      <Tooltip title = {bill?.debit_note_number?.length > 0?`Debit note : ${bill?.debit_note_number?.map((element) => element).join(",")}`:""}>
+                        {/* Bill number related information  */}
                         <div>
                           {bill.bill_no}
                         </div>
+
+                        {/* Debit note number related information 
+                          Debit note number we get for yarn_receive, beam_receive, purchase_taka, general_purchase
+                        */}
                         <div style={{
                           color: "blue", 
                           fontSize: 12
                         }}>
-                          {bill?.debit_note_number !== undefined?`(${bill?.debit_note_number})`:""}
+                          {bill?.debit_note_number?.length > 0?`(${bill?.debit_note_number?.map((element) => element).join(",")})`:""}
                         </div>
                       </Tooltip>
                     </td>
@@ -842,25 +850,33 @@ const BillForm = () => {
 
                     <td style={{ textAlign: "center" }}>
                       
-                      {bill?.model == "purchase_taka_bills"?
-                        <Tag color = {PURCHASE_TAG_COLOR}>PURCHASE TAKA</Tag>
-                      :bill?.model == "yarn_bills"?
-                        <Tag color = {PURCHASE_YARN_BILL_TAG_COLOR}>YARN</Tag>
-                      :bill?.model == "receive_size_beam_bill"?
-                        <Tag color = {BEAM_RECEIVE_TAG_COLOR}>BEAM PURCAHSE</Tag>
-                      : bill?.model == "credit_notes"?
-                        <Tag color= {CREDIT_NOTE_OTHER}>CREDIT NOTE</Tag>
-                      : bill?.model == "job_rework_bill"?
-                        <Tag color = {JOB_REWORK_BILL_TAG_COLOR}>
-                          JOB REWORK
+                      {bill?.model == PURCHASE_TAKA_BILL_MODEL?
+                        <Tag color = {PURCHASE_TAG_COLOR} className="bill-payment-model-tag">
+                          {PURCHASE_TAKA_MODEL_NAME}
                         </Tag>
-                      : bill?.model == "general_purchase_entries"?
-                        <Tag color = {GENERAL_PURCHASE_ENTRY_TAG_COLOR}>
-                          GENERAL PURCHASE
+                      :bill?.model == YARN_RECEIVE_BILL_MODEL?
+                        <Tag color = {PURCHASE_YARN_BILL_TAG_COLOR} className="bill-payment-model-tag">
+                          {YARN_RECEIVE_MODEL_NAME}
+                        </Tag>
+                      :bill?.model == RECEIVE_SIZE_BEAM_BILL_MODEL?
+                        <Tag color = {BEAM_RECEIVE_TAG_COLOR} className="bill-payment-model-tag">
+                          {RECEIVE_SIZE_BEAM_MODEL_NAME}
+                        </Tag>
+                      : bill?.model == CREDIT_NOTE_BILL_MODEL?
+                        <Tag color= {CREDIT_NOTE_OTHER} className="bill-payment-model-tag">
+                          {CREDIT_NOTE_MODEL_NAME}
+                        </Tag>
+                      : bill?.model == JOB_REWORK_BILL_MODEL?
+                        <Tag color = {JOB_REWORK_BILL_TAG_COLOR} className="bill-payment-model-tag">
+                          {JOB_REWORK_MODEL_NAME}
+                        </Tag>
+                      : bill?.model == GENRAL_PURCHASE_BILL_MODEL?
+                        <Tag color = {GENERAL_PURCHASE_ENTRY_TAG_COLOR} className="bill-payment-model-tag">
+                          {GENERAL_PURCHASE_MODEL_NAME}
                         </Tag>
                       :<>
-                        <Tag color={JOB_TAG_COLOR}>
-                          JOB BILL
+                        <Tag color={JOB_TAG_COLOR} className="bill-payment-model-tag">
+                          {JOB_TAKA_MODEL_NAME}
                         </Tag>
                       </>}
                     </td>
@@ -869,8 +885,11 @@ const BillForm = () => {
                     <td style={{ textAlign: "center", color: "#000" }}>{bill.amount || "0"}</td>
                     
                     {/* Bill remaing amount related information  */}
-                    <td style={{ textAlign: "center" }}>
-                      <Tooltip title = {`${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill_deducation_amount} = ${bill_remaing_amount}`}>
+                    <td style={{ textAlign: "center", fontWeight: 600, cursor: "pointer" }}>
+                      <Tooltip 
+                        title = {bill_remaing_amount > 0?
+                          `${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill_deducation_amount} = ${bill_remaing_amount}`:
+                          ""}>
                         {bill_remaing_amount}
                       </Tooltip>
                     </td>
@@ -881,8 +900,9 @@ const BillForm = () => {
                     </td>
                     
                     {/* Bill due days information  */}
-                    <td style={{ textAlign: "center", color: dueDays == 0?"#000":"red", fontWeight: dueDays == 0?500:600 }}>
-                      {`${dueDays !== 0 ? '+' + dueDays + 'D' : "0"}`}
+                    <td style={{ textAlign: "center", color: 
+                      dueDays == 0?"#000":"red", fontWeight: dueDays == 0?500:600 }}>
+                      {`${dueDays !== 0 ?  + dueDays > 0? '+' + dueDays + 'D':0  : "0"}`}
                     </td>
                     
                     {/* Part payment amount information  */}

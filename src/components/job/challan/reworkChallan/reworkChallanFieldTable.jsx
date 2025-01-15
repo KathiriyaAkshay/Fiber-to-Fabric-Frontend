@@ -111,6 +111,8 @@ const ReworkChallanFieldTable = ({
                   `meter_${currentFieldNumber}`,
                   res.data.data !== null ? res.data.data.meter : undefined
                 );
+                setValue(`received_meter_${currentFieldNumber}`, parseFloat(0).toFixed(2)); 
+                setValue(`received_weight_${currentFieldNumber}`, parseFloat(0).toFixed(2))
 
                 setActiveField((prev) => prev + 1);
                 setTimeout(() => {
@@ -234,10 +236,6 @@ const ReworkChallanFieldTable = ({
                       validateStatus={
                         errors[`taka_no_${fieldNumber}`] ? "error" : ""
                       }
-                      // help={
-                      //   errors[`taka_no_${fieldNumber}`] &&
-                      //   errors[`taka_no_${fieldNumber}`].message
-                      // }
                       required={true}
                       wrapperCol={{ sm: 24 }}
                       style={{
@@ -256,6 +254,8 @@ const ReworkChallanFieldTable = ({
                               width: "100%",
                               border: "0px solid",
                               borderRadius: "0px",
+                              fontWeight: 600, 
+                              color: "red !important"
                             }}
                             disabled={fieldNumber !== activeField}
                             onChange={(e) => {
@@ -351,6 +351,7 @@ const ReworkChallanFieldTable = ({
                               width: "100%",
                               border: "0px solid",
                               borderRadius: "0px",
+                              fontWeight: 600
                             }}
                             disabled
                             onChange={(e) => {
@@ -433,12 +434,24 @@ const ReworkChallanFieldTable = ({
                     </Form.Item>
                   </td>
                   <td>
-                    <Button
-                      className="job-challan-taka-plus-option"
-                      icon={<MinusCircleOutlined />}
-                      disabled={fieldNumber > activeField}
-                      onClick={() => removeCurrentField(fieldNumber)}
-                    ></Button>
+                    {
+                      (getValues(`received_meter_${fieldNumber}`) > 0 || 
+                      getValues(`received_meter_${fieldNumber}`) == undefined) ? (
+                        <Button
+                          className="job-challan-taka-plus-option"
+                          icon={<MinusCircleOutlined />}
+                          disabled={fieldNumber > activeField}
+                          onClick={() => removeCurrentField(fieldNumber)}
+                        ></Button>
+                      ) : (
+                        <div 
+                          style={{textAlign: "center", 
+                            marginLeft: "auto", 
+                            marginRight: "auto",
+                            fontWeight: 600
+                          }}>#</div>
+                      )
+                    }
                   </td>
                 </tr>
               );

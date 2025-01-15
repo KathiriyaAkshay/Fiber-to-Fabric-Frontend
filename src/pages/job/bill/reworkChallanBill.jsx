@@ -25,6 +25,8 @@ import { EditOutlined, FileTextOutlined } from "@ant-design/icons";
 import ReworkChallanModal from "../../../components/job/challan/reworkChallan/ReworkChallanModal";
 import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
 import PartialPaymentInformation from "../../../components/accounts/payment/partialPaymentInformation";
+import { JOB_REWORK_BILL_MODEL } from "../../../constants/bill.model";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../constants/bill.model";
 
 const ReworkChallanBill = () => {
   const [quality, setQuality] = useState(null);
@@ -269,12 +271,12 @@ const ReworkChallanBill = () => {
             {record?.job_rework_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.job_rework_bill?.id}
-                bill_model={"job_rework_bill"}
+                bill_model={JOB_REWORK_BILL_MODEL}
                 paid_amount={record?.job_rework_bill?.paid_amount}
               />
             </>:<>
-              <Tag color = {record?.job_rework_bill?.is_paid?"green":"red"}>
-                {String(record?.job_rework_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              <Tag color = {record?.job_rework_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.job_rework_bill?.is_paid?PAID_TAG_TEXT:"Un-Paid").toUpperCase()}
               </Tag>
             </>}
           </div>
@@ -287,25 +289,32 @@ const ReworkChallanBill = () => {
         return (
           <Space>
             <ViewReworkChallanInfo details={details} />
-            <Button
-              onClick={() => {
-                setReworkChallanModal((prev) => {
-                  return {
-                    ...prev,
-                    isModalOpen: true,
-                    details: details,
-                    mode: "UPDATE",
-                  };
-                });
-              }}
-            >
-              <EditOutlined />
-            </Button>
+            
+            { details?.job_rework_bill?.is_partial_payment == false && 
+              details?.job_rework_bill?.is_paid == false && (
+              <Button
+                onClick={() => {
+                  setReworkChallanModal((prev) => {
+                    return {
+                      ...prev,
+                      isModalOpen: true,
+                      details: details,
+                      mode: "UPDATE",
+                    };
+                  });
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              )} 
+
             <Button
               onClick={() => {
                 let MODE;
-                if (details.bill_status === "confirmed") {
+                if (details.job_rework_bill?.is_paid) {
                   MODE = "VIEW";
+                } else if (details?.job_rework_bill?.is_partial_payment){
+                  MODE = "VIEW" ; 
                 } else {
                   MODE = "ADD";
                 }

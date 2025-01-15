@@ -35,6 +35,9 @@ import { disabledFutureDate } from "../../../../utils/date";
 import { JOB_REWORK_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { JOB_REWORK_BILL_MODEL } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 const ReworkChallan = () => {
   const navigate = useNavigate();
@@ -274,23 +277,16 @@ const ReworkChallan = () => {
       title: "Total Rec. Meter",
       dataIndex: "taka_receive_meter",
       key: "taka_receive_meter",
+      render: (text, record) => {
+        return(
+          <div style={{
+            fontWeight: 600
+          }}>
+            {parseFloat(text).toFixed(2)}
+          </div>
+        )
+      }
     },
-    // {
-    //   title: "Wastage in KG.",
-    //   dataIndex: "wastageInKg",
-    //   key: "wastageInKg",
-    //   render: (text, record) => {
-    //     let received_meter = Number(record?.taka_receive_meter) ;
-    //     let total_meter = Number(record?.total_meter) ;
-
-    //     let wastage_kg = 100 - ((Number(received_meter*100)) / total_meter) ;
-    //     return(
-    //       <div>
-    //         {wastage_kg.toFixed(2)}
-    //       </div>
-    //     )
-    //   }
-    // },
     {
       title: "Short(%)",
       dataIndex: "shortPercentage",
@@ -327,20 +323,35 @@ const ReworkChallan = () => {
       title: "Payment Status",
       dataIndex: "is_paid",
       key: "is_paid",
-      render: (paymentStatus) => (
-        <Tag color={!paymentStatus ? "red" : "green"}>
-          {paymentStatus ? "Paid" : "Un-Paid"}
-        </Tag>
-      ),
+      render: (text, record) => {
+        return(
+          <div>
+
+            {record?.job_rework_bill?.is_partial_payment?<>
+              <PartialPaymentInformation
+                bill_id={record?.job_rework_bill?.id}
+                bill_model={JOB_REWORK_BILL_MODEL}
+                paid_amount={record?.job_rework_bill?.paid_amount}
+              />
+            </>:<>
+              <Tag className="bill-payment-model-tag" color = {record?.job_rework_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.job_rework_bill?.is_paid?PAID_TAG_TEXT:"Un-Paid").toUpperCase()}
+              </Tag>
+            </>}
+
+          </div>
+        )
+      },
     },
     {
       title: "Action",
       render: (details) => {
-        let delete_visible = 0;
 
+        let delete_visible = 0;
         details?.job_rework_challan_details?.map((element) => {
           if (element?.is_rework_received == true) {
             delete_visible = 1;
+            return ; 
           }
         });
 
@@ -348,6 +359,7 @@ const ReworkChallan = () => {
           <Space>
             <ViewReworkChallanInfo details={details} />
 
+            {/* Edit and Delete option  */}
             {delete_visible == 0 && (
               <>
                 <Button
@@ -365,8 +377,10 @@ const ReworkChallan = () => {
             <Button
               onClick={() => {
                 let MODE;
-                if (details.bill_status === "confirmed") {
+                if (details.job_rework_bill?.is_paid) {
                   MODE = "VIEW";
+                } else if (details?.job_rework_bill?.is_partial_payment){
+                  MODE = "VIEW" ; 
                 } else {
                   MODE = "ADD";
                 }

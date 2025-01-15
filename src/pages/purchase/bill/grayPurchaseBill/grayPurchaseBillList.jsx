@@ -28,14 +28,15 @@ import { addDaysToDate } from "../../../accounts/reports/utils";
 import { PURCHASE_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { PURCHASE_QUALITY_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR, PURCHASE_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
 
 const GrayPurchaseBillList = () => {
   const { companyId } = useContext(GlobalContext);
   // const { data: user } = useCurrentUser();
   // const navigate = useNavigate();
 
-  const [fromDate, setFromDate] = useState();
-  const [toDate, setToDate] = useState();
+  const [fromDate, setFromDate] = useState(undefined);
+  const [toDate, setToDate] = useState(undefined);
   const [quality, setQuality] = useState();
   const [payment, setPayment] = useState();
   const [orderNo, setOrderNo] = useState("");
@@ -124,25 +125,30 @@ const GrayPurchaseBillList = () => {
         order_no: debouncedOrderNo,
         supplier_name: debouncedSupplier,
         payment_status: debouncedPayment,
-        // in_stock: debouncedType === "in_stock" ? true : false,
       },
     ],
     queryFn: async () => {
+      let params = {
+        company_id: companyId,
+        page,
+        pageSize,
+        quality_id: debouncedQuality,
+        bill_no: debouncedBillNo,
+        order_no: debouncedOrderNo,
+        supplier_name: debouncedSupplier,
+        payment_status: debouncedPayment,
+        bill_status: "received",
+      }
+
+      if (debouncedFromDate !== undefined){
+        params.bill_from = dayjs(debouncedFromDate).format("YYYY-MM-DD")
+      }
+
+      if (debouncedToDate !== undefined){
+        params.bill_to = dayjs(debouncedToDate).format("YYYY-MM-DD")
+      }
       const res = await getPurchaseTakaListRequest({
-        params: {
-          company_id: companyId,
-          page,
-          pageSize,
-          bill_from: dayjs(debouncedFromDate).format("YYYY-MM-DD"),
-          bill_to: dayjs(debouncedToDate).format("YYYY-MM-DD"),
-          quality_id: debouncedQuality,
-          bill_no: debouncedBillNo,
-          order_no: debouncedOrderNo,
-          supplier_name: debouncedSupplier,
-          payment_status: debouncedPayment,
-          bill_status: "received",
-          //   in_stock: debouncedType === "in_stock" ? true : false,
-        },
+        params: params
       });
       return res.data?.data;
     },
@@ -331,15 +337,16 @@ const GrayPurchaseBillList = () => {
       render: (text, record) => {
         return(
           <div>
+            
             {record?.purchase_taka_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.purchase_taka_bill?.id}
-                bill_model={"purchase_taka_bills"}
+                bill_model={PURCHASE_TAKA_BILL_MODEL}
                 paid_amount={record?.purchase_taka_bill?.paid_amount}
               />
             </>:<>
-              <Tag color = {record?.purchase_taka_bill?.is_paid?"green":"red"}>
-                {String(record?.purchase_taka_bill?.is_paid?"Paid":"Un-Paid").toUpperCase()}
+              <Tag className="bill-payment-model-tag" color = {record?.purchase_taka_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.purchase_taka_bill?.is_paid?PAID_TAG_TEXT:"Un-Paid").toUpperCase()}
               </Tag>
             </>}
           </div>
@@ -355,9 +362,11 @@ const GrayPurchaseBillList = () => {
             <Button
               onClick={() => {
                 let MODE;
-                if (details.payment_status === "paid") {
+                if (details?.purchase_taka_bill?.is_paid) {
                   MODE = "VIEW";
-                } else if (details.payment_status === "not_paid") {
+                } else if (details.purchase_taka_bill?.is_partial_payment){
+                  MODE = "VIEW" ; 
+                } else if (!details?.purchase_taka_bill?.is_paid) {
                   MODE = "UPDATE";
                 }
                 setPurchaseTakaChallanModal((prev) => {

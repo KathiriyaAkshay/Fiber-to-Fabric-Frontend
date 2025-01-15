@@ -341,7 +341,7 @@ const JobTakaChallanModal = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Received Job Bill
+            Job Bill
           </Typography.Text>
         }
         open={isModelOpen}

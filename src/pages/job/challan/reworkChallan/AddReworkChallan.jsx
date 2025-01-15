@@ -131,7 +131,7 @@ const AddReworkChallan = () => {
   });
 
   async function onSubmit(data) {
-    const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
+      const detailArray = Array.from({ length: activeField }, (_, i) => i + 1);
 
     let hasError = 0;
     let temp = [];
@@ -139,7 +139,15 @@ const AddReworkChallan = () => {
     detailArray?.map((field, index) => {
       let taka_no = +data[`taka_no_${field}`];
       let meter = +data[`meter_${field}`];
-
+    
+      // Skip the iteration if both taka_no and meter are invalid
+      if (
+        (isNaN(taka_no) || !taka_no) &&
+        (isNaN(meter) || !meter)
+      ) {
+        return; // Skip to the next iteration
+      }
+    
       if ((isNaN(taka_no) || !taka_no) && !isNaN(meter)) {
         message.error("Please, Provide valid taka details");
         setError(`taka_no_${field}`, {
@@ -152,12 +160,12 @@ const AddReworkChallan = () => {
         message.error(`Please, Provide valid details for taka ${taka_no}`);
         setError(`meter_${field}`, {
           type: "manual",
-          message: "Taka No required.",
+          message: "Meter required.",
         });
         hasError = 1;
         return;
       }
-
+    
       if (!isNaN(taka_no) && !isNaN(meter)) {
         temp.push({
           index: index + 1,
@@ -375,8 +383,10 @@ const AddReworkChallan = () => {
       const selectedSupplierCompany = dropDownSupplierCompanyOption.find(
         (item) => item.supplier_id === supplier_id
       );
-      setValue("delivery_address", selectedSupplierCompany?.users?.address);
-      setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no);
+      if (selectedSupplierCompany){
+        setValue("delivery_address", selectedSupplierCompany?.users?.address);
+        setValue("gst_in_2", selectedSupplierCompany?.users?.gst_no || "GST");
+      }
     }
   }, [supplier_id, dropDownSupplierCompanyOption, setValue]);
 
@@ -434,14 +444,16 @@ const AddReworkChallan = () => {
   };
 
   return (
-    <div className="flex flex-col p-4">
+    <div className="flex flex-col p-4" >
       <div className="flex items-center gap-5">
         <Button onClick={goBack}>
           <ArrowLeftOutlined />
         </Button>
         <h3 className="m-0 text-primary">Create Rework Challan</h3>
       </div>
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit)}
+        style={{marginTop: 15}}
+      >
         <Row
           gutter={18}
           style={{
@@ -721,6 +733,26 @@ const AddReworkChallan = () => {
             marginTop: "-30px",
           }}
         >
+          <Col span={6}>
+            <Form.Item
+              label="Supplier GST"
+              name="gst_in_2"
+              validateStatus={errors.gst_in_2 ? "error" : ""}
+              help={errors.gst_in_2 && errors.gst_in_2.message}
+              required={true}
+              wrapperCol={{ sm: 24 }}
+            >
+               <Controller
+                control={control}
+                name="gst_in_2"
+                render={({ field }) => {
+                  return (
+                    <Input {...field} placeholder="Supplier GST" readOnly />
+                  );
+                }}
+              />
+            </Form.Item>
+          </Col>
 
           <Col span={6}>
             <Form.Item
