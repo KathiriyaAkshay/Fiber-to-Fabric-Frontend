@@ -155,8 +155,6 @@ function AddDailyTFOReport() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
-  console.log("errors----->", errors);
-
   useEffect(() => {
     // set total_cops_weight
     const total_cops_weight = Number(total_cops) * Number(per_cops_weight);

@@ -2,9 +2,7 @@ import { Button, Flex, Input, Spin, Table, Typography, message } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getDailyBeamStockRequest,
-} from "../../../../api/requests/task";
+import { getDailyBeamStockRequest } from "../../../../api/requests/task";
 import { usePagination } from "../../../../hooks/usePagination";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { useContext, useEffect, useState } from "react";
@@ -130,13 +128,7 @@ function BeamStockReportList() {
     {
       title: "Quality Name",
       dataIndex: "quality_name",
-      render: (text, record) => {
-        return (
-          <div>
-            {record?.quality_name}-({record?.quality_weight}KG)
-          </div>
-        );
-      },
+      render: (text, record) => getDisplayQualityName(record),
     },
     {
       title: "Req. eve. non pasarela beam",
@@ -174,7 +166,7 @@ function BeamStockReportList() {
     },
     {
       title: "N.pasarela secondary beam",
-      dataIndex: "non_pasarela_beam_count_secondary"
+      dataIndex: "non_pasarela_beam_count_secondary",
     },
   ];
 

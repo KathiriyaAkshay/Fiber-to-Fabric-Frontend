@@ -59,7 +59,7 @@ function AddYarnStockReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createYarnStockReport } = useMutation({
+  const { mutateAsync: createYarnStockReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createYarnStockReportRequest({
         data,
@@ -177,7 +177,7 @@ function AddYarnStockReport() {
 
   const disabledDate = (current) => {
     // Can not select days after today
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   return (
@@ -447,12 +447,11 @@ function AddYarnStockReport() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

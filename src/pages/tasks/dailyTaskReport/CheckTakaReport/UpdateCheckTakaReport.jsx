@@ -202,9 +202,9 @@ function UpdateCheckTakaReport() {
     }
   }, [machineListRes?.rows, reportDetails, reset]);
 
-  const disabledDate = current => {
+  const disabledDate = (current) => {
     // Disable dates that are after the current date
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   return (
@@ -451,7 +451,7 @@ function UpdateCheckTakaReport() {
           </Row>
 
           <Flex gap={10} justify="flex-end">
-            <Button type="primary" htmlType="submit" loading = {isPending}>
+            <Button type="primary" htmlType="submit" loading={isPending}>
               Update
             </Button>
           </Flex>

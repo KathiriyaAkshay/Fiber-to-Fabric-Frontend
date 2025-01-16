@@ -66,36 +66,39 @@ function UpdateEmployeeAttendanceReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: updateEmployeeAttendanceReport } = useMutation({
-    mutationFn: async (data) => {
-      if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length) {
-        message.warning(`Please select ${data?.absent_employee_count} absend employee`)
-      } else {
-        const res = await updateEmployeeAttendanceReportRequest({
-          id,
-          data,
-          params: {
-            company_id: companyId,
-          },
-        });
-        return res.data;
-      }
-    },
-    mutationKey: ["reports/employee-attandance-report/update", id],
-    onSuccess: (res) => {
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
-      }
-      navigate(-1);
-    },
-    onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
-    },
-  });
+  const { mutateAsync: updateEmployeeAttendanceReport, isPending } =
+    useMutation({
+      mutationFn: async (data) => {
+        if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length) {
+          message.warning(
+            `Please select ${data?.absent_employee_count} absend employee`
+          );
+        } else {
+          const res = await updateEmployeeAttendanceReportRequest({
+            id,
+            data,
+            params: {
+              company_id: companyId,
+            },
+          });
+          return res.data;
+        }
+      },
+      mutationKey: ["reports/employee-attandance-report/update", id],
+      onSuccess: (res) => {
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
+        navigate(-1);
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage && typeof errorMessage === "string") {
+          message.error(errorMessage);
+        }
+      },
+    });
 
   const { data: reportDetails } = useQuery({
     queryKey: ["reports/employee-attandance-report/get", id],
@@ -264,7 +267,7 @@ function UpdateEmployeeAttendanceReport() {
               validateStatus={errors.user_ids ? "error" : ""}
               help={errors.user_ids && errors.user_ids.message}
               wrapperCol={{ sm: 24 }}
-              required = {true}
+              required={true}
             >
               <Controller
                 control={control}
@@ -277,7 +280,7 @@ function UpdateEmployeeAttendanceReport() {
                     loading={isLoadingEmployeeList}
                     {...field}
                     options={EmployeeListRes?.rows?.map((user) => ({
-                      label:`${user?.first_name} ${user?.last_name} ( ${user?.employer?.employee_type?.employee_type} )`,
+                      label: `${user?.first_name} ${user?.last_name} ( ${user?.employer?.employee_type?.employee_type} )`,
                       value: user.id,
 
                       disabled:
@@ -293,12 +296,11 @@ function UpdateEmployeeAttendanceReport() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

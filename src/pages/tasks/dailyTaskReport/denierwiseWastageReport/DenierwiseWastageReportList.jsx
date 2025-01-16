@@ -205,7 +205,7 @@ function DenierwiseWastageReportList() {
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
           <GoBackButton />
-          <h3 className="m-0 text-primary">Dennier Wastage Report</h3>
+          <h3 className="m-0 text-primary">Denierwise wastage report</h3>
           <Button
             onClick={navigateToAdd}
             icon={<PlusCircleOutlined />}
@@ -251,6 +251,8 @@ function DenierwiseWastageReportList() {
               width: "200px",
             }}
           />
+
+          <Button type="primary">Summary</Button>
         </Flex>
       </div>
       {renderTable()}
