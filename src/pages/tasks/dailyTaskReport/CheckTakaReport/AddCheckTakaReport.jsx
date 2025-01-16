@@ -46,55 +46,6 @@ function AddCheckTakaReport() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
-    queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
-    queryFn: async () => {
-      const res = await getCompanyMachineListRequest({
-        companyId,
-        params: { company_id: companyId },
-      });
-      return res.data?.data?.machineList;
-    },
-    enabled: Boolean(companyId),
-  });
-
-  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
-    useQuery({
-      queryKey: [
-        "quality-master/inhouse-quality/list",
-        {
-          company_id: companyId,
-        },
-      ],
-      queryFn: async () => {
-        const res = await getInHouseQualityListRequest({
-          params: {
-            company_id: companyId,
-          },
-        });
-        return res.data?.data;
-      },
-      enabled: Boolean(companyId),
-    });
-
-  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
-    queryKey: [
-      "employee/list",
-      {
-        company_id: companyId,
-      },
-    ],
-    queryFn: async () => {
-      const res = await getEmployeeListRequest({
-        params: {
-          company_id: companyId,
-        },
-      });
-      return res.data?.data?.empoloyeeList;
-    },
-    enabled: Boolean(companyId),
-  });
-
   const { mutateAsync: createCheckTakaReport, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await createCheckTakaReportRequest({
@@ -143,8 +94,58 @@ function AddCheckTakaReport() {
     },
   });
 
-  // console.log("errors----->", errors);
-  const { machine_id, machine_no } = watch();
+  const { machine_id, machine_no, machine_name } = watch();
+
+  const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
+    queryKey: [`machine/list/${companyId}`, { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getCompanyMachineListRequest({
+        companyId,
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.machineList;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  const { data: inHouseQualityList, isLoading: isLoadingInHouseQualityList } =
+    useQuery({
+      queryKey: [
+        "quality-master/inhouse-quality/list",
+        {
+          company_id: companyId,
+          machine_name,
+        },
+      ],
+      queryFn: async () => {
+        const res = await getInHouseQualityListRequest({
+          params: {
+            company_id: companyId,
+            machine_name,
+          },
+        });
+        return res.data?.data;
+      },
+      enabled: Boolean(companyId && machine_name),
+    });
+
+  const { data: employeeListRes, isLoading: isLoadingEmployeeList } = useQuery({
+    queryKey: [
+      "employee/list",
+      {
+        company_id: companyId,
+      },
+    ],
+    queryFn: async () => {
+      const res = await getEmployeeListRequest({
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data?.data?.empoloyeeList;
+    },
+    enabled: Boolean(companyId),
+  });
 
   useEffect(() => {
     // set machine name as it is required from backend
@@ -159,9 +160,9 @@ function AddCheckTakaReport() {
     });
   }, [machineListRes?.rows, machine_id, machine_no, setValue]);
 
-  const disabledDate = current => {
+  const disabledDate = (current) => {
     // Disable dates that are after the current date
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   return (
@@ -196,7 +197,7 @@ function AddCheckTakaReport() {
                       width: "100%",
                     }}
                     format="DD-MM-YYYY"
-                    disabledDate={disabledDate  }
+                    disabledDate={disabledDate}
                   />
                 )}
               />
@@ -246,7 +247,12 @@ function AddCheckTakaReport() {
                     allowClear
                     loading={isLoadingEmployeeList}
                     options={employeeListRes?.rows?.map(
-                      ({ id = 0, first_name = "", last_name = "", username = ""  }) => ({
+                      ({
+                        id = 0,
+                        first_name = "",
+                        last_name = "",
+                        username = "",
+                      }) => ({
                         label: `${first_name} ${last_name} | ( ${username} )`,
                         value: id,
                       })
@@ -274,12 +280,10 @@ function AddCheckTakaReport() {
                     placeholder="Quality"
                     allowClear={true}
                     loading={isLoadingInHouseQualityList}
-                    options={inHouseQualityList?.rows?.map(
-                      (item) => ({
-                        label: getDisplayQualityName(item),
-                        value: item?.id,
-                      })
-                    )}
+                    options={inHouseQualityList?.rows?.map((item) => ({
+                      label: getDisplayQualityName(item),
+                      value: item?.id,
+                    }))}
                   />
                 )}
               />
@@ -434,7 +438,7 @@ function AddCheckTakaReport() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit" loading = {isPending}>
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>

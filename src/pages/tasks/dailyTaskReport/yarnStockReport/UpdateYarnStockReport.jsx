@@ -39,7 +39,7 @@ function UpdateYarnStockReport() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateReport } = useMutation({
+  const { mutateAsync: updateReport, isPending } = useMutation({
     mutationFn: async (data) => {
       console.log(data);
       // const res = await updateYarnStockReportRequest({
@@ -197,12 +197,11 @@ function UpdateYarnStockReport() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

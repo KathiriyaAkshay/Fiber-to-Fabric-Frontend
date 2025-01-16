@@ -25,6 +25,11 @@ import { getEmployeeAttendanceReportListRequest } from "../../../../api/requests
 import DeleteEmployeeAttendanceReportButton from "../../../../components/tasks/employeeAttendance/DeleteEmployeeAttendanceReportButton";
 import useDebounce from "../../../../hooks/useDebounce";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import moment from "moment";
+
+function disabledFutureDate(current) {
+  return current && current > moment().endOf("day");
+}
 
 function EmployeeAttendanceReportList() {
   const [search, setSearch] = useState("");
@@ -283,6 +288,7 @@ function EmployeeAttendanceReportList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -296,6 +302,7 @@ function EmployeeAttendanceReportList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
