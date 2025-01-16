@@ -13,6 +13,7 @@ export let RECEIVE_SIZE_BEAM_MODEL_NAME = "BEAM RECEIVE" ;
 export let CREDIT_NOTE_MODEL_NAME = "CREDIT NOTE" ;
 export let JOB_REWORK_MODEL_NAME = "JOB REWORK" ; 
 export let GENERAL_PURCHASE_MODEL_NAME = "GENRAL PURCHASE" ;  
+export let CREDIT_NOTE_NAME = "CREDIT NOTE" ; 
 
 export let PAID_TAG_TEXT_COLOR = "green" ; 
 export let PAID_TAG_TEXT = "Paid"; 

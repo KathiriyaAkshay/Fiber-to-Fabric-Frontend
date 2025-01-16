@@ -305,7 +305,7 @@ const PurchaseTakaChallanModal = ({
   //  CALCULATION END------------------------------------------------
 
   useEffect(() => {
-    if (purchaseTakasBillDetail?.purchaseBill !== null) {
+    if (purchaseTakasBillDetail?.purchaseBill !== null && purchaseTakasBillDetail?.purchaseBill !== undefined) {
       setValue("invoice_no", purchaseTakasBillDetail.purchaseBill.invoice_no);
       setValue("rate", purchaseTakasBillDetail.purchaseBill.rate);
       setValue("amount", purchaseTakasBillDetail.purchaseBill.amount);
@@ -937,7 +937,10 @@ const PurchaseTakaChallanModal = ({
             <Row className="border-0 border-b ">
               <Col span={12} className="p-2 font-medium border-0 border-r ">
                 <Flex gap={10} justify="flex-start" className="mt-3">
-                  <Typography>TDS (%)</Typography>
+                  <Typography style={{
+                    marginTop: "auto", 
+                    marginBottom: "auto"
+                  }}>TDS (%)</Typography>
                   <Form.Item
                     name="TDS_value"
                     validateStatus={errors.TDS_value ? "error" : ""}
@@ -955,6 +958,10 @@ const PurchaseTakaChallanModal = ({
                           name="TDS_value"
                           placeholder="TDS value"
                           disabled={MODE === "VIEW"}
+                          style={{
+                            color: "blue",
+                            fontWeight: 600
+                          }}
                           onChange={(e) => {
                             setValue("TDS_value", e.target.value);
                             calculateAfterTDSAmount(e.target.value);
@@ -963,8 +970,14 @@ const PurchaseTakaChallanModal = ({
                       )}
                     />
                   </Form.Item>
-                  <Typography>
-                    After TDS amount: {currentValues.after_TDS_amount}
+                  <Typography style={{
+                    marginTop: "auto", 
+                    marginBottom: "auto"
+                  }}>
+                    After TDS amount: <span style={{
+                      fontWeight: 600, 
+                      color: "blue"
+                    }}>{currentValues.after_TDS_amount}</span>
                   </Typography>
                 </Flex>
               </Col>

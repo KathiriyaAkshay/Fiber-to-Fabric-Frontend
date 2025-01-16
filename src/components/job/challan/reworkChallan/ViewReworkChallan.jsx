@@ -107,6 +107,9 @@ const ViewReworkChallanInfo = ({
     else return open;
   }, [isEyeButton, isModelOpen, open]);
 
+  console.log("Open modal", isOpen);
+  
+
   const closeHandler = () => {
     if (isEyeButton) {
       setIsModalOpen(false);

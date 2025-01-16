@@ -290,9 +290,14 @@ const SizeBeamChallanModal = ({
   // Set default value ===============================================================================================
 
   useEffect(() => {
-    if (mode == "VIEW" && isModelOpen) {
+    console.log("Runn this functionality");
+    console.log("Mode", mode);
+    console.log("Model open", isModelOpen);
+    
+    
+    
+    if (mode == "VIEW") {
       const { receive_size_beam_bill } = details;
-
       setValue("bill_date", dayjs(receive_size_beam_bill?.bill_date));
       setValue("due_date", dayjs(receive_size_beam_bill?.due_date));
       setValue("rate", receive_size_beam_bill?.rate);
@@ -387,6 +392,7 @@ const SizeBeamChallanModal = ({
                   <Col
                     span={16}
                   >
+                    {/* Supplier name related information  */}
                     {`${details?.supplier?.first_name !== undefined?`${details?.supplier?.first_name} ${details?.supplier?.last_name}`:`${details?.receive_size_beam_bill?.supplier?.supplier_name}`}`}
                   </Col>
                 </Row>
@@ -395,8 +401,7 @@ const SizeBeamChallanModal = ({
                     Company Name :
                   </Col>
                   <Col span={16}>
-                    {/* {`${details?.inhouse_quality?.quality_name} ${details?.inhouse_quality?.quality_weight}KG `} */}
-                    {companyInfo?.company_name || ""}
+                    {details?.supplier?.supplier_company|| details?.supplier?.supplier?.supplier_company}
                   </Col>
                 </Row>
               </Col>

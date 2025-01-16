@@ -195,13 +195,26 @@ export function generateJobBillDueDate(bill_date){
 }
 
 export function addDaysToDate(startDate, daysToAdd) {
-  console.log(startDate);
-  
-  // Convert the startDate to a Date object if it's not already one
   let date = new Date(startDate);
-
-  // Add the days to the date
   date.setDate(date.getDate() + daysToAdd);
-
   return date;
+}
+
+export function getCurrentFinancialYear() {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+
+  // If the current month is April (3) or later, financial year starts this year
+  // Otherwise, it starts the previous year
+  const startYear = currentMonth >= 3 ? currentYear : currentYear - 1;
+  const endYear = startYear + 1;
+
+  const financialYearStartDate = new Date(startYear, 3, 1); // April 1
+  const financialYearEndDate = new Date(endYear, 2, 31);    // March 31
+
+  return {
+    startDate: financialYearStartDate.toISOString().split('T')[0], // YYYY-MM-DD format
+    endDate: financialYearEndDate.toISOString().split('T')[0]     // YYYY-MM-DD format
+  };
 }

@@ -6,14 +6,12 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ToWords } from "to-words";
 import {
+  createCreditNoteRequest,
   getCreditNoteByIdRequest,
-  getDebitNoteByIdRequest,
   getLastCreditNoteNumberRequest,
-  getLastDebitNoteNumberRequest,
 } from "../../../../api/requests/accounts/notes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
-import { createDebitNoteRequest } from "../../../../api/requests/accounts/notes";
 import { useMutation } from "@tanstack/react-query";
 
 const toWords = new ToWords({
@@ -58,27 +56,25 @@ const CalculateInterest = (due_days, bill_amount) => {
 
 const SunadryCreditNoteGenerate = ({
   bill_details,
-  companyListRes,
   open,
   setOpen,
   debiteNoteData,
   setDebitNoteSelection,
+  setSelectedRecords
 }) => {
-  console.log(bill_details);
-
   const queryClient = useQueryClient();
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [debitNote, setDebitNote] = useState(undefined);
 
-  const company = useMemo(() => {
-    if (companyListRes?.length > 0) {
-      const data = companyListRes?.rows?.find((item) => +item.id == +companyId);
-      return data;
+  // Selected company information ==============================================================
+  const selectedCompany = useMemo(() => {
+    if (companyId) {
+      return companyListRes?.rows?.find(({ id }) => id === companyId);
     }
-  }, [companyListRes]);
+  }, [companyId, companyListRes]);
 
-  // Get last debite note last number information request =================================
+  // Fetch credit note last number related information =======================================
   const { data: debitNoteLastNumber } = useQuery({
     queryKey: [
       "get",
@@ -103,47 +99,41 @@ const SunadryCreditNoteGenerate = ({
       let temp_debit_note = String(debitNoteLastNumber?.debitNoteNumber).split(
         "-"
       )[1];
+      // if 
       let debit_note = `CNP-${+temp_debit_note + 1}`;
       setDebitNote(`${debit_note}`);
     }
   }, [debitNoteLastNumber]);
 
-  // Get Debit note by id related information
-  const [genratedDebiteNoteInfo, setGeneratedDebiteNoteInfo] =
-    useState(undefined);
+  // Get crdit note by id related information ========================================================
+  const [genratedDebiteNoteInfo, setGeneratedDebiteNoteInfo] = useState(undefined);
   const [isGenerated, setIsGenerated] = useState(false);
-
+  
   const manuallyFetchDebitNoteInformation = async () => {
     setIsGenerated(true);
     const params = {
       company_id: companyId,
     };
-
     const debit_note_id = bill_details[0]?.credit_note_id;
-
     if (!debit_note_id) {
-      console.error("No debit note ID found.");
       return;
     }
-
     try {
-      // Manually call the queryFn
       const response = await getCreditNoteByIdRequest({
         id: debit_note_id,
         params: params,
       });
-
-      // Handle the response data
       const data = response?.data?.data;
       setGeneratedDebiteNoteInfo(data?.creditNote);
     } catch (error) {
-      console.error("Error fetching debit note:", error);
     }
   };
 
   useEffect(() => {
     if (bill_details?.length == 1) {
-      if (bill_details[0]?.credit_note_id != null) {
+      if (bill_details[0]?.credit_note_id != null && bill_details[0]?.credit_note_id !== undefined) {
+        console.log("Run this functionality");
+        
         manuallyFetchDebitNoteInformation();
       }
     }
@@ -161,24 +151,38 @@ const SunadryCreditNoteGenerate = ({
     if (bill_details?.length > 0) {
       let totalAmount = 0;
       bill_details?.map((bill) => {
-        let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
-        let dueDays = isNaN(calculateDaysDifference(dueDate))
-          ? 0
-          : calculateDaysDifference(dueDate);
-        let interestAmount = CalculateInterest(dueDays, +bill?.amount);
+        const dueDate =
+          bill?.due_date == null
+            ? bill?.model == PURCHASE_TAKA_BILL_MODEL
+              ? generatePurchaseBillDueDate(bill?.bill_date)
+              : generateJobBillDueDate(bill?.bill_date)
+            : moment(bill?.due_date).format("DD-MM-YYYY");
+        let dueDays = calculateDaysDifference(dueDate);
+        if (dueDays < 0){
+          dueDays = 0 ; 
+        } 
+
+        const interestAmount = CalculateInterest(dueDays, bill?.amount);
         totalAmount += +interestAmount;
       });
+      console.log("Total interest amount", totalAmount);
+      
       setTotalInterestAmount(totalAmount);
+    }
+  }, [bill_details]);
 
-      let CGST = (+totalAmount * 2.5) / 100;
-
-      let net_amount = +totalAmount + +CGST * 2;
+  useEffect(() => {
+    console.log("Total inerest amount", totalInterestAmount);
+    if (totalInterestAmount !== "" && totalInterestAmount !== undefined){
+      let CGST = (+totalInterestAmount * 2.5) / 100;
+      let net_amount = +totalInterestAmount + +CGST * 2;
       let round_off_amount = Math.round(net_amount);
       setRoundOffAmount(net_amount - round_off_amount);
       setTaxAmount({ CGST: CGST });
       setNetAmount(round_off_amount);
     }
-  }, [bill_details]);
+    
+  }, [totalInterestAmount])
 
   useEffect(() => {
     if (taxValue > 0) {
@@ -195,9 +199,11 @@ const SunadryCreditNoteGenerate = ({
     }
   }, [taxValue]);
 
+  // =============== Credit note creation related option handler ================ // 
+
   const { mutateAsync: addDebitOtherNOte, isPending } = useMutation({
     mutationFn: async ({ data }) => {
-      const res = await createDebitNoteRequest({
+      const res = await createCreditNoteRequest({
         data,
         params: {
           company_id: companyId,
@@ -207,12 +213,13 @@ const SunadryCreditNoteGenerate = ({
     },
     mutationKey: ["add", "debit", "other-note"],
     onSuccess: (res) => {
-      queryClient.invalidateQueries(["sundry", "debtor", "data"]);
+      queryClient.invalidateQueries(["sundry", "creditor", "data"]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
       }
       setDebitNoteSelection([]);
+      setSelectedRecords([]) ; 
       setOpen(false);
     },
     onError: (error) => {
@@ -222,44 +229,55 @@ const SunadryCreditNoteGenerate = ({
   });
 
   const handleSubmit = async () => {
-    let bill_details_temp = [];
-    bill_details?.map((element) => {
-      let dueDate = moment(element?.due_days).format("DD-MM-YYYY");
-      let dueDays = isNaN(calculateDaysDifference(dueDate))
-        ? 0
-        : calculateDaysDifference(dueDate);
-      let interestAmount = CalculateInterest(dueDays, +element?.amount);
-      bill_details_temp?.push({
-        bill_id: element.bill_id,
-        model: element?.model,
-        rate: 0,
-        per: 1.0,
-        invoice_no: element?.bill_no,
-        particular_name: "Late Payment Income",
-        // quality: billData?.inhouse_quality?.quality_weight,
-        amount: +interestAmount,
+    if (totalInterestAmount == "" || totalInterestAmount == undefined || totalInterestAmount == null){
+      message.warning("Please, Enter late payment value") ; 
+    }  else {
+      let CREDIT_NOTE_PARTICULAR_NAME = "Late Payment Income" ; 
+      let bill_details_temp = [];
+      bill_details?.map((element) => {
+        const dueDate =
+          element?.due_date == null
+          ? element?.model == PURCHASE_TAKA_BILL_MODEL
+            ? generatePurchaseBillDueDate(element?.bill_date)
+            : generateJobBillDueDate(element?.bill_date)
+          : moment(element?.due_date).format("DD-MM-YYYY");
+        let dueDays = calculateDaysDifference(dueDate);
+        if (dueDays < 0){
+          dueDays = 0 ; 
+        } 
+
+        const interestAmount = CalculateInterest(dueDays, element?.amount);
+        bill_details_temp?.push({
+          bill_id: element.bill_id,
+          model: element?.model,
+          rate: 0,
+          per: 1.0,
+          invoice_no: element?.bill_no,
+          particular_name: CREDIT_NOTE_PARTICULAR_NAME,
+          amount: +interestAmount,
+        });
       });
-    });
-    const payload = {
-      party_id: bill_details[0]?.party_id,
-      supplier_id: bill_details[0]?.supplier_id,
-      debit_note_number: debitNote,
-      debit_note_type: "other",
-      SGST_value: 2.5,
-      SGST_amount: +taxAmoumt?.CGST,
-      CGST_value: 2.5,
-      CGST_amount: +taxAmoumt?.CGST,
-      IGST_value: 0,
-      IGST_amount: 0,
-      round_off_amount: roundOffAmoumt,
-      net_amount: netAmount,
-      extra_tex_name: taxName,
-      extra_tex_value: +taxValue,
-      extra_tex_amount: +taxAmoumt?.TDS || 0,
-      createdAt: dayjs(new Date()).format("YYYY-MM-DD"),
-      debit_note_details: bill_details_temp,
-    };
-    await addDebitOtherNOte({ data: payload });
+      const payload = {
+        party_id: bill_details[0]?.party_id,
+        supplier_id: bill_details[0]?.supplier_id,
+        credit_note_number: debitNote,
+        credit_note_type: "other",
+        SGST_value: 2.5,
+        SGST_amount: +taxAmoumt?.CGST,
+        CGST_value: 2.5,
+        CGST_amount: +taxAmoumt?.CGST,
+        IGST_value: 0,
+        IGST_amount: 0,
+        round_off_amount: parseFloat(roundOffAmoumt).toFixed(2),
+        net_amount: netAmount,
+        extra_tex_name: taxName || "TDS",
+        extra_tex_value: +taxValue || 0,
+        extra_tex_amount: +taxAmoumt?.TDS || 0,
+        createdAt: dayjs(new Date()).format("YYYY-MM-DD"),
+        credit_note_details: bill_details_temp,
+      };
+      await addDebitOtherNOte({ data: payload });
+    }
   };
 
   return (
@@ -269,6 +287,8 @@ const SunadryCreditNoteGenerate = ({
         width={"75%"}
         onCancel={() => {
           setOpen(false);
+          setDebitNoteSelection([]) ; 
+          setSelectedRecords([]) ; 
         }}
         footer={false}
         closeIcon={<CloseOutlined className="text-white" />}
@@ -310,6 +330,7 @@ const SunadryCreditNoteGenerate = ({
                     <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
                       Credit Note No.
                     </Typography.Text>
+
                     {isGenerated ? (
                       <>
                         <div>{genratedDebiteNoteInfo?.credit_note_number}</div>
@@ -319,6 +340,7 @@ const SunadryCreditNoteGenerate = ({
                         <div>{debitNote || "CNP-1"}</div>
                       </>
                     )}
+
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
@@ -352,26 +374,32 @@ const SunadryCreditNoteGenerate = ({
               </tr>
               <tr width="50%">
                 <td colSpan={4}>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span> 1234567890ABCDE
+                  <div style={{fontSize: 16, fontWeight: 600}}>
+                    {selectedCompany?.company_name}
+                  </div>
+                  <div>
+                    {selectedCompany?.address_line_1}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>State Name:</span> Gujarat
+                    <span>GSTIN/UIN:</span> {selectedCompany?.gst_no}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>PinCode:</span> 123456
+                    <span>State Name:</span> {String(selectedCompany?.state).toUpperCase()}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>Contact:</span> 9876543210
+                    <span>PinCode:</span> {selectedCompany?.pincode}
                   </div>
                   <div className="credit-note-info-title">
-                    <span>Email:</span> company@example.com
+                    <span>Contact:</span> {selectedCompany?.owner_mobile}
+                  </div>
+                  <div className="credit-note-info-title">
+                    <span>Email:</span> {selectedCompany?.company_email}
                   </div>
                 </td>
                 {debiteNoteData?.supplier?.id !== undefined && (
                   <td colSpan={4}>
                     <div className="credit-note-info-title">
-                      <span style={{ fontWeight: 400 }}>Supplier</span>
+                      <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Supplier</span>
                       <br></br>
                       <span>
                         {String(
@@ -397,7 +425,7 @@ const SunadryCreditNoteGenerate = ({
                 {debiteNoteData?.supplier?.id == undefined && (
                   <td colSpan={4}>
                     <div className="credit-note-info-title">
-                      <span style={{ fontWeight: 400 }}>Party</span>
+                      <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Party</span>
                       <br></br>
                       <span>
                         {String("Party Company STATIC").toUpperCase()}
@@ -454,7 +482,15 @@ const SunadryCreditNoteGenerate = ({
                   </>
                 ) : (
                   <>
-                    <td>{parseFloat(totalInterestAmount).toFixed(2)}</td>
+                    <td>
+                      <Input
+                        value = {totalInterestAmount}
+                        onChange={(event) => {
+                          setTotalInterestAmount(event.target.value) ;
+                        }}
+                        placeholder="Amount"
+                      />
+                    </td>
                   </>
                 )}
               </tr>
@@ -622,8 +658,11 @@ const SunadryCreditNoteGenerate = ({
               marginBottom: 10,
             }}
           >
-            {bill_details[0]?.debit_note_id == null &&
-              bill_details?.length == 1 && (
+
+            {/* Credit note generate option ================= */}
+            {bill_details[0]?.credit_note_id == null &&
+              bill_details?.length == 1 &&
+              bill_details[0]?.credit_note_id !== undefined && (
                 <Button
                   type="primary"
                   loading={isPending}
@@ -631,11 +670,19 @@ const SunadryCreditNoteGenerate = ({
                 >
                   Generate
                 </Button>
-              )}
-            {bill_details[0]?.debit_note_id != null && (
+            )}
+            
+            {/* Credit note print option ======================== */}
+            { bill_details[0]?.credit_note_id != null &&
+              bill_details[0]?.credit_note_id !== undefined && (
               <Button type="primary">PRINT</Button>
             )}
-            <Button onClick={() => setOpen(false)}>Close</Button>
+
+            <Button onClick={() => {
+              setOpen(false)
+              setDebitNoteSelection([]) ; 
+              setSelectedRecords([]) ; 
+            }}>Close</Button>
           </Flex>
         </div>
       </Modal>

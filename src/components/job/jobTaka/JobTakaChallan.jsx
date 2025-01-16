@@ -48,6 +48,8 @@ const toWords = new ToWords({
   },
 });
 
+const VIEW_MODE = "VIEW" ; 
+
 const addSizeBeamReceive = yup.object().shape({
   invoice_no: yup.string().required("Please enter invoice no."),
   bill_date: yup.string().required("Please enter bill date"),
@@ -544,6 +546,7 @@ const JobTakaChallanModal = ({
                           setValue("rate", e.target.value);
                           calculateAmount(e.target.value, details.total_meter);
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -571,6 +574,7 @@ const JobTakaChallanModal = ({
                           setValue("amount", e.target.value);
                           calculateRate(e.target.value, details.total_meter);
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -620,6 +624,7 @@ const JobTakaChallanModal = ({
                           setValue("discount_value", e.target.value);
                           calculateDiscount(e.target.value);
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -672,6 +677,7 @@ const JobTakaChallanModal = ({
                           setValue("SGST_value", e.target.value);
                           calculatePercent(e.target.value, "SGST_amount");
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -723,6 +729,7 @@ const JobTakaChallanModal = ({
                           setValue("CGST_value", e.target.value);
                           calculatePercent(e.target.value, "CGST_amount");
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -774,6 +781,7 @@ const JobTakaChallanModal = ({
                           setValue("IGST_value", e.target.value);
                           calculatePercent(e.target.value, "IGST_amount");
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -824,9 +832,9 @@ const JobTakaChallanModal = ({
                         type="number"
                         onChange={(e) => {
                           setValue("TCS_value", e.target.value);
-                          //   calculatePercent(e.target.value, "TCS_amount");
                           calculateTCSAmount(e.target.value);
                         }}
+                        readOnly = {MODE == VIEW_MODE?true:false}
                       />
                     )}
                   />
@@ -894,7 +902,10 @@ const JobTakaChallanModal = ({
             <Row className="border-0 border-b ">
               <Col span={12} className="p-2 font-medium border-0 border-r ">
                 <Flex gap={10} justify="flex-start" className="mt-3">
-                  <Typography>TDS (%)</Typography>
+                  <Typography style={{
+                    marginTop: "auto", 
+                    marginBottom: "auto"
+                  }}>TDS (%)</Typography>
                   <Form.Item
                     name="TDS_value"
                     validateStatus={errors.TDS_value ? "error" : ""}
@@ -915,12 +926,20 @@ const JobTakaChallanModal = ({
                             setValue("TDS_value", e.target.value);
                             calculateAfterTDSAmount(e.target.value);
                           }}
+                          style={{
+                            color: "blue", 
+                            fontWeight: 600
+                          }}
+                          readOnly = {MODE == VIEW_MODE?true:false}
                         />
                       )}
                     />
                   </Form.Item>
-                  <Typography>
-                    After TDS amount: {currentValues.after_TDS_amount}
+                  <Typography style={{
+                    marginTop: "auto", 
+                    marginBottom:"auto"
+                  }}>
+                    After TDS amount: <span style={{color: "blue", marginLeft: 5, fontWeight: 600}}>{currentValues.after_TDS_amount}</span>
                   </Typography>
                 </Flex>
               </Col>

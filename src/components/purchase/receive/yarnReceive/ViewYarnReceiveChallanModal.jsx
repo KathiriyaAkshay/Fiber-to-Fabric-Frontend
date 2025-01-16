@@ -581,11 +581,15 @@ const ViewYarnReceiveChallan = ({
           >
             <Col span={4} className="p-2 font-semibold">
               <strong>TDS : </strong>
-              {details?.TDS_amount}
+              <span style={{color: "blue"}}>
+                {details?.TDS_amount}
+              </span>
             </Col>
             <Col span={20} className="p-2 font-semibold">
               <strong>After TDS :</strong>
-              {details?.after_TDS_amount}
+              <span style={{color: "blue"}}>
+                {details?.after_TDS_amount}
+              </span>
             </Col>
           </Row>
         </Flex>
