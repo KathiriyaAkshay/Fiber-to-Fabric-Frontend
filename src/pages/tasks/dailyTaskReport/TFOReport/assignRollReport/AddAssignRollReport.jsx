@@ -491,6 +491,7 @@ function AddAssignRollReport() {
             onClick={() => {
               remove(index);
             }}
+            danger
           >
             <DeleteOutlined />
           </Button>
@@ -538,7 +539,6 @@ function AddAssignRollReport() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

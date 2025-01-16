@@ -1,4 +1,4 @@
-    import {
+import {
   ArrowLeftOutlined,
   DeleteOutlined,
   PlusOutlined,
@@ -78,7 +78,7 @@ const AddBeamStockReport = () => {
   const [selectedNonPasarela, setSelectedNonPasarela] = useState([]);
 
   // Beam max taka related information ===========================
-  const [beamMaxTaka, setBeamMaxTaka] = useState(undefined) ; 
+  const [beamMaxTaka, setBeamMaxTaka] = useState(undefined);
 
   function goBack() {
     navigate(-1);
@@ -129,7 +129,7 @@ const AddBeamStockReport = () => {
       ]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success("Beam stock created successfully") ; 
+        message.success("Beam stock created successfully");
         setFieldArray([]);
       }
       reset();
@@ -143,19 +143,17 @@ const AddBeamStockReport = () => {
   function hasDuplicateBeamNo(beamDetails) {
     const seenBeams = new Set();
     for (const beam of beamDetails) {
-        if (seenBeams.has(beam.beam_no)) {
-            return true; // Duplicate found
-        }
-        seenBeams.add(beam.beam_no);
+      if (seenBeams.has(beam.beam_no)) {
+        return true; // Duplicate found
+      }
+      seenBeams.add(beam.beam_no);
     }
     return false; // No duplicates
   }
 
   async function onSubmit(data) {
-
     if (data.beam_type === "non pasarela (primary)") {
-      
-      let hasError = 0; 
+      let hasError = 0;
 
       const newData = {
         machine_name: data.machine_name,
@@ -165,13 +163,13 @@ const AddBeamStockReport = () => {
         quality_group: data.quality_group,
       };
 
-      fieldArray.map((fieldNumber, indexValue) => {
+      fieldArray.map((fieldNumber) => {
         if (!getValues(`beam_no_${fieldNumber}`)) {
           setError(`beam_no_${fieldNumber}`, {
             type: "manual",
             message: "Required",
           });
-          hasError = 1 ; 
+          hasError = 1;
         }
 
         if (!getValues(`taar_${fieldNumber}`)) {
@@ -179,7 +177,7 @@ const AddBeamStockReport = () => {
             type: "manual",
             message: "Required",
           });
-          hasError = 1 ; 
+          hasError = 1;
         }
 
         if (!getValues(`pano_${fieldNumber}`)) {
@@ -187,7 +185,7 @@ const AddBeamStockReport = () => {
             type: "manual",
             message: "Required",
           });
-          hasError = 1 ; 
+          hasError = 1;
         }
 
         if (!getValues(`taka_${fieldNumber}`)) {
@@ -200,16 +198,14 @@ const AddBeamStockReport = () => {
 
         if (!getValues(`meter_${fieldNumber}`)) {
           setError(`meter_${fieldNumber}`, {
-            type: "manual", 
+            type: "manual",
             message: "Required",
           });
           hasError = 1;
         }
+      });
 
-      })
-
-
-      if (hasError == 0){
+      if (hasError == 0) {
         if (data.quality_group === "job") {
           newData.beam_details = fieldArray.map((fieldNumber) => {
             return {
@@ -218,7 +214,7 @@ const AddBeamStockReport = () => {
               meters: +data[`meter_${fieldNumber}`],
               pano: +data[`pano_${fieldNumber}`],
               taka: +data[`taka_${fieldNumber}`],
-              createdAt: dayjs(new Date())
+              createdAt: dayjs(new Date()),
             };
           });
         } else {
@@ -229,49 +225,51 @@ const AddBeamStockReport = () => {
               meters: +data[`meter_${fieldNumber}`],
               pano: +data[`pano_${fieldNumber}`],
               taka: +data[`taka_${fieldNumber}`],
-              createdAt: dayjs(new Date())
+              createdAt: dayjs(new Date()),
             };
           });
         }
 
-        const hasDuplicate = hasDuplicateBeamNo(newData?.beam_details) ; 
+        const hasDuplicate = hasDuplicateBeamNo(newData?.beam_details);
 
-        if (hasDuplicate){
+        if (hasDuplicate) {
           message.warning("Please enter a unique beam number.");
-        } else{
-          await addBeamStockReport(newData); 
+        } else {
+          await addBeamStockReport(newData);
         }
       }
-      
     }
 
     if (data.beam_type === "pasarela (primary)") {
       const formData = [];
-      const secondary_beam_ids = [] ; 
-      const hasError = false ; 
+      const secondary_beam_ids = [];
+      let hasError = false;
 
       selectedNonPasarela.forEach((index) => {
         const secondaryBeamNo = data[`secondary_beam_no_${index}`];
-        secondary_beam_ids.push(secondaryBeamNo) ; 
+        secondary_beam_ids.push(secondaryBeamNo);
         formData.push({
           beam_load_id: nonPasarelaList[index].id,
           secondary_loaded_beam_id: secondaryBeamNo || null,
-          createdAt: dayjs(new Date()), 
-          pasarela_id: +data.employee
+          createdAt: dayjs(new Date()),
+          pasarela_id: +data.employee,
         });
       });
-    
-      if (secondary_beam_ids?.length !== [...new Set(secondary_beam_ids)]?.length){
-        message.error("Please select a different secondary beam for each primary beam") ; 
-        hasError = true; 
-        return ; 
+
+      if (
+        secondary_beam_ids?.length !== [...new Set(secondary_beam_ids)]?.length
+      ) {
+        message.error(
+          "Please select a different secondary beam for each primary beam"
+        );
+        hasError = true;
+        return;
       }
 
-      if (!hasError){
+      if (!hasError) {
         await addPasarelaBeamStockReport(formData);
       }
     }
-  
   }
 
   const {
@@ -355,23 +353,23 @@ const AddBeamStockReport = () => {
   });
 
   // Get Employee dropdown list ==============================================
-  const [employeeDropDownOption, setEmployeeDropDownOption] = useState([]) ; 
-  const BEAM_PASARIA_EMPLOYEE = "BEAM pasaria" ; 
-  const BEAM_WRAPER_EMPLOYEE = "BEAM warpar"; 
+  const [employeeDropDownOption, setEmployeeDropDownOption] = useState([]);
+  const BEAM_PASARIA_EMPLOYEE = "BEAM pasaria";
+  const BEAM_WRAPER_EMPLOYEE = "BEAM warpar";
 
   // Dropdown employee list related api ========================================
   const { data: employeeList, isLoading: isLoadingEmployeeData } = useQuery({
-    queryKey: ["employee", "list", { company_id: companyId}],
+    queryKey: ["employee", "list", { company_id: companyId }],
     queryFn: async () => {
-      let employee_type = undefined ; 
-      if (beam_type == "pasarela (primary)"){
-        employee_type = BEAM_PASARIA_EMPLOYEE ; 
+      let employee_type = undefined;
+      if (beam_type == "pasarela (primary)") {
+        employee_type = BEAM_PASARIA_EMPLOYEE;
       } else {
-        employee_type = BEAM_WRAPER_EMPLOYEE ; 
+        employee_type = BEAM_WRAPER_EMPLOYEE;
       }
       const res = await getEmployeeListRequest({
         companyId,
-        params: { company_id: companyId, salary_type: employee_type},
+        params: { company_id: companyId, salary_type: employee_type },
       });
       return res.data?.data?.empoloyeeList;
     },
@@ -380,19 +378,24 @@ const AddBeamStockReport = () => {
   });
 
   useEffect(() => {
-    if (beam_type !== undefined && employeeList?.rows?.length > 0 ){
-      let temp_employee = [] ; 
-      let employee_type = beam_type == "pasarela (primary)"?BEAM_PASARIA_EMPLOYEE:BEAM_WRAPER_EMPLOYEE ; 
+    if (beam_type !== undefined && employeeList?.rows?.length > 0) {
+      let temp_employee = [];
+      let employee_type =
+        beam_type == "pasarela (primary)"
+          ? BEAM_PASARIA_EMPLOYEE
+          : BEAM_WRAPER_EMPLOYEE;
       employeeList?.rows?.map((element) => {
-        if (element?.employer?.employee_type?.salary_type?.includes(employee_type)){
-          temp_employee.push(element)
+        if (
+          element?.employer?.employee_type?.salary_type?.includes(employee_type)
+        ) {
+          temp_employee.push(element);
         }
-      })
-      setEmployeeDropDownOption(temp_employee) ; 
+      });
+      setEmployeeDropDownOption(temp_employee);
     }
-  },[beam_type, employeeList]);
+  }, [beam_type, employeeList]);
 
-  // Get Machine dropdown list 
+  // Get Machine dropdown list
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
     queryFn: async () => {
@@ -405,7 +408,7 @@ const AddBeamStockReport = () => {
     enabled: Boolean(companyId),
   });
 
-  // Get Quality dropdown list 
+  // Get Quality dropdown list
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
     useQuery({
       queryKey: [
@@ -439,9 +442,9 @@ const AddBeamStockReport = () => {
       },
       enabled: Boolean(companyId),
       initialData: { rows: [] },
-  });
+    });
 
-  // Get LastNumber beam number information 
+  // Get LastNumber beam number information
   const { data: lastBeamNumber } = useQuery({
     queryKey: [
       "lastBeam",
@@ -449,7 +452,6 @@ const AddBeamStockReport = () => {
       { company_id: companyId, type: quality_group, beam_type },
     ],
     queryFn: async () => {
-      
       if (
         quality_group === "inhouse(gray)" ||
         beam_type === "non pasarela (primary)"
@@ -480,7 +482,7 @@ const AddBeamStockReport = () => {
     setFieldArray([]);
   };
 
-  const [currentWorkingIndex, setCurrentWorkingIndex] = useState(0);  
+  const [currentWorkingIndex, setCurrentWorkingIndex] = useState(0);
   const addNewFieldRow = (indexValue) => {
     let isValid = true;
     if (!fieldArray.length && indexValue === -1) {
@@ -502,7 +504,7 @@ const AddBeamStockReport = () => {
     clearErrors(`pano_${indexValue}`);
     clearErrors(`taka_${indexValue}`);
     clearErrors(`meter_${indexValue}`);
-    
+
     if (!getValues(`taar_${indexValue}`)) {
       setError(`taar_${indexValue}`, {
         type: "manual",
@@ -534,7 +536,7 @@ const AddBeamStockReport = () => {
 
     if (isValid) {
       const nextValue = fieldArray[fieldArray.length - 1] + 1;
-      setCurrentWorkingIndex(nextValue) ; 
+      setCurrentWorkingIndex(nextValue);
 
       setFieldArray((prev) => {
         return [...prev, nextValue];
@@ -697,13 +699,15 @@ const AddBeamStockReport = () => {
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
                           label: getDisplayQualityName(item),
-                          max_taka: item?.max_taka 
+                          max_taka: item?.max_taka,
                         }))
                       }
                       onChange={(value) => {
                         field.onChange(value);
-                        let filterdQuality = dropDownQualityListRes?.rows?.find((item) => item?.id == +value) ; 
-                        setBeamMaxTaka(filterdQuality?.max_taka)
+                        let filterdQuality = dropDownQualityListRes?.rows?.find(
+                          (item) => item?.id == +value
+                        );
+                        setBeamMaxTaka(filterdQuality?.max_taka);
 
                         if (beam_type === "non pasarela (primary)") {
                           addNewFieldRow(-1);
@@ -754,7 +758,7 @@ const AddBeamStockReport = () => {
               />
             </Form.Item>
           </Col>
-          
+
           {/* =========== Employee selection dropdown ============  */}
           <Col span={4}>
             <Form.Item
@@ -788,8 +792,8 @@ const AddBeamStockReport = () => {
               />
             </Form.Item>
           </Col>
-        </Row>  
-        
+        </Row>
+
         {/* ========= Non pasarela beam selection ===========  */}
         {beam_type === "non pasarela (primary)" &&
           quality_id &&
@@ -797,11 +801,13 @@ const AddBeamStockReport = () => {
           fieldArray.map((fieldNumber, index) => {
             return (
               <>
-                <div style={{
-                  marginTop: -10, 
-                  fontWeight: 600,
-                  color: "red"
-                }}>
+                <div
+                  style={{
+                    marginTop: -10,
+                    fontWeight: 600,
+                    color: "red",
+                  }}
+                >
                   Max Taka for Beam : {beamMaxTaka}
                 </div>
                 <FormRow
@@ -816,17 +822,15 @@ const AddBeamStockReport = () => {
                   setValue={setValue}
                   lastBeamNumber={lastBeamNumber}
                   quality_group={quality_group}
-                  currentWorkingIndex = {currentWorkingIndex}
-                  max_taka = {beamMaxTaka}
+                  currentWorkingIndex={currentWorkingIndex}
+                  max_taka={beamMaxTaka}
                 />
               </>
             );
-        })}
+          })}
 
         {beam_type == "non pasarela (primary)" && fieldArray?.length == 0 && (
-          <Empty
-            description = "No Beam found"
-          />
+          <Empty description="No Beam found" />
         )}
 
         {/* ========= Pasarela employee selection ==============  */}
@@ -849,15 +853,11 @@ const AddBeamStockReport = () => {
                 />
               );
             }
-        })}
+          })}
 
         {beam_type == "pasarela (primary)" && nonPasarelaList?.length == 0 && (
-          <Empty
-            description = "No Beam found"
-          />
+          <Empty description="No Beam found" />
         )}
-
-        
 
         <Flex gap={10} justify="flex-end">
           <Button htmlType="button" onClick={() => reset()}>
@@ -884,8 +884,8 @@ const FormRow = ({
   fieldArray,
   quality_group,
   setValue,
-  currentWorkingIndex, 
-  max_taka
+  currentWorkingIndex,
+  max_taka,
 }) => {
   return (
     <>
@@ -922,8 +922,7 @@ const FormRow = ({
                     {...field}
                     placeholder="0"
                     style={{ width: "480px" }}
-                    readOnly = {currentWorkingIndex > fieldNumber?true:false}
-                    
+                    readOnly={currentWorkingIndex > fieldNumber ? true : false}
                   />
                 </Flex>
               )}
@@ -989,21 +988,22 @@ const FormRow = ({
               control={control}
               name={`taka_${fieldNumber}`}
               render={({ field }) => (
-                <Input 
-                  {...field} 
-                  type="number" 
-                  placeholder="0" 
+                <Input
+                  {...field}
+                  type="number"
+                  placeholder="0"
                   onChange={(e) => {
-                    if (e.target.value > max_taka){
-                      message.warning(`The maximum allowed Taka for this quality on the beam is ${max_taka}`)
+                    if (e.target.value > max_taka) {
+                      message.warning(
+                        `The maximum allowed Taka for this quality on the beam is ${max_taka}`
+                      );
                     } else {
-                      setValue(`taka_${fieldNumber}`, e.target.value) ; 
+                      setValue(`taka_${fieldNumber}`, e.target.value);
                     }
-                    if (quality_group == "inhouse(gray)"){
-                      let meter = Number(e.target.value)*220; 
-                      setValue(`meter_${fieldNumber}`, meter) ; 
+                    if (quality_group == "inhouse(gray)") {
+                      let meter = Number(e.target.value) * 220;
+                      setValue(`meter_${fieldNumber}`, meter);
                     }
-                    
                   }}
                 />
               )}
@@ -1062,7 +1062,7 @@ const FormRow = ({
   );
 };
 
-// ====== Pasarela beam selection ====== 
+// ====== Pasarela beam selection ======
 const PasarelaFormRow = ({
   index,
   row,
@@ -1072,7 +1072,7 @@ const PasarelaFormRow = ({
   secondaryBeamDropDown,
   selectedNonPasarela,
   setSelectedNonPasarela,
-  supplier_beam_number
+  supplier_beam_number,
 }) => {
   const actionHandler = (e) => {
     if (e.target.checked) {
@@ -1093,7 +1093,7 @@ const PasarelaFormRow = ({
         gutter={18}
         style={{
           padding: "12px",
-          marginTop: "-15px"
+          marginTop: "-15px",
         }}
       >
         <Col span={3}>
@@ -1122,9 +1122,14 @@ const PasarelaFormRow = ({
                       disabled
                     />
                   </Flex>
-                  <div style={{fontWeight: 600, color: "blue", marginTop: "7px"}}>
-                    {supplier_beam_number !== undefined?<span>Sup B.N :{supplier_beam_number}</span>:""}
-                    
+                  <div
+                    style={{ fontWeight: 600, color: "blue", marginTop: "7px" }}
+                  >
+                    {supplier_beam_number !== undefined ? (
+                      <span>Sup B.N :{supplier_beam_number}</span>
+                    ) : (
+                      ""
+                    )}
                   </div>
                 </>
               )}

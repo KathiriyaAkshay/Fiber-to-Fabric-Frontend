@@ -25,6 +25,7 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getWastageReportTaskListRequest } from "../../../../api/requests/reports/wastageReportTask";
 import DeleteWastageReportTaskButton from "../../../../components/tasks/WastageReport/DeleteWastageReportTaskButton";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
+import { disabledFutureDate } from "../../../../utils/date";
 
 function WastageReportTaskList() {
   const [search, setSearch] = useState("");
@@ -383,6 +384,7 @@ function WastageReportTaskList() {
               format="YYYY-MM-DD"
               value={fromDate}
               onChange={setFromDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 
@@ -396,6 +398,7 @@ function WastageReportTaskList() {
               format="YYYY-MM-DD"
               value={toDate}
               onChange={setToDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 

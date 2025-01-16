@@ -58,7 +58,7 @@ function AddEmployeeAttendanceReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: createEmployeeAttendance } = useMutation({
+  const { mutateAsync: createEmployeeAttendance, isPending } = useMutation({
     mutationFn: async (data) => {
       if (parseInt(data?.absent_employee_count) !== data?.user_ids?.length) {
         message.warning(
@@ -263,7 +263,7 @@ function AddEmployeeAttendanceReport() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Create
           </Button>
         </Flex>

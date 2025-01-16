@@ -172,12 +172,8 @@ function CheckTakaReportList() {
       dataIndex: "quality",
       key: "quality",
       render: (text, record) => {
-        return(
-          <div>
-            {getDisplayQualityName(record?.inhouse_quality)}
-          </div>
-        )
-      }
+        return <div>{getDisplayQualityName(record?.inhouse_quality)}</div>;
+      },
     },
     {
       title: "Problem",
