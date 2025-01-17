@@ -2,6 +2,7 @@ export let PURCHASE_TAKA_BILL_MODEL = "purchase_taka_bills" ;
 export let YARN_RECEIVE_BILL_MODEL = "yarn_bills" ; 
 export let RECEIVE_SIZE_BEAM_BILL_MODEL = "receive_size_beam_bill" ; 
 export let CREDIT_NOTE_BILL_MODEL = "credit_notes" ; 
+export let DEBIT_NOTE_BILL_MODEL = "debit_notes" ; 
 export let JOB_REWORK_BILL_MODEL = "job_rework_bill" ; 
 export let JOB_TAKA_BILL_MODEL = "job_taka_bills" ; 
 export let GENRAL_PURCHASE_BILL_MODEL = "general_purchase_entries" ; 

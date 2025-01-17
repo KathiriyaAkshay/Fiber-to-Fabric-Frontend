@@ -967,8 +967,6 @@ const TableWithAccordion = ({
         });
 
       } else {
-        console.log("Job bill information open");
-        
         setCreditorBillModal({
           isModalOpen: true,
           details: details,

@@ -13,6 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import { createDebitNoteRequest } from "../../../../api/requests/accounts/notes";
 import { useMutation } from "@tanstack/react-query";
+import { DEBIT_NOTE_BILL_MODEL } from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -671,7 +672,8 @@ const SundaryDebitNoteGenerate = ({
               {/* Debit note generate option  */}
               {bill_details[0]?.debit_note_id == null &&
                 bill_details?.length == 1 && 
-                bill_details[0]?.debit_note_id !== undefined && (
+                bill_details[0]?.debit_note_id !== undefined && 
+                bill_details[0]?.model !== DEBIT_NOTE_BILL_MODEL && (
                   <Button
                     type="primary"
                     loading={isPending}
@@ -684,6 +686,10 @@ const SundaryDebitNoteGenerate = ({
               {/* Debit note print option  */}
               { bill_details[0]?.debit_note_id != null && 
                 bill_details[0]?.debit_note_id !== undefined &&(
+                <Button type="primary">PRINT</Button>
+              )}
+
+              { bill_details[0]?.model == DEBIT_NOTE_BILL_MODEL &&(
                 <Button type="primary">PRINT</Button>
               )}
               <Button onClick={() => setOpen(false)}>Close</Button>

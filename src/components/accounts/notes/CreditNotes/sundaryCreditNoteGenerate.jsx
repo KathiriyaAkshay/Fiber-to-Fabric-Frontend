@@ -13,6 +13,8 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import { useMutation } from "@tanstack/react-query";
+import { CREDIT_NOTE_BILL_MODEL, PURCHASE_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
+import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../../../../pages/accounts/reports/utils";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -110,12 +112,12 @@ const SunadryCreditNoteGenerate = ({
   const [isGenerated, setIsGenerated] = useState(false);
   const [creditNoteLoading, setCreditNoteLoading] = useState(false) ; 
   
-  const manuallyFetchDebitNoteInformation = async () => {
+  const manuallyFetchDebitNoteInformation = async (credit_note_id) => {
     setIsGenerated(true);
     const params = {
       company_id: companyId,
     };
-    const debit_note_id = bill_details[0]?.credit_note_id;
+    const debit_note_id = credit_note_id;
     if (!debit_note_id) {
       return;
     }
@@ -136,9 +138,9 @@ const SunadryCreditNoteGenerate = ({
   useEffect(() => {
     if (bill_details?.length == 1) {
       if (bill_details[0]?.credit_note_id != null && bill_details[0]?.credit_note_id !== undefined) {
-        console.log("Run this functionality");
-        
-        manuallyFetchDebitNoteInformation();
+        manuallyFetchDebitNoteInformation(bill_details[0]?.credit_note_id);
+      } else if (bill_details[0]?.model == CREDIT_NOTE_BILL_MODEL){
+        manuallyFetchDebitNoteInformation(bill_details[0]?.bill_id) ; 
       }
     }
   }, [bill_details]);
@@ -169,14 +171,11 @@ const SunadryCreditNoteGenerate = ({
         const interestAmount = CalculateInterest(dueDays, bill?.amount);
         totalAmount += +interestAmount;
       });
-      console.log("Total interest amount", totalAmount);
-      
       setTotalInterestAmount(totalAmount);
     }
   }, [bill_details]);
 
   useEffect(() => {
-    console.log("Total inerest amount", totalInterestAmount);
     if (totalInterestAmount !== "" && totalInterestAmount !== undefined){
       let CGST = (+totalInterestAmount * 2.5) / 100;
       let net_amount = +totalInterestAmount + +CGST * 2;
@@ -470,7 +469,7 @@ const SunadryCreditNoteGenerate = ({
                   <td>1.</td>
                   <td style={{ fontWeight: 600 }} colSpan={2}>
                     {isGenerated?<>
-                      {genratedDebiteNoteInfo?.debit_note_details[0]?.particular_name}
+                      {genratedDebiteNoteInfo?.credit_note_details[0]?.particular_name}
                     </>:<>
                       <span>
                         Late Payment Income
@@ -707,7 +706,9 @@ const SunadryCreditNoteGenerate = ({
               {/* Credit note generate option ================= */}
               {bill_details[0]?.credit_note_id == null &&
                 bill_details?.length == 1 &&
-                bill_details[0]?.credit_note_id !== undefined && (
+                bill_details[0]?.credit_note_id !== undefined && 
+                bill_details[0]?.model !== CREDIT_NOTE_BILL_MODEL && 
+                (
                   <Button
                     type="primary"
                     loading={isPending}
@@ -720,6 +721,10 @@ const SunadryCreditNoteGenerate = ({
               {/* Credit note print option ======================== */}
               { bill_details[0]?.credit_note_id != null &&
                 bill_details[0]?.credit_note_id !== undefined && (
+                <Button type="primary">PRINT</Button>
+              )}
+
+              {bill_details[0]?.model === CREDIT_NOTE_BILL_MODEL && (
                 <Button type="primary">PRINT</Button>
               )}
 
