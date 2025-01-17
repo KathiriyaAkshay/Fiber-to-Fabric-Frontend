@@ -751,16 +751,21 @@ const SundryCreditor = () => {
                       ReteriveBillInformation={async (model, bill_id) => {
                         await ReteriveBillInformation(model, bill_id);
                       }}
+                      
+                      // Handle Debit note click related handler
                       handleDebitNoteClick={(bill, data) => {
                         setDebitNoteModelOpen(true);
                         setDebitNoteSelection([bill]);
                         setDebitNoteModelData(data);
                       }}
+
+                      // Handle credit note click related handler 
                       handleCreditNoteClick={(bill, data) => {
                         setCreditNoteModelOpen(true);
                         setCreditNoteSelection([bill]);
                         setCreditNoteModelData(data);
                       }}
+                      
                       setInformationLoading = {setInformationLoading}
                       setCreditNoteModelData = {setCreditNoteModelData}
                       setDebitNoteModelData = {setDebitNoteModelData}
@@ -1233,7 +1238,7 @@ const TableWithAccordion = ({
                       ) : (
                         <>
                           {/* Credit note option  */}
-                          <Tooltip>
+                          <Tooltip title = "Crdit Note">
                             <TabletFilled
                               style={{ color: "blue" }}
                               onClick={() => {
@@ -1247,12 +1252,14 @@ const TableWithAccordion = ({
                       {/* ======= Debit note id related information =====  */}
                       {bill?.debit_note_id !== null && (
                         <>
-                          <TabletFilled
-                            style={{ color: "gray" }}
-                            onClick={() => {
-                              handleDebitNoteClick(bill, data);
-                            }}
-                          />
+                          <Tooltip title = "Debit Note">
+                            <TabletFilled
+                              style={{ color: "gray" }}
+                              onClick={() => {
+                                handleDebitNoteClick(bill, data);
+                              }}
+                            />
+                          </Tooltip>
                         </>
                       )}
                     </Space>

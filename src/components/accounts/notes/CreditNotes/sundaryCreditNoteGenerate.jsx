@@ -1,4 +1,4 @@
-import { Button, Flex, Input, Modal, Typography, message } from "antd";
+import { Button, Flex, Input, Modal, Spin, Typography, message } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import "./_style.css";
 import { CloseOutlined, EyeOutlined, FileTextFilled } from "@ant-design/icons";
@@ -108,6 +108,7 @@ const SunadryCreditNoteGenerate = ({
   // Get crdit note by id related information ========================================================
   const [genratedDebiteNoteInfo, setGeneratedDebiteNoteInfo] = useState(undefined);
   const [isGenerated, setIsGenerated] = useState(false);
+  const [creditNoteLoading, setCreditNoteLoading] = useState(false) ; 
   
   const manuallyFetchDebitNoteInformation = async () => {
     setIsGenerated(true);
@@ -119,13 +120,16 @@ const SunadryCreditNoteGenerate = ({
       return;
     }
     try {
+      setCreditNoteLoading(true) ; 
       const response = await getCreditNoteByIdRequest({
         id: debit_note_id,
         params: params,
       });
       const data = response?.data?.data;
+      setCreditNoteLoading(false) ; 
       setGeneratedDebiteNoteInfo(data?.creditNote);
     } catch (error) {
+      setCreditNoteLoading(false) ; 
     }
   };
 
@@ -320,371 +324,413 @@ const SunadryCreditNoteGenerate = ({
             padding: "16px 32px",
           },
         }}
-      >
-        <div className="credit-note-container">
-          <table className="credit-note-table">
-            <tbody>
-              <tr>
-                <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
-                      Credit Note No.
-                    </Typography.Text>
+      > 
+        <Spin spinning = {creditNoteLoading}>
+          <div className="credit-note-container">
+            <table className="credit-note-table">
+              <tbody>
+                <tr>
+                  <td colSpan={3} width={"33.33%"}>
+                    <div className="year-toggle" style={{ textAlign: "left" }}>
+                      <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
+                        Credit Note No.
+                      </Typography.Text>
 
-                    {isGenerated ? (
-                      <>
-                        <div>{genratedDebiteNoteInfo?.credit_note_number}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div>{debitNote || "CNP-1"}</div>
-                      </>
-                    )}
-
-                  </div>
-                </td>
-                <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <Typography.Text style={{ fontWeight: 400 }}>
-                      Date.
-                    </Typography.Text>
-                    <div>{moment(new Date()).format("DD-MM-YYYY")}</div>
-                  </div>
-                </td>
-                <td colSpan={3} width={"33.33%"}>
-                  <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <div style={{ fontWeight: 400 }}>Bill No.</div>
-                    {isGenerated ? (
-                      <>
-                        {genratedDebiteNoteInfo?.credit_note_details
-                          ?.map((element) => element?.invoice_no)
-                          .join(",")}
-                      </>
-                    ) : (
-                      <>
-                        <div>
-                          {bill_details
-                            ?.map((element) => element?.bill_no)
-                            .join(",")}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-              <tr width="50%">
-                <td colSpan={4}>
-                  <div style={{fontSize: 16, fontWeight: 600}}>
-                    {selectedCompany?.company_name}
-                  </div>
-                  <div>
-                    {selectedCompany?.address_line_1}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN:</span> {selectedCompany?.gst_no}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>State Name:</span> {String(selectedCompany?.state).toUpperCase()}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PinCode:</span> {selectedCompany?.pincode}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Contact:</span> {selectedCompany?.owner_mobile}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Email:</span> {selectedCompany?.company_email}
-                  </div>
-                </td>
-                {debiteNoteData?.supplier?.id !== undefined && (
-                  <td colSpan={4}>
-                    <div className="credit-note-info-title">
-                      <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Supplier</span>
-                      <br></br>
-                      <span>
-                        {String(
-                          debiteNoteData?.supplier?.supplier_company
-                        ).toUpperCase()}
-                      </span>
-                      <br />
-                      <span>{debiteNoteData?.supplier?.supplier_name}</span>
-                      <br />
-                      {debiteNoteData?.address}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>GSTIN/UIN:</span> {debiteNoteData?.gst_no}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>PAN/IT No:</span> {debiteNoteData?.pancard_no}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>Email:</span> {debiteNoteData?.email}
-                    </div>
-                  </td>
-                )}
-                {debiteNoteData?.supplier?.id == undefined && (
-                  <td colSpan={4}>
-                    <div className="credit-note-info-title">
-                      <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Party</span>
-                      <br></br>
-                      <span>
-                        {String("Party Company STATIC").toUpperCase()}
-                      </span>
-                      <br />
-                      <span>{`${debiteNoteData?.first_name}`}</span>
-                      <br />
-                      {debiteNoteData?.address}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>GSTIN/UIN:</span> {debiteNoteData?.gst_no}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>PAN/IT No:</span> {debiteNoteData?.pancard_no}
-                    </div>
-                    <div className="credit-note-info-title">
-                      <span>Email:</span> {debiteNoteData?.email}
-                    </div>
-                  </td>
-                )}
-              </tr>
-            </tbody>
-          </table>
-          <table className="credit-note-table">
-            <thead style={{ fontWeight: 600 }}>
-              <tr>
-                <td style={{ width: "50px" }}>SL No.</td>
-                <td colSpan={2}>Particulars</td>
-                <td>Quantity</td>
-                <td>Rate</td>
-                <td>Per</td>
-                <td style={{ width: "100px" }}>Amount</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1.</td>
-                <td style={{ fontWeight: 600 }} colSpan={2}>
-                  Late Payment Income
-                </td>
-                <td></td>
-                <td></td>
-                <td>-</td>
-                {isGenerated ? (
-                  <>
-                    <td>
-                      {genratedDebiteNoteInfo?.credit_note_details?.reduce(
-                        (total, element) => {
-                          return total + (+element?.amount || 0); // Safely handle missing or invalid values
-                        },
-                        0
+                      {isGenerated ? (
+                        <>
+                          <div>{genratedDebiteNoteInfo?.credit_note_number}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div>{debitNote || "CNP-1"}</div>
+                        </>
                       )}
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>
-                      <Input
-                        value = {totalInterestAmount}
-                        onChange={(event) => {
-                          setTotalInterestAmount(event.target.value) ;
-                        }}
-                        placeholder="Amount"
-                      />
-                    </td>
-                  </>
-                )}
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={2} style={{ textAlign: "right" }}>
-                  <div style={{ fontWeight: 600 }}>SGST @ 2.5%</div>
-                  <div style={{ fontWeight: 600 }}>CGST @ 2.5%</div>
-                  <div style={{ fontWeight: 600 }}>IGST @ 0%</div>
-                  <div>Round Off</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                {isGenerated ? (
-                  <>
-                    <td>
-                      <div>{genratedDebiteNoteInfo?.SGST_amount}</div>
-                      <div>{genratedDebiteNoteInfo?.CGST_amount}</div>
-                      <div>0.0</div>
-                      <div>{genratedDebiteNoteInfo?.round_off_amount}</div>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>
-                      <div>{parseFloat(taxAmoumt?.CGST || 0).toFixed(2)}</div>
-                      <div>{parseFloat(taxAmoumt?.CGST || 0).toFixed(2)}</div>
-                      <div>0.0</div>
-                      <div>{parseFloat(roundOffAmoumt || 0).toFixed(2)}</div>
-                    </td>
-                  </>
-                )}
-              </tr>
-              <tr style={{ height: "50px" }}>
-                <td></td>
-                <td colSpan={2}></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr style={{ height: "50px" }}>
-                <td></td>
-                <td colSpan={2}></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
-              <tr style={{ height: "50px" }}>
-                <td></td>
-                <td colSpan={2}>
-                  <span style={{ fontWeight: 600 }}>Extra Tax </span>
-                  <Flex style={{ gap: 5 }}>
-                    <Input
-                      readOnly={isGenerated ? true : false}
-                      value={
-                        isGenerated
-                          ? genratedDebiteNoteInfo?.extra_tex_name
-                          : taxName
-                      }
-                      onChange={(event) => {
-                        setTaxName(event.target.value);
-                      }}
-                      placeholder="Tax Name"
-                      style={{ width: "25%" }}
-                    />
-                    <Input
-                      readOnly={isGenerated ? true : false}
-                      value={
-                        isGenerated
-                          ? genratedDebiteNoteInfo?.extra_tex_value
-                          : taxValue
-                      }
-                      type="number"
-                      onChange={(event) => {
-                        setTaxValue(event.target.value);
-                      }}
-                      placeholder="Tax Value"
-                      style={{ width: "15%" }}
-                    />
-                    %
-                  </Flex>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                {isGenerated ? (
-                  <>
-                    <td>{genratedDebiteNoteInfo?.extra_tex_amount}</td>
-                  </>
-                ) : (
-                  <>
-                    <td>{parseFloat(taxAmoumt?.TDS || 0).toFixed(2)}</td>
-                  </>
-                )}
-              </tr>
-              <tr>
-                <td></td>
-                <td colSpan={2}>
-                  <b>Total</b>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-                {isGenerated ? (
-                  <>
-                    <td>{genratedDebiteNoteInfo?.net_amount}</td>
-                  </>
-                ) : (
-                  <>
-                    <td>{parseFloat(netAmount || 0).toFixed(2)}</td>
-                  </>
-                )}
-              </tr>
-              <tr>
-                <td colSpan={8}>
-                  <Flex
-                    justify="space-between"
-                    style={{ width: "100%" }}
-                    className="mt-3"
-                  >
+
+                    </div>
+                  </td>
+                  <td colSpan={3} width={"33.33%"}>
+                    <div className="year-toggle" style={{ textAlign: "left" }}>
+                      <Typography.Text style={{ fontWeight: 400 }}>
+                        Date.
+                      </Typography.Text>
+                      <div>{moment(new Date()).format("DD-MM-YYYY")}</div>
+                    </div>
+                  </td>
+                  <td colSpan={3} width={"33.33%"}>
+                    <div className="year-toggle" style={{ textAlign: "left" }}>
+                      <div style={{ fontWeight: 400 }}>Bill No.</div>
+                      {isGenerated ? (
+                        <>
+                          {genratedDebiteNoteInfo?.credit_note_details
+                            ?.map((element) => element?.invoice_no)
+                            .join(",")}
+                        </>
+                      ) : (
+                        <>
+                          <div>
+                            {bill_details
+                              ?.map((element) => element?.bill_no)
+                              .join(",")}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+                <tr width="50%">
+                  <td colSpan={4}>
+                    <div style={{fontSize: 16, fontWeight: 600}}>
+                      {selectedCompany?.company_name}
+                    </div>
                     <div>
-                      <div>
-                        <span style={{ fontWeight: 600 }}>
-                          Amount Chargable(in words):
+                      {selectedCompany?.address_line_1}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>GSTIN/UIN:</span> {selectedCompany?.gst_no}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>State Name:</span> {String(selectedCompany?.state).toUpperCase()}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>PinCode:</span> {selectedCompany?.pincode}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>Contact:</span> {selectedCompany?.owner_mobile}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>Email:</span> {selectedCompany?.company_email}
+                    </div>
+                  </td>
+                  {debiteNoteData?.supplier?.id !== undefined && (
+                    <td colSpan={4}>
+                      <div className="credit-note-info-title">
+                        <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Supplier</span>
+                        <br></br>
+                        <span>
+                          {String(
+                            debiteNoteData?.supplier?.supplier_company
+                          ).toUpperCase()}
                         </span>
-                        {toWords.convert(netAmount || 0)}
+                        <br />
+                        <span>{debiteNoteData?.supplier?.supplier_name}</span>
+                        <br />
+                        {debiteNoteData?.address}
                       </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span> {debiteNoteData?.gst_no}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>PAN/IT No:</span> {debiteNoteData?.pancard_no}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Email:</span> {debiteNoteData?.email}
+                      </div>
+                    </td>
+                  )}
+                  {debiteNoteData?.supplier?.id == undefined && (
+                    <td colSpan={4}>
+                      <div className="credit-note-info-title">
+                        <span style={{ fontWeight: 400, fontSize: 16, color: "blue" }}>Party</span>
+                        <br></br>
+                        <span>
+                          {String("Party Company STATIC").toUpperCase()}
+                        </span>
+                        <br />
+                        <span>{`${debiteNoteData?.first_name}`}</span>
+                        <br />
+                        {debiteNoteData?.address}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>GSTIN/UIN:</span> {debiteNoteData?.gst_no}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>PAN/IT No:</span> {debiteNoteData?.pancard_no}
+                      </div>
+                      <div className="credit-note-info-title">
+                        <span>Email:</span> {debiteNoteData?.email}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              </tbody>
+            </table>
+            <table className="credit-note-table">
+              <thead style={{ fontWeight: 600 }}>
+                <tr>
+                  <td style={{ width: "50px" }}>SL No.</td>
+                  <td colSpan={2}>Particulars</td>
+                  <td>Quantity</td>
+                  <td>Rate</td>
+                  <td>Per</td>
+                  <td style={{ width: "100px" }}>Amount</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1.</td>
+                  <td style={{ fontWeight: 600 }} colSpan={2}>
+                    {isGenerated?<>
+                      {genratedDebiteNoteInfo?.debit_note_details[0]?.particular_name}
+                    </>:<>
+                      <span>
+                        Late Payment Income
+                      </span>
+                    </>}
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td>-</td>
+                  {isGenerated ? (
+                    <>
+                      <td>
+                        {genratedDebiteNoteInfo?.credit_note_details?.reduce(
+                          (total, element) => {
+                            return total + (+element?.amount || 0); // Safely handle missing or invalid values
+                          },
+                          0
+                        )}
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>
+                        <Input
+                          value = {totalInterestAmount}
+                          onChange={(event) => {
+                            setTotalInterestAmount(event.target.value) ;
+                          }}
+                          placeholder="Amount"
+                        />
+                      </td>
+                    </>
+                  )}
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={2} style={{ textAlign: "right" }}>
+                    
+                    {/* SGST amount related information  */}
+                    {isGenerated?<>
+                      <div style={{ fontWeight: 600, marginTop: 8 }}>SGST @ {genratedDebiteNoteInfo?.SGST_value}%</div>
+                    </>:<>
+                      <div style={{ fontWeight: 600, marginTop: 8 }}>SGST @ 2.5%</div>
+                    </>}
+                    
+                    {/* CGST amount related information  */}
+                    {isGenerated?<>
+                      <div style={{ fontWeight: 600, marginTop : 8  }}>CGST @ {genratedDebiteNoteInfo?.CGST_value}%</div>
+                    </>:<>
+                      <div style={{ fontWeight: 600, marginTop : 8  }}>CGST @ 2.5%</div>
+                    </>}
+                    
+                    {/* IGST amount information  */}
+                    {isGenerated?<>
+                      <div style={{ fontWeight: 600, marginTop: 8 }}>IGST @ {genratedDebiteNoteInfo?.IGST_value}%</div>
+                    </>:<>
+                      <div style={{ fontWeight: 600, marginTop: 8 }}>IGST @ 0%</div>
+                    </>}
+                    
+                    <div style={{marginTop: 8}}>Round Off</div>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  {isGenerated ? (
+                    <>
+                      <td>
+                        <div>{genratedDebiteNoteInfo?.SGST_amount}</div>
+                        <div>{genratedDebiteNoteInfo?.CGST_amount}</div>
+                        <div>0.0</div>
+                        <div>{genratedDebiteNoteInfo?.round_off_amount}</div>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td>
+                        <div>{parseFloat(taxAmoumt?.CGST || 0).toFixed(2)}</div>
+                        <div>{parseFloat(taxAmoumt?.CGST || 0).toFixed(2)}</div>
+                        <div>0.0</div>
+                        <div>{parseFloat(roundOffAmoumt || 0).toFixed(2)}</div>
+                      </td>
+                    </>
+                  )}
+                </tr>
+                <tr style={{ height: "50px" }}>
+                  <td></td>
+                  <td colSpan={2}></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr style={{ height: "50px" }}>
+                  <td></td>
+                  <td colSpan={2}></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr style={{ height: "50px" }}>
+                  <td></td>
+                  <td colSpan={2}>
+                    <span style={{ fontWeight: 600 }}>Extra Tax </span>
+                    <Flex style={{ gap: 5 }}>
+                      {isGenerated?
+                        <>
+                          <Flex>
+                              <span style={{fontWeight: 600}}>{genratedDebiteNoteInfo?.extra_tex_name || "TDS"}</span>
+                              <span style={{marginLeft: 10}}>{genratedDebiteNoteInfo?.extra_tex_value || "0"}%</span>
+                          </Flex>
+                        </>
+                      :<>
+                        <Input
+                          readOnly={isGenerated ? true : false}
+                          value={
+                            isGenerated
+                              ? genratedDebiteNoteInfo?.extra_tex_name
+                              : taxName
+                          }
+                          onChange={(event) => {
+                            setTaxName(event.target.value);
+                          }}
+                          placeholder="Tax Name"
+                          style={{ width: "25%" }}
+                        />
+                        <Input
+                          readOnly={isGenerated ? true : false}
+                          value={
+                            isGenerated
+                              ? genratedDebiteNoteInfo?.extra_tex_value
+                              : taxValue
+                          }
+                          type="number"
+                          onChange={(event) => {
+                            setTaxValue(event.target.value);
+                          }}
+                          placeholder="Tax Value"
+                          style={{ width: "15%" }}
+                        />
+                        %
+                      </>}
+                    </Flex>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  {isGenerated ? (
+                    <>
+                      <td style={{
+                        fontWeight: 600, 
+                        color: "blue"
+                      }}>{genratedDebiteNoteInfo?.extra_tex_amount}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td style={{
+                        fontWeight: 600, 
+                        color: "blue"
+                      }}>{parseFloat(taxAmoumt?.TDS || 0).toFixed(2)}</td>
+                    </>
+                  )}
+                </tr>
+                <tr>
+                  <td></td>
+                  <td colSpan={2}>
+                    <b>Total</b>
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  {isGenerated ? (
+                    <>
+                      <td>{genratedDebiteNoteInfo?.net_amount}</td>
+                    </>
+                  ) : (
+                    <>
+                      <td>{parseFloat(netAmount || 0).toFixed(2)}</td>
+                    </>
+                  )}
+                </tr>
+                <tr>
+                  <td colSpan={8}>
+                    <Flex
+                      justify="space-between"
+                      style={{ width: "100%" }}
+                      className="mt-3"
+                    >
                       <div>
-                        <span style={{ fontWeight: "500" }}>Remarks:</span> None
+                        <div>
+                          <span style={{ fontWeight: 600 }}>
+                            Amount Chargable(in words):
+                          </span>
+                          {toWords.convert(netAmount || 0)}
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: "500" }}>Remarks:</span> None
+                        </div>
                       </div>
-                    </div>
-                    <div>E & O.E</div>
-                  </Flex>
-                  <Flex
-                    justify="space-between"
-                    style={{ width: "100%" }}
-                    className="mt-3"
+                      <div>E & O.E</div>
+                    </Flex>
+                    <Flex
+                      justify="space-between"
+                      style={{ width: "100%" }}
+                      className="mt-3"
+                    >
+                      <div></div>
+                      <div>
+                        <div>For,</div>
+                        <div>
+                          .................................................
+                        </div>
+                        <div>Authorized Signatory</div>
+                      </div>
+                    </Flex>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <Flex
+              gap={12}
+              justify="flex-end"
+              style={{
+                marginTop: "1rem",
+                alignItems: "center",
+                width: "100%",
+                justifyContent: "flex-end",
+                gap: "1rem",
+                marginBottom: 10,
+              }}
+            >
+
+              {/* Credit note generate option ================= */}
+              {bill_details[0]?.credit_note_id == null &&
+                bill_details?.length == 1 &&
+                bill_details[0]?.credit_note_id !== undefined && (
+                  <Button
+                    type="primary"
+                    loading={isPending}
+                    onClick={handleSubmit}
                   >
-                    <div></div>
-                    <div>
-                      <div>For,</div>
-                      <div>
-                        .................................................
-                      </div>
-                      <div>Authorized Signatory</div>
-                    </div>
-                  </Flex>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    Generate
+                  </Button>
+              )}
+              
+              {/* Credit note print option ======================== */}
+              { bill_details[0]?.credit_note_id != null &&
+                bill_details[0]?.credit_note_id !== undefined && (
+                <Button type="primary">PRINT</Button>
+              )}
 
-          <Flex
-            gap={12}
-            justify="flex-end"
-            style={{
-              marginTop: "1rem",
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "flex-end",
-              gap: "1rem",
-              marginBottom: 10,
-            }}
-          >
-
-            {/* Credit note generate option ================= */}
-            {bill_details[0]?.credit_note_id == null &&
-              bill_details?.length == 1 &&
-              bill_details[0]?.credit_note_id !== undefined && (
-                <Button
-                  type="primary"
-                  loading={isPending}
-                  onClick={handleSubmit}
-                >
-                  Generate
-                </Button>
-            )}
-            
-            {/* Credit note print option ======================== */}
-            { bill_details[0]?.credit_note_id != null &&
-              bill_details[0]?.credit_note_id !== undefined && (
-              <Button type="primary">PRINT</Button>
-            )}
-
-            <Button onClick={() => {
-              setOpen(false)
-              setDebitNoteSelection([]) ; 
-              setSelectedRecords([]) ; 
-            }}>Close</Button>
-          </Flex>
-        </div>
+              <Button onClick={() => {
+                setOpen(false)
+                setDebitNoteSelection([]) ; 
+                setSelectedRecords([]) ; 
+              }}>Close</Button>
+            </Flex>
+          </div>
+        </Spin>
       </Modal>
     </>
   );
