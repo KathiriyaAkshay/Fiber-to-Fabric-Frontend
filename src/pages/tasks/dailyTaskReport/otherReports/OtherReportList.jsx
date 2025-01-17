@@ -1,14 +1,28 @@
-import { Button, Flex, Input, Space, Spin, Table } from "antd";
+import { useState } from "react";
+import {
+  Button,
+  Flex,
+  Input,
+  message,
+  Popconfirm,
+  Space,
+  Spin,
+  Table,
+  Tag,
+} from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
-import { getOtherReportListRequest } from "../../../../api/requests/reports/otherReport";
+import {
+  getOtherReportListRequest,
+  updateOtherReportRequest,
+} from "../../../../api/requests/reports/otherReport";
 import DeleteOtherReportButton from "../../../../components/tasks/otherReport/DeleteOtherReportButton";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
@@ -16,7 +30,6 @@ import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import useDebounce from "../../../../hooks/useDebounce";
-import { useState } from "react";
 
 function OtherReportList() {
   const { companyId } = useContext(GlobalContext);
@@ -51,6 +64,44 @@ function OtherReportList() {
   function navigateToAdd() {
     navigate("/tasks/daily-task-report/other-reports/add");
   }
+
+  const {
+    mutateAsync: updateOtherReport,
+    isPending: isPendingUpdateOtherReport,
+  } = useMutation({
+    mutationFn: async ({ data, id }) => {
+      const res = await updateOtherReportRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["reports", "other-report", "update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const onConfirmWastage = async (id) => {
+    const data = {
+      is_confirm: true,
+    };
+
+    await updateOtherReport({ data, id });
+  };
 
   function navigateToUpdate(id) {
     navigate(`/tasks/daily-task-report/other-reports/update/${id}`);
@@ -113,6 +164,34 @@ function OtherReportList() {
       title: "Notes",
       dataIndex: "notes",
       key: "notes",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_confirm",
+      key: "is_confirm",
+      render: (text, record) =>
+        text == false ? (
+          <>
+            <Popconfirm
+              title="Other Report Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record?.id);
+              }}
+              okButtonProps={{
+                loading: isPendingUpdateOtherReport,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
     },
     {
       title: "Action",

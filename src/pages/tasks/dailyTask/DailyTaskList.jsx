@@ -1,11 +1,11 @@
-import { Button, Space, Spin, Table } from "antd";
+import { Button, Space, Spin, Table, Tag, Popconfirm, message } from "antd";
 import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { getTaskListRequest } from "../../../api/requests/task";
 import DeleteTaskButton from "../../../components/tasks/DeleteTaskButton";
 // import { useCurrentUser } from "../../../api/hooks/auth";
@@ -15,6 +15,7 @@ import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useContext } from "react";
+import { updateTaskRequest } from "../../../api/requests/task";
 // import { getSupervisorListRequest } from "../../../api/requests/users";
 
 function DailyTaskList() {
@@ -69,6 +70,43 @@ function DailyTaskList() {
   function navigateToUpdate(id) {
     navigate(`/tasks/daily-task/update/${id}`);
   }
+
+  const { mutateAsync: updateTask, isPending: isLoadingUpdateTask } =
+    useMutation({
+      mutationFn: async ({ data, id }) => {
+        const res = await updateTaskRequest({
+          id,
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data;
+      },
+      mutationKey: ["task-assignment", "update"],
+      onSuccess: (res) => {
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
+        navigate(-1);
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage && typeof errorMessage === "string") {
+          message.error(errorMessage);
+        }
+      },
+    });
+
+  const onConfirmWastage = async (record) => {
+    const data = {
+      status: "completed",
+      log_id: record?.task_assignments_logs[0]?.id,
+    };
+
+    await updateTask({ data, id: record?.id });
+  };
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -146,6 +184,31 @@ function DailyTaskList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      // render: (text) =>
+      //   text == "pending" ? <Tag color="red">{text}</Tag> : null,
+      render: (text, record) =>
+        record.task_assignments_logs[0].status == "pending" ? (
+          <>
+            <Popconfirm
+              title="Task Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record);
+              }}
+              okButtonProps={{
+                loading: isLoadingUpdateTask,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
     },
     {
       title: "Action",

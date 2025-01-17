@@ -71,7 +71,7 @@ function AddOtherReport() {
 
   const disabledDate = (current) => {
     // Disable dates that are after today
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   };
 
   const {
@@ -186,7 +186,6 @@ function AddOtherReport() {
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

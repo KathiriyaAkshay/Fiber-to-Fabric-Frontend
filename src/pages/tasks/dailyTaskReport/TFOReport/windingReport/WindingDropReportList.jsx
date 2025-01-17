@@ -123,7 +123,7 @@ function WindingDropReportList() {
       title: "ID",
       dataIndex: "id",
       key: "id",
-      render: (text, record, index) => ((page*pageSize) + index ) + 1
+      render: (text, record, index) => page * pageSize + index + 1,
     },
     {
       title: "Date",
@@ -208,23 +208,24 @@ function WindingDropReportList() {
           onChange: onPageChange,
         }}
         summary={() => {
-          return(
+          return (
             <>
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
-                <Table.Summary.Cell/>
-                <Table.Summary.Cell/>
-                <Table.Summary.Cell/>
-                <Table.Summary.Cell/>
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
+                <Table.Summary.Cell />
                 <Table.Summary.Cell>
                   <Typography.Text>{100}</Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>{100}</Typography.Text>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell />
               </Table.Summary.Row>
             </>
-          )
+          );
         }}
       />
     );

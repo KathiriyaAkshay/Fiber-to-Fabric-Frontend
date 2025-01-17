@@ -9,7 +9,7 @@ import {
   Table,
   Tag,
   Typography,
-  Tooltip
+  Tooltip,
 } from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -64,7 +64,7 @@ const JobTakaList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
-          production_type: JOB_QUALITY_TYPE
+          production_type: JOB_QUALITY_TYPE,
         },
       ],
       queryFn: async () => {
@@ -74,20 +74,23 @@ const JobTakaList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
-            production_type: JOB_QUALITY_TYPE
+            production_type: JOB_QUALITY_TYPE,
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
     });
-  
+
   // Dropdown supplier list api =======================================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
+    queryKey: [
+      "dropdown/supplier/list",
+      { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
+    ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
@@ -217,46 +220,49 @@ const JobTakaList = () => {
       title: "Taka No",
       dataIndex: "taka_no",
       key: "taka_no",
-      render: (text, record) => {
-        return(
+      render: (text) => {
+        return (
           <div>
-            <Tag color="#108ee9">
-              {text}
-            </Tag>
+            <Tag color="#108ee9">{text}</Tag>
           </div>
-        )
-      }
+        );
+      },
     },
     {
       title: "Quality Name",
       render: (details) => {
-        return(
-          <div style={{fontSize:13}}>
+        return (
+          <div style={{ fontSize: 13 }}>
             {getDisplayQualityName(details.job_taka_challan.inhouse_quality)}
           </div>
-        )
+        );
       },
     },
     {
-      title: "Supplier", 
+      title: "Supplier",
       render: (text, record) => {
-        return(
-          <div style={{fontSize: 13}}>
+        return (
+          <div style={{ fontSize: 13 }}>
             {record?.job_taka_challan?.supplier?.supplier_name}
           </div>
-        )
-      }
+        );
+      },
     },
     {
       title: "Job Challan No",
       render: (details) => {
-        return(
-          <div style={{cursor: "pointer"}}>
-            <Tooltip title = {`Gray order - ${details?.job_taka_challan?.gray_order?.order_no}`}>
-              {details?.job_taka_challan?.challan_no} | <span style={{fontWeight: 600}}>{details?.job_taka_challan?.gray_order?.order_no}</span>
+        return (
+          <div style={{ cursor: "pointer" }}>
+            <Tooltip
+              title={`Gray order - ${details?.job_taka_challan?.gray_order?.order_no}`}
+            >
+              {details?.job_taka_challan?.challan_no} |{" "}
+              <span style={{ fontWeight: 600 }}>
+                {details?.job_taka_challan?.gray_order?.order_no}
+              </span>
             </Tooltip>
           </div>
-        )
+        );
       },
     },
     {
@@ -269,7 +275,6 @@ const JobTakaList = () => {
       dataIndex: "weight",
       key: "weight",
     },
-
     {
       title: "Average",
       dataIndex: "total_meter",
@@ -295,7 +300,6 @@ const JobTakaList = () => {
         return <div>-</div>; // Render nothing if the value is undefined
       },
     },
-    ,
     {
       title: "Status",
       render: (details) => {
@@ -322,7 +326,9 @@ const JobTakaList = () => {
               details={[
                 {
                   label: "Quality Name",
-                  value: getDisplayQualityName(details.job_taka_challan.inhouse_quality),
+                  value: getDisplayQualityName(
+                    details.job_taka_challan.inhouse_quality
+                  ),
                 },
                 {
                   label: "Date",
@@ -392,20 +398,22 @@ const JobTakaList = () => {
 
           return (
             <>
-              
               {/* Particular page total information  */}
               <Table.Summary.Row className="font-semibold">
                 <Table.Summary.Cell>Total</Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
+                  <Typography.Text>
+                    {parseFloat(totalMeter).toFixed(2)}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{parseFloat(totalMeter).toFixed(2)}</Typography.Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Typography.Text>{parseFloat(totalWeight).toFixed(2)}</Typography.Text>
+                  <Typography.Text>
+                    {parseFloat(totalWeight).toFixed(2)}
+                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
@@ -421,8 +429,7 @@ const JobTakaList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
-                <Table.Summary.Cell>
-                </Table.Summary.Cell>
+                <Table.Summary.Cell></Table.Summary.Cell>
                 <Table.Summary.Cell>
                   <Typography.Text>
                     {parseFloat(jobTakaList?.total_meters).toFixed(2) || 0}
@@ -446,7 +453,6 @@ const JobTakaList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Job Production List</h3>

@@ -30,11 +30,27 @@ function BaseLayout() {
   }, [navigate, user]);
 
   useEffect(() => {
-    const data = localStorage.getItem("SALE_CHALLAN_ADD");
-    if (data) {
+    const SALE_CHALLAN_ADD = localStorage.getItem("SALE_CHALLAN_ADD");
+    if (SALE_CHALLAN_ADD) {
       if (location.pathname !== "/sales/challan/sale-challan/add") {
         console.log("Clearing localStorage...");
         localStorage.removeItem("SALE_CHALLAN_ADD"); // Replace "someKey" with your key
+      }
+    }
+
+    const PURCHASE_CHALLAN_ADD = localStorage.getItem("PURCHASE_CHALLAN_ADD");
+    if (PURCHASE_CHALLAN_ADD) {
+      if (location.pathname !== "/purchase/purchased-taka/add") {
+        console.log("Clearing localStorage...");
+        localStorage.removeItem("PURCHASE_CHALLAN_ADD"); // Replace "someKey" with your key
+      }
+    }
+
+    const JOB_CHALLAN_ADD = localStorage.getItem("JOB_CHALLAN_ADD");
+    if (JOB_CHALLAN_ADD) {
+      if (location.pathname !== "/job/job-taka/add") {
+        console.log("Clearing localStorage...");
+        localStorage.removeItem("JOB_CHALLAN_ADD"); // Replace "someKey" with your key
       }
     }
   }, [location.pathname]);

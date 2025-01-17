@@ -3,6 +3,8 @@ import {
   DatePicker,
   Flex,
   Input,
+  message,
+  Popconfirm,
   Space,
   Spin,
   Table,
@@ -15,14 +17,17 @@ import {
   FilePdfOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import { getWastageReportTaskListRequest } from "../../../../api/requests/reports/wastageReportTask";
+import {
+  getWastageReportTaskListRequest,
+  updateWastageReportTaskRequest,
+} from "../../../../api/requests/reports/wastageReportTask";
 import DeleteWastageReportTaskButton from "../../../../components/tasks/WastageReport/DeleteWastageReportTaskButton";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import { disabledFutureDate } from "../../../../utils/date";
@@ -81,6 +86,45 @@ function WastageReportTaskList() {
   function navigateToUpdate(id) {
     navigate(`/tasks/daily-task-report/wastage-report/update/${id}`);
   }
+
+  const {
+    mutateAsync: updateWastageReportTask,
+    isPending: isLoadingWastageReportTask,
+  } = useMutation({
+    mutationFn: async ({ data, id }) => {
+      const res = await updateWastageReportTaskRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["reports/wastage-report-task/update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const onConfirmWastage = async (record) => {
+    const data = {
+      status: "completed",
+      log_id: record?.wastage_task_logs[0]?.id,
+    };
+
+    await updateWastageReportTask({ data, id: record?.id });
+  };
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -227,8 +271,31 @@ function WastageReportTaskList() {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text) =>
-        text == "pending" ? <Tag color="red">{text}</Tag> : null,
+      // render: (text) =>
+      //   text == "pending" ? <Tag color="red">{text}</Tag> : null,
+      render: (text, record) =>
+        record.wastage_task_logs[0].status == "pending" ? (
+          <>
+            <Popconfirm
+              title="Wastage Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record);
+              }}
+              okButtonProps={{
+                loading: isLoadingWastageReportTask,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
     },
     {
       title: "Action",

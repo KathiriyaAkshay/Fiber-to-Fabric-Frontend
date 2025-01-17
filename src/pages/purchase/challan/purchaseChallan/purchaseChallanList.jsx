@@ -93,7 +93,7 @@ const PurchaseChallanList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
-          production_type: PURCHASE_QUALITY_TYPE
+          production_type: PURCHASE_QUALITY_TYPE,
         },
       ],
       queryFn: async () => {
@@ -103,7 +103,7 @@ const PurchaseChallanList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
-            production_type: PURCHASE_QUALITY_TYPE
+            production_type: PURCHASE_QUALITY_TYPE,
           },
         });
         return res.data?.data;
@@ -115,10 +115,16 @@ const PurchaseChallanList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE }],
+    queryKey: [
+      "dropdown/supplier/list",
+      { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
+    ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId, supplier_type: PURCHASE_SUPPLIER_TYPE },
+        params: {
+          company_id: companyId,
+          supplier_type: PURCHASE_SUPPLIER_TYPE,
+        },
       });
       return res.data?.data?.supplierList;
     },
@@ -241,13 +247,9 @@ const PurchaseChallanList = () => {
       title: "Challan No",
       dataIndex: "challan_no",
       key: "challan_no",
-      render: (text, record) => {
-        return (
-          <div style={{ fontWeight: 600 }}>
-            {text}
-          </div>
-        )
-      }
+      render: (text) => {
+        return <div style={{ fontWeight: 600 }}>{text}</div>;
+      },
     },
     {
       title: "Order No",
@@ -266,7 +268,7 @@ const PurchaseChallanList = () => {
           <div style={{ fontSize: 13 }}>
             {getDisplayQualityName(details?.inhouse_quality)}
           </div>
-        )
+        );
       },
     },
     {
@@ -296,20 +298,34 @@ const PurchaseChallanList = () => {
       render: (text, record) => {
         return (
           <div>
-
-            {record?.purchase_taka_bill?.is_partial_payment ? <>
-              <PartialPaymentInformation
-                bill_id={record?.purchase_taka_bill?.id}
-                bill_model={PURCHASE_TAKA_BILL_MODEL}
-                paid_amount={record?.purchase_taka_bill?.paid_amount}
-              />
-            </> : <>
-              <Tag className="bill-payment-model-tag" color={record?.purchase_taka_bill?.is_paid ? PAID_TAG_TEXT_COLOR : "red"}>
-                {String(record?.purchase_taka_bill?.is_paid ? PAID_TAG_TEXT : "Un-Paid").toUpperCase()}
-              </Tag>
-            </>}
+            {record?.purchase_taka_bill?.is_partial_payment ? (
+              <>
+                <PartialPaymentInformation
+                  bill_id={record?.purchase_taka_bill?.id}
+                  bill_model={PURCHASE_TAKA_BILL_MODEL}
+                  paid_amount={record?.purchase_taka_bill?.paid_amount}
+                />
+              </>
+            ) : (
+              <>
+                <Tag
+                  className="bill-payment-model-tag"
+                  color={
+                    record?.purchase_taka_bill?.is_paid
+                      ? PAID_TAG_TEXT_COLOR
+                      : "red"
+                  }
+                >
+                  {String(
+                    record?.purchase_taka_bill?.is_paid
+                      ? PAID_TAG_TEXT
+                      : "Un-Paid"
+                  ).toUpperCase()}
+                </Tag>
+              </>
+            )}
           </div>
-        )
+        );
       },
     },
     {
@@ -336,7 +352,7 @@ const PurchaseChallanList = () => {
                 </Button>
 
                 <DeletePurchaseTaka details={details} />
-                
+
                 <Button
                   onClick={() => {
                     let MODE;
@@ -362,10 +378,14 @@ const PurchaseChallanList = () => {
               </>
             )}
 
-            {isShowReturn && details.purchase_taka_bill?.is_partial_payment == false  && (
-              <ReturnPurchaseChallan details={details} companyId={companyId} />
-            )}
-            
+            {isShowReturn &&
+              details.purchase_taka_bill?.is_partial_payment == false && (
+                <ReturnPurchaseChallan
+                  details={details}
+                  companyId={companyId}
+                />
+              )}
+
             <Button
               onClick={() => {
                 localStorage.setItem(

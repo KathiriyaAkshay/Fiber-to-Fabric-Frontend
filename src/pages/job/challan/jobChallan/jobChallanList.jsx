@@ -31,13 +31,16 @@ import dayjs from "dayjs";
 import DeleteJobTaka from "../../../../components/job/jobTaka/DeleteJobTaka";
 import ViewJobTakaInfo from "../../../../components/job/jobTaka/viewJobTakaInfo";
 import moment from "moment";
-import { JOB_ORDER_TYPE } from "../../../../constants/supplier";
+// import { JOB_ORDER_TYPE } from "../../../../constants/supplier";
 import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { JOB_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
-import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
+import {
+  PAID_TAG_TEXT,
+  PAID_TAG_TEXT_COLOR,
+} from "../../../../constants/bill.model";
 
 const JobChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -90,7 +93,7 @@ const JobChallanList = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
-          production_type: JOB_QUALITY_TYPE
+          production_type: JOB_QUALITY_TYPE,
         },
       ],
       queryFn: async () => {
@@ -100,20 +103,23 @@ const JobChallanList = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
-            production_type: JOB_QUALITY_TYPE
+            production_type: JOB_QUALITY_TYPE,
           },
         });
         return res.data?.data;
       },
       enabled: Boolean(companyId),
-  });
+    });
 
   // Dropdown supplier list related api =========================================
   const {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
+    queryKey: [
+      "dropdown/supplier/list",
+      { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
+    ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
@@ -256,21 +262,17 @@ const JobChallanList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return(
-          <div style={{fontSize: 13}}>
+        return (
+          <div style={{ fontSize: 13 }}>
             {getDisplayQualityName(details.inhouse_quality)}
           </div>
-        )
+        );
       },
     },
     {
       title: "Challan No",
       render: (details) => {
-        return(
-          <div style={{fontWeight: 600}}>
-            {details?.challan_no}
-          </div>
-        )
+        return <div style={{ fontWeight: 600 }}>{details?.challan_no}</div>;
       },
     },
     {
@@ -313,19 +315,30 @@ const JobChallanList = () => {
       render: (text, record) => {
         return (
           <div>
-            {record?.job_taka_bill?.is_partial_payment ? <>
-              <PartialPaymentInformation
-                bill_id={record?.job_taka_bill?.id}
-                bill_model={JOB_TAKA_BILL_MODEL}
-                paid_amount={record?.job_taka_bill?.paid_amount}
-              />
-            </> : <>
-              <Tag className="bill-payment-model-tag" color={record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT_COLOR : "red"}>
-                {String(record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT : "Un-Paid").toUpperCase()}
-              </Tag>
-            </>}
+            {record?.job_taka_bill?.is_partial_payment ? (
+              <>
+                <PartialPaymentInformation
+                  bill_id={record?.job_taka_bill?.id}
+                  bill_model={JOB_TAKA_BILL_MODEL}
+                  paid_amount={record?.job_taka_bill?.paid_amount}
+                />
+              </>
+            ) : (
+              <>
+                <Tag
+                  className="bill-payment-model-tag"
+                  color={
+                    record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT_COLOR : "red"
+                  }
+                >
+                  {String(
+                    record?.job_taka_bill?.is_paid ? PAID_TAG_TEXT : "Un-Paid"
+                  ).toUpperCase()}
+                </Tag>
+              </>
+            )}
           </div>
-        )
+        );
       },
     },
     {
@@ -344,9 +357,9 @@ const JobChallanList = () => {
                 >
                   <EditOutlined />
                 </Button>
-                
+
                 <DeleteJobTaka details={details} />
-                
+
                 <Button
                   onClick={() => {
                     let MODE;
@@ -367,11 +380,9 @@ const JobChallanList = () => {
                 >
                   <FileTextOutlined />
                 </Button>
-              
               </>
             )}
 
-            
             <Button
               onClick={() => {
                 localStorage.setItem(

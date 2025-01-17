@@ -549,6 +549,13 @@ const UpdateInHouseQuality = () => {
           });
           isValid = false;
         }
+        if (getValues(`warping_weight_${index}`) === "0") {
+          setError(`warping_weight_${index}`, {
+            type: "manual",
+            message: "Warping weight must be greater than 0.",
+          });
+          isValid = false;
+        }
         if (!getValues(`yarn_stock_company_id_${index}`)) {
           setError(`yarn_stock_company_id_${index}`, {
             type: "manual",
@@ -643,6 +650,13 @@ const UpdateInHouseQuality = () => {
           setError(`weft_weight_${index}`, {
             type: "manual",
             message: "Please enter weft weight.",
+          });
+          isValid = false;
+        }
+        if (getValues(`weft_weight_${index}`) === "0") {
+          setError(`weft_weight_${index}`, {
+            type: "manual",
+            message: "Weft weight must be greater than 0.",
           });
           isValid = false;
         }
@@ -896,7 +910,7 @@ const UpdateInHouseQuality = () => {
       </div>
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
         {/* Quality Details Card */}
-        <Card style={{ margin: "1rem 0px" }}>
+        <Card style={{ margin: "1rem 0px", border: "1px solid rgb(25 74 109" }}>
           <h2 className="m-0 text-primary">Quality Details:</h2>
           <Row
             gutter={18}
@@ -1490,7 +1504,7 @@ const UpdateInHouseQuality = () => {
         </Card>
 
         {/* Beam Rate Card */}
-        <Card style={{ margin: "1rem 0px" }}>
+        <Card style={{ margin: "1rem 0px", border: "1px solid rgb(25 74 109" }}>
           <h2 className="m-0 text-primary">Beam Rate:</h2>
 
           <Row
@@ -1652,7 +1666,7 @@ const UpdateInHouseQuality = () => {
         </Card>
 
         {/* Warping Detail[Tana]  */}
-        <Card style={{ margin: "1rem 0px" }}>
+        <Card style={{ margin: "1rem 0px", border: "1px solid rgb(25 74 109" }}>
           <h2 className="m-0 text-primary">Warping Detail[Tana]:</h2>
 
           {warpingFormArray.length
@@ -1871,7 +1885,7 @@ const UpdateInHouseQuality = () => {
         </Card>
 
         {/* Weft Detail[Wana]  */}
-        <Card style={{ margin: "1rem 0px" }}>
+        <Card style={{ margin: "1rem 0px", border: "1px solid rgb(25 74 109" }}>
           <h2 className="m-0 text-primary">Weft Detail[Wana]:</h2>
 
           {weftFormArray.length
@@ -2180,7 +2194,7 @@ const UpdateInHouseQuality = () => {
         </Card>
 
         {/* Require Ready Beam */}
-        <Card style={{ margin: "1rem 0px" }}>
+        <Card style={{ margin: "1rem 0px", border: "1px solid rgb(25 74 109" }}>
           <h2 className="m-0 text-primary">Require Ready Beam:</h2>
 
           <Row
