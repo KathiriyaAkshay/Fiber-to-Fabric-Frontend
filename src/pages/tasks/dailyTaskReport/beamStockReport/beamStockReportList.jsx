@@ -9,6 +9,7 @@ import { useContext, useEffect, useState } from "react";
 import { updateCompanyRequest } from "../../../../api/requests/company";
 import { useMutation } from "@tanstack/react-query";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 
 function BeamStockReportList() {
   const navigate = useNavigate();
@@ -193,6 +194,7 @@ function BeamStockReportList() {
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
         <div className="flex items-center gap-2">
+          <GoBackButton />
           <h3 className="m-0 text-primary">Beam Stock Report</h3>
           <Button
             onClick={navigateToAdd}

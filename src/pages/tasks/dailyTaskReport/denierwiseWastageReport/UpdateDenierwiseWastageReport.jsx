@@ -67,32 +67,34 @@ function UpdateDenierwiseWastageReport() {
     enabled: Boolean(companyId),
   });
 
-  const { mutateAsync: updateDenierwiseWastageReport, isPending } = useMutation({
-    mutationFn: async (data) => {
-      const res = await updateDenierwiseWastageReportRequest({
-        id,
-        data,
-        params: {
-          company_id: companyId,
-        },
-      });
-      return res.data;
-    },
-    mutationKey: ["reports/denierwise-wastage-report/update", id],
-    onSuccess: (res) => {
-      const successMessage = res?.message;
-      if (successMessage) {
-        message.success(successMessage);
-      }
-      navigate(-1);
-    },
-    onError: (error) => {
-      const errorMessage = error?.response?.data?.message;
-      if (errorMessage && typeof errorMessage === "string") {
-        message.error(errorMessage);
-      }
-    },
-  });
+  const { mutateAsync: updateDenierwiseWastageReport, isPending } = useMutation(
+    {
+      mutationFn: async (data) => {
+        const res = await updateDenierwiseWastageReportRequest({
+          id,
+          data,
+          params: {
+            company_id: companyId,
+          },
+        });
+        return res.data;
+      },
+      mutationKey: ["reports/denierwise-wastage-report/update", id],
+      onSuccess: (res) => {
+        const successMessage = res?.message;
+        if (successMessage) {
+          message.success(successMessage);
+        }
+        navigate(-1);
+      },
+      onError: (error) => {
+        const errorMessage = error?.response?.data?.message;
+        if (errorMessage && typeof errorMessage === "string") {
+          message.error(errorMessage);
+        }
+      },
+    }
+  );
 
   const { data: reportDetails } = useQuery({
     queryKey: ["reports/denierwise-wastage-report/get", id],
@@ -172,12 +174,10 @@ function UpdateDenierwiseWastageReport() {
     });
   }, [yarn_company_name, yscdListRes?.yarnCompanyList]);
 
-  
   function disabledDate(current) {
     // Can not select future dates
-    return current && current > moment().endOf('day');
+    return current && current > moment().endOf("day");
   }
-
 
   return (
     <div className="flex flex-col p-4">
@@ -370,12 +370,11 @@ function UpdateDenierwiseWastageReport() {
         </Row>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit" loading = {isPending}>
+          <Button type="primary" htmlType="submit" loading={isPending}>
             Update
           </Button>
         </Flex>
       </Form>
-
     </div>
   );
 }

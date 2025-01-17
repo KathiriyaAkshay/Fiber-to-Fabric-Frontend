@@ -231,35 +231,29 @@ const MyOrderList = () => {
       title: "Order No",
       dataIndex: "order_no",
       key: "order_no",
-      render: (text, record) => {
-        return(
-          <div style={{fontWeight: 600}}>
-            {text}
-          </div>
-        )
-      }
+      render: (text) => {
+        return <div style={{ fontWeight: 600 }}>{text}</div>;
+      },
     },
     {
       title: "Party / Supplier Name",
       render: (details) => {
         if (details.party) {
-          return(
+          return (
             <div>
-              <strong style={{fontSize: 12}}>Party</strong>
+              <strong style={{ fontSize: 12 }}>Party</strong>
               <div>
                 {`${details.party.first_name} ${details.party.last_name}`}
               </div>
             </div>
-          )
+          );
         } else {
-          return(
+          return (
             <div>
-              <strong style={{fontSize: 12}}>Supplier</strong>
-              <div>
-                {details?.supplier_name}
-              </div>
+              <strong style={{ fontSize: 12 }}>Supplier</strong>
+              <div>{details?.supplier_name}</div>
             </div>
-          )
+          );
         }
       },
     },
@@ -271,11 +265,11 @@ const MyOrderList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return(
-          <div style={{fontSize: 13}}>
+        return (
+          <div style={{ fontSize: 13 }}>
             {getDisplayQualityName(details?.inhouse_quality)}
           </div>
-        )
+        );
       },
     },
     {
@@ -287,13 +281,9 @@ const MyOrderList = () => {
       title: "Pending Taka",
       dataIndex: "pending_taka",
       key: "pending_taka",
-      render: (text, record) => {
-        return(
-          <div style={{fontWeight: 600, color: "red"}}>
-            {text}
-          </div>
-        )
-      }
+      render: (text) => {
+        return <div style={{ fontWeight: 600, color: "red" }}>{text}</div>;
+      },
     },
     {
       title: "Deliver Taka",
@@ -310,13 +300,9 @@ const MyOrderList = () => {
       title: "Pending Meter",
       dataIndex: "pending_meter",
       key: "pending_meter",
-      render: (text, record) => {
-        return(
-          <div style={{fontWeight: 600, color: "red"}}>
-            {text}
-          </div>
-        )
-      }
+      render: (text) => {
+        return <div style={{ fontWeight: 600, color: "red" }}>{text}</div>;
+      },
     },
     {
       title: "Deliver Meter",
@@ -392,7 +378,6 @@ const MyOrderList = () => {
                   label: "Time",
                   value: dayjs(details?.createdAt).format("hh:mm:ss"),
                 },
-
                 {
                   label: "Checker Name",
                   value: details?.party?.party.checker_name,
@@ -413,12 +398,10 @@ const MyOrderList = () => {
                 >
                   <EditOutlined />
                 </Button>
-                
+
                 <DeleteMyOrder details={details} />
-              
               </>
             )}
-            
 
             {orderType === "taka(inhouse)" && (
               <Button
@@ -429,8 +412,30 @@ const MyOrderList = () => {
                 <ClockCircleOutlined />
               </Button>
             )}
-            
-            <Button>
+
+            <Button
+              onClick={() => {
+                if (orderType === "taka(inhouse)") {
+                  localStorage.setItem(
+                    "SALE_CHALLAN_ADD",
+                    JSON.stringify({ model: orderType, id: details.id })
+                  );
+                  navigate("/sales/challan/sale-challan/add");
+                } else if (orderType === "purchase/trading") {
+                  localStorage.setItem(
+                    "PURCHASE_CHALLAN_ADD",
+                    JSON.stringify({ model: orderType, id: details.id })
+                  );
+                  navigate("/purchase/purchased-taka/add");
+                } else if (orderType === "job") {
+                  localStorage.setItem(
+                    "JOB_CHALLAN_ADD",
+                    JSON.stringify({ model: orderType, id: details.id })
+                  );
+                  navigate("/job/job-taka/add");
+                }
+              }}
+            >
               <RedoOutlined />
             </Button>
           </Space>
