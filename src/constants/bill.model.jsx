@@ -15,6 +15,19 @@ export let CREDIT_NOTE_MODEL_NAME = "CREDIT NOTE" ;
 export let JOB_REWORK_MODEL_NAME = "JOB REWORK" ; 
 export let GENERAL_PURCHASE_MODEL_NAME = "GENRAL PURCHASE" ;  
 export let CREDIT_NOTE_NAME = "CREDIT NOTE" ; 
+export let DEBIT_NOTE_NAME = "DEBIT NOTE" ; 
 
 export let PAID_TAG_TEXT_COLOR = "green" ; 
 export let PAID_TAG_TEXT = "Paid"; 
+
+export let YARN_SALE_BILL_MODEL = "yarn_sale_bills" ; 
+export let BEAM_SALE_BILL_MODEL = "beam_sale_bill" ; 
+export let JOB_WORK_BILL_MODEL = "job_work_bills" ; 
+export let SALE_BILL_MODEL = "sale_bills" ; 
+export let JOB_GREAY_SALE_BILL_MODEL = "job_gray_sale_bill" ; 
+
+export let YARN_SALE_BILL_MODEL_NAME = "YARN SALE" ; 
+export let BEAM_SALE_MODEL_NAME = "BEAM SALE" ;
+export let JOB_WORK_MODEL_NAME = "JOB WORK" ; 
+export let SALE_BILL_MODEL_NAME = "SALE BILL" ; 
+export let JOB_GREAY_BILL_MODEL_NAME = "JOB GRAY SALE" ; 

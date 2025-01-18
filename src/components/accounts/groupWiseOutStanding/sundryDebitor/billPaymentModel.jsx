@@ -11,6 +11,7 @@ import {
   Typography,
   Flex,
   message,
+  Tooltip,
 } from "antd";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import moment from "moment";
@@ -74,26 +75,15 @@ const BillPaymentModel = ({
   const [updateOption, setUpdateOption] = useState("passbookUpdate");
 
   const handlePartAmountChange = (value, index) => {
-    // Update data
     setData((prevData) =>
       prevData.map((element, indexValue) => {
         if (indexValue === index) {
-
-          // Total bill amount
           const total_amount = element?.totalAmount || 0; // Bill total payment
-          
-          // Credit note amount 
           let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
-
-          // Bill Final amount
-          let bill_deducation_amount = +total_amount - +credit_note_amount ; 
-          
-          // Bill Remaing amount
-          let bill_remaing_amount = parseFloat(element?.part_payment == null?bill_deducation_amount:+element?.part_payment).toFixed(2) ; 
-
+          let bill_deducation_amount = +total_amount - +credit_note_amount;
+          let bill_remaing_amount = parseFloat(element?.part_payment == null ? bill_deducation_amount : +element?.part_payment).toFixed(2);
           // const partPayment = +value > +totalAmount ? 0 : +value; // Bil
           // const remainAmount = +totalAmount - +partPayment;
-
           return {
             ...element,
             partAmount: element?.part_payment,
@@ -127,9 +117,25 @@ const BillPaymentModel = ({
       title: "Sale return/Claim/Discount",
       dataIndex: "salesReturn",
       key: "salesReturn",
+      render: (text, record) => {
+        return(
+          <Flex style={{cursor: "pointer"}}>
+            <Tooltip title = {`Sale Return : ${text}`}>
+              <div style={{color: "red"}}>{parseFloat(text).toFixed(2)}</div>
+            </Tooltip>/
+            <Tooltip title = {`Claim Amount: ${parseFloat(0).toFixed(2)}`}>
+              <div style={{color: "orange"}}>{parseFloat(0).toFixed(2)}</div>
+            </Tooltip>/
+            <Tooltip title = {`Discount Amount: ${parseFloat(0).toFixed(2)}`}>
+              <div style={{color: "green"}}>{parseFloat(0).toFixed(2)}</div>
+            </Tooltip>
+          </Flex>
+        )
+      }
     },
   ];
 
+  // ============ Partial payment related information columns ============ 
   const partialPaymentColumns = [
     {
       title: "No",
@@ -151,7 +157,7 @@ const BillPaymentModel = ({
       dataIndex: "salesReturn",
       key: "salesReturn",
       render: (text, record) => {
-        return(
+        return (
           <div>
             {parseFloat(record?.credit_note_amount || 0)}
           </div>
@@ -182,6 +188,7 @@ const BillPaymentModel = ({
     },
   ];
 
+  // Calculate bill amount information 
   useEffect(() => {
     if (selectedBill?.length > 0) {
       let temp = [];
@@ -278,7 +285,7 @@ const BillPaymentModel = ({
         const errorMessage = error?.response?.data?.message || error.message;
         message.error(errorMessage);
       },
-    });
+  });
 
   // Get last vocher number related information ================================
   const { data: lastVoucherNo } = useQuery({
@@ -307,6 +314,7 @@ const BillPaymentModel = ({
       let vocher_details = `V-${+temp_vocher_number + 1}`;
 
       data?.map((element) => {
+        
         let total_amount = parseFloat(+element?.amount || 0).toFixed(2) || 0;
         let credit_note_amount =
           parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
@@ -314,11 +322,13 @@ const BillPaymentModel = ({
           parseFloat(+element?.paid_amount || 0).toFixed(2) || 0;
         let finalAmount = total_amount - paid_amount - credit_note_amount;
         let partAmount = element?.partAmount;
+        
         let new_paid_amount =
           paymentOption == "fullPayment"
             ? finalAmount
             : +finalAmount - +partAmount;
         total_paid_amount += +new_paid_amount;
+
         bill_details.push({
           bill_id: element?.bill_id,
           bill_no: element?.bill_no,
@@ -353,6 +363,11 @@ const BillPaymentModel = ({
         is_credited: true,
         bill_details: bill_details,
       };
+
+      console.log("Request payload informatino ==================");
+      
+      console.log(requestPayload);
+      
       // await addBillEntry({ data: requestPayload });
     }
   };
@@ -404,217 +419,220 @@ const BillPaymentModel = ({
         },
       }}
     >
-      <Form form={form} layout="vertical">
-        <Radio.Group
-          defaultValue="fullPayment"
-          value={paymentOption}
-          onChange={(event) => {
-            setPaymentOption(event.target.value);
-          }}
-          style={{
-            marginTop: "10px",
-          }}
-        >
-          <Radio value="fullPayment">Full Payment</Radio>
-          <Radio value="partPayment">Part Payment</Radio>
-        </Radio.Group>
-
-        <Table
-          columns={
-            paymentOption == "fullPayment"
-              ? fullPaymentColumns
-              : partialPaymentColumns
-          }
-          dataSource={data}
-          pagination={false}
-          style={{
-            marginTop: "20px",
-            marginBottom: "10px",
-          }}
-          summary={() => (
-            <>
-              <Table.Summary.Row key={"total"}>
-                <Table.Summary.Cell colSpan={2}>
-                  <Text>Total</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text>{totalAmount?.amount || 0}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text>
-                    <span style={{ color: "blue" }}>
-                      {totalAmount?.saleAmount || 0}
-                    </span>
-                  </Text>
-                </Table.Summary.Cell>
-                {paymentOption !== "fullPayment" &&
-                  Array(3)
-                    .fill(null)
-                    .map((_, index) => (
-                      <Table.Summary.Cell key={`total-empty-${index}`} />
-                    ))}
-              </Table.Summary.Row>
-
-              <Table.Summary.Row key={"grandTotal"}>
-                <Table.Summary.Cell colSpan={2}>
-                  <Text>Grand Total</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell>
-                  <Text>{grandTotal || 0}</Text>
-                </Table.Summary.Cell>
-                <Table.Summary.Cell />
-                {paymentOption !== "fullPayment" &&
-                  Array(3)
-                    .fill(null)
-                    .map((_, index) => (
-                      <Table.Summary.Cell key={`grand-empty-${index}`} />
-                    ))}
-              </Table.Summary.Row>
-            </>
-          )}
-        />
-
-        <div
-          style={{
-            marginTop: "20px",
-          }}
-        >
-          <Flex
+      <div>
+        <Form form={form} layout="vertical">
+          <Radio.Group
+            defaultValue="fullPayment"
+            value={paymentOption}
+            onChange={(event) => {
+              setPaymentOption(event.target.value);
+            }}
             style={{
-              gap: 10,
-              textAlign: "center",
+              marginTop: "10px",
             }}
           >
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">TDS Amount</div>
-              <Input
-                value={tdsAmount}
-                type="number"
-                placeholder="TDS Amount"
-                onChange={(event) => {
-                  setTdsAmount(event.target.value);
-                }}
-              />
-            </div>
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">Round Off Amount</div>
-              <Input
-                placeholder="Round Off Amount"
-                value={roundOffAmount}
-                type="number"
-                onChange={(event) => {
-                  setRoundOffAmount(event.target.value);
-                }}
-              />
-            </div>
-          </Flex>
-        </div>
+            <Radio value="fullPayment">Full Payment</Radio>
+            <Radio value="partPayment">Part Payment</Radio>
+          </Radio.Group>
 
-        <div>
+          <Table
+            columns={
+              paymentOption == "fullPayment"
+                ? fullPaymentColumns
+                : partialPaymentColumns
+            }
+            dataSource={data}
+            pagination={false}
+            style={{
+              marginTop: "20px",
+              marginBottom: "10px",
+            }}
+            summary={() => (
+              <>
+                <Table.Summary.Row key={"total"}>
+                  <Table.Summary.Cell colSpan={2}>
+                    <Text>Total</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>{totalAmount?.amount || 0}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>
+                      <span style={{ color: "blue" }}>
+                        {totalAmount?.saleAmount || 0}
+                      </span>
+                    </Text>
+                  </Table.Summary.Cell>
+                  {paymentOption !== "fullPayment" &&
+                    Array(3)
+                      .fill(null)
+                      .map((_, index) => (
+                        <Table.Summary.Cell key={`total-empty-${index}`} />
+                      ))}
+                </Table.Summary.Row>
+
+                <Table.Summary.Row key={"grandTotal"}>
+                  <Table.Summary.Cell colSpan={2}>
+                    <Text>Grand Total</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell>
+                    <Text>{grandTotal || 0}</Text>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell />
+                  {paymentOption !== "fullPayment" &&
+                    Array(3)
+                      .fill(null)
+                      .map((_, index) => (
+                        <Table.Summary.Cell key={`grand-empty-${index}`} />
+                      ))}
+                </Table.Summary.Row>
+              </>
+            )}
+          />
+
           <div
             style={{
-              fontWeight: 600,
-              color: "blue",
-              fontSize: 15,
-              marginTop: 10,
+              marginTop: "20px",
             }}
           >
-            Payable Amount: {payableAmount || 0}
+            <Flex
+              style={{
+                gap: 10,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">TDS Amount</div>
+                <Input
+                  value={tdsAmount}
+                  type="number"
+                  placeholder="TDS Amount"
+                  onChange={(event) => {
+                    setTdsAmount(event.target.value);
+                  }}
+                />
+              </div>
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">Round Off Amount</div>
+                <Input
+                  placeholder="Round Off Amount"
+                  value={roundOffAmount}
+                  type="number"
+                  onChange={(event) => {
+                    setRoundOffAmount(event.target.value);
+                  }}
+                />
+              </div>
+            </Flex>
           </div>
-        </div>
 
-        <div
-          style={{
-            marginTop: "10px",
-          }}
-        >
-          <Flex
+          <div>
+            <div
+              style={{
+                fontWeight: 600,
+                color: "blue",
+                fontSize: 15,
+                marginTop: 10,
+              }}
+            >
+              Payable Amount: {payableAmount || 0}
+            </div>
+          </div>
+
+          <div
             style={{
-              gap: 10,
-              textAlign: "center",
+              marginTop: "10px",
             }}
           >
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">Cheque number</div>
-              <Input
-                placeholder="Cheque number"
-                value={chequeNumber}
-                onChange={(event) => {
-                  setChequeNumber(event.target.value);
-                }}
-              />
-            </div>
+            <Flex
+              style={{
+                gap: 10,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">Cheque number</div>
+                <Input
+                  placeholder="Cheque number"
+                  value={chequeNumber}
+                  onChange={(event) => {
+                    setChequeNumber(event.target.value);
+                  }}
+                />
+              </div>
 
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">Cheque Date</div>
-              <DatePicker
-                style={{
-                  width: "100%",
-                }}
-                disabledDate={disabledFutureDate}
-                format="DD-MM-YYYY"
-                value={chequeDate}
-                onChange={(event) => {
-                  setChequeDate(event.target.value);
-                }}
-              />
-            </div>
-          </Flex>
-        </div>
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">Cheque Date</div>
+                <DatePicker
+                  style={{
+                    width: "100%",
+                  }}
+                  disabledDate={disabledFutureDate}
+                  format="DD-MM-YYYY"
+                  value={chequeDate}
+                  onChange={(event) => {
+                    setChequeDate(event.target.value);
+                  }}
+                />
+              </div>
+            </Flex>
+          </div>
 
-        <div
-          style={{
-            marginTop: "10px",
-            gap: 5,
-          }}
-        >
-          <Flex
+          <div
             style={{
+              marginTop: "10px",
               gap: 5,
-              textAlign: "center",
             }}
           >
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">Party Bank</div>
-              <Input
-                placeholder="PARTY Bank"
-                value={partyBank}
-                onChange={(event) => {
-                  setPartyBank(event.target.value);
-                }}
-              />
-            </div>
-            <div style={{ width: "48%" }}>
-              <div className="sundary-bill-payment-label">Bank</div>
-              <Select
-                value={bankValue}
-                onChange={(event) => {
-                  setBankValue(event);
-                }}
-                style={{
-                  width: "100%",
-                }}
-                placeholder={"Bank Option"}
-                options={bankOption}
-              ></Select>
-            </div>
-          </Flex>
-        </div>
+            <Flex
+              style={{
+                gap: 5,
+                textAlign: "center",
+              }}
+            >
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">Party Bank</div>
+                <Input
+                  placeholder="PARTY Bank"
+                  value={partyBank}
+                  onChange={(event) => {
+                    setPartyBank(event.target.value);
+                  }}
+                />
+              </div>
+              <div style={{ width: "48%" }}>
+                <div className="sundary-bill-payment-label">Bank</div>
+                <Select
+                  value={bankValue}
+                  onChange={(event) => {
+                    setBankValue(event);
+                  }}
+                  style={{
+                    width: "100%",
+                  }}
+                  placeholder={"Bank Option"}
+                  options={bankOption}
+                ></Select>
+              </div>
+            </Flex>
+          </div>
 
-        <Radio.Group
-          defaultValue="passbookUpdate"
-          style={{
-            marginTop: 20,
-          }}
-          value={updateOption}
-          onChange={(event) => {
-            setUpdateOption(event.target.value);
-          }}
-        >
-          <Radio value="passbookUpdate">Passbook Update</Radio>
-          <Radio value="cashbookUpdate">Cashbook Update</Radio>
-        </Radio.Group>
-      </Form>
+          <Radio.Group
+            defaultValue="passbookUpdate"
+            style={{
+              marginTop: 20,
+            }}
+            value={updateOption}
+            onChange={(event) => {
+              setUpdateOption(event.target.value);
+            }}
+          >
+            <Radio value="passbookUpdate">Passbook Update</Radio>
+            <Radio value="cashbookUpdate">Cashbook Update</Radio>
+          </Radio.Group>
+        </Form>
+      </div>
+
     </Modal>
   );
 };

@@ -289,8 +289,6 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const [dueDate, setDueDate] = useState(null);
   useEffect(() => {
     if (saleBillDetail) {
-      console.log("Sale bill details information");
-      console.log({ saleBillDetail });
       setValue("invoice_no", saleBillDetail.invoice_no);
       setValue("rate", saleBillDetail.rate);
       setValue("amount", saleBillDetail.amount);
@@ -472,7 +470,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   M/s.
                 </Typography.Text>
                 <Typography.Text>
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong>
                 </Typography.Text>
                 <Typography.Text className="block">
                   {details?.party?.address}
@@ -523,8 +521,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {saleBillDetail?.broker?.first_name}{" "}
-                      {saleBillDetail?.broker?.last_name}
+                      {String(`${saleBillDetail?.broker?.first_name}` `${saleBillDetail?.broker?.last_name}`).toUpperCase()}
                     </Typography.Text>
                   </Col>
                 </Row>
@@ -1002,7 +999,10 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={8}
                 className="pl-2 font-medium border-0 border-r border-solid"
               >
-                Avg Rate: {parseFloat(averageAmount).toFixed(2)}
+                Avg Rate: <span style={{
+                  fontWeight: 600 , 
+                  color: "blue"
+                }}>{parseFloat(averageAmount).toFixed(2)}</span>
               </Col>
               <Col
                 span={2}
@@ -1040,7 +1040,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   ♦ DELIVERY AT:
                 </Typography.Text>
                 <Typography.Text className="block font-semibold mt-1">
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong>
                 </Typography.Text>
                 <Typography.Text className="block mt-1">
                   {details?.party?.address}
@@ -1061,7 +1061,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Due date: {dueDate}</div>
+                <div style={{ color: "gray" }}>Due date <br/> {dueDate}</div>
               </Col>
               <Col
                 span={4}

@@ -1208,18 +1208,6 @@ const TableWithAccordion = ({
                         />
                       )}
 
-                      {/* <Button
-                        type="primary"
-                        onClick={async () => {
-                          await ReteriveBillInformation(
-                            bill?.model,
-                            bill?.bill_id
-                          );
-                        }}
-                      >
-                        <EyeOutlined />
-                      </Button> */}
-                      
                       {/* ===== Credit note creation related checkbox =====  */}
                       {bill?.credit_note_id == null && bill?.model != CREDIT_NOTE_BILL_MODEL ? (
                         <>
@@ -1238,7 +1226,7 @@ const TableWithAccordion = ({
                           {/* Credit note option  */}
                           <Tooltip title = "Crdit Note">
                             <TabletFilled
-                              style={{ color: "blue" }}
+                              style={{ color: "green" }}
                               onClick={() => {
                                 handleCreditNoteClick(bill, data);
                               }}
@@ -1252,7 +1240,7 @@ const TableWithAccordion = ({
                         <>
                           <Tooltip title = "Debit Note">
                             <TabletFilled
-                              style={{ color: "gray" }}
+                              style={{ color: "red" }}
                               onClick={() => {
                                 handleDebitNoteClick(bill, data);
                               }}

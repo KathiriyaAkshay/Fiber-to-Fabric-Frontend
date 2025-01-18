@@ -147,7 +147,6 @@ const BillForm = () => {
         "less_percentage": minus_amount,
         "plus_percentage": plus_amount,
         "model": element?.model,
-        
         "net_amount": element?.exists_part_payment == null?+element?.net_amount:element?.exist_remaing_amount,
         "part_payment": current_remaing_amount,
         "paid_amount": paid_amount

@@ -23,16 +23,36 @@ const CalculateInterest = (due_days, bill_amount) => {
   };
 
 const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBill }) => {
-    const columns = [
-        { title: "No", dataIndex: "no", key: "no" },
-        { title: "Bill No.", dataIndex: "billNo", key: "billNo" },
-        { title: "Interest", dataIndex: "interest", key: "interest" },
-    ];
-
+    
     const [data, setData] = useState([]);
     const [totalInterest, setTotalInterest] = useState(undefined) ; 
     const [interestAmount, setInterestAmount] = useState("") ; 
     const [dueDate, setDueDate] = useState(new dayjs()) ; 
+
+    const handleInterestChange = (value, record) => {
+        const updatedData = data.map((item) =>
+            item.bill_no == record?.bill_no && item?.model == record?.model ? { ...item, interest: value } : item
+        );
+        setData(updatedData);
+    };
+
+    const columns = [
+        { title: "No", dataIndex: "no", key: "no" },
+        { title: "Bill No.", dataIndex: "billNo", key: "billNo" },
+        {
+            title: "Interest",
+            dataIndex: "interest",
+            key: "interest",
+            render: (text, record) => (
+                <Input
+                    value={record.interest}
+                    placeholder="Interest amount"
+                    onChange={(e) => handleInterestChange(e.target.value, record)}
+                />
+            ),
+        },
+    ];
+
 
     function disabledFutureDate(current) {
      return current && current > moment().endOf("day");
@@ -49,7 +69,8 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
                 temp.push({
                     billNo: bill?.bill_no, 
                     interest: interestAmount, 
-                    no: index + 1
+                    no: index + 1, 
+                    ...bill
                 })
                 total += +interestAmount ; 
             })
@@ -58,6 +79,16 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
             setInterestAmount(parseFloat(total).toFixed(2)) ; 
         }
     },[selectedInterestBill])
+
+    useEffect(() => {
+        if (data?.length > 0 && data !== undefined){
+            let temp_total_interest = 0 ; 
+            data?.map((element) => {
+                temp_total_interest += +element?.interest ; 
+            })
+            setTotalInterest(parseFloat(temp_total_interest).toFixed(2)) ; 
+        }
+    }, [data]) ; 
 
     return (
         <Modal
@@ -98,10 +129,6 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
             />
             <div style={{ marginTop: 16 }}>
                 <div style={{ marginBottom: 8 }}>
-                    <label>Interest Amount</label>
-                    <Input value={interestAmount} />
-                </div>
-                <div style={{ marginBottom: 8 }}>
                     <label>Payment Date</label>
                     <DatePicker onChange={setDueDate} value={dueDate} style={{ width: "100%" }} format="DD-MM-YYYY" disabledDate={disabledFutureDate} />
                 </div>
@@ -111,7 +138,17 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
                         if (interestAmount == "" && interestAmount == undefined){
                             message.warning("Please, Provide interest amount") ; 
                         } else{
-                            await onConfirm(interestAmount, dueDate)
+                            let hasError = false ; 
+                            data?.map((element) => {
+                                if (element?.interest == "" || element?.interest == undefined){
+                                    message.warning(`Please, Enter interest amount for bill no : ${element?.bill_no}`) ; 
+                                    hasError = true ; 
+                                    return; 
+                                }
+                            })
+                            if (!hasError){
+                                await onConfirm(interestAmount, dueDate, data)
+                            }
                         }
                     }}>
                         CONFIRM

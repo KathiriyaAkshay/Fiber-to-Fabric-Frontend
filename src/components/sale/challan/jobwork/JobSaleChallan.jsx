@@ -275,7 +275,7 @@ const JobWorkSaleChallanModel = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Work Challan
+            Job Work Bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -870,7 +870,7 @@ const JobWorkSaleChallanModel = ({
             </Row>
             <Row className="border-0 border-b border-solid !m-0">
               <Col span={24} className="p-2 font-medium border-0 border-r ">
-                <strong>NET RATE:</strong> {currentValues.net_rate}Rs/Kg
+                <strong>NET RATE:</strong> <span style={{fontWeight: 600, color: "blue"}}>{currentValues.net_rate}Rs/Kg</span>
               </Col>
             </Row>
             <Row className="border-0 border-b !m-0 p-4">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   DatePicker,
@@ -26,7 +26,8 @@ import { currentMonthStartDateEndDate } from "../../../../utils/date";
 import { FilePdfOutlined, PlusCircleFilled } from "@ant-design/icons";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { YARN_SUPPLIER_TYPE } from "../../../../constants/supplier";
-import {PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR, YARN_RECEIVE_BILL_MODEL } from "../../../../constants/bill.model";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR, YARN_RECEIVE_BILL_MODEL } from "../../../../constants/bill.model";
+import { getYSCDropdownList } from "../../../../api/requests/reports/yarnStockReport";
 
 const YarnBillList = () => {
   const [startDate, endDate] = currentMonthStartDateEndDate();
@@ -47,6 +48,11 @@ const YarnBillList = () => {
     500
   );
 
+  const [yarnCompanyName, setYarnCompanyName] = useState(null);
+  const [yarnCompanyId, setYarnCompanyId] = useState(null) ; 
+  const debouncedYarnCompanyId = useDebounce(yarnCompanyId, 400) ; 
+  const [yarnDennierOption, setYarnDennierOption] = useState([]) ; 
+
   const [status, setStatus] = useState();
   const debounceStatus = useDebounce(status, 600);
 
@@ -58,9 +64,9 @@ const YarnBillList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", 
-      { 
-        company_id: companyId, 
+    queryKey: ["dropdown/supplier/list",
+      {
+        company_id: companyId,
         supplier_type: YARN_SUPPLIER_TYPE
       }],
     queryFn: async () => {
@@ -71,6 +77,35 @@ const YarnBillList = () => {
     },
     enabled: Boolean(companyId),
   });
+
+  const { data: yscdListRes, isLoading: isLoadingYSCDList } = useQuery({
+    queryKey: ["dropdown", "yarn_company", "list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getYSCDropdownList({
+        params: { company_id: companyId },
+      });
+      return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  useEffect(() => {
+    if (yarnCompanyName !== null && yarnCompanyName !== undefined && yscdListRes?.yarnCompanyList?.length > 0){
+      const selectedYarnCompany = yscdListRes?.yarnCompanyList?.find((element) => 
+        element?.yarn_company_name == yarnCompanyName
+      )
+      if (selectedYarnCompany){
+        let temp = [] ; 
+        selectedYarnCompany?.yarn_details?.map((element) => {
+          temp.push({
+            label: `${element?.yarn_count}C/${element?.filament}F ${element?.yarn_color}-${element?.luster_type}`, 
+            value: element?.yarn_company_id
+          })
+        })
+        setYarnDennierOption(temp) ;       
+      }
+    }
+  }, [yarnCompanyName])
 
   const { data: yarnBillData, isLoading } = useQuery({
     queryKey: [
@@ -83,6 +118,7 @@ const YarnBillList = () => {
         bill_from: debouncedFromDate,
         bill_to: debouncedToDate,
         is_paid: debounceStatus,
+        yarn_stock_company_id: yarnCompanyId
       },
     ],
     queryFn: async () => {
@@ -95,6 +131,7 @@ const YarnBillList = () => {
           bill_from: debouncedFromDate,
           bill_to: debouncedToDate,
           is_paid: debounceStatus,
+          yarn_stock_company_id : yarnCompanyId
         },
       });
       return res?.data?.data;
@@ -210,34 +247,34 @@ const YarnBillList = () => {
       render: (text, record) => {
         let due_date = record?.due_date;
         due_date = new Date(due_date);
-      
+
         let today = new Date();
-    
+
         // Correct the time difference calculation
         let timeDifference = today.getTime() - due_date.getTime();
-        
+
         // Convert time difference to days
         let daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-      
+
         // If the due date is in the future, set the days difference to 0
         if (daysDifference < 0) {
           daysDifference = 0;
         }
-        
-        if (record?.is_paid){
-          return(
+
+        if (record?.is_paid) {
+          return (
             <div>0</div>
-          ) 
+          )
         } else {
           return <div style={{
-            color: daysDifference == 0?"#000":"red",
+            color: daysDifference == 0 ? "#000" : "red",
             fontWeight: 600
           }}>
             +{daysDifference}D
           </div>;
         }
 
-      }      
+      }
     },
     {
       title: "Action",
@@ -248,13 +285,13 @@ const YarnBillList = () => {
           <Space>
             <ViewYarnReceiveChallan details={record} />
 
-            { record?.is_paid == false 
+            {record?.is_paid == false
               && record?.is_partial_payment == false && (
-              <>
-                <DeleteYarnBillButton details={record} />
-                <UpdateYarnChallanModel details={record} />
-              </>
-            )}
+                <>
+                  <DeleteYarnBillButton details={record} />
+                  <UpdateYarnChallanModel details={record} />
+                </>
+              )}
 
             {record?.is_partial_payment == true && (
               <>
@@ -266,7 +303,7 @@ const YarnBillList = () => {
               </>
             )}
 
-            {record?.is_paid  && (
+            {record?.is_paid && (
               <Tag color={PAID_TAG_TEXT_COLOR} className="bill-payment-model-tag">
                 {PAID_TAG_TEXT}
               </Tag>
@@ -519,7 +556,7 @@ const YarnBillList = () => {
             </Flex>
           </div>
           <Flex align="center" gap={10}>
-            <Flex align="center" gap={10}>
+            <Flex align="center" gap={10} wrap={"wrap"} justify="flex-end">
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Payment status
@@ -564,6 +601,57 @@ const YarnBillList = () => {
                   }}
                   allowClear
                   className="min-w-40"
+                />
+              </Flex>
+
+              <Flex align="center" gap={10}>
+                <Typography.Text className="whitespace-nowrap">
+                  Yarn company
+                </Typography.Text>
+
+                <Select
+                  placeholder="Select Yarn company"
+                  loading={isLoadingYSCDList}
+                  options={yscdListRes?.yarnCompanyList?.map(
+                    (element) => {
+                      return {
+                        label: element?.yarn_company_name,
+                        value: element?.yarn_company_name,
+                      };
+                    }
+                  )}
+                  value={yarnCompanyName}
+                  onChange={setYarnCompanyName}
+                  style={{
+                    textTransform: "capitalize",
+                  }}
+                  dropdownStyle={{
+                    textTransform: "capitalize",
+                  }}
+                  className="min-w-40"
+                  allowClear={true}
+                />
+              </Flex>
+              
+              <Flex align="center" gap={10}>
+                <Typography.Text className="whitespace-nowrap">
+                  Yarn Dennier
+                </Typography.Text>
+
+                <Select
+                  placeholder="Select Yarn Dennier"
+                  loading={false}
+                  options={yarnDennierOption}
+                  value={yarnCompanyId}
+                  onChange={setYarnCompanyId}
+                  style={{
+                    textTransform: "capitalize",
+                  }}
+                  dropdownStyle={{
+                    textTransform: "capitalize",
+                  }}
+                  className="min-w-40"
+                  allowClear={true}
                 />
               </Flex>
 

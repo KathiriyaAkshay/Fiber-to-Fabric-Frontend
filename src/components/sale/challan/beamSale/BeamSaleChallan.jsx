@@ -273,7 +273,7 @@ const BeamSaleChallanModel = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Receive Size Beam Challan
+            Beam Sale Bill
           </Typography.Text>
         }
         open={isModelOpen}
@@ -900,7 +900,7 @@ const BeamSaleChallanModel = ({
             </Row>
             <Row className="border-0 border-b border-solid !m-0">
               <Col span={24} className="p-2 font-medium border-0 border-r ">
-                NET RATE: {currentValues.net_rate}Rs/Kg
+                NET RATE: <span style={{fontWeight: 600, color: "blue"}}>{currentValues.net_rate}Rs/Kg</span>
               </Col>
             </Row>
             <Row className="border-0 border-b !m-0 p-4">

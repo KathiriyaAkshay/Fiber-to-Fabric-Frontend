@@ -70,7 +70,7 @@ const PrintBeamSaleChallan = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Beam Sale
+            Beam Sale Challan
           </Typography.Text>
         }
         open={isOpen}
@@ -165,8 +165,9 @@ const PrintBeamSaleChallan = ({
           >
             <Col span={12}>
               <p>
-                <strong>M/S :</strong><br/> {details?.supplier?.supplier_name}
-                <span style={{fontWeight: 600, marginLeft: 5}}>({details?.supplier?.supplier_company})</span>
+                <strong>M/S :</strong><br/> 
+                {details?.supplier?.supplier_name}<br/>
+                <span style={{fontWeight: 600}}>({details?.supplier?.supplier_company})</span>
               </p>
               <p>{details?.supplier?.user?.address}</p>
               <p>

@@ -515,7 +515,7 @@ function YarnOrderList() {
 
             <Select
               placeholder="Select Yarn company"
-              loading={isLoading}
+              loading={isLoadingYSCDList}
               options={yscdListRes?.yarnCompanyList?.map(
                 ({ yarn_company_name = "" }) => {
                   return {

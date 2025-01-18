@@ -65,7 +65,7 @@ const PrintJobWorkChallan = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Job Work
+            Job Work Challan
           </Typography.Text>
         }
         open={isOpen}
@@ -164,8 +164,8 @@ const PrintJobWorkChallan = ({
           >
             <Col span={12}>
               <p>
-                <strong>M/S :</strong> {details?.supplier?.supplier_company}(
-                {details?.supplier?.supplier_name})
+                <strong>M/S :</strong> {details?.supplier?.supplier_company}<br/>
+                <span style={{fontWeight: 600}}>({details?.supplier?.supplier_name})</span>
               </p>
               <p>{details?.supplier?.user?.address}</p>
               <p>

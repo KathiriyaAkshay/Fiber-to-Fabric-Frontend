@@ -110,13 +110,11 @@ const SundaryDebitNoteGenerate = ({
     useState(undefined);
   const [isGenerated, setIsGenerated] = useState(false);
   const [debitNoteDetailsLoading, setDebitNoteDetailsLoading] = useState(false) ; 
-  const manuallyFetchDebitNoteInformation = async () => {
+  const manuallyFetchDebitNoteInformation = async (debit_note_id) => {
     setIsGenerated(true);
     const params = {
       company_id: companyId,
     };
-
-    const debit_note_id = bill_details[0]?.debit_note_id;
 
     if (!debit_note_id) {
       console.error("No debit note ID found.");
@@ -144,8 +142,10 @@ const SundaryDebitNoteGenerate = ({
 
   useEffect(() => {
     if (bill_details?.length == 1) {
-      if (bill_details[0]?.debit_note_id != null) {
-        manuallyFetchDebitNoteInformation();
+      if (bill_details[0]?.debit_note_id != null && bill_details[0]?.debit_note_id !== undefined) {
+        manuallyFetchDebitNoteInformation(bill_details[0]?.debit_note_id);
+      } else if (bill_details[0]?.model == DEBIT_NOTE_BILL_MODEL){
+        manuallyFetchDebitNoteInformation(bill_details[0]?.bill_id) ; 
       }
     }
   }, [bill_details]);
@@ -159,25 +159,29 @@ const SundaryDebitNoteGenerate = ({
   const [taxValue, setTaxValue] = useState(0);
 
   useEffect(() => {
-    if (bill_details?.length > 0) {
-      let totalAmount = 0;
-      bill_details?.map((bill) => {
-        let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
-        let dueDays = isNaN(calculateDaysDifference(dueDate))
-          ? 0
-          : calculateDaysDifference(dueDate);
-        let interestAmount = CalculateInterest(dueDays, +bill?.amount);
-        totalAmount += +interestAmount;
-      });
-      setTotalInterestAmount(totalAmount);
-
-      let CGST = (+totalAmount * 2.5) / 100;
-
-      let net_amount = +totalAmount + +CGST * 2;
-      let round_off_amount = Math.round(net_amount);
-      setRoundOffAmount(net_amount - round_off_amount);
-      setTaxAmount({ CGST: CGST });
-      setNetAmount(round_off_amount);
+    try {
+      if (bill_details?.length > 0) {
+        let totalAmount = 0;
+        bill_details?.map((bill) => {
+          let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
+          let dueDays = isNaN(calculateDaysDifference(dueDate))
+            ? 0
+            : calculateDaysDifference(dueDate);
+          let interestAmount = CalculateInterest(dueDays, +bill?.amount);
+          totalAmount += +interestAmount;
+        });
+        setTotalInterestAmount(totalAmount);
+  
+        let CGST = (+totalAmount * 2.5) / 100;
+  
+        let net_amount = +totalAmount + +CGST * 2;
+        let round_off_amount = Math.round(net_amount);
+        setRoundOffAmount(net_amount - round_off_amount);
+        setTaxAmount({ CGST: CGST });
+        setNetAmount(round_off_amount);
+      }
+    } catch (error) {
+      
     }
   }, [bill_details]);
 
@@ -314,11 +318,15 @@ const SundaryDebitNoteGenerate = ({
                       </Typography.Text>
                       {isGenerated ? (
                         <>
-                          <div>{genratedDebiteNoteInfo?.debit_note_number}</div>
+                          <div style={{
+                            color: "red"
+                          }}>{genratedDebiteNoteInfo?.debit_note_number}</div>
                         </>
                       ) : (
                         <>
-                          <div>{debitNote || "DNP-1"}</div>
+                          <div style={{
+                            color: "red"
+                          }}>{debitNote || "DNP-1"}</div>
                         </>
                       )}
                     </div>

@@ -66,7 +66,7 @@ const PrintYarnSaleChallan = ({
         closeIcon={<CloseOutlined className="text-white" />}
         title={
           <Typography.Text className="text-xl font-medium text-white">
-            Yarn Sale
+            Yarn Sale Challan
           </Typography.Text>
         }
         open={isOpen}

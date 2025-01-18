@@ -154,24 +154,28 @@ const SunadryCreditNoteGenerate = ({
   const [taxValue, setTaxValue] = useState(0);
 
   useEffect(() => {
-    if (bill_details?.length > 0) {
-      let totalAmount = 0;
-      bill_details?.map((bill) => {
-        const dueDate =
-          bill?.due_date == null
-            ? bill?.model == PURCHASE_TAKA_BILL_MODEL
-              ? generatePurchaseBillDueDate(bill?.bill_date)
-              : generateJobBillDueDate(bill?.bill_date)
-            : moment(bill?.due_date).format("DD-MM-YYYY");
-        let dueDays = calculateDaysDifference(dueDate);
-        if (dueDays < 0){
-          dueDays = 0 ; 
-        } 
-
-        const interestAmount = CalculateInterest(dueDays, bill?.amount);
-        totalAmount += +interestAmount;
-      });
-      setTotalInterestAmount(totalAmount);
+    try {
+      if (bill_details?.length > 0) {
+        let totalAmount = 0;
+        bill_details?.map((bill) => {
+          const dueDate =
+            bill?.due_date == null
+              ? bill?.model == PURCHASE_TAKA_BILL_MODEL
+                ? generatePurchaseBillDueDate(bill?.bill_date)
+                : generateJobBillDueDate(bill?.bill_date)
+              : moment(bill?.due_date).format("DD-MM-YYYY");
+          let dueDays = calculateDaysDifference(dueDate);
+          if (dueDays < 0){
+            dueDays = 0 ; 
+          } 
+  
+          const interestAmount = CalculateInterest(dueDays, bill?.amount);
+          totalAmount += +interestAmount;
+        });
+        setTotalInterestAmount(totalAmount);
+      }
+    } catch (error) {
+      
     }
   }, [bill_details]);
 
@@ -337,11 +341,15 @@ const SunadryCreditNoteGenerate = ({
 
                       {isGenerated ? (
                         <>
-                          <div>{genratedDebiteNoteInfo?.credit_note_number}</div>
+                          <div style={{
+                            color: "green"
+                          }}>{genratedDebiteNoteInfo?.credit_note_number}</div>
                         </>
                       ) : (
                         <>
-                          <div>{debitNote || "CNP-1"}</div>
+                          <div style={{
+                            color: "green"
+                          }}>{debitNote || "CNP-1"}</div>
                         </>
                       )}
 

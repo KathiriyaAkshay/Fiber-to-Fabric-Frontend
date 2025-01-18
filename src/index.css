@@ -1408,3 +1408,8 @@ h2 {
 .add-received-rework-challan-input{
   background-color: #efefef;
 }
+
+.sundry-dropdown-option-danger{
+  font-weight: 600;
+  color: red;
+}

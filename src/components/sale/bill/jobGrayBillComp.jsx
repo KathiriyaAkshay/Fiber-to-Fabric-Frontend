@@ -74,7 +74,6 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
-  const componentRef = useRef();
 
   const { data: jobGrayBillDetail = null } = useQuery({
     queryKey: ["/sale/job-gray-sale/bill/get", MODE, { id: details.id }],
@@ -433,7 +432,8 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   M/s.
                 </Typography.Text>
                 <Typography.Text>
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong><br/>
+
                 </Typography.Text>
                 <Typography.Text className="block">
                   {details?.party?.address}
@@ -484,8 +484,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {jobGrayBillDetail?.broker?.first_name}{" "}
-                      {jobGrayBillDetail?.broker?.last_name}
+                      {String(`${jobGrayBillDetail?.broker?.first_name}` `${jobGrayBillDetail?.broker?.last_name}`).toUpperCase()}
                     </Typography.Text>
                   </Col>
                 </Row>
@@ -921,7 +920,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={8}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                Avg Rate: {parseFloat(averageAmount).toFixed(2)}
+                Avg Rate: <span style={{fontWeight: 600, color: "blue"}}>{parseFloat(averageAmount).toFixed(2)} Rs</span>
               </Col>
               <Col
                 span={2}
@@ -952,7 +951,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                   ♦ DELIVERY AT:
                 </Typography.Text>
                 <Typography.Text className="block font-semibold mt-1">
-                  <strong>{`${details?.party?.first_name} ${details?.party?.last_name}`}</strong>
+                  <strong>{String(`${details?.party?.first_name} ${details?.party?.last_name}`).toUpperCase()}</strong>
                 </Typography.Text>
                 <Typography.Text className="block mt-1">
                   {details?.party?.address}
@@ -973,7 +972,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={3}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                <div style={{ color: "gray" }}>Due date: {dueDate}</div>
+                <div style={{ color: "gray" }}>Due date<br/> {dueDate}</div>
               </Col>
               <Col
                 span={4}
