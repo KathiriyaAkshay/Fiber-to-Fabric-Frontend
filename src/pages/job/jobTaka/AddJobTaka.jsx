@@ -29,7 +29,11 @@ import FieldTable from "../../../components/fieldTable";
 import moment from "moment/moment";
 import { checkUniqueTakaNoRequest } from "../../../api/requests/purchase/purchaseTaka";
 import AlertModal from "../../../components/common/modal/alertModal";
-import { JOB_ORDER_TYPE, JOB_QUALITY_TYPE, JOB_SUPPLIER_TYPE } from "../../../constants/supplier";
+import {
+  JOB_ORDER_TYPE,
+  JOB_QUALITY_TYPE,
+  JOB_SUPPLIER_TYPE,
+} from "../../../constants/supplier";
 import { MY_ORDER_PENDING_STATUS } from "../../../constants/supplier";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
 
@@ -55,6 +59,7 @@ const AddJobTaka = () => {
   // const [fieldArray, setFieldArray] = useState([0]);
 
   const [activeField, setActiveField] = useState(0);
+  const JOB_CHALLAN_ADD = JSON.parse(localStorage.getItem("JOB_CHALLAN_ADD"));
 
   const [isTakaExist, setIsTakaExist] = useState(false);
 
@@ -178,7 +183,6 @@ const AddJobTaka = () => {
           weight: parseInt(data[`weight_${field}`]),
         });
       }
-
     });
 
     const newData = {
@@ -200,7 +204,10 @@ const AddJobTaka = () => {
       job_challan_detail: purchase_challan_detail,
     };
 
-    if ((all_taka_number?.length !== [...new Set(all_taka_number)]?.length) && hasError == false) {
+    if (
+      all_taka_number?.length !== [...new Set(all_taka_number)]?.length &&
+      hasError == false
+    ) {
       message.error("Please, Enter all unique taka");
       hasError = 1;
       return;
@@ -244,7 +251,14 @@ const AddJobTaka = () => {
     },
     resolver: addJobTakaSchemaResolver,
   });
-  const { supplier_name, gray_order_id, supplier_id, total_weight, total_meter, total_taka } = watch();
+  const {
+    supplier_name,
+    gray_order_id,
+    supplier_id,
+    total_weight,
+    total_meter,
+    total_taka,
+  } = watch();
 
   // Dropdown quality api ===================================================
   const { data: dropDownQualityListRes, isLoading: dropDownQualityLoading } =
@@ -257,7 +271,7 @@ const AddJobTaka = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
-          production_type: JOB_QUALITY_TYPE
+          production_type: JOB_QUALITY_TYPE,
         },
       ],
       queryFn: async () => {
@@ -267,7 +281,7 @@ const AddJobTaka = () => {
             page: 0,
             pageSize: 9999,
             is_active: 1,
-            production_type: JOB_QUALITY_TYPE
+            production_type: JOB_QUALITY_TYPE,
           },
         });
         return res.data?.data;
@@ -278,10 +292,22 @@ const AddJobTaka = () => {
   // Gray order selection dropdown api ==================================================
   const { data: grayOrderListRes, isLoading: isLoadingGrayOrderList } =
     useQuery({
-      queryKey: ["party", "list", { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS }],
+      queryKey: [
+        "party",
+        "list",
+        {
+          company_id: companyId,
+          order_type: JOB_ORDER_TYPE,
+          status: MY_ORDER_PENDING_STATUS,
+        },
+      ],
       queryFn: async () => {
         const res = await getMyOrderListRequest({
-          params: { company_id: companyId, order_type: JOB_ORDER_TYPE, status: MY_ORDER_PENDING_STATUS },
+          params: {
+            company_id: companyId,
+            order_type: JOB_ORDER_TYPE,
+            status: MY_ORDER_PENDING_STATUS,
+          },
         });
         return res.data?.data;
       },
@@ -293,7 +319,10 @@ const AddJobTaka = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
+    queryKey: [
+      "dropdown/supplier/list",
+      { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
+    ],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
         params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
@@ -374,8 +403,12 @@ const AddJobTaka = () => {
         setValue("quality_id", order.inhouse_quality.id);
         setValue("supplier_name", order.supplier_name);
         setValue("pending_meter", order.pending_meter);
-        setInitialPendingMeter(isNaN(order.pending_meter) ? 0 : +order?.pending_meter || 0);
-        setInitialPendingTaka(isNaN(order.pending_taka) ? 0 : order.pending_taka || 0);
+        setInitialPendingMeter(
+          isNaN(order.pending_meter) ? 0 : +order?.pending_meter || 0
+        );
+        setInitialPendingTaka(
+          isNaN(order.pending_taka) ? 0 : order.pending_taka || 0
+        );
       }
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
@@ -429,17 +462,11 @@ const AddJobTaka = () => {
   useEffect(() => {
     if (initialPendingMeter !== undefined) {
       setPendingMeter(+initialPendingMeter - +totalMeter);
-
     }
     if (initialPendingTaka !== undefined) {
       setPendingTaka(+initialPendingTaka - +totalTaka);
     }
-  }, [
-    initialPendingMeter,
-    initialPendingTaka,
-    totalTaka,
-    totalMeter,
-  ]);
+  }, [initialPendingMeter, initialPendingTaka, totalTaka, totalMeter]);
 
   const onConfirmHandler = () => {
     const purchaseChallanDetailArr = Array.from(
@@ -460,6 +487,26 @@ const AddJobTaka = () => {
     setTotalMeter(0);
     setTotalWeight(0);
   };
+
+  useEffect(() => {
+    if (JOB_CHALLAN_ADD) {
+      if (JOB_CHALLAN_ADD.model === "job") {
+        setValue("gray_order_id", JOB_CHALLAN_ADD.id);
+      }
+    }
+  }, []);
+
+  const handleBeforeUnload = () => {
+    localStorage.removeItem("JOB_CHALLAN_ADD");
+  };
+
+  useEffect(() => {
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col p-4">
@@ -842,14 +889,20 @@ const AddJobTaka = () => {
           <Col span={12}></Col>
           <Col span={3} style={{ textAlign: "center" }}>
             <div style={{ textAlign: "left", fontSize: 12 }}>Pending Meter</div>
-            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>
+            <Typography
+              style={{ color: "red", textAlign: "left", fontWeight: 600 }}
+            >
               {pendingMeter || 0}
             </Typography>
           </Col>
 
           <Col span={3} style={{ textAlign: "center" }}>
             <div style={{ textAlign: "left", fontSize: 12 }}>Pending Taka</div>
-            <Typography style={{ color: "red", textAlign: "left", fontWeight: 600 }}>{pendingTaka || 0}</Typography>
+            <Typography
+              style={{ color: "red", textAlign: "left", fontWeight: 600 }}
+            >
+              {pendingTaka || 0}
+            </Typography>
           </Col>
         </Row>
 

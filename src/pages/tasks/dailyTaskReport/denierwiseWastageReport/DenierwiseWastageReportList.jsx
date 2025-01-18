@@ -3,21 +3,27 @@ import {
   DatePicker,
   Flex,
   Input,
+  message,
+  Popconfirm,
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import { EditOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import { getDenierwiseWastageReportListRequest } from "../../../../api/requests/reports/denierwiseWastageReport";
+import {
+  getDenierwiseWastageReportListRequest,
+  updateDenierwiseWastageReportRequest,
+} from "../../../../api/requests/reports/denierwiseWastageReport";
 import DeleteDenierwiseWastageReportButton from "../../../../components/tasks/denierwiseWastageReport/DeleteDenierwiseWastageReportButton";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import moment from "moment";
@@ -76,6 +82,44 @@ function DenierwiseWastageReportList() {
     navigate(`/tasks/daily-task-report/denierwise-wastage-report/update/${id}`);
   }
 
+  const {
+    mutateAsync: updateDenierwiseWastageReport,
+    isPending: isPendingUpdateDenierwiseReport,
+  } = useMutation({
+    mutationFn: async ({ data, id }) => {
+      const res = await updateDenierwiseWastageReportRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["reports/denierwise-wastage-report/update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const onConfirmWastage = async (id) => {
+    const data = {
+      is_confirm: true,
+    };
+
+    await updateDenierwiseWastageReport({ data, id });
+  };
+
   const columns = [
     {
       title: "ID",
@@ -113,6 +157,34 @@ function DenierwiseWastageReportList() {
       title: "Notes",
       dataIndex: "notes",
       key: "notes",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_confirm",
+      key: "is_confirm",
+      render: (text, record) =>
+        text == false ? (
+          <>
+            <Popconfirm
+              title="Denierwise Wastage Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record?.id);
+              }}
+              okButtonProps={{
+                loading: isPendingUpdateDenierwiseReport,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
     },
     {
       title: "Action",

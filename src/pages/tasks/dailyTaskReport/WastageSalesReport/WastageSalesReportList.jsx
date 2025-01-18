@@ -1,13 +1,27 @@
-import { Button, DatePicker, Flex, Input, Spin, Table, Typography } from "antd";
+import {
+  Button,
+  DatePicker,
+  Flex,
+  Input,
+  message,
+  Popconfirm,
+  Spin,
+  Table,
+  Tag,
+  Typography,
+} from "antd";
 import { FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import useDebounce from "../../../../hooks/useDebounce";
-import { getWastageSaleReportListRequest } from "../../../../api/requests/reports/wastageSaleReport";
+import {
+  getWastageSaleReportListRequest,
+  updateWastageSaleReportRequest,
+} from "../../../../api/requests/reports/wastageSaleReport";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
 import moment from "moment";
 
@@ -58,6 +72,41 @@ function WastageSalesReportList() {
     },
     enabled: Boolean(companyId),
   });
+
+  const {
+    mutateAsync: updateWastageSalesReport,
+    isPending: isWastageSalesUpdating,
+  } = useMutation({
+    mutationFn: async ({ data, id }) => {
+      const res = await updateWastageSaleReportRequest({
+        id,
+        data,
+        params: { company_id: companyId },
+      });
+      return res.data;
+    },
+    mutationKey: ["reports/wastage-sale-report/update"],
+    onSuccess: (res) => {
+      QueryClient.invalidateQueries(["reports", "list", companyId]);
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || error.message;
+      message.error(errorMessage);
+    },
+  });
+
+  const onConfirmWastage = async (id) => {
+    const data = {
+      is_confirm: true,
+    };
+
+    await updateWastageSalesReport({ data, id });
+  };
 
   function navigateToAdd() {
     navigate("/tasks/daily-task-report/wastage-sales-report/add");
@@ -191,6 +240,34 @@ function WastageSalesReportList() {
       dataIndex: "notes",
       key: "notes",
     },
+    {
+      title: "Status",
+      dataIndex: "is_confirm",
+      key: "is_confirm",
+      render: (text, record) =>
+        text == false ? (
+          <>
+            <Popconfirm
+              title="Wastage Sales Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record?.id);
+              }}
+              okButtonProps={{
+                loading: isWastageSalesUpdating,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
+    },
   ];
 
   const disableFutureDates = (current) => {
@@ -249,6 +326,7 @@ function WastageSalesReportList() {
                 <Table.Summary.Cell>
                   <Typography.Text>{finalTotal}</Typography.Text>
                 </Table.Summary.Cell>
+                <Table.Summary.Cell />
                 <Table.Summary.Cell />
               </Table.Summary.Row>
             </>

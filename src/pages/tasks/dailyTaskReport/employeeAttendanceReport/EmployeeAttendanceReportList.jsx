@@ -3,9 +3,12 @@ import {
   DatePicker,
   Flex,
   Input,
+  message,
+  Popconfirm,
   Space,
   Spin,
   Table,
+  Tag,
   Typography,
 } from "antd";
 import {
@@ -14,14 +17,17 @@ import {
   PlusCircleOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
 // import { useCurrentUser } from "../../../../api/hooks/auth";
 import ViewDetailModal from "../../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getEmployeeAttendanceReportListRequest } from "../../../../api/requests/reports/employeeAttendance";
+import {
+  getEmployeeAttendanceReportListRequest,
+  updateEmployeeAttendanceReportRequest,
+} from "../../../../api/requests/reports/employeeAttendance";
 import DeleteEmployeeAttendanceReportButton from "../../../../components/tasks/employeeAttendance/DeleteEmployeeAttendanceReportButton";
 import useDebounce from "../../../../hooks/useDebounce";
 import GoBackButton from "../../../../components/common/buttons/GoBackButton";
@@ -88,6 +94,44 @@ function EmployeeAttendanceReportList() {
       `/tasks/daily-task-report/employees-attendance-report/update/${id}`
     );
   }
+
+  const {
+    mutateAsync: updateEmployeeAttendanceReport,
+    isPending: isLoadingUpdateEmployeeAttendance,
+  } = useMutation({
+    mutationFn: async ({ data, id }) => {
+      const res = await updateEmployeeAttendanceReportRequest({
+        id,
+        data,
+        params: {
+          company_id: companyId,
+        },
+      });
+      return res.data;
+    },
+    mutationKey: ["reports/employee-attandance-report/update"],
+    onSuccess: (res) => {
+      const successMessage = res?.message;
+      if (successMessage) {
+        message.success(successMessage);
+      }
+      navigate(-1);
+    },
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message;
+      if (errorMessage && typeof errorMessage === "string") {
+        message.error(errorMessage);
+      }
+    },
+  });
+
+  const onConfirmWastage = async (id) => {
+    const data = {
+      is_confirm: true,
+    };
+
+    await updateEmployeeAttendanceReport({ data, id });
+  };
 
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
@@ -178,6 +222,34 @@ function EmployeeAttendanceReportList() {
       title: "Shift Type",
       dataIndex: "shift",
       key: "shift",
+    },
+    {
+      title: "Status",
+      dataIndex: "is_confirm",
+      key: "is_confirm",
+      render: (text, record) =>
+        text == false ? (
+          <>
+            <Popconfirm
+              title="Employee Attendance Conformation"
+              description="Are you sure you want to confirm this Entry ?"
+              onConfirm={() => {
+                onConfirmWastage(record?.id);
+              }}
+              okButtonProps={{
+                loading: isLoadingUpdateEmployeeAttendance,
+              }}
+            >
+              <div>
+                <Tag color="red">Pending</Tag>
+              </div>
+            </Popconfirm>
+          </>
+        ) : (
+          <div>
+            <Tag color="green">Confirmed</Tag>
+          </div>
+        ),
     },
     {
       title: "Action",
