@@ -95,10 +95,12 @@ function SupervisorList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = supervisorListRes?.supervisorList?.rows?.map((supervisor) => {
-      const { id, first_name, last_name, adhar_no, mobile, email } = supervisor;
-      return [id, first_name, last_name, adhar_no, mobile, email];
-    });
+    const body = supervisorListRes?.supervisorList?.rows?.map(
+      (supervisor, index) => {
+        const { first_name, last_name, adhar_no, mobile, email } = supervisor;
+        return [index + 1, first_name, last_name, adhar_no, mobile, email];
+      }
+    );
 
     const tableTitle = [
       "ID",

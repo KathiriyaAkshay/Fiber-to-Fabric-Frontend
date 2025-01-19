@@ -101,11 +101,11 @@ function SupplierList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.supplierList?.rows?.map((user) => {
-      const { id, supplier, address, gst_no, supplier_types } = user;
+    const body = userListRes?.supplierList?.rows?.map((user, index) => {
+      const { supplier, address, gst_no, supplier_types } = user;
       const { supplier_name, supplier_company, hsn_code } = supplier;
       return [
-        id,
+        index + 1,
         supplier_name,
         supplier_company,
         address,
