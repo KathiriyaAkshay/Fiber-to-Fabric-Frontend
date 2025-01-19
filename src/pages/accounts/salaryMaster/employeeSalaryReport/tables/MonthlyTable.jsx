@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import _ from "lodash";
 import { Controller } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 const MonthlyTable = ({
   data,
@@ -25,7 +26,7 @@ const MonthlyTable = ({
               <Checkbox onChange={(e) => selectAllEntries(e, data)} />{" "}
               &nbsp;&nbsp; Action
             </td>
-            <td width={150}>Employee Name</td>
+            <td width={200}>Employee Name</td>
             <td>Type</td>
             <td>Salary</td>
             <td>Bonus</td>
@@ -62,19 +63,19 @@ const MonthlyTable = ({
             </tr>
           )}
 
-          <tr>
+          {/* <tr>
             <td>Total</td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
             <td></td>
-            <td>0</td>
-            <td>0</td>
+            <td>{0}</td>
+            <td>{0}</td>
             <td></td>
             <td>0</td>
             <td></td>
-          </tr>
+          </tr> */}
         </tbody>
       </table>
     </>
@@ -126,6 +127,12 @@ const TableRow = ({
     return final;
   }, [bonusValue, salary, deductionValue, tds]);
 
+  const tdsAmount = useMemo(() => {
+    const calculateTotal = +salary + +bonusValue - +deductionValue;
+    const calculatedTDS = (calculateTotal * tds) / 100;
+    return calculatedTDS;
+  }, [bonusValue, deductionValue, salary, tds]);
+
   const advance = useMemo(() => {
     if (_.isEmpty(row.advance_salary)) {
       return 0;
@@ -139,6 +146,7 @@ const TableRow = ({
   // const payable = useMemo(() => {
   //   return (+cfAdvanceValue + +total - +advance).toFixed(2);
   // }, [advance, cfAdvanceValue, total]);
+
   useEffect(() => {
     setValue(
       `payable_${row.id}`,
@@ -219,7 +227,14 @@ const TableRow = ({
           }
         >
           {row?.user?.first_name} {row?.user?.last_name} ({row.machineNo_from}-
-          {row.machineNo_to}){isPaid ? <Tag color="green">Paid</Tag> : null}
+          {row.machineNo_to})
+          <br />
+          {row.user.role_id === 9 ? (
+            <Link target="_blank" to={""}>
+              View Details
+            </Link>
+          ) : null}
+          {isPaid ? <Tag color="green">Paid</Tag> : null}
         </Tooltip>
       </td>
       <td></td>
@@ -230,7 +245,13 @@ const TableRow = ({
           placeholder="1200"
           className="remove-input-box"
           value={bonusValue}
-          onChange={(e) => setBonusValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setBonusValue(value);
+            }
+          }}
         />
       </td>
       <td>
@@ -239,22 +260,60 @@ const TableRow = ({
           placeholder="1200"
           className="remove-input-box"
           value={deductionValue}
-          onChange={(e) => setDeductionValue(e.target.value)}
+          // onChange={(e) => setDeductionValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setDeductionValue(value);
+            }
+          }}
         />
       </td>
       <td>
-        <Typography>
-          {total.toFixed(2)} <span style={{ color: "blue" }}>({tds}%)</span>
-        </Typography>
+        <Tooltip
+          title={
+            <>
+              <span>TDS Amount: {tdsAmount}</span>
+            </>
+          }
+        >
+          <Typography>
+            {total.toFixed(2)} <span style={{ color: "blue" }}>({tds}%)</span>
+          </Typography>
+        </Tooltip>
+        <Controller
+          control={control}
+          name={`total_${row.id}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="hidden"
+              value={total}
+              className="remove-input-box"
+              readOnly
+            />
+          )}
+        />
       </td>
-      <td>{advance}</td>
+      <td>
+        {advance}{" "}
+        {isPaid ? <span style={{ color: "grey" }}>(cleared)</span> : null}
+      </td>
       <td>
         <Input
           style={{ width: "180px" }}
           placeholder="1200"
           className="remove-input-box"
           value={cfAdvanceValue}
-          onChange={(e) => setCfAdvanceValue(e.target.value)}
+          // onChange={(e) => setCfAdvanceValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setCfAdvanceValue(value);
+            }
+          }}
         />
       </td>
       <td>
@@ -262,7 +321,7 @@ const TableRow = ({
           control={control}
           name={`payable_${row.id}`}
           render={({ field }) => (
-            <Input {...field} className="remove-input-box" />
+            <Input {...field} className="remove-input-box" readOnly />
           )}
         />
       </td>

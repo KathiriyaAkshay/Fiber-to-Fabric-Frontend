@@ -83,9 +83,9 @@ function AccountantUserList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.accountantUserList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, email, address } = user;
-      return [id, first_name, last_name, mobile, email, address];
+    const body = userListRes?.accountantUserList?.rows?.map((user, index) => {
+      const { first_name, last_name, mobile, email, address } = user;
+      return [index + 1, first_name, last_name, mobile, email, address];
     });
 
     const tableTitle = [

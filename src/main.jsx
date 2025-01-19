@@ -183,6 +183,8 @@ import Gstr3 from "./pages/accounts/reports/gstr3";
 import ParticularLedgerReport from "./pages/accounts/reports/particularLedgerReport";
 import LedgerReport from "./pages/accounts/reports/ledgerReport";
 import CostPerMeter from "./pages/accounts/costPerMeter";
+import NotFound from "./components/common/NotFound";
+import ComingSoon from "./components/common/ComingSoon";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -219,6 +221,14 @@ const router = createBrowserRouter([
       //   element: <Register />,
       // },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+  {
+    path: "/coming-soon",
+    element: <ComingSoon />,
   },
   {
     path: "/",

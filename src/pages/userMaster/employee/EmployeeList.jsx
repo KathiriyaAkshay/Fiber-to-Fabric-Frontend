@@ -115,9 +115,9 @@ function EmployeeList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.empoloyeeList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, username } = user;
-      return [id, first_name, last_name, mobile, username];
+    const body = userListRes?.empoloyeeList?.rows?.map((user, index) => {
+      const { first_name, last_name, mobile, username } = user;
+      return [index + 1, first_name, last_name, mobile, username];
     });
 
     let tableTitle = [

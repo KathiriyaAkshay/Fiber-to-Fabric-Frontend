@@ -27,7 +27,7 @@ const WorkBasisTable = ({
 }) => {
   const header = useMemo(() => {
     if (data && data.salary_report.length) {
-      const qualityData = data.salary_report[0].result;
+      const qualityData = data.salary_report[0].result || [];
       return qualityData.map((item) => {
         return item?.quality?.quality_name;
       });
@@ -83,7 +83,7 @@ const WorkBasisTable = ({
             </tr>
           )}
 
-          <tr>
+          {/* <tr>
             <td>Total</td>
             <td></td>
             {header.map((item) => (
@@ -96,7 +96,7 @@ const WorkBasisTable = ({
             <td></td>
             <td></td>
             <td></td>
-          </tr>
+          </tr> */}
         </tbody>
       </table>
     </>
@@ -127,7 +127,8 @@ const TableRow = ({
   //   (+row.total_present_count || 0) * (+row.per_attendance || 0);
 
   const qualityData = useMemo(() => {
-    if (row && row.result.length) {
+    console.log({ row });
+    if (row && row?.result && row?.result?.length) {
       return row.result.map((item) => {
         const dayMeter = item.monthly_report.length ? 0 : 0;
         return {
@@ -152,6 +153,17 @@ const TableRow = ({
     const calculateTotal = qualityTotal + bonusValue - deductionValue;
     const final = calculateTotal - (calculateTotal * tds) / 100;
     return final;
+  }, [bonusValue, deductionValue, qualityData, tds]);
+
+  const tdsAmount = useMemo(() => {
+    let qualityTotal = 0;
+    qualityData.forEach((item) => {
+      qualityTotal += item.production_rate * item.dayMeter;
+    });
+
+    const calculateTotal = qualityTotal + bonusValue - deductionValue;
+    const calculatedTDS = (calculateTotal * tds) / 100;
+    return calculatedTDS;
   }, [bonusValue, deductionValue, qualityData, tds]);
 
   const advance = useMemo(() => {
@@ -258,7 +270,14 @@ const TableRow = ({
           placeholder="1200"
           className="remove-input-box"
           value={bonusValue}
-          onChange={(e) => setBonusValue(e.target.value)}
+          // onChange={(e) => setBonusValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setBonusValue(value);
+            }
+          }}
         />
       </td>
       <td>
@@ -267,22 +286,60 @@ const TableRow = ({
           placeholder="1200"
           className="remove-input-box"
           value={deductionValue}
-          onChange={(e) => setDeductionValue(e.target.value)}
+          // onChange={(e) => setDeductionValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setDeductionValue(value);
+            }
+          }}
         />
       </td>
       <td>
-        <Typography>
-          {total.toFixed(2)} <span style={{ color: "blue" }}>({tds}%)</span>
-        </Typography>
+        <Tooltip
+          title={
+            <>
+              <span>TDS Amount: {tdsAmount}</span>
+            </>
+          }
+        >
+          <Typography>
+            {total.toFixed(2)} <span style={{ color: "blue" }}>({tds}%)</span>
+          </Typography>
+        </Tooltip>
+        <Controller
+          control={control}
+          name={`total_${row.id}`}
+          render={({ field }) => (
+            <Input
+              {...field}
+              type="hidden"
+              value={total}
+              className="remove-input-box"
+              readOnly
+            />
+          )}
+        />
       </td>
-      <td>{advance}</td>
+      <td>
+        {advance}{" "}
+        {isPaid ? <span style={{ color: "grey" }}>(cleared)</span> : null}
+      </td>
       <td>
         <Input
           style={{ width: "180px" }}
           placeholder="1200"
           className="remove-input-box"
           value={cfAdvanceValue}
-          onChange={(e) => setCfAdvanceValue(e.target.value)}
+          // onChange={(e) => setCfAdvanceValue(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only positive numbers (including empty input)
+            if (/^\d*$/.test(value)) {
+              setCfAdvanceValue(value);
+            }
+          }}
         />
       </td>
       <td>
@@ -290,7 +347,7 @@ const TableRow = ({
           control={control}
           name={`payable_${row.id}`}
           render={({ field }) => (
-            <Input {...field} className="remove-input-box" />
+            <Input {...field} className="remove-input-box" readOnly />
           )}
         />
       </td>
