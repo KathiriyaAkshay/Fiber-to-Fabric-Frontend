@@ -8,6 +8,10 @@ export function createWorkBasisSalaryRequest({ data, params }) {
   return api.post(`/account/salary-report/work-basis/create`, data, { params });
 }
 
+export function deleteWorkBasisSalaryRequest({ data, params }) {
+  return api.post(`/account/salary/report/component/delete`, data, { params });
+}
+
 export function getWorkBasisSalaryListRequest({ params }) {
   return api.get(`/account/salary/report/generate`, { params });
 }

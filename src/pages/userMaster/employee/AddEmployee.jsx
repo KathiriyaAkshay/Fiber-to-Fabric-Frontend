@@ -45,7 +45,13 @@ const addEmployeeSchemaResolver = yupResolver(
     salary_type: yup.string().required("Please select salary type"),
     company_id: yup.string().required("Please select company"),
     joining_date: yup.string().required("Please select joining date"),
-    tds: yup.string(),
+    // tds: yup.string(),
+    tds: yup
+      .string()
+      .test("tds-validation", "TDS should be less than 100.", (value) => {
+        const tdsValue = parseFloat(value);
+        return tdsValue < 100 && tdsValue !== 100;
+      }),
     salary: yup
       .string()
       .nullable()

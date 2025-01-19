@@ -1,7 +1,7 @@
-import { CheckOutlined } from "@ant-design/icons";
 import {
   Button,
   Checkbox,
+  Divider,
   Flex,
   Input,
   message,
@@ -9,12 +9,13 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import dayjs from "dayjs";
-import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
+import _ from "lodash";
+import { CheckOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import { Controller } from "react-hook-form";
 
-const AttendanceTable = ({
+const BeamWarpar = ({
   data,
   selectedEntries,
   selectEntryHandler,
@@ -25,6 +26,17 @@ const AttendanceTable = ({
   setValue,
   month,
 }) => {
+  const header = useMemo(() => {
+    if (data && data.salary_report.length) {
+      const qualityData = data.salary_report[0].result || [];
+      return qualityData.map((item) => {
+        return item?.quality?.quality_name;
+      });
+    } else {
+      return [];
+    }
+  }, [data]);
+
   return (
     <>
       <table className="custom-table">
@@ -34,9 +46,10 @@ const AttendanceTable = ({
               <Checkbox onChange={(e) => selectAllEntries(e, data)} />{" "}
               &nbsp;&nbsp; Action
             </td>
-            <td width={250}>Employee</td>
-            <td>Type</td>
-            <td>Attendance</td>
+            <td width={150}>Employee</td>
+            {header.map((item) => {
+              return <td key={item}>{item}</td>;
+            })}
             <td>Bonus</td>
             <td>Deduction</td>
             <td>Total</td>
@@ -51,7 +64,7 @@ const AttendanceTable = ({
             data.salary_report.map((row) => {
               return (
                 <TableRow
-                  key={row.id + "_attendance"}
+                  key={row.id + "_work_basis"}
                   row={row}
                   selectedEntries={selectedEntries}
                   selectEntryHandler={selectEntryHandler}
@@ -65,32 +78,33 @@ const AttendanceTable = ({
             })
           ) : (
             <tr>
-              <td colSpan={11} style={{ textAlign: "center" }}>
+              <td colSpan={9} style={{ textAlign: "center" }}>
                 No records found
               </td>
             </tr>
           )}
 
           {/* <tr>
-            <td>Total</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr> */}
+              <td>Total</td>
+              <td></td>
+              {header.map((item) => (
+                <td key={item + "_total"}></td>
+              ))}
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr> */}
         </tbody>
       </table>
     </>
   );
 };
 
-export default AttendanceTable;
+export default BeamWarpar;
 
 const TableRow = ({
   row,
@@ -107,35 +121,60 @@ const TableRow = ({
   const [cfAdvanceValue, setCfAdvanceValue] = useState(0);
 
   const isPaid = row.salary_paid_log?.length;
-  const attendance = `${+row.total_present_count || 0} x ${
-    +row.per_attendance || 0
-  }`;
-  const calculateAttendance =
-    (+row.total_present_count || 0) * (+row.per_attendance || 0);
 
-  // const bonus = _.isEmpty(row.components) ? 0 : 0;
-  // const bonus = useMemo(() => {
-  //   return _.isEmpty(row.components) ? 0 : row.components.bonus;
-  // }, [row.components]);
+  const qualityData = useMemo(() => {
+    if (row && row?.result && row?.result?.length) {
+      return row.result.map((item) => {
+        const pasarela_beams_count = item?.pasarela_beams_count || 0;
+        const beam_maker_primary =
+          item?.quality?.inhouse_beam_rate?.beam_maker_primary || 0;
 
-  // const deduction = useMemo(() => {
-  //   return _.isEmpty(row.components) ? 0 : row.components.deduction;
-  // }, [row.components]);
+        const pissing_beam_counts = item?.pissing_beam_counts || 0;
+        const beam_maker_secondary =
+          item?.quality?.inhouse_beam_rate?.beam_maker_secondary || 0;
+
+        const total =
+          pasarela_beams_count * beam_maker_primary +
+          pissing_beam_counts * beam_maker_secondary;
+        return {
+          value: (
+            <span>
+              {pasarela_beams_count} x {beam_maker_primary}{" "}
+              <Divider style={{ margin: 1 }} />
+              {pissing_beam_counts} x {beam_maker_secondary}
+            </span>
+          ),
+          total,
+        };
+      });
+    } else {
+      return [];
+    }
+  }, [row]);
 
   const tds = +row.tds || 0;
-  // const calculateTotal = calculateAttendance + bonusValue - deductionValue;
 
   const total = useMemo(() => {
-    const calculateTotal = calculateAttendance + bonusValue - deductionValue;
+    let qualityTotal = 0;
+    qualityData.forEach((item) => {
+      qualityTotal += item.total;
+    });
+
+    const calculateTotal = qualityTotal + bonusValue - deductionValue;
     const final = calculateTotal - (calculateTotal * tds) / 100;
     return final;
-  }, [bonusValue, calculateAttendance, deductionValue, tds]);
+  }, [bonusValue, deductionValue, qualityData, tds]);
 
   const tdsAmount = useMemo(() => {
-    const calculateTotal = calculateAttendance + bonusValue - deductionValue;
+    let qualityTotal = 0;
+    qualityData.forEach((item) => {
+      qualityTotal += item.total;
+    });
+
+    const calculateTotal = qualityTotal + bonusValue - deductionValue;
     const calculatedTDS = (calculateTotal * tds) / 100;
     return calculatedTDS;
-  }, [bonusValue, deductionValue, calculateAttendance, tds]);
+  }, [bonusValue, deductionValue, qualityData, tds]);
 
   const advance = useMemo(() => {
     if (_.isEmpty(row.advance_salary)) {
@@ -230,8 +269,11 @@ const TableRow = ({
           {row.machineNo_to}){isPaid ? <Tag color="green">Paid</Tag> : null}
         </Tooltip>
       </td>
-      <td></td>
-      <td>{attendance}</td>
+      {qualityData && qualityData.length
+        ? qualityData.map((item) => {
+            return <td key={item.value}>{item.value}</td>;
+          })
+        : null}
       <td>
         <Input
           style={{ width: "150px" }}

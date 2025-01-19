@@ -1,16 +1,13 @@
+import NotFoundImage from "../../assets/png/404.png";
 import { Button } from "antd";
-import { Link, useRouteError } from "react-router-dom";
-import ErrorImage from "../../assets/png/error.png";
+import { Link } from "react-router-dom";
 
-function ErrorBoundary() {
-  let error = useRouteError();
-  console.error("Error:----->", error);
-  // Uncaught ReferenceError: path is not defined
+const NotFound = () => {
   return (
     <div className="flex items-center justify-center w-full h-screen">
       <div
         style={{
-          padding: "20px",
+          // padding: "20px",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -20,11 +17,9 @@ function ErrorBoundary() {
         }}
       >
         <div style={{ width: "100%" }}>
-          <h1 className="mb-2.5">500</h1>
-          <h5 className="m-0 text-xl">Internal server error 👨🏻‍💻</h5>
           <img
-            src={ErrorImage}
-            alt="Error"
+            src={NotFoundImage}
+            alt="Not found"
             style={{
               maxWidth: "90%", // Ensures it fits within the viewport width
               maxHeight: "70vh", // Ensures it doesn't overflow the viewport height
@@ -32,6 +27,11 @@ function ErrorBoundary() {
               margin: "0 auto", // Centers the image
             }}
           />
+          <h2 className="m-0">Page not found</h2>
+          <p>
+            Oops! The page you are looking for does not exist. It might have
+            been moved or deleted.
+          </p>
         </div>
         <Button type="primary" href="/" component={Link} className="px-5.5">
           Back to Home
@@ -39,6 +39,6 @@ function ErrorBoundary() {
       </div>
     </div>
   );
-}
+};
 
-export default ErrorBoundary;
+export default NotFound;

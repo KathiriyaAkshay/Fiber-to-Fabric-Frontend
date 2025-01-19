@@ -89,11 +89,11 @@ function VehicleUserList() {
   function downloadPdf() {
     const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.vehicleList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, vehicle, address } = user;
+    const body = userListRes?.vehicleList?.rows?.map((user, index) => {
+      const { first_name, last_name, mobile, vehicle, address } = user;
       const { vehicleNo, vehicleName, pricePerRate } = vehicle;
       return [
-        id,
+        index + 1,
         first_name,
         last_name,
         mobile,

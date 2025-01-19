@@ -89,9 +89,9 @@ function BrokerList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.brokerList?.rows?.map((user) => {
-      const { id, first_name, last_name, adhar_no, mobile, email } = user;
-      return [id, first_name, last_name, adhar_no, mobile, email];
+    const body = userListRes?.brokerList?.rows?.map((user, index) => {
+      const { first_name, last_name, adhar_no, mobile, email } = user;
+      return [index + 1, first_name, last_name, adhar_no, mobile, email];
     });
 
     let tableTitle = [

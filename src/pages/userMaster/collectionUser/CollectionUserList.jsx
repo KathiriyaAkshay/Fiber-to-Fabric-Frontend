@@ -90,10 +90,9 @@ function CollectionUserList() {
   function downloadPdf() {
     // const { leftContent, rightContent } = getPDFTitleContent({ user, company });
 
-    const body = userListRes?.collectionUserList?.rows?.map((user) => {
-      const { id, first_name, last_name, mobile, email, address, salary } =
-        user;
-      return [id, first_name, last_name, mobile, email, address, salary];
+    const body = userListRes?.collectionUserList?.rows?.map((user, index) => {
+      const { first_name, last_name, mobile, email, address, salary } = user;
+      return [index + 1, first_name, last_name, mobile, email, address, salary];
     });
 
     const tableTitle = [
