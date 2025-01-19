@@ -46,6 +46,7 @@ import { disabledFutureDate } from "../../utils/date";
 import BeamCardInformationModel from "../../components/common/modal/beamCardInformation";
 import BeamCardNumberInfoModel from "../../components/beamCard/beamCardNumberInfoModel";
 import { InfoCircleFilled } from "@ant-design/icons";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const getTakaDetailsObject = (details) => {
   if (details) {
@@ -228,7 +229,7 @@ const BeamCardList = () => {
       enabled: Boolean(companyId),
     });
 
-  // Beam card list request
+  // Beam card list api ======================================================
   const { data: beamCardList, isLoading } = useQuery({
     queryKey: [
       "beamCard",
@@ -242,7 +243,7 @@ const BeamCardList = () => {
         machine_name: debouncedMachine,
         status: debouncedBeamTypeDropDown,
         quality_id: debouncedQuality,
-        // status: debouncedStatus,
+        type: beamType
       },
     ],
     queryFn: async () => {
@@ -256,7 +257,7 @@ const BeamCardList = () => {
           machine_name: debouncedMachine,
           status: debouncedBeamTypeDropDown,
           quality_id: debouncedQuality,
-          // status: debouncedStatus,
+          is_secondary: beamType == "primary"?"0":"1"
         },
       });
       return res.data?.data;
@@ -461,7 +462,7 @@ const BeamCardList = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (text) => {
+      render: (text, record) => {
         if (text == "running") {
           return <Tag color="magenta">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "finished") {
@@ -475,10 +476,21 @@ const BeamCardList = () => {
         } else if (text == "bhidan_of_beam") {
           return <Tag color="blue">{capitalizeFirstCharacter(text)}</Tag>;
         } else if (text == "sent") {
-          return <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>;
+          return (
+            <div>
+              <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>
+              <span>{record?.job_beam_sent?.challan_no}</span>
+            </div>
+          );
         } else if (text == "primary(advance)") {
           return <Tag color="cyan">{capitalizeFirstCharacter(text)}</Tag>;
-        } else {
+        } else if (text == "sale"){
+          return (
+            <div>
+              <Tag color = "Iridescent Jade">{capitalizeFirstCharacter(text)}</Tag>
+            </div>
+          )
+        } {
           return <Tag>{capitalizeFirstCharacter(text)}</Tag>;
         }
       },
@@ -655,7 +667,7 @@ const BeamCardList = () => {
           >
             <Flex align="center" gap={10}>
               <Radio value={"primary"}> Primary Beam</Radio>
-              {/* <Radio value={"secondary"}> Secondary Beam </Radio> */}
+              <Radio value={"secondary"}> Secondary Beam </Radio>
             </Flex>
           </Radio.Group>
           <Input
@@ -705,10 +717,14 @@ const BeamCardList = () => {
                 textTransform: "capitalize",
               }}
               onChange={setBeamTypeDropDow}
+              showSearch
               style={{
                 textTransform: "capitalize",
               }}
               className="min-w-40"
+              filterOption={(input, option) =>
+                option?.label.toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Flex>
           <Flex align="center" gap={10}>
@@ -748,7 +764,7 @@ const BeamCardList = () => {
                 dropDownQualityListRes &&
                 dropDownQualityListRes?.rows?.map((item) => ({
                   value: item.id,
-                  label: item.quality_name,
+                  label: getDisplayQualityName(item),
                 }))
               }
               dropdownStyle={{

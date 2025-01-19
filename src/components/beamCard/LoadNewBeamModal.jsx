@@ -19,6 +19,8 @@ import {
   createNBNBeamRequest,
   getLoadedMachineListRequest,
 } from "../../api/requests/beamCard";
+import { getDisplayQualityName } from "../../constants/nameHandler";
+import { JOB_QUALITY_TYPE, TAKA_INHOUSE_QUALITY_TYPE } from "../../constants/supplier";
 
 const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
   const queryClient = useQueryClient();
@@ -109,6 +111,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
           page: 0,
           pageSize: 99999,
           is_active: 1,
+          production_type: TAKA_INHOUSE_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -120,6 +123,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
               page: 0,
               pageSize: 99999,
               is_active: 1,
+              production_type: TAKA_INHOUSE_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -167,8 +171,10 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
     const pano = +getValues(`pano_${index}`);
     const tar = +getValues(`tar_${index}`);
 
-    if (!quality_id || !taka || !meter || !pano || !tar) {
-      message.error("Please, Fill all required details");
+    let hasError = false; 
+    if (!quality_id && !taka && !meter && !pano && !tar) {
+      message.error(`Please, Fill all required details for Beam : ${beam_no}`);
+      hasError = true ; 
       return;
     }
 
@@ -187,7 +193,9 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
       ],
     };
 
-    AddNBNBeamLoad(payload);
+    if (!hasError){
+      AddNBNBeamLoad(payload);
+    }
   };
 
   // Save load machine handler ...............................
@@ -217,18 +225,26 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
             ends_or_tars: tar,
           });
         } else if (!areAllFieldsInvalid) {
-          message.error("Please, Fill all required details");
+          message.error(`Please, Fill all required details for Beam : ${beamNo}`);
           hasError = 1 ; 
         }
       });
 
-      if (hasError == 0){
-        const finalPayload = {
-          machine_name,
-          BeamDetails,
-        };
-        AddNBNBeamLoad(finalPayload);
+      console.log("Beam details information =============");
+      console.log(BeamDetails);
+      
+      if (BeamDetails?.length == 0 && hasError == false ){
+        message.warning("Please provide at least one load beam information")
+      } else {
+        if (hasError == 0){
+          const finalPayload = {
+            machine_name,
+            BeamDetails,
+          };
+          // AddNBNBeamLoad(finalPayload);
+        }
       }
+
     }
   };
 
@@ -353,7 +369,7 @@ const LoadNewBeamModal = ({ isModalOpen, setIsModalOpen }) => {
                               dropDownQualityListRes &&
                               dropDownQualityListRes?.rows?.map((item) => ({
                                 value: item.id,
-                                label: item.quality_name,
+                                label: getDisplayQualityName(item),
                               }))
                             }
                           />

@@ -19,7 +19,7 @@ import { getTakaCuttingListRequest } from "../../api/requests/production/takaTpC
 import DeleteTakaTpCutting from "../../components/production/DeleteTakaTpCutting";
 import useDebounce from "../../hooks/useDebounce";
 import dayjs from "dayjs";
-import { CUT_TAG_COLOR, SAMPLE_CUTTING_TAG_COLOR, TAKA_IP_TAG_COLOR } from "../../constants/tag";
+import { CUT_TAG_COLOR, SALE_CHALLAN_INFO_TAG_COLOR, SALE_TAG_COLOR, SAMPLE_CUTTING_TAG_COLOR, TAKA_IP_TAG_COLOR } from "../../constants/tag";
 
 const TakaTpCutting = () => {
   const navigate = useNavigate();
@@ -168,19 +168,43 @@ const TakaTpCutting = () => {
     },
     {
       title: "Action",
-      render: (details) => {
-        return (
-          <Space>
-            <Button
-              onClick={() => {
-                navigateToUpdate(details.id);
-              }}
-            >
-              <EditOutlined />
-            </Button>
-            <DeleteTakaTpCutting details={details} />
-          </Space>
-        );
+      render: (details, record) => {
+        if ((!record?.from_in_stock && record?.from_in_stock !== undefined) || (!record?.to_in_stock && record?.to_in_stock !== undefined) ){
+          return(
+            <div>
+              <Tag className="bill-payment-model-tag"  color = {SALE_CHALLAN_INFO_TAG_COLOR}>Sold</Tag>
+              <div>
+                {record?.from_in_stock === false ?  (
+                  <>
+                    <div style={{fontSize: 12}}>
+                      <span style={{fontWeight: 600}}>Sold taka : </span>{record?.from_taka}<br/>
+                    </div>
+                  </>
+                ) : null}
+                {record?.to_in_stock == false?(
+                  <>
+                    <div style={{fontSize: 12}}>
+                      <span style={{fontWeight: 600}}>Sold taka : </span>{record?.to_taka}<br/>
+                    </div>
+                  </>
+                ):null}
+              </div>
+            </div>
+          )
+        } else {
+          return (
+            <Space>
+              <Button
+                onClick={() => {
+                  navigateToUpdate(details.id);
+                }}
+              >
+                <EditOutlined />
+              </Button>
+              <DeleteTakaTpCutting details={details} />
+            </Space>
+          );
+        }
       },
     },
   ];

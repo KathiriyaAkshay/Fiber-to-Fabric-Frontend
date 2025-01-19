@@ -7,4 +7,5 @@ export const BEAM_TYPE = [
     { label: "Bhidan Of Month", value: "bhidan_of_beam" },
     { label: "Sent", value: "sent" },
     { label: "Advance Beam", value: "primary(advance)" },
+    { label: "Sale", value: "sale"}
 ]

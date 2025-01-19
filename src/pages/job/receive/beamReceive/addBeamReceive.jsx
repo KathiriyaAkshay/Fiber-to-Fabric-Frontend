@@ -148,6 +148,7 @@ const AddBeamReceive = () => {
         challan_beam_type: data.challan_beam_type,
         challan_no: data.challan_no,
         receive_date: dayjs(data.date).format("YYYY-MM-DD"),
+        is_beam_stock_added: is_beam_stock_added,
         job_beam_details: fieldArray.map((field, index) => {
           return {
             beam_no: lastBeamNo
@@ -165,10 +166,6 @@ const AddBeamReceive = () => {
           };
         }),
       };
-
-      console.log("New data infomration=============");
-      console.log(newData);
-      
       await addNewBeamReceive(newData);
     }
   }
@@ -412,7 +409,9 @@ const AddBeamReceive = () => {
           <h3 className="m-0 text-primary">Add New Beam Receive</h3>
         </div>
         <Form.Item name="fieldA" valuePropName="checked">
-          <Checkbox defaultChecked onChange={(event) => {
+          <Checkbox 
+            value={is_beam_stock_added} 
+            onChange={(event) => {
             set_is_beam_stock_added(event.target.checked)
           }} />
           {"  "}
