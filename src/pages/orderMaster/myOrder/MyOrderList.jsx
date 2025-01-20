@@ -7,6 +7,7 @@ import {
   Table,
   Typography,
   Tag,
+  Tooltip,
 } from "antd";
 import {
   EditOutlined,
@@ -35,6 +36,7 @@ import DeleteMyOrder from "../../../components/orderMaster/myOrder/DeleteMyOrder
 import { ORDER_TYPE } from "../../../constants/orderMaster";
 import GridInformationModel from "../../../components/common/modal/gridInformationModel";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { JOB_ORDER_TYPE, PURCHASE_ORDER_TYPE, TAKA_IN_HOUSE_ORDER_TYPE } from "../../../constants/supplier";
 
 const ORDER_STATUS = [
   { label: "Pending", value: "pending" },
@@ -413,31 +415,37 @@ const MyOrderList = () => {
               </Button>
             )}
 
-            <Button
-              onClick={() => {
-                if (orderType === "taka(inhouse)") {
-                  localStorage.setItem(
-                    "SALE_CHALLAN_ADD",
-                    JSON.stringify({ model: orderType, id: details.id })
-                  );
-                  navigate("/sales/challan/sale-challan/add");
-                } else if (orderType === "purchase/trading") {
-                  localStorage.setItem(
-                    "PURCHASE_CHALLAN_ADD",
-                    JSON.stringify({ model: orderType, id: details.id })
-                  );
-                  navigate("/purchase/purchased-taka/add");
-                } else if (orderType === "job") {
-                  localStorage.setItem(
-                    "JOB_CHALLAN_ADD",
-                    JSON.stringify({ model: orderType, id: details.id })
-                  );
-                  navigate("/job/job-taka/add");
-                }
-              }}
-            >
-              <RedoOutlined />
-            </Button>
+            <Tooltip title = {
+              orderType == TAKA_IN_HOUSE_ORDER_TYPE?"Create sale challan":
+              orderType == PURCHASE_ORDER_TYPE?"Create purchase challan":
+              "Create Job Challan"
+            }>
+              <Button
+                onClick={() => {
+                  if (orderType === TAKA_IN_HOUSE_ORDER_TYPE) {
+                    localStorage.setItem(
+                      "SALE_CHALLAN_ADD",
+                      JSON.stringify({ model: orderType, id: details.id })
+                    );
+                    navigate("/sales/challan/sale-challan/add");
+                  } else if (orderType === PURCHASE_ORDER_TYPE) {
+                    localStorage.setItem(
+                      "PURCHASE_CHALLAN_ADD",
+                      JSON.stringify({ model: orderType, id: details.id })
+                    );
+                    navigate("/purchase/purchased-taka/add");
+                  } else if (orderType === JOB_ORDER_TYPE) {
+                    localStorage.setItem(
+                      "JOB_CHALLAN_ADD",
+                      JSON.stringify({ model: orderType, id: details.id })
+                    );
+                    navigate("/job/job-taka/add");
+                  }
+                }}
+              >
+                <RedoOutlined />
+              </Button>
+            </Tooltip>
           </Space>
         );
       },

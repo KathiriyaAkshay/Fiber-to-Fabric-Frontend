@@ -17,7 +17,6 @@ import {
 import { useContext } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import { usePagination } from "../../../../hooks/usePagination";
-import { saleYarnChallanListRequest } from "../../../../api/requests/sale/challan/challan";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import {
@@ -31,6 +30,10 @@ import PrintYarnSaleChallan from "../../../../components/sale/challan/yarn/print
 import * as XLSX from "xlsx";
 import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/challan/beamSale";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import PrintBeamSaleChallan from "../../../../components/sale/challan/beamSale/printBeamSaleChallan";
+import BeamSaleChallanModel from "../../../../components/sale/challan/beamSale/BeamSaleChallan";
+
+const CONFIRMED_BILL_STATUS = "confirmed" ; 
 
 const BeamSaleBillList = () => {
     const { companyId, financialYearEnd } = useContext(GlobalContext);
@@ -87,7 +90,8 @@ const BeamSaleBillList = () => {
       },
       enabled: Boolean(companyId),
     });
-  
+    
+    // Beam sale challan related bill inforamtion =============================
     const { data: yarnSaleBillListData, isLoading: isLoadingYarnSaleBill } =
       useQuery({
         queryKey: [
@@ -98,8 +102,7 @@ const BeamSaleBillList = () => {
             pageSize,
             supplier_name: debounceParty,
             end: financialYearEnd,
-            bill_status: "confirmed",
-            is_paid: debounceBillStatus,
+            bill_status: CONFIRMED_BILL_STATUS,
           },
         ],
         queryFn: async () => {
@@ -110,7 +113,7 @@ const BeamSaleBillList = () => {
               page,
               pageSize,
               supplier_name: debounceParty,
-              bill_status: "confirmed",
+              bill_status: CONFIRMED_BILL_STATUS,
             },
           });
           return res.data?.data;
@@ -132,6 +135,18 @@ const BeamSaleBillList = () => {
         render: (text) => moment(text).format("DD-MM-YYYY"),
       },
       {
+        title: "Bill No", 
+        render: (text, record) => {
+          return(
+            <div style={{
+              fontWeight: 600
+            }}>
+              {record?.beam_sale_bill?.E_way_bill_no}
+            </div>
+          )
+        }
+      }, 
+      {
         title: "Party Company name",
         dataIndex: ["supplier", "supplier_company"],
       },
@@ -141,16 +156,6 @@ const BeamSaleBillList = () => {
           return `${record.challan_no}`;
         },
       },
-      {
-        title: "Bill No", 
-        render: (text, record) => {
-          return(
-            <div>
-              {record?.beam_sale_bill?.E_way_bill_no}
-            </div>
-          )
-        }
-      }, 
       {
         title: "Total Beam",
         render: (record) => {
@@ -252,11 +257,11 @@ const BeamSaleBillList = () => {
         dataIndex: "actions",
         render: (text, record) => (
           <Space>
-            <PrintYarnSaleChallan details={record} />
+            <PrintBeamSaleChallan details={record} />
             <Button
               onClick={() => {
                 let MODE;
-                if (record.yarn_sale_bill.is_paid) {
+                if (record.beam_sale_bill.is_paid) {
                   MODE = "VIEW";
                 } else {
                   MODE = "UPDATE";
@@ -282,13 +287,13 @@ const BeamSaleBillList = () => {
       const tableTitle = [
         "No",
         "Bill Date",
-        "Challan No",
+        "Bill No",
         "Party Name",
-        "Dennier",
-        "HSN No",
-        "Kg",
+        "Challan No",
+        "Total Beam",
+        "Total Meter",
         "Rate",
-        "Amount",
+        "Amount (Exl GST)",
         "SGST",
         "CGST",
         "IGST",
@@ -296,69 +301,60 @@ const BeamSaleBillList = () => {
       ];
   
       let temp = [];
-      let totalKG = 0;
-      let totalAmount = 0;
-      let totalNetAmount = 0;
+      let total_net_amount = 0 ;
   
-      yarnSaleBillListData?.list?.map((element, index) => {
-        totalKG = totalKG + Number(element?.kg);
-        totalAmount = totalAmount + Number(element?.yarn_sale_bill?.amount);
-        totalNetAmount =
-          totalNetAmount + Number(element?.yarn_sale_bill?.net_amount);
-  
+      yarnSaleBillListData?.rows?.map((element, index) => {
+        let total_meter = 0 ; 
+        element?.beam_sale_details?.map((item) => {
+          const obj =
+            item?.loaded_beam?.non_pasarela_beam_detail ||
+            item?.loaded_beam?.recieve_size_beam_detail ||
+            item?.loaded_beam?.job_beam_receive_detail;
+          
+          total_meter += +obj?.meter || +obj?.meters;  
+        })
+
         temp.push([
           index + 1,
           moment(element?.bill_date).format("DD-MM-YYYY"),
-          element?.challan_no,
+          element?.beam_sale_bill?.E_way_bill_no,
           element?.supplier?.supplier_company,
-          `${element?.yarn_stock_company?.yarn_count}C/${element?.yarn_stock_company?.filament}F - ( ${element?.yarn_stock_company?.yarn_type}(${element?.yarn_stock_company?.yarn_Sub_type}) - ${element?.yarn_stock_company?.yarn_color} )`,
-          element?.yarn_stock_company?.hsn_no,
-          element?.kg,
-          element?.yarn_sale_bill?.rate,
-          element?.yarn_sale_bill?.amount,
-          element?.yarn_sale_bill?.SGST_amount,
-          element?.yarn_sale_bill?.CGST_amount,
-          element?.yarn_sale_bill?.IGST_amount,
-          element?.yarn_sale_bill?.net_amount,
+          element?.challan_no, 
+          element?.beam_sale_details?.length, 
+          total_meter, 
+          element?.beam_sale_bill?.rate, 
+          element?.beam_sale_bill?.amount, 
+          element?.beam_sale_bill?.SGST_amount, 
+          element?.beam_sale_bill?.CGST_amount, 
+          element?.beam_sale_bill?.IGST_amount,
+          element?.beam_sale_bill?.net_amount
         ]);
+        total_net_amount += element?.beam_sale_bill?.net_amount ; 
       });
-  
+      
       let total = [
+        "Total", 
+        "", 
+        "", 
+        "", 
+        "", 
+        parseFloat(yarnSaleBillListData?.total_beams).toFixed(2), 
+        parseFloat(yarnSaleBillListData?.total_meter).toFixed(2), 
         "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        totalKG,
-        "",
-        totalAmount,
-        "",
-        "",
-        "",
-        totalNetAmount,
-      ];
-  
-      localStorage.setItem("print-title", "Yarn Sale Bill List");
+        parseFloat(yarnSaleBillListData?.total_bill_amounts).toFixed(2), 
+        "", 
+        "", 
+        "", 
+        parseFloat(total_net_amount).toFixed(2)
+      ] ; 
+
+      localStorage.setItem("print-title", "Beam Sale Bill List");
       localStorage.setItem("print-head", JSON.stringify(tableTitle));
       localStorage.setItem("print-array", JSON.stringify(temp));
       localStorage.setItem("total-count", "1");
       localStorage.setItem("total-data", JSON.stringify(total));
   
-      if (option == "pdf") {
-        window.open("/print");
-      } else {
-        let data = [tableTitle, ...temp, total];
-        let worksheet = XLSX.utils.aoa_to_sheet(data);
-        let workbook = XLSX.utils.book_new();
-  
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Yarn-Sales");
-  
-        // Export to Excel file
-        const dateString = moment().format("YYYY-MMD-D_HH:mm:ss");
-        const fileName = `yarn_sale_${dateString}.xlsx`;
-        XLSX.writeFile(workbook, fileName);
-      }
+      window.open("/print");
     };
   
     function renderTable() {
@@ -390,8 +386,9 @@ const BeamSaleBillList = () => {
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
-                  <Table.Summary.Cell>{yarnSaleBillListData?.total_beams || 0}</Table.Summary.Cell>
-                  <Table.Summary.Cell>{yarnSaleBillListData?.total_meter || 0}</Table.Summary.Cell>
+                  <Table.Summary.Cell></Table.Summary.Cell>
+                  <Table.Summary.Cell>{parseFloat(yarnSaleBillListData?.total_beams).toFixed(2) || 0}</Table.Summary.Cell>
+                  <Table.Summary.Cell>{parseFloat(yarnSaleBillListData?.total_meter).toFixed(2) || 0}</Table.Summary.Cell>
                   <Table.Summary.Cell>
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
@@ -399,7 +396,6 @@ const BeamSaleBillList = () => {
                   </Table.Summary.Cell>
                   <Table.Summary.Cell>
                   </Table.Summary.Cell>
-                  <Table.Summary.Cell />
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
                   <Table.Summary.Cell />
@@ -421,7 +417,7 @@ const BeamSaleBillList = () => {
   
             <Flex align="center" gap={10}>
               <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
+                {/* <Typography.Text className="whitespace-nowrap">
                   Bill status
                 </Typography.Text>
                 <Select
@@ -440,7 +436,7 @@ const BeamSaleBillList = () => {
                     textTransform: "capitalize",
                   }}
                   className="min-w-40"
-                />
+                /> */}
                 <Typography.Text className="whitespace-nowrap">
                   Party
                 </Typography.Text>
@@ -501,23 +497,14 @@ const BeamSaleBillList = () => {
                   }}
                 />
               </Flex>
-  
-              <Flex align="center" gap={10}>
-                <Button
-                  icon={<FileExcelFilled />}
-                  onClick={() => {
-                    DownloadOption("excel");
-                  }}
-                />
-              </Flex>
             </Flex>
           </div>
   
           {renderTable()}
         </div>
         {yarnSaleChallanModel.isModalOpen && (
-          <YarnSaleChallanModel
-            details={yarnSaleChallanModel.details}
+          <BeamSaleChallanModel
+          beamDetails={yarnSaleChallanModel.details}
             isModelOpen={yarnSaleChallanModel.isModalOpen}
             handleCloseModal={handleCloseModal}
             MODE={yarnSaleChallanModel.mode}

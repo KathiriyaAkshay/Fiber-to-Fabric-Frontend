@@ -27,6 +27,8 @@ const BillPaymentModel = ({
   selectedBill,
   sundryDebtorData,
 }) => {
+  console.log(selectedBill);
+  
   const queryClient = useQueryClient();
   const { companyListRes, companyId } = useContext(GlobalContext);
   const [bankOption, setBankOption] = useState([]);

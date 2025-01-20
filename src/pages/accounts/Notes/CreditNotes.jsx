@@ -36,6 +36,7 @@ import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/Cred
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
 import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
 import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
+import { JOB_REWORK_BILL_MODEL, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
 // import UpdateCreditNode from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 
 const CREDIT_NOTE_TYPES = [
@@ -295,16 +296,15 @@ const CreditNotes = () => {
       key: "credit_note_type",
       render: (text, record) => {
         if (creditNoteTypes === "late") {
-          // Helper function to map models to labels
           const getModelLabel = (model) => {
             switch (model) {
-              case "purchase_taka_bills":
-                return "PURCHASE TAKA";
-              case "job_taka_bills":
-                return "JOB TAKA";
-              case "yarn_bills":
-                return "YARN BILL";
-              case "beam_sale_bill":
+              case PURCHASE_TAKA_BILL_MODEL:
+                return PURCHASE_TAKA_MODEL_NAME;
+              case JOB_TAKA_BILL_MODEL:
+                return JOB_TAKA_MODEL_NAME;
+              case  YARN_RECEIVE_BILL_MODEL:
+                return YARN_RECEIVE_MODEL_NAME;
+              case "":
                 return "BEAM SALE";
               case "receive_size_beam_bill":
                 return "BEAM RECEIVE";
@@ -357,6 +357,20 @@ const CreditNotes = () => {
           );
         } else {
           if (text == "other"){
+            let credit_note_details = record?.credit_note_details[0] ; 
+            if ([PURCHASE_TAKA_BILL_MODEL, YARN_RECEIVE_BILL_MODEL, RECEIVE_SIZE_BEAM_BILL_MODEL, 
+              JOB_REWORK_BILL_MODEL, JOB_TAKA_BILL_MODEL]?.includes(credit_note_details?.model)){
+              return(
+                <div>
+                  <div>
+                    <span style={{fontWeight: 600, fontSize: 12}}>Sundry Debitor</span>
+                  </div>
+                  <Tag color =  {CREDIT_NOTE_OTHER}>
+                    OTHER
+                  </Tag>
+                </div>
+              )
+            }
             return(
               <Tag color =  {CREDIT_NOTE_OTHER}>
                 OTHER

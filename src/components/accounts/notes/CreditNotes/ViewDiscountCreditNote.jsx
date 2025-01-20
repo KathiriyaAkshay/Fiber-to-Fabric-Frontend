@@ -91,10 +91,13 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
               <tr>
                 <td colSpan={3} width={"33.33%"}>
                   <div className="year-toggle" style={{ textAlign: "left" }}>
-                    <Typography.Text style={{ fontSize: 20, fontWeight: 400 }}>
+                    <Typography.Text style={{ fontSize: 20, fontWeight: 600 }}>
                       Credit Note No.
                     </Typography.Text>
-                    <div>{details.credit_note_number || ""}</div>
+                    <div style={{
+                      fontWeight: 400, 
+                      color: "green"
+                    }}>{details.credit_note_number || ""}</div>
                   </div>
                 </td>
                 <td colSpan={3} width={"33.33%"}>
@@ -208,7 +211,7 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
                     ""}
                 </td>
                 <td>
-                  {type == "other" ? details?.hsn_no : details?.quantity || ""}
+                  {type == "other" ? details?.hsn_no || "-" : details?.quantity || ""}
                 </td>
                 <td>{details?.rate || ""}</td>
                 <td></td>

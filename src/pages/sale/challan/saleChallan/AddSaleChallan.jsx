@@ -58,10 +58,11 @@ const addJobTakaSchemaResolver = yupResolver(
 );
 
 const AddSaleChallan = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
+  
   // const [fieldArray, setFieldArray] = useState([0]);
   const SALE_CHALLAN_ADD = JSON.parse(localStorage.getItem("SALE_CHALLAN_ADD"));
-
   const [saleChallanTypes, setSaleChallanTypes] = useState([]);
 
   const [totalTaka, setTotalTaka] = useState(0);
@@ -80,12 +81,11 @@ const AddSaleChallan = () => {
   const [pendingTaka, setPendingTaka] = useState(0);
 
   const [pendingWeight, setPendingWeight] = useState(0);
-
-  const navigate = useNavigate();
-  //   const { data: user } = useCurrentUser();
   const { companyId, companyListRes } = useContext(GlobalContext);
+
+  const [isPartySelect, setIsPartySelect] = useState(false) ; 
+
   function goBack() {
-    // localStorage.removeItem("SALE_CHALLAN_ADD");
     navigate(-1);
   }
 
@@ -452,6 +452,9 @@ const AddSaleChallan = () => {
         setValue("delivery_address", order?.party?.party?.delivery_address);
         setValue("party_name", order?.party?.id);
       }
+    } else {
+      console.log("Not match any order information ");
+      setIsPartySelect(true) ; 
     }
   }, [gray_order_id, grayOrderListRes, setValue]);
 
@@ -1088,7 +1091,7 @@ const AddSaleChallan = () => {
                 <Select
                   {...field}
                   placeholder="Select Party"
-                  disabled={true}
+                  disabled={!isPartySelect}
                   loading={isLoadingPartyList}
                   options={partyUserListRes?.partyList?.rows?.map((party) => ({
                     label: `${party?.first_name} ${party?.last_name}`,

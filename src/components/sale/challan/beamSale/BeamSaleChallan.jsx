@@ -459,7 +459,7 @@ const BeamSaleChallanModel = ({
               </Col>
               <Col span={8} className="flex items-right justify-left border">
                 <Typography.Text className="text-center">
-                  {details.vehicle.vehicle.vehicleNo}
+                  {details?.vehicle?.vehicle?.vehicleNo || "-"}
                 </Typography.Text>
               </Col>
             </Row>

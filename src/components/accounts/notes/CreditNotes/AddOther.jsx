@@ -34,6 +34,7 @@ import {
   PURCHASE_TAG_COLOR,
 } from "../../../../constants/tag";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
+import { CREDIT_NOTE_OTHER_TYPE } from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -62,10 +63,7 @@ const validationSchema = yup.object().shape({
   invoice_number: yup.string().required("Please enter invoice number"),
   party_id: yup.string().required("Please select party"),
   date: yup.string().required("Please enter date"),
-  // particular: yup.string().required("Please enter particular"),
-  // hsn_code: yup.string().required("Please enter hsn code"),
   amount: yup.string().required("Please enter amount"),
-  // bill_id: yup.string().required("Please select bill."),
   particular: yup.string().required("Please,Provide credit note information"),
   hsn_no: yup
     .string()
@@ -132,19 +130,8 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     const payload = {
       party_id: is_party ? +party_id : null,
       supplier_id: !is_party ? +party_id : null,
-      // supplier_id: billData?.supplier_id,
-      // model: selectedBillData?.model,
       credit_note_number: `CNS-${data?.credit_note_no}` || "",
-      credit_note_type: "other",
-      // sale_challan_id: 456,
-      // quality_id: data?.quality_id,
-      // gray_order_id: 321,
-      // party_id: 654,
-      // return_id: 987,
-      // total_taka: +data.total_taka,
-      // total_meter: +data.total_meter,
-      // discount_value: +data.discount_value,
-      // discount_amount: +data.discount_amount,
+      credit_note_type: CREDIT_NOTE_OTHER_TYPE,
       SGST_value: +data.SGST_value,
       SGST_amount: +data.SGST_amount,
       CGST_value: +data.CGST_value,
@@ -154,22 +141,15 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
       hsn_no: data.hsn_no,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
       extra_tex_name: data.extra_tex_name,
       extra_tex_value: +data.extra_tex_value,
       extra_tex_amount: +data.extra_tex_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       credit_note_details: [
         {
-          // bill_id: data.bill_id,
-          // model: selectedBillData?.model,
-          // rate: +data.rate,
           per: 1.0,
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
-          // quality: billData?.inhouse_quality?.quality_weight,
           amount: +data.amount,
         },
       ],
@@ -263,11 +243,14 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
         +amount +
         +SGSTAmount +
         +CGSTAmount +
-        +IGSTAmount +
-        +round_off_amount -
+        +IGSTAmount -
         +extraTexAmount;
 
-      setValue("net_amount", netAmount.toFixed(2));
+      const final_net_amount = Math.round(netAmount) ; 
+      
+      let round_off_value = +final_net_amount - +netAmount ; 
+      setValue("net_amount", final_net_amount.toFixed(2));
+      setValue("round_off_amount", parseFloat(round_off_value).toFixed(2))
     }
   }, [
     CGST_value,
@@ -286,7 +269,19 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       const res = await getPartyListRequest({
         params: { company_id: company_id },
       });
-      return res.data?.data;
+      let temp = {
+        "partyList": {
+          "rows": []
+        }
+      } ; 
+
+      res?.data?.data?.partyList?.rows?.map((element) => {
+        temp["partyList"]['rows'].push(element) ; 
+        element?.sub_parties?.map((subParty) => {
+          temp["partyList"]['rows'].push(subParty) ; 
+        })
+      })
+      return temp ; 
     },
     enabled: Boolean(company_id),
   });
@@ -299,11 +294,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
     queryKey: ["dropdown/supplier/list", { company_id: company_id }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: company_id },
       });
       return res.data?.data?.supplierList;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company_id),
   });
 
   // Company changes related request handler
@@ -319,7 +314,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       if (party_id?.includes("party")) {
         let temp_party_id = party_id.split("***")[1];
         return partyUserListRes?.partyList?.rows?.find(
-          ({ id }) => id === +temp_party_id
+          (party) => party?.party?.user_id === +temp_party_id
         );
       } else {
         let temp_supplier_id = party_id.split("***")[1];
@@ -532,8 +527,9 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                               {partyUserListRes?.partyList?.rows?.map(
                                 (party) => (
                                   <Select.Option
-                                    key={`party-${party?.id}`}
-                                    value={`party***${party?.id}`}
+                                    key={`party-${party?.party?.user_id}`}
+                                    value={`party***${party?.party?.user_id}`}
+                                    className = {"credit-note-user-selection-dropdown"}
                                   >
                                     <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
                                     <span>
@@ -552,6 +548,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                                   <Select.Option
                                     key={`supplier-${supplier?.supplier_id}`}
                                     value={`supplier***${supplier?.supplier_id}`}
+                                    className = {"credit-note-user-selection-dropdown"} 
                                   >
                                     <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                                     <span>
@@ -777,7 +774,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                   <td></td>
                   <td colSpan={3} style={{ textAlign: "right" }}>
                     <div style={{ marginBottom: "6px" }}>
-                      SGST @{" "}
+                      <span style={{fontWeight: 600}}>SGST @{" "}</span>
                       <Controller
                         control={control}
                         name="SGST_value"
@@ -793,7 +790,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       %
                     </div>
                     <div style={{ marginBottom: "6px" }}>
-                      CGST @{" "}
+                      <span style={{fontWeight: 600}}>CGST @{" "}</span>
                       <Controller
                         control={control}
                         name="CGST_value"
@@ -809,7 +806,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                       %
                     </div>
                     <div style={{ marginBottom: "6px" }}>
-                      IGST @{" "}
+                      <span style={{fontWeight: 600}}>IGST @{" "}</span>
                       <Controller
                         control={control}
                         name="IGST_value"

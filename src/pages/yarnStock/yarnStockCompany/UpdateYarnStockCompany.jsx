@@ -62,7 +62,7 @@ function UpdateYarnStockCompany() {
     navigate(-1);
   }
 
-  const { mutateAsync: updateYSC } = useMutation({
+  const { mutateAsync: updateYSC, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await updateYarnStockCompanyRequest({
         id,
@@ -539,7 +539,7 @@ function UpdateYarnStockCompany() {
         </div>
 
         <Flex gap={10} justify="flex-end">
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Update
           </Button>
         </Flex>

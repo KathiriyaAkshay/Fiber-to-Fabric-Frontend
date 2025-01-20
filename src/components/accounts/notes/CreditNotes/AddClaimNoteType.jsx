@@ -31,6 +31,7 @@ import moment from "moment";
 import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { BEAM_RECEIVE_TAG_COLOR, JOB_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../../constants/tag";
 import { CURRENT_YEAR_TAG_COLOR, PREVIOUS_YEAR_TAG_COLOR } from "../../../../constants/tag";
+import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -103,18 +104,14 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
 
   const onSubmit = async (data) => {
     console.log(data);
+    console.log(billData);
     
     
     const payload = {
-      // supplier_id: data?.supplier_id,
-      // model: selectedBillData?.model,
       credit_note_number: creditNoteLastNumber?.debitNoteNumber || "",
       credit_note_type: "claim",
       sale_challan_id: null,
       quality_id: data?.quality_id  || null,
-      // gray_order_id: 321,
-      // party_id: selectedBillData.party_id,
-      // return_id: 987,
       total_taka: +data.total_taka,
       total_meter: +data.total_meter,
       discount_value: +data.discount_value,
@@ -127,20 +124,15 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       IGST_amount: +data.IGST_amount,
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
-      // extra_tex_value: 1.0,
-      // extra_tex_amount: 15.0,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       credit_note_details: [
         {
           bill_id: billData?.bill_id,
           bill_no: billData?.invoice_no || billData?.bill_no,
-          model: "sale_bills",
+          model: billData?.model,
           rate: +data.rate,
           per: 1.0,
-          invoice_no: data?.invoice_number,
+          invoice_no: billData?.bill_no || billData?.invoice_no ,
           particular_name: "Claim On Sales",
           quantity: billData?.total_meter || billData?.meter || billData?.quantity,
           amount: +data.amount,
@@ -148,13 +140,11 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       ],
     };
 
-    if (billData?.party !== null) {
-      payload["party_id"] = billData?.party?.id
+    if (billData?.party_id !== null) {
+      payload["party_id"] = billData?.party_id
     } else {
-      payload["supplier_id"] = billData?.supplier?.id
+      payload["supplier_id"] = billData?.supplier_id
     }
-    console.log(payload);
-    
     await addCreditNote(payload);
   };
 
@@ -224,9 +214,13 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
       const netAmount =
-        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount + +round_off_amount;
+        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount ;
 
-      setValue("net_amount", netAmount.toFixed(2));
+      const final_net_amount = Math.round(netAmount) ; 
+      const round_off_value = +final_net_amount - +netAmount
+
+      setValue("net_amount", final_net_amount.toFixed(2));
+      setValue("round_off_amount", parseFloat(round_off_value).toFixed(2))
     }
   }, [CGST_value, IGST_value, SGST_value, amount, round_off_amount, setValue]);
 
@@ -285,32 +279,6 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
-
-  // useEffect(() => {
-  //   if (billData && Object.keys(billData)) {
-  //     setValue("supplier_id", billData?.sale_challan?.supplier_id);
-  //     setValue("sale_challan_id", billData?.sale_challan_id);
-  //     setValue("quality_id", billData?.quality_id);
-
-  //     setValue("SGST_value", billData?.SGST_value);
-  //     // setValue("SGST_amount", billData?.SGST_amount);
-  //     setValue("CGST_value", billData?.CGST_value);
-  //     // setValue("CGST_amount", billData?.CGST_amount);
-  //     setValue("IGST_value", billData?.IGST_value);
-  //     // setValue("IGST_amount", billData?.IGST_amount);
-  //     setValue("round_off_amount", billData?.round_off_amount);
-  //     setValue("net_amount", billData?.net_amount);
-  //     setValue("rate", billData?.rate);
-  //     setValue("invoice_number", billData?.invoice_number);
-
-  //     setValue("total_taka", billData?.total_taka);
-  //     setValue("total_meter", billData?.total_meter);
-  //     setValue("discount_value", billData?.discount_value);
-  //     setValue("discount_amount", billData?.discount_amount);
-  //   }
-  // }, [billData, setValue]);
-
-
 
   return (
     <Modal
@@ -509,15 +477,17 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
                                     fontWeight: 600
                                   }}>{item.bill_no}</span>
                                   <Tag color={
-                                    item?.model == "sale_biills" ? SALE_TAG_COLOR :
-                                      item?.model == "yarn_sale_bills" ? YARN_SALE_BILL_TAG_COLOR :
-                                        item?.model == "job_gray_sale_bill" ? JOB_TAG_COLOR :
-                                          item?.model == "beam_sale_bill" ? BEAM_RECEIVE_TAG_COLOR : "default"
+                                    item?.model == SALE_BILL_MODEL ? SALE_TAG_COLOR :
+                                      item?.model == YARN_SALE_BILL_MODEL ? YARN_SALE_BILL_TAG_COLOR :
+                                        item?.model == JOB_GREAY_SALE_BILL_MODEL ? JOB_TAG_COLOR :
+                                          item?.model == BEAM_SALE_BILL_MODEL ? BEAM_RECEIVE_TAG_COLOR :
+                                          item?.model == JOB_WORK_BILL_MODEL?JOB_TAG_COLOR: "default"
                                   } style={{ marginLeft: "8px" }}>
-                                    {item?.model == "sale_biills" ? "Sale Bill" :
-                                      item?.model == "yarn_sale_bills" ? "Yarn Sale" :
-                                        item?.model == "job_gray_sale_bill" ? "Job Gray" :
-                                          item?.model == "beam_sale_bill" ? "Beam Sale" : item?.model
+                                    {item?.model == SALE_BILL_MODEL ? SALE_BILL_MODEL_NAME :
+                                      item?.model == YARN_SALE_BILL_MODEL ? YARN_SALE_BILL_MODEL_NAME :
+                                        item?.model == JOB_GREAY_SALE_BILL_MODEL ? JOB_GREAY_BILL_MODEL_NAME :
+                                          item?.model == BEAM_SALE_BILL_MODEL ? BEAM_SALE_MODEL_NAME : 
+                                            item?.model == JOB_WORK_BILL_MODEL?JOB_WORK_MODEL_NAME: item?.model
                                     }
                                   </Tag>
                                 </div>

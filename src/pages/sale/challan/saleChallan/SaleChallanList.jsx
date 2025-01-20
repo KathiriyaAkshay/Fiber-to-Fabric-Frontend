@@ -125,7 +125,7 @@ const SaleChallanList = () => {
         company_id: companyId,
         page,
         pageSize,
-        is_gray: debouncedState === "gray" ? true : false,
+        is_gray: debouncedState === "gray" ? "1" : "0",
         from: debouncedFromDate,
         to: debouncedToDate,
         quality_id: debouncedQuality,
@@ -469,7 +469,7 @@ const SaleChallanList = () => {
             <Button
               onClick={() => {
                 let MODE;
-                if (details.bill_status !== "paid") {
+                if (details.bill_status !== "pending") {
                   MODE = "VIEW";
                 } else if (details.bill_status === "pending") {
                   MODE = "ADD";

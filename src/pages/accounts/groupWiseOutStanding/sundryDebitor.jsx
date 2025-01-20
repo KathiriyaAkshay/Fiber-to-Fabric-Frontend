@@ -1658,9 +1658,9 @@ const TableWithAccordion = ({
           {isAccordionOpen === data.id ? (
             <>
               <Flex style={{ gap: 6 }}>
-                <div>
+                {/* <div>
                   <Input style={{ width: "60px" }} />
-                </div>
+                </div> */}
                 <div style={{ marginTop: "auto", marginBottom: "auto" }}>
                   <CheckOutlined style={{ fontSize: 18 }} />
                 </div>

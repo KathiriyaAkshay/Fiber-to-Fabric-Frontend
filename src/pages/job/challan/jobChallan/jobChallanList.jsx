@@ -8,6 +8,7 @@ import {
   Spin,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import {
@@ -383,17 +384,19 @@ const JobChallanList = () => {
               </>
             )}
 
-            <Button
-              onClick={() => {
-                localStorage.setItem(
-                  "SALE_CHALLAN_ADD",
-                  JSON.stringify({ model: "job", id: details.id })
-                );
-                navigate("/sales/challan/sale-challan/add");
-              }}
-            >
-              <RedoOutlined />
-            </Button>
+            <Tooltip title = {"Create Sale challan"}>
+              <Button
+                onClick={() => {
+                  localStorage.setItem(
+                    "SALE_CHALLAN_ADD",
+                    JSON.stringify({ model: "job", id: details.id })
+                  );
+                  navigate("/sales/challan/sale-challan/add");
+                }}
+              >
+                <RedoOutlined />
+              </Button>
+            </Tooltip>
           </Space>
         );
       },

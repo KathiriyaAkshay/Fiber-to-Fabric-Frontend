@@ -74,6 +74,8 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
+  console.log(details);
+  
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -521,7 +523,7 @@ const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {String(`${saleBillDetail?.broker?.first_name}` `${saleBillDetail?.broker?.last_name}`).toUpperCase()}
+{String(`${saleBillDetail?.broker?.first_name} ${saleBillDetail?.broker?.last_name}`).toUpperCase()}
                     </Typography.Text>
                   </Col>
                 </Row>

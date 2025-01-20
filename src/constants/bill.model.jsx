@@ -31,3 +31,14 @@ export let BEAM_SALE_MODEL_NAME = "BEAM SALE" ;
 export let JOB_WORK_MODEL_NAME = "JOB WORK" ; 
 export let SALE_BILL_MODEL_NAME = "SALE BILL" ; 
 export let JOB_GREAY_BILL_MODEL_NAME = "JOB GRAY SALE" ; 
+ 
+export let CREDIT_NOTE_BEAM_SALE_RETURN = "beam_sale_return" ; 
+export let CREDIT_NOTE_YARN_SALE_RETURN = "yarn_sale_return" ; 
+export let CREDIT_NOTE_SALE_RETURN = "sale_return" ; 
+export let CREDIT_NOTE_CLAIM_NOTE = "claim" ; 
+export let CREDIT_NOTE_DISCOUNT_NOTE = "discount" ; 
+
+export let CREDIT_NOTE_OTHER_TYPE = "other" ; 
+export let DEBIT_NOTE_OTHER_TYPE = "other" ; 
+
+
