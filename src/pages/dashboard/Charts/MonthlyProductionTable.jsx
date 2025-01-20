@@ -131,15 +131,15 @@ const MonthlyProductionTable = () => {
       {isLoading ? (
         <Spin />
       ) : (
-        <div style={{ maxHeight: "210px", overflowY: "scroll" }}>
+        <div style={{ maxHeight: "210px", overflowY: "scroll" }} className="flex items-start justify-center">
           <table
             style={{ width: "100%", borderCollapse: "collapse" }}
-            border={1}
+            border={0}
             className="dashboard-monthlyproduction-table"
           >
             <thead>
               <tr>
-                <th></th>
+                <th>Idx</th>
                 <th>{currentFinancialYear}</th>
                 <th>{previousFinancialYear}</th>
               </tr>
@@ -150,7 +150,7 @@ const MonthlyProductionTable = () => {
                   return (
                     <tr key={index}>
                       <td style={{
-                        fontWeight: 600
+                        fontWeight: 400
                       }}>{data?.name}</td>
                       <td style={{ textAlign: "center" }}>
                         {data[currentFinancialYear].toFixed(2)}
