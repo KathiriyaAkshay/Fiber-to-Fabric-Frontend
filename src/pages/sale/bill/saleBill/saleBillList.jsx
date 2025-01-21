@@ -38,6 +38,8 @@ import dayjs from "dayjs";
 import DeleteSaleBill from "../../../../components/sale/bill/DeleteSaleBill";
 import moment from "moment";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../../constants/tag";
 
 const SaleBillList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -60,10 +62,8 @@ const SaleBillList = () => {
 
   const [state, setState] = useState("current");
   const [type, setType] = useState();
-  const [companyValue, setCompanyValue] = useState();
   const [party, setParty] = useState();
-  const [isGrayValue, setIsGrayValue] = useState("cash");
-  const [invoiceFilter, setInvoiceFilter] = useState();
+  const [isGrayValue, setIsGrayValue] = useState("grey");
   const [quality, setQuality] = useState();
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -76,6 +76,9 @@ const SaleBillList = () => {
   const debouncedToDate = useDebounce(toDate, 500);
   const debouncedQuality = useDebounce(quality, 500);
   const debouncePayment = useDebounce(payment, 500);
+  const debounceType = useDebounce(type, 500) ; 
+  const debouncedGray = useDebounce(isGrayValue, 500) ; 
+  const debouncedParty = useDebounce(party, 500) ; 
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
@@ -114,7 +117,8 @@ const SaleBillList = () => {
       },
       enabled: Boolean(companyId),
     });
-
+  
+  // Sale bill related api handler ========================================
   const { data: SaleBillList, isLoading } = useQuery({
     queryKey: [
       "saleBill",
@@ -128,6 +132,9 @@ const SaleBillList = () => {
         toBill: debouncedToDate,
         quality_id: debouncedQuality,
         is_paid: debouncePayment,
+        sale_challan_type: debounceType, 
+        is_gray: debouncedGray == "gray"?"1":"0", 
+        party_id: debouncedParty
       },
     ],
     queryFn: async () => {
@@ -140,6 +147,9 @@ const SaleBillList = () => {
           toBill: debouncedToDate,
           quality_id: debouncedQuality,
           is_paid: debouncePayment,
+          sale_challan_type: debounceType, 
+          is_gray: debouncedGray == "gray"?"1":"0", 
+          party_id: debouncedParty
         },
       });
       return res.data?.data;
@@ -263,19 +273,42 @@ const SaleBillList = () => {
       title: "Challan/Bill",
       dataIndex: "invoice_no",
       key: "invoice_no",
+      render: (text, record) => {
+        return(
+          <div>
+            <div style={{fontWeight: 600}}>
+              {text}
+            </div>
+            <div>
+              {record?.sale_challan !== null?
+                <Tag color= {SALE_CHALLAN_INFO_TAG_COLOR}>Challan created</Tag>
+              :""}
+            </div>
+          </div>
+        )
+      }
     },
     {
       title: "Order No",
     },
     {
       title: "Party Name",
-      render: (details) =>
-        `${details.party.first_name} ${details.party.last_name}`,
+      render: (details) => {
+        return(
+          <div>
+            {String(`${details.party.first_name} ${details.party.last_name}`).toUpperCase()}
+          </div>
+        )
+      }
     },
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details.inhouse_quality.quality_name} (${details.inhouse_quality.quality_weight}KG)`;
+        return (
+          <div style={{fontSize: 13}}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        );
       },
     },
     {
@@ -487,37 +520,6 @@ const SaleBillList = () => {
   return (
     <>
       <div className="flex flex-col p-4">
-        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3">
-          <Select
-            allowClear
-            placeholder="Select Invoice FIlter"
-            options={[
-              { label: "E invoice pending", value: "E-invoice-pending" },
-              { label: "E way bill pending", value: "E-way-bill-pending" },
-              { label: "E invoice cancelled", value: "E-invoice-cancelled" },
-            ]}
-            dropdownStyle={{
-              textTransform: "capitalize",
-            }}
-            value={invoiceFilter}
-            onChange={setInvoiceFilter}
-            style={{
-              textTransform: "capitalize",
-            }}
-            className="min-w-40"
-          />
-          <Radio.Group
-            name="filter"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-          >
-            <Flex align="center" gap={10}>
-              <Radio value={"current"}> Current</Radio>
-              <Radio value={"previous"}> Previous </Radio>
-            </Flex>
-          </Radio.Group>
-        </div> */}
-
         <div className="flex items-center justify-between gap-5 mx-3 mb-3">
           <div className="flex items-center gap-2">
             <h3 className="m-0 text-primary">Sale Bill List</h3>
@@ -540,25 +542,6 @@ const SaleBillList = () => {
                 </Flex>
               </Radio.Group>
 
-              <Flex align="center" gap={10}>
-                <Typography.Text className="whitespace-nowrap">
-                  Company
-                </Typography.Text>
-                <Select
-                  placeholder="Select Company"
-                  value={companyValue}
-                  onChange={setCompanyValue}
-                  options={companyListRes?.rows?.map(
-                    ({ company_name = "", id = "" }) => ({
-                      label: company_name,
-                      value: id,
-                    })
-                  )}
-                  style={{
-                    width: "100%",
-                  }}
-                />
-              </Flex>
               <Flex align="center" gap={10}>
                 <Typography.Text className="whitespace-nowrap">
                   Type
@@ -603,6 +586,7 @@ const SaleBillList = () => {
                   dropdownStyle={{
                     textTransform: "capitalize",
                   }}
+                  allowClear
                 />
               </Flex>
               <Flex align="center" gap={10}>
@@ -618,7 +602,7 @@ const SaleBillList = () => {
                     dropDownQualityListRes &&
                     dropDownQualityListRes?.rows?.map((item) => ({
                       value: item.id,
-                      label: item.quality_name,
+                      label: getDisplayQualityName(item),
                     }))
                   }
                   dropdownStyle={{

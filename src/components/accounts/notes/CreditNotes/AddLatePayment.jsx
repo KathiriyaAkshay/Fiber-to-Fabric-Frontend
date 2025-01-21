@@ -76,7 +76,7 @@ const AddLatePayment = ({
   isAddModalOpen,
   creditNoteData,
 }) => {
-  const isEditMode = !_.isNull(creditNoteData);
+  // const isEditMode = !_.isNull(creditNoteData);
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
@@ -238,39 +238,6 @@ const AddLatePayment = ({
     }
   }, [company_id, resetField]);
 
-  // useEffect(() => {
-  //   if (amount) {
-  //     const SGSTAmount = (amount * SGST_value) / 100;
-  //     setValue("SGST_amount", SGSTAmount.toFixed(2));
-
-  //     const CGSTAmount = (amount * CGST_value) / 100;
-  //     setValue("CGST_amount", CGSTAmount.toFixed(2));
-
-  //     const IGSTAmount = (amount * IGST_value) / 100;
-  //     setValue("IGST_amount", IGSTAmount.toFixed(2));
-
-  //     const extraTexAmount = (amount * extra_tex_value) / 100;
-  //     setValue("extra_tex_amount", extraTexAmount.toFixed(2));
-
-  //     const netAmount =
-  //       +amount +
-  //       +SGSTAmount +
-  //       +CGSTAmount +
-  //       +IGSTAmount +
-  //       +round_off_amount -
-  //       +extraTexAmount;
-
-  //     setValue("net_amount", netAmount.toFixed(2));
-  //   }
-  // }, [
-  //   CGST_value,
-  //   IGST_value,
-  //   SGST_value,
-  //   amount,
-  //   extra_tex_value,
-  //   round_off_amount,
-  //   setValue,
-  // ]);
 
   const { data: creditNoteLastNumber } = useQuery({
     queryKey: [
@@ -342,14 +309,14 @@ const AddLatePayment = ({
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: company_id }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: company_id },
       });
       return res.data?.data?.supplierList;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company_id),
   });
 
   const selectedCompany = useMemo(() => {
@@ -394,24 +361,26 @@ const AddLatePayment = ({
   }, [party_id]);
 
   useEffect(() => {
-    if (
-      bill_id &&
-      bill_id?.length &&
-      saleBillList &&
-      saleBillList?.bills?.length
-    ) {
-      let totalAmount = 0;
+    // if (
+    //   bill_id &&
+    //   bill_id?.length &&
+    //   saleBillList &&
+    //   saleBillList?.bills?.length
+    // ) {
+    //   let totalAmount = 0;
       
-      bill_id.forEach((id) => {
+    //   bill_id.forEach((id) => {
         
-        let bill_model = String(id).split("****")[0]; 
-        let bill_model_id = String(id).split("****")[1] ; 
-        const data = saleBillList?.bills?.find((item) => item.bill_id === +bill_model_id && item?.model ==  bill_model);
-        totalAmount += +data.amount;
-      });
-      setValue("amount", totalAmount);
-    }
+    //     let bill_model = String(id).split("****")[0]; 
+    //     let bill_model_id = String(id).split("****")[1] ; 
+    //     const data = saleBillList?.bills?.find((item) => item.bill_id === +bill_model_id && item?.model ==  bill_model);
+    //     totalAmount += +data.amount;
+    //   });
+    //   setValue("amount", totalAmount);
+    // }
 
+    let totalAmount =  0;
+    let totalNetAmount = 0 ;
     const CGSTValue = +getValues("CGST_value");
     if (CGSTValue) {
       const CGSTAmount = (+totalAmount * +CGSTValue) / 100;

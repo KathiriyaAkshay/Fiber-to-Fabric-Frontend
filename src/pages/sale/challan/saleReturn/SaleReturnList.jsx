@@ -14,11 +14,6 @@ import { useQuery } from "@tanstack/react-query";
 import { usePagination } from "../../../../hooks/usePagination";
 import { useContext, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-// import {
-//   downloadUserPdf,
-//   getPDFTitleContent,
-// } from "../../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../../api/hooks/auth";
 import dayjs from "dayjs";
 import useDebounce from "../../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../../api/requests/qualityMaster";
@@ -27,10 +22,10 @@ import { getPartyListRequest } from "../../../../api/requests/users";
 import ViewSaleReturn from "../../../../components/sale/challan/saleReturn/ViewSaleReturn";
 import SaleReturnBill from "../../../../components/sale/challan/saleReturn/SaleReturnBill";
 import moment from "moment";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
 
 const SaleReturnList = () => {
   const { companyId } = useContext(GlobalContext);
-  // const { data: user } = useCurrentUser();
 
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();

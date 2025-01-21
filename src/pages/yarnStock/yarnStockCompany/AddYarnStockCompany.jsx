@@ -54,7 +54,7 @@ function AddYarnStockCompany() {
 
   const { companyId } = useContext(GlobalContext);
 
-  const { mutateAsync: addYSC } = useMutation({
+  const { mutateAsync: addYSC, isPending } = useMutation({
     mutationFn: async (data) => {
       const res = await addYarnStockCompanyRequest({
         data,
@@ -381,7 +381,7 @@ function AddYarnStockCompany() {
           <Button htmlType="button" onClick={() => reset()}>
             Reset
           </Button>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading = {isPending}>
             Create
           </Button>
         </Flex>

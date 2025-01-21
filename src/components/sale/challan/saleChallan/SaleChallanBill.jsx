@@ -70,9 +70,6 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
-
-  console.log(details);
-  
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
@@ -94,7 +91,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
       queryClient.invalidateQueries(["saleChallan", "list", companyId]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("Sale bill created successfully");
       }
       handleCloseModal();
     },
@@ -167,7 +164,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
       CGST_value: 0,
       CGST_amount: 0,
 
-      IGST_value: 0,
+      IGST_value: 5,
       IGST_amount: 0,
 
       TCS_value: 0,
@@ -559,7 +556,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={2}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                {details.hsn_no}
+                {details.inhouse_quality?.vat_hsn_no}
               </Col>
               <Col
                 span={3}
@@ -935,7 +932,7 @@ const SaleChallanBill = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                 span={8}
                 className="p-2 font-medium border-0 border-r border-solid"
               >
-                Avg Rate: {parseFloat(averageAmount).toFixed(2)}
+                Avg Rate: <span style={{fontWeight: 600, color: "blue"}}>{parseFloat(averageAmount).toFixed(2)}</span>
               </Col>
               <Col
                 span={2}

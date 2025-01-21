@@ -273,7 +273,13 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       const res = await getPartyListRequest({
         params: { company_id: company_id },
       });
-      return res.data?.data;
+      res?.data?.data?.partyList?.rows?.map((element) => {
+        temp["partyList"]['rows'].push(element) ; 
+        element?.sub_parties?.map((subParty) => {
+          temp["partyList"]['rows'].push(subParty) ; 
+        })
+      })
+      return temp ; 
     },
     enabled: Boolean(company_id),
   });
@@ -283,14 +289,14 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: company_id }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: company_id },
       });
       return res.data?.data?.supplierList;
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(company_id),
   });
 
   const selectedCompany = useMemo(() => {
@@ -305,7 +311,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
       if (party_id?.includes("party")) {
         let temp_party_id = party_id.split("***")[1];
         return partyUserListRes?.partyList?.rows?.find(
-          ({ id }) => id === +temp_party_id
+          (party) => party?.party?.user_id === +temp_party_id
         );
       } else {
         let temp_supplier_id = party_id.split("***")[1];
@@ -503,18 +509,21 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                             }
                           >
                             {/* Party Options */}
-                            {partyUserListRes?.partyList?.rows?.map((party) => (
-                              <Select.Option
-                                key={`party-${party?.id}`}
-                                value={`party***${party?.id}`}
-                              >
-                                <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
-                                <span>
-                                  {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
-                                  <strong>{party?.party?.company_name}</strong>
-                                </span>
-                              </Select.Option>
-                            ))}
+                            {partyUserListRes?.partyList?.rows?.map((party) => {
+                              return(
+                                <Select.Option
+                                  key={`party-${party?.party?.user_id}`}
+                                  value={`party***${party?.party?.user_id}`}
+                                  className = {"credit-note-user-selection-dropdown"}
+                                >
+                                  <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
+                                  <span>
+                                    {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
+                                    <strong>{party?.party?.company_name}</strong>
+                                  </span>
+                                </Select.Option>
+                              )
+                            })}
 
                             {/* Supplier Options */}
                             {dropdownSupplierListRes?.flatMap((element) =>
@@ -522,6 +531,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
                                 <Select.Option
                                   key={`supplier-${supplier?.supplier_id}`}
                                   value={`supplier***${supplier?.supplier_id}`}
+                                  className = {"credit-note-user-selection-dropdown"}
                                 >
                                   <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
                                   <span>

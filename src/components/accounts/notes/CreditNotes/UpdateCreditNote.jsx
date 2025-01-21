@@ -56,13 +56,9 @@ const UpdateCreditNote = ({
   setIsModalOpen,
   creditNoteTypes,
 }) => {
-  console.log("Update credit note update functionality");
-  console.log(details);
-
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
   }
-
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
