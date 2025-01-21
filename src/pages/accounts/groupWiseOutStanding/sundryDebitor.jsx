@@ -55,7 +55,23 @@ import BillPaymentModel from "../../../components/accounts/groupWiseOutStanding/
 import SundaryDebitNoteGenerate from "../../../components/accounts/notes/DebitNotes/sundaryDebiteNoteGenerate";
 import SunadryCreditNoteGenerate from "../../../components/accounts/notes/CreditNotes/sundaryCreditNoteGenerate";
 import { getCurrentFinancialYear } from "../reports/utils";
-import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, CREDIT_NOTE_BILL_MODEL, CREDIT_NOTE_MODEL_NAME, DEBIT_NOTE_BILL_MODEL, DEBIT_NOTE_NAME, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
+import {
+  BEAM_SALE_BILL_MODEL,
+  BEAM_SALE_MODEL_NAME,
+  CREDIT_NOTE_BILL_MODEL,
+  CREDIT_NOTE_MODEL_NAME,
+  DEBIT_NOTE_BILL_MODEL,
+  DEBIT_NOTE_NAME,
+  JOB_GREAY_BILL_MODEL_NAME,
+  JOB_GREAY_SALE_BILL_MODEL,
+  JOB_WORK_BILL_MODEL,
+  JOB_WORK_MODEL_NAME,
+  SALE_BILL_MODEL,
+  SALE_BILL_MODEL_NAME,
+  YARN_RECEIVE_BILL_MODEL,
+  YARN_SALE_BILL_MODEL,
+  YARN_SALE_BILL_MODEL_NAME,
+} from "../../../constants/bill.model";
 import YarnSaleChallanModel from "../../../components/sale/challan/yarn/YarnSaleChallan";
 import BeamSaleChallanModel from "../../../components/sale/challan/beamSale/BeamSaleChallan";
 import JobWorkSaleChallanModel from "../../../components/sale/challan/jobwork/JobSaleChallan";
@@ -68,7 +84,6 @@ function calculateDaysDifference(dueDate) {
   const dayDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
   return dayDifference;
 }
-
 
 const CalculateInterest = (due_days, bill_amount) => {
   const INTEREST_RATE = 0.12; // Annual interest rate of 12%
@@ -98,10 +113,8 @@ const BILL_MODEL = {
   job_gray_sale_bill: "job_gray_sale_bill",
 };
 
-
 const NOTE_GENERATE_MODE = "Generate";
 const NOTE_VIEW_MODE = "View";
-
 
 const SundryDebitor = () => {
   const { company, companyId, companyListRes } = useContext(GlobalContext);
@@ -109,7 +122,7 @@ const SundryDebitor = () => {
   const { startDate, endDate } = getCurrentFinancialYear();
   const [billInformationLoading, setBillInformationLoading] = useState(false);
 
-  const [selectedUser, setSelectedUser] = useState(undefined) ; 
+  const [selectedUser, setSelectedUser] = useState(undefined);
   const [fromDate, setFromDate] = useState(dayjs(startDate));
   const [toDate, setToDate] = useState(dayjs(endDate));
   const [billNo, setBillNo] = useState("");
@@ -169,7 +182,11 @@ const SundryDebitor = () => {
     } else if (selection == "pending_interest") {
       const temp = initialDebitorData?.map((element) => {
         const temp_bill = element?.bills?.filter((bill) => {
-          if ([CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL].includes(bill?.model)) {
+          if (
+            [CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL].includes(
+              bill?.model
+            )
+          ) {
             return false;
           }
           const dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
@@ -192,7 +209,11 @@ const SundryDebitor = () => {
     } else if (selection == "only_dues") {
       const temp = initialDebitorData?.map((element) => {
         const temp_bill = element?.bills?.filter((bill) => {
-          if ([CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL].includes(bill?.model)) {
+          if (
+            [CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL].includes(
+              bill?.model
+            )
+          ) {
             return false;
           }
           const dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
@@ -363,7 +384,7 @@ const SundryDebitor = () => {
     },
   });
 
-  const PaidInterestAmount = async (records,due_date, data) => {
+  const PaidInterestAmount = async (records, due_date, data) => {
     let requestPayload = [];
     data?.map((element) => {
       requestPayload.push({
@@ -373,10 +394,10 @@ const SundryDebitor = () => {
         bill_id: element?.bill_id,
       });
 
-      if (selectedUser?.is_supplier){
-        requestPayload["supplier_id"] = selectedUser?.id
+      if (selectedUser?.is_supplier) {
+        requestPayload["supplier_id"] = selectedUser?.id;
       } else {
-        requestPayload["party_id"] = selectedUser?.id
+        requestPayload["party_id"] = selectedUser?.id;
       }
     });
     // await addInterestAmount({ data: requestPayload });
@@ -391,11 +412,15 @@ const SundryDebitor = () => {
     if (selectedBill?.length > 0) {
       let totalAmount = 0;
       selectedBill?.map((bill) => {
-
-        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Bill total payment 
-        let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Bill credit note amount
+        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Bill total payment
+        let credit_note_amount =
+          parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Bill credit note amount
         let bill_deducation_amount = +total_amount - +credit_note_amount;
-        let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
+        let bill_remaing_amount = parseFloat(
+          bill?.part_payment == null
+            ? bill_deducation_amount
+            : +bill?.part_payment
+        ).toFixed(2);
         totalAmount += +bill_remaing_amount;
       });
       setTotalBillAmount(totalAmount);
@@ -472,7 +497,10 @@ const SundryDebitor = () => {
 
   const setLocalStorageForPrint = (title, ownerName, tableTitle, tableData) => {
     localStorage.setItem("print-array", JSON.stringify(tableData));
-    localStorage.setItem("print-title", `Sundary Debitor : ${ownerName} ${title}`);
+    localStorage.setItem(
+      "print-title",
+      `Sundary Debitor : ${ownerName} ${title}`
+    );
     localStorage.setItem("print-head", JSON.stringify(tableTitle));
     localStorage.setItem("total-count", "0");
   };
@@ -484,10 +512,14 @@ const SundryDebitor = () => {
     data?.bills?.forEach((bill) => {
       let billDate = moment(bill?.createdAt).format("DD-MM-YYYY");
       let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
-      let dueDays = isNaN(calculateDaysDifference(dueDate)) ? 0 : calculateDaysDifference(dueDate);
+      let dueDays = isNaN(calculateDaysDifference(dueDate))
+        ? 0
+        : calculateDaysDifference(dueDate);
 
       let totalAmount = parseFloat(bill?.amount || 0).toFixed(2);
-      let creditNoteAmount = parseFloat(bill?.credit_note_amount || 0).toFixed(2);
+      let creditNoteAmount = parseFloat(bill?.credit_note_amount || 0).toFixed(
+        2
+      );
       let billDeductionAmount = +totalAmount - +creditNoteAmount;
       let interestAmount = 0;
 
@@ -495,7 +527,9 @@ const SundryDebitor = () => {
         interestAmount = CalculateInterest(dueDays, bill?.amount);
       }
 
-      let billRemainingAmount = parseFloat(bill?.part_payment == null ? billDeductionAmount : +bill?.part_payment).toFixed(2);
+      let billRemainingAmount = parseFloat(
+        bill?.part_payment == null ? billDeductionAmount : +bill?.part_payment
+      ).toFixed(2);
 
       if (!filterPaid || !bill?.is_paid) {
         tableData.push([
@@ -510,7 +544,9 @@ const SundryDebitor = () => {
           dueDays,
           dueDate,
           interestAmount || 0,
-          `${data?.supplier?.broker?.first_name || ""} ${data?.supplier?.broker?.last_name || ""}`.toUpperCase(),
+          `${data?.supplier?.broker?.first_name || ""} ${
+            data?.supplier?.broker?.last_name || ""
+          }`.toUpperCase(),
         ]);
       }
     });
@@ -518,7 +554,7 @@ const SundryDebitor = () => {
     return tableData;
   };
 
-  // Particular Supplier/Party all bill download option 
+  // Particular Supplier/Party all bill download option
   const AllBillDownloadOption = (data) => {
     setBillInformationLoading(true);
 
@@ -537,7 +573,9 @@ const SundryDebitor = () => {
       "Broker",
     ];
 
-    let billOwnerName = String(data?.supplier?.supplier_name || data?.party?.company_name).toUpperCase();
+    let billOwnerName = String(
+      data?.supplier?.supplier_name || data?.party?.company_name
+    ).toUpperCase();
     let tableData = prepareTableData(data);
 
     setLocalStorageForPrint("All bills", billOwnerName, tableTitle, tableData);
@@ -546,7 +584,7 @@ const SundryDebitor = () => {
     setBillInformationLoading(false);
   };
 
-  // Particular Supplier/Party all due bill download option 
+  // Particular Supplier/Party all due bill download option
   const AllDueBillDownloadOption = (data) => {
     setBillInformationLoading(true);
 
@@ -565,7 +603,9 @@ const SundryDebitor = () => {
       "Broker",
     ];
 
-    let billOwnerName = String(data?.supplier?.supplier_name || data?.party?.company_name).toUpperCase();
+    let billOwnerName = String(
+      data?.supplier?.supplier_name || data?.party?.company_name
+    ).toUpperCase();
     let tableData = prepareTableData(data, true);
 
     setLocalStorageForPrint("All bills", billOwnerName, tableTitle, tableData);
@@ -573,7 +613,6 @@ const SundryDebitor = () => {
 
     setBillInformationLoading(false);
   };
-
 
   // ====================== Other download option ======================= //
 
@@ -594,7 +633,7 @@ const SundryDebitor = () => {
         "Net Amount",
         "Rem. Amount",
         "Due Days",
-        "Interest Amt."
+        "Interest Amt.",
       ];
       let tableData = [];
 
@@ -632,14 +671,19 @@ const SundryDebitor = () => {
             : calculateDaysDifference(billDate);
 
           let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
-          let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+          let credit_note_amount =
+            parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount
           let bill_deducation_amount = +total_amount - +credit_note_amount;
 
           let interest_amount = 0;
           if (bill?.credit_note_id == null) {
             interest_amount = CalculateInterest(dueDays, bill?.amount);
           }
-          let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
+          let bill_remaing_amount = parseFloat(
+            bill?.part_payment == null
+              ? bill_deducation_amount
+              : +bill?.part_payment
+          ).toFixed(2);
 
           if (option == "due_bills") {
             if (!bill?.is_paid) {
@@ -654,15 +698,17 @@ const SundryDebitor = () => {
                 total_amount,
                 bill_remaing_amount,
                 `${dueDays} (${billDays})`,
-                interest_amount
-              ])
+                interest_amount,
+              ]);
 
-              // Update total information 
+              // Update total information
               total_taka = +total_taka + +bill?.taka || 0;
               total_meter = +total_meter + +bill?.meter || 0;
               total_bill_amount = +total_bill_amount + +total_amount || 0;
-              total_remain_amount = +total_remain_amount + +bill_remaing_amount || 0;
-              total_interest_amount = +total_interest_amount + +interest_amount || 0;
+              total_remain_amount =
+                +total_remain_amount + +bill_remaing_amount || 0;
+              total_interest_amount =
+                +total_interest_amount + +interest_amount || 0;
               index += 1;
             }
           } else {
@@ -677,25 +723,34 @@ const SundryDebitor = () => {
               total_amount,
               bill_remaing_amount,
               `${dueDays} (${billDays})`,
-              interest_amount
-            ])
+              interest_amount,
+            ]);
             index += 1;
 
-            // Update total information 
+            // Update total information
             total_taka = +total_taka + +bill?.taka || 0;
             total_meter = +total_meter + +bill?.meter || 0;
             total_bill_amount = +total_bill_amount + +total_amount || 0;
-            total_remain_amount = +total_remain_amount + +bill_remaing_amount || 0;
-            total_interest_amount = +total_interest_amount + +interest_amount || 0;
+            total_remain_amount =
+              +total_remain_amount + +bill_remaing_amount || 0;
+            total_interest_amount =
+              +total_interest_amount + +interest_amount || 0;
           }
 
           if (option == "with_broker") {
-            tableData.push(String(`${data?.supplier?.broker?.first_name || data?.party?.broker?.first_name}` `${data?.supplier?.broker?.last_name || data?.party?.broker?.last_name}`).toUpperCase())
+            tableData.push(
+              String(
+                `${
+                  data?.supplier?.broker?.first_name ||
+                  data?.party?.broker?.first_name
+                }``${
+                  data?.supplier?.broker?.last_name ||
+                  data?.party?.broker?.last_name
+                }`
+              ).toUpperCase()
+            );
           }
-
-
-
-        })
+        });
 
         tableData.push([
           "Total",
@@ -708,55 +763,60 @@ const SundryDebitor = () => {
           parseFloat(total_bill_amount).toFixed(2),
           parseFloat(total_remain_amount).toFixed(2),
           "",
-          parseFloat(total_interest_amount).toFixed(2)
-        ])
+          parseFloat(total_interest_amount).toFixed(2),
+        ]);
 
         if (option == "with_broker") {
           tableData.push("");
         }
-
-      })
+      });
 
       setLocalStorageForPrint("All bills", "", tableTitle, tableData);
       window.open("/print");
 
       setBillInformationLoading(false);
     }
-  }
+  };
 
   const PDFDownloadOptionMenu = [
     {
       key: "1",
       label: (
-        <div onClick={() => {
-          PDFDownloadOptionHandler("all_bills")
-        }}>
+        <div
+          onClick={() => {
+            PDFDownloadOptionHandler("all_bills");
+          }}
+        >
           All Bills
         </div>
-      )
+      ),
     },
     {
       key: "2",
       label: (
-        <div className="sundry-dropdown-option-danger"
+        <div
+          className="sundry-dropdown-option-danger"
           onClick={() => {
-            PDFDownloadOptionHandler("due_bills")
-          }}>
+            PDFDownloadOptionHandler("due_bills");
+          }}
+        >
           Due Bills
         </div>
-      )
+      ),
     },
     {
       key: "3",
       label: (
-        <div onClick={() => {
-          PDFDownloadOptionHandler("with_broker")
-        }}>
+        <div
+          onClick={() => {
+            PDFDownloadOptionHandler("with_broker");
+          }}
+        >
           With Broker
         </div>
-      )
-    }
-  ]
+      ),
+    },
+  ];
 
   const SummaryOptionHandler = (option) => {
     if (initialDebitorData?.length == 0) {
@@ -771,21 +831,20 @@ const SundryDebitor = () => {
           "Taka/Beam",
           "Meter/KG",
           "Amount",
-          "Int. Receivable"
-        ]
+          "Int. Receivable",
+        ];
         let tableData = [];
         let temp = {};
 
         initialDebitorData?.map((data) => {
           temp[data?.id] = {
-            "user": data?.supplier?.supplier_company || data?.party?.company_name,
-            "total_taka": 0,
-            "total_meter": 0,
-            "total_amount": 0,
-            "total_interest": 0
-          }
+            user: data?.supplier?.supplier_company || data?.party?.company_name,
+            total_taka: 0,
+            total_meter: 0,
+            total_amount: 0,
+            total_interest: 0,
+          };
           data?.bills?.map((bill) => {
-
             let paid_amount = parseFloat(bill?.paid_amount) || 0;
             paid_amount = paid_amount.toFixed(2);
 
@@ -806,12 +865,16 @@ const SundryDebitor = () => {
               interest_amount = CalculateInterest(dueDays, bill?.amount);
             }
 
-            temp[data?.id]["total_taka"] = +temp[data?.id]["total_taka"] + +bill?.taka || 0;
-            temp[data?.id]["total_meter"] = +temp[data?.id]["total_meter"] + +bill?.meter || 0;
-            temp[data?.id]["total_amount"] = +temp[data?.id]["total_amount"] + +bill?.meter || 0;
-            temp[data?.id]["total_interest"] = +temp[data?.id]["total_interest"] + +interest_amount || 0;
-          })
-        })
+            temp[data?.id]["total_taka"] =
+              +temp[data?.id]["total_taka"] + +bill?.taka || 0;
+            temp[data?.id]["total_meter"] =
+              +temp[data?.id]["total_meter"] + +bill?.meter || 0;
+            temp[data?.id]["total_amount"] =
+              +temp[data?.id]["total_amount"] + +bill?.meter || 0;
+            temp[data?.id]["total_interest"] =
+              +temp[data?.id]["total_interest"] + +interest_amount || 0;
+          });
+        });
 
         let total_taka = 0;
         let total_meter = 0;
@@ -825,14 +888,15 @@ const SundryDebitor = () => {
             data?.total_taka,
             data?.total_meter,
             data?.total_amount,
-            data?.total_interest
-          ])
+            data?.total_interest,
+          ]);
           index += 1;
           total_taka = +total_taka + +data?.total_taka;
           total_meter = +total_meter + +data?.total_meter;
           total_amount = +total_amount + +data?.total_amount;
-          total_interest_amount = +total_interest_amount + +data?.total_interest;
-        })
+          total_interest_amount =
+            +total_interest_amount + +data?.total_interest;
+        });
 
         tableData.push([
           index,
@@ -840,8 +904,8 @@ const SundryDebitor = () => {
           parseFloat(total_taka).toFixed(2),
           parseFloat(total_meter).toFixed(2),
           parseFloat(total_amount).toFixed(2),
-          parseFloat(total_interest_amount).toFixed(2)
-        ])
+          parseFloat(total_interest_amount).toFixed(2),
+        ]);
 
         setLocalStorageForPrint("Bill Summary", "", tableTitle, tableData);
         setBillInformationLoading(false);
@@ -854,19 +918,19 @@ const SundryDebitor = () => {
           "0-30 days(In. GST)",
           "30-60 days(In. GST)",
           "60-90 days(In. GST)",
-          "90 + days(In. GST)"
+          "90 + days(In. GST)",
         ];
         let tableData = [];
 
         let temp = {};
         initialDebitorData?.map((data) => {
           temp[data?.id] = {
-            "user": data?.supplier?.supplier_company || data?.party?.company_name,
-            "30": 0,
-            "60": 0,
-            "90": 0,
-            "90+": 0
-          }
+            user: data?.supplier?.supplier_company || data?.party?.company_name,
+            30: 0,
+            60: 0,
+            90: 0,
+            "90+": 0,
+          };
 
           data?.bills?.map((bill) => {
             let paid_amount = parseFloat(bill?.paid_amount) || 0;
@@ -885,26 +949,35 @@ const SundryDebitor = () => {
             }
 
             let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
-            let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+            let credit_note_amount =
+              parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount
             let bill_deducation_amount = +total_amount - +credit_note_amount;
 
             let interest_amount = 0;
             if (bill?.credit_note_id == null) {
               interest_amount = CalculateInterest(dueDays, bill?.amount);
             }
-            let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
+            let bill_remaing_amount = parseFloat(
+              bill?.part_payment == null
+                ? bill_deducation_amount
+                : +bill?.part_payment
+            ).toFixed(2);
 
             if (dueDays < 30) {
-              temp[data?.id]["30"] = +temp[data?.id]["30"] + +bill_remaing_amount;
+              temp[data?.id]["30"] =
+                +temp[data?.id]["30"] + +bill_remaing_amount;
             } else if (dueDays >= 30 && dueDays < 60) {
-              temp[data?.id]["60"] = +temp[data?.id]["60"] + +bill_remaing_amount;
+              temp[data?.id]["60"] =
+                +temp[data?.id]["60"] + +bill_remaing_amount;
             } else if (dueDays >= 60 && dueDays < 90) {
-              temp[data?.id]["90"] = +temp[data?.id]["90"] + +bill_remaing_amount;
+              temp[data?.id]["90"] =
+                +temp[data?.id]["90"] + +bill_remaing_amount;
             } else {
-              temp[data?.id]["90+"] = +temp[data?.id]["90+"] + +bill_remaing_amount;
+              temp[data?.id]["90+"] =
+                +temp[data?.id]["90+"] + +bill_remaing_amount;
             }
-          })
-        })
+          });
+        });
 
         let temp_total_30 = 0;
         let temp_total_60 = 0;
@@ -918,8 +991,8 @@ const SundryDebitor = () => {
             parseFloat(data["30"]).toFixed(2),
             parseFloat(data["60"]).toFixed(2),
             parseFloat(data["90"]).toFixed(2),
-            parseFloat(data["90+"]).toFixed(2)
-          ])
+            parseFloat(data["90+"]).toFixed(2),
+          ]);
 
           index += 1;
 
@@ -927,25 +1000,30 @@ const SundryDebitor = () => {
           temp_total_60 = +temp_total_60 + +data["60"];
           temp_total_90 = +temp_total_90 + +data["90"];
           temp_total_90_plus = +temp_total_90_plus + +data["90+"];
-        })
+        });
         tableData.push([
           index,
           "Total",
           parseFloat(temp_total_30).toFixed(2),
           parseFloat(temp_total_60).toFixed(2),
           parseFloat(temp_total_90).toFixed(2),
-          parseFloat(temp_total_90_plus).toFixed(2)
-        ])
+          parseFloat(temp_total_90_plus).toFixed(2),
+        ]);
 
         index += 1;
 
         tableData.push([
           index,
           "Grand Total",
-          parseFloat(+temp_total_30 + +temp_total_60 + +temp_total_90 + +temp_total_90_plus).toFixed(2),
+          parseFloat(
+            +temp_total_30 +
+              +temp_total_60 +
+              +temp_total_90 +
+              +temp_total_90_plus
+          ).toFixed(2),
           "",
           "",
-          ""
+          "",
         ]);
 
         setLocalStorageForPrint("Stock Summary", "", tableTitle, tableData);
@@ -954,32 +1032,35 @@ const SundryDebitor = () => {
       }
       setBillInformationLoading(false);
     }
-
-  }
+  };
 
   const SummaryOptionMenu = [
     {
       key: "1",
       label: (
-        <div onClick={() => {
-          SummaryOptionHandler("all_bills")
-        }}>
+        <div
+          onClick={() => {
+            SummaryOptionHandler("all_bills");
+          }}
+        >
           All Bills
         </div>
-      )
+      ),
     },
     {
       key: "2",
       label: (
-        <div className="sundry-dropdown-option-danger"
+        <div
+          className="sundry-dropdown-option-danger"
           onClick={() => {
-            SummaryOptionHandler("stock-management")
-          }}>
+            SummaryOptionHandler("stock-management");
+          }}
+        >
           Stock Management
         </div>
-      )
-    }
-  ]
+      ),
+    },
+  ];
 
   const InterestSummaryOptionHandle = () => {
     try {
@@ -993,7 +1074,7 @@ const SundryDebitor = () => {
         "Total interest",
         "Total Amount",
         "Received Amount",
-        "Not Rec. Amount"
+        "Not Rec. Amount",
       ];
       let tableData = [];
 
@@ -1022,36 +1103,48 @@ const SundryDebitor = () => {
             : calculateDaysDifference(billDate);
 
           let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
-          let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+          let credit_note_amount =
+            parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount
           let bill_deducation_amount = +total_amount - +credit_note_amount;
 
           let interest_amount = 0;
           if (bill?.credit_note_id == null) {
             interest_amount = CalculateInterest(dueDays, bill?.amount);
           }
-          let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
-          let bill_paid_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2);
+          let bill_remaing_amount = parseFloat(
+            bill?.part_payment == null
+              ? bill_deducation_amount
+              : +bill?.part_payment
+          ).toFixed(2);
+          let bill_paid_amount = parseFloat(
+            +bill_deducation_amount - +bill_remaing_amount
+          ).toFixed(2);
 
           if (interest_amount > 0) {
             temp[data?.id] = {
-              'user': data?.supplier?.supplier_company || data?.party?.company_name,
-              "total_meter": 0,
-              "interest_amount": 0,
-              "total_amount": 0,
-              "received_amount": 0,
-              "not_received_amount": 0
-            }
+              user:
+                data?.supplier?.supplier_company || data?.party?.company_name,
+              total_meter: 0,
+              interest_amount: 0,
+              total_amount: 0,
+              received_amount: 0,
+              not_received_amount: 0,
+            };
 
-            temp[data?.id]["total_meter"] = +temp[data?.id]["total_meter"] + +bill?.meter || 0;
-            temp[data?.id]["interest_amount"] = +temp[data?.id]["interest_amount"] + +interest_amount || 0;
-            temp[data?.id]["total_amount"] = +temp[data?.id]["total_amount"] + +total_amount || 0;
-            temp[data?.id]["received_amount"] = +temp[data?.id]["received_amount"] + +bill_paid_amount || 0;
-            temp[data?.id]["not_received_amount"] = +temp[data?.id]["not_received_amount"] + +bill_remaing_amount || 0;
+            temp[data?.id]["total_meter"] =
+              +temp[data?.id]["total_meter"] + +bill?.meter || 0;
+            temp[data?.id]["interest_amount"] =
+              +temp[data?.id]["interest_amount"] + +interest_amount || 0;
+            temp[data?.id]["total_amount"] =
+              +temp[data?.id]["total_amount"] + +total_amount || 0;
+            temp[data?.id]["received_amount"] =
+              +temp[data?.id]["received_amount"] + +bill_paid_amount || 0;
+            temp[data?.id]["not_received_amount"] =
+              +temp[data?.id]["not_received_amount"] + +bill_remaing_amount ||
+              0;
           }
-
-
-        })
-      })
+        });
+      });
 
       let temp_total_meter = 0;
       let temp_total_inerest = 0;
@@ -1067,8 +1160,8 @@ const SundryDebitor = () => {
           parseFloat(data["interest_amount"]).toFixed(2),
           parseFloat(data["total_amount"]).toFixed(2),
           parseFloat(data["received_amount"]).toFixed(2),
-          parseFloat(data["not_received_amount"]).toFixed(2)
-        ])
+          parseFloat(data["not_received_amount"]).toFixed(2),
+        ]);
         index += 1;
 
         temp_total_meter += +data["total_meter"];
@@ -1076,7 +1169,7 @@ const SundryDebitor = () => {
         temp_total_amount += +data["total_amount"];
         temp_total_received_amount += +data["received_amount"];
         temp_total_not_received_amount += +data["not_received_amount"];
-      })
+      });
 
       tableData.push([
         index,
@@ -1085,7 +1178,7 @@ const SundryDebitor = () => {
         parseFloat(temp_total_inerest).toFixed(2),
         parseFloat(temp_total_amount).toFixed(2),
         parseFloat(temp_total_received_amount).toFixed(2),
-        parseFloat(temp_total_not_received_amount).toFixed(2)
+        parseFloat(temp_total_not_received_amount).toFixed(2),
       ]);
 
       setLocalStorageForPrint("Stock Summary", "", tableTitle, tableData);
@@ -1096,7 +1189,7 @@ const SundryDebitor = () => {
 
       setBillInformationLoading(false);
     }
-  }
+  };
   return (
     <Spin spinning={billInformationLoading}>
       <div className="flex flex-col gap-2 p-4">
@@ -1106,7 +1199,6 @@ const SundryDebitor = () => {
           </div>
 
           <div style={{ marginLeft: "auto" }}>
-
             {/* ============== Interest payment option ============  */}
             {selectedInterestBill?.length > 0 && (
               <Flex style={{ gap: 5 }}>
@@ -1115,7 +1207,7 @@ const SundryDebitor = () => {
                     marginTop: "auto",
                     marginBottom: "auto",
                     textAlign: "center",
-                    color: "green"
+                    color: "green",
                   }}
                 >
                   {" "}
@@ -1131,7 +1223,6 @@ const SundryDebitor = () => {
                 </Button>
               </Flex>
             )}
-
             {/* ============== Bill Payment option ================= */}
             {selectedBill?.length > 0 && (
               <Flex style={{ gap: 5 }}>
@@ -1182,7 +1273,6 @@ const SundryDebitor = () => {
         </div>
 
         <Flex align="center" justify="flex-end" gap={10}>
-
           {/* ============== Debit note generation option =========  */}
           {debitNoteSelection?.length > 0 && (
             <Flex>
@@ -1198,7 +1288,9 @@ const SundryDebitor = () => {
           )}
 
           <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">Find</Typography.Text>
+            <Typography.Text className="whitespace-nowrap">
+              Find
+            </Typography.Text>
             <Input
               value={billNo}
               onChange={(e) => setBillNo(e.target.value)}
@@ -1253,7 +1345,9 @@ const SundryDebitor = () => {
           </Flex>
 
           <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">From</Typography.Text>
+            <Typography.Text className="whitespace-nowrap">
+              From
+            </Typography.Text>
             <DatePicker value={fromDate} onChange={setFromDate} />
           </Flex>
           <Flex align="center" gap={10}>
@@ -1262,7 +1356,10 @@ const SundryDebitor = () => {
           </Flex>
 
           {/* PDF Download option  */}
-          <Dropdown menu={{ items: PDFDownloadOptionMenu }} placement="bottomLeft">
+          <Dropdown
+            menu={{ items: PDFDownloadOptionMenu }}
+            placement="bottomLeft"
+          >
             <Button
               icon={<FilePdfOutlined />}
               type="primary"
@@ -1272,15 +1369,15 @@ const SundryDebitor = () => {
 
           {/* Summary download option  */}
           <Dropdown menu={{ items: SummaryOptionMenu }} placement="bottomLeft">
-            <Button>
-              SUMMARY
-            </Button>
+            <Button>SUMMARY</Button>
           </Dropdown>
 
           {/* Interest summary download option  */}
-          <Button onClick={() => {
-            InterestSummaryOptionHandle()
-          }}>
+          <Button
+            onClick={() => {
+              InterestSummaryOptionHandle();
+            }}
+          >
             INTEREST SUMMARY
           </Button>
         </Flex>
@@ -1331,55 +1428,38 @@ const SundryDebitor = () => {
               {debitorDataList ? (
                 debitorDataList?.map((data, index) => (
                   <TableWithAccordion
-
                     key={index}
-
                     data={data}
-
                     company={company}
-
                     companyId={companyId}
-
                     handleInterestCheckboxSelection={(event, bill, user_id) => {
-                      setSelectedUser(user_id)
+                      setSelectedUser(user_id);
                       handleInterestCheckboxSelection(event, bill);
                     }}
-
                     selectedInterestBill={selectedInterestBill}
-
                     selectedBill={selectedBill}
                     handleBillSelection={(event, bill) => {
                       handleBillSelection(event, bill);
                     }}
-
                     companyListRes={companyListRes}
-
                     handleDebitNoteSelection={handleDebitNoteSelection}
-
                     debitNoteSelection={debitNoteSelection}
-
-
                     // Handle Debit note click related handler
                     handleDebitNoteClick={(bill, data) => {
                       setDebitNoteModelOpen(true);
                       setDebitNoteSelection([bill]);
                       setDebitNoteModelData(data);
                     }}
-
-
-                    // Handle credit note click related handler 
+                    // Handle credit note click related handler
                     handleCreditNoteClick={(bill, data) => {
                       setCreditNoteModelOpen(true);
                       setCreditNoteSelection([bill]);
                       setCreditNoteModelData(data);
                     }}
-
                     setBillInformationLoading={setBillInformationLoading}
-
                     allbillDownloadHandler={(data) => {
                       AllBillDownloadOption(data);
                     }}
-
                     allDueBillDownloadHandler={(data) => {
                       AllDueBillDownloadOption(data);
                     }}
@@ -1396,7 +1476,10 @@ const SundryDebitor = () => {
                 <td colSpan={11}></td>
               </tr>
 
-              <tr style={{ backgroundColor: "white" }} className="sundary-total">
+              <tr
+                style={{ backgroundColor: "white" }}
+                className="sundary-total"
+              >
                 <td>
                   <b>Grand Total</b>
                 </td>
@@ -1422,7 +1505,7 @@ const SundryDebitor = () => {
             </tbody>
           </table>
         )}
-        
+
         {/* ==== Inerest received payment modal ====  */}
         {interestPaymentModalOpen && (
           <InterestPaymentModal
@@ -1498,7 +1581,7 @@ const TableWithAccordion = ({
   handleCreditNoteClick,
   handleDebitNoteClick,
   allbillDownloadHandler,
-  allDueBillDownloadHandler
+  allDueBillDownloadHandler,
 }) => {
   const [isAccordionOpen, setIsAccordionOpen] = useState(data?.id);
 
@@ -1539,7 +1622,7 @@ const TableWithAccordion = ({
       ...prev,
       isModalOpen: false,
     }));
-  }
+  };
 
   const TOTAL = useMemo(() => {
     if (data && data?.bills && data?.bills?.length) {
@@ -1561,7 +1644,7 @@ const TableWithAccordion = ({
     }
   }, [data]);
 
-  // ==== Bill information click related handler ==== // 
+  // ==== Bill information click related handler ==== //
   const onClickViewHandler = async (bill, type) => {
     try {
       let response;
@@ -1624,8 +1707,6 @@ const TableWithAccordion = ({
     }
   };
 
-
-
   return (
     <>
       <tr
@@ -1668,13 +1749,11 @@ const TableWithAccordion = ({
             </>
           ) : null}
         </td>
-        <td style={{ textAlign: "center" }}>
-        </td>
+        <td style={{ textAlign: "center" }}></td>
 
         {/* PDF export related option  */}
         <td>
           <Flex style={{ gap: 6 }}>
-
             <Button type="text">{isAccordionOpen ? "▼" : "►"}</Button>
 
             {/* All Bill related download option   */}
@@ -1697,9 +1776,7 @@ const TableWithAccordion = ({
               />
             </Tooltip>
           </Flex>
-
         </td>
-
       </tr>
 
       {/* Accordion Content Rows (conditionally rendered) */}
@@ -1707,7 +1784,6 @@ const TableWithAccordion = ({
         <>
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
-
               let paid_amount = parseFloat(bill?.paid_amount) || 0;
               paid_amount = paid_amount.toFixed(2);
 
@@ -1733,18 +1809,18 @@ const TableWithAccordion = ({
                 bill?.model == SALE_BILL_MODEL
                   ? SALE_BILL_MODEL_NAME
                   : bill?.model == YARN_SALE_BILL_MODEL
-                    ? YARN_SALE_BILL_MODEL_NAME
-                    : bill?.model == JOB_GREAY_SALE_BILL_MODEL
-                      ? JOB_GREAY_BILL_MODEL_NAME
-                      : bill?.model == BEAM_SALE_BILL_MODEL
-                        ? BEAM_SALE_MODEL_NAME
-                        : bill?.model == CREDIT_NOTE_BILL_MODEL
-                          ? CREDIT_NOTE_MODEL_NAME
-                          : bill?.model == DEBIT_NOTE_BILL_MODEL
-                            ? DEBIT_NOTE_NAME
-                            : bill?.model == JOB_WORK_BILL_MODEL
-                              ? JOB_WORK_MODEL_NAME
-                              : "";
+                  ? YARN_SALE_BILL_MODEL_NAME
+                  : bill?.model == JOB_GREAY_SALE_BILL_MODEL
+                  ? JOB_GREAY_BILL_MODEL_NAME
+                  : bill?.model == BEAM_SALE_BILL_MODEL
+                  ? BEAM_SALE_MODEL_NAME
+                  : bill?.model == CREDIT_NOTE_BILL_MODEL
+                  ? CREDIT_NOTE_MODEL_NAME
+                  : bill?.model == DEBIT_NOTE_BILL_MODEL
+                  ? DEBIT_NOTE_NAME
+                  : bill?.model == JOB_WORK_BILL_MODEL
+                  ? JOB_WORK_MODEL_NAME
+                  : "";
 
               let isChecked =
                 selectedInterestBill?.filter(
@@ -1771,25 +1847,32 @@ const TableWithAccordion = ({
                   : false;
 
               let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
-              let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+              let credit_note_amount =
+                parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount
               let bill_deducation_amount = +total_amount - +credit_note_amount;
 
               let interest_amount = 0;
               if (bill?.credit_note_id == null) {
                 interest_amount = CalculateInterest(dueDays, bill?.amount);
               }
-              let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
-              let bill_paid_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2);
+              let bill_remaing_amount = parseFloat(
+                bill?.part_payment == null
+                  ? bill_deducation_amount
+                  : +bill?.part_payment
+              ).toFixed(2);
+              let bill_paid_amount = parseFloat(
+                +bill_deducation_amount - +bill_remaing_amount
+              ).toFixed(2);
 
               return (
                 <tr key={index + "_bill"} className="sundary-data">
-
                   {/* Debit note creation related checkbox handler  */}
                   <td>
                     {bill?.debit_note_id == null &&
-                      ![CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(
-                        bill?.model
-                      ) && (
+                      ![
+                        CREDIT_NOTE_BILL_MODEL,
+                        DEBIT_NOTE_BILL_MODEL,
+                      ]?.includes(bill?.model) && (
                         <Checkbox
                           checked={debiteNoteChecked}
                           onChange={(event) => {
@@ -1810,15 +1893,17 @@ const TableWithAccordion = ({
 
                   {/* Bill number related information  */}
                   <td>
-                    {
-                      bill?.model === CREDIT_NOTE_BILL_MODEL ? (
-                        <span style={{ color: "green" }}>{bill?.bill_no || "N/A"}</span>
-                      ) : bill?.model === DEBIT_NOTE_BILL_MODEL ? (
-                        <span style={{ color: "red" }}>{bill?.bill_no || "N/A"}</span>
-                      ) : (
-                        <span>{bill?.bill_no || "N/A"}</span>
-                      )
-                    }
+                    {bill?.model === CREDIT_NOTE_BILL_MODEL ? (
+                      <span style={{ color: "green" }}>
+                        {bill?.bill_no || "N/A"}
+                      </span>
+                    ) : bill?.model === DEBIT_NOTE_BILL_MODEL ? (
+                      <span style={{ color: "red" }}>
+                        {bill?.bill_no || "N/A"}
+                      </span>
+                    ) : (
+                      <span>{bill?.bill_no || "N/A"}</span>
+                    )}
                   </td>
 
                   {/* Bill type related information  */}
@@ -1828,8 +1913,8 @@ const TableWithAccordion = ({
                         bill?.model === CREDIT_NOTE_BILL_MODEL
                           ? "green"
                           : bill?.model === DEBIT_NOTE_BILL_MODEL
-                            ? "red"
-                            : "#000",
+                          ? "red"
+                          : "#000",
                     }}
                   >
                     {model}
@@ -1846,12 +1931,16 @@ const TableWithAccordion = ({
                     {bill?.model === BEAM_SALE_BILL_MODEL ? (
                       <>
                         <span style={{ color: "blue" }}>{`Beam =>`}</span>
-                        <span style={{ marginLeft: 4 }}>{bill?.taka || "0"}</span>
+                        <span style={{ marginLeft: 4 }}>
+                          {bill?.taka || "0"}
+                        </span>
                       </>
                     ) : bill?.model === YARN_SALE_BILL_MODEL ? (
                       <>
                         <span style={{ color: "blue" }}>{`Cartoon =>`}</span>
-                        <span style={{ marginLeft: 4 }}>{bill?.taka || "0"}</span>
+                        <span style={{ marginLeft: 4 }}>
+                          {bill?.taka || "0"}
+                        </span>
                       </>
                     ) : (
                       <span>{bill?.taka || "-"}</span>
@@ -1862,12 +1951,16 @@ const TableWithAccordion = ({
                     {bill?.model === BEAM_SALE_BILL_MODEL ? (
                       <>
                         <span style={{ color: "blue" }}>{`KG =>`}</span>
-                        <span style={{ marginLeft: 4 }}>{bill?.meter || "0"}</span>
+                        <span style={{ marginLeft: 4 }}>
+                          {bill?.meter || "0"}
+                        </span>
                       </>
                     ) : bill?.model === YARN_SALE_BILL_MODEL ? (
                       <>
                         <span style={{ color: "blue" }}>{`KG =>`}</span>
-                        <span style={{ marginLeft: 4 }}>{bill?.meter || "0"}</span>
+                        <span style={{ marginLeft: 4 }}>
+                          {bill?.meter || "0"}
+                        </span>
                       </>
                     ) : (
                       <span>{bill?.meter || "-"}</span>
@@ -1877,7 +1970,9 @@ const TableWithAccordion = ({
                   {/* =========== Bill amount information =========  */}
                   <td>
                     <Tooltip
-                      title={`${total_amount} - ${credit_note_amount} - ${bill_paid_amount} = ${parseFloat(bill_remaing_amount).toFixed(2)}`}
+                      title={`${total_amount} - ${credit_note_amount} - ${bill_paid_amount} = ${parseFloat(
+                        bill_remaing_amount
+                      ).toFixed(2)}`}
                     >
                       <div>
                         {/* Total bill remaing amount information  */}
@@ -1895,7 +1990,6 @@ const TableWithAccordion = ({
                             Received ( {paid_amount} )
                           </div>
                         )}
-
                       </div>
                     </Tooltip>
                   </td>
@@ -1910,7 +2004,6 @@ const TableWithAccordion = ({
                       cursor: "pointer",
                     }}
                   >
-
                     {/* Due Date related information  */}
                     <Tooltip title={`Due Date : ${dueDate || ""}`}>
                       {dueDays <= 0 ? 0 : `+${dueDays}D` || 0}
@@ -1929,7 +2022,6 @@ const TableWithAccordion = ({
                         ( {billDays} )
                       </span>
                     </Tooltip>
-
                   </td>
 
                   {/* Interest amount information  */}
@@ -1937,7 +2029,9 @@ const TableWithAccordion = ({
                   {/* Credit note and Debit note related interest amount not show  */}
 
                   <td>
-                    {[CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(bill?.model) ? (
+                    {[CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(
+                      bill?.model
+                    ) ? (
                       <>
                         <div>---</div>
                       </>
@@ -1947,7 +2041,15 @@ const TableWithAccordion = ({
                           bill?.interest_amount !== null && (
                             <>
                               <div style={{ cursor: "pointer" }}>
-                                <span style={{ color: "green", fontWeight: 600, fontSize: 13 }}>Rece :</span>
+                                <span
+                                  style={{
+                                    color: "green",
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                  }}
+                                >
+                                  Rece :
+                                </span>
                                 <span style={{ fontSize: 12, marginLeft: 4 }}>
                                   {moment(bill?.interest_paid_date).format(
                                     "DD-MM-YYYY"
@@ -1955,7 +2057,13 @@ const TableWithAccordion = ({
                                 </span>
                               </div>
                               <div style={{ marginTop: 3 }}>
-                                <span style={{ color: "blue", fontWeight: 600, fontSize: 13 }}>
+                                <span
+                                  style={{
+                                    color: "blue",
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                  }}
+                                >
                                   Amount:
                                 </span>
                                 <span style={{ fontSize: 12, marginLeft: 4 }}>
@@ -1978,11 +2086,15 @@ const TableWithAccordion = ({
                         gap: 5,
                       }}
                     >
-
-                      {![CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(bill?.model) && (
+                      {![
+                        CREDIT_NOTE_BILL_MODEL,
+                        DEBIT_NOTE_BILL_MODEL,
+                      ]?.includes(bill?.model) && (
                         <>
-
-                          {![SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill?.model) && (
+                          {![
+                            SALE_BILL_MODEL,
+                            JOB_GREAY_SALE_BILL_MODEL,
+                          ]?.includes(bill?.model) && (
                             <Tooltip title={"Challan"}>
                               <EyeOutlined
                                 style={{ fontSize: 18 }}
@@ -1996,7 +2108,9 @@ const TableWithAccordion = ({
                           <Tooltip title={"Bill"}>
                             <FileTextOutlined
                               style={{ fontSize: 18 }}
-                              onClick={() => { onClickViewHandler(bill, "bill") }}
+                              onClick={() => {
+                                onClickViewHandler(bill, "bill");
+                              }}
                             />
                           </Tooltip>
                         </>
@@ -2009,7 +2123,7 @@ const TableWithAccordion = ({
                             <TabletFilled
                               style={{ color: "green" }}
                               onClick={() => {
-                                handleCreditNoteClick(bill, data)
+                                handleCreditNoteClick(bill, data);
                               }}
                             />
                           </div>
@@ -2030,19 +2144,21 @@ const TableWithAccordion = ({
                         </Tooltip>
                       )}
 
-                      {bill?.debit_note_id !== null && bill?.debit_note_id !== undefined && (
-                        <Tooltip title={`DEBIT NOTE : ${bill?.debit_note_number}`}>
-                          <div style={{ cursor: "pointer" }}>
-                            <TabletFilled
-                              style={{ color: "red" }}
-                              onClick={() => {
-                                handleDebitNoteClick(bill, data);
-                              }}
-                            />
-                          </div>
-                        </Tooltip>
-                      )}
-
+                      {bill?.debit_note_id !== null &&
+                        bill?.debit_note_id !== undefined && (
+                          <Tooltip
+                            title={`DEBIT NOTE : ${bill?.debit_note_number}`}
+                          >
+                            <div style={{ cursor: "pointer" }}>
+                              <TabletFilled
+                                style={{ color: "red" }}
+                                onClick={() => {
+                                  handleDebitNoteClick(bill, data);
+                                }}
+                              />
+                            </div>
+                          </Tooltip>
+                        )}
                     </Flex>
                   </td>
 
@@ -2058,7 +2174,6 @@ const TableWithAccordion = ({
                     )}
                   </td>
 
-
                   {/* Bill Interest payment checkbox selection  */}
                   <td>
                     {bill?.interest_paid_date ? (
@@ -2067,15 +2182,17 @@ const TableWithAccordion = ({
                       CalculateInterest(dueDays, bill?.amount) !== 0 && (
                         <Checkbox
                           checked={isChecked}
-                          onChange={(event) => handleInterestCheckboxSelection(event, bill, {
-                            "is_supplier": data?.supplier !== undefined?true:false,
-                            "id": data?.id
-                          })}
+                          onChange={(event) =>
+                            handleInterestCheckboxSelection(event, bill, {
+                              is_supplier:
+                                data?.supplier !== undefined ? true : false,
+                              id: data?.id,
+                            })
+                          }
                         />
                       )
                     )}
                   </td>
-
                 </tr>
               );
             })

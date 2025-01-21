@@ -13,21 +13,22 @@ import {
   EditOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  getPartyListRequest,
+  getPartyListRequest2,
   updateUserRequest,
 } from "../../../api/requests/users";
 import { USER_ROLES } from "../../../constants/userRole";
-// import { downloadUserPdf, getPDFTitleContent } from "../../../lib/pdf/userPdf";
-// import { useCurrentUser } from "../../../api/hooks/auth";
-import ViewDetailModal from "../../../components/common/modal/ViewDetailModal";
 import { usePagination } from "../../../hooks/usePagination";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useContext, useState } from "react";
 import useDebounce from "../../../hooks/useDebounce";
+import ViewPartyDetailsModel from "./ViewPartyDetailsModel";
+import AddPartyCompany from "./AddPartyCompany";
+import ViewBrokersDetailsModel from "./ViewBrokersDetailsModel";
 
 const roleId = USER_ROLES.PARTY.role_id;
 
@@ -41,7 +42,15 @@ function PartyList() {
   const debouncedDueDay = useDebounce(dueDay, 500);
   const debouncedCreditLimitTo = useDebounce(creditLimitTo, 500);
   const debouncedCreditLimitFrom = useDebounce(creditLimitFrom, 500);
-  const { companyId } = useContext(GlobalContext);
+  const { companyId, companyListRes } = useContext(GlobalContext);
+
+  const [partyId, setPartyId] = useState(null);
+  const [isOpenBrokerDetails, setIsOpenBrokerDetails] = useState(false);
+
+  const handleCloseBrokerDetailsModel = () => {
+    setIsOpenBrokerDetails(false);
+  };
+
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
   // const { data: user } = useCurrentUser();
@@ -62,7 +71,7 @@ function PartyList() {
       },
     ],
     queryFn: async () => {
-      const res = await getPartyListRequest({
+      const res = await getPartyListRequest2({
         params: {
           company_id: companyId,
           page,
@@ -218,6 +227,7 @@ function PartyList() {
       title: "Action",
       render: (userDetails) => {
         const {
+          id,
           first_name,
           last_name,
           mobile,
@@ -228,31 +238,40 @@ function PartyList() {
           adhar_no,
           address,
           party,
+          sub_parties,
         } = userDetails;
 
         return (
           <Space>
-            <ViewDetailModal
+            <ViewPartyDetailsModel
               title="Party Details"
-              details={[
-                { title: "Name", value: `${first_name} ${last_name}` },
-                { title: "Contact Number", value: mobile },
-                { title: "Email", value: email },
-                { title: "Username", value: username },
-                { title: "GST No", value: gst_no },
-                { title: "PAN No", value: pancard_no },
-                { title: "Adhaar No", value: adhar_no },
-                { title: "Address", value: address },
-                { title: "Checker name", value: party?.checker_name },
-                { title: "Checker number", value: party?.checker_number },
-                { title: "Overdue day limit", value: party?.overdue_day_limit },
-                { title: "Credit limit", value: party?.credit_limit },
-                { title: "Company name", value: party?.company_name },
-                {
-                  title: "Company GST number",
-                  value: party?.company_gst_number,
-                },
-              ]}
+              isScroll={true}
+              companyListRes={companyListRes}
+              details={{
+                data: [
+                  { title: "Name", value: `${first_name} ${last_name}` },
+                  { title: "Contact Number", value: mobile },
+                  { title: "Email", value: email },
+                  { title: "Username", value: username },
+                  { title: "GST No", value: gst_no },
+                  { title: "PAN No", value: pancard_no },
+                  { title: "Adhaar No", value: adhar_no },
+                  { title: "Address", value: address },
+                  { title: "Checker name", value: party?.checker_name },
+                  { title: "Checker number", value: party?.checker_number },
+                  {
+                    title: "Overdue day limit",
+                    value: party?.overdue_day_limit,
+                  },
+                  { title: "Credit limit", value: party?.credit_limit },
+                  { title: "Company name", value: party?.company_name },
+                  {
+                    title: "Company GST number",
+                    value: party?.company_gst_number,
+                  },
+                ],
+                subParties: sub_parties || [],
+              }}
             />
             <Button
               onClick={() => {
@@ -261,6 +280,17 @@ function PartyList() {
             >
               <EditOutlined />
             </Button>
+
+            <Button
+              onClick={() => {
+                setIsOpenBrokerDetails(true);
+                setPartyId(id);
+              }}
+            >
+              <TeamOutlined />
+            </Button>
+
+            <AddPartyCompany />
           </Space>
         );
       },
@@ -376,6 +406,16 @@ function PartyList() {
         </Flex>
       </div>
       {renderTable()}
+
+      {isOpenBrokerDetails && (
+        <ViewBrokersDetailsModel
+          isModalOpen={isOpenBrokerDetails}
+          handleCancel={handleCloseBrokerDetailsModel}
+          partyId={partyId}
+          companyId={companyId}
+          isScroll={false}
+        />
+      )}
     </div>
   );
 }

@@ -210,8 +210,6 @@ const PassBookForm = () => {
         color: "black",
       };
 
-      console.log(particularRes);
-
       const data = particularRes.rows.map(
         ({ particular_name, label, is_cost_per_meter, head }) => {
           return {

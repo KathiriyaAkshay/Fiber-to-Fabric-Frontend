@@ -115,7 +115,7 @@ body {
   background-color: #83b1ff;
 }
 
-.job-challan-table-total td{
+.job-challan-table-total td {
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -611,7 +611,7 @@ input:read-only {
   /* -webkit-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1); */
   /* -moz-box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1); */
   /* box-shadow: 3px 3px 5px 0px rgba(212, 212, 212, 1); */
-  border:1px solid rgb(208, 208, 208);
+  border: 1px solid rgb(208, 208, 208);
   border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
@@ -631,7 +631,7 @@ input:read-only {
   ); */
 }
 
-.query-chart-icon{
+.query-chart-icon {
   height: 100%;
   display: flex;
   justify-content: center;
@@ -852,7 +852,7 @@ input:read-only {
   background-color: #eff5e9;
 }
 
-.statement-passbook-table-particular-entry{
+.statement-passbook-table-particular-entry {
   font-weight: 600;
 }
 
@@ -1025,72 +1025,68 @@ h2 {
   color: #fff;
 }
 
-.sub-table {
-  .ant-table {
-    width: 30% !important;
-    margin-right: auto !important;
-  }
+.sub-table .ant-table {
+  width: 30% !important;
+  margin-right: auto !important;
 }
 
-.payment-voucher-model{
-  .ant-descriptions-title{
-    font-size: 22px !important;
-  }
-  .ant-descriptions-item-label{
-    font-weight: 600 !important;
-    color: #000000 !important;
-  }
+.payment-voucher-model .ant-descriptions-title {
+  font-size: 22px !important;
+}
+.payment-voucher-model .ant-descriptions-item-label {
+  font-weight: 600 !important;
+  color: #000 !important;
 }
 
-.custom-table thead th{
+.custom-table thead th {
   font-size: 15px !important;
 }
 
-.sundary-header td{
+.sundary-header td {
   font-size: 14px;
   font-weight: 600;
   padding-left: 10px !important;
 }
 
-.sundary-data td{
+.sundary-data td {
   font-size: 14px;
   padding-left: 10px !important;
 }
 
 .sundary-total td {
-  font-size: 15px ;
+  font-size: 15px;
   padding-top: 10px !important;
   padding-bottom: 10px !important;
 }
 
-.sundary-due-date{
+.sundary-due-date {
   color: red !important;
 }
 
-.sundary-bill-payment-label{
+.sundary-bill-payment-label {
   font-weight: 600;
   text-align: left;
   margin-bottom: 8px;
 }
 
-.table-due-date-information-div{
+.table-due-date-information-div {
   font-weight: 600;
   color: red;
 }
 
-.opening-balance-entry{
+.opening-balance-entry {
   background-color: #c9efa4;
 }
 
-.passbook-particular-entry-td{
+.passbook-particular-entry-td {
   font-weight: 500;
 }
 
-.bank-balance-card .ant-collapse-header-text{
-  font-weight:600;
+.bank-balance-card .ant-collapse-header-text {
+  font-weight: 600;
 }
 
-.dashboard-monthlyproduction-table thead th{
+.dashboard-monthlyproduction-table thead th {
   font-weight: 300;
   padding-top: 7px;
   padding-bottom: 7px;
@@ -1098,17 +1094,17 @@ h2 {
   border-bottom: 1px solid rgb(208, 208, 208);
 }
 
-.dashboard-monthlyproduction-table tbody td{
+.dashboard-monthlyproduction-table tbody td {
   padding-top: 7px;
   padding-bottom: 3px;
   font-weight: 300;
   text-align: center;
 }
 
-.dashboard-monthlyproduction-table tbody tr{
+.dashboard-monthlyproduction-table tbody tr {
   border-bottom: 1px solid rgb(208, 208, 208);
 }
-.ant-statistic .ant-statistic-title{
+.ant-statistic .ant-statistic-title {
   color: black;
 }
 
@@ -1171,7 +1167,7 @@ h2 {
   padding: 4px;
   border: 1px solid #ddd; /* Added border to table cells */
   color: #333;
-  padding-left:  6px;
+  padding-left: 6px;
 }
 
 .dashboard-chart-due-days {
@@ -1184,7 +1180,7 @@ h2 {
   text-decoration: underline;
 }
 
-.challan-information-text{
+.challan-information-text {
   color: rgb(65, 65, 65);
   cursor: pointer;
   padding-left: 8px;
@@ -1193,11 +1189,11 @@ h2 {
   margin-top: 6px;
 }
 
-.challan-information-text:hover{
+.challan-information-text:hover {
   color: black;
 }
 
-.challan-information-count{
+.challan-information-count {
   color: black;
   font-weight: 600;
   margin-left: 8px;
@@ -1209,47 +1205,47 @@ h2 {
   cursor: pointer;
 }
 
-.due-days:hover{
+.due-days:hover {
   text-decoration: underline;
   color: blue !important;
 }
 
-.dashboard-employee-attendance thead th{
+.dashboard-employee-attendance thead th {
   font-size: 11px;
 }
 
-.dashboard-employee-attendance tbody td{
+.dashboard-employee-attendance tbody td {
   color: #525252;
   font-size: 11px;
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-.present-employee-count{
+.present-employee-count {
   color: blue !important;
   font-weight: 600 !important;
 }
 
-.absent-employee-count{
+.absent-employee-count {
   color: red !important;
   font-weight: 600 !important;
 }
 
-.credit-note-table tr td:nth-child(3){
+.credit-note-table tr td:nth-child(3) {
   color: black;
   font-weight: 600;
 }
 
-.dashboard-order-title{
+.dashboard-order-title {
   font-size: 16px;
   font-weight: 600;
 }
 
-.dashboard-order-data-div{
+.dashboard-order-data-div {
   margin-top: 6px;
 }
 
-.dashboard-order-data-title{
+.dashboard-order-data-title {
   font-size: 13px;
   color: gray;
   font-weight: 600;
@@ -1257,11 +1253,11 @@ h2 {
   margin-bottom: auto;
 }
 
-.dashboard-order-data-title:hover{
+.dashboard-order-data-title:hover {
   color: black;
 }
 
-.dashboard-order-data-count{
+.dashboard-order-data-count {
   font-size: 12px;
   background-color: #194a6d;
   color: #fff;
@@ -1272,7 +1268,7 @@ h2 {
   height: fit-content;
 }
 
-.dashboard-order-pending-meter-title{
+.dashboard-order-pending-meter-title {
   font-size: 12px;
 }
 
@@ -1290,7 +1286,7 @@ h2 {
   width: fit-content;
 }
 
-.production-report-title{
+.production-report-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
@@ -1333,31 +1329,31 @@ h2 {
   color: #28a745;
 }
 
-.sale-stock-title{
+.sale-stock-title {
   cursor: pointer;
 }
 
-.sale-stock-title:hover{
+.sale-stock-title:hover {
   color: blue !important;
   text-decoration: underline;
 }
 
-.production-taka-report{
+.production-taka-report {
   cursor: pointer;
 }
 
-.production-taka-report:hover{
+.production-taka-report:hover {
   color: blue;
   text-decoration: underline;
 }
 
-.production-taka-info{
+.production-taka-info {
   font-weight: 600;
   padding-left: 5px;
   font-size: 12px;
 }
 
-.production-taka-info-quality{
+.production-taka-info-quality {
   font-weight: 600;
 }
 
@@ -1397,56 +1393,56 @@ h2 {
   color: #333;
 }
 
-.gstr3b-report-title{
+.gstr3b-report-title {
   color: green;
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 14px;
 }
 
-.tax-total-amount-row td{
+.tax-total-amount-row td {
   color: green !important;
 }
 
-.folding-taka-info{
+.folding-taka-info {
   font-weight: 600;
   font-size: 13px;
   margin-bottom: 3px;
 }
 
-.production-pending-meter{
+.production-pending-meter {
   color: red !important;
-  font-weight:500;
+  font-weight: 500;
 }
 
-.production-multiple-quality-input{
+.production-multiple-quality-input {
   max-width: 220px;
 }
 
-.sale-challan-taka-number{
+.sale-challan-taka-number {
   color: red;
   font-weight: 600;
 }
 
-.bill-payment-model-tag{
+.bill-payment-model-tag {
   font-weight: 600;
 }
 
-.add-received-rework-challan-input{
+.add-received-rework-challan-input {
   background-color: #efefef;
 }
 
-.sundry-dropdown-option-danger{
+.sundry-dropdown-option-danger {
   font-weight: 600;
   color: red;
 }
 
-.credit-note-user-selection-dropdown .ant-tag{
+.credit-note-user-selection-dropdown .ant-tag {
   font-size: 12px;
   font-weight: 600;
 }
 
-.credit-note-user-selection-dropdown span{
+.credit-note-user-selection-dropdown span {
   font-size: 12px;
 }
 
@@ -1457,7 +1453,7 @@ body {
 }
 
 *::-webkit-scrollbar {
-  width: var(--sb-size)
+  width: var(--sb-size);
 }
 
 *::-webkit-scrollbar-track {
@@ -1468,11 +1464,10 @@ body {
 *::-webkit-scrollbar-thumb {
   background: var(--sb-thumb-color);
   border-radius: 3px;
-  
 }
 
 @supports not selector(::-webkit-scrollbar) {
   body {
-    scrollbar-color: var(--sb-thumb-color)
-                     var(--sb-track-color);
-  }}
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
