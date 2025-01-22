@@ -41,4 +41,6 @@ export let CREDIT_NOTE_DISCOUNT_NOTE = "discount" ;
 export let CREDIT_NOTE_OTHER_TYPE = "other" ; 
 export let DEBIT_NOTE_OTHER_TYPE = "other" ; 
 
-
+export let PURCHASE_RETURN_MODEL_NAME = "PURCHASE RETURN" ; 
+export let RECEIVE_BEAM_RETURN_MODEL_NAME = "BEAM RETURN" ; 
+export let YARN_RECEIVE_RETURN_MODEL_NAME = "YARN RETURN" ; 

@@ -36,7 +36,8 @@ import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/Cred
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
 import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
 import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
-import { JOB_REWORK_BILL_MODEL, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
+import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 // import UpdateCreditNode from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 
 const CREDIT_NOTE_TYPES = [
@@ -177,9 +178,7 @@ const CreditNotes = () => {
       dataIndex: "challan",
       key: "challan",
       render: (text, record) => {
-        if (creditNoteTypes == "other") {
-          return <div>{record?.credit_note_details[0]?.invoice_no}</div>;
-        } else if (creditNoteTypes == "sale_return"){
+        if (creditNoteTypes == "sale_return"){
           return(
             <div>
               { record?.sale_challan_return?.sale_challan?.challan_no || 
@@ -187,29 +186,17 @@ const CreditNotes = () => {
               }
             </div>
           )
-        } else if (creditNoteTypes == "late"){
+        } else{
           return (
             <div style={{
               fontWeight: 600
             }}>
               {record?.credit_note_details
-                ?.map((element) => element?.invoice_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
+                ?.map((element) => element?.invoice_no || element?.bill_no || "N/A")  // Map through to get bill_no or "N/A" if it's null
                 .join(", ")}
             </div>
           );
-        } else {
-          return (
-            <div
-              style={{
-                fontWeight: 600,
-              }}
-            >
-              {record?.credit_note_details
-                ?.map((element) => element?.bill_no || "N/A") // Map through to get bill_no or "N/A" if it's null
-                .join(", ")}
-            </div>
-          );
-        }
+        } 
       },
     },
     {
@@ -218,6 +205,12 @@ const CreditNotes = () => {
       key: "inhouse_quality",
       render: (text, record) => {
         if (creditNoteTypes == "late"){
+          // Showing purchasse related information 
+          // Show quality id and yarn stock company related information 
+
+          console.log(record);
+          
+          
           return(
             <div>-</div>
           )
@@ -229,7 +222,35 @@ const CreditNotes = () => {
           return(
             <div>-</div>
           )
-        }  else if (record?.yarn_sale == null){
+        } else if (creditNoteTypes == "claim"){
+          // Show only quality related information 
+          // Contain bill of sale bill, job work, job gray sale 
+
+          let credit_note_model = record?.credit_note_details[0]?.model ; 
+          if (credit_note_model === JOB_WORK_BILL_MODEL){
+            let yarn_stock_company = record?.credit_note_details[0]?.yarn_stock_company ; 
+            return(
+              <div>
+                <div style={{fontWeight: 600}}>
+                  {yarn_stock_company?.yarn_company_name || "N/A"}
+                </div>
+                {yarn_stock_company?.yarn_count && yarn_stock_company?.yarn_denier && yarn_stock_company?.yarn_type ? (
+                  `${yarn_stock_company.yarn_count}C/${yarn_stock_company.yarn_denier}D (${yarn_stock_company.yarn_type}(${yarn_stock_company?.yarn_Sub_type}))`
+                ) : (
+                  "Details unavailable"
+                )}
+              </div>
+            )
+          } else {
+            let quality_details = record?.credit_note_details[0]; 
+            return(
+              <div>
+                {getDisplayQualityName(quality_details?.inhouse_quality)}
+              </div>
+            )
+          }
+
+        } else if (record?.yarn_sale == null){
           return `${text?.quality_name || ""} (${text?.quality_weight || ""}KG)`;
         } else{
           return(
@@ -276,153 +297,122 @@ const CreditNotes = () => {
         record?.credit_note_details?.map((element) => {
           total_amount += +element?.amount;
         });
-        if (creditNoteTypes == "other") {
-          return <div>{record?.credit_note_details[0]?.amount}</div>;
-        } else if (creditNoteTypes == "sale_return") {
-          return <div>{record?.amount || "0.0"}</div>;
-        } else {
-          return <div>{parseFloat(total_amount).toFixed(2)}</div>;
-        }
+        return(
+          <div>
+            {parseFloat(total_amount).toFixed(2)}
+          </div>
+        )
       },
     },
     {
       title: "Net Amount",
       dataIndex: "net_amount",
       key: "net_amount",
+      render: (text, record) => {
+        return(
+          <div>
+            {parseFloat(text).toFixed(2)}
+          </div>
+        )
+      }
     },
     {
       title: "Type",
       dataIndex: "credit_note_type",
       key: "credit_note_type",
       render: (text, record) => {
-        if (creditNoteTypes === "late") {
-          const getModelLabel = (model) => {
-            switch (model) {
-              case PURCHASE_TAKA_BILL_MODEL:
-                return PURCHASE_TAKA_MODEL_NAME;
-              case JOB_TAKA_BILL_MODEL:
-                return JOB_TAKA_MODEL_NAME;
-              case  YARN_RECEIVE_BILL_MODEL:
-                return YARN_RECEIVE_MODEL_NAME;
-              case "":
-                return "BEAM SALE";
-              case "receive_size_beam_bill":
-                return "BEAM RECEIVE";
-              default:
-                return "";
-            }
-          };
-        
-          // Helper function to map models to tag colors
-          const getModelTagColor = (model) => {
-            switch (model) {
-              case "purchase_taka_bills":
-                return PURCHASE_TAG_COLOR;
-              case "job_taka_bills":
-                return JOB_TAG_COLOR;
-              case "yarn_bills":
-                return YARN_SALE_BILL_TAG_COLOR;
-              case "beam_sale_bill":
-                return SALE_TAG_COLOR;
-              case "receive_size_beam_bill":
-                return BEAM_RECEIVE_TAG_COLOR;
-              default:
-                return "";
-            }
-          };
-        
-          // Get unique labels
-          const uniqueLabels = [
-            ...new Set(
-              record?.credit_note_details?.map((element) => getModelLabel(element?.model))
-            ),
-          ];
-        
-          // Render the tags
-          return (
-            <div style={{ fontWeight: 600 }}>
-              {uniqueLabels.map((label, index) => (
-                <Tag
-                  key={index}
-                  color={getModelTagColor(
-                    record?.credit_note_details?.find(
-                      (element) => getModelLabel(element?.model) === label
-                    )?.model
-                  )}
-                >
-                  {label}
-                </Tag>
-              ))}
-            </div>
-          );
-        } else {
-          if (text == "other"){
-            let credit_note_details = record?.credit_note_details[0] ; 
-            if ([PURCHASE_TAKA_BILL_MODEL, YARN_RECEIVE_BILL_MODEL, RECEIVE_SIZE_BEAM_BILL_MODEL, 
-              JOB_REWORK_BILL_MODEL, JOB_TAKA_BILL_MODEL]?.includes(credit_note_details?.model)){
-              return(
-                <div>
-                  <div>
-                    <span style={{fontWeight: 600, fontSize: 12}}>Sundry Debitor</span>
-                  </div>
-                  <Tag color =  {CREDIT_NOTE_OTHER}>
-                    OTHER
-                  </Tag>
-                </div>
-              )
-            }
+        if (creditNoteTypes === "other") {
+          let credit_note_model = record?.credit_note_details[0]?.model ; 
+          if (credit_note_model == null || credit_note_model == undefined){
             return(
-              <Tag color =  {CREDIT_NOTE_OTHER}>
+              <Tag color = {CREDIT_NOTE_OTHER}>
                 OTHER
               </Tag>
             )
-          } else if (text == "sale_return"){
+          }  else {
             return(
-              <Tag color = {CREDIT_NOTE_SALE_RETURN}>
+              <div>
                 <div style={{
-                  fontSize:10
-                }}>SALE RETURN</div>
-              </Tag>
-            )
-          } else if (text == "discount"){
-            return(
-              <Tag color = {CREDIT_NOTE_DISCOUNT}>
-                DISCOUNT
-              </Tag>
-            )
-          } else if (text == "claim"){
-            return(
-              <Tag color = {CREDIT_NOTE_CLAIM}>
-                CLAIM NOTE
-              </Tag>
-            )
-          } else if (text == "yarn_sale_return"){
-            return(
-              <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
-                <div style={{
-                  fontSize: 10
-                }}>
-                  YARN SALE RETURN
-                </div>
-              </Tag>
-            )
-          } else if (text == "beam_sale_return"){
-              return(
-                <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
-                  <div style={{
-                    fontSize: 10
-                  }}>
-                    BEAM SALE RETURN
-                  </div>
+                  fontWeight: 600, 
+                  fontSize: 13
+                }}>Sundry</div>
+                <Tag color = "blue">
+                  {
+                    credit_note_model == YARN_RECEIVE_BILL_MODEL?YARN_RECEIVE_MODEL_NAME:
+                    credit_note_model == RECEIVE_SIZE_BEAM_BILL_MODEL?RECEIVE_SIZE_BEAM_MODEL_NAME:
+                    credit_note_model == PURCHASE_TAKA_BILL_MODEL?PURCHASE_TAKA_MODEL_NAME:
+                    credit_note_model == JOB_TAKA_BILL_MODEL?JOB_TAKA_MODEL_NAME:
+                    credit_note_model == JOB_REWORK_BILL_MODEL?JOB_REWORK_MODEL_NAME:GENERAL_PURCHASE_MODEL_NAME
+                  }
                 </Tag>
-              )
-          } else{
-            return(
-              <Tag>
-                {text}
-              </Tag>
+              </div>
             )
           }
+        } else if (creditNoteTypes == "late"){
+          let credit_note_model = record?.credit_note_details[0]?.model ; 
+          let credit_note_color = "default" ; 
+          if (credit_note_model == GENRAL_PURCHASE_BILL_MODEL){
+            credit_note_color = SALE_TAG_COLOR
+          } else if (credit_note_model == YARN_RECEIVE_BILL_MODEL){
+            credit_note_color = YARN_SALE_BILL_TAG_COLOR
+          } else if (credit_note_model == JOB_REWORK_BILL_MODEL){
+            credit_note_color = JOB_TAG_COLOR
+          } else if (credit_note_model == RECEIVE_SIZE_BEAM_BILL_MODEL){
+            credit_note_color = BEAM_RECEIVE_TAG_COLOR
+          } else if (credit_note_model == PURCHASE_TAKA_BILL_MODEL){
+            credit_note_color = PURCHASE_TAG_COLOR
+          } else {
+            credit_note_color = JOB_TAG_COLOR
+          }
+          return(
+            <Tag color = {credit_note_color}>
+              {
+                credit_note_model == YARN_RECEIVE_BILL_MODEL?YARN_RECEIVE_MODEL_NAME:
+                credit_note_model == RECEIVE_SIZE_BEAM_BILL_MODEL?RECEIVE_SIZE_BEAM_MODEL_NAME:
+                credit_note_model == PURCHASE_TAKA_BILL_MODEL?PURCHASE_TAKA_MODEL_NAME:
+                credit_note_model == JOB_TAKA_BILL_MODEL?JOB_TAKA_MODEL_NAME:
+                credit_note_model == JOB_REWORK_BILL_MODEL?JOB_REWORK_MODEL_NAME:
+                credit_note_model == GENRAL_PURCHASE_BILL_MODEL?GENERAL_PURCHASE_MODEL_NAME:credit_note_model
+              } 
+            </Tag>
+          )
+        } else {
+          let credit_note_model = record?.credit_note_details[0]?.model ; 
+          let credit_note_color = "default"
+
+          if (credit_note_model == YARN_SALE_BILL_MODEL){
+            credit_note_color = YARN_SALE_BILL_TAG_COLOR
+          } else if (credit_note_model == BEAM_SALE_BILL_MODEL){
+            credit_note_color = BEAM_RECEIVE_TAG_COLOR
+          } else if (credit_note_model == JOB_WORK_BILL_MODEL){
+            credit_note_color =  JOB_TAG_COLOR
+          } else if (credit_note_model == JOB_GREAY_SALE_BILL_MODEL){
+            credit_note_color = JOB_TAG_COLOR
+          } else {
+            credit_note_color = SALE_TAG_COLOR ; 
+          }
+           
+          return(
+            <Tag 
+              color={credit_note_color}
+              style={{ marginLeft: "8px" }}
+            >
+              {
+                credit_note_model === YARN_SALE_BILL_MODEL
+                  ? YARN_SALE_BILL_MODEL_NAME
+                  : credit_note_model === BEAM_SALE_BILL_MODEL
+                  ? BEAM_SALE_MODEL_NAME
+                  : credit_note_model === JOB_WORK_BILL_MODEL
+                  ? JOB_WORK_MODEL_NAME
+                  : credit_note_model === SALE_BILL_MODEL
+                  ? SALE_BILL_MODEL_NAME
+                  : credit_note_model === JOB_GREAY_SALE_BILL_MODEL
+                  ? JOB_GREAY_BILL_MODEL_NAME
+                  : ""
+              }
+            </Tag>
+
+          )
         }
       },
     },

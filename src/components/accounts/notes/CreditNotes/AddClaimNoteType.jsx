@@ -332,7 +332,8 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       setValue("total_meter", billInfo?.total_meter);
       setValue("total_taka", billInfo?.total_taka);
       setValue("invoice_number", billInfo?.bill_number);
-      setValue("yarn_company_id", billInfo?.yarn_company_id) ; 
+      setValue("yarn_company_id", billInfo?.yarn_company_id) ;
+      setValue(`quality_id`, billInfo?.quality_id)  ; 
     }
   }, [billData, setValue])
 

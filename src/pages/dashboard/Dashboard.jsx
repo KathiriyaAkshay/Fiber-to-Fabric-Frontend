@@ -20,7 +20,6 @@ import {
   getOrderMasterAnalyticsRequest,
   productionInHoustTakaReportRequest,
 } from "../../api/requests/dashboard";
-import prettyNum from "pretty-num";
 import DayReceivableOutStanding from "./Charts/DayReceivableOutStanding";
 import DayPayableOutStanding from "./Charts/DayPayableOutStanding";
 import PayableChart from "./Charts/PayableChart";

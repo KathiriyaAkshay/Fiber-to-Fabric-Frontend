@@ -113,6 +113,7 @@ const OtherForm = ({ type, handleClose }) => {
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
           amount: +data.amount,
+          model: "other"
         },
       ],
     };

@@ -50,9 +50,6 @@ export function extractSupplierInformation(details, model){
     let due_date = 0 ; 
 
     if (model == YARN_RECEIVE_BILL_MODEL){
-
-        console.log("Run this functionality");
-        
         
         // Supplier information 
         supplier_name = details?.supplier?.supplier?.supplier_name ; 

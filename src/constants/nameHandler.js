@@ -33,3 +33,10 @@ export const getDisaplyWrapDennierName = (record) => {
 
   return `${yarn_dennier}D/${yarn_filament}F (${yarn_type}(${yarn_sub_type}))-${luster_type}-${yarn_color}`;
 };
+
+export const getYarnStockCompany = (record) => {
+  
+  // return(
+
+  // )
+}
