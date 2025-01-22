@@ -10,7 +10,7 @@ export function mutationOnErrorHandler({ error, message }) {
   }
 }
 export function formatString(input) {
-  const formatted = input.replace(/_/g, " "); // Remove underscores
+  const formatted = input.replace(/[_-]/g, " "); // Remove underscores & dash
   return formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
 }
 

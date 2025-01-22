@@ -31,6 +31,25 @@ import { mutationOnErrorHandler } from "../../../utils/mutationUtils";
 
 const roleId = USER_ROLES.SUPPLIER.role_id;
 
+const SUPPLIER_NAMES = [
+  { label: "POWER", value: "POWER", color: "#B8860B" },
+  { label: "GAS", value: "GAS", color: "#B8860B" },
+  { label: "MILLGINE", value: "MILLGINE", color: "#B8860B" },
+  {
+    label: "MACHINERY EXPENSES",
+    value: "MACHINERY EXPENSES",
+    color: "#B8860B",
+  },
+  { label: "OFFICE EXPENSES", value: "OFFICE EXPENSES", color: "#B8860B" },
+  {
+    label: "INSURANCE AND TAXES",
+    value: "INSURANCE AND TAXES",
+    color: "#B8860B",
+  },
+  { label: "MISCELLANEOUS", value: "MISCELLANEOUS", color: "#B8860B" },
+  { label: "VEHICLE SALARY", value: "VEHICLE SALARY", color: "#B8860B" },
+];
+
 const addSupplierSchemaResolver = yupResolver(
   yup.object().shape({
     first_name: yup.string(),
@@ -241,17 +260,36 @@ function AddSupplier() {
                     placeholder="Supplier Name"
                     allowClear
                     loading={isLoadingSupplierNameList}
-                    options={supplierNameList?.map((supplierName) => ({
-                      label: supplierName?.supplier_name,
-                      value: supplierName?.supplier_name,
-                    }))}
+                    // options={supplierNameList?.map((supplierName) => ({
+                    //   label: supplierName?.supplier_name,
+                    //   value: supplierName?.supplier_name,
+                    // }))}
                     style={{
                       textTransform: "capitalize",
                     }}
                     dropdownStyle={{
                       textTransform: "capitalize",
                     }}
-                  />
+                  >
+                    {SUPPLIER_NAMES.map((option) => (
+                      <Select.Option
+                        key={option?.value}
+                        value={option?.value}
+                        style={{ color: option.color }}
+                      >
+                        {option?.label}
+                      </Select.Option>
+                    ))}
+                    {supplierNameList?.map((supplierName) => (
+                      <Select.Option
+                        key={supplierName?.supplier_name}
+                        value={supplierName?.supplier_name}
+                        // style={{ color: option.color }}
+                      >
+                        {supplierName?.supplier_name}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 )}
               />
             </Form.Item>

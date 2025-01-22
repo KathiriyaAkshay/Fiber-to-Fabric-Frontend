@@ -35,6 +35,14 @@ export function getPartyListRequest({ params }) {
   return api.get(`/party/list`, { params });
 }
 
+export function getPartyListRequest2({ params }) {
+  return api.get(`/party/user-master/list`, { params });
+}
+
+export function addPartyCompanyRequest({ data, params }) {
+  return api.post(`/party/company/add`, data, { params });
+}
+
 // supplier
 export function getSupplierByIdRequest({ id, params }) {
   return api.get(`/supplier/get/${id}`, { params });

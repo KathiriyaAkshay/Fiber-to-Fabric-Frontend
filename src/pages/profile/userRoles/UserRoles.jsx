@@ -149,6 +149,8 @@ function UserRoles() {
             key={id}
           >
             {sub_modules?.map((sub_module) => {
+              console.log({ sub_module });
+
               return (
                 <PermissionCheckboxes
                   key={`${sub_module?.id}`}

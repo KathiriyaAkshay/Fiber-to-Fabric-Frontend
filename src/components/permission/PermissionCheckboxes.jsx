@@ -1,5 +1,6 @@
 import { Checkbox, Col, Row } from "antd";
 import { useState } from "react";
+import { formatString } from "../../utils/mutationUtils";
 
 function PermissionCheckboxes({ module, watch, setValue }) {
   const { name = "", id = 0, operations = [] } = module;
@@ -18,7 +19,7 @@ function PermissionCheckboxes({ module, watch, setValue }) {
           }}
           disabled={!company_id || !user_id}
         >
-          {name}
+          {formatString(name)}
         </Checkbox>
       </Col>
       <Col span={18}>
