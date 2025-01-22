@@ -35,20 +35,6 @@ import {
   YarnIcon,
 } from "../../../public/icons/icons";
 
-const formatNumber = (number) => {
-  // Using pretty-num to convert to short format
-  return prettyNum(number, {
-    precision: 1, // Keep one decimal place
-    abbreviations: {
-      K: "K",
-      M: "M", // Millions
-      B: "B", // Billions
-      Cr: "Cr", // Crore
-      L: "L", // Lakh
-    },
-  });
-};
-
 // ============== Company bank balance related information ================== //
 const CompanyBankBalance = ({ company }) => {
   const { data: bankBalanceData } = useQuery({
@@ -144,7 +130,7 @@ const CompanyBankBalance = ({ company }) => {
                     {String(item.bank_name).toUpperCase()}
                   </Typography>
                   <Typography>
-                    B/L: <b>{formatNumber(item.balance)}</b>
+                    B/L: <b>{item.balance}</b>
                   </Typography>
                 </Flex>
               ))}

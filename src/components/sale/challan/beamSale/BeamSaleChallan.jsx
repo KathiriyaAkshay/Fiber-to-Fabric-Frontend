@@ -57,8 +57,6 @@ const BeamSaleChallanModel = ({
   useEffect(() => {
     if (companyId){
       const companyInfo = companyListRes?.rows?.find((item) => item?.id == companyId) ; 
-      console.log(companyInfo);
-      
       setCompanyDetails(companyInfo) ; 
     }
   },[companyId])
@@ -130,6 +128,7 @@ const BeamSaleChallanModel = ({
       net_rate: +data.net_rate,
       amount: +data.amount,
       rate: +data.rate,
+      net_rate: +data?.rate
     };
     await generateBeamSaleBill(newData);
   };
@@ -148,27 +147,20 @@ const BeamSaleChallanModel = ({
       E_way_bill_no: "",
       bill_date: dayjs(),
       due_date: dayjs(),
-
       rate: 0,
       amount: 0,
-
       discount_amount: 0,
       discount_value: 0,
-
       freight_value: 0,
       freight_amount: 0,
       net_amount: 0,
       net_rate: 0,
-
       IGST_amount: 0,
       IGST_value: 0,
-
       SGST_amount: 0,
       SGST_value: 6,
-
       CGST_amount: 0,
       CGST_value: 6,
-
       round_off: 0,
     },
   });
