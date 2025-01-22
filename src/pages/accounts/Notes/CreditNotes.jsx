@@ -26,7 +26,7 @@ import { getCreditNotesListRequest } from "../../../api/requests/accounts/notes"
 import { getPartyListRequest } from "../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import dayjs from "dayjs";
-import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
+import ViewDiscountCreditNote from '../../../../components/accounts/notes/CreditNotes/ViewDiscountCreditNote';
 import moment from "moment";
 import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_CLAIM, CREDIT_NOTE_DISCOUNT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
