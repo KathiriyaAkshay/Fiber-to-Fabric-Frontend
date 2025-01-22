@@ -26,7 +26,6 @@ import { getCreditNotesListRequest } from "../../../api/requests/accounts/notes"
 import { getPartyListRequest } from "../../../api/requests/users";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import dayjs from "dayjs";
-// import ViewCreditNoteModal from "../../../components/accounts/notes/CreditNotes/ViewCreditNoteModal";
 import moment from "moment";
 import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import useDebounce from "../../../hooks/useDebounce";
@@ -38,7 +37,6 @@ import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/Del
 import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
-// import UpdateCreditNode from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
