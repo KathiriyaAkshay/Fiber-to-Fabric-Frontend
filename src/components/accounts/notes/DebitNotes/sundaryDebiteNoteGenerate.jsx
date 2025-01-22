@@ -46,8 +46,6 @@ function calculateDaysDifference(dueDate) {
 }
 
 const CalculateInterest = (due_days, bill_amount) => {
-  console.log(due_days, bill_amount);
-
   const INTEREST_RATE = 0.12; // Annual interest rate of 12%
   if (due_days <= 0 || bill_amount <= 0) {
     return 0; // Return 0 if inputs are invalid
@@ -142,8 +140,17 @@ const SundaryDebitNoteGenerate = ({
 
   useEffect(() => {
     if (bill_details?.length == 1) {
-      if (bill_details[0]?.debit_note_id != null && bill_details[0]?.debit_note_id !== undefined) {
-        manuallyFetchDebitNoteInformation(bill_details[0]?.debit_note_id);
+
+      // Check debit note related data 
+      let debit_note_id = null ; 
+      let debit_note_number = undefined ; 
+      if (bill_details[0]?.debit_notes?.length > 0){
+        debit_note_id = bill_details[0]?.debit_notes[0]?.id ;
+        debit_note_number = bill_details[0]?.debit_notes[0]?.debit_note_number ;  
+      }
+
+      if (debit_note_id != null && debit_note_id !== undefined) {
+        manuallyFetchDebitNoteInformation(debit_note_id);
       } else if (bill_details[0]?.model == DEBIT_NOTE_BILL_MODEL){
         manuallyFetchDebitNoteInformation(bill_details[0]?.bill_id) ; 
       }
@@ -678,9 +685,9 @@ const SundaryDebitNoteGenerate = ({
             >
 
               {/* Debit note generate option  */}
-              {bill_details[0]?.debit_note_id == null &&
+              {bill_details[0]?.debit_notes[0]?.id == null &&
                 bill_details?.length == 1 && 
-                bill_details[0]?.debit_note_id !== undefined && 
+                bill_details[0]?.debit_notes[0]?.id !== undefined && 
                 bill_details[0]?.model !== DEBIT_NOTE_BILL_MODEL && (
                   <Button
                     type="primary"
@@ -692,8 +699,8 @@ const SundaryDebitNoteGenerate = ({
               )}
 
               {/* Debit note print option  */}
-              { bill_details[0]?.debit_note_id != null && 
-                bill_details[0]?.debit_note_id !== undefined &&(
+              { bill_details[0]?.debit_notes[0]?.id != null && 
+                bill_details[0]?.debit_notes[0]?.id !== undefined &&(
                 <Button type="primary">PRINT</Button>
               )}
 

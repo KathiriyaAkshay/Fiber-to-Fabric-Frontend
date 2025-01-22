@@ -81,11 +81,15 @@ const BillPaymentModel = ({
       prevData.map((element, indexValue) => {
         if (indexValue === index) {
           const total_amount = element?.totalAmount || 0; // Bill total payment
+          
+
+
           let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
+          
+          
           let bill_deducation_amount = +total_amount - +credit_note_amount;
           let bill_remaing_amount = parseFloat(element?.part_payment == null ? bill_deducation_amount : +element?.part_payment).toFixed(2);
-          // const partPayment = +value > +totalAmount ? 0 : +value; // Bil
-          // const remainAmount = +totalAmount - +partPayment;
+          
           return {
             ...element,
             partAmount: element?.part_payment,
@@ -198,9 +202,22 @@ const BillPaymentModel = ({
       let totalSaleReturnAmount = 0;
       let finalNetAmount = 0;
       selectedBill?.map((bill, index) => {
+
+        // Bill Amount information 
         let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
-        let credit_note_amount =
-          parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
+
+        console.log("Selected bill information");
+        console.log(bill);
+        
+        let return_amount = 0 ; 
+
+        if (bill?.credit_notes?.length > 0 ){
+          console.log("Run this functionality");
+          
+        }
+        
+        
+        let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
         let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0;
         let finalAmount = total_amount - paid_amount - credit_note_amount;
 

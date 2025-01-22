@@ -19,7 +19,7 @@ import {
   getLastCreditNoteNumberRequest,
 } from "../../../../api/requests/accounts/notes";
 import { Controller, useForm } from "react-hook-form";
-import { getPartyListRequest } from "../../../../api/requests/users";
+import { getPartyListRequest, getSupplierListRequest } from "../../../../api/requests/users";
 import TextArea from "antd/es/input/TextArea";
 import "./_style.css";
 import { ToWords } from "to-words";
@@ -76,24 +76,6 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
 
-  const { data: creditNoteLastNumber } = useQuery({
-    queryKey: [
-      "get",
-      "credit-notes",
-      "last-number",
-      {
-        company_id: companyId,
-      },
-    ],
-    queryFn: async () => {
-      const params = {
-        company_id: companyId,
-      };
-      const response = await getLastCreditNoteNumberRequest({ params });
-      return response.data.data;
-    },
-    enabled: Boolean(companyId),
-  });
 
   // ----------------------------------------------------------------------------------------------------------------------
 
@@ -151,6 +133,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
           amount: +data.amount,
+          bill_no: data?.invoice_number
         },
       ],
     };
@@ -170,18 +153,11 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       credit_note_no: "",
       company_id: null,
       particular: "Credit note",
-
       is_current: "current",
       date: dayjs(),
       bill_id: null,
       amount: "",
       party_id: null,
-
-      //
-      // supplier_id: "",
-      // sale_challan_id: "",
-      // quality_id: "",
-
       SGST_value: 2.5,
       SGST_amount: 0,
       CGST_value: 2.5,
@@ -192,10 +168,6 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       net_amount: "",
       rate: "",
       invoice_number: "",
-      // total_taka: "",
-      // total_meter: "",
-      // discount_value: "",
-      // discount_amount: "",
       extra_tex_value: 0,
       extra_tex_name: "TDS",
       extra_tex_amount: 0,
@@ -293,7 +265,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
   } = useQuery({
     queryKey: ["dropdown/supplier/list", { company_id: company_id }],
     queryFn: async () => {
-      const res = await getDropdownSupplierListRequest({
+      const res = await getSupplierListRequest({
         params: { company_id: company_id },
       });
       return res.data?.data?.supplierList;
@@ -319,19 +291,15 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       } else {
         let temp_supplier_id = party_id.split("***")[1];
         let supplierInfo = null;
-        dropdownSupplierListRes?.some((element) =>
-          element?.supplier_company?.some((supplier) => {
-            if (supplier?.supplier_id === +temp_supplier_id) {
-              supplierInfo = supplier;
-              return true; // Stop searching once the supplier is found
-            }
-            return false;
-          })
-        );
+        dropdownSupplierListRes?.rows?.map((element) =>{
+          if (+element?.id === +temp_supplier_id){
+            supplierInfo = element ;
+          }
+        });
         return supplierInfo;
       }
     }
-  }, [partyUserListRes?.partyList?.rows, party_id]);
+  }, [partyUserListRes?.partyList?.rows, party_id, dropdownSupplierListRes?.rows]);
 
   const selectedUser = useMemo(() => {
     if (party_id) {
@@ -342,6 +310,26 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       }
     }
   }, [party_id]);
+
+  // Get Last credit number related information
+  const { data: creditNoteLastNumber } = useQuery({
+    queryKey: [
+      "get",
+      "credit-notes",
+      "last-number",
+      {
+        company_id: company_id,
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: company_id,
+      };
+      const response = await getLastCreditNoteNumberRequest({ params });
+      return response.data.data;
+    },
+    enabled: Boolean(company_id),
+  });
 
   function disabledFutureDate(current) {
     return current && current > moment().endOf("day");
@@ -543,21 +531,19 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                               )}
 
                               {/* Supplier Options */}
-                              {dropdownSupplierListRes?.flatMap((element) =>
-                                element?.supplier_company?.map((supplier) => (
-                                  <Select.Option
-                                    key={`supplier-${supplier?.supplier_id}`}
-                                    value={`supplier***${supplier?.supplier_id}`}
-                                    className = {"credit-note-user-selection-dropdown"} 
-                                  >
-                                    <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
-                                    <span>
-                                      {`${supplier?.supplier_company} | `}
-                                      <strong>{`${element?.supplier_name}`}</strong>
-                                    </span>
-                                  </Select.Option>
-                                ))
-                              )}
+                              {dropdownSupplierListRes?.rows?.flatMap((element) => (
+                                <Select.Option
+                                  key={`supplier-${element?.id}`}
+                                  value={`supplier***${element?.id}`}
+                                  className = {"credit-note-user-selection-dropdown"}
+                                >
+                                  <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
+                                  <span>
+                                    {`${element?.supplier?.supplier_company} | `}
+                                    <strong>{`${element?.supplier?.supplier_name}`}</strong>
+                                  </span>
+                                </Select.Option>
+                              ))}
                             </Select>
                           )}
                         />
@@ -648,15 +634,26 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                     </div>
                   </td>
                   <td colSpan={4}>
+
+                    {/* Party company information  */}
                     {selectedUser == "party" && (
                       <>
+                        <div style={{
+                          fontWeight: 600, 
+                          fontSize: 16
+                        }}>
+                          {String(selectedPartyCompany?.party?.company_name).toUpperCase()}
+                        </div>
                         <div className="credit-note-info-title">
                           <span>Party:</span>
                           {selectedPartyCompany
-                            ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name} (${selectedPartyCompany?.party?.company_name})`
+                            ? `${selectedPartyCompany?.first_name} ${selectedPartyCompany?.last_name}`
                             : ""}
                         </div>
                         <div>
+                          <div style={{fontWeight: 600}}>
+                            Address:
+                          </div>
                           {selectedPartyCompany?.party?.delivery_address || ""}
                         </div>
                         <div className="credit-note-info-title">
@@ -664,27 +661,41 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
                           {selectedPartyCompany?.gst_no || ""}
                         </div>
                         <div className="credit-note-info-title">
-                          <span>State Name: </span>{" "}
-                          {selectedPartyCompany?.state || ""}
+                          <span>Email: </span>{" "}
+                          {selectedPartyCompany?.email || ""}
                         </div>
                       </>
                     )}
+
+                    {/* Supplier information  */}
                     {selectedUser == "supplier" && (
                       <>
                         <div className="credit-note-info-title">
+                          <div style={{
+                            fontWeight: 600,
+                            fontSize: 16
+                          }}>
+                            {String(selectedPartyCompany?.supplier?.supplier_company).toUpperCase()}
+                          </div>
                           <span>Supplier:</span>
-                          {selectedPartyCompany
-                            ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
-                            : ""}
+                          {selectedPartyCompany?.supplier?.supplier_name}
+                        </div>
+                        <div>
+                          <div style={{
+                            fontWeight: 600
+                          }}>
+                            Address:
+                          </div>
+                          {selectedPartyCompany?.address}
                         </div>
                         <div>{selectedPartyCompany?.users?.address}</div>
                         <div className="credit-note-info-title">
                           <span>GSTIN/UIN: </span>
-                          {selectedPartyCompany?.users?.gst_no || ""}
+                          {selectedPartyCompany?.gst_no || ""}
                         </div>
                         <div className="credit-note-info-title">
-                          <span>Mobile: </span>{" "}
-                          {selectedPartyCompany?.users?.mobile || ""}
+                          <span>Email: </span>{" "}
+                          {selectedPartyCompany?.email || ""}
                         </div>
                       </>
                     )}

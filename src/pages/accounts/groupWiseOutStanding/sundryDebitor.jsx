@@ -353,7 +353,8 @@ const SundryDebitor = () => {
       queryClient.invalidateQueries(["sundry", "debtor", "data"]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        setSelectedInterestBill([]) ; 
+        message.success("Interest paid successfully");
       }
       setPaymentInterestModalOpen(false);
     },
@@ -371,15 +372,13 @@ const SundryDebitor = () => {
         interest_paid_date: moment(due_date).format("YYYY-MM-DD"),
         model: element?.model,
         bill_id: element?.bill_id,
+        supplier_id: selectedUser?.is_supplier?selectedUser?.id:null,
+        party_id: !selectedBill?.is_supplier?selectedUser?.id:null, 
+        bill_no: element?.billNo || element?.invoice_no || element?.bill_no
       });
-
-      if (selectedUser?.is_supplier){
-        requestPayload["supplier_id"] = selectedUser?.id
-      } else {
-        requestPayload["party_id"] = selectedUser?.id
-      }
     });
-    // await addInterestAmount({ data: requestPayload });
+
+    await addInterestAmount({ data: requestPayload });
   };
 
   // Bill Payment selection handler ==============================================
@@ -1707,7 +1706,8 @@ const TableWithAccordion = ({
         <>
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
-
+              
+              // Bill paid amount information 
               let paid_amount = parseFloat(bill?.paid_amount) || 0;
               paid_amount = paid_amount.toFixed(2);
 
@@ -1769,24 +1769,39 @@ const TableWithAccordion = ({
                 )?.length > 0
                   ? true
                   : false;
-
-              let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Total Bill amount
-              let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
-              let bill_deducation_amount = +total_amount - +credit_note_amount;
-
+                
+              // Bill interest amount information 
               let interest_amount = 0;
               if (bill?.credit_note_id == null) {
                 interest_amount = CalculateInterest(dueDays, bill?.amount);
+              
+              // Bill amount information 
+              let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
+              
+              // Bill credit notes
+              let bill_credit_notes = bill?.credit_notes 
+
+              let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Credit note amount 
+              let bill_deducation_amount = +total_amount - +credit_note_amount;
+
               }
               let bill_remaing_amount = parseFloat(bill?.part_payment == null ? bill_deducation_amount : +bill?.part_payment).toFixed(2);
               let bill_paid_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2);
+              
+              // Check debit note id related information 
+              let debit_note_id = null ; 
+              let debit_note_number = undefined ; 
+              if (bill?.debit_notes?.length > 0){
+                debit_note_id = bill?.debit_notes[0]?.id ;
+                debit_note_number = bill?.debit_notes[0]?.debit_note_number ;  
+              }
 
               return (
                 <tr key={index + "_bill"} className="sundary-data">
 
                   {/* Debit note creation related checkbox handler  */}
                   <td>
-                    {bill?.debit_note_id == null &&
+                    {debit_note_id == null &&
                       ![CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(
                         bill?.model
                       ) && (
@@ -2030,8 +2045,8 @@ const TableWithAccordion = ({
                         </Tooltip>
                       )}
 
-                      {bill?.debit_note_id !== null && bill?.debit_note_id !== undefined && (
-                        <Tooltip title={`DEBIT NOTE : ${bill?.debit_note_number}`}>
+                      {debit_note_id !== null && debit_note_id !== undefined && (
+                        <Tooltip title={`DEBIT NOTE : ${debit_note_number}`}>
                           <div style={{ cursor: "pointer" }}>
                             <TabletFilled
                               style={{ color: "red" }}

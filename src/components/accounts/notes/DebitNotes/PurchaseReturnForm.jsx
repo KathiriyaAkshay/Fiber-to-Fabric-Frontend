@@ -120,7 +120,7 @@ const PurchaseReturnForm = ({ handleClose }) => {
     ) || null;
   }, [challan_no, debitNoteChallanNo]);
   
-  if (!temp_model || !temp_challan_id) return null; // Invalid placement
+  // if (!temp_model || !temp_challan_id) return null; // Invalid placement
   
 
   const { data: challanData } = useQuery({

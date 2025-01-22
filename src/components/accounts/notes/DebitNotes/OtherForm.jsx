@@ -11,10 +11,9 @@ import {
   Tag
 } from "antd";
 import dayjs from "dayjs";
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { getPartyListRequest } from "../../../../api/requests/users";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import TextArea from "antd/es/input/TextArea";
 import { createDebitNoteRequest } from "../../../../api/requests/accounts/notes";
@@ -22,8 +21,9 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ToWords } from "to-words";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
-import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
+import { JOB_TAG_COLOR } from "../../../../constants/tag";
 import { PREVIOUS_YEAR_TAG_COLOR, CURRENT_YEAR_TAG_COLOR } from "../../../../constants/tag";
+import { getLastDebitNoteNumberRequest } from "../../../../api/requests/accounts/notes";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -94,19 +94,8 @@ const OtherForm = ({ type, handleClose }) => {
     const payload = {
       party_id: is_party? +party_id:null,
       supplier_id: !is_party?+party_id:null,
-      // supplier_id: billData?.supplier_id,
-      // model: selectedBillData?.model,
       debit_note_number: `DNS-${data?.debit_note_no}` || "",
       debit_note_type: type,
-      // sale_challan_id: 456,
-      // quality_id: data?.quality_id,
-      // gray_order_id: 321,
-      // party_id: 654,
-      // return_id: 987,
-      // total_taka: +data.total_taka,
-      // total_meter: +data.total_meter,
-      // discount_value: +data.discount_value,
-      // discount_amount: +data.discount_amount,
       SGST_value: +data.SGST_value,
       SGST_amount: +data.SGST_amount,
       CGST_value: +data.CGST_value,
@@ -115,22 +104,14 @@ const OtherForm = ({ type, handleClose }) => {
       IGST_amount: +data.IGST_amount,
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
       extra_tex_name: data.extra_tex_name,
       extra_tex_value: +data.extra_tex_value,
       extra_tex_amount: +data.extra_tex_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       debit_note_details: [
         {
-          // bill_id: data.bill_id,
-          // model: selectedBillData?.model,
-          // rate: +data.rate,
-          // per: 1.0,
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
-          // quality: billData?.inhouse_quality?.quality_weight,
           amount: +data.amount,
         },
       ],
@@ -149,18 +130,11 @@ const OtherForm = ({ type, handleClose }) => {
     defaultValues: {
       debit_note_no: "",
       company_id: null,
-
       is_current: 1,
       date: dayjs(),
       bill_id: null,
       amount: "",
       party_id: null,
-
-      //
-      // supplier_id: "",
-      // sale_challan_id: "",
-      // quality_id: "",
-
       SGST_value: 6,
       SGST_amount: 0,
       CGST_value: 6,
@@ -171,10 +145,6 @@ const OtherForm = ({ type, handleClose }) => {
       net_amount: "",
       rate: "",
       invoice_number: "",
-      // total_taka: "",
-      // total_meter: "",
-      // discount_value: "",
-      // discount_amount: "",
       extra_tex_value: 0,
       extra_tex_name: "TDS",
       extra_tex_amount: 0,
@@ -234,16 +204,16 @@ const OtherForm = ({ type, handleClose }) => {
   ]);
 
   // Load Partylist Dropdown =======================================================
-  const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-    queryKey: ["party", "list", { company_id: company_id }],
-    queryFn: async () => {
-      const res = await getPartyListRequest({
-        params: { company_id: company_id },
-      });
-      return res.data?.data;
-    },
-    enabled: Boolean(company_id),
-  });
+  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
+  //   queryKey: ["party", "list", { company_id: company_id }],
+  //   queryFn: async () => {
+  //     const res = await getPartyListRequest({
+  //       params: { company_id: company_id },
+  //     });
+  //     return res.data?.data;
+  //   },
+  //   enabled: Boolean(company_id),
+  // });
 
   // Load Supplier list DropDown ====================================================
   const {
@@ -266,30 +236,44 @@ const OtherForm = ({ type, handleClose }) => {
     }
   }, [company_id, companyListRes]);
 
+
+  // Last debit note number information request =================
+  const { data: debitNoteLastNumber } = useQuery({
+    queryKey: [
+      "get",
+      "debit-notes",
+      "last-number",
+      {
+        company_id: company_id,
+      },
+    ],
+    queryFn: async () => {
+      const params = {
+        company_id: company_id,
+      };
+      const response = await getLastDebitNoteNumberRequest({ params });
+      return response.data.data;
+    },
+    enabled: Boolean(company_id),
+  });
+
   // Handle selected company related information based on party and supplier selection
   const selectedPartyCompany = useMemo(() => {
     if (party_id) {
-      if (party_id?.includes("party")) {
-        let temp_party_id = party_id.split("***")[1];
-        return partyUserListRes?.partyList?.rows?.find(
-          ({ id }) => id === +temp_party_id
-        );
-      } else {
-        let temp_supplier_id = party_id.split("***")[1];
-        let supplierInfo = null;
-        dropdownSupplierListRes?.some((element) =>
-          element?.supplier_company?.some((supplier) => {
-            if (supplier?.supplier_id === +temp_supplier_id) {
-              supplierInfo = supplier;
-              return true; // Stop searching once the supplier is found
-            }
-            return false;
-          })
-        );
-        return supplierInfo
-      }
+      let temp_supplier_id = party_id.split("***")[1];
+      let supplierInfo = null;
+      dropdownSupplierListRes?.some((element) =>
+        element?.supplier_company?.some((supplier) => {
+          if (supplier?.supplier_id === +temp_supplier_id) {
+            supplierInfo = supplier;
+            return true; // Stop searching once the supplier is found
+          }
+          return false;
+        })
+      );
+      return supplierInfo ; 
     }
-  }, [partyUserListRes?.partyList?.rows, party_id]);
+  }, [dropdownSupplierListRes,  party_id]);
 
   const selectedUser = useMemo(() => {
     if (party_id) {
@@ -300,6 +284,7 @@ const OtherForm = ({ type, handleClose }) => {
       }
     }
   }, [party_id])
+
 
   return (
     <>
@@ -333,6 +318,14 @@ const OtherForm = ({ type, handleClose }) => {
                     />
                   </Form.Item>
                 </div>
+
+                {debitNoteLastNumber?.debitNoteNumber && (
+                  <div style={{marginTop: -10}}>
+                    <Typography.Text >
+                      Last Debit Note: <span style={{color: "red"}}>{debitNoteLastNumber?.debitNoteNumber?debitNoteLastNumber?.debitNoteNumber:""}</span>
+                    </Typography.Text>
+                  </div>
+                )}
               </div>
             </td>
           </tr>
@@ -405,7 +398,7 @@ const OtherForm = ({ type, handleClose }) => {
             </td>
             <td colSpan={2} width={"25%"}>
               <div className="year-toggle">
-                <label style={{ textAlign: "left" }}>Party Company:</label>
+                <label style={{ textAlign: "left" }}>Supplier Company:</label>
                 <Form.Item
                   label=""
                   name="party_id"
@@ -421,43 +414,20 @@ const OtherForm = ({ type, handleClose }) => {
                       <Select
                         {...field}
                         className="width-100"
-                        placeholder="Select Party Company"
+                        placeholder="Select Supplier Company"
                         style={{
                           textTransform: "capitalize",
                         }}
                         dropdownStyle={{
                           textTransform: "capitalize",
                         }}
-                        loading={isLoadingPartyList}
-                      // options={partyUserListRes?.partyList?.rows?.map(
-                      //   (party) => ({
-                      //     label:
-                      //       party.first_name +
-                      //       " " +
-                      //       party.last_name +
-                      //       " " +
-                      //       `| ( ${party?.username})`,
-                      //     value: party.id,
-                      //   })
-                      // )}
+                        loading={isLoadingDropdownSupplierList}
                       >
-
-                        {/* Party Options */}
-                        {partyUserListRes?.partyList?.rows?.map((party) => (
-                          <Select.Option key={`party-${party?.id}`} value={`party***${party?.id}`}>
-                            <Tag color={PURCHASE_TAG_COLOR}>PARTY</Tag>
-                            <span>
-                              {`${party?.first_name} ${party?.last_name} | `.toUpperCase()}
-                              <strong>{party?.party?.company_name}</strong>
-                            </span>
-                          </Select.Option>
-                        ))}
-
                         {/* Supplier Options */}
                         {dropdownSupplierListRes?.flatMap((element) =>
                           element?.supplier_company?.map((supplier) => (
                             <Select.Option key={`supplier-${supplier?.supplier_id}`} value={`supplier***${supplier?.supplier_id}`}>
-                              <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag>
+                              {/* <Tag color={JOB_TAG_COLOR}>SUPPLIER</Tag> */}
                               <span>
                                 {`${supplier?.supplier_company} | `}<strong>{`${element?.supplier_name}`}</strong>
                               </span>
@@ -520,7 +490,7 @@ const OtherForm = ({ type, handleClose }) => {
           </tr>
           <tr width="50%">
             <td colSpan={4}>
-              <b>{selectedCompany?.company_name || ""}</b>
+              <b style={{color: "blue"}}>{selectedCompany?.company_name || ""}</b>
               <div>
                 {selectedCompany?.address_line_1 || ""}
                 {selectedCompany?.address_line_2 || ""}
@@ -541,7 +511,7 @@ const OtherForm = ({ type, handleClose }) => {
                 <span>Email:</span> {selectedCompany?.company_email || ""}
               </div>
             </td>
-            <td colSpan={4}>
+            <td colSpan={4} style={{verticalAlign: "top"}}>
               {selectedUser == "party" && (
                 <>
                   <div className="credit-note-info-title">
@@ -565,26 +535,31 @@ const OtherForm = ({ type, handleClose }) => {
               )}
               {selectedUser == "supplier" && (
                 <>
-                  <span style={{
-                    fontWeight: 600,
-                    fontSize: 16
-                  }}>{selectedPartyCompany?.supplier_company}</span>
-                  <div className="credit-note-info-title">
-                    <span>Supplier:</span>
-                    {selectedPartyCompany
-                      ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name} (${selectedPartyCompany?.supplier_company})`
-                      : ""}
-                  </div>
-                  <div>
-                    {selectedPartyCompany?.users?.address}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>GSTIN/UIN: </span>
-                    {selectedPartyCompany?.users?.gst_no || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Mobile: </span>{" "}
-                    {selectedPartyCompany?.users?.mobile || ""}
+                  <div style={{verticalAlign: "top"}}>
+                    <span style={{
+                      fontWeight: 600,
+                      fontSize: 16
+                    }}>{String(selectedPartyCompany?.supplier_company).toUpperCase()}</span>
+                    <div className="credit-note-info-title">
+                      <span>Supplier:</span>
+                      {selectedPartyCompany
+                        ? `${selectedPartyCompany?.users?.first_name} ${selectedPartyCompany?.users?.last_name}`
+                        : ""}
+                    </div>
+                    <div>
+                      <div style={{fontWeight: 600}}>
+                        Address:
+                      </div>
+                      {selectedPartyCompany?.users?.address}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>GSTIN/UIN: </span>
+                      {selectedPartyCompany?.users?.gst_no || ""}
+                    </div>
+                    <div className="credit-note-info-title">
+                      <span>Mobile: </span>{" "}
+                      {selectedPartyCompany?.users?.mobile || ""}
+                    </div>
                   </div>
                 </>
               )}
@@ -665,7 +640,7 @@ const OtherForm = ({ type, handleClose }) => {
             <td></td>
             <td colSpan={3} style={{ textAlign: "right" }}>
               <div style={{ marginBottom: "6px" }}>
-                SGST @{" "}
+                <span style={{fontWeight: 600}}>SGST @{" "}</span>
                 <Controller
                   control={control}
                   name="SGST_value"
@@ -674,13 +649,14 @@ const OtherForm = ({ type, handleClose }) => {
                       {...field}
                       placeholder="3"
                       style={{ width: "100px" }}
+                      type="number"
                     />
                   )}
                 />{" "}
                 %
               </div>
               <div style={{ marginBottom: "6px" }}>
-                CGST @{" "}
+                <span style={{fontWeight: 600}}>CGST @{" "}</span>
                 <Controller
                   control={control}
                   name="CGST_value"
@@ -689,13 +665,14 @@ const OtherForm = ({ type, handleClose }) => {
                       {...field}
                       placeholder="3"
                       style={{ width: "100px" }}
+                      type="number"
                     />
                   )}
                 />{" "}
                 %
               </div>
               <div style={{ marginBottom: "6px" }}>
-                IGST @{" "}
+                <span style={{fontWeight: 600}}>IGST @{" "}</span>
                 <Controller
                   control={control}
                   name="IGST_value"
@@ -704,6 +681,7 @@ const OtherForm = ({ type, handleClose }) => {
                       {...field}
                       placeholder="3"
                       style={{ width: "100px" }}
+                      type="number"
                     />
                   )}
                 />{" "}
@@ -745,6 +723,15 @@ const OtherForm = ({ type, handleClose }) => {
                       {...field}
                       placeholder="3"
                       style={{ width: "20%" }}
+                      type="number"
+                      onChange={(e) => {
+                        let value = e.target.value ;
+                        if (value > 100){
+                          message.warning("Please enter proper extra tax value")
+                        } else {
+                          setValue(`extra_tex_value`, value) ; 
+                        }
+                      }}
                     />
                   )}
                 />

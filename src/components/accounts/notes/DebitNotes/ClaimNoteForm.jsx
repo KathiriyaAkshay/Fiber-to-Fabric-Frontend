@@ -18,7 +18,7 @@ import {
   getLastDebitNoteNumberRequest,
   debitNoteDropDownRequest
 } from "../../../../api/requests/accounts/notes";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
 import dayjs from "dayjs";
 import { getYarnReceiveBillByIdRequest } from "../../../../api/requests/purchase/yarnReceive";
@@ -28,7 +28,7 @@ import {
   getReceiveSizeBeamBillByIdRequest,
 } from "../../../../api/requests/purchase/purchaseSizeBeam";
 import { getPurchaseTakaBillByIdRequest } from "../../../../api/requests/purchase/bill";
-import { getReworkChallanByIdRequest } from "../../../../api/requests/job/challan/reworkChallan";
+import { getReworkChallanByIdRequest, getReworkChallanListRequest } from "../../../../api/requests/job/challan/reworkChallan";
 import { ToWords } from "to-words";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -37,6 +37,9 @@ import { getFinancialYearEnd } from "../../../../pages/accounts/reports/utils";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../../constants/tag";
 import { SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../../constants/tag";
 import moment from "moment";
+import { GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../../constants/bill.model";
+import { extractSupplierInformation } from "../../../../utils/supplier.handler";
+import SupplierInformationComp from "./supplierInformationComp";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -60,24 +63,16 @@ const toWords = new ToWords({
 });
 
 const validationSchema = yup.object().shape({
-  // company_id: yup.string().required("Please select company"),
-  // debit_note_no: yup.string().required("Please enter debit note number"),
-  // invoice_number: yup.string().required("Please enter invoice number"),
-  // supplier_id: yup.string().required("Please select supplier"),
   date: yup.string().required("Please enter date"),
-  // particular: yup.string().required("Please enter particular"),
-  // hsn_code: yup.string().required("Please enter hsn code"),
   amount: yup.string().required("Please enter amount"),
   bill_id: yup.string().required("Please select bill"),
-  // bill_id: yup
-  //   .array()
-  //   .min(1, "Please select bill.")
-  //   .required("Please select bill."),
 });
 
 const ClaimNoteForm = ({ type, handleClose }) => {
   const queryClient = useQueryClient();
   const { companyId, company } = useContext(GlobalContext);
+  const [supplierInformation, setSuplierInformation] = useState({}) ; 
+  const [ billInformation, setBillInformation] = useState({}) ; 
 
   const { mutateAsync: addDebitClaimNOte, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -118,15 +113,11 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     let temp_debit_note_number = String(debitNoteLastNumber?.debitNoteNumber || "DNP-0").split("-")[1] ; 
     temp_debit_note_number = `DNP-${+temp_debit_note_number + 1}` ; 
     const payload = {
-      supplier_id: billData?.supplier_id || null,
+      supplier_id: billData?.supplier?.suplier?.user_id || billData?.supplier?.user_id,
       model: temp_bill_model,
       debit_note_number: temp_debit_note_number || "",
       debit_note_type: type,
-      // sale_challan_id: 456,
       quality_id: data?.quality_id || null,
-      // gray_order_id: 321,
-      // party_id: 654,
-      // return_id: 987,
       total_taka: +data.total_taka,
       total_meter: +data.total_meter,
       discount_value: +data.discount_value,
@@ -139,11 +130,6 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       IGST_amount: +data.IGST_amount,
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
-      // net_rate: 6.67,
-      // tcs_value: 0.75,
-      // tcs_amount: 11.25,
-      // extra_tex_value: 1.0,
-      // extra_tex_amount: 15.0,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
       debit_note_details: [
         {
@@ -154,10 +140,10 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           invoice_no: data?.invoice_number,
           particular_name: "Claim On Purchase",
           amount: +data.amount,
+          quality_id: +data?.quality_id         
         },
       ],
     };
-
     await addDebitClaimNOte(payload);
   };
 
@@ -174,12 +160,9 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       date: dayjs(),
       bill_id: null,
       amount: "",
-
-      //
       supplier_id: "",
       sale_challan_id: "",
       quality_id: "",
-
       SGST_value: 0,
       SGST_amount: 0,
       CGST_value: 0,
@@ -225,9 +208,13 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
       const netAmount =
-        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount + +round_off_amount;
+        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount ; 
 
-      setValue("net_amount", netAmount.toFixed(2));
+      const finalNetAmount = Math.round(netAmount) ; 
+      const round_off_value = finalNetAmount - netAmount ; 
+
+      setValue("net_amount", finalNetAmount.toFixed(2));
+      setValue("round_off_amount", round_off_value.toFixed(2))
     }
   }, [CGST_value, IGST_value, SGST_value, amount, round_off_amount, setValue]);
 
@@ -274,6 +261,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     enabled: Boolean(companyId),
   });
 
+  // Get  Particular bill data related information ===========================
   const { data: billData } = useQuery({
     queryKey: [
       "get",
@@ -293,7 +281,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
         (item) => item.bill_id == +temp_bill_id && item?.model == temp_bill_type
       );
       switch (selectedBillData.model) {
-        case "yarn_bills":
+        case YARN_RECEIVE_BILL_MODEL:
           response = await getYarnReceiveBillByIdRequest({
             id: selectedBillData.bill_id,
             params: { company_id: companyId },
@@ -301,11 +289,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           response = {
             ...response?.data?.data,
             ...response?.data?.data?.yarnReciveBill,
+            model : YARN_RECEIVE_BILL_MODEL
           };
           delete response.yarnReciveBill;
           return response;
 
-        case "job_taka_bills":
+        case JOB_TAKA_BILL_MODEL:
           response = await getJobTakaBillByIdRequest({
             params: {
               company_id: companyId,
@@ -315,11 +304,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           response = {
             ...response?.data?.data,
             ...response?.data?.data?.jobBill,
+            model: JOB_TAKA_BILL_MODEL
           };
           delete response.jobBill;
           return response;
 
-        case "receive_size_beam_bill":
+        case RECEIVE_SIZE_BEAM_BILL_MODEL:
           response = await getReceiveSizeBeamBillByIdRequest({
             id: selectedBillData.bill_id,
             params: {
@@ -329,11 +319,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           response = {
             ...response?.data?.data,
             ...response?.data?.data?.receive,
+            model : RECEIVE_SIZE_BEAM_BILL_MODEL
           };
           delete response.receive;
           return response;
 
-        case "general_purchase_entries":
+        case GENRAL_PURCHASE_BILL_MODEL:
           response = await getGeneralPurchaseByIdRequest({
             id: selectedBillData.bill_id,
             params: { company_id: companyId },
@@ -341,11 +332,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           response = {
             ...response?.data?.data,
             ...response?.data?.data?.generalPurchaseEntry,
+            model: GENRAL_PURCHASE_BILL_MODEL
           };
           delete response.generalPurchaseEntry;
           return response;
 
-        case "purchase_taka_bills":
+        case PURCHASE_TAKA_BILL_MODEL:
           response = await getPurchaseTakaBillByIdRequest({
             params: {
               company_id: companyId,
@@ -355,18 +347,25 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           response = {
             ...response?.data?.data,
             ...response?.data?.data?.purchaseBill,
+            model: PURCHASE_TAKA_BILL_MODEL
           };
           delete response.purchaseBill;
           return response;
 
-        case "job_rework_bill":
-          response = await getReworkChallanByIdRequest({
+        case JOB_REWORK_BILL_MODEL:
+          response = await getReworkChallanListRequest({
             id: selectedBillData.bill_id,
             params: {
               company_id: companyId,
+              bill_id: selectedBillData.bill_id, 
+              page: 0 ,
+              pageSize: 10
             },
           });
-          return response?.data?.data;
+          return {
+            ...response?.data?.data?.rows[0], 
+            model: JOB_REWORK_BILL_MODEL
+          };
 
         default:
           return response;
@@ -377,25 +376,21 @@ const ClaimNoteForm = ({ type, handleClose }) => {
 
   useEffect(() => {
     if (billData && Object.keys(billData)) {
-      setValue("supplier_id", billData?.supplier_id);
-      // setValue("sale_challan_id", billData?.supplier_id);
-      setValue("quality_id", billData?.inhouse_quality_id);
+      let supplier = extractSupplierInformation(billData, billData?.model)  ; 
+      setSuplierInformation(supplier?.supplier) ; 
+      setBillInformation(supplier?.bill) ; 
 
-      setValue("SGST_value", billData?.SGST_value);
-      // setValue("SGST_amount", billData?.SGST_amount);
-      setValue("CGST_value", billData?.CGST_value);
-      // setValue("CGST_amount", billData?.CGST_amount);
-      setValue("IGST_value", billData?.IGST_value);
-      // setValue("IGST_amount", billData?.IGST_amount);
-      // setValue("round_off_amount", billData?.round_off);
-      // setValue("net_amount", billData?.net_amount);
-      // setValue("rate", billData?.rate);
-      setValue("invoice_number", billData?.invoice_number);
+      let billInfo = supplier?.bill ; 
 
-      setValue("total_taka", billData?.total_taka);
-      setValue("total_meter", billData?.total_meter);
-      // setValue("discount_value", billData?.discount_value);
-      // setValue("discount_amount", billData?.discount_amount);
+      setValue("supplier_id", supplier?.supplier?.supplier_id);
+      setValue("quality_id", billInfo?.quality_id);
+      setValue("SGST_value", billInfo?.SGST_value);
+      setValue("CGST_value", billInfo?.CGST_value);
+      setValue("IGST_value", billInfo?.IGST_value);
+      setValue("invoice_number", billInfo?.bill_no);
+      setValue("total_taka", billInfo?.total_taka);
+      setValue("total_meter", billInfo?.total_meter);
+      setValue("rate", billInfo?.rate || 0) ; 
     }
   }, [billData, setValue]);
 
@@ -403,21 +398,23 @@ const ClaimNoteForm = ({ type, handleClose }) => {
     return current && current > moment().endOf("day");
   }
 
+  useEffect(() => {
+    console.log(billList);
+    
+  }, [billList]); 
+
+  useEffect(() => {
+    console.log("Bill data information");
+    console.log(billData);
+    
+  }, [billData])
+
   return (
     <Form>
       <table className="credit-note-table">
         <tbody>
-          {/* <tr>
-            <td colSpan={8} className="text-center">
-              <h2>Claim Note</h2>
-            </td>
-          </tr> */}
           <tr>
             <td colSpan={3} width={"33.33%"}>
-              {/* <div className="p-2">
-                
-                <div>{debitNoteLastNumber?.debitNoteNumber || "-"}</div>
-              </div> */}
               <div className="year-toggle">
                 <Typography.Text style={{ fontSize: 20 }}>
                   Debit Note No.
@@ -497,16 +494,6 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                       <Select
                         {...field}
                         placeholder="Select Bill"
-                        // options={
-                        //   billList && billList.result.length
-                        //     ? billList?.result?.map((item) => {
-                        //         return {
-                        //           label: item?.bill_no,
-                        //           value: item.bill_id + "_" + item.model,
-                        //         };
-                        //       })
-                        //     : []
-                        // }
                         style={{
                           textTransform: "capitalize",
                         }}
@@ -515,7 +502,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                         }}
                       >
                         {billList?.result?.map((item) => (
-                          <Select.Option key={item?.bill_id} value={`${item?.model}***${item?.bill_id}`}>
+                          <Select.Option key={`${item?.model}***${item?.bill_id}`} value={`${item?.model}***${item?.bill_id}`}>
                             <div style={{ display: "flex", alignItems: "center"}}>
                               <span style={{ fontWeight: 600 }}>{item.bill_no}</span>
                               <Tag
@@ -530,12 +517,12 @@ const ClaimNoteForm = ({ type, handleClose }) => {
                                 style={{ marginLeft: "8px" }}
                               >
                                 {{
-                                  general_purchase_entries: "General Purchase",
-                                  yarn_bills: "Yarn Bill",
-                                  job_rework_bill: "Job Rework",
-                                  receive_size_beam_bill: "Receive Size Beam",
-                                  purchase_taka_bills: "Purchase Taka",
-                                  job_taka_bills: "Job Taka",
+                                  general_purchase_entries: GENERAL_PURCHASE_MODEL_NAME,
+                                  yarn_bills: YARN_RECEIVE_MODEL_NAME,
+                                  job_rework_bill: JOB_REWORK_MODEL_NAME,
+                                  receive_size_beam_bill: RECEIVE_SIZE_BEAM_MODEL_NAME,
+                                  purchase_taka_bills: PURCHASE_TAKA_MODEL_NAME,
+                                  job_taka_bills: JOB_TAKA_MODEL_NAME,
                                 }[item?.model] || "Default"}
                               </Tag>
                             </div>
@@ -567,22 +554,9 @@ const ClaimNoteForm = ({ type, handleClose }) => {
               </div>
             </td>
             <td colSpan={4}>
-              <div style={{
-                fontSize: 16, 
-                fontWeight: 600
-              }}>{String(billData?.supplier?.supplier_company || "").toUpperCase()}</div>
-              <div className="credit-note-info-title">
-                <span>Supplier:</span> {billData?.supplier?.supplier_name || ""}
-              </div>
-              <div className="credit-note-info-title">
-                <span>GSTIN/UIN:</span> {billData?.supplier?.user?.gst_no || ""}
-              </div>
-              <div className="credit-note-info-title">
-                <span>PAN/IT No:</span> {billData?.supplier?.user?.pancard_no}
-              </div>
-              <div className="credit-note-info-title">
-                <span>Email:</span>{billData?.supplier?.user?.email}
-              </div>
+              <SupplierInformationComp
+                supplier={ supplierInformation}
+              />
             </td>
           </tr>
         </tbody>
@@ -600,11 +574,24 @@ const ClaimNoteForm = ({ type, handleClose }) => {
         </thead>
         <tbody>
           <tr>
-            <td></td>
+            <td>1</td>
             <td colSpan={2}>Claim On Purchase</td>
             <td></td>
+            <td style={{verticalAlign: "top"}}>
+              <div>
+                <div>
+                  <span style={{fontWeight: 600}}>Rate :</span> {billInformation?.rate || 0}
+                </div>
+                <div>
+                  <span style={{fontWeight: 600}}>Bill Amount (Exl. GST)</span> {billInformation?.bill_amount}
+                </div>
+                <div>
+                  <span style={{fontWeight: 600, color: "blue"}}>Bill Amount (With. GST)</span> {billInformation?.bill_net_amount}
+                </div>
+              </div>
+            </td>
             <td></td>
-            <td></td>
+
             <td>
               <Form.Item
                 label=""
@@ -626,9 +613,9 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           <tr>
             <td></td>
             <td colSpan={2} style={{ textAlign: "right" }}>
-              <div>SGST @ {SGST_value} %</div>
-              <div>CGST @ {CGST_value} %</div>
-              <div>IGST @ {IGST_value}%</div>
+              <div style={{fontWeight: 600}}>SGST @ {SGST_value} %</div>
+              <div style={{fontWeight: 600}}>CGST @ {CGST_value} %</div>
+              <div style={{fontWeight: 600}}>IGST @ {IGST_value}%</div>
               <div>Round Off</div>
             </td>
             <td></td>
