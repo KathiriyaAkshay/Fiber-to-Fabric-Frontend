@@ -282,7 +282,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      <Row>
+      {/* <Row>
         <Col span={24}>
           <div className="dashboard-advertisement">
             <p>
@@ -291,8 +291,8 @@ const Dashboard = () => {
             </p>
           </div>
         </Col>
-      </Row>
-      <Row justify={"space-between"} align={"flex-end"} className="mt-2">
+      </Row> */}
+      {/* <Row justify={"space-between"} align={"flex-end"} className="mt-2">
         <Col span={3}>
           <QueryChart
             title="Avg. Yarn"
@@ -349,18 +349,18 @@ const Dashboard = () => {
             icon={<MeterIcon />}
           ></QueryChart>
         </Col>
-      </Row>
-      <Row gutter={6} className="mt-2 w-100">
+      </Row> */}
+      <Row gutter={6} className=" w-100">
         {/* part 1 */}
         <Col span={4} style={{ position: "sticky", top: "200px" }}>
           <Row justify={"flex-start"} align={"flex-start"}>
-            <Col span={24}>
+            {/* <Col span={24}>
               <Card className="w-100 chart-wrapper side-row-card">
                 <Statistic title="Sales Order" value={-1204} />
                 <Divider />
                 <Statistic title="Schedule Meter" value={0} />
               </Card>
-            </Col>
+            </Col> */}
 
             {/* ========== Oder master related data information ==========  */}
             <Col span={24}>

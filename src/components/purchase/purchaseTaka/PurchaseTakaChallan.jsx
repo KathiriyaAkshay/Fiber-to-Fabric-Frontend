@@ -88,8 +88,6 @@ const PurchaseTakaChallanModal = ({
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [companyInfo, setCompanyInfo] = useState({});
-  console.log("MODE", MODE);
-  
 
   const { data: purchaseTakasBillDetail = null } = useQuery({
     queryKey: ["/purchase/taka/bill/get", MODE, { id: details.id }],

@@ -41,6 +41,7 @@ import { getGeneralPurchaseByIdRequest } from "../../../../api/requests/purchase
 import { getPurchaseTakaBillByIdRequest } from "../../../../api/requests/purchase/bill";
 import { getReworkChallanListRequest } from "../../../../api/requests/job/challan/reworkChallan";
 import { extractSupplierInformation } from "../../../../utils/supplier.handler";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -235,7 +236,11 @@ const AddLatePayment = ({
     round_off_amount,
     extra_tex_amount,
     net_amount,
-    bill_id
+    bill_id, 
+    SGST_value, 
+    CGST_value, 
+    IGST_value,
+    extra_tex_value
   } = watch();
 
   useEffect(() => {
@@ -299,18 +304,6 @@ const AddLatePayment = ({
     enabled: Boolean(company_id && party_id),
   });
 
-  // Load PartyList dropdown =========================================
-  // const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
-  //   queryKey: ["party", "list", { company_id: company_id }],
-  //   queryFn: async () => {
-  //     const res = await getPartyListRequest({
-  //       params: { company_id: company_id },
-  //     });
-  //     return res.data?.data;
-  //   },
-  //   enabled: Boolean(company_id),
-  // });
-
   // Load Supplier list dropdown =====================================
   const {
     data: dropdownSupplierListRes,
@@ -333,18 +326,28 @@ const AddLatePayment = ({
   }, [company_id, companyListRes]);
 
   useEffect(() => {
-    console.log("Bill id", bill_id);
-
     if (bill_id !== undefined && numOfBill?.length == 0 && bill_id !== null) {
       setNumOfBill([0]);
       setValue(`particular_0`, "Late Payment income")
     }
   }, [bill_id])
 
-  useEffect(() => {
-
+  const calculateTaxAmount = () => {
     let totalAmount = 0;
     let totalNetAmount = 0;
+    numOfBill.forEach((_, index) => {
+      const amount = getValues(`amount_${index}`);
+      totalAmount += +amount;
+    });
+
+    const SGSTValue = +getValues("SGST_value");
+    if (SGSTValue) {
+      const SGSTAmount = (+totalAmount * +SGSTValue) / 100;
+      setValue("SGST_amount", SGSTAmount.toFixed(2));
+      totalNetAmount += +SGSTAmount;
+    }
+
+
     const CGSTValue = +getValues("CGST_value");
     if (CGSTValue) {
       const CGSTAmount = (+totalAmount * +CGSTValue) / 100;
@@ -360,21 +363,24 @@ const AddLatePayment = ({
     }
 
     const extraTexValue = +getValues("extra_tex_value");
-    if (extraTexValue) {
-      const extraTexAmount = (totalAmount * extraTexValue) / 100;
-      setValue("extra_tex_amount", extraTexAmount.toFixed(2));
-      totalNetAmount -= +extraTexAmount;
-    }
+    
+    let taxData = calculateFinalNetAmount(
+      +totalAmount, 
+      SGSTValue, 
+      CGSTValue, 
+      IGSTValue, 
+      0, 
+      extraTexValue
+    )
 
-    totalNetAmount += totalAmount;
-    setValue("net_amount", totalNetAmount.toFixed(2));
-  }, []);
+    setValue("extra_tex_amount", taxData?.tdsAmount);
+    setValue("net_amount", taxData.roundedNetAmount);
+    setValue("round_off_amount", taxData?.roundOffValue) ; 
+  }
 
   useEffect(() => {
-    console.log("Bill id related information");
-    console.log(bill_id);
-    
-  }, [bill_id])
+    calculateTaxAmount() ; 
+  }, [SGST_value, CGST_value, IGST_value, extra_tex_value])
 
   return (
     <>
@@ -660,6 +666,7 @@ const AddLatePayment = ({
                       getValues={getValues}
                       userInformation={userInformation}
                       setUserInformation={setUserInformation}
+                      calculateTaxAmount = {calculateTaxAmount}
                     />
                   );
                 })
@@ -856,7 +863,8 @@ const SingleBillRender = ({
   setValue,
   getValues,
   userInformation,
-  setUserInformation
+  setUserInformation, 
+  calculateTaxAmount
 }) => {
   const [billInformation, setBillInforamtion] = useState({}) ; 
   const { data: billData } = useQuery({
@@ -997,7 +1005,7 @@ const SingleBillRender = ({
       let amount = getValues(`amount_${index}`) || 0 ; 
       amount = +amount + +billInfo?.interest_amount ; 
       setValue(`amount_${index}`, parseFloat(amount).toFixed(2))      
-
+      calculateTaxAmount() ; 
     }
   }, [billData, billId, index, setValue]);
   return (
@@ -1088,7 +1096,12 @@ const SingleBillRender = ({
         <Controller
           control={control}
           name={`amount_${index}`}
-          render={({ field }) => <Input {...field} placeholder="3" />}
+          render={({ field }) => <Input {...field} placeholder="3" 
+            onChange={(e) => {
+              setValue(`amount_${index}`, e.target.value) ; 
+              calculateTaxAmount() ; 
+            }}
+          />}
         />
       </td>
     </tr>

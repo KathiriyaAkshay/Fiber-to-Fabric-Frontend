@@ -13,6 +13,9 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import _ from "lodash";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
+import { CREDIT_NOTE_SALE_RETURN } from "../../../../constants/tag";
+import { CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN } from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -36,18 +39,6 @@ const toWords = new ToWords({
 });
 
 const validationSchema = yup.object().shape({
-  // company_id: yup.string().required("Please select company"),
-  // debit_note_no: yup.string().required("Please enter debit note number"),
-  // invoice_number: yup.string().required("Please enter invoice number"),
-  // party_id: yup.string().required("Please select party"),
-  // date: yup.string().required("Please enter date"),
-  // particular: yup.string().required("Please enter particular"),
-  // hsn_code: yup.string().required("Please enter hsn code"),
-  // amount: yup.string().required("Please enter amount"),
-  // bill_id: yup
-  //   .array()
-  //   .min(1, "Please select bill.")
-  //   .required("Please select bill."),
 });
 
 const UpdateCreditNote = ({
@@ -112,17 +103,10 @@ const UpdateCreditNote = ({
       id: details.id,
       credit_note_type: creditNoteTypes,
       credit_note_number: details?.credit_note_number,
-      // sale_challan_id: 1010,
-      // quality_id: 2020, // **************************************
-      // gray_order_id: 3030,
       party_id: details?.party_id,
-      // sale_return_id: 5050,
       hsn_no: details.hsn_no || "HSN0036",
-      // extra_tex_name: "TDS",
       total_taka: +details.total_taka,
       total_meter: +details.total_meter,
-      // quantity: 200.25, // **************************************
-      // amount: 1200.75, // **************************************
       discount_value: +data.discount_value,
       discount_amount: +data.discount_amount,
       SGST_value: +data.SGST_value,
@@ -131,18 +115,35 @@ const UpdateCreditNote = ({
       CGST_amount: +data.SGST_value,
       IGST_value: +data.SGST_value,
       IGST_amount: +data.SGST_value,
-      round_off_amount: +data.round_off_amount,
+      round_off_amount: +data.round_off_value,
       net_amount: +data.net_amount,
-      // net_rate: 15.0,
       rate: data.rate || 0,
-      tcs_value: +data.SGST_value,
-      tcs_amount: +data.SGST_value,
-      // invoice_no: "INV98765",
-      // particular_name: "Particular B",
-      // extra_tex_value: 0.75,
-      // extra_tex_amount: 7.5,
+      tcs_value: +data.TCS_value,
+      tcs_amount: +data.TCS_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+      extra_tex_value: +data?.TDS_value, 
+      extra_tex_amount: +data?.TDS_amount, 
+      supplier_id: details?.supplier_id
     };
+    
+    let hasError = false ; 
+    
+    // Validation for SGST_amount, CGST_amount, IGST_amount, and other amounts
+    const amountsToValidate = [
+      { label: "SGST Amount", value: data.SGST_value },
+      { label: "CGST Amount", value: data.CGST_value },
+      { label: "IGST Amount", value: data.IGST_value },
+      { label: "TDS Amount", value: data.TDS_value },
+    ];
+  
+    const invalidAmount = amountsToValidate.find(
+      (amount) => amount.value === undefined || amount.value === null || amount.value === ""
+    );
+  
+    if (invalidAmount) {
+      message.warning(`${invalidAmount.label} cannot be empty.`);
+      return; // Stop execution if validation fails
+    }
 
     if (
       creditNoteTypes === "late" ||
@@ -150,21 +151,54 @@ const UpdateCreditNote = ({
       creditNoteTypes === "claim" ||
       creditNoteTypes === "other"
     ) {
-      payload.credit_note_details = numOfBill.map((_, index) => {
-        return {
-          bill_id: data[`bill_id_${index}`] == 0?data[`invoice_no_${index}`] :data[`bill_id_${index}`],
-          model: data[`model_${index}`],
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
-          id: +data[`credit_note_details_id_${index}`], 
-          bill_no: data[`bill_no_${index}`], 
-          invoice_no: data[`invoice_no_${index}`] 
-        };
+
+      // Validate bill amount for each bill
+      numOfBill.map((_, index) => {
+        const amount = data[`amount_${index}`] || undefined;
+        if (amount === undefined){
+          hasError = true ; 
+        }
       });
-    } else if (creditNoteTypes === "sale_return") {
-      payload.amount = data[`amount_${0}`];
+      
+      if (hasError) { // If invalidBill is found, show warning
+        message.warning("Bill Amount cannot be empty or invalid for all bills.");
+        return; // Stop execution if validation fails
+      } 
+
+      payload.credit_note_details = numOfBill.map((_, index) => {
+        let credit_note_data =  {
+          ...details?.credit_note_details[index],
+          amount: +data[`amount_${index}`],
+        }; 
+        return {
+          id: credit_note_data["id"], 
+          bill_id :credit_note_data["bill_id"], 
+          bill_no: credit_note_data["bill_no"], 
+          model: credit_note_data["model"], 
+          rate: credit_note_data["rate"], 
+          per: credit_note_data["per"], 
+          invoice_no: credit_note_data["invoice_no"], 
+          particular_name: credit_note_data["particular_name"], 
+          quantity: credit_note_data["quantity"], 
+          amount: credit_note_data["amount"]
+        }
+      });
+    } else{
+      let amount = data[`amount_${0}`] ; 
+
+      if (amount == undefined || amount == null || amount == ""){
+        message.warning("Please, Enter amount") ; 
+        hasError = true; 
+        return; 
+      } else {
+        payload.amount = amount ; 
+        payload.credit_note_details = [] ; 
+      }
     }
-    await updateCreditNote({ data: payload, companyId: data.company_id });
+
+    if (!hasError){
+      await updateCreditNote({ data: payload, companyId: data.company_id });
+    }
   };
 
   const {
@@ -185,26 +219,17 @@ const UpdateCreditNote = ({
   const {
     company_id,
     total_meter,
-    total_taka,
     rate,
-    // amount,
-    // party_id,
-    // SGST_value,
     SGST_amount,
-    // CGST_value,
     CGST_amount,
-    // IGST_value,
     IGST_amount,
-    // round_off_value,
-    // round_off_amount,
-    // TCS_value,
     TCS_amount,
-    // TDS_value,
     TDS_amount,
-    // discount_value,
     discount_amount,
     total_amount,
     net_amount,
+    round_off_value, 
+    discount_value
   } = watch();
 
   const calculateTaxAmount = () => {
@@ -231,45 +256,37 @@ const UpdateCreditNote = ({
     if (SGSTValue) {
       SGSTAmount = (+totalAmount * +SGSTValue) / 100;
       setValue("SGST_amount", SGSTAmount.toFixed(2));
-      // totalNetAmount += +SGSTAmount;
     }
 
     const CGSTValue = +getValues("CGST_value");
     if (CGSTValue) {
       CGSTAmount = (+totalAmount * +CGSTValue) / 100;
       setValue("CGST_amount", CGSTAmount.toFixed(2));
-      // totalNetAmount += +CGSTAmount;
     }
 
     const IGSTValue = +getValues("IGST_value");
     if (IGSTValue) {
       IGSTAmount = (+totalAmount * +IGSTValue) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
-      // totalNetAmount += +IGSTAmount;
-    }
-
-    const TDS_value = +getValues("TDS_value");
-    if (TDS_value) {
-      const TDS_amount = (+discountAmount * +TDS_value) / 100;
-      setValue("TDS_amount", TDS_amount.toFixed(2));
     }
 
     const TCS_value = +getValues("TCS_value");
-    const beforeTCS = +discountAmount + +SGSTAmount + +CGSTAmount + +IGSTAmount;
-    const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-    setValue("TCS_amount", TCS_Amount);
+    const TDS_value = +getValues("TDS_value");
 
-    const roundOffValue = +getValues("round_off_value");
-    
-    const netAmount =
-      +totalAmount +
-      +SGSTAmount +
-      +CGSTAmount +
-      +IGSTAmount +
-      +TCS_Amount +
-      +roundOffValue;
+    let taxData = calculateFinalNetAmount(
+      totalAmount, 
+      SGSTValue, 
+      CGSTValue, 
+      IGSTValue, 
+      TCS_value, 
+      TDS_value
+    )
 
-      setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
+    setValue("TCS_amount", taxData?.tcsAmount);
+    setValue("TDS_amount", taxData?.tdsAmount);
+    setValue("net_amount", taxData?.roundedNetAmount);
+    setValue("round_off_value", taxData?.roundOffValue)
+
   };
 
 
@@ -291,8 +308,6 @@ const UpdateCreditNote = ({
 
   const selectedCompany = useMemo(() => {
     if (company_id) {
-      console.log(companyListRes?.rows);
-      
       return companyListRes?.rows?.find(({ id }) => id === company_id);
     }
   }, [company_id, companyListRes]);
@@ -321,6 +336,8 @@ const UpdateCreditNote = ({
         tds_amount,
         round_off_amount,
         net_amount,
+        extra_tex_value, 
+        extra_tex_amount
       } = details;
 
       reset({
@@ -340,9 +357,9 @@ const UpdateCreditNote = ({
         discount_value: +discount_value || 0,
         TCS_amount: +tcs_amount || 0,
         TCS_value: +tcs_value || 0,
-        TDS_value: +tds || 0,
-        TDS_amount: +tds_amount || 0,
-        round_off_amount: +round_off_amount || 0,
+        TDS_value: +extra_tex_value || 0,
+        TDS_amount: +extra_tex_amount || 0,
+        round_off_value: +round_off_amount || 0,
         net_amount: +net_amount || 0,
       });
     }
@@ -725,7 +742,7 @@ const UpdateCreditNote = ({
               <tr>
                 <td></td>
                 <td></td>
-                <td>TDS(%)</td>
+                <td style={{fontWeight: 500, color: "blue"}}>TDS(%)</td>
                 <td>
                   <Controller
                     control={control}
@@ -753,22 +770,7 @@ const UpdateCreditNote = ({
                 <td></td>
                 <td>Round Off</td>
                 <td>
-                  <Controller
-                    control={control}
-                    name="round_off_value"
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        placeholder="3"
-                        style={{ width: "100px" }}
-                        type="number"
-                        onChange={(e) => {
-                          setValue("round_off_value", +e.target.value);
-                          calculateTaxAmount();
-                        }}
-                      />
-                    )}
-                  />
+                  {round_off_value}
                 </td>
                 <td></td>
               </tr>
@@ -895,6 +897,8 @@ const SingleBillRender = ({
         );
         setValue(`model_${index}`, details.credit_note_details[index].model);
       }
+
+      calculateTaxAmount()  ; 
     }
   }, [creditNoteTypes, details, index, setValue]);
 

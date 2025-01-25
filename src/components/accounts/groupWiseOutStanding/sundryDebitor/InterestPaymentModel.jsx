@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Table, Input, DatePicker, Button, message } from "antd";
 import moment from "moment";
 import dayjs from "dayjs";
+import { sundaryDebitorHandler } from "../../../../constants/sundary.handler";
 
 function calculateDaysDifference(dueDate) {
     const today = new Date(); // Get today's date
@@ -22,7 +23,7 @@ const CalculateInterest = (due_days, bill_amount) => {
     return interestAmount.toFixed(2); // Return the interest amount rounded to 2 decimal places
   };
 
-const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBill }) => {
+const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBill,isInterestAmountLoading }) => {
     
     const [data, setData] = useState([]);
     const [totalInterest, setTotalInterest] = useState(undefined) ; 
@@ -63,16 +64,14 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
             let temp = [] ; 
             let total = 0 ; 
             selectedInterestBill?.map((bill, index) => {
-                let dueDate= moment(bill?.due_days).format("DD-MM-YYYY") ;
-                let dueDays = isNaN(calculateDaysDifference(dueDate))?0:calculateDaysDifference(dueDate) ; 
-                let interestAmount = CalculateInterest(dueDays, +bill?.amount) ; 
+                let sundary = sundaryDebitorHandler(bill) ; 
                 temp.push({
                     billNo: bill?.bill_no, 
-                    interest: interestAmount, 
+                    interest: sundary?.interest_amount, 
                     no: index + 1, 
                     ...bill
                 })
-                total += +interestAmount ; 
+                total += +sundary?.interest_amount ; 
             })
             setData(temp) ; 
             setTotalInterest(parseFloat(total).toFixed(2)) ; 
@@ -134,7 +133,7 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
                 </div>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                     <Button onClick={onCancel}>CANCEL</Button>
-                    <Button type="primary" onClick={async() => {
+                    <Button type="primary" loading = {isInterestAmountLoading} onClick={async() => {
                         if (interestAmount == "" && interestAmount == undefined){
                             message.warning("Please, Provide interest amount") ; 
                         } else{
@@ -150,7 +149,7 @@ const InterestPaymentModal = ({ visible, onConfirm, onCancel, selectedInterestBi
                                 await onConfirm(interestAmount, dueDate, data)
                             }
                         }
-                    }}>
+                    }} >
                         CONFIRM
                     </Button>
                 </div>

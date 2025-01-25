@@ -62,6 +62,8 @@ const SundaryDebitNoteGenerate = ({
   debiteNoteData,
   setDebitNoteSelection,
 }) => {
+  console.log(bill_details);
+  
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
   const [debitNote, setDebitNote] = useState(undefined);
@@ -144,9 +146,9 @@ const SundaryDebitNoteGenerate = ({
       // Check debit note related data 
       let debit_note_id = null ; 
       let debit_note_number = undefined ; 
-      if (bill_details[0]?.debit_notes?.length > 0){
-        debit_note_id = bill_details[0]?.debit_notes[0]?.id ;
-        debit_note_number = bill_details[0]?.debit_notes[0]?.debit_note_number ;  
+      if (bill_details[0]?.debitNotes?.length > 0){
+        debit_note_id = bill_details[0]?.debitNotes[0]?.debit_note?.id ;
+        debit_note_number = bill_details[0]?.debitNotes[0]?.debit_note?.debit_note_number ;  
       }
 
       if (debit_note_id != null && debit_note_id !== undefined) {
@@ -685,9 +687,9 @@ const SundaryDebitNoteGenerate = ({
             >
 
               {/* Debit note generate option  */}
-              {bill_details[0]?.debit_notes[0]?.id == null &&
+              {bill_details[0]?.debitNotes[0]?.id == null &&
                 bill_details?.length == 1 && 
-                bill_details[0]?.debit_notes[0]?.id !== undefined && 
+                bill_details[0]?.debitNotes[0]?.id !== undefined && 
                 bill_details[0]?.model !== DEBIT_NOTE_BILL_MODEL && (
                   <Button
                     type="primary"
@@ -699,8 +701,8 @@ const SundaryDebitNoteGenerate = ({
               )}
 
               {/* Debit note print option  */}
-              { bill_details[0]?.debit_notes[0]?.id != null && 
-                bill_details[0]?.debit_notes[0]?.id !== undefined &&(
+              { bill_details[0]?.debitNotes[0]?.id != null && 
+                bill_details[0]?.debitNotes[0]?.id !== undefined &&(
                 <Button type="primary">PRINT</Button>
               )}
 

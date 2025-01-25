@@ -204,6 +204,8 @@ const BeamSaleChallanModel = ({
   }
 
   useEffect(() => {
+    console.log("Run this fucntionality");
+    
     const finalNetAmount = parseFloat(
       +currentValues.discount_amount +
         +currentValues.SGST_amount +
@@ -231,6 +233,7 @@ const BeamSaleChallanModel = ({
     currentValues.IGST_amount,
     setValue,
     details.enter_weight,
+    currentValues?.amount
   ]);
 
   //  CALCULATION END------------------------------------------------
@@ -259,6 +262,7 @@ const BeamSaleChallanModel = ({
   }, [yarnSalesBillDetail, setValue]);
 
   const primaryWrapDennier = details?.beam_sale_warp_deniers?.find((element) => element?.inhouse_waraping_detail?.is_primary == true) ; 
+  
   return (
     <>
       <Modal

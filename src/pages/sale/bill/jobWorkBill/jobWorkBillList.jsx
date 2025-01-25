@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import PrintJobWorkChallan from "../../../../components/sale/challan/jobwork/printJobWorkChallan";
 import * as XLSX from "xlsx";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { JOB_WORK_BILL_MODEL, PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 
 const JobWorkBillList = () => {
@@ -111,7 +112,7 @@ const JobWorkBillList = () => {
     },
     {
       title: "Amount",
-      dataIndex: ["job_work_bill", "amount"],
+      dataIndex: ["job_work_bill", "amounpt"],
     },
     {
       title: "Due Date",
@@ -156,12 +157,12 @@ const JobWorkBillList = () => {
             {record?.job_work_bill?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.job_work_bill?.id}
-                bill_model={"job_work_bills"}
+                bill_model={JOB_WORK_BILL_MODEL}
                 paid_amount={record?.job_work_bill?.paid_amount}
               />
             </>:<>
-              <Tag color = {record?.job_work_bill?.is_paid?"green":"red"}>
-                {String(record?.job_work_bill?.is_paid?"Paid":"Un-paid").toUpperCase()}
+              <Tag color = {record?.job_work_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.job_work_bill?.is_paid?PAID_TAG_TEXT:"Un-paid").toUpperCase()}
               </Tag>
             </>}
           </div>
@@ -179,6 +180,8 @@ const JobWorkBillList = () => {
               let MODE;
               if (record.job_work_bill.is_paid) {
                 MODE = "VIEW";
+              } else if (record?.job_work_bill?.is_partial_payment){
+                MODE = "VIEW" ; 
               } else {
                 MODE = "UPDATE";
               }

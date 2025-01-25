@@ -28,6 +28,8 @@ const toWords = new ToWords({
 });
 
 const ViewCreditNoteModal = ({ details, type }) => {
+  console.log(details);
+  
   const { companyListRes } = useContext(GlobalContext);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const company = useMemo(() => {
@@ -206,9 +208,7 @@ const ViewCreditNoteModal = ({ details, type }) => {
                 <td>{details?.rate || ""}</td>
                 <td></td>
                 <td>
-                  {details?.amount ||
-                    details?.credit_note_details[0]?.amount ||
-                    ""}
+                  {details?.amount || "Keyur" }
                 </td>
               </tr>
               <tr>

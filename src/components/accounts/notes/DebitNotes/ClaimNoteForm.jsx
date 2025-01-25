@@ -40,6 +40,7 @@ import moment from "moment";
 import { GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../../constants/bill.model";
 import { extractSupplierInformation } from "../../../../utils/supplier.handler";
 import SupplierInformationComp from "./supplierInformationComp";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -140,7 +141,8 @@ const ClaimNoteForm = ({ type, handleClose }) => {
           invoice_no: data?.invoice_number,
           particular_name: "Claim On Purchase",
           amount: +data.amount,
-          quality_id: +data?.quality_id         
+          quality_id: +data?.quality_id, 
+          yarn_company_id: +data?.yarn_company_id        
         },
       ],
     };
@@ -207,14 +209,16 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       const IGSTAmount = (amount * IGST_value) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
-      const netAmount =
-        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount ; 
-
-      const finalNetAmount = Math.round(netAmount) ; 
-      const round_off_value = finalNetAmount - netAmount ; 
-
-      setValue("net_amount", finalNetAmount.toFixed(2));
-      setValue("round_off_amount", round_off_value.toFixed(2))
+      let taxData = calculateFinalNetAmount(
+        +amount, 
+        SGST_value, 
+        CGST_value, 
+        IGST_value, 
+        0, 
+        0
+      )
+      setValue("net_amount", taxData?.roundedNetAmount);
+      setValue("round_off_amount", taxData?.roundOffValue)
     }
   }, [CGST_value, IGST_value, SGST_value, amount, round_off_amount, setValue]);
 
@@ -391,6 +395,7 @@ const ClaimNoteForm = ({ type, handleClose }) => {
       setValue("total_taka", billInfo?.total_taka);
       setValue("total_meter", billInfo?.total_meter);
       setValue("rate", billInfo?.rate || 0) ; 
+      setValue("yarn_company_id", billInfo?.yarn_company_id)
     }
   }, [billData, setValue]);
 

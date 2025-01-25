@@ -21,7 +21,7 @@ import {
   Tooltip,
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import {
   PARTICULAR_OPTIONS,
@@ -32,7 +32,6 @@ import {
   getCashbookListRequest,
   updateCashbookRequest,
 } from "../../../api/requests/accounts/payment";
-// import { usePagination } from "../../../hooks/usePagination";
 import { useNavigate } from "react-router-dom";
 import { getParticularListRequest } from "../../../api/requests/accounts/particular";
 import dayjs from "dayjs";
@@ -46,6 +45,8 @@ import RevertPassBookEntry from "../../../components/accounts/statement/passbook
 import { useMutation } from "@tanstack/react-query";
 import RevertCashbookEntry from "../../../components/accounts/statement/cashbook/RevertCashbookEntry";
 import EditCashbookEntry from "../../../components/accounts/statement/cashbook/EditCashbokEntry";
+import { CheckCircleFilled, CheckCircleOutlined } from "@ant-design/icons";
+import CashbookAuditConfirmed from "../../../components/accounts/statement/cashbook/cashbookAuditConfirmed";
 
 const CashBook = () => {
   const navigate = useNavigate();
@@ -64,6 +65,10 @@ const CashBook = () => {
   const debounceTo = useDebounce(toMonth, 500);
   const debounceSearch = useDebounce(search, 500);
   const debounceParticular = useDebounce(particular, 500);
+
+  // Interest amount information modal
+  const [interestAmountModal, setInterestAmountModal] = useState(false) ; 
+  const [interstAmountData, setInterstAmountData] = useState(undefined) ; 
 
   const navigateToAdd = () => {
     navigate("/account/payment/add");
@@ -272,340 +277,397 @@ const CashBook = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2 p-4">
-      <div className="flex items-center justify-between gap-5 mx-3 mb-3">
-        <div className="flex items-center gap-2">
-          <h3 className="m-0 text-primary">Cashbook</h3>
-          <Button
-            onClick={navigateToAdd}
-            icon={<PlusCircleOutlined />}
-            type="text"
-          />
+    <Spin spinning = {isCashbookPending}>
+      <div className="flex flex-col gap-2 p-4">
+        <div className="flex items-center justify-between gap-5 mx-3 mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="m-0 text-primary">Cashbook</h3>
+            <Button
+              onClick={navigateToAdd}
+              icon={<PlusCircleOutlined />}
+              type="text"
+            />
+          </div>
+          <Flex align="center" justify="flex-end" gap={10}>
+            <Flex align="center" gap={10}>
+              <Typography>From Month</Typography>
+              <DatePicker
+                value={fromMonth}
+                picker="month"
+                onChange={setFromMonth}
+              />
+              <Typography>To</Typography>
+              <DatePicker value={toMonth} picker="month" onChange={setToMonth} />
+            </Flex>
+
+            <Flex align="center" gap={10}>
+              <Typography.Text className="whitespace-nowrap">
+                Particular
+              </Typography.Text>
+              <Select
+                allowClear
+                showSearch
+                placeholder="Select Particular"
+                dropdownStyle={{
+                  textTransform: "capitalize",
+                }}
+                style={{
+                  textTransform: "capitalize",
+                  minWidth: "200px",
+                }}
+                loading={isLoadingParticular}
+                options={particularOptions}
+                value={particular}
+                onChange={setParticular}
+              />
+            </Flex>
+            <Flex align="center" gap={10}>
+              <Input value={search} onChange={setSearch} placeholder="Search" />
+            </Flex>
+            <Button
+              icon={<FilePdfOutlined />}
+              type="primary"
+              disabled={!cashBookList?.rows?.length}
+              onClick={downloadPdf}
+              className="flex-none"
+            />
+          </Flex>
         </div>
-        <Flex align="center" justify="flex-end" gap={10}>
-          <Flex align="center" gap={10}>
-            <Typography>From Month</Typography>
-            <DatePicker
-              value={fromMonth}
-              picker="month"
-              onChange={setFromMonth}
-            />
-            <Typography>To</Typography>
-            <DatePicker value={toMonth} picker="month" onChange={setToMonth} />
-          </Flex>
 
-          <Flex align="center" gap={10}>
-            <Typography.Text className="whitespace-nowrap">
-              Particular
-            </Typography.Text>
-            <Select
-              allowClear
-              showSearch
-              placeholder="Select Particular"
-              dropdownStyle={{
-                textTransform: "capitalize",
-              }}
-              style={{
-                textTransform: "capitalize",
-                minWidth: "200px",
-              }}
-              loading={isLoadingParticular}
-              options={particularOptions}
-              value={particular}
-              onChange={setParticular}
-            />
-          </Flex>
-          <Flex align="center" gap={10}>
-            <Input value={search} onChange={setSearch} placeholder="Search" />
-          </Flex>
-          <Button
-            icon={<FilePdfOutlined />}
-            type="primary"
-            disabled={!cashBookList?.rows?.length}
-            onClick={downloadPdf}
-            className="flex-none"
-          />
-        </Flex>
-      </div>
+        <Row style={{ justifyContent: "flex-end" }}>
+          <Col span={6} style={{ textAlign: "right" }}>
+            <Checkbox
+              checked={isDeleted}
+              onChange={(e) => setIsDeleted(e.target.checked)}
+              style={{ fontSize: "16px", color: "red" }}
+            >
+              Deleted
+            </Checkbox>
+          </Col>
+        </Row>
 
-      <Row style={{ justifyContent: "flex-end" }}>
-        <Col span={6} style={{ textAlign: "right" }}>
-          <Checkbox
-            checked={isDeleted}
-            onChange={(e) => setIsDeleted(e.target.checked)}
-            style={{ fontSize: "16px", color: "red" }}
-          >
-            Deleted
-          </Checkbox>
-        </Col>
-      </Row>
+        {isLoadingCashBookList ? (
+          <Spin />
+        ) : (
+          <table border={1} className="statement-passbook-table mt-2">
+            <thead>
+              <tr>
+                <td>Date</td>
+                <td>Time</td>
+                {/* <td>Particular</td> */}
+                <td>Particular</td>
+                <td>Debit amount(Rs.)</td>
+                <td>Credit amount(Rs.)</td>
+                <td>Balance(Rs.)</td>
+                <td>Remark</td>
+                <td>Action</td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td
+                  style={{
+                    padding: "12px",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                  }}
+                  colSpan={9}
+                >
+                  {unverifiedEntries && unverifiedEntries?.length
+                    ? "Unverified Entries"
+                    : "No unverified entry available"}
+                </td>
+              </tr>
 
-      {isLoadingCashBookList ? (
-        <Spin />
-      ) : (
-        <table border={1} className="statement-passbook-table mt-2">
-          <thead>
-            <tr>
-              <td>Date</td>
-              <td>Time</td>
-              {/* <td>Particular</td> */}
-              <td>Particular</td>
-              <td>Debit amount(Rs.)</td>
-              <td>Credit amount(Rs.)</td>
-              <td>Balance(Rs.)</td>
-              <td>Remark</td>
-              <td>Action</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td
-                style={{
-                  padding: "12px",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                }}
-                colSpan={9}
-              >
-                {unverifiedEntries && unverifiedEntries?.length
-                  ? "Unverified Entries"
-                  : "No unverified entry available"}
-              </td>
-            </tr>
-
-            {/* ============ Unverified entries information ============  */}
-            {unverifiedEntries && unverifiedEntries?.length
-              ? unverifiedEntries?.map((row, index) => {
-                  return (
-                    <tr
-                      key={index + "_unverified"}
-                      className={row?.is_withdraw ? "red" : "green"}
-                    >
-                      <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
-                      <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
-                      {/* <td>{row?.cheque_no}</td> */}
-                      <td>
-                        {capitalizeFirstCharacter(row?.particular_type)
-                          .split("_")
-                          .join(" ")}
-                      </td>
-                      <td>
-                        <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
-                      </td>
-                      <td>
-                        <Typography
-                          style={{ color: "green", fontWeight: "600" }}
-                        >
-                          {!row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
-                      </td>
-                      <td>{row?.balance}</td>
-                      <td width={250}>{row.remarks || "----"}</td>
-                      <td>
-                        <Flex style={{ gap: 10 }}>
-                          <Tooltip title="Verify Statement">
-                            <div
-                              style={{
-                                cursor: "pointer",
-                                color: row?.is_verified ? "green" : "red",
-                                fontWeight: 600,
-                                marginTop: "auto",
-                                marginBottom: "auto",
-                              }}
-                              onClick={() => {
-                                CashbookStatementVerify(row);
-                              }}
-                            >
-                              {row?.is_verified ? "Confirmed" : "Confirm"}
-                            </div>
-                          </Tooltip>
-
-                          {/* Delete cashbook entry option  */}
-                          <Button
-                            icon={<DeleteOutlined />}
-                            danger
-                            onClick={() => {
-                              DeleteCashbookEntryHandler(row);
-                            }}
-                          ></Button>
-                        </Flex>
-                      </td>
-                    </tr>
-                  );
-                })
-              : null}
-            <tr>
-              <td
-                style={{
-                  padding: "12px",
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  fontSize: "16px",
-                }}
-                colSpan={9}
-              >
-                {verifiedEntries && verifiedEntries?.length
-                  ? "Verified Entries"
-                  : "No verified entry available"}
-              </td>
-            </tr>
-
-            {/* ======= Verified enteries information ============  */}
-            {verifiedEntries && verifiedEntries?.length
-              ? verifiedEntries?.map((row, index) => {
-                  return (
-                    <tr
-                      key={index + "_verified"}
-                      className={row?.is_withdraw ? "red" : "green"}
-                    >
-                      <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
-                      <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
-                      <td>
-                        {capitalizeFirstCharacter(row?.particular_type)
-                          .split("_")
-                          .join(" ")}
-
-                        <span
-                          style={{
-                            fontSize: 12,
-                          }}
-                        >
-                          {row?.is_reverted ? "(Reverse Entry)" : ""}
-                        </span>
-                      </td>
-                      <td>
-                        <Typography style={{ color: "red", fontWeight: "600" }}>
-                          {row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
-                      </td>
-                      <td>
-                        <Typography
-                          style={{ color: "green", fontWeight: "600" }}
-                        >
-                          {!row?.is_withdraw
-                            ? row?.amount?.toFixed(2)
-                            : (0).toFixed(2)}
-                        </Typography>
-                      </td>
-                      <td>{row?.balance}</td>
-                      <td>{row.remarks || "-----"}</td>
-                      <td>
-                        <Space>
-                          <div>
-                            {!row.is_reverted && (
-                              <Tooltip title="Un-verified statement">
-                                <div
-                                  style={{
-                                    cursor: "pointer",
-                                    color: row?.is_verified ? "green" : "red",
-                                    fontWeight: 600,
-                                  }}
-                                  onClick={() => {
-                                    CashbookStatementVerify(row);
-                                  }}
-                                >
-                                  {row?.is_verified ? "Confirmed" : "Confirm"}
-                                </div>
-                              </Tooltip>
-                            )}
-
-                            <Flex style={{ gap: 7, marginTop: 4 }}>
-                              {/* Revert action ===========  */}
-                              {row.able_to_revert ? (
-                                <RevertCashbookEntry details={row} />
-                              ) : null}
-
-                              {/* Edit action ====================  */}
-                              <Button
+              {/* ============ Unverified entries information ============  */}
+              {unverifiedEntries && unverifiedEntries?.length
+                ? unverifiedEntries?.map((row, index) => {
+                    return (
+                      <tr
+                        key={index + "_unverified"}
+                        className={row?.is_withdraw ? "red" : "green"}
+                      >
+                        <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
+                        <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
+                        {/* <td>{row?.cheque_no}</td> */}
+                        <td>
+                          {capitalizeFirstCharacter(row?.particular_type)
+                            .split("_")
+                            .join(" ")}
+                        </td>
+                        <td>
+                          <Typography style={{ color: "red", fontWeight: "600" }}>
+                            {row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </td>
+                        <td>
+                          <Typography
+                            style={{ color: "green", fontWeight: "600" }}
+                          >
+                            {!row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </td>
+                        <td>{row?.balance}</td>
+                        <td width={250}>{row.remarks || "----"}</td>
+                        <td>
+                          <Flex style={{ gap: 10 }}>
+                            <Tooltip title = "Confirmed transaction">
+                              <div
                                 style={{
-                                  borderColor: "var(--menu-item-hover-color)",
+                                  cursor: "pointer",
+                                  // color: row?.is_verified ? "green" : "red",
+                                  fontWeight: 600,
+                                  marginTop: "auto",
+                                  marginBottom: "auto",
                                 }}
                                 onClick={() => {
-                                  setSelectedRow(row);
-                                  setIsOpenEditEntry(true);
-                                  // setIsVerifyEntry(false);
+                                  if (row?.bill_interest_paid_audits?.length > 0){
+                                    setInterestAmountModal(true);
+                                    setInterstAmountData(row)
+                                  } else {
+                                    CashbookStatementVerify(row);
+                                  }
+                                  
                                 }}
                               >
-                                <EditOutlined
+                                {row?.is_verified?
+                                  <CheckCircleFilled
+                                    style={{
+                                      fontSize: 18, 
+                                      color: "green"
+                                    }}
+                                  />
+                                :
+                                  <CheckCircleOutlined
+                                    style={{
+                                      fontSize: 18,
+                                      color: "red"
+                                    }}
+                                  />
+                                }
+                                {/* <ExclamationCircleOutlined/>
+                                {row?.is_verified ? "Confirmed" : "Confirm"} */}
+                              </div>
+                            </Tooltip>
+
+                            {/* Delete cashbook entry option  */}
+                            <Button
+                              icon={<DeleteOutlined />}
+                              danger
+                              onClick={() => {
+                                DeleteCashbookEntryHandler(row);
+                              }}
+                            ></Button>
+                          </Flex>
+                        </td>
+                      </tr>
+                    );
+                  })
+                : null}
+              <tr>
+                <td
+                  style={{
+                    padding: "12px",
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    fontSize: "16px",
+                  }}
+                  colSpan={9}
+                >
+                  {verifiedEntries && verifiedEntries?.length
+                    ? "Verified Entries"
+                    : "No verified entry available"}
+                </td>
+              </tr>
+
+              {/* ======= Verified enteries information ============  */}
+              {verifiedEntries && verifiedEntries?.length
+                ? verifiedEntries?.map((row, index) => {
+                    return (
+                      <tr
+                        key={index + "_verified"}
+                        className={row?.is_withdraw ? "red" : "green"}
+                      >
+                        <td>{dayjs(row?.createdAt).format("DD-MM-YYYY")}</td>
+                        <td>{dayjs(row?.createdAt).format("HH:mm:ss")}</td>
+                        <td>
+                          {capitalizeFirstCharacter(row?.particular_type)
+                            .split("_")
+                            .join(" ")}
+
+                          <span
+                            style={{
+                              fontSize: 12,
+                            }}
+                          >
+                            {row?.is_reverted ? "(Reverse Entry)" : ""}
+                          </span>
+                        </td>
+                        <td>
+                          <Typography style={{ color: "red", fontWeight: "600" }}>
+                            {row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </td>
+                        <td>
+                          <Typography
+                            style={{ color: "green", fontWeight: "600" }}
+                          >
+                            {!row?.is_withdraw
+                              ? row?.amount?.toFixed(2)
+                              : (0).toFixed(2)}
+                          </Typography>
+                        </td>
+                        <td>{row?.balance}</td>
+                        <td>{row.remarks || "-----"}</td>
+                        <td>
+                          <Space>
+                            <div>
+
+                              <Flex style={{ gap: 7, marginTop: 4 }}>
+                                
+                                {!row.is_reverted && (
+                                  <Tooltip title="Un-verified statement">
+                                    <div
+                                      style={{
+                                        cursor: "pointer",
+                                        fontWeight: 600,
+                                        marginTop: "auto", 
+                                        marginBottom: "auto"
+                                      }}
+                                      onClick={() => {
+                                        CashbookStatementVerify(row);
+                                      }}
+                                    >
+                                      {row?.is_verified?
+                                        <CheckCircleFilled
+                                          style={{
+                                            fontSize: 18, 
+                                            color: "green"
+                                          }}
+                                        />
+                                      :
+                                        <CheckCircleOutlined
+                                          style={{
+                                            fontSize: 18,
+                                            color: "red"
+                                          }}
+                                        />
+                                      }
+                                    </div>
+                                  </Tooltip>
+                                )}
+
+                                {/* Revert action ===========  */}
+                                {row.able_to_revert ? (
+                                  <RevertCashbookEntry details={row} />
+                                ) : null}
+
+                                {/* Edit action ====================  */}
+                                <Button
                                   style={{
-                                    color: "var(--menu-item-hover-color)",
+                                    borderColor: "var(--menu-item-hover-color)",
                                   }}
-                                />
-                              </Button>
-                            </Flex>
-                          </div>
-                        </Space>
-                      </td>
-                    </tr>
-                  );
-                })
-              : null}
+                                  onClick={() => {
+                                    setSelectedRow(row);
+                                    setIsOpenEditEntry(true);
+                                    // setIsVerifyEntry(false);
+                                  }}
+                                >
+                                  <EditOutlined
+                                    style={{
+                                      color: "var(--menu-item-hover-color)",
+                                    }}
+                                  />
+                                </Button>
+                              </Flex>
+                            </div>
+                          </Space>
+                        </td>
+                      </tr>
+                    );
+                  })
+                : null}
 
-            {/* Display totals and closing balance */}
-            <tr>
-              <td>
-                <Typography style={{ fontWeight: "700" }}>Total</Typography>
-              </td>
-              <td></td>
-              <td></td>
-              <td>
-                <Typography style={{ fontWeight: "700" }}>
-                  {parseFloat(totalAmount).toFixed(2) || 0}
-                </Typography>
-              </td>
-              <td>
-                <Typography style={{ fontWeight: "700" }}>
-                  {parseFloat(totalDeposit).toFixed(2) || 0}
-                </Typography>
-              </td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>
-                <Typography style={{ fontWeight: "700" }}>
-                  Closing Balance
-                </Typography>
-              </td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>
-                <Typography style={{ fontWeight: "700" }}>
-                  {closingBalance || 0}
-                </Typography>
-              </td>
-              <td></td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      )}
+              {/* Display totals and closing balance */}
+              <tr>
+                <td>
+                  <Typography style={{ fontWeight: "700" }}>Total</Typography>
+                </td>
+                <td></td>
+                <td></td>
+                <td>
+                  <Typography style={{ fontWeight: "700" }}>
+                    {parseFloat(totalAmount).toFixed(2) || 0}
+                  </Typography>
+                </td>
+                <td>
+                  <Typography style={{ fontWeight: "700" }}>
+                    {parseFloat(totalDeposit).toFixed(2) || 0}
+                  </Typography>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>
+                  <Typography style={{ fontWeight: "700" }}>
+                    Closing Balance
+                  </Typography>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                  <Typography style={{ fontWeight: "700" }}>
+                    {closingBalance || 0}
+                  </Typography>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        )}
 
-      {/* Edit cashbook related functionality  */}
-      {isOpenEditEntry && (
-        <EditCashbookEntry
-          open={isOpenEditEntry}
-          handleClose={() => {
-            setIsOpenEditEntry(false);
-          }}
-          row={selectedRow}
-          companyId={companyId}
-          isVerifyEntry={true}
-        />
-      )}
-    </div>
+        {/* Edit cashbook related functionality  */}
+        {isOpenEditEntry && (
+          <EditCashbookEntry
+            open={isOpenEditEntry}
+            handleClose={() => {
+              setIsOpenEditEntry(false);
+            }}
+            row={selectedRow}
+            companyId={companyId}
+            isVerifyEntry={true}
+          />
+        )}
+
+        {/* Interst amount auditing information modal  */}
+        {interestAmountModal && (
+          <CashbookAuditConfirmed
+            isOpen={interestAmountModal}
+            handleClose={() => {
+              setInterestAmountModal(false)
+            }}
+            data={interstAmountData}
+            CashbookStatementVerify = {() => {
+              setInterestAmountModal(false); 
+              CashbookStatementVerify(interstAmountData)
+            }}
+            isCashbookPending = {isCashbookPending}
+          />
+        )}
+      </div>
+    </Spin>
   );
 };
 

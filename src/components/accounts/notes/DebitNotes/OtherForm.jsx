@@ -24,6 +24,7 @@ import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { JOB_TAG_COLOR } from "../../../../constants/tag";
 import { PREVIOUS_YEAR_TAG_COLOR, CURRENT_YEAR_TAG_COLOR } from "../../../../constants/tag";
 import { getLastDebitNoteNumberRequest } from "../../../../api/requests/accounts/notes";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -113,7 +114,6 @@ const OtherForm = ({ type, handleClose }) => {
           invoice_no: data?.invoice_number,
           particular_name: data?.particular,
           amount: +data.amount,
-          model: "other"
         },
       ],
     };
@@ -181,18 +181,19 @@ const OtherForm = ({ type, handleClose }) => {
       const IGSTAmount = (amount * IGST_value) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
-      const extraTexAmount = (amount * extra_tex_value) / 100;
-      setValue("extra_tex_amount", extraTexAmount.toFixed(2));
+      let taxData = calculateFinalNetAmount(
+        +amount, 
+        SGST_value, 
+        CGST_value, 
+        IGST_value, 
+        0, 
+        extra_tex_value || 0
+      )
 
-      const netAmount =
-        +amount +
-        +SGSTAmount +
-        +CGSTAmount +
-        +IGSTAmount +
-        +round_off_amount -
-        +extraTexAmount;
+      setValue("extra_tex_amount", taxData.tdsAmount);
+      setValue("net_amount", taxData?.roundedNetAmount);
+      setValue("round_off_amount", taxData?.roundOffValue)
 
-      setValue("net_amount", netAmount.toFixed(2));
     }
   }, [
     CGST_value,

@@ -40,6 +40,7 @@ import moment from "moment";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
 import { SALE_CHALLAN_INFO_TAG_COLOR } from "../../../../constants/tag";
+import { SALE_BILL_MODEL } from "../../../../constants/bill.model";
 
 const SaleBillList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -384,7 +385,7 @@ const SaleBillList = () => {
             {record?.is_partial_payment?<>
               <PartialPaymentInformation
                 bill_id={record?.id}
-                bill_model={"sale_bills"}
+                bill_model={SALE_BILL_MODEL}
                 paid_amount={record?.paid_amount}
               />
             </>:<>
@@ -402,7 +403,7 @@ const SaleBillList = () => {
         return (
           <Space>
 
-            {record?.is_partial_payment == false && (
+            {record?.is_partial_payment == false && record?.is_paid == false && (
               <>
                 <Button
                   onClick={() => {

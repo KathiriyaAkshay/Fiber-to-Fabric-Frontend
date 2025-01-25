@@ -1,6 +1,6 @@
 import { Button, Flex, Table } from "antd";
 import { useRef } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { PrinterOutlined } from "@ant-design/icons";
 import ReactToPrint from "react-to-print";
 // import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -23,6 +23,8 @@ import * as XLSX from "xlsx";
 import dayjs from "dayjs";
 import { useParams } from "react-router-dom";
 import { BEAM_RECEIVE_TAG_COLOR, SALE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import { BEAM_SALE_BILL_MODEL, CREDIT_NOTE_SALE_RETURN, BEAM_SALE_MODEL_NAME, CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_BEAM_SALE_RETURN_NAME, CREDIT_NOTE_SALE_RETURN_NAME, CREDIT_NOTE_YARN_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN_NAME, DEBIT_NOTE_CLAIM_NOTE, DEBIT_NOTE_CLAIM_NOTE_NAME, DEBIT_NOTE_DISCOUNT_NAME, DEBIT_NOTE_DISCOUNT_TYPE, DEBIT_NOTE_PURCHASE_RETURN, DEBIT_NOTE_PURCHASE_RETURN_NAME, DEBIT_NOTE_SIZE_BEAM_RETURN, DEBIT_NOTE_SIZE_BEAM_RETURN_NAME, DEBIT_NOTE_YARN_RETURN, DEBIT_NOTE_YARN_RETURN_NAME, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME, CREDIT_NOTE_LATE_TYPE, CREDIT_NOTE_LATE_TYPE_NAME, CREDIT_NOTE_CLAIM_NOTE, CREDIT_NOTE_CLAIM_NOTE_NAME, CREDIT_NOTE_DISCOUNT_NOTE, CREDIT_NOTE_DISCOUNT_NAME } from "../../../constants/bill.model";
 
 function getFileName(input) {
   const formattedString = input?.toLowerCase()?.split(" ").join("-");
@@ -168,6 +170,7 @@ const GstrPrint = () => {
     },
   });
 
+  const { company, companyId, companyListRes } = useContext(GlobalContext);
   const [title, setTitle] = useState(null);
   const [tableHead1, setTableHead1] = useState([]);
   const [tableBody1, setTableBody1] = useState([]);
@@ -178,7 +181,16 @@ const GstrPrint = () => {
   const [selectedCompany, setSelectedCompany] = useState({});
   const [downloadFileName, setDownloadFileName] = useState("");
 
-  // const { company } = useContext(GlobalContext);
+  useEffect(() => {
+    if (companyId !== undefined && companyListRes !== undefined && selectedCompany !== undefined){
+      companyListRes?.rows?.map((element) => {
+        if (element?.id == +companyId){
+          setSelectedCompany(element) ; 
+        }
+      })
+    }
+  }, [companyId, companyListRes])
+
 
   const excelDownloadHandler = () => {
     const fileName = prompt("Please enter the file name", title);
@@ -206,7 +218,6 @@ const GstrPrint = () => {
     const printTitle = localStorage.getItem("print-title");
 
     setReportData(reportData);
-    setSelectedCompany(companyData);
     setTitle(printTitle);
 
     setTableHead1([
@@ -329,19 +340,19 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.supplier?.supplier_company}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.party?.company_name}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.supplier?.supplier_company}
@@ -362,28 +373,28 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
-              {record?.yarn_sale?.supplier?.user?.gst_no}
+              {record?.yarn_sale?.supplier?.user?.gst_no || "--"}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
-              {record?.party?.company_gst_number}
+              {record?.party?.company_gst_number || "--"}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
-              {record?.beam_sale?.supplier?.user?.gst_no}
+              {record?.beam_sale?.supplier?.user?.gst_no || "--"}
             </div>
           )
         } else {
           return(
             <div>
-              {record?.job_work?.supplier?.user?.gst_no}
+              {record?.job_work?.supplier?.user?.gst_no || "--"}
             </div>
           )
         }
@@ -396,19 +407,19 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.supplier?.user?.address}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.party?.delivery_address}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.supplier?.user?.address}
@@ -428,7 +439,7 @@ const GstrPrint = () => {
       dataIndex: "total_meter",
       key: "total_meter",
       render: (text, record) => {
-        if (record?.model == "yarn_sale_bills"){
+        if (record?.model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.kg} <span style={{
@@ -436,7 +447,7 @@ const GstrPrint = () => {
               }}>KG</span>
             </div>
           )
-        } else if (record?.model == "job_work_bills"){
+        } else if (record?.model == JOB_WORK_BILL_MODEL){
           return(
             <div>
               {record?.job_work?.kg} <span style={{
@@ -444,7 +455,7 @@ const GstrPrint = () => {
               }}>KG</span>
             </div>
           )
-        } else if (record?.model == "beam_sale_bill"){
+        } else if (record?.model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.total_meter}
@@ -465,37 +476,29 @@ const GstrPrint = () => {
       key: "hsn",
       render: (text, record) => {
         let bill_model = record?.model ; 
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.yarn_stock_company?.hsn_no}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.inhouse_quality?.vat_hsn_no}
             </div>
           )
-        } else if (bill_model == "job_work_bills"){
+        } else if (bill_model == JOB_WORK_BILL_MODEL){
           return(
             <div>
               {record?.job_work?.yarn_stock_company?.hsn_no}
             </div>
           )
         } else {
-          // Beam sale bill handler 
-          let yarn_stock_company = undefined ; 
-
-          record?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
-            if (element?.inhouse_waraping_detail?.is_primary){
-              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
-            }
-          })
-
+          let hsn_code = record?.beam_sale?.beam_sale_warp_deniers[0]?.inhouse_waraping_detail?.yarn_stock_company?.hsn_no ; 
           return(
             <div>
-              {yarn_stock_company?.hsn_no || "----"}
+              {hsn_code || "----"}
             </div>
           )
         }
@@ -533,24 +536,23 @@ const GstrPrint = () => {
       render: (text, record) => {
         let model = undefined ;
         let bill_model = record?.model ;  
-        if (record?.model == "yarn_sale_bills"){
-          model = "Yarn sale"
-        } else if (record?.model == "beam_sale_bill"){
-          model = "Beam sale" ; 
-        } else if (record?.model == "sale_bills") {
-          model = "Grey Job Sale"
-        } else if (record?.model == "job_gray_sale_bill"){
-          model = "Inhouse"
+        if (record?.model == YARN_SALE_BILL_MODEL){
+          model = YARN_SALE_BILL_MODEL_NAME
+        } else if (record?.model == BEAM_SALE_BILL_MODEL){
+          model = BEAM_SALE_MODEL_NAME ; 
+        } else if (record?.model == SALE_BILL_MODEL) {
+          model = SALE_BILL_MODEL_NAME
+        } else if (record?.model == JOB_GREAY_SALE_BILL_MODEL){
+          model = JOB_GREAY_BILL_MODEL_NAME
         } else {
-          model = "Job Work"
+          model = JOB_WORK_MODEL_NAME
         }
         return(
           <div style={{
-            color : bill_model == "sale_bills"?SALE_TAG_COLOR:
-              bill_model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-              bill_model == "job_gray_sale_bill"?SALE_TAG_COLOR:
-              bill_model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR: "gray",
-            fontWeight: 600
+            color : bill_model == SALE_BILL_MODEL?SALE_TAG_COLOR:
+              bill_model == YARN_SALE_BILL_MODEL?YARN_SALE_BILL_TAG_COLOR:
+              bill_model == JOB_GREAY_BILL_MODEL_NAME?SALE_TAG_COLOR:
+              bill_model ==  BEAM_SALE_BILL_MODEL?BEAM_RECEIVE_TAG_COLOR: "gray"
           }}>
             {model}
           </div>
@@ -566,7 +568,6 @@ const GstrPrint = () => {
         return(
           <div style = {{
             color: is_paid == false?"red":"green", 
-            fontWeight: 600 
           }}>
             {is_paid == false?"Unpaid":"Paid"}
           </div>
@@ -594,16 +595,6 @@ const GstrPrint = () => {
       title: "Bill No.",
       dataIndex: "invoice_no",
       key: "invoice_no",
-      render: (text, record) => {
-        return(
-          <div style={{
-            color: "red", 
-            fontWeight: 600
-          }}>
-            {text}
-          </div>
-        )
-      }
     },
     {
       title: "Bill Date",
@@ -628,19 +619,19 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.supplier?.supplier_company}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.party?.company_name}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.supplier?.supplier_company}
@@ -652,7 +643,7 @@ const GstrPrint = () => {
               {record?.job_work?.supplier?.supplier_company}
             </div>
           )
-        } 
+        }
       }
     },
     {
@@ -661,28 +652,28 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
-              {record?.yarn_sale?.supplier?.user?.gst_no}
+              {record?.yarn_sale?.supplier?.user?.gst_no || "--"}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
-              {record?.party?.company_gst_number}
+              {record?.party?.company_gst_number || "--"}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
-              {record?.beam_sale?.supplier?.user?.gst_no}
+              {record?.beam_sale?.supplier?.user?.gst_no || "--"}
             </div>
           )
         } else {
           return(
             <div>
-              {record?.job_work?.supplier?.user?.gst_no}
+              {record?.job_work?.supplier?.user?.gst_no || "--"}
             </div>
           )
         }
@@ -695,19 +686,19 @@ const GstrPrint = () => {
       render: (text, record) => {
         let bill_model = record?.model ; 
         
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.supplier?.user?.address}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.party?.delivery_address}
             </div>
           ) 
-        } else if (bill_model == "beam_sale_bill"){
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.supplier?.user?.address}
@@ -727,7 +718,7 @@ const GstrPrint = () => {
       dataIndex: "total_meter",
       key: "total_meter",
       render: (text, record) => {
-        if (record?.model == "yarn_sale_bills"){
+        if (record?.model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.kg} <span style={{
@@ -735,7 +726,7 @@ const GstrPrint = () => {
               }}>KG</span>
             </div>
           )
-        } else if (record?.model == "job_work_bills"){
+        } else if (record?.model == JOB_WORK_BILL_MODEL){
           return(
             <div>
               {record?.job_work?.kg} <span style={{
@@ -743,7 +734,7 @@ const GstrPrint = () => {
               }}>KG</span>
             </div>
           )
-        } else if (record?.model == "beam_sale_bill"){
+        } else if (record?.model == BEAM_SALE_BILL_MODEL){
           return(
             <div>
               {record?.beam_sale?.total_meter}
@@ -764,37 +755,29 @@ const GstrPrint = () => {
       key: "hsn",
       render: (text, record) => {
         let bill_model = record?.model ; 
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           return(
             <div>
               {record?.yarn_sale?.yarn_stock_company?.hsn_no}
             </div>
           )
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_SALE_BILL_MODEL]?.includes(bill_model)){
           return(
             <div>
               {record?.inhouse_quality?.vat_hsn_no}
             </div>
           )
-        } else if (bill_model == "job_work_bills"){
+        } else if (bill_model == JOB_WORK_BILL_MODEL){
           return(
             <div>
               {record?.job_work?.yarn_stock_company?.hsn_no}
             </div>
           )
         } else {
-          // Beam sale bill handler 
-          let yarn_stock_company = undefined ; 
-
-          record?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
-            if (element?.inhouse_waraping_detail?.is_primary){
-              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
-            }
-          })
-
+          let hsn_code = record?.beam_sale?.beam_sale_warp_deniers[0]?.inhouse_waraping_detail?.yarn_stock_company?.hsn_no ; 
           return(
             <div>
-              {yarn_stock_company?.hsn_no || "----"}
+              {hsn_code || "----"}
             </div>
           )
         }
@@ -832,24 +815,23 @@ const GstrPrint = () => {
       render: (text, record) => {
         let model = undefined ;
         let bill_model = record?.model ;  
-        if (record?.model == "yarn_sale_bills"){
-          model = "Yarn sale"
-        } else if (record?.model == "beam_sale_bill"){
-          model = "Beam sale" ; 
-        } else if (record?.model == "sale_bills") {
-          model = "Grey Job Sale"
-        } else if (record?.model == "job_gray_sale_bill"){
-          model = "Inhouse"
+        if (record?.model == YARN_SALE_BILL_MODEL){
+          model = YARN_SALE_BILL_MODEL_NAME
+        } else if (record?.model == BEAM_SALE_BILL_MODEL){
+          model = BEAM_SALE_MODEL_NAME ; 
+        } else if (record?.model == SALE_BILL_MODEL) {
+          model = SALE_BILL_MODEL_NAME
+        } else if (record?.model == JOB_GREAY_SALE_BILL_MODEL){
+          model = JOB_GREAY_BILL_MODEL_NAME
         } else {
-          model = "Job Work"
+          model = JOB_WORK_MODEL_NAME
         }
         return(
           <div style={{
-            color : bill_model == "sale_bills"?SALE_TAG_COLOR:
-              bill_model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-              bill_model == "job_gray_sale_bill"?SALE_TAG_COLOR:
-              bill_model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR: "gray",
-            fontWeight: 600
+            color : bill_model == SALE_BILL_MODEL?SALE_TAG_COLOR:
+              bill_model == YARN_SALE_BILL_MODEL?YARN_SALE_BILL_TAG_COLOR:
+              bill_model == JOB_GREAY_BILL_MODEL_NAME?SALE_TAG_COLOR:
+              bill_model ==  BEAM_SALE_BILL_MODEL?BEAM_RECEIVE_TAG_COLOR: "gray"
           }}>
             {model}
           </div>
@@ -865,7 +847,6 @@ const GstrPrint = () => {
         return(
           <div style = {{
             color: is_paid == false?"red":"green", 
-            fontWeight: 600 
           }}>
             {is_paid == false?"Unpaid":"Paid"}
           </div>
@@ -911,21 +892,30 @@ const GstrPrint = () => {
         let model = record?.model ;
         let type = record?.debit_note_type || record?.credit_note_type ; 
         let type_value = undefined ;
-
         if (type == "other"){
-          type_value = "Other" ; 
-        } else if (type == "claim"){
-          type_value = "Claim Note" ; 
-        } else if (type == "discount"){
-          type_value = "Discount Note" ; 
-        } else if (type == "sale_return"){
-          type_value = "Sale Return" ; 
-        } else if (type == "yarn_sale_return"){
-          type_value = "Yarn Sale Return" ; 
-        } else if (type == "beam_sale_return"){
-          type_value = "Beam Sale Return" ;
-        } else if (type == "late"){
-          type_value = "Late Payment"
+          type_value = "OTHER" ; 
+        } else if (type === DEBIT_NOTE_YARN_RETURN){
+            type_value = DEBIT_NOTE_YARN_RETURN_NAME ; 
+        } else if (type == DEBIT_NOTE_SIZE_BEAM_RETURN){
+            type_value = DEBIT_NOTE_SIZE_BEAM_RETURN_NAME ; 
+        } else if (type == DEBIT_NOTE_PURCHASE_RETURN){
+            type_value = DEBIT_NOTE_PURCHASE_RETURN_NAME ; 
+        } else if (type == DEBIT_NOTE_DISCOUNT_TYPE){
+            type_value = DEBIT_NOTE_DISCOUNT_NAME ; 
+        } else if (type == DEBIT_NOTE_CLAIM_NOTE){ 
+            type_value = DEBIT_NOTE_CLAIM_NOTE_NAME; 
+        } else if (type === CREDIT_NOTE_BEAM_SALE_RETURN){
+            type_value = CREDIT_NOTE_BEAM_SALE_RETURN_NAME ; 
+        } else if (type == CREDIT_NOTE_YARN_SALE_RETURN){
+            type_value = CREDIT_NOTE_YARN_SALE_RETURN_NAME ; 
+        } else if (type == CREDIT_NOTE_SALE_RETURN){
+            type_value = CREDIT_NOTE_SALE_RETURN_NAME  ; 
+        } else if (type == CREDIT_NOTE_LATE_TYPE){
+            type_value = CREDIT_NOTE_LATE_TYPE_NAME ; 
+        } else if (type == CREDIT_NOTE_CLAIM_NOTE){
+            type_value = CREDIT_NOTE_CLAIM_NOTE_NAME ; 
+        } else if (type == CREDIT_NOTE_DISCOUNT_NOTE){
+            type_value = CREDIT_NOTE_DISCOUNT_NAME ; 
         }
         return(
           <div style={{
@@ -985,7 +975,7 @@ const GstrPrint = () => {
         } else {
           return(
             <div>
-              {record?.supplier?.user?.gst_no}
+              {record?.supplier?.user?.gst_no || "--"}
             </div>
           )
         }
@@ -999,13 +989,13 @@ const GstrPrint = () => {
         if (record?.party !== null){
           return(
             <div>
-              {record?.party?.delivery_address}
+              {record?.party?.delivery_address || "--"}
             </div>
           )
         } else {
           return(
             <div>
-              {record?.supplier?.user?.address}
+              {record?.supplier?.user?.address || "--"}
             </div>
           )
         }
@@ -1186,24 +1176,23 @@ const GstrPrint = () => {
       render: (text, record) => {
         let model = undefined ;
         let bill_model = text;  
-        if (bill_model == "yarn_sale_bills"){
-          model = "Yarn sale"
-        } else if (bill_model == "beam_sale_bill"){
-          model = "Beam sale" ; 
-        } else if (bill_model == "sale_bills") {
-          model = "Grey Job Sale"
-        } else if (bill_model == "job_gray_sale_bill"){
-          model = "Inhouse"
+        if (bill_model == YARN_SALE_BILL_MODEL){
+          model = YARN_SALE_BILL_MODEL_NAME
+        } else if (bill_model == BEAM_SALE_BILL_MODEL){
+          model = BEAM_SALE_MODEL_NAME ; 
+        } else if (bill_model == SALE_BILL_MODEL) {
+          model = SALE_BILL_MODEL_NAME
+        } else if (bill_model == JOB_GREAY_SALE_BILL_MODEL){
+          model = JOB_GREAY_BILL_MODEL_NAME
         } else {
-          model = "Job Work"
+          model = JOB_WORK_MODEL_NAME
         }
         return(
           <div style={{
-            color : bill_model == "sale_bills"?SALE_TAG_COLOR:
-              bill_model == "yarn_sale_bills"?YARN_SALE_BILL_TAG_COLOR:
-              bill_model == "job_gray_sale_bill"?SALE_TAG_COLOR:
-              bill_model == "beam_sale_bill"?BEAM_RECEIVE_TAG_COLOR: "gray",
-            fontWeight: 600
+            color : bill_model == SALE_BILL_MODEL?SALE_TAG_COLOR:
+              bill_model == YARN_SALE_BILL_MODEL?YARN_SALE_BILL_TAG_COLOR:
+              bill_model == JOB_GREAY_SALE_BILL_MODEL?SALE_TAG_COLOR:
+              bill_model == BEAM_SALE_BILL_MODEL?BEAM_RECEIVE_TAG_COLOR: "gray",
           }}>
             {model}
           </div>
@@ -1211,12 +1200,17 @@ const GstrPrint = () => {
       }
     },
   ];
+
   const [b2bInvoiceHsnSummary, setB2bInvoiceHsnSummary] = useState([]) ; 
-
+  const [debitNoteHSNSummary, setDebitNoteHSNSummary] = useState([]) ; 
+  const [creditNoteHSNSummary, setCreditNoteHSNSummary] = useState([]) ; 
+ 
   useEffect(() => {
-    if (reportData !== undefined && Object.entries(reportData)?.length > 0 ){
-      let HSNB2BInvoices = [] ; 
 
+    if (reportData !== undefined && Object.entries(reportData)?.length > 0 ){
+      
+      // B2B invoice hsn summary related information =================================
+      let HSNB2BInvoices = [] ; 
       const groupedData = reportData?.b2b_invoice?.reduce((acc, item) => {
         if (!acc[item.model]) {
           acc[item.model] = {};
@@ -1225,20 +1219,15 @@ const GstrPrint = () => {
         let HSN_number = undefined;  
         let bill_model = item?.model ; 
 
-        if (bill_model == "yarn_sale_bills"){
+        if (bill_model == YARN_SALE_BILL_MODEL){
           HSN_number = item?.yarn_sale?.yarn_stock_company?.hsn_no ; 
-        } else if (["sale_bills", "job_gray_sale_bill"]?.includes(bill_model)){
+        } else if ([SALE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME]?.includes(bill_model)){
           HSN_number = item?.inhouse_quality?.vat_hsn_no ; 
-        } else if (bill_model == "job_work_bills"){
+        } else if (bill_model == JOB_WORK_BILL_MODEL){
           HSN_number = item?.job_work?.yarn_stock_company?.hsn_no ; 
         } else{
-          let yarn_stock_company = undefined ; 
-          item?.beam_sale?.beam_sale_warp_deniers?.map((element) => {
-            if (element?.inhouse_waraping_detail?.is_primary){
-              yarn_stock_company = element?.inhouse_waraping_detail?.yarn_stock_company ; 
-            }
-          })
-          HSN_number = yarn_stock_company?.hsn_no; 
+          let hsn_code = item?.beam_sale?.beam_sale_warp_deniers[0]?.inhouse_waraping_detail?.yarn_stock_company?.hsn_no ; 
+          HSN_number = hsn_code || "NO" ; 
         }
       
         if (!acc[item.model][HSN_number]) {
@@ -1260,11 +1249,11 @@ const GstrPrint = () => {
             let total_meter = 0 ; 
             let total_kg = 0 ; 
 
-            if (key == "yarn_sale_bill"){
+            if (key == YARN_SALE_BILL_MODEL){
               total_kg = +element?.yarn_sale?.kg ; 
-            } else if (key == "job_work_bills"){
+            } else if (key == JOB_WORK_BILL_MODEL){
               total_kg += +element?.job_work?.kg ; 
-            } else if (key == "beam_sale_bill"){
+            } else if (key == BEAM_SALE_BILL_MODEL){
               total_meter += element?.beam_sale?.total_meter ; 
             } else {
               total_meter += +element?.total_meter ; 
@@ -1329,10 +1318,10 @@ const GstrPrint = () => {
               kg: total_kg, 
               amount: total_amount, 
               gstRate: gst_rate, 
-              sgst: total_sgst, 
-              cgst: total_cgst, 
-              igst: total_igst, 
-              netAmount: total_net_amount, 
+              sgst: parseFloat(total_sgst).toFixed(2), 
+              cgst: parseFloat(total_cgst).toFixed(2), 
+              igst: parseFloat(total_igst).toFixed(2), 
+              netAmount: parseFloat(total_net_amount).toFixed(2), 
               type: key
             })
           }) 
@@ -1340,10 +1329,11 @@ const GstrPrint = () => {
         })
       })
       setB2bInvoiceHsnSummary(HSNB2BInvoices) ; 
+
+      // DEBIT note hsn summary related information ==================================
     }
   }, [reportData])
 
-  
   
   const RenderTableList = () => {
     return (
@@ -1383,11 +1373,11 @@ const GstrPrint = () => {
                   let bill_model = element?.model ; 
                   
                   // Count Meter and KG
-                  if (bill_model == "yarn_sale_bills"){
+                  if (bill_model == YARN_SALE_BILL_MODEL){
                     total_kg += +element?.yarn_sale?.kg ; 
-                  } else if (bill_model == "job_work_bills"){
+                  } else if (bill_model == JOB_WORK_BILL_MODEL){
                     total_kg += +element?.job_work?.kg ; 
-                  } else if (bill_model == "beam_sale_bill"){
+                  } else if (bill_model == BEAM_SALE_BILL_MODEL){
                     total_meter += +element?.beam_sale?.total_meter ; 
                   } else {
                     total_meter += +element?.total_meter || 0 ;
@@ -1464,6 +1454,7 @@ const GstrPrint = () => {
               Total {reportData?.skip_b2b_bills?.length} Bills
             </div>
 
+            {/* ===== Zero tax related information =====  */}
             <Table
               style={{
                 marginTop: 15
@@ -1485,11 +1476,11 @@ const GstrPrint = () => {
                   let bill_model = element?.model ; 
                   
                   // Count Meter and KG
-                  if (bill_model == "yarn_sale_bills"){
+                  if (bill_model == YARN_SALE_BILL_MODEL){
                     total_kg += +element?.yarn_sale?.kg ; 
-                  } else if (bill_model == "job_work_bills"){
+                  } else if (bill_model == JOB_WORK_BILL_MODEL){
                     total_kg += +element?.job_work?.kg ; 
-                  } else if (bill_model == "beam_sale_bill"){
+                  } else if (bill_model == BEAM_SALE_BILL_MODEL){
                     total_meter += +element?.beam_sale?.total_meter ; 
                   } else {
                     total_meter += +element?.total_meter || 0 ;
@@ -1551,91 +1542,9 @@ const GstrPrint = () => {
             />
 
           </>
-        ) : null}
+        ) : null} 
 
-        {key === "3" ? (
-          <>
-            <div style={{
-              color: "#1677FF", 
-              marginBottom: 6, 
-              fontWeight: 600, 
-              fontSize: 18
-            }}>
-              HSN-wise Summary
-            </div>
-
-            <div style={{
-              fontSize: 16, 
-              marginBottom: 10, 
-            }}>
-              B2B Invoices  | <span style={{
-                color: "blue"
-              }}>
-              {b2bInvoiceHsnSummary?.length} Bills
-              </span>
-            </div>
-
-            <Table
-              columns={HSNWiseSummaryColumns}
-              dataSource={b2bInvoiceHsnSummary || []}
-              pagination = {false}
-              summary={() => {
-                
-                let total_meter = 0; 
-                let total_kg = 0 ; 
-                let total_sgst = 0 ;
-                let total_cgst = 0 ; 
-                let total_isgt = 0 ; 
-                let total_amount = 0 ; 
-                let total_net_amount = 0 ;
-
-                b2bInvoiceHsnSummary?.map((element) => {
-                  console.log(element?.meter);
-                  
-                  total_meter += isNaN(element?.meter)?0:+element?.meter ; 
-                  total_kg += +element?.kg;  
-                  total_sgst += +element?.sgst; 
-                  total_cgst += +element?.cgst ; 
-                  total_isgt += +element?.igst; 
-                  total_net_amount += +element?.netAmount ; 
-                  total_amount += +element?.amount; 
-                })
-
-                return(
-                  <Table.Summary.Row>
-                    <Table.Summary.Cell>
-                      Total
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_meter} M / {total_kg} KG
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_amount}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_sgst}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_cgst}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_isgt}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell>
-                      {total_net_amount}
-                    </Table.Summary.Cell>
-                    <Table.Summary.Cell></Table.Summary.Cell>
-                  </Table.Summary.Row>
-                )
-              }}
-            />
-          </>
-        ):null}
-
-        {/* Table of Debit Credit */}
+        {/* ===== Debit note and credit note related information =====  */}
         {key === "2" ? (
           <>
             <div style={{
@@ -1725,6 +1634,88 @@ const GstrPrint = () => {
             />
           </>
         ) : null}
+
+        {/* ===== HSN wise summary related information =====  */}
+        {key === "3" ? (
+          <>
+            <div style={{
+              color: "#1677FF", 
+              marginBottom: 6, 
+              fontWeight: 600, 
+              fontSize: 18
+            }}>
+              HSN-wise Summary
+            </div>
+
+            <div style={{
+              fontSize: 16, 
+              marginBottom: 10, 
+            }}>
+              B2B Invoices  | <span style={{
+                color: "blue"
+              }}>
+              {b2bInvoiceHsnSummary?.length} Bills
+              </span>
+            </div>
+
+            <Table
+              columns={HSNWiseSummaryColumns}
+              dataSource={b2bInvoiceHsnSummary || []}
+              pagination = {false}
+              summary={() => {
+                
+                let total_meter = 0; 
+                let total_kg = 0 ; 
+                let total_sgst = 0 ;
+                let total_cgst = 0 ; 
+                let total_isgt = 0 ; 
+                let total_amount = 0 ; 
+                let total_net_amount = 0 ;
+
+                b2bInvoiceHsnSummary?.map((element) => {
+                  total_meter += isNaN(element?.meter)?0:+element?.meter ; 
+                  total_kg += +element?.kg;  
+                  total_sgst += +element?.sgst; 
+                  total_cgst += +element?.cgst ; 
+                  total_isgt += +element?.igst; 
+                  total_net_amount += +element?.netAmount ; 
+                  total_amount += +element?.amount; 
+                })
+
+                return(
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell>
+                      Total
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_meter).toFixed(2)} M / {total_kg} KG
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_amount).toFixed(2)}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_sgst).toFixed(2)}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_cgst).toFixed(2)}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_isgt).toFixed(2)}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell>
+                      {parseFloat(total_net_amount).toFixed(2)}
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell></Table.Summary.Cell>
+                  </Table.Summary.Row>
+                )
+              }}
+            />
+          </>
+
+        ):null}
       </div>
     );
   };

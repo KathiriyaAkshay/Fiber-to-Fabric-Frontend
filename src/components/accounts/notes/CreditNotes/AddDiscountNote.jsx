@@ -41,6 +41,7 @@ import { saleYarnChallanListRequest } from "../../../../api/requests/sale/challa
 import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/challan/beamSale";
 import { extractCreditNoteData } from "../../../../utils/supplier.handler";
 import UserInformationComp from "./userinformationComp";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -318,6 +319,7 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
   const calculateTaxAmount = () => {
     let totalAmount = 0;
     let totalNetAmount = 0;
+
     numOfBill.forEach((_, index) => {
       const amount = getValues(`amount_${index}`);
       totalAmount += +amount;
@@ -345,10 +347,18 @@ const AddDiscountNote = ({ setIsAddModalOpen, isAddModalOpen }) => {
     }
 
     totalNetAmount += totalAmount;
-    let final_net_amount = Math.round(totalNetAmount) ; 
-    let round_off_value = +final_net_amount - +totalNetAmount ; 
-    setValue("net_amount", final_net_amount.toFixed(2));
-    setValue("round_off_amount", round_off_value.toFixed(2)) ; 
+    
+    let taxData = calculateFinalNetAmount(
+      +totalAmount, 
+      SGSTValue,
+      CGSTValue, 
+      IGSTValue, 
+      0, 
+      0 || 0
+    )
+
+    setValue("net_amount", taxData.finalNetAmount);
+    setValue("round_off_amount", taxData?.roundOffValue) ; 
   };
 
   function disabledFutureDate(current) {

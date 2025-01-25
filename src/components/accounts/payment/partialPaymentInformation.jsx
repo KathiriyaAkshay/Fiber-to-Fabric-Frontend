@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Modal, Table, Button, Flex, Tooltip, Tag } from "antd";
+import { Modal, Table, Button, Flex, Tooltip, Tag, Spin } from "antd";
 import { DollarOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
@@ -14,6 +14,7 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
         setIsModalOpen(false);
     };
 
+    // ========== Columns information ================= // 
     const columns = [
         {
             title: 'No.',
@@ -46,7 +47,7 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
             render: (text, record) => {
                 return(
                     <div>
-                        {record?.part_payment}
+                        {record?.amount}
                     </div>
                 )
             }
@@ -77,13 +78,10 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
             title: 'Cheque no.',
             dataIndex: 'chequeNo',
             key: 'chequeNo',
-            render: (text, record) => {
-                return(
-                    <div>
-                        {record?.bill_payment_detail?.cheque_no}
-                    </div>
-                )
-            }
+        },
+        {
+            title: "Voch No", 
+            dataIndex: "vochNo"
         },
         {
             title: 'Payment date',
@@ -109,7 +107,7 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
         },
     ];
 
-    // ============== Get Particular bill part payment related data =========== 
+    // ===== Get particular bill payment related data information ====== // 
     const { data: billPaymentData, isLoading, refetch } = useQuery({
         queryKey: ["account/bill/payments/list", { company_id: companyId }],
         queryFn: async () => {
@@ -132,6 +130,24 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
 
     // ================= Bank Transaction information ====================== // 
     const [bannkTransaction, setBankTransaction] = useState([]) ; 
+
+    useEffect(() => {
+        if (billPaymentData?.billPaymentDetails?.rows?.length > 0){
+            let items = [] ; 
+            billPaymentData?.billPaymentDetails?.rows?.map((element) => {
+                let temp = {} ; 
+                temp["date"] = moment(element?.createdAt).format("DD-MM-YYYY"); 
+                temp["amount"] = element?.part_payment ; 
+                temp["paid_amount"] = element?.paid_amount ; 
+                temp["bank"] = element?.bill_payment_detail?.company_bank_detail?.bank_name ;  
+                temp["chequeNo"] = element?.bill_payment_detail?.cheque_no ; 
+                temp["vochNo"] = element?.bill_payment_detail?.voucher_no ; 
+                temp["paymentDate"] = moment(element?.bill_payment_detail?.cheque_date).format("DD-MM-YYYY") ; 
+                items.push(temp) ; 
+            })
+            setBankTransaction(items) ; 
+        }
+    }, [billPaymentData])
 
     return (
         <>
@@ -199,18 +215,21 @@ const   PartialPaymentInformation = ({bill_id, bill_model, paid_amount}) => {
                         paddingRight: "10px"
                     }
                 }}
+                centered
             >
-                <Table
-                    columns={columns}
-                    dataSource={billPaymentData?.billPaymentDetails?.rows || []}
-                    pagination={false}
-                    loading = {isLoading}
-                    footer={() => (
-                        <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                            Total 22400 0
-                        </div>
-                    )}
-                />
+                <Spin spinning = {isLoading}>
+                    <Table
+                        columns={columns}
+                        dataSource={bannkTransaction}
+                        pagination={false}
+                        loading = {isLoading}
+                        // footer={() => (
+                        //     <div style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                        //         Total 22400 0
+                        //     </div>
+                        // )}
+                    />
+                </Spin>
             </Modal>
         </>
     );
