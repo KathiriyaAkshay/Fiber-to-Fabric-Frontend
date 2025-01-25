@@ -6,7 +6,25 @@ import CompanySelection from "./CompanySelection";
 import topbarLogo from "../../../assets/svg/topbar-logo.svg";
 import YearSelection from "./YearSelection";
 
+const addPopupOffsetRecursively = (menuItems) => {
+  return menuItems.map((item) => {
+    const newItem = {
+      ...item,
+      popupOffset: [8, 8], // Adds vertical and horizontal spacing
+    };
+
+    // If the item has children, apply the function recursively
+    if (item.children) {
+      newItem.children = addPopupOffsetRecursively(item.children);
+    }
+
+    return newItem;
+  });
+};
+
 function Navbar() {
+  const updatedMenuOptions = addPopupOffsetRecursively(menubarOptionsList);
+
   return (
     <Flex
       justify="space-between"
@@ -19,9 +37,17 @@ function Navbar() {
         <Menu
           theme="dark"
           mode="horizontal"
-          items={menubarOptionsList}
+          // items={menubarOptionsList}
+          items={updatedMenuOptions}
           className="w-4/5"
           overflowedIndicator={"More"}
+          onOpenChange={() => {
+            const dropdowns = document.querySelectorAll(".ant-menu-sub");
+            dropdowns.forEach((dropdown) => {
+              dropdown.style.maxHeight = "400px"; // Adjust the height as per your requirement
+              dropdown.style.overflowY = "auto";
+            });
+          }}
         />
       </Flex>
       <Flex gap={"12px"} align="center">
