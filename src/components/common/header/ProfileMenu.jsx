@@ -30,6 +30,10 @@ function ProfileMenu() {
       key: "Create User",
     },
     {
+      label: <RotuerLink to="/profile/sign-up">Sign Up</RotuerLink>,
+      key: "Sign Up",
+    },
+    {
       label: <RotuerLink to="/profile/user-roles">User Roles</RotuerLink>,
       key: "User Roles",
     },

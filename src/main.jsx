@@ -185,6 +185,7 @@ import LedgerReport from "./pages/accounts/reports/ledgerReport";
 import CostPerMeter from "./pages/accounts/costPerMeter";
 import NotFound from "./components/common/NotFound";
 import ComingSoon from "./components/common/ComingSoon";
+import SignUp from "./pages/profile/signUp/SignUp";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -1008,6 +1009,10 @@ const router = createBrowserRouter([
           {
             path: "create-user",
             element: <div>create-user</div>,
+          },
+          {
+            path: "sign-up",
+            element: <SignUp />,
           },
           {
             path: "user-roles",
