@@ -41,12 +41,17 @@ body {
   min-height: 100vh;
 }
 
+.ant-menu-submenu-popup,
+.ant-menu-sub {
+  padding: 0;
+}
+
 .view-in-house-quality-model {
   width: 80% !important;
 }
 
 .red-option-text {
-  color: red;
+  color: black;
 }
 
 .ant-tag {
@@ -1466,15 +1471,13 @@ body {
   border-radius: 3px;
 }
 
-.ant-select-selector{
+.ant-select-selector {
   max-width: 300px !important;
   /* min-width: 220px !important; */
 }
 
-
 @supports not selector(::-webkit-scrollbar) {
   body {
-    scrollbar-color: var(--sb-thumb-color)
-                     var(--sb-track-color);
-  }}
-
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
