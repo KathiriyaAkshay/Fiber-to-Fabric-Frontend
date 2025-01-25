@@ -191,19 +191,21 @@ const CashBookForm = () => {
         color: "black",
       };
 
-      const data = particularRes.rows.map(
-        ({ particular_name, label, is_cost_per_meter, head }) => {
+      const data = [...particularRes.static_particular,...particularRes.rows].map(
+        ({ particular_name, label, is_cost_per_meter, head, is_main }) => {
           return {
             label: label,
             value: particular_name,
-            color: "#000",
+            color: !is_main ? "#000" : '#B8860B',
             is_cost_per_meter,
             head,
+            is_main
           };
         }
       );
 
-      setParticularOptions([...PARTICULAR_OPTIONS, ...data, otherOption]);
+
+      setParticularOptions([...data, otherOption]);
     }
   }, [particularRes]);
 
@@ -277,15 +279,17 @@ const CashBookForm = () => {
                             allowClear
                             loading={isLoadingParticular}
                           >
-                            {particularOptions?.map((option) => (
-                              <Select.Option
-                                key={option.value}
-                                value={option.value}
-                                style={{ color: option.color }}
-                              >
-                                {option.label}
-                              </Select.Option>
-                            ))}
+                            {particularOptions
+                                  ?.sort((a, b) => (a.is_main === b.is_main ? 0 : a.is_main ? -1 : 1))
+                                  .map((option) => (
+                                    <Select.Option
+                                      key={option.value}
+                                      value={option.value}
+                                      style={{ color: option.color }}
+                                    >
+                                      {option.label}
+                                    </Select.Option>
+                                  ))}
                           </Select>
                         );
                       }}
