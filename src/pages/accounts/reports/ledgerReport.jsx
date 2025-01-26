@@ -372,49 +372,116 @@ const LedgerReport = () => {
       let debit = 0;
       let cumulativeBalance = 0;
       
-      // Is credit related option 
-      const isCredit = [
-        PURCHASE_TAKA_BILL_MODEL,
-        GENRAL_PURCHASE_BILL_MODEL,
-        YARN_RECEIVE_BILL_MODEL,
-        RECEIVE_SIZE_BEAM_BILL_MODEL,
-        JOB_REWORK_BILL_MODEL,
-        CREDIT_NOTE_BILL_MODEL,
-      ].includes(bill.model);
-      
-      // IS Debit related option 
-      const isDebit = [
-        SALE_BILL_MODEL,
-        JOB_GREAY_SALE_BILL_MODEL,
-        BEAM_SALE_BILL_MODEL,
-        YARN_SALE_BILL_MODEL,
-        JOB_WORK_BILL_MODEL, 
-        DEBIT_NOTE_BILL_MODEL,
-      ].includes(bill.model);
-
-
       if (bill?.type == "bill_payments"){
 
-        credit = isCredit ? bill?.paid_amount : 0 ; 
-        debit = isDebit ? bill?.paid_amount : 0 ; 
+
+        // Is credit related option 
+        const isDebit = [
+          PURCHASE_TAKA_BILL_MODEL,
+          GENRAL_PURCHASE_BILL_MODEL,
+          YARN_RECEIVE_BILL_MODEL,
+          RECEIVE_SIZE_BEAM_BILL_MODEL,
+          JOB_REWORK_BILL_MODEL,
+          CREDIT_NOTE_BILL_MODEL,
+        ].includes(bill.bill_payments[0]?.model);
+        
+        // IS Debit related option 
+        const isCredit = [
+          SALE_BILL_MODEL,
+          JOB_GREAY_SALE_BILL_MODEL,
+          BEAM_SALE_BILL_MODEL,
+          YARN_SALE_BILL_MODEL,
+          JOB_WORK_BILL_MODEL, 
+          DEBIT_NOTE_BILL_MODEL,
+        ].includes(bill.bill_payments[0]?.model);
+      
+        credit = isCredit ? bill?.total_amount : 0 ; 
+        debit = isDebit ? bill?.total_amount : 0 ; 
+        cumulativeBalance = +openingBalance + +credit - +debit;
+        openingBalance = +cumulativeBalance;
 
         particulars = (
           <Flex gap={12} style={{width :"100%"}}>
-            <p style={{ margin: 0, fontWeight: "500", fontSize: 16 }}>
+            <p style={{ margin: 0, fontWeight: "500", fontSize: 14 }}>
               {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString("Bank")}
             </p>
-            <span className="ledger-report-ref-link" 
-              onClick={() => {
-                onClickViewHandler(bill?.bill_id, bill?.model)
-              }} >
-              New Ref: {bill.bill_no}
-            </span>
+            <div>
+              {bill?.bill_payments?.map((element) => {
+                return(
+                  <div className="ledger-report-ref-link" 
+                    onClick={() => {
+                      onClickViewHandler(element?.bill_id, element?.model)
+                    }} >
+                    New Ref: {element.bill_no || element?.invoice_no}
+                  </div>
+                )
+
+              })}
+            </div>
           </Flex>
         );
 
         vchType = "PAID" ; 
 
+
+        // Push bill related information 
+        billData.push({
+          particulars,
+          vchType,
+          vchNo,
+          credit,
+          debit,
+          cumulativeBalance,
+          mode: bill?.model
+        });
+
+        // ***************** TDS amount calculation ********************** // 
+
+        let bill_net_amount = 0 ; 
+        let TDS_amount = 0 ; 
+        bill.bill_payments?.map((element) => {
+          bill_net_amount = +bill_net_amount + +element?.net_amount ; 
+          let TDS_value = element?.tds || 0 ;
+          let bill_tds_amount = (+bill_net_amount * +TDS_value) / 100 ; 
+          bill_tds_amount = Math.round(bill_tds_amount) ; 
+
+          TDS_amount += +bill_tds_amount ; 
+        })
+
+        // Push bill related information 
+        billData.push({
+          particulars,
+          vchType :"TDS",
+          vchNo: "--",
+          credit: isCredit?parseFloat(TDS_amount).toFixed(2):0,
+          debit: isDebit?parseFloat(TDS_amount).toFixed(2):0,
+          cumulativeBalance,
+          mode: bill?.model
+        });
+
+
       } else {
+
+        // Is credit related option 
+        const isDebit = [
+          PURCHASE_TAKA_BILL_MODEL,
+          GENRAL_PURCHASE_BILL_MODEL,
+          YARN_RECEIVE_BILL_MODEL,
+          RECEIVE_SIZE_BEAM_BILL_MODEL,
+          JOB_REWORK_BILL_MODEL,
+          CREDIT_NOTE_BILL_MODEL,
+        ].includes(bill.model);
+        
+        // IS Debit related option 
+        const isCredit = [
+          SALE_BILL_MODEL,
+          JOB_GREAY_SALE_BILL_MODEL,
+          BEAM_SALE_BILL_MODEL,
+          YARN_SALE_BILL_MODEL,
+          JOB_WORK_BILL_MODEL, 
+          DEBIT_NOTE_BILL_MODEL,
+        ].includes(bill.model);
+        
         credit = isCredit ? bill.amount : 0;
         debit = isDebit ? bill.amount : 0;
         cumulativeBalance = +openingBalance + +credit - +debit;
@@ -422,7 +489,7 @@ const LedgerReport = () => {
   
         particulars = (
           <Flex gap={12} style={{width :"100%"}}>
-            <p style={{ margin: 0, fontWeight: "500", fontSize: 16 }}>
+            <p style={{ margin: 0, fontWeight: "500", fontSize: 14 }}>
               {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString(bill.model)}
             </p>
             <span className="ledger-report-ref-link" 
@@ -446,8 +513,6 @@ const LedgerReport = () => {
           bill?.model === SALE_BILL_MODEL?SALE_BILL_MODEL_NAME:
           bill?.model === JOB_GREAY_SALE_BILL_MODEL?JOB_GREAY_BILL_MODEL_NAME:
           String(formatString(bill?.model)).toUpperCase() ; 
-  
-      }
         
       // Push bill related information 
       billData.push({
@@ -459,6 +524,8 @@ const LedgerReport = () => {
         cumulativeBalance,
         mode: bill?.model
       });
+      }
+      
     });
 
     return billData;

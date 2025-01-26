@@ -22,6 +22,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { DeleteOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const DEFAULT_PARTICULARS = [
   "Raw Yarn stock",
@@ -50,6 +51,11 @@ const CurrentStock = () => {
 
   const [rightTotalAmount, setRightTotalAmount] = useState(0);
   const [rightTotalMeters, setRightTotalMeters] = useState(0);
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+  
 
   const { mutateAsync: saveCurrentStock, isPending } = useMutation({
     mutationFn: async (data) => {
@@ -209,7 +215,24 @@ const CurrentStock = () => {
     const data = currentStockData?.stockOpeningReport?.filter(
       (item) => item.id !== id
     );
+
+    let hasError = false ; 
     const payload = data.map((item) => {
+      const particularName = item?.particular_name ; 
+      const amount = item?.amount ; 
+
+      if (particularName === undefined || particularName === null || particularName === ''){
+        hasError = true ; 
+        message.warning("Please, Enter particular name") ; 
+        return ; 
+      }
+
+      if (amount === undefined || amount === null || amount === ''){
+        hasError = true ; 
+        message.warning("Please, Enter amount")  ; 
+        return ; 
+      }
+
       return {
         particular_name: item.particular_name,
         meters: item.meters,
@@ -218,8 +241,10 @@ const CurrentStock = () => {
       };
     });
 
-    await saveCurrentStock(payload);
-    resetEntry(fieldNo);
+    if (!hasError){
+      await saveCurrentStock(payload);
+      resetEntry(fieldNo);
+    }
   };
 
   return (
@@ -242,6 +267,7 @@ const CurrentStock = () => {
                 value={date}
                 format={"DD-MM-YYYY"}
                 onChange={(selectedDate) => setDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
             <Flex align="center" gap={10}>
@@ -458,6 +484,7 @@ const CurrentStock = () => {
                 value={rightDate}
                 format={"DD-MM-YYYY"}
                 onChange={(selectedDate) => setRightDate(selectedDate)}
+                disabledDate={disabledFutureDate}
               />
             </Flex>
           </Flex>

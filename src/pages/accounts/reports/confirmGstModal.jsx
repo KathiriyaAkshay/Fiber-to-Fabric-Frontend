@@ -1,15 +1,46 @@
 import { CloseOutlined, EyeOutlined } from "@ant-design/icons";
-import { Button, Flex, Modal, Select, Typography } from "antd";
-import { useState } from "react";
+import { Button, DatePicker, Flex, Modal, Select, Typography } from "antd";
+import { useContext, useState } from "react";
+import { getGstrGSTConformationRequest } from "../../../api/requests/accounts/reports";
+import { useQuery } from "@tanstack/react-query";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import moment from "moment";
 
 const ConfirmGstModal = () => {
+  const {companyId} = useContext(GlobalContext) ; 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [dateSelection, setDateSelection] = useState(undefined) ; 
+
   const showModal = () => {
     setIsModalOpen(true);
   };
+  
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
+  // Get GST Conformation related data //
+  const {data: gstrConformationData, isFetching: isLoadingGST, isError} = useQuery({
+    queryKey: ["gstr-1", "gst", "conformation", 
+      {company_id: companyId, date: dateSelection}], 
+    queryFn: async () => {
+      const res = await getGstrGSTConformationRequest({
+        data: {
+          month: moment(dateSelection).format("MM-YYYY"),
+          metadata: "jsonStringify data"
+        },
+        params: {
+          company_id: companyId, 
+
+        }
+      })
+    }, 
+    enabled: Boolean(companyId)
+  })
 
   return (
     <>
@@ -53,7 +84,7 @@ const ConfirmGstModal = () => {
                 <b>GST Fill Month</b>
               </td>
               <td>
-                <Select
+                {/* <Select
                   placeholder="Select Month"
                   options={[
                     { label: "4, 2024", value: "4, 2024" },
@@ -67,6 +98,16 @@ const ConfirmGstModal = () => {
                   dropdownStyle={{
                     textTransform: "capitalize",
                   }}
+                /> */}
+                <DatePicker
+                  placeholder = "Select Month"
+                  picker="month"
+                  value={dateSelection}
+                  onChange={setDateSelection}
+                  dropdownStyle={{
+                    textTransform: "capitalize",
+                  }}
+                  disabledDate={disabledFutureDate}
                 />
               </td>
             </tr>

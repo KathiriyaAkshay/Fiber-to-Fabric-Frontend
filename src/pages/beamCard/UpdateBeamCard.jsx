@@ -27,6 +27,7 @@ import {
   getPasarelaBeamListRequest,
   updateLoadNewBeamRequest,
 } from "../../api/requests/beamCard";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const addJobTakaSchemaResolver = yupResolver(
   yup.object().shape({
@@ -443,7 +444,7 @@ const UpdateBeamCard = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />

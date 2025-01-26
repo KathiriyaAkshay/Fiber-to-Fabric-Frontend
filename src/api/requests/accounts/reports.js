@@ -23,6 +23,10 @@ export function getGstr2ReportService({ params }) {
   return api.get(`/account/report/gstr-2/report`, { params });
 }
 
+export function getGstrGSTConformationRequest({data, params}) {
+  return api.post(`/account/report/gstr-1/report/gst-confirm`, data, {params}) ; 
+}
+
 // LIVE STOCK REPORT---------------------------
 
 // Opening Stock

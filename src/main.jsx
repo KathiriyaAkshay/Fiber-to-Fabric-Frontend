@@ -974,10 +974,10 @@ const router = createBrowserRouter([
           { path: "update/:id", element: <EditRequireReadyBeam /> },
         ],
       },
-      {
-        path: "seeking",
-        element: <div>seeking</div>,
-      },
+      // {
+      //   path: "seeking",
+      //   element: <div>seeking</div>,
+      // },
       {
         path: "cost-calculator",
         element: <CostCalculator />,

@@ -4,6 +4,7 @@ import { useContext, useMemo, useState } from "react";
 import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getMonthlyTransactionReportService } from "../../../api/requests/accounts/reports";
+import moment from "moment";
 
 const MonthlyTransactionReport = () => {
   const { companyListRes } = useContext(GlobalContext);
@@ -35,6 +36,10 @@ const MonthlyTransactionReport = () => {
     }
   }, [companyListRes, selectedCompany]);
 
+  function disabledFutureDate(current) {
+    return current && current > moment().endOf("day");
+  }
+
   return (
     <div className="flex flex-col p-4">
       <div className="flex items-center justify-between gap-5 mx-3 mb-3">
@@ -50,7 +55,7 @@ const MonthlyTransactionReport = () => {
               format={"MM-YYYY"}
               picker="month"
               allowClear={false}
-              // disabledDate={disabledFutureDate}
+              disabledDate={disabledFutureDate}
             />
           </Flex>
 

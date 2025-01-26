@@ -79,7 +79,7 @@ const getActions = (details) => {
       return {
         isView: true,
         isEdit: true,
-        isPlus: true,
+        isPlus: false,
         isBarCode: true,
         isDelete: false,
         isArrow: !details.is_completed,
@@ -407,7 +407,15 @@ const BeamCardList = () => {
         }
 
         if (shortage_status?.includes(record?.status)) {
-          return <div>{shortage}%</div>;
+          if (shortage < 0){
+            return(
+              <div>
+                0%
+              </div>
+            )
+          } else {
+            return <div>{shortage}%</div>;
+          }
         } else {
           return <div>-</div>;
         }
@@ -478,8 +486,15 @@ const BeamCardList = () => {
         } else if (text == "sent") {
           return (
             <div>
-              <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>
-              <span>{record?.job_beam_sent?.challan_no}</span>
+              <div>
+                <Tag color="purple">{capitalizeFirstCharacter(text)}</Tag>
+              </div>
+              <div style={{
+                fontSize: 12, 
+                marginTop: 6
+              }}>
+                <span>{record?.job_beam_sent?.challan_no}</span>
+              </div>
             </div>
           );
         } else if (text == "primary(advance)") {
@@ -487,7 +502,7 @@ const BeamCardList = () => {
         } else if (text == "sale"){
           return (
             <div>
-              <Tag color = "Iridescent Jade">{capitalizeFirstCharacter(text)}</Tag>
+              <Tag color = "green">{capitalizeFirstCharacter(text)}</Tag>
             </div>
           )
         } {

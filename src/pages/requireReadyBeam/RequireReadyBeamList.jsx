@@ -18,6 +18,7 @@ import useDebounce from "../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../api/requests/qualityMaster";
 import { getCompanyMachineListRequest } from "../../api/requests/machine";
 import dayjs from "dayjs";
+import { getDisplayQualityName } from "../../constants/nameHandler";
 
 const getDate = (value) => {
   return dayjs(value).format("DD-MM-YYYY");
@@ -29,14 +30,11 @@ const getTime = (value) => {
 const RequireReadyBeamList = () => {
   const [search, setSearch] = useState();
   const [machine, setMachine] = useState();
-  // const [status, setStatus] = useState(1);
   const debouncedSearch = useDebounce(search, 500);
   const debouncedMachine = useDebounce(machine, 500);
-  // const debouncedStatus = useDebounce(status, 500);
   const { /*company,*/ companyId } = useContext(GlobalContext);
   const navigate = useNavigate();
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
-  //   const { data: user } = useCurrentUser();
 
   const { data: machineListRes, isLoading: isLoadingMachineList } = useQuery({
     queryKey: ["machine", "list", { company_id: companyId }],
@@ -108,7 +106,11 @@ const RequireReadyBeamList = () => {
     {
       title: "Quality",
       render: function (detail) {
-        return `${detail.quality_name} - (${detail.quality_weight})`;
+        return (
+          <div>
+            {getDisplayQualityName(detail)}
+          </div>
+        )
       },
     },
     {

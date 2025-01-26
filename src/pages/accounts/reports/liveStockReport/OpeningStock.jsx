@@ -64,7 +64,7 @@ const OpeningStock = () => {
       ]);
       const successMessage = res?.message;
       if (successMessage) {
-        message.success(successMessage);
+        message.success("Account Opening stock updated successfully");
       }
     },
     onError: (error) => {
@@ -74,7 +74,23 @@ const OpeningStock = () => {
   });
 
   const onSubmit = async (data) => {
+    let hasError = false; 
     const payload = numOfFields.map((item) => {
+
+      const particularName = data[`particular_name_${item}`];
+      const amount = data[`amount_${item}`];
+      if (particularName === undefined || particularName === null || particularName === ''){
+        hasError = true ; 
+        message.warning("Please, Enter particular name") ; 
+        return ; 
+      }
+
+      if (amount === undefined || amount === null || amount === ''){
+        hasError = true ; 
+        message.warning("Please, Enter amount")  ; 
+        return ; 
+      }
+
       return {
         particular_name: data[`particular_name_${item}`],
         amount: data[`amount_${item}`],
@@ -82,7 +98,9 @@ const OpeningStock = () => {
       };
     });
 
-    await saveOpeningStock(payload);
+    if (!hasError){
+      await saveOpeningStock(payload);
+    }
   };
 
   const { control, handleSubmit, setValue, getValues, resetField } = useForm({
