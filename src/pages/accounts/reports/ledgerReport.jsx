@@ -19,7 +19,7 @@ import { PARTICULAR_OPTIONS } from "../../../constants/account";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR } from "../../../constants/tag";
 import { formatString } from "../../../utils/mutationUtils";
 import dayjs from "dayjs";
-import _ from "lodash";
+import _, { zip } from "lodash";
 import { useNavigate } from "react-router-dom";
 import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
 import { getBeamSaleChallanBillListRequest, getBeamSaleChallanListRequest } from "../../../api/requests/sale/challan/beamSale";
@@ -364,62 +364,92 @@ const LedgerReport = () => {
     const billData = [];
 
     data.forEach((bill) => {
+
       let particulars = "";
       let vchType = "";
       let vchNo = "";
       let credit = 0;
       let debit = 0;
       let cumulativeBalance = 0;
-
-      const isCredit = [
-        "purchase_taka_bills",
-        "general_purchase_entries",
-        "yarn_bills",
-        "receive_size_beam_bill",
-        "job_rework_bill",
-        "job_work_bills",
-        "credit_notes",
-        "debit_notes",
-      ].includes(bill.model);
-
-      const isDebit = [
-        "sale_bills",
-        "job_gray_sale_bill",
-        "beam_sale_bill",
-        "yarn_sale_bills",
-      ].includes(bill.model);
-
-      credit = isCredit ? bill.amount : 0;
-      debit = isDebit ? bill.amount : 0;
-      cumulativeBalance = +openingBalance + +credit - +debit;
-      openingBalance = +cumulativeBalance;
-
-      particulars = (
-        <Flex gap={12} style={{width :"100%"}}>
-          <p style={{ margin: 0, fontWeight: "500", fontSize: 16 }}>
-            {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString(bill.model)}
-          </p>
-          <span className="ledger-report-ref-link" 
-            onClick={() => {
-              onClickViewHandler(bill?.bill_id, bill?.model)
-            }} >
-            New Ref: {bill.bill_no}
-          </span>
-        </Flex>
-      );
       
-      vchType = bill?.model === YARN_RECEIVE_BILL_MODEL?YARN_RECEIVE_MODEL_NAME:
-        bill?.model === RECEIVE_SIZE_BEAM_BILL_MODEL?RECEIVE_SIZE_BEAM_MODEL_NAME:
-        bill?.model === PURCHASE_TAKA_BILL_MODEL?PURCHASE_TAKA_MODEL_NAME:
-        bill?.model === GENRAL_PURCHASE_BILL_MODEL?GENERAL_PURCHASE_MODEL_NAME:
-        bill?.model === JOB_REWORK_BILL_MODEL?JOB_REWORK_MODEL_NAME:
-        bill?.model === JOB_TAKA_BILL_MODEL?JOB_TAKA_MODEL_NAME:
-        bill?.model === YARN_SALE_BILL_MODEL?YARN_SALE_BILL_MODEL_NAME:
-        bill?.model === BEAM_SALE_BILL_MODEL?BEAM_SALE_MODEL_NAME:
-        bill?.model === JOB_WORK_BILL_MODEL?JOB_WORK_MODEL_NAME:
-        bill?.model === SALE_BILL_MODEL?SALE_BILL_MODEL_NAME:
-        bill?.model === JOB_GREAY_SALE_BILL_MODEL?JOB_GREAY_BILL_MODEL_NAME:
-        String(formatString(bill?.model)).toUpperCase() ; 
+      // Is credit related option 
+      const isCredit = [
+        PURCHASE_TAKA_BILL_MODEL,
+        GENRAL_PURCHASE_BILL_MODEL,
+        YARN_RECEIVE_BILL_MODEL,
+        RECEIVE_SIZE_BEAM_BILL_MODEL,
+        JOB_REWORK_BILL_MODEL,
+        CREDIT_NOTE_BILL_MODEL,
+      ].includes(bill.model);
+      
+      // IS Debit related option 
+      const isDebit = [
+        SALE_BILL_MODEL,
+        JOB_GREAY_SALE_BILL_MODEL,
+        BEAM_SALE_BILL_MODEL,
+        YARN_SALE_BILL_MODEL,
+        JOB_WORK_BILL_MODEL, 
+        DEBIT_NOTE_BILL_MODEL,
+      ].includes(bill.model);
+
+
+      if (bill?.type == "bill_payments"){
+
+        credit = isCredit ? bill?.paid_amount : 0 ; 
+        debit = isDebit ? bill?.paid_amount : 0 ; 
+
+        particulars = (
+          <Flex gap={12} style={{width :"100%"}}>
+            <p style={{ margin: 0, fontWeight: "500", fontSize: 16 }}>
+              {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString("Bank")}
+            </p>
+            <span className="ledger-report-ref-link" 
+              onClick={() => {
+                onClickViewHandler(bill?.bill_id, bill?.model)
+              }} >
+              New Ref: {bill.bill_no}
+            </span>
+          </Flex>
+        );
+
+        vchType = "PAID" ; 
+
+      } else {
+        credit = isCredit ? bill.amount : 0;
+        debit = isDebit ? bill.amount : 0;
+        cumulativeBalance = +openingBalance + +credit - +debit;
+        openingBalance = +cumulativeBalance;
+  
+        particulars = (
+          <Flex gap={12} style={{width :"100%"}}>
+            <p style={{ margin: 0, fontWeight: "500", fontSize: 16 }}>
+              {isCredit ? "Cr." : isDebit ? "Dr" : ""}. {formatString(bill.model)}
+            </p>
+            <span className="ledger-report-ref-link" 
+              onClick={() => {
+                onClickViewHandler(bill?.bill_id, bill?.model)
+              }} >
+              New Ref: {bill.bill_no}
+            </span>
+          </Flex>
+        );
+        
+        vchType = bill?.model === YARN_RECEIVE_BILL_MODEL?YARN_RECEIVE_MODEL_NAME:
+          bill?.model === RECEIVE_SIZE_BEAM_BILL_MODEL?RECEIVE_SIZE_BEAM_MODEL_NAME:
+          bill?.model === PURCHASE_TAKA_BILL_MODEL?PURCHASE_TAKA_MODEL_NAME:
+          bill?.model === GENRAL_PURCHASE_BILL_MODEL?GENERAL_PURCHASE_MODEL_NAME:
+          bill?.model === JOB_REWORK_BILL_MODEL?JOB_REWORK_MODEL_NAME:
+          bill?.model === JOB_TAKA_BILL_MODEL?JOB_TAKA_MODEL_NAME:
+          bill?.model === YARN_SALE_BILL_MODEL?YARN_SALE_BILL_MODEL_NAME:
+          bill?.model === BEAM_SALE_BILL_MODEL?BEAM_SALE_MODEL_NAME:
+          bill?.model === JOB_WORK_BILL_MODEL?JOB_WORK_MODEL_NAME:
+          bill?.model === SALE_BILL_MODEL?SALE_BILL_MODEL_NAME:
+          bill?.model === JOB_GREAY_SALE_BILL_MODEL?JOB_GREAY_BILL_MODEL_NAME:
+          String(formatString(bill?.model)).toUpperCase() ; 
+  
+      }
+        
+      // Push bill related information 
       billData.push({
         particulars,
         vchType,
@@ -761,12 +791,17 @@ const LedgerReport = () => {
                                 <tr key={index + "sub_row"}
                                   className = {backgroundClass}
                                 >
+                                  
+                                  {/* Transaction date information  */}
                                   <td style={{ border: "0px", textAlign: "center" }}>
                                     {date}
                                   </td>
+
+                                  {/* Particular information  */}
                                   <td style={{ border: "0px" }}>
                                     {row.particulars}
                                   </td>
+
                                   <td style={{ 
                                     border: "0px", 
                                     textAlign: 
@@ -775,22 +810,30 @@ const LedgerReport = () => {
                                   }}>
                                     {row.vchType}
                                   </td>
-                                  <td style={{ border: "0px" }}>{row.vchNo}</td>
+                                  
+                                  <td style={{ border: "0px", textAlign: "center" }}>{row.vchNo || "--"}</td>
+                                  
+                                  {/* Debit amount information  */}
                                   <td
                                     style={{ textAlign: "center", border: "0px", color: "red" }}
                                   >
                                     {row.debit}
                                   </td>
-                                  <td
+                                  
+                                  {/* Credit amount information  */}
+                                  <td 
                                     style={{ textAlign: "center", border: "0px", color: "green" }}
                                   >
                                     {row.credit}
                                   </td>
+
+                                  {/* Cumulative balance information    */}
                                   <td
                                     style={{ textAlign: "center", border: "0px" }}
                                   >
                                     {row.cumulativeBalance.toFixed(2)}
                                   </td>
+                                
                                 </tr>
                               );
                             })}
