@@ -304,7 +304,7 @@ export const menubarOptionsList = [
     label: (
       <Link
         className="text-current no-underline hover:text-current"
-        to="sales/challan"
+        // to="sales/challan"
       >
         Sales
       </Link>
@@ -490,7 +490,7 @@ export const menubarOptionsList = [
     label: (
       <Link
         className="text-current no-underline hover:text-current"
-        to="/purchase"
+        to="/purchase/purchased-taka"
       >
         Purchase
       </Link>
@@ -691,7 +691,7 @@ export const menubarOptionsList = [
     path: "/job",
     key: "Job",
     label: (
-      <Link className="text-current no-underline hover:text-current" to="/job">
+      <Link className="text-current no-underline hover:text-current" to="/job/job-taka">
         Job
       </Link>
     ),
