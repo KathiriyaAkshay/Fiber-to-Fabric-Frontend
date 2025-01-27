@@ -23,6 +23,119 @@ import ViewSaleReturn from "../../../../components/sale/challan/saleReturn/ViewS
 import SaleReturnBill from "../../../../components/sale/challan/saleReturn/SaleReturnBill";
 import moment from "moment";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import ViewParticularSaleReturn from "../../../../components/sale/challan/saleReturn/ViewParticularSaleReturn";
+
+const SaleReturnInformation = ({item}) => {
+  const makeUniqueList = (itemsInfo) => {
+    
+    try {
+      const filteredItems = itemsInfo?.filter(
+        (item) => item.sale_challan_return_id !== null
+      );
+      
+      const grouped = filteredItems.reduce((acc, item) => {
+        const key = item.sale_challan_return_id;
+        if (!acc[key]) {
+          acc[key] = [];
+      }
+        acc[key].push(item);
+        return acc;
+      }, {});
+  
+      // Convert grouped object back into an array
+      return Object.values(grouped);
+    } catch (error) {
+      return [] ;   
+    }
+  };
+
+  const uniqueList = makeUniqueList(
+    item?.sale_challan?.sale_challan_details
+  );
+
+  const columns = [
+    {
+      title: "ID", 
+      render: (text, record, index) => {
+        return(
+          <div style={{fontWeight: 600}}>
+            {index + 1}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Return Taka",
+      render: (text, record) => {
+        return <div>{record?.length}</div>;
+      },
+    },
+    {
+      title: "Return Meter",
+      render: (text, record) => {
+        let total_return_meter = 0;
+        record?.map((element) => {
+          total_return_meter += +element?.meters || +element?.meter;
+        });
+        return (
+          <div
+            style={{
+              fontWeight: 600,
+              color: "red",
+            }}
+          >
+            {total_return_meter}
+          </div>
+        );
+      },
+    },
+    {
+      title: "Action",
+      render: (record) => {
+        let return_taka_id_array = [] ; 
+        record?.map((item) => {
+          return_taka_id_array.push(item?.id) ; 
+        })
+        
+        return(
+          <Space>
+            <ViewParticularSaleReturn
+              details={item}
+              taka_array = {return_taka_id_array}
+            />
+            <SaleReturnBill
+              details={item}
+            />
+            {/* <ParticularPurchaseReturnInfo
+              details={{ ...item, new_challan_details: record }}
+            /> */}
+          </Space>
+        );
+      },
+    },
+  ];
+
+  return (
+    <>
+      <div
+        style={{
+          paddingTop: 10,
+          paddingBottom: 10,
+        }}
+      >
+        <Table
+          dataSource={uniqueList}
+          columns={columns}
+          pagination = {false}
+          className="return-taka-info-table"
+          style={{
+            width: "30%"
+          }}
+        />
+      </div>
+    </>
+  )
+}
 
 const SaleReturnList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -44,9 +157,9 @@ const SaleReturnList = () => {
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
     queryKey: ["party", "list", { company_id: companyId }],
     queryFn: async () => {
-      const res = await getPartyListRequest({
+    const res = await getPartyListRequest({
         params: { company_id: companyId },
-      });
+    });
       return res.data?.data;
     },
     enabled: Boolean(companyId),
@@ -177,11 +290,16 @@ const SaleReturnList = () => {
       },
     },
     {
-      title: "Due Date",
+      title: "Challan Date",
       render: (text, record) => {
-        let result = new Date(record?.return_date);
-        result.setDate(result.getDate() + record?.due_days);
-        return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
+        // let result = new Date(record?.return_date);
+        // result.setDate(result.getDate() + record?.due_days);
+        // return <div>{dayjs(result).format("DD-MM-YYYY")}</div>;
+        return(
+          <div>
+            {dayjs(record?.sale_challan?.createdAt).format("DD-MM-YYYY")}
+          </div>
+        )
       },
     },
     {
@@ -197,7 +315,13 @@ const SaleReturnList = () => {
     {
       title: "Quality Name",
       render: (details) => {
-        return `${details?.sale_challan?.inhouse_quality?.quality_name} (${details?.sale_challan?.inhouse_quality?.quality_weight}KG)`;
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {getDisplayQualityName(details?.sale_challan?.inhouse_quality)}
+          </div>
+        )
       },
       sorter: {
         compare: (a, b) => {
@@ -212,7 +336,20 @@ const SaleReturnList = () => {
       title: "Party Name",
       dataIndex: ["sale_challan", "party"],
       key: "party_name",
-      render: (text) => `${text?.first_name} ${text?.last_name}`,
+      render: (text) => {
+        return(
+          <div>
+            <div style={{
+              fontWeight: 600
+            }}>
+              {String(`${text?.first_name} ${text?.last_name}`).toUpperCase()}
+            </div>
+            <div>
+              {text?.party?.company_name}
+            </div>
+          </div>
+        )
+      },
       sorter: {
         compare: (a, b) => {
           return (
@@ -226,21 +363,18 @@ const SaleReturnList = () => {
       title: "Total Sale",
       dataIndex: ["sale_challan", "total_sale"],
       key: "total_sale",
-      sorter: {
-        compare: (a, b) => {
-          return a?.sale_challan?.total_sale - b?.sale_challan?.total_sale;
-        },
-      },
-    },
-    {
-      title: "Return Meter",
-      render: (details) => {
-        let totalMeter = 0;
-        details.sale_challan.sale_challan_details.forEach(({ meter }) => {
-          totalMeter += +meter;
-        });
-        return totalMeter;
-      },
+      render: (text, record) => {
+        return( 
+          <div>
+            {record?.sale_challan?.total_meter}
+          </div>
+        )
+      }
+      // sorter: {
+      //   compare: (a, b) => {
+      //     return a?.sale_challan?.total_sale - b?.sale_challan?.total_sale;
+      //   },
+      // },
     },
     {
       title: "Total Taka",
@@ -253,27 +387,72 @@ const SaleReturnList = () => {
       },
     },
     {
-      title: "Return Date",
-      dataIndex: "return_date",
-      key: "return_date",
-      render: (text) => dayjs(text).format("DD-MM-YYYY"),
-      sorter: {
-        compare: (a, b) => {
-          return a?.return_date - b?.return_date;
-        },
+      title: "Return Meter",
+      render: (text, record) => {
+        let sale_return_id = record?.id ;  
+        let total_return_meter = 0 ; 
+        record?.sale_challan?.sale_challan_details?.map((element) => {
+          if (+element?.sale_challan_return_id === +sale_return_id){
+            total_return_meter += +element?.meter ; 
+          }
+        })
+
+        return(
+          <div style={{
+            fontWeight: 600, 
+            color: "red"
+          }}>
+            {parseFloat(total_return_meter).toFixed(2)}
+          </div>
+        )
       },
     },
     {
-      title: "Action",
-      render: (details) => {
+      title: "Return Taka", 
+      render: (text, record) => {
+        let sale_return_id = record?.id ; 
+        let total_return_taka = 0 ; 
+        record?.sale_challan?.sale_challan_details?.map((element) => {
+          if (+element?.sale_challan_return_id === +sale_return_id){
+            total_return_taka += 1; 
+          }
+        })
+
         return (
+          <div style={{
+            fontWeight: 600, 
+            color: "red"
+          }}>
+            {parseFloat(total_return_taka).toFixed(2)}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Action", 
+      render: (text, record) => {
+        let sale_return_id = record?.id ; 
+        let sale_return_taka_id = [] ; 
+        record?.sale_challan?.sale_challan_details?.map((element) => {
+          if (+element?.sale_challan_return_id == +sale_return_id){
+            sale_return_taka_id.push(element?.id) ; 
+          }
+        })
+        return(
           <Space>
-            <ViewSaleReturn details={details} companyId={companyId} />
-            <SaleReturnBill details={details} />
+
+            <SaleReturnBill
+              details={record}
+            />
+            
+            <ViewParticularSaleReturn
+              details={record}
+              taka_array  = {sale_return_taka_id}
+            />
           </Space>
-        );
-      },
-    },
+        )
+      }
+    }
   ];
 
   function disabledFutureDate(current) {
@@ -302,19 +481,22 @@ const SaleReturnList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
+        // expandable={{
+        //   expandedRowRender: (record) => {
+        //     return (
+        //       <SaleReturnInformation
+        //         item = {record}
+        //       />
+        //     )
+        //   }, 
+        //   expandedRowKeys: 
+        //     saleChallanReturnList?.rows?.map((element) => element?.id) || [] 
+        // }}
         summary={(pageData) => {
-          let totalTaka = 0;
-          // let totalSale = 0;
-          // let totalReturnMeter = 0;
-          pageData.forEach((row) => {
-            // let tt = 0;
-            // row.sale_challan.sale_challan_details.forEach(({ meter }) => {
-            //   tt += +meter;
-            // });
-
-            totalTaka += +row.sale_challan.total_taka || 0;
-            // totalReturnMeter += +tt || 0;
-          });
+          // let totalTaka = 0;
+          // pageData.forEach((row) => {
+          //   totalTaka += +row.sale_challan.total_taka || 0;
+          // });
           return (
             <>
               <Table.Summary.Row className="font-semibold">
@@ -325,18 +507,14 @@ const SaleReturnList = () => {
                 <Table.Summary.Cell />
                 <Table.Summary.Cell>
                   <Typography.Text>
-                    {saleChallanReturnList?.total_sale}
+                    {parseFloat(saleChallanReturnList?.total_sale).toFixed(2)}
                   </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>
-                    {saleChallanReturnList?.retrun_meter}
-                  </Typography.Text>
                 </Table.Summary.Cell>
                 <Table.Summary.Cell>
-                  <Typography.Text>{totalTaka}</Typography.Text>
+                  <Typography.Text>{parseFloat(saleChallanReturnList?.retrun_meter).toFixed(2)}</Typography.Text>
                 </Table.Summary.Cell>
-                <Table.Summary.Cell />
                 <Table.Summary.Cell />
                 <Table.Summary.Cell />
               </Table.Summary.Row>
@@ -396,7 +574,7 @@ const SaleReturnList = () => {
                   dropDownQualityListRes &&
                   dropDownQualityListRes?.rows?.map((item) => ({
                     value: item.id,
-                    label: item.quality_name,
+                    label: getDisplayQualityName(item),
                   }))
                 }
                 dropdownStyle={{

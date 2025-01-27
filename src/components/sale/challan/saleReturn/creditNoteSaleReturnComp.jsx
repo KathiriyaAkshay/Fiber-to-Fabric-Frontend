@@ -137,7 +137,7 @@ const CreditNoteSaleReturnComp = ({ details }) => {
           >
             <Col span={24}>
               <Text className="font-bold" style={{ fontSize: "22px" }}>
-                SONU TEXTTILE
+                {String(company?.company_name).toUpperCase()}
               </Text>
             </Col>
           </Row>

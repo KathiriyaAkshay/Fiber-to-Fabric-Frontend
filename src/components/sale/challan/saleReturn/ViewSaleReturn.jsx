@@ -17,9 +17,6 @@ const ViewSaleReturn = ({ details }) => {
   // const [companyInfo, setCompanyInfo] = useState({});
   const TakaArray = Array(12).fill(0);
 
-  if (isModelOpen) {
-    console.log({ details });
-  }
 
   const [totalTaka1, setTotalTaka1] = useState(0);
   const [totalTaka2, setTotalTaka2] = useState(0);
@@ -58,13 +55,6 @@ const ViewSaleReturn = ({ details }) => {
     setTotalTaka2(tempTotal2);
   }, [TakaArray, details]);
 
-  // useEffect(() => {
-  //   companyListRes?.rows?.map((element) => {
-  //     if (element?.id == details?.company_id) {
-  //       setCompanyInfo(element);
-  //     }
-  //   });
-  // }, [details, companyListRes]);
 
   return (
     <>
@@ -143,7 +133,7 @@ const ViewSaleReturn = ({ details }) => {
           >
             <Col span={24}>
               <Text className="font-bold" style={{ fontSize: "22px" }}>
-                SONU TEXTTILE
+                {String(company?.company_name).toUpperCase()}
               </Text>
             </Col>
           </Row>
