@@ -12,7 +12,7 @@ export const USER_ROLES = {
   PARNTER_USER: { role_id: 11, name: "partner user" },
   MENDING_USER: { role_id: 12, name: "mending user" },
   FOLDING_USER: { role_id: 13, name: "folding user" },
-  SUPERADMIN_USER : {role_id: 14, name: "Superadmin user"}
+  SUPERADMIN_USER: { role_id: 14, name: "Superadmin user" },
 };
 
 export const ROLE_ID_USER_TYPE_MAP = {
