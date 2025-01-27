@@ -41,7 +41,7 @@ import SaleBillComp from "../../../components/sale/bill/saleBillComp";
 import { getJobGraySaleBillListRequest } from "../../../api/requests/sale/bill/jobGraySaleBill";
 import JobGrayBillComp from "../../../components/sale/bill/jobGrayBillComp";
 import { getCreditNotesListRequest, getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
-import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
+import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewCreditNote";
 import ViewDebitNote from "../../../components/accounts/notes/DebitNotes/ViewDebitNote";
 
 const BILL_TYPE = [
