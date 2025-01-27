@@ -3,9 +3,13 @@ import { api } from "../../../api";
 import { Link as RotuerLink, useNavigate } from "react-router-dom";
 import profilePlaceholder from "../../../assets/png/profile-placeholder.png";
 import ProfileDetailModal from "../modal/ProfileDetailModal";
+import { useCurrentUser } from "../../../api/hooks/auth";
+import { USER_ROLES } from "../../../constants/userRole";
 
 function ProfileMenu() {
   const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
+
   function handleLogout() {
     // remove authentication token from local storage
     localStorage.removeItem("authToken");
@@ -29,7 +33,7 @@ function ProfileMenu() {
       label: <RotuerLink to="/user-master/other-user">Create User</RotuerLink>,
       key: "Create User",
     },
-    {
+    user.role_id === USER_ROLES.SUPERADMIN_USER.role_id && {
       label: <RotuerLink to="/profile/sign-up">Sign Up</RotuerLink>,
       key: "Sign Up",
     },
