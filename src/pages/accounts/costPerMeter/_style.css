@@ -1,0 +1,19 @@
+.cost-per-meter table {
+  border-collapse: collapse !important;
+  height: 400px !important;
+  overflow: auto; /* Ensures borders do not double up */
+}
+
+.cost-per-meter tr {
+  border-top: 1px solid rgb(233, 233, 233) !important; /* Adds a top border to each row */
+}
+
+/* Optionally, remove the top border from the first row */
+.cost-per-meter tr:first-child {
+  border-top: none !important;
+}
+
+.cost-per-meter td,
+th {
+  border: none !important; /* Ensures cells have no borders */
+}
