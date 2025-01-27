@@ -5,6 +5,7 @@ import { CloseOutlined, FileTextFilled } from "@ant-design/icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ToWords } from "to-words";
+import { CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN , CREDIT_NOTE_SALE_RETURN} from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -27,10 +28,12 @@ const toWords = new ToWords({
   },
 });
 
-const ViewDiscountCreditNoteModel = ({ details, type }) => {
-  const [totalAmount, setTotalAmount] = useState(0);
+const ViewDiscountCreditNoteModel = ({ details, type, isEyeButton, handleClose, isModalOpen }) => {
   const { companyListRes } = useContext(GlobalContext);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [invoiceNumber, setInvocieNumber] = useState(undefined) ; 
+  
   const company = useMemo(() => {
     if (details && Object.keys(details).length && companyListRes) {
       const data = companyListRes?.rows?.find(
@@ -42,25 +45,45 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
 
   useEffect(() => {
     if (details) {
-      let total_amount = 0;
-      details?.credit_note_details?.map((element) => {
-        total_amount += +element?.amount || 0;
-      });
-      setTotalAmount(total_amount);
+
+      // Set Bill amount
+      let credit_note_type = details?.credit_note_type ; 
+      if ([CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN, CREDIT_NOTE_SALE_RETURN, "other"]?.includes(credit_note_type)){
+        setTotalAmount(details?.amount)
+        setInvocieNumber(details?.invoice_no) ;
+      } else {
+        let total_amount = 0;
+        details?.credit_note_details?.map((element) => {
+          total_amount += +element?.amount || 0;
+        });
+        setTotalAmount(total_amount);
+        setInvocieNumber(details?.credit_note_details
+          ?.map((element) => element?.bill_no || "N/A") // Map through to get bill_no or "N/A" if it's null
+          .join(", "))
+      }
+
+      // Set Invoice number
+
     }
   }, [details]);
 
   return (
     <>
-      <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
-        <FileTextFilled />
-      </Button>
+      {isEyeButton == undefined && (
+        <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
+          <FileTextFilled />
+        </Button>
+      )}
 
       <Modal
-        open={isAddModalOpen}
+        open={isModalOpen == undefined?isAddModalOpen:isModalOpen}
         width={"75%"}
         onCancel={() => {
-          setIsAddModalOpen(false);
+          if (handleClose == undefined){
+            setIsAddModalOpen(false);
+          } else {
+            handleClose()
+          }
         }}
         footer={false}
         closeIcon={<CloseOutlined className="text-white" />}
@@ -95,7 +118,7 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
                       Credit Note No.
                     </Typography.Text>
                     <div style={{
-                      fontWeight: 400, 
+                      fontWeight: 400,
                       color: "green"
                     }}>{details.credit_note_number || ""}</div>
                   </div>
@@ -116,9 +139,7 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
                   <div className="year-toggle" style={{ textAlign: "left" }}>
                     <div style={{ fontWeight: 400 }}>Bill No.</div>
                     <div>
-                      {details?.credit_note_details
-                        ?.map((element) => element?.bill_no || "N/A") // Map through to get bill_no or "N/A" if it's null
-                        .join(", ")}
+                      {invoiceNumber}
                     </div>
                   </div>
                 </td>
@@ -167,23 +188,28 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
 
                   {details?.supplier !== null && (
                     <>
+                      <div style={{
+                        fontSize: 16,
+                        color: "#000",
+                        fontWeight: 600
+                      }}>{String(details?.supplier?.supplier_company).toUpperCase()}</div>
                       <div className="credit-note-info-title">
                         <span>Supplier:</span>
-                        {details?.party?.company_name || "-"}
+                        {details?.supplier?.supplier_name || "-"}
                         <br />
                         {details?.address || ""}
                       </div>
                       <div className="credit-note-info-title">
                         <span>GSTIN/UIN:</span>{" "}
-                        {details?.party?.user?.gst_no || "-"}
+                        {details?.supplier?.user?.gst_no || "-"}
                       </div>
                       <div className="credit-note-info-title">
                         <span>PAN/IT No: </span>
-                        {details?.party?.user?.pancard_no || "-"}
+                        {details?.supplier?.user?.pancard_no || "-"}
                       </div>
                       <div className="credit-note-info-title">
-                        <span>State Name:</span>{" "}
-                        {details?.party?.user?.state || "-"}
+                        <span>Email:</span>{" "}
+                        {details?.supplier?.user?.email || "-"}
                       </div>
                     </>
                   )}
@@ -220,9 +246,10 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
               <tr>
                 <td></td>
                 <td colSpan={2} style={{ textAlign: "right" }}>
-                  <div>SGST @ {details?.SGST_value || 0} %</div>
-                  <div>CGST @ {details.CGST_value || 0} %</div>
-                  <div>IGST @ {details.IGST_value || 0}%</div>
+                  <div><span style={{ fontWeight: 600 }}>SGST @</span> {details?.SGST_value || 0} %</div>
+                  <div><span style={{ fontWeight: 600 }}>CGST @ </span>{details.CGST_value || 0} %</div>
+                  <div><span style={{ fontWeight: 600 }}>IGST @</span> {details.IGST_value || 0}%</div>
+                  <div><span style={{ fontWeight: 600 }}>TCS @</span> {details.tcs_value || 0}%</div>
                   <div>Round Off</div>
                 </td>
                 <td></td>
@@ -232,6 +259,7 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
                   <div>{details.SGST_amount || 0}</div>
                   <div>{details.CGST_amount || 0}</div>
                   <div>{details.IGST_amount || 0}</div>
+                  <div>{details.tcs_amount || 0}</div>
                   <div>{details.round_off_amount || 0}</div>
                 </td>
               </tr>
@@ -253,14 +281,20 @@ const ViewDiscountCreditNoteModel = ({ details, type }) => {
               </tr>
               <tr style={{ height: "50px" }}>
                 <td></td>
-                <td colSpan={2}>
-                  {details?.extra_tex_name || ""}{" "}
+                <td colSpan={2} style={{
+                  fontWeight: 600,
+                  color: "blue"
+                }}>
+                  {details?.extra_tex_name || "TDS"}{" "}
                   {details?.extra_tex_value || ""}
                 </td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td>{details?.extra_tex_amount || ""}</td>
+                <td style={{
+                  fontWeight: 600,
+                  color: "blue"
+                }}>{details?.extra_tex_amount || ""}</td>
               </tr>
               <tr>
                 <td></td>

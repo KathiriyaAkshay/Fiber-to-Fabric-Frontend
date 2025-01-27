@@ -14,6 +14,7 @@ import {
 } from "antd";
 import {
   EditOutlined,
+  EyeOutlined,
   FilePdfOutlined,
   PlusCircleOutlined,
 } from "@ant-design/icons";
@@ -31,12 +32,14 @@ import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_TAG_COLOR, PURCHASE_TAG_
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
-// import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
+import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
 import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
 import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
-import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
+import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_BEAM_SALE_RETURN_NAME, CREDIT_NOTE_OTHER_TYPE, CREDIT_NOTE_SALE_RETURN, CREDIT_NOTE_SALE_RETURN_NAME, CREDIT_NOTE_YARN_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
 import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { getSupplierListRequest } from "../../../api/requests/users";
+import AccountBeamSaleChallan from "../../../components/sale/challan/beamSale/accountBeamSaleChallan";
 
 const CREDIT_NOTE_TYPES = [
   { label: "Sale Return", value: "sale_return" },
@@ -51,6 +54,7 @@ const CreditNotes = () => {
 
   const [creditNoteTypes, setCreditNoteTypes] = useState("sale_return");
   const [party, setParty] = useState(null);
+  const [supplier, setSupplier] = useState(null) ; 
   const [quality, setQuality] = useState(null);
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
@@ -64,8 +68,17 @@ const CreditNotes = () => {
   const debounceFromDate = useDebounce(fromDate, 150);
   const debounceToDate = useDebounce(toDate, 150);
   const debounceSaleReturnNo = useDebounce(saleReturnNo, 150);
+  const debouncedSupplier = useDebounce(supplier, 150) ; 
 
   const { page, pageSize, onPageChange, onShowSizeChange } = usePagination();
+
+  const [challanModal, setChallanModal] = useState({
+    isModalOpen: false,
+    details: null,
+    mode: "",
+    model: "",
+  }) ; 
+  const [challanDataLoading, setChallanDataLoading] = useState(false) ; 
 
   // Party list dropdown =====================================
   const { data: partyUserListRes, isLoading: isLoadingPartyList } = useQuery({
@@ -75,6 +88,21 @@ const CreditNotes = () => {
         params: { company_id: companyId },
       });
       return res.data?.data;
+    },
+    enabled: Boolean(companyId),
+  });
+
+  // Load Supplier list related dropdown api =======================================================
+  const {
+    data: dropdownSupplierListRes,
+    isLoading: isLoadingDropdownSupplierList,
+  } = useQuery({
+    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryFn: async () => {
+      const res = await getSupplierListRequest({
+        params: { company_id: companyId },
+      });
+      return res.data?.data?.supplierList;
     },
     enabled: Boolean(companyId),
   });
@@ -121,7 +149,8 @@ const CreditNotes = () => {
           quality_id: debounceQuality,
           from: debounceFromDate,
           to: debounceToDate,
-          sale_return_no: debounceSaleReturnNo,
+          supplier_id: debouncedSupplier
+          // sale_return_no: debounceSaleReturnNo,
         },
       ],
       queryFn: async () => {
@@ -132,6 +161,9 @@ const CreditNotes = () => {
           credit_note_type: creditNoteTypes,
           party_id: debounceParty,
           quality_id: debounceQuality,
+          fromDate: debounceFromDate, 
+          toDate: debounceToDate, 
+          supplier_id: debouncedSupplier
         };
         if (fromDate) {
           params.from = dayjs(debounceFromDate).format("YYYY-MM-DD");
@@ -146,11 +178,14 @@ const CreditNotes = () => {
         return response.data.data;
       },
       enabled: Boolean(companyId),
-    });
+  });
 
   const downloadPdf = () => {
     console.log("downloadPdf");
   };
+
+  // Load Beam sale challan information 
+
 
   const columns = [
     {
@@ -176,15 +211,31 @@ const CreditNotes = () => {
       dataIndex: "challan",
       key: "challan",
       render: (text, record) => {
-        if (creditNoteTypes == "sale_return"){
+        if (record?.credit_note_type == CREDIT_NOTE_SALE_RETURN){
           return(
             <div>
-              { record?.sale_challan_return?.sale_challan?.challan_no || 
-                record?.yarn_sale?.challan_no || "-"  
-              }
+              {record?.sale_challan_return?.sale_challan?.challan_no || "N/A"}
             </div>
           )
-        } else{
+        } else if (record?.credit_note_type == CREDIT_NOTE_YARN_SALE_RETURN){
+          return(
+            <div>
+              {record?.yarn_sale?.challan_no || "N/A"}
+            </div>
+          )
+        } else if (record?.credit_note_type == CREDIT_NOTE_BEAM_SALE_RETURN){
+          return(
+            <div>
+              {record?.beam_sale_return?.beam_sale?.challan_no || "N/A"}
+            </div>
+          )
+        } else if (record?.credit_note_type == CREDIT_NOTE_OTHER_TYPE){
+          return(
+            <div>
+              {record?.invoice_no}
+            </div>
+          )
+        } else{  
           return (
             <div style={{
               fontWeight: 600
@@ -205,10 +256,6 @@ const CreditNotes = () => {
         if (creditNoteTypes == "late"){
           // Showing purchasse related information 
           // Show quality id and yarn stock company related information 
-
-          console.log(record);
-          
-          
           return(
             <div>-</div>
           )
@@ -291,15 +338,25 @@ const CreditNotes = () => {
       dataIndex: "amount",
       key: "amount",
       render: (text, record) => {
-        let total_amount = 0;
-        record?.credit_note_details?.map((element) => {
-          total_amount += +element?.amount;
-        });
-        return(
-          <div>
-            {parseFloat(total_amount).toFixed(2)}
-          </div>
-        )
+        let credit_note_type = record?.credit_note_type ; 
+
+        if ([CREDIT_NOTE_BEAM_SALE_RETURN, CREDIT_NOTE_YARN_SALE_RETURN, CREDIT_NOTE_SALE_RETURN, "other"]?.includes(credit_note_type)){
+          return(
+            <div>
+              {parseFloat(record?.amount).toFixed(2)}
+            </div>
+          )
+        } else {
+          let total_amount = 0;
+          record?.credit_note_details?.map((element) => {
+            total_amount += +element?.amount;
+          });
+          return(
+            <div>
+              {parseFloat(total_amount).toFixed(2)}
+            </div>
+          )
+        }
       },
     },
     {
@@ -319,7 +376,25 @@ const CreditNotes = () => {
       dataIndex: "credit_note_type",
       key: "credit_note_type",
       render: (text, record) => {
-        if (creditNoteTypes === "other") {
+        if (record?.credit_note_type == CREDIT_NOTE_SALE_RETURN){
+          return(
+            <Tag color = {SALE_TAG_COLOR}>
+              {CREDIT_NOTE_SALE_RETURN_NAME}
+            </Tag>
+          )
+        } else if (record?.credit_note_type == CREDIT_NOTE_BEAM_SALE_RETURN){
+          return(
+            <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
+              {CREDIT_NOTE_BEAM_SALE_RETURN_NAME}
+            </Tag>
+          )
+        } else if (record?.credit_note_type == CREDIT_NOTE_YARN_SALE_RETURN){
+          return(
+            <Tag color = {YARN_SALE_BILL_TAG_COLOR}>
+              {CREDIT_NOTE_YARN_SALE_RETURN_NAME}
+            </Tag>
+          )
+        }  else if (creditNoteTypes === "other") {
           let credit_note_model = record?.credit_note_details[0]?.model ; 
           if (credit_note_model == null || credit_note_model == undefined){
             return(
@@ -429,27 +504,24 @@ const CreditNotes = () => {
         return (
           <Space>
             {/* Sale return related information*/}
-            {details?.credit_note_type == "sale_return" && (
+            {details?.credit_note_type == CREDIT_NOTE_SALE_RETURN && (
               <CreditNoteSaleReturnComp details={details} />
             )}
 
             {/* Yarn sale return related information  */}
-            {details?.credit_note_type == "yarn_sale_return" && (
+            {details?.credit_note_type == CREDIT_NOTE_YARN_SALE_RETURN && (
               <AccountantYarnSaleChallan details={details} />
             )}
 
-            {creditNoteTypes != "discount" ? (
-              <>
-                {/* <ViewCreditNoteModal details={details} type={creditNoteTypes} /> */}
-              </>
-            ) : (
-              <>
-                {/* <ViewDiscountCreditNoteModel
-                  details={details}
-                  type={creditNoteTypes}
-                /> */}
-              </>
+            {/* Beam sale return related information  */}
+            {details?.credit_note_type == CREDIT_NOTE_BEAM_SALE_RETURN && (
+              <AccountBeamSaleChallan details = {details} />
             )}
+
+            <ViewDiscountCreditNoteModel
+              details={details}
+            />
+            
             {!details.is_partial_payment ? (
               <>
                 {/* <UpdateCreditNote details={details} /> */}
@@ -574,6 +646,31 @@ const CreditNotes = () => {
         <Flex align="center" justify="flex-end" gap={10}>
           <Flex align="center" gap={10}>
             <Typography.Text className="whitespace-nowrap">
+              Supplier
+            </Typography.Text>
+            <Select
+              allowClear
+              placeholder="Select Supplier"
+              dropdownStyle={{
+                textTransform: "capitalize",
+              }}
+              style={{
+                textTransform: "capitalize",
+              }}
+              className="min-w-40"
+              value={supplier}
+              onChange={setSupplier}
+              loading={isLoadingDropdownSupplierList}
+              options={dropdownSupplierListRes?.rows?.flatMap((element) => {
+                return {
+                  label: element?.supplier?.supplier_company, 
+                  value: element?.id
+                }
+              })}
+            />
+          </Flex>
+          <Flex align="center" gap={10}>
+            <Typography.Text className="whitespace-nowrap">
               Party
             </Typography.Text>
             <Select
@@ -621,7 +718,7 @@ const CreditNotes = () => {
                 dropDownQualityListRes &&
                 dropDownQualityListRes?.rows?.map((item) => ({
                   value: item.id,
-                  label: item.quality_name,
+                  label: getDisplayQualityName(item),
                 }))
               }
             />
@@ -647,7 +744,7 @@ const CreditNotes = () => {
           </Flex>
         </Flex>
 
-        <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-4  ">
+        {/* <div className="flex items-center justify-end gap-5 mx-3 mb-3 mt-4  ">
           <Flex align="center" gap={10}>
             <Flex align="center" gap={10}>
               <Typography.Text className="whitespace-nowrap">
@@ -668,7 +765,7 @@ const CreditNotes = () => {
               />
             </Flex>
           </Flex>
-        </div>
+        </div> */}
         {renderTable()}
       </div>
 

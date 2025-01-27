@@ -814,7 +814,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/report/yarn-sent-report"
+                to="coming-soon"
               >
                 Yarn Sent Report
               </Link>
@@ -826,7 +826,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/report/job-cost-report"
+                to="comming-soon"
               >
                 Job Cost Report
               </Link>
@@ -838,7 +838,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/report/job-profit-report"
+                to="comming-soon"
               >
                 Job Profit Report
               </Link>
@@ -862,7 +862,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="job/report/job-production"
+                to="comming-soon"
               >
                 Job Production
               </Link>
@@ -1052,7 +1052,7 @@ export const menubarOptionsList = [
         label: (
           <Link
             className="text-current no-underline hover:text-current"
-            to="account/accounts-report"
+            to="comming-soon"
           >
             Accounts Report
           </Link>
@@ -1076,7 +1076,7 @@ export const menubarOptionsList = [
         label: (
           <Link
             className="text-current no-underline hover:text-current"
-            to="account/balance-sheet"
+            to="comming-soon"
           >
             Balance Sheet
           </Link>
@@ -1088,7 +1088,7 @@ export const menubarOptionsList = [
         label: (
           <Link
             className="text-current no-underline hover:text-current"
-            to="account/profite-and-loss"
+            to="comming-soon"
           >
             Profite & Loss
           </Link>
@@ -1148,24 +1148,24 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="account/statement/bank-reconciliation"
+                to="comming-soon"
               >
                 Bank Reconciliation
               </Link>
             ),
           },
-          {
-            path: "cashbook-verify",
-            key: "Cashbook Verify",
-            label: (
-              <Link
-                className="text-current no-underline hover:text-current"
-                to="account/statement/cashbook-verify"
-              >
-                Cashbook Verify
-              </Link>
-            ),
-          },
+          // {
+          //   path: "cashbook-verify",
+          //   key: "Cashbook Verify",
+          //   label: (
+          //     <Link
+          //       className="text-current no-underline hover:text-current"
+          //       to="account/statement/cashbook-verify"
+          //     >
+          //       Cashbook Verify
+          //     </Link>
+          //   ),
+          // },
         ],
       },
       {
@@ -1198,7 +1198,7 @@ export const menubarOptionsList = [
             label: (
               <Link
                 className="text-current no-underline hover:text-current"
-                to="account/reports/cost-and-profit-report"
+                to="comming-soon"
               >
                 Cost And Profit Report
               </Link>
@@ -1308,7 +1308,7 @@ export const menubarOptionsList = [
                 className="text-current no-underline hover:text-current"
                 to="account/reports/live-stock-report"
               >
-                Live Stock Report
+                Stock Report
               </Link>
             ),
           },
@@ -1550,18 +1550,18 @@ export const menubarOptionsList = [
       </Link>
     ),
   },
-  {
-    path: "seeking",
-    key: "Seeking",
-    label: (
-      <Link
-        className="text-current no-underline hover:text-current"
-        to="seeking"
-      >
-        Seeking
-      </Link>
-    ),
-  },
+  // {
+  //   path: "seeking",
+  //   key: "Seeking",
+  //   label: (
+  //     <Link
+  //       className="text-current no-underline hover:text-current"
+  //       to="seeking"
+  //     >
+  //       Seeking
+  //     </Link>
+  //   ),
+  // },
   {
     path: "cost-calculator",
     key: "Cost Calculator",

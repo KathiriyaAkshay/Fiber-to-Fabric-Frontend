@@ -2,14 +2,9 @@ import { Flex, Spin, Button, Modal, Table } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GlobalContext } from "../../../contexts/GlobalContext";
-import PieCharts from "./PieChart";
-import { ArrowsAltOutlined } from "@ant-design/icons";
-import { getDashboardOutStandingInformation } from "../../../api/requests/dashboard";
-import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { getSundryDebtorsService } from "../../../api/requests/accounts/sundryDebtors";
-import moment from "moment";
 import { productionInHoustTakaReportRequest } from "../../../api/requests/dashboard";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const ProductionReport = ({ }) => {
     
@@ -117,7 +112,8 @@ const ProductionReport = ({ }) => {
             render: (text, record) => {
                 return(
                     <div>
-                        {record?.quality?.quality_name} ({record?.quality?.weight_from} KG)
+                        {getDisplayQualityName(record?.quality)}
+                        {/* {record?.quality?.quality_name} ({record?.quality?.weight_from} KG) */}
                     </div>
                 )
             }
@@ -270,7 +266,7 @@ const ProductionReport = ({ }) => {
             render: (text, record) => {
                 return(
                     <div>
-                        {record?.total_weight}
+                        {parseFloat(record?.total_weight).toFixed(2)}
                     </div>
                 )
             }

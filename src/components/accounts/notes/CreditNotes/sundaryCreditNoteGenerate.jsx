@@ -15,6 +15,8 @@ import moment from "moment";
 import { useMutation } from "@tanstack/react-query";
 import { CREDIT_NOTE_BILL_MODEL, PURCHASE_TAKA_BILL_MODEL } from "../../../../constants/bill.model";
 import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../../../../pages/accounts/reports/utils";
+import { sundryCreditorHandler } from "../../../../constants/sundary.handler";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -66,8 +68,8 @@ const SunadryCreditNoteGenerate = ({
 }) => {
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [debitNote, setDebitNote] = useState(undefined);
+  const [sundryData, setSundryData] = useState({}) ; 
 
   // Selected company information ==============================================================
   const selectedCompany = useMemo(() => {
@@ -137,8 +139,11 @@ const SunadryCreditNoteGenerate = ({
 
   useEffect(() => {
     if (bill_details?.length == 1) {
-      if (bill_details[0]?.credit_note_id != null && bill_details[0]?.credit_note_id !== undefined) {
-        manuallyFetchDebitNoteInformation(bill_details[0]?.credit_note_id);
+      
+      let sundary = sundryCreditorHandler(bill_details[0]) ;
+      setSundryData(sundary) ;  
+      if (sundary?.credit_note_id !== undefined) {
+        manuallyFetchDebitNoteInformation(sundary?.credit_note_id);
       } else if (bill_details[0]?.model == CREDIT_NOTE_BILL_MODEL){
         manuallyFetchDebitNoteInformation(bill_details[0]?.bill_id) ; 
       }
@@ -158,38 +163,45 @@ const SunadryCreditNoteGenerate = ({
       if (bill_details?.length > 0) {
         let totalAmount = 0;
         bill_details?.map((bill) => {
-          const dueDate =
-            bill?.due_date == null
-              ? bill?.model == PURCHASE_TAKA_BILL_MODEL
-                ? generatePurchaseBillDueDate(bill?.bill_date)
-                : generateJobBillDueDate(bill?.bill_date)
-              : moment(bill?.due_date).format("DD-MM-YYYY");
-          let dueDays = calculateDaysDifference(dueDate);
-          if (dueDays < 0){
-            dueDays = 0 ; 
-          } 
-  
-          const interestAmount = CalculateInterest(dueDays, bill?.amount);
-          totalAmount += +interestAmount;
+          let sundary = sundryCreditorHandler(bill) ; 
+          totalAmount += +sundary?.interestAmount ; 
+          
         });
-        setTotalInterestAmount(totalAmount);
+        setTotalInterestAmount(parseFloat(totalAmount).toFixed(2));
       }
     } catch (error) {
       
     }
   }, [bill_details]);
 
+  // Tax amount calculation related flow ===============================================
   useEffect(() => {
     if (totalInterestAmount !== "" && totalInterestAmount !== undefined){
-      let CGST = (+totalInterestAmount * 2.5) / 100;
-      let net_amount = +totalInterestAmount + +CGST * 2;
-      let round_off_amount = Math.round(net_amount);
-      setRoundOffAmount(net_amount - round_off_amount);
-      setTaxAmount({ CGST: CGST });
-      setNetAmount(round_off_amount);
+      let SGST_value = 2.5 ; 
+      let CGST_value = 2.5 ; 
+      let IGST_value = 0 ;
+      let TCS_value = 0 ; 
+      let TDS_value = +taxValue || 0 ; 
+
+      let data = calculateFinalNetAmount(
+        +totalInterestAmount, 
+        SGST_value, 
+        CGST_value, 
+        IGST_value, 
+        TCS_value, 
+        TDS_value
+      )
+
+      setRoundOffAmount(data?.roundOffValue);
+      setTaxAmount({
+        TDS: data?.tdsAmount, 
+        SGST: data?.sgstAmount, 
+        CGST: data?.cgstAmount, 
+        IGST: data?.igstAmount
+      });
+      setNetAmount(data?.finalNetAmount);
     }
-    
-  }, [totalInterestAmount])
+  }, [totalInterestAmount, taxValue])
 
   useEffect(() => {
     if (taxValue > 0) {
@@ -239,6 +251,7 @@ const SunadryCreditNoteGenerate = ({
     if (totalInterestAmount == "" || totalInterestAmount == undefined || totalInterestAmount == null){
       message.warning("Please, Enter late payment value") ; 
     }  else {
+      
       let CREDIT_NOTE_PARTICULAR_NAME = "Late Payment Income" ; 
       let bill_details_temp = [];
       bill_details?.map((element) => {
@@ -283,7 +296,8 @@ const SunadryCreditNoteGenerate = ({
         createdAt: dayjs(new Date()).format("YYYY-MM-DD"),
         credit_note_details: bill_details_temp,
       };
-      await addDebitOtherNOte({ data: payload });
+
+      // await addDebitOtherNOte({ data: payload });
     }
   };
 
@@ -712,9 +726,7 @@ const SunadryCreditNoteGenerate = ({
             >
 
               {/* Credit note generate option ================= */}
-              {bill_details[0]?.credit_note_id == null &&
-                bill_details?.length == 1 &&
-                bill_details[0]?.credit_note_id !== undefined && 
+              { sundryData?.credit_note_id == undefined && 
                 bill_details[0]?.model !== CREDIT_NOTE_BILL_MODEL && 
                 (
                   <Button
@@ -727,8 +739,7 @@ const SunadryCreditNoteGenerate = ({
               )}
               
               {/* Credit note print option ======================== */}
-              { bill_details[0]?.credit_note_id != null &&
-                bill_details[0]?.credit_note_id !== undefined && (
+              { sundryData?.credit_note_id != undefined && (
                 <Button type="primary">PRINT</Button>
               )}
 

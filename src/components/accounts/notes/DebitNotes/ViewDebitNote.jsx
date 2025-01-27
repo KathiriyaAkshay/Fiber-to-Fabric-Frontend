@@ -5,6 +5,7 @@ import { CloseOutlined, EyeOutlined, FileTextFilled } from "@ant-design/icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { ToWords } from "to-words";
+import { DEBIT_NOTE_PURCHASE_RETURN, DEBIT_NOTE_SIZE_BEAM_RETURN, DEBIT_NOTE_YARN_RETURN } from "../../../../constants/bill.model";
 
 const toWords = new ToWords({
     localeCode: "en-IN",
@@ -27,10 +28,14 @@ const toWords = new ToWords({
     },
 });
 
-const ViewDebitNote = ({ details, type }) => {
-    const [totalAmount, setTotalAmount] = useState(0) ;
+const ViewDebitNote = ({ details, type, isEyeButton, isModelOpen, handleClose }) => {
+    console.log(details);
+    
     const { companyListRes } = useContext(GlobalContext);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [totalAmount, setTotalAmount] = useState(0) ;
+    const [invoiceNo, setInvoiceNo] = useState(undefined) ; 
+
     const company = useMemo(() => {
         if (details && Object.keys(details).length && companyListRes) {
             const data = companyListRes?.rows?.find(
@@ -42,25 +47,43 @@ const ViewDebitNote = ({ details, type }) => {
 
     useEffect(() => {
         if (details){
-            let total_amount = 0; 
-            details?.debit_note_details?.map((element) => {
-                total_amount += +element?.amount || 0 ;
-            })
-            setTotalAmount(total_amount) ;
+            let debit_note_type = details?.debit_note_type ; 
+
+            if ([DEBIT_NOTE_PURCHASE_RETURN, DEBIT_NOTE_SIZE_BEAM_RETURN, DEBIT_NOTE_YARN_RETURN, "other"]?.includes(debit_note_type)){
+                setTotalAmount(details?.amount) ;
+                setInvoiceNo(details?.invoice_no) ;
+            }   else {
+                let total_amount = 0; 
+                details?.debit_note_details?.map((element) => {
+                    total_amount += +element?.amount || 0 ;
+                })
+                setTotalAmount(total_amount) ;
+                setInvoiceNo(details?.debit_note_details?.map((element) => {
+                    
+                }))
+
+            }
+
         }
     }, [details]) ; 
 
     return (
         <>
-            <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
-                <FileTextFilled />
-            </Button>
+            {isEyeButton == undefined && (
+                <Button type="primary" onClick={() => setIsAddModalOpen(true)}>
+                    <FileTextFilled />
+                </Button>
+            )}
 
             <Modal
-                open={isAddModalOpen}
+                open={isModelOpen == undefined?isAddModalOpen:isModelOpen}
                 width={"75%"}
                 onCancel={() => {
-                    setIsAddModalOpen(false);
+                    if (handleClose == undefined){
+                        setIsAddModalOpen(false);
+                    }   else {
+                        handleClose() ;
+                    }
                 }}
                 footer={false}
                 closeIcon={<CloseOutlined className="text-white" />}
@@ -175,7 +198,7 @@ const ViewDebitNote = ({ details, type }) => {
                                                 fontSize: 16,
                                                 color: "#000", 
                                                 fontWeight: 600
-                                            }}>{details?.supplier?.supplier_company}</div>
+                                            }}>{String(details?.supplier?.supplier_company).toUpperCase()}</div>
                                             <div className="credit-note-info-title">
                                                 <span>Supplier:</span>
                                                 {details?.supplier?.supplier_name || "-"}
@@ -214,6 +237,8 @@ const ViewDebitNote = ({ details, type }) => {
                         <tbody>
                             <tr>
                                 <td>1.</td>
+                                
+                                
                                 {type == "purchase_return"?<>
                                     <td colSpan={2}>
                                         {details?.purchase_taka_challan !== null?
@@ -222,11 +247,17 @@ const ViewDebitNote = ({ details, type }) => {
                                 </>:<>
                                     <td colSpan={2}>{details?.particular_name || details?.debit_note_details[0]?.particular_name || ""}</td>
                                 </>}
+                                
+                                {/* Quantity information  */}
                                 <td>{type == "other" ? details?.hsn_no : 
                                     type == "purchase_return"?
                                         details?.purchase_taka_challan !== null?details?.total_meter:details?.total_meter:details?.quantity || "-"}</td>
+                                
+                                {/* Rate amount information  */}
                                 <td>{details?.net_rate || "0.0"}</td>
+                                
                                 <td>{"-"}</td>
+                                
                                 <td>
                                     {type === "other"
                                         ? details?.debit_note_details?.[0]?.amount || ""
@@ -234,16 +265,17 @@ const ViewDebitNote = ({ details, type }) => {
                                         ? parseFloat((+details?.total_meter || 0) * (+details?.net_rate || 0)).toFixed(2)
                                         : type === "claim_note"
                                         ? details?.debit_note_details?.[0]?.amount || "":
-                                        details?.debit_note_details?.map((element) => +element?.quantity || 0)}
+                                        details?.debit_note_details?.map((element) => +element?.amount || 0)}
                                 </td>
 
                             </tr>
                             <tr>
                                 <td></td>
                                 <td colSpan={2} style={{ textAlign: "right" }}>
-                                    <div>SGST @ {details?.SGST_value || 0} %</div>
-                                    <div>CGST @ {details.CGST_value || 0} %</div>
-                                    <div>IGST @ {details.IGST_value || 0}%</div>
+                                    <div><span style={{fontWeight: 600}}>SGST @</span> {details?.SGST_value || 0} %</div>
+                                    <div><span style={{fontWeight: 600}}>CGST @ </span>{details.CGST_value || 0} %</div>
+                                    <div><span style={{fontWeight: 600}}>IGST @</span> {details.IGST_value || 0}%</div>
+                                    <div><span style={{fontWeight: 600}}>TCS @</span> {details.tcs_value || 0}%</div>
                                     <div>Round Off</div>
                                 </td>
                                 <td></td>
@@ -253,6 +285,7 @@ const ViewDebitNote = ({ details, type }) => {
                                     <div>{details.SGST_amount || 0}</div>
                                     <div>{details.CGST_amount || 0}</div>
                                     <div>{details.IGST_amount || 0}</div>
+                                    <div>{details.tcs_amount || 0}</div>
                                     <div>{details.round_off_amount || 0}</div>
                                 </td>
                             </tr>
@@ -274,14 +307,20 @@ const ViewDebitNote = ({ details, type }) => {
                             </tr>
                             <tr style={{ height: "50px" }}>
                                 <td></td>
-                                <td colSpan={2}>
-                                    {details?.extra_tex_name || ""}{" "}
+                                <td colSpan={2} style={{
+                                    fontWeight: 600, 
+                                    color: "blue"
+                                }}>
+                                    {details?.extra_tex_name || "TDS"}{" "}
                                     {details?.extra_tex_value || ""}
                                 </td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>{details?.extra_tex_amount || ""}</td>
+                                <td style={{
+                                    fontWeight: 600, 
+                                    color: "blue"
+                                }}>{details?.extra_tex_amount || ""}</td>
                             </tr>
                             <tr>
                                 <td></td>

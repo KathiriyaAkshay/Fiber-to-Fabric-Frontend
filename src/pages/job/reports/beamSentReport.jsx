@@ -8,6 +8,7 @@ import { getDropdownSupplierListRequest } from "../../../api/requests/users";
 import useDebounce from "../../../hooks/useDebounce";
 import { getInHouseQualityListRequest } from "../../../api/requests/qualityMaster";
 import { FilePdfOutlined } from "@ant-design/icons";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const BeamSentReport = () => {
   const { companyId } = useContext(GlobalContext);
@@ -96,9 +97,6 @@ const BeamSentReport = () => {
       let current_sent_meter = Number(sent_meter);
       let current_received_meter = Number(received_meter);
       let curr_pending_meter = current_sent_meter - current_received_meter;
-
-      //   let current_sent_meter = Number(sent_meter);
-      //   let current_received_meter = Number(received_meter);
       let shortage =
         (Number(current_received_meter) * 100) / current_sent_meter;
       shortage = 100 - shortage;
@@ -274,9 +272,9 @@ const BeamSentReport = () => {
               value={quality}
               loading={isLoadingInHouseQualityList}
               options={inHouseQualityList?.rows?.map(
-                ({ id = 0, quality_name = "" }) => ({
-                  label: quality_name,
-                  value: id,
+                (item) => ({
+                  label: getDisplayQualityName(item),
+                  value: item?.id,
                 })
               )}
               dropdownStyle={{

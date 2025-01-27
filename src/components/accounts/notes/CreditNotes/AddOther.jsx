@@ -33,8 +33,8 @@ import {
   PREVIOUS_YEAR_TAG_COLOR,
   PURCHASE_TAG_COLOR,
 } from "../../../../constants/tag";
-import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import { CREDIT_NOTE_OTHER_TYPE } from "../../../../constants/bill.model";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -127,6 +127,9 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       extra_tex_value: +data.extra_tex_value,
       extra_tex_amount: +data.extra_tex_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+      // invoice_no: data?.invoice_number, // Update 
+      // amount: +data?.amount, // Update
+      // particular_name: data?.particular,
       credit_note_details: [
         {
           per: 1.0,
@@ -136,6 +139,7 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
           bill_no: data?.invoice_number
         },
       ],
+      credit_note_details: []
     };
     await addCreditNote({ data: payload, companyId: data.company_id });
   };
@@ -208,21 +212,18 @@ const AddOther = ({ setIsAddModalOpen, isAddModalOpen }) => {
       const IGSTAmount = (amount * IGST_value) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
-      const extraTexAmount = (amount * extra_tex_value) / 100;
-      setValue("extra_tex_amount", extraTexAmount.toFixed(2));
+      let taxData = calculateFinalNetAmount(
+        +amount, 
+        SGSTAmount,
+        CGSTAmount, 
+        IGSTAmount, 
+        0, 
+        extra_tex_value || 0
+      )
 
-      const netAmount =
-        +amount +
-        +SGSTAmount +
-        +CGSTAmount +
-        +IGSTAmount -
-        +extraTexAmount;
-
-      const final_net_amount = Math.round(netAmount) ; 
-      
-      let round_off_value = +final_net_amount - +netAmount ; 
-      setValue("net_amount", final_net_amount.toFixed(2));
-      setValue("round_off_amount", parseFloat(round_off_value).toFixed(2))
+      setValue("extra_tex_amount", taxData.tdsAmount);
+      setValue("net_amount", taxData?.roundedNetAmount);
+      setValue("round_off_amount", taxData?.roundOffValue)
     }
   }, [
     CGST_value,

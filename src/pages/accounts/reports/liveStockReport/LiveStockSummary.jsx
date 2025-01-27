@@ -1,5 +1,5 @@
 const LiveStockSummary = () => {
-  return <div>LiveStockSummary</div>;
+  return <div>Comming Soon</div>;
 };
 
 export default LiveStockSummary;

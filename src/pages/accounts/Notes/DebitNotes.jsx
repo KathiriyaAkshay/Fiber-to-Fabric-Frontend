@@ -24,12 +24,12 @@ import { getDebitNotesListRequest } from "../../../api/requests/accounts/notes";
 import dayjs from "dayjs";
 import { disabledFutureDate } from "../../../utils/date";
 import ViewDebitNote from "../../../components/accounts/notes/DebitNotes/ViewDebitNote";
-import { CREDIT_NOTE_LATE_PAYMENT, CREDIT_NOTE_OTHER, CREDIT_NOTE_SALE_RETURN, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
+import { CREDIT_NOTE_OTHER, PURCHASE_TAG_COLOR, YARN_SALE_BILL_TAG_COLOR } from "../../../constants/tag";
 import { SALE_TAG_COLOR, JOB_TAG_COLOR, BEAM_RECEIVE_TAG_COLOR } from "../../../constants/tag";
 import DeleteDebitNote from "../../../components/accounts/notes/DebitNotes/DeleteDebitNote";
 import UpdateDebitNote from "../../../components/accounts/notes/DebitNotes/UpdateDebitNote";
 import DebitNotInvoice from "../../../components/accounts/notes/DebitNotes/DebitNoteInvoice";
-import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, DEBIT_NOTE_OTHER_TYPE, GENERAL_PURCHASE_MODEL_NAME, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_RETURN_MODEL_NAME, PURCHASE_TAKA_MODEL_NAME, RECEIVE_BEAM_RETURN_MODEL_NAME, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_MODEL_NAME, YARN_RECEIVE_RETURN_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
+import { BEAM_SALE_BILL_MODEL, BEAM_SALE_MODEL_NAME, DEBIT_NOTE_OTHER_TYPE, DEBIT_NOTE_PURCHASE_RETURN, DEBIT_NOTE_PURCHASE_RETURN_NAME, DEBIT_NOTE_SIZE_BEAM_RETURN, DEBIT_NOTE_SIZE_BEAM_RETURN_NAME, DEBIT_NOTE_YARN_RETURN, DEBIT_NOTE_YARN_RETURN_NAME, GENERAL_PURCHASE_MODEL_NAME, JOB_GREAY_BILL_MODEL_NAME, JOB_GREAY_SALE_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_MODEL_NAME, JOB_WORK_BILL_MODEL, JOB_WORK_MODEL_NAME, PURCHASE_RETURN_MODEL_NAME, PURCHASE_TAKA_MODEL_NAME, RECEIVE_BEAM_RETURN_MODEL_NAME, RECEIVE_SIZE_BEAM_MODEL_NAME, SALE_BILL_MODEL, SALE_BILL_MODEL_NAME, YARN_RECEIVE_MODEL_NAME, YARN_RECEIVE_RETURN_MODEL_NAME, YARN_SALE_BILL_MODEL, YARN_SALE_BILL_MODEL_NAME } from "../../../constants/bill.model";
 
 const DEBIT_NOTE_TYPES = [
   { label: "Purchase Return", value: "purchase_return" },
@@ -112,20 +112,30 @@ const DebitNotes = () => {
       dataIndex: "debit_note_details",
       key: "debit_note_details",
       render: (text, record) => {
-        if (debitNoteType == "purchase_return") {
-          if (record?.purchase_taka_challan !== null) {
-            return (
-              <div>
-                {record?.purchase_taka_challan?.challan_no}
-              </div>
-            )
-          } else {
-            return (
-              <div>
-                {record?.yarn_receive_challan?.challan_no}
-              </div>
-            )
-          }
+        if (record?.debit_note_type == DEBIT_NOTE_PURCHASE_RETURN) {
+          return (
+            <div>
+              {record?.sale_challan?.challan_no || "N/A"}
+            </div>
+          )
+        } else if (record?.debit_note_type == DEBIT_NOTE_SIZE_BEAM_RETURN){
+          return(
+            <div>
+              {record?.recevice_size_beam_return?.receive_size_beam?.challan_no}
+            </div>
+          )
+        } else if (record?.debit_note_type == DEBIT_NOTE_YARN_RETURN){
+          return(
+            <div>
+              {record?.yarn_receive_challan?.challan_no}
+            </div>
+          )
+        } else if (record?.debit_note_type == DEBIT_NOTE_OTHER_TYPE){
+          return(
+            <div>
+              {record?.invoice_no || "N/A"}
+            </div>
+          )
         } else {
           return (
             <div style={{
@@ -143,28 +153,26 @@ const DebitNotes = () => {
       title: "Challan/Bill Type",
       dataIndex: "",
       render: (text, record) => {
-        if (debitNoteType == "purchase_return") {
-          if (record?.yarn_receive_challan !== null) {
-            return (
-              <Tag color={YARN_SALE_BILL_TAG_COLOR}>
-                <div style={{ fontSize: 11 }}>
-                  {YARN_RECEIVE_RETURN_MODEL_NAME}
-                </div>
-              </Tag>
-            )
-          } else if (record?.beam_receive_challan){
-            <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
-              {RECEIVE_BEAM_RETURN_MODEL_NAME}
+        if (record?.debit_note_type == DEBIT_NOTE_PURCHASE_RETURN) {
+          return (
+            <Tag color={PURCHASE_TAG_COLOR}>
+              <div style={{ fontSize: 11 }}>
+                {DEBIT_NOTE_PURCHASE_RETURN_NAME}
+              </div>
             </Tag>
-          } else {
-            return (
-              <Tag color={PURCHASE_TAG_COLOR}>
-                <div style={{ fontSize: 11 }}>
-                  {PURCHASE_RETURN_MODEL_NAME}
-                </div>
-              </Tag>
-            )
-          }
+          )
+        } else if (record?.debit_note_type == DEBIT_NOTE_SIZE_BEAM_RETURN){
+          return(
+            <Tag color = {BEAM_RECEIVE_TAG_COLOR}>
+              {DEBIT_NOTE_SIZE_BEAM_RETURN_NAME}
+            </Tag>
+          )
+        } else if (record?.debit_note_type == DEBIT_NOTE_YARN_RETURN){
+          return(
+            <Tag color = {YARN_SALE_BILL_TAG_COLOR} >
+              {DEBIT_NOTE_YARN_RETURN_NAME}
+            </Tag>
+          )
         } else if (debitNoteType == DEBIT_NOTE_OTHER_TYPE) {
           let debit_note_model = record?.debit_note_details[0]?.model ; 
           let debit_note_type = record?.debit_note_type ; 
@@ -288,10 +296,13 @@ const DebitNotes = () => {
       render: (text, record) => {
         return (
           <Space>
+            
+            {/* Debit note view  */}
             <ViewDebitNote
               details={record}
               type={debitNoteType}
             />
+
             {!record?.is_partial_payment ? (
               <>
                 {/* <UpdateCreditNote details={details} /> */}

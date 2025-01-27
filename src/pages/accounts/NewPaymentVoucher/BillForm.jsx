@@ -32,6 +32,7 @@ import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, GENERAL_PURCHASE_ENTRY_TAG_C
 import moment from "moment";
 import { generateJobBillDueDate, generatePurchaseBillDueDate } from "../reports/utils";
 import { CREDIT_NOTE_BILL_MODEL, CREDIT_NOTE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
+import { billDataHandler  } from "../../../constants/bill.handler";
 
 const { TextArea } = Input;
 const SUPPLIER_TYPES = [
@@ -121,35 +122,46 @@ const BillForm = () => {
   });
 
   const onSubmit = async (data) => {
+    let hasError = false;
     const temp_bill_details = selectedBills?.map((element) => {
 
-      let finalTotalAmount = 0;
-      
-      let exist_remaing_amount = element?.exists_part_payment == null?+element?.net_amount: +element?.exists_part_payment || 0 ; 
-      let current_remaing_amount = element?.part_payment || 0; 
-      let tds_amount = +element?.tds ; 
-      let plus_amount = +element?.plus_percentage ; 
-      let minus_amount = +element?.less_percentage ; 
+      if (
+        element?.part_payment === null || 
+        element?.part_payment === undefined || 
+        Number.isNaN(+element?.part_payment) || 
+        element?.part_payment === ''
+      ) {
+        message.warning('Part payment value is invalid or missing!');
+        hasError = true; 
+        return ; 
+      }
 
-      let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+      let tds_amount = +element?.tds ; // TDS Amount 
+      let plus_amount = +element?.plus_percentage ;  // Plus amount
+      let minus_amount = +element?.less_percentage ; // Minus amount
+      
+      let billData = billDataHandler(element) ;
+      let bill_remaing_amount = element?.part_payment || 0 ; 
+
+      // Paid amount calcuation 
+      let paid_amount = +billData?.bill_net_amount - +bill_remaing_amount ; 
       paid_amount = +paid_amount - +tds_amount ; 
       paid_amount = +paid_amount + +plus_amount ; 
-      paid_amount = +paid_amount - +minus_amount ; 
-      finalTotalAmount += +paid_amount ; 
+      paid_amount = +paid_amount - +minus_amount ; // Paid Amount calculation
 
       return {
-        "bill_id": element?.bill_id,
-        "bill_no": element?.bill_no,
-        "amount": +element?.amount,
-        "bill_date": element?.bill_date,
-        "due_date": element?.due_date,
+        "bill_id": billData?.bill_id,
+        "bill_no": billData?.bill_no,
+        "amount": +billData?.bill_amount_without_gst,
+        "bill_date": billData?.bill_date,
+        "due_date": billData?.dueDate,
         "tds": tds_amount,
         "less_percentage": minus_amount,
         "plus_percentage": plus_amount,
-        "model": element?.model,
-        "net_amount": element?.exists_part_payment == null?+element?.net_amount:element?.exist_remaing_amount,
-        "part_payment": current_remaing_amount,
-        "paid_amount": paid_amount
+        "model": billData?.model,
+        "net_amount": billData?.bill_net_amount,
+        "part_payment": bill_remaing_amount,
+        "paid_amount": parseFloat(paid_amount).toFixed(2)
       }
     });
   
@@ -167,7 +179,10 @@ const BillForm = () => {
       bill_details: temp_bill_details,
       is_credited: false
     };
-    await addBillEntry({ company_id: data.company_id, data: payload });
+
+    if (!hasError){
+      await addBillEntry({ company_id: data.company_id, data: payload });
+    }
   };
 
   const {
@@ -269,21 +284,26 @@ const BillForm = () => {
       enabled: Boolean(company_id && account_name),
     });
   
-  // Total unpaid bill net amount related calcualtion =============================
+  // Bill data total count calculation ================================
   useEffect(() => {
     if (unPaidBillListRes) {
       let totalBill = 0;
       let totalAmount = 0;
       let totalNetAmount = 0;
-
       setUnPaidBillData(unPaidBillListRes);
+
       unPaidBillListRes.forEach((bill) => {
           totalBill += 1;
-          totalAmount += bill.amount;
-          totalNetAmount += bill?.part_payment == null?+bill?.net_amount:+bill?.part_payment;
+          let billData = billDataHandler(bill) ; 
+          totalAmount += +billData?.bill_amount_without_gst;
+          totalNetAmount += +billData?.bill_net_amount;
       });
 
-      setTotalCounts({ totalBills: totalBill, totalAmount, totalNetAmount });
+      setTotalCounts({ 
+        totalBills: totalBill, 
+        totalAmount: parseFloat(totalAmount).toFixed(2), 
+        totalNetAmount: parseFloat(totalNetAmount).toFixed(2) 
+      });
     }
   }, [unPaidBillListRes]);
 
@@ -313,18 +333,20 @@ const BillForm = () => {
   const calculateAmount = useCallback(() => {
     let totalAmount = 0;
     selectedBills.forEach((bill) => {
-
-      let exist_remaing_amount = bill?.exists_part_payment == null?+bill?.net_amount: +bill?.exists_part_payment || 0 ; 
-      let current_remaing_amount = bill?.part_payment || 0; 
+      let billData = billDataHandler(bill) ; 
+      
+      // Paid amount calculation ===================
       let tds_amount = +bill?.tds ; 
       let plus_amount = +bill?.plus_percentage ; 
       let minus_amount = +bill?.less_percentage ; 
+      let bill_remaing_amount = +bill?.part_payment || 0 ;
 
-      let paid_amount = +exist_remaing_amount - +current_remaing_amount ; 
+      let paid_amount = +billData?.bill_net_amount - +bill_remaing_amount ; 
       paid_amount = +paid_amount - +tds_amount ; 
       paid_amount = +paid_amount + +plus_amount ; 
       paid_amount = +paid_amount - +minus_amount ; 
       totalAmount += paid_amount ; 
+          
     });
 
     setValue("amount", parseFloat(totalAmount).toFixed(2));
@@ -353,6 +375,7 @@ const BillForm = () => {
           part_payment: 0,
           less_percentage: 0,
           plus_percentage: 0,
+          tds_amount: 0
         },
       ]);
     } else {
@@ -789,18 +812,20 @@ const BillForm = () => {
                   ({ bill_id, model }) => bill_id === +bill.bill_id && model == bill?.model
                 );
 
-                const dueDate = bill?.due_date == null?
-                  bill?.model == PURCHASE_TAKA_MODEL_NAME?generatePurchaseBillDueDate(bill?.bill_date):
-                  generateJobBillDueDate(bill?.bill_date)
-                  :moment(bill?.due_date).format("DD-MM-YYYY") ;
+                // const dueDate = bill?.due_date == null?
+                //   bill?.model == PURCHASE_TAKA_MODEL_NAME?generatePurchaseBillDueDate(bill?.bill_date):
+                //   generateJobBillDueDate(bill?.bill_date)
+                //   :moment(bill?.due_date).format("DD-MM-YYYY") ;
 
-                const dueDays = bill?.model == CREDIT_NOTE_MODEL_NAME?0:calculateDaysDifference(dueDate) ; 
+                // const dueDays = bill?.model == CREDIT_NOTE_MODEL_NAME?0:calculateDaysDifference(dueDate) ; 
 
-                let bill_net_amount = +bill?.net_amount ; 
-                let debit_note_amount = +bill?.debit_note_amount || 0; 
-                let bill_deducation_amount = parseFloat(+bill_net_amount - +debit_note_amount).toFixed(2) ; 
-                let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
-                bill_deducation_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2) ; 
+                // let bill_net_amount = +bill?.net_amount ; 
+                // let debit_note_amount = +bill?.debit_note_amount || 0; 
+                // let bill_deducation_amount = parseFloat(+bill_net_amount - +debit_note_amount).toFixed(2) ; 
+                // let bill_remaing_amount = parseFloat(bill?.part_payment == null?bill_deducation_amount:+bill?.part_payment).toFixed(2) ; 
+                // bill_deducation_amount = parseFloat(+bill_deducation_amount - +bill_remaing_amount).toFixed(2) ; 
+
+                let payment = billDataHandler(bill); 
 
                 return (
                   <tr key={index + "_un_paid_bill"} className={isBillSelected?"checked-bill-row":""}>
@@ -819,20 +844,16 @@ const BillForm = () => {
                       cursor: "pointer"
                      }}>
 
-                      <Tooltip title = {bill?.debit_note_number?.length > 0?`Debit note : ${bill?.debit_note_number?.map((element) => element).join(",")}`:""}>
-                        {/* Bill number related information  */}
+                      <Tooltip title = {payment?.debit_note_number?.length > 0?`DEBIT NOTE : ${payment?.debit_note_number?.map((element) => element?.number).join(", ")}`:""}>
                         <div>
                           {bill.bill_no}
                         </div>
 
-                        {/* Debit note number related information 
-                          Debit note number we get for yarn_receive, beam_receive, purchase_taka, general_purchase
-                        */}
                         <div style={{
                           color: "blue", 
                           fontSize: 12
                         }}>
-                          {bill?.debit_note_number?.length > 0?`(${bill?.debit_note_number?.map((element) => element).join(",")})`:""}
+                          {payment?.debit_note_number?.length > 0?`(${payment?.debit_note_number?.map((element) => element?.number).join(", ")})`:""}
                         </div>
                       </Tooltip>
                     </td>
@@ -880,28 +901,20 @@ const BillForm = () => {
                       </>}
                     </td>
                       
-                    {/* Bill amount related information  */}
-                    <td style={{ textAlign: "center", color: "#000" }}>{bill.amount || "0"}</td>
+                    <td style={{ textAlign: "center", color: "#000" }}>{payment?.bill_amount_without_gst || "0"}</td>
                     
-                    {/* Bill remaing amount related information  */}
                     <td style={{ textAlign: "center", fontWeight: 600, cursor: "pointer" }}>
-                      <Tooltip 
-                        title = {bill_remaing_amount > 0?
-                          `${bill?.net_amount} ${bill?.debit_note_amount !== 0?`-${bill?.debit_note_amount}`:""} - ${bill_deducation_amount} = ${bill_remaing_amount}`:
-                          ""}>
-                        {bill_remaing_amount}
+                      <Tooltip title = {payment?.bill_net_amount_info_string}>
+                        {payment?.bill_net_amount}
                       </Tooltip>
                     </td>
                     
-                    {/* Bill date information  */}
                     <td style={{ textAlign: "center" }}>
-                      {dayjs(bill.bill_date).format("DD-MM-YYYY")}
+                      {payment?.bill_date}
                     </td>
                     
-                    {/* Bill due days information  */}
-                    <td style={{ textAlign: "center", color: 
-                      dueDays == 0?"#000":"red", fontWeight: dueDays == 0?500:600 }}>
-                      {`${dueDays !== 0 ?  + dueDays > 0? '+' + dueDays + 'D':0  : "0"}`}
+                    <td style={{ textAlign: "center", color: payment?.due_days_color, fontWeight: payment?.dueDays == 0?500:600 }}>
+                      {`${payment?.dueDays !== 0?'+' + payment?.dueDays + "D":payment?.dueDays}`}
                     </td>
                     
                     {/* Part payment amount information  */}

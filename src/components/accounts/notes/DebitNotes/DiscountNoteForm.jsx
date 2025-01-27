@@ -11,7 +11,7 @@ import {
 } from "antd";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { GlobalContext } from "../../../../contexts/GlobalContext";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createDebitNoteRequest,
   debitNoteDropDownRequest,
@@ -36,6 +36,7 @@ import { getReworkChallanByIdRequest, getReworkChallanListRequest } from "../../
 import { GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../../constants/bill.model";
 import SupplierInformationComp from "./supplierInformationComp";
 import { extractSupplierInformation } from "../../../../utils/supplier.handler";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -69,6 +70,7 @@ const validationSchema = yup.object().shape({
 });
 
 const DiscountNoteForm = ({ type, handleClose }) => {
+  const queryClient = useQueryClient() ; 
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
   const [supplierInformation, setSupplierInformation] = useState({}) ; 
@@ -86,6 +88,7 @@ const DiscountNoteForm = ({ type, handleClose }) => {
     },
     mutationKey: ["add", "debit", "discount-note"],
     onSuccess: (res) => {
+      queryClient.invalidateQueries(["get", "debit-notes", "list"]);
       const successMessage = res?.message;
       if (successMessage) {
         message.success(successMessage);
@@ -250,11 +253,19 @@ const DiscountNoteForm = ({ type, handleClose }) => {
       totalNetAmount += +IGSTAmount;
     }
 
-    totalNetAmount += totalAmount;
-    let final_net_amount = Math.round(totalNetAmount) ; 
-    let round_off_value = +final_net_amount - +totalNetAmount ;  
-    setValue("net_amount", final_net_amount.toFixed(2));
-    setValue("round_off_amount", round_off_value.toFixed(2)) ; 
+    console.log(totalAmount);
+    
+
+    let taxData = calculateFinalNetAmount(
+      totalAmount, 
+      SGSTValue, 
+      CGSTValue, 
+      IGSTValue, 
+      0, 
+      0
+    )
+    setValue("net_amount", taxData?.roundedNetAmount);
+    setValue("round_off_amount", taxData?.roundOffValue) 
   };
 
 
@@ -315,7 +326,8 @@ const DiscountNoteForm = ({ type, handleClose }) => {
             particular_name: "Discount On Purchase",
             quantity: +data[`quantity_${index}`],
             amount: +data[`amount_${index}`],
-            quality_id: +data[`quality_id_${index}`]
+            quality_id: +data[`quality_id_${index}`], 
+            yarn_company_id: data[`yarn_company_id_${index}`]
           };
         }),
       };
@@ -675,7 +687,8 @@ const DiscountNoteForm = ({ type, handleClose }) => {
                     <span style={{ fontWeight: 600 }}>
                       Amount Chargable(in words):
                     </span>{" "}
-                    {toWords.convert(net_amount || 0)}
+                    {toWords.convert(isNaN(Number(net_amount)) ? 0 : +(net_amount))}
+
                   </div>
                   <div>
                     <span style={{ fontWeight: "500" }}>Remarks:</span>
@@ -836,7 +849,7 @@ const SingleBillRender = ({
           response = await getReworkChallanListRequest({
             id: selectedBillData.bill_id,
             params: {
-              company_id: companyId,
+              company_id: company_id,
               bill_id: selectedBillData.bill_id, 
               page: 0 ,
               pageSize: 10
@@ -899,13 +912,9 @@ const SingleBillRender = ({
       setValue(`quality_id_${index}`, data?.bill?.quality_id ) ; 
       setValue(`total_meter_${index}`, data?.bill?.total_meter) ; 
       setValue(`total_taka_${index}`, data?.bill?.total_taka) ; 
+      setValue(`yarn_company_id_${index}`, data?.bill?.yarn_company_id)
 
-      // setValue(`quantity_${index}`, billData?.quantity || 0);
-      // setValue(`rate_${index}`, billData?.rate || 0);
-      // setValue(`bill_number_${index}`, billData?.receive?.bill_number || "0") ;
-
-      // // Set SGST, CGST, IGST amount 
-      // console.log(billData);
+      calculateTaxAmount();
       
 
     }
@@ -982,6 +991,7 @@ const SingleBillRender = ({
               onChange={(e) => {
                 setValue(`per_${index}`, e.target.value);
                 calculateAmount(e.target.value);
+                calculateTaxAmount(); 
               }}
             />
           )}

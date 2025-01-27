@@ -37,6 +37,7 @@ import ViewChallan from "../../../../components/sale/challan/saleChallan/ViewCha
 import { disabledFutureDate } from "../../../../utils/date";
 import { JOB_TAG_COLOR, PURCHASE_TAG_COLOR, SALE_TAG_COLOR } from "../../../../constants/tag";
 import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 const SaleChallanList = () => {
   const { companyId } = useContext(GlobalContext);
@@ -418,12 +419,24 @@ const SaleChallanList = () => {
     },
     {
       title: "Payment Status",
-      render: (details) => {
-        return details.is_paid ? (
-          <Tag color="green">Paid</Tag>
-        ) : (
-          <Tag color="red">Unpaid</Tag>
-        );
+      render: (record) => {
+        if (record?.sale_bill == null){
+          return(
+            <Tag color="red">Un-Paid</Tag>
+          )
+        } else if (record?.sale_bill?.is_paid){
+          return(
+            <Tag color = {PAID_TAG_TEXT_COLOR}>{PAID_TAG_TEXT}</Tag>
+          )
+        } else if (record?.sale_bill?.is_partial_payment){
+          return(
+            <Tag color = {PAID_TAG_TEXT_COLOR}>{"Part Payment"}</Tag>
+          )
+        } else {
+          return(
+            <Tag color="red">Un-Paid</Tag>
+          )
+        }
       },
       sorter: {
         compare: (a, b) => {

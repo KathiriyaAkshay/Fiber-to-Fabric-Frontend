@@ -41,10 +41,11 @@ import ViewPurchaseChallanInfo from "../../../components/purchase/purchaseChalla
 import ViewJobTakaInfo from "../../../components/job/jobTaka/viewJobTakaInfo";
 import ViewReworkChallanInfo from "../../../components/job/challan/reworkChallan/ViewReworkChallan";
 import { getYarnReceiveBillByIdRequest } from "../../../api/requests/purchase/yarnReceive";
-import { CREDIT_NOTE_BILL_MODEL, CREDIT_NOTE_MODEL_NAME, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
+import { CREDIT_NOTE_BILL_MODEL, CREDIT_NOTE_MODEL_NAME, DEBIT_NOTE_BILL_MODEL, GENERAL_PURCHASE_MODEL_NAME, GENRAL_PURCHASE_BILL_MODEL, JOB_REWORK_BILL_MODEL, JOB_REWORK_MODEL_NAME, JOB_TAKA_BILL_MODEL, JOB_TAKA_MODEL_NAME, PURCHASE_TAKA_BILL_MODEL, PURCHASE_TAKA_MODEL_NAME, RECEIVE_SIZE_BEAM_BILL_MODEL, RECEIVE_SIZE_BEAM_MODEL_NAME, YARN_RECEIVE_BILL_MODEL, YARN_RECEIVE_MODEL_NAME } from "../../../constants/bill.model";
 import JobTakaChallanModal from "../../../components/job/jobTaka/JobTakaChallan";
 import PurchaseTakaChallanModal from "../../../components/purchase/purchaseTaka/PurchaseTakaChallan";
 import ReworkChallanModal from "../../../components/job/challan/reworkChallan/ReworkChallanModal";
+import { sundryCreditorHandler } from "../../../constants/sundary.handler";
 
 const orderTypeOptions = [
   { label: "Purchase", value: "purchase" },
@@ -254,11 +255,11 @@ const SundryCreditor = () => {
       creditNoteList?.forEach((item) => {
         item?.bills?.forEach((bill) => {
           meters += bill?.meters;
-          billAmount += bill?.amount;
+          billAmount += +sundryCreditorHandler(bill)?.bill_net_amount;
         });
       });
 
-      return { meters, bill_amount: billAmount };
+      return { meters: parseFloat(meters).toFixed(2), bill_amount: parseFloat(billAmount).toFixed(2) };
     } else {
       return { meters: 0, bill_amount: 0 };
     }
@@ -910,7 +911,7 @@ const TableWithAccordion = ({
       let amount = 0;
       data?.bills?.forEach((item) => {
         meter += item?.meters || 0;
-        amount += item?.amount || 0;
+        amount += +sundryCreditorHandler(item)?.bill_net_amount
       });
 
       return { meter, amount };
@@ -1031,6 +1032,7 @@ const TableWithAccordion = ({
                 (item) => item?.id === bill?.bill_id && item?.model === bill?.model
               );
 
+              // Due date information 
               const dueDate =
                 bill?.due_date == null
                   ? bill?.model == PURCHASE_TAKA_BILL_MODEL
@@ -1042,16 +1044,20 @@ const TableWithAccordion = ({
                 dueDays = 0 ; 
               } 
 
+              // Interest amount information 
               const interestAmount = CalculateInterest(dueDays, bill?.amount);
-
+              
+              // Paid amount information 
               const paid_amount = +bill?.paid_amount;
               const debit_note_amount = +bill?.debit_note_net_amount;
               const bill_amount = +bill?.amount;
 
               const net_amount = parseFloat(bill_amount - debit_note_amount - paid_amount).toFixed(2);
 
+              let sundryData = sundryCreditorHandler(bill)
+
               return (
-                <tr
+               <tr
                   key={index + "_bill"}
                   style={
                     isChecked
@@ -1081,7 +1087,7 @@ const TableWithAccordion = ({
                       </span>
 
                       {/* Debit note number information  */}
-                      {bill?.debit_note_id !== null && (
+                      {sundryData?.debit_note_number?.length !== 0 && (
                         <div
                           style={{
                             fontSize: 12,
@@ -1090,15 +1096,15 @@ const TableWithAccordion = ({
                           }}
                         >
                           <Tooltip
-                            title={`DEBIT NOTE : ${bill?.debit_note_number}`}
+                            title={`DEBIT NOTE : ${sundryData?.debit_note_number?.map((element) => element?.number).join(",")}`}
                           >
-                            ( {bill?.debit_note_number} )
+                            ( {sundryData?.debit_note_number?.map((element) => element?.number).join(", ")} )
                           </Tooltip>
                         </div>
                       )}
                       
                       {/* Credit note number information  */}
-                      {bill?.credit_note_id !== null && (
+                      {sundryData?.credit_note_number !== undefined && (
                         <div
                           style={{
                             fontSize: 12,
@@ -1107,9 +1113,9 @@ const TableWithAccordion = ({
                           }}
                         >
                           <Tooltip
-                            title={`CRDIT NOTE : ${bill?.credit_note_number}`}
+                            title={`CRDIT NOTE : ${sundryData?.credit_note_number}`}
                           >
-                            ( {bill?.credit_note_number} )
+                            ( {sundryData?.credit_note_number} )
                           </Tooltip>
                         </div>
                       )}
@@ -1160,9 +1166,9 @@ const TableWithAccordion = ({
                   {/* Bill amount information  */}
                   <td>
                     <Tooltip
-                      title={`${bill_amount} - ${debit_note_amount} - ${paid_amount} = ${net_amount}`}
+                      title={`${sundryData?.bill_net_amount_info_string}`}
                     >
-                      {net_amount || 0}
+                      {sundryData?.bill_net_amount || 0}
                     </Tooltip>
                   </td>
                   
@@ -1171,22 +1177,21 @@ const TableWithAccordion = ({
 
                   {/* Due days information  */}
                   <td className={dueDays !== 0 ? "sundary-due-date" : ""}>
-                    {dueDays === 0 ? (
-                      0
-                    ) : (
-                      <>
-                        +<span style={{ fontWeight: 550 }}>{dueDays}</span> Days
-                      </>
-                    )}
+                    <>
+                      <Tooltip title = {`Bill date : ${sundryData?.bill_date}`}>
+                        <span style={{ fontWeight: 550 }}>{dueDays}</span> Days
+                      </Tooltip>
+                    </>
                   </td>
                   
                   {/* Inerest amount related information  */}
                   <td
-                    className={interestAmount !== 0 ? "sundary-due-date" : ""}
+                    // className={interestAmount !== 0 ? "sundary-due-date" : ""}
+                    style={{color: sundryData?.interstAmountColor}}
                   >
-                    {bill?.credit_note_id !== null
-                      ? parseFloat(bill?.credit_note_net_amount).toFixed(2)
-                      : interestAmount}
+                    {sundryData?.credit_note_number !== undefined
+                      ? sundryData?.credit_note_amount
+                      : sundryData?.interestAmount}
                   </td>
                   
                   <td>
@@ -1202,14 +1207,14 @@ const TableWithAccordion = ({
                       )}
                       
                       {/* Particular model bill information  */}
-                      {bill?.model !== CREDIT_NOTE_BILL_MODEL && (
+                      {![CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(bill?.model) && (
                         <FileTextOutlined style={{fontSize: 18}} 
                           onClick={() => onClickViewHandler(bill, "bill")}
                         />
                       )}
 
                       {/* ===== Credit note creation related checkbox =====  */}
-                      {bill?.credit_note_id == null && bill?.model != CREDIT_NOTE_BILL_MODEL ? (
+                      {sundryData?.credit_note_number == undefined && bill?.model != CREDIT_NOTE_BILL_MODEL ? (
                         <>
                           <Checkbox
                             checked={selectedRecords?.some(
@@ -1224,7 +1229,7 @@ const TableWithAccordion = ({
                       ) : (
                         <>
                           {/* Credit note option  */}
-                          <Tooltip title = "Crdit Note">
+                          <Tooltip title = {`Credit Note : ${sundryData?.credit_note_number}`}>
                             <TabletFilled
                               style={{ color: "green" }}
                               onClick={() => {
@@ -1236,18 +1241,19 @@ const TableWithAccordion = ({
                       )}
 
                       {/* ======= Debit note id related information =====  */}
-                      {bill?.debit_note_id !== null && (
+                      {sundryData?.debit_note_number?.length > 0 && sundryData?.debit_note_number?.map((element) => (
                         <>
-                          <Tooltip title = "Debit Note">
+                          <Tooltip title = {`Debit note : ${element?.number}`}>
                             <TabletFilled
                               style={{ color: "red" }}
                               onClick={() => {
-                                handleDebitNoteClick(bill, data);
+                                let debiteNoteFind = bill?.debitNotes?.find((note) => +note?.debit_note?.id === +element?.id ) ; 
+                                handleDebitNoteClick({...bill, debitNotes: [debiteNoteFind]}, data); 
                               }}
                             />
                           </Tooltip>
                         </>
-                      )}
+                      ))}
                     </Space>
                   </td>
                 </tr>
@@ -1271,10 +1277,10 @@ const TableWithAccordion = ({
         <td></td>
         <td></td>
         <td>
-          <b>{TOTAL?.meter}</b>
+          <b>{parseFloat(TOTAL?.meter).toFixed(2)}</b>
         </td>
         <td>
-          <b>{TOTAL?.amount}</b>
+          <b>{parseFloat(TOTAL?.amount).toFixed(2)}</b>
         </td>
         <td></td>
         <td></td>

@@ -41,7 +41,7 @@ const AccountantYarnSaleChallan = ({ details }) => {
 
     return (
         <>
-            <Button type="primary" onClick={() => { setIsModalOpen(true) }}>
+            <Button  onClick={() => { setIsModalOpen(true) }}>
                 <EyeOutlined />
             </Button>
 

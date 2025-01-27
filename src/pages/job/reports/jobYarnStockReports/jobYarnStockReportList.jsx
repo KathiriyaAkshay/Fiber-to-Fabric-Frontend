@@ -9,7 +9,8 @@ import useDebounce from "../../../../hooks/useDebounce";
 import { getJobYarnStockReportListRequest } from "../../../../api/requests/job/reports/jobYarnStockReport";
 import { getDropdownSupplierListRequest } from "../../../../api/requests/users";
 import dayjs from "dayjs";
-import { render } from "react-dom";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
 
 const JobYarnStockReportList = () => {
   const [supplier, setSupplier] = useState();
@@ -22,10 +23,10 @@ const JobYarnStockReportList = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -75,8 +76,14 @@ const JobYarnStockReportList = () => {
     },
     {
       title: "Quality Name",
-      render: (detail) => {
-        return `${detail.inhouse_quality.quality_name} - (${detail.inhouse_quality.quality_weight}KG)`;
+      render: (details) => {
+        return(
+          <div style={{
+            fontSize: 13
+          }}>
+            {getDisplayQualityName(details?.inhouse_quality)}
+          </div>
+        )
       },
     },
     {
@@ -152,13 +159,13 @@ const JobYarnStockReportList = () => {
               </Table.Summary.Cell>
               <Table.Summary.Cell index={2}></Table.Summary.Cell>
               <Table.Summary.Cell index={3}>
-                <b>{jobYarnStockReportList?.total_stock_meter || 0}</b>
+                <b>{parseFloat(jobYarnStockReportList?.total_stock_meter).toFixed(2) || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={4}>
-                <b>{jobYarnStockReportList?.total_yarn_stock_kgs || 0}</b>
+                <b>{parseFloat(jobYarnStockReportList?.total_yarn_stock_kgs).toFixed(2) || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={5}>
-                <b>{jobYarnStockReportList?.total_beam_stocks || 0}</b>
+                <b>{parseFloat(jobYarnStockReportList?.total_beam_stocks).toFixed(2) || 0}</b>
               </Table.Summary.Cell>
               <Table.Summary.Cell index={6}></Table.Summary.Cell>
               <Table.Summary.Cell index={6}></Table.Summary.Cell>

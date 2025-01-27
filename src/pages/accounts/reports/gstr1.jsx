@@ -17,12 +17,14 @@ import { getGstr1ReportService } from "../../../api/requests/accounts/reports";
 import { useQuery } from "@tanstack/react-query";
 import ConfirmGstModal from "./confirmGstModal";
 import moment from "moment";
+import { getCurrentFinancialYear } from "./utils";
 
 const Gstr1 = () => {
   const { companyListRes } = useContext(GlobalContext);
 
-  const [fromDate, setFromDate] = useState(null);
-  const [toDate, setToDate] = useState(null);
+  const { startDate, endDate} = getCurrentFinancialYear() ; 
+  const [fromDate, setFromDate] = useState(dayjs(startDate));
+  const [toDate, setToDate] = useState(dayjs(endDate));
   const [company, setCompany] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
@@ -82,6 +84,13 @@ const Gstr1 = () => {
       title: "Taxable Amount",
       dataIndex: "taxable_amount",
       key: "taxable_amount",
+      render:(text) => {
+        return(
+          <div>
+            {parseFloat(text).toFixed(2)}
+          </div>
+        )
+      }
     },
     {
       title: "Central Tax",
@@ -125,7 +134,8 @@ const Gstr1 = () => {
     },
   ];
 
-  const {
+  // Fetch GSTR related reoprt data ============================
+  const { 
     data: gstr1Data,
     isFetching: isLoadingGstr1,
     isError,
@@ -206,16 +216,6 @@ const Gstr1 = () => {
     }
   }, [data]);
 
-  useEffect(() => {
-    const today = dayjs(); // Get today's date using dayjs
-
-    // Get the first day of the current month
-    const firstDayOfMonth = dayjs().startOf("month");
-
-    // Set the default values
-    setFromDate(firstDayOfMonth);
-    setToDate(today);
-  }, []);
 
   // -------- Print functionality.....
 
@@ -300,7 +300,9 @@ const Gstr1 = () => {
           </Flex>
         ) : gstr1Data && Object.keys(gstr1Data).length ? (
           <div className="border p-4 rounded-lg shadow">
+
             {/* GSTR1 Report information  */}
+            
             <div className="text-center mb-4">
               <h2 className="text-xl font-bold">
                 {selectedCompany?.company_name || ""}
@@ -368,6 +370,8 @@ const Gstr1 = () => {
                 pagination={false}
                 summary={(pageData) => {
                   const totalData = pageData.find(({ key }) => key === 3);
+                  console.log("Tax amouont", totalData?.taxable_amount);
+                  
 
                   return (
                     <Table.Summary fixed>
@@ -380,7 +384,7 @@ const Gstr1 = () => {
                         </Table.Summary.Cell>
                         <Table.Summary.Cell index={2}>
                           <strong>
-                            {parseFloat(totalData?.taxable_amount).toFixed(2) ||
+                            {parseFloat(+totalData?.taxable_amount).toFixed(2) ||
                               0}
                           </strong>
                         </Table.Summary.Cell>
@@ -440,21 +444,6 @@ const Gstr1 = () => {
           </div>
         )}
       </div>
-
-      {/* <Drawer
-        title={isParticularOpen}
-        onClose={() => setIsParticularOpen("")}
-        open={isParticularOpen !== "" ? true : false}
-        width={"1000"}
-        className="gstr-table"
-        extra={<Button icon={<PrinterOutlined />}>Print</Button>}
-      >
-        <Table
-          columns={gstr1_dialog_columns}
-          dataSource={gstr1_dialog_data}
-          pagination={false}
-        />
-      </Drawer> */}
     </div>
   );
 };

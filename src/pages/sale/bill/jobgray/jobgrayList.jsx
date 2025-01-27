@@ -35,6 +35,7 @@ import DeleteJobGrayBill from "../../../../components/sale/bill/DeleteJobGrayBil
 import moment from "moment";
 import JobGrayBillMultiplePrint from "../../../../components/sale/bill/jobGrayBillMultiplePrint";
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 const JobGrayList = () => {
   const { companyId, companyListRes } = useContext(GlobalContext);
@@ -368,8 +369,8 @@ const JobGrayList = () => {
                 paid_amount={record?.paid_amount}
               />
             </>:<>
-              <Tag color = {record?.is_paid?"green":"red"}>
-                {String(record?.is_paid?"Paid":"Un-paid").toUpperCase()}
+              <Tag color = {record?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                {String(record?.is_paid?PAID_TAG_TEXT:"Un-paid").toUpperCase()}
               </Tag>
             </>}
           </div>
@@ -382,7 +383,7 @@ const JobGrayList = () => {
         return (
           <Space>
             
-            {record?.is_partial_payment == false && (
+            {record?.is_partial_payment == false && record?.is_paid == false && (
               <>
                 <Button
                   onClick={() => {

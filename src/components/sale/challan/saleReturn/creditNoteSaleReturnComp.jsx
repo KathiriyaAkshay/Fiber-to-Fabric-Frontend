@@ -64,7 +64,6 @@ const CreditNoteSaleReturnComp = ({ details }) => {
   return (
     <>
       <Button
-        type="primary"
         onClick={() => {
           setIsModalOpen(true);
         }}

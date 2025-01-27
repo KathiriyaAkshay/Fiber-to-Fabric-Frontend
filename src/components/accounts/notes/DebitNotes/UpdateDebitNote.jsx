@@ -13,6 +13,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import _ from "lodash";
 import { mutationOnErrorHandler } from "../../../../utils/mutationUtils";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -36,18 +37,6 @@ const toWords = new ToWords({
 });
 
 const validationSchema = yup.object().shape({
-  // company_id: yup.string().required("Please select company"),
-  // debit_note_no: yup.string().required("Please enter debit note number"),
-  // invoice_number: yup.string().required("Please enter invoice number"),
-  // party_id: yup.string().required("Please select party"),
-  // date: yup.string().required("Please enter date"),
-  // particular: yup.string().required("Please enter particular"),
-  // hsn_code: yup.string().required("Please enter hsn code"),
-  // amount: yup.string().required("Please enter amount"),
-  // bill_id: yup
-  //   .array()
-  //   .min(1, "Please select bill.")
-  //   .required("Please select bill."),
 });
 
 const UpdateDebitNote = ({
@@ -56,14 +45,13 @@ const UpdateDebitNote = ({
   setIsModalOpen,
   debitNoteTypes,
 }) => {
-  console.log("update debit note: ", details);
-
+  console.log(details);
+  
   const queryClient = useQueryClient();
   const { companyListRes } = useContext(GlobalContext);
   const [numOfBill, setNumOfBill] = useState([]);
   const [buyerRef, setBuyerRef] = useState(undefined) ; 
   const [descriptionGoods, setDescriptionGoods] = useState(undefined) ; 
-  
   useEffect(() => {
     if (details){
       let ref_number = details?.debit_note_details?.map((element) => element?.bill_no || element?.invoice_no).join(",") ; 
@@ -111,17 +99,9 @@ const UpdateDebitNote = ({
       id: details.id,
       debit_note_type: debitNoteTypes,
       debit_note_number: details?.debit_note_number,
-      // sale_challan_id: 1010,
-      // quality_id: 2020, // **************************************
-      // gray_order_id: 3030,
-      //   party_id: details?.party_id,
-      // sale_return_id: 5050,
       hsn_no: details.hsn_no,
-      // extra_tex_name: "TDS",
       total_taka: +details.total_taka,
       total_meter: +details.total_meter,
-      // quantity: 200.25, // **************************************
-      // amount: 1200.75, // **************************************
       discount_value: +data.discount_value,
       discount_amount: +data.discount_amount,
       SGST_value: +data.SGST_value,
@@ -132,45 +112,75 @@ const UpdateDebitNote = ({
       IGST_amount: +data.SGST_value,
       round_off_amount: +data.round_off_amount,
       net_amount: +data.net_amount,
-      // net_rate: 15.0,
       rate: data.rate,
-      tcs_value: +data.SGST_value,
-      tcs_amount: +data.SGST_value,
-      // invoice_no: "INV98765",
-      // particular_name: "Particular B",
-      // extra_tex_value: 0.75,
-      // extra_tex_amount: 7.5,
+      tcs_value: +data.TCS_value,
+      tcs_amount: +data.TCS_amount,
       createdAt: dayjs(data.date).format("YYYY-MM-DD"),
+      extra_tex_value: +data?.TDS_value, 
+      extra_tex_amount: +data?.TDS_amount
     };
+  
     if (details.party) {
       payload.party_id = details?.party?.id;
     } else if (details.supplier) {
-      payload.party_id = details?.supplier?.id;
+      payload.supplier_id = details?.supplier?.id;
     }
-
+    // Validation for SGST_amount, CGST_amount, IGST_amount, and other amounts
+    const amountsToValidate = [
+      { label: "SGST Amount", value: data.SGST_value },
+      { label: "CGST Amount", value: data.CGST_value },
+      { label: "IGST Amount", value: data.IGST_value },
+      { label: "TDS Amount", value: data.TDS_value },
+    ];
+  
+    const invalidAmount = amountsToValidate.find(
+      (amount) => amount.value === undefined || amount.value === null || amount.value === ""
+    );
+  
+    if (invalidAmount) {
+      message.warning(`${invalidAmount.label} cannot be empty.`);
+      return; // Stop execution if validation fails
+    }
+  
+    let hasError = false ; 
     if (
       debitNoteTypes === "discount_note" ||
       debitNoteTypes === "claim_note" ||
       debitNoteTypes === "other"
     ) {
+      // Validate bill amount for each bill
+      numOfBill.map((_, index) => {
+        const amount = data[`amount_${index}`] || undefined;
+        if (amount === undefined){
+          hasError = true ; 
+        }
+      });
+      
+      if (hasError) { // If invalidBill is found, show warning
+        message.warning("Bill Amount cannot be empty or invalid for all bills.");
+        return; // Stop execution if validation fails
+      }
       payload.debit_note_details = numOfBill.map((_, index) => {
         return {
-          id: +data[`debit_note_details_id_${index}`],
-          bill_id: data[`bill_id_${index}`],
-          model: data[`model_${index}`],
-          // rate: +data[`rate_${index}`],
-          // per: +data[`per_${index}`],
-          // invoice_no: data?.invoice_number,
-          // particular_name: "Discount On Sales",
-          quantity: +data[`quantity_${index}`],
-          amount: +data[`amount_${index}`],
+          ...details?.debit_note_details[index], 
+          amount: +data[`amount_${index}`]
         };
       });
-    } else if (debitNoteTypes === "purchase_return") {
-      payload.amount = data[`amount_${0}`];
+    } else{
+      let amount = data[`amount_0`] ; 
+      if (amount == undefined || amount == null || amount == ""){
+        message.warning("Please, Enter amount") ; 
+        hasError = true; 
+        return; 
+      } else {
+        payload.debit_note_details = [] ; 
+        payload.amount = +data[`amount_${0}`];
+      }
     }
-
-    await updateDebitNote({ data: payload, companyId: data.company_id });
+    
+    if (!hasError){
+      await updateDebitNote({ data: payload, companyId: data.company_id });
+    }
   };
 
   const {
@@ -193,146 +203,75 @@ const UpdateDebitNote = ({
     total_meter,
     total_taka,
     rate,
-    // amount,
-    // party_id,
-    // SGST_value,
     SGST_amount,
-    // CGST_value,
     CGST_amount,
-    // IGST_value,
     IGST_amount,
-    // round_off_value,
-    // round_off_amount,
-    // TCS_value,
     TCS_amount,
-    // TDS_value,
     TDS_amount,
-    // discount_value,
     discount_amount,
     total_amount,
     net_amount,
+    round_off_value
   } = watch();
 
   const calculateTaxAmount = () => {
     let amountSum = 0;
-    // let totalNetAmount = 0;
-
     let SGSTAmount = 0;
     let CGSTAmount = 0;
     let IGSTAmount = 0;
 
+    // Total Amount calculate 
     numOfBill.forEach((_, index) => {
       const amount = getValues(`amount_${index}`);
       amountSum += +amount;
     });
 
+    // Discount amount calculation 
     const discountValue = +getValues("discount_value");
     const discountAmount = (amountSum * +discountValue) / 100;
     setValue("discount_amount", discountAmount.toFixed(2));
-
+    
     const totalAmount = +amountSum - +discountAmount;
     setValue("total_amount", totalAmount.toFixed(2));
 
+    // SGST amount 
     const SGSTValue = +getValues("SGST_value");
     if (SGSTValue) {
       SGSTAmount = (+totalAmount * +SGSTValue) / 100;
       setValue("SGST_amount", SGSTAmount.toFixed(2));
-      // totalNetAmount += +SGSTAmount;
     }
 
+    // CGST amount 
     const CGSTValue = +getValues("CGST_value");
     if (CGSTValue) {
       CGSTAmount = (+totalAmount * +CGSTValue) / 100;
       setValue("CGST_amount", CGSTAmount.toFixed(2));
-      // totalNetAmount += +CGSTAmount;
     }
 
+    // IGST amount 
     const IGSTValue = +getValues("IGST_value");
     if (IGSTValue) {
       IGSTAmount = (+totalAmount * +IGSTValue) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
-      // totalNetAmount += +IGSTAmount;
-    }
-
-    const TDS_value = +getValues("TDS_value");
-    if (TDS_value) {
-      const TDS_amount = (+discountAmount * +TDS_value) / 100;
-      setValue("TDS_amount", TDS_amount.toFixed(2));
     }
 
     const TCS_value = +getValues("TCS_value");
-    const beforeTCS = +discountAmount + +SGSTAmount + +CGSTAmount + +IGSTAmount;
-    const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-    setValue("TCS_amount", TCS_Amount);
+    const TDS_value = +getValues("TDS_value");
 
-    const roundOffValue = +getValues("round_off_value");
-
-    const netAmount =
-      +totalAmount +
-      +SGSTAmount +
-      +CGSTAmount +
-      +IGSTAmount +
-      // +round_off_amount +
-      +TCS_Amount +
-      +roundOffValue;
-
-    setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
-
-    // totalNetAmount += totalAmount;
-    // setValue("net_amount", totalNetAmount.toFixed(2));
+    let taxData = calculateFinalNetAmount(
+      totalAmount, 
+      SGSTValue, 
+      CGSTValue, 
+      IGSTValue, 
+      TCS_value, 
+      TDS_value
+    ); 
+    
+    setValue("TCS_amount", taxData?.tcsAmount);
+    setValue("TDS_amount", taxData?.tdsAmount);
+    setValue("net_amount", taxData?.roundedNetAmount);
+    setValue("round_off_value", taxData?.roundOffValue)
   };
-
-  // useEffect(() => {
-  //   if (amount) {
-  //     const discountAmount = (amount * +discount_value) / 100;
-  //     setValue("discount_amount", discountAmount.toFixed(2));
-
-  //     const totalAmount = +amount - +discountAmount;
-  //     setValue("total_amount", totalAmount.toFixed(2));
-
-  //     const SGSTAmount = (totalAmount * SGST_value) / 100;
-  //     setValue("SGST_amount", SGSTAmount.toFixed(2));
-
-  //     const CGSTAmount = (totalAmount * CGST_value) / 100;
-  //     setValue("CGST_amount", CGSTAmount.toFixed(2));
-
-  //     const IGSTAmount = (totalAmount * IGST_value) / 100;
-  //     setValue("IGST_amount", IGSTAmount.toFixed(2));
-
-  //     // const extraTexAmount = (amount * extra_tex_value) / 100;
-  //     // setValue("extra_tex_amount", extraTexAmount.toFixed(2));
-
-  //     const TDS_amount = (+discount_amount * +TDS_value) / 100;
-  //     setValue("TDS_amount", TDS_amount.toFixed(2));
-
-  //     const beforeTCS =
-  //       +discountAmount + +SGSTAmount + +CGSTAmount + +IGSTAmount;
-  //     const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //     setValue("TCS_amount", TCS_Amount);
-
-  //     const netAmount =
-  //       +totalAmount +
-  //       +SGSTAmount +
-  //       +CGSTAmount +
-  //       +IGSTAmount +
-  //       +round_off_amount +
-  //       +TCS_Amount;
-
-  //     setValue("net_amount", netAmount ? netAmount.toFixed(2) : 0);
-  //   }
-  // }, [
-  //   CGST_value,
-  //   IGST_value,
-  //   SGST_value,
-  //   TCS_value,
-  //   TDS_value,
-  //   amount,
-  //   discount_amount,
-  //   discount_value,
-  //   getValues,
-  //   round_off_amount,
-  //   setValue,
-  // ]);
 
   useEffect(() => {
     if (debitNoteTypes === "purchase_return") {
@@ -356,16 +295,6 @@ const UpdateDebitNote = ({
     }
   }, [company_id, companyListRes]);
 
-  // const calculateTCSAmount = (TCS_value) => {
-  //   const beforeTCS =
-  //     +getValues("discount_amount") +
-  //     +getValues("SGST_amount") +
-  //     +getValues("CGST_amount") +
-  //     +getValues("IGST_amount");
-  //   // const TCS_Amount = +((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //   const TCS_Amount = ((+beforeTCS * +TCS_value) / 100).toFixed(2);
-  //   setValue("TCS_amount", TCS_Amount);
-  // };
 
   useEffect(() => {
     if (details) {
@@ -375,7 +304,6 @@ const UpdateDebitNote = ({
         total_meter,
         total_taka,
         rate,
-        // amount,
         CGST_amount,
         CGST_value,
         IGST_amount,
@@ -390,6 +318,8 @@ const UpdateDebitNote = ({
         tds_amount,
         round_off_amount,
         net_amount,
+        extra_tex_amount, 
+        extra_tex_value
       } = details;
 
       reset({
@@ -398,7 +328,6 @@ const UpdateDebitNote = ({
         total_meter,
         total_taka,
         rate,
-        // amount,
         CGST_amount: +CGST_amount || 0,
         CGST_value: +CGST_value || 0,
         IGST_amount: +IGST_amount || 0,
@@ -409,16 +338,13 @@ const UpdateDebitNote = ({
         discount_value: +discount_value || 0,
         TCS_amount: +tcs_amount || 0,
         TCS_value: +tcs_value || 0,
-        TDS_value: +tds || 0,
-        TDS_amount: +tds_amount || 0,
-        round_off_amount: +round_off_amount || 0,
+        TDS_value: +extra_tex_value || 0,
+        TDS_amount: +extra_tex_amount || 0,
+        round_off_value: +round_off_amount || 0,
         net_amount: +net_amount || 0,
       });
     }
   }, [details, reset]);
-
-  console.log("Debit note type information ===========", debitNoteTypes);
-  
 
   const renderCell = (type, value) => {
     if (debitNoteTypes === "other") return <td></td>;
@@ -480,50 +406,12 @@ const UpdateDebitNote = ({
                   <div className="credit-note-info-title">
                     <span>GSTIN/UIN:</span> {selectedCompany?.gst_no || ""}
                   </div>
-                  {/* <div className="credit-note-info-title">
-                    <span>State Name: </span> {selectedCompany?.state || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Contact:</span>{" "}
-                    {selectedCompany?.company_contact || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Email:</span> {selectedCompany?.company_email || ""}
-                  </div> */}
                 </td>
                 <td width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>Debit Note No: </span>
                     {details?.debit_note_number || "-"}
                   </div>
-                  {/* <div>
-                    <Form.Item
-                      label=""
-                      name="credit_note_no"
-                      validateStatus={errors.credit_note_no ? "error" : ""}
-                      help={
-                        errors.credit_note_no && errors.credit_note_no.message
-                      }
-                      required={true}
-                      wrapperCol={{ sm: 24 }}
-                    >
-                      <Controller
-                        control={control}
-                        name="party_id"
-                        rules={{ required: "Credit note no is required" }}
-                        render={({ field }) => (
-                          <Input
-                            {...field}
-                            className="width-100"
-                            placeholder="Credit Note No."
-                          />
-                        )}
-                      />
-                    </Form.Item>
-                  </div> */}
                 </td>
                 <td width={"25%"}>
                   <div>
@@ -588,7 +476,7 @@ const UpdateDebitNote = ({
                     </>
                   ) : (
                     <>
-                      <span>
+                      <span style={{fontWeight: 600}}>
                         {String(details?.supplier?.supplier_company).toUpperCase()}
                       </span>
                       <div className="credit-note-info-title">
@@ -605,29 +493,10 @@ const UpdateDebitNote = ({
                       </div>
                     </>
                   )}
-
-                  {/* <div className="credit-note-info-title">
-                    <span>State Name: </span> {selectedCompany?.state || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>PinCode:</span> {selectedCompany?.pincode || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Contact:</span>{" "}
-                    {selectedCompany?.company_contact || ""}
-                  </div>
-                  <div className="credit-note-info-title">
-                    <span>Email:</span> {selectedCompany?.company_email || ""}
-                  </div> */}
                 </td>
                 <td colSpan={2} width={"25%"}>
                   <div className="credit-note-info-title">
                     <span>DESCRIPTION OF GOODS : </span>
-                    {/* {_.isEmpty(details?.inhouse_quality)
-                      ? `${details?.inhouse_quality?.quality_name || ""} (${
-                          details?.inhouse_quality?.quality_weight || ""
-                        }KG)`
-                      : ""} */}
                       {descriptionGoods}
                   </div>
                 </td>
@@ -663,9 +532,9 @@ const UpdateDebitNote = ({
               <tr>
                 <td>1</td>
                 <td>
-                  {debitNoteTypes === "other"
+                  {["other", "claim_note"]?.includes(debitNoteTypes)
                     ? details?.debit_note_details[0]?.particular_name
-                    : null}
+                    : ""}
                 </td>
                 {renderCell(debitNoteTypes, total_meter)}
                 {renderCell(debitNoteTypes, rate)}
@@ -712,15 +581,20 @@ const UpdateDebitNote = ({
                 </td>
                 <td>{discount_amount}</td>
               </tr>
-
+              
+              {/* Total amount calculation  */}
               <tr>
                 <td></td>
                 <td></td>
-                <td>(-) Total Amount</td>
+                <td style={{fontWeight: 400}}>(-) Total Amount</td>
                 <td></td>
-                <td>{total_amount}</td>
-              </tr>
+                <td style={{
+                  color: "blue", 
+                  fontWeight: 600
+                }}>{total_amount}</td>
+              </tr> 
 
+              {/* SGST amount calculation flow  */}
               <tr>
                 <td></td>
                 <td></td>
@@ -746,7 +620,8 @@ const UpdateDebitNote = ({
                 </td>
                 <td>{SGST_amount}</td>
               </tr>
-
+              
+              {/* CGST amount calculation flow  */}
               <tr>
                 <td></td>
                 <td></td>
@@ -772,7 +647,8 @@ const UpdateDebitNote = ({
                 </td>
                 <td>{CGST_amount}</td>
               </tr>
-
+              
+              {/* IGST amount calculation flow  */}
               <tr>
                 <td></td>
                 <td></td>
@@ -798,7 +674,8 @@ const UpdateDebitNote = ({
                 </td>
                 <td>{IGST_amount}</td>
               </tr>
-
+                
+              {/* TCS amount calculation flow  */}
               <tr>
                 <td></td>
                 <td></td>
@@ -813,11 +690,6 @@ const UpdateDebitNote = ({
                         placeholder="3"
                         style={{ width: "100px" }}
                         type="number"
-                        // onChange={(e) => {
-                        //   setValue("TCS_value", e.target.value);
-                        //   //   calculatePercent(e.target.value, "TCS_amount");
-                        //   // calculateTCSAmount(e.target.value);
-                        // }}
                         onChange={(e) => {
                           setValue("TCS_value", +e.target.value);
                           calculateTaxAmount();
@@ -829,11 +701,15 @@ const UpdateDebitNote = ({
                 </td>
                 <td>{TCS_amount}</td>
               </tr>
-
+              
+              {/* Extra tax calculation related flow  */}
               <tr>
                 <td></td>
                 <td></td>
-                <td>TDS(%)</td>
+                <td style={{
+                  fontWeight: 500, 
+                  color: "blue"
+                }}>{details?.extra_tex_name}(%)</td>
                 <td>
                   <Controller
                     control={control}
@@ -861,7 +737,8 @@ const UpdateDebitNote = ({
                 <td></td>
                 <td>Round Off</td>
                 <td>
-                  <Controller
+                  {round_off_value}
+                  {/* <Controller
                     control={control}
                     name="round_off_value"
                     render={({ field }) => (
@@ -876,7 +753,7 @@ const UpdateDebitNote = ({
                         }}
                       />
                     )}
-                  />
+                  /> */}
                 </td>
                 <td></td>
               </tr>
@@ -970,12 +847,17 @@ const SingleBillRender = ({
 }) => {
   useEffect(() => {
     if (details) {
+      console.log("Run this function");
+      console.log(details?.debit_note_details[index]?.id);
+      
       setValue(`debit_note_details_id_${index}`, details?.debit_note_details[index]?.id) ; 
       setValue(`bill_no_${index}`, details?.debit_note_details[index]?.bill_no) ; 
       setValue(`invoice_no_${index}`, details?.debit_note_details[index]?.invoice_no) ; 
+      
       if (creditNoteTypes === "purchase_return") {
         setValue(`amount_${index}`, +details.amount || 0);
         setValue(`quantity_${index}`, details.quantity);
+      
       } else if (creditNoteTypes === "discount_note") {
         setValue(`amount_${index}`, +details.debit_note_details[index].amount);
         setValue(
@@ -1003,6 +885,7 @@ const SingleBillRender = ({
         );
         setValue(`model_${index}`, details.debit_note_details[index].model);
       }
+      calculateTaxAmount() ;
     }
   }, [creditNoteTypes, details, index, setValue]);
 

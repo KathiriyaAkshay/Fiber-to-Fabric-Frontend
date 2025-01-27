@@ -225,7 +225,7 @@ const AddSaleBill = () => {
     resolver: addJobTakaSchemaResolver,
   });
 
-  const { machine_name } = watch();
+  const { machine_name, party_id } = watch();
   const formValues = watch(); // Watch all form values
 
   useEffect(() => {
@@ -329,14 +329,16 @@ const AddSaleBill = () => {
   });
 
   const { data: brokerUserListRes, isLoading: isLoadingBrokerList } = useQuery({
-    queryKey: ["broker", "list", { company_id: companyId }],
+    queryKey: ["broker", "list", { company_id: companyId , party_id: party_id}],
     queryFn: async () => {
-      const res = await getBrokerListRequest({
-        params: { company_id: companyId, page: 0, pageSize: 99999 },
-      });
-      return res.data?.data;
+      if (party_id){
+        const res = await getBrokerListRequest({
+          params: { company_id: companyId, page: 0, pageSize: 99999, party_id: party_id },
+        });
+        return res.data?.data;
+      }
     },
-    enabled: Boolean(companyId),
+    enabled: Boolean(companyId && party_id),
   });
 
   const addNewFieldRow = (indexValue) => {

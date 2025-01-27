@@ -14,8 +14,6 @@ const PrintBeamSaleChallan = ({
   open = false,
   close,
 }) => {
-  console.log(details);
-  
   const [isModelOpen, setIsModalOpen] = useState(false);
   const componentRef = useRef();
   const { companyListRes } = useContext(GlobalContext);

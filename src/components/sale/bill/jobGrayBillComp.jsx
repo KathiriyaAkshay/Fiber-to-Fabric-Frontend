@@ -484,7 +484,7 @@ const JobGrayBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
                       BROKER NAME
                     </Typography.Text>
                     <Typography.Text>
-                      {String(`${jobGrayBillDetail?.broker?.first_name}` `${jobGrayBillDetail?.broker?.last_name}`).toUpperCase()}
+                      {jobGrayBillDetail?.broker?.first_name} {jobGrayBillDetail?.broker?.last_name}
                     </Typography.Text>
                   </Col>
                 </Row>

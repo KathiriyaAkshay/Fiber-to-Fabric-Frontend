@@ -36,6 +36,7 @@ import { saleJobWorkChallanListRequest, saleYarnChallanListRequest } from "../..
 import { getJobGraySaleBillListRequest } from "../../../../api/requests/sale/bill/jobGraySaleBill";
 import { extractCreditNoteData } from "../../../../utils/supplier.handler";
 import UserInformationComp from "./userinformationComp";
+import { calculateFinalNetAmount } from "../../../../constants/taxHandler";
 
 const toWords = new ToWords({
   localeCode: "en-IN",
@@ -213,14 +214,18 @@ const AddClaimNoteType = ({ setIsAddModalOpen, isAddModalOpen }) => {
       const IGSTAmount = (amount * IGST_value) / 100;
       setValue("IGST_amount", IGSTAmount.toFixed(2));
 
-      const netAmount =
-        +amount + +SGSTAmount + +CGSTAmount + +IGSTAmount;
+      let taxData = calculateFinalNetAmount(
+        +amount, 
+        SGSTAmount,
+        CGSTAmount, 
+        IGSTAmount, 
+        0, 
+        0
+      )
 
-      const final_net_amount = Math.round(netAmount);
-      const round_off_value = +final_net_amount - +netAmount
-
-      setValue("net_amount", final_net_amount.toFixed(2));
-      setValue("round_off_amount", parseFloat(round_off_value).toFixed(2))
+      setValue("extra_tex_amount", taxData.tdsAmount);
+      setValue("net_amount", taxData?.roundedNetAmount);
+      setValue("round_off_amount", taxData?.roundOffValue)
     }
   }, [CGST_value, IGST_value, SGST_value, amount, round_off_amount, setValue]);
 

@@ -32,6 +32,7 @@ import { getBeamSaleChallanListRequest } from "../../../../api/requests/sale/cha
 import PartialPaymentInformation from "../../../../components/accounts/payment/partialPaymentInformation";
 import PrintBeamSaleChallan from "../../../../components/sale/challan/beamSale/printBeamSaleChallan";
 import BeamSaleChallanModel from "../../../../components/sale/challan/beamSale/BeamSaleChallan";
+import { PAID_TAG_TEXT, PAID_TAG_TEXT_COLOR } from "../../../../constants/bill.model";
 
 const CONFIRMED_BILL_STATUS = "confirmed" ; 
 
@@ -244,8 +245,8 @@ const BeamSaleBillList = () => {
                   paid_amount={record?.beam_sale_bill?.paid_amount}
                 />
               </>:<>
-                <Tag color = {record?.beam_sale_bill?.is_paid?"green":"red"}>
-                  {String(record?.beam_sale_bill?.is_paid?"Paid":"Un-paid").toUpperCase()}
+                <Tag color = {record?.beam_sale_bill?.is_paid?PAID_TAG_TEXT_COLOR:"red"}>
+                  {String(record?.beam_sale_bill?.is_paid?PAID_TAG_TEXT:"Un-paid").toUpperCase()}
                 </Tag>
               </>}
             </div>
@@ -263,6 +264,8 @@ const BeamSaleBillList = () => {
                 let MODE;
                 if (record.beam_sale_bill.is_paid) {
                   MODE = "VIEW";
+                } else if (record?.beam_sale_bill?.is_partial_payment){
+                  MODE = "VIEW" ; 
                 } else {
                   MODE = "UPDATE";
                 }

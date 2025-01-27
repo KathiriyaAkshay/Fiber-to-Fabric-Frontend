@@ -15,6 +15,9 @@ import {
 } from "../../../../api/requests/users";
 import { addJobYarnStockReportRequest } from "../../../../api/requests/job/reports/jobYarnStockReport";
 import { useCurrentUser } from "../../../../api/hooks/auth";
+import { getDisplayQualityName } from "../../../../constants/nameHandler";
+import { JOB_SUPPLIER_TYPE } from "../../../../constants/supplier";
+import { JOB_QUALITY_TYPE } from "../../../../constants/supplier";
 
 const addYSCSchemaResolver = yupResolver(
   yup.object().shape({
@@ -118,6 +121,7 @@ const AddJobYarnStockReport = () => {
           page: 0,
           pageSize: 9999,
           is_active: 1,
+          production_type: JOB_QUALITY_TYPE
         },
       ],
       queryFn: async () => {
@@ -129,6 +133,7 @@ const AddJobYarnStockReport = () => {
               page: 0,
               pageSize: 9999,
               is_active: 1,
+              production_type: JOB_QUALITY_TYPE
             },
           });
           return res.data?.data;
@@ -155,10 +160,10 @@ const AddJobYarnStockReport = () => {
     data: dropdownSupplierListRes,
     isLoading: isLoadingDropdownSupplierList,
   } = useQuery({
-    queryKey: ["dropdown/supplier/list", { company_id: companyId }],
+    queryKey: ["dropdown/supplier/list", { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE }],
     queryFn: async () => {
       const res = await getDropdownSupplierListRequest({
-        params: { company_id: companyId },
+        params: { company_id: companyId, supplier_type: JOB_SUPPLIER_TYPE },
       });
       return res.data?.data?.supplierList;
     },
@@ -310,7 +315,7 @@ const AddJobYarnStockReport = () => {
                         dropDownQualityListRes &&
                         dropDownQualityListRes?.rows?.map((item) => ({
                           value: item.id,
-                          label: item.quality_name,
+                          label: getDisplayQualityName(item),
                         }))
                       }
                     />

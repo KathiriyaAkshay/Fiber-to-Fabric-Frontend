@@ -75,6 +75,7 @@ import {
 import YarnSaleChallanModel from "../../../components/sale/challan/yarn/YarnSaleChallan";
 import BeamSaleChallanModel from "../../../components/sale/challan/beamSale/BeamSaleChallan";
 import JobWorkSaleChallanModel from "../../../components/sale/challan/jobwork/JobSaleChallan";
+import { sundaryDebitorHandler } from "../../../constants/sundary.handler";
 
 function calculateDaysDifference(dueDate) {
   const today = new Date(); // Get today's date
@@ -271,13 +272,9 @@ const SundryDebitor = () => {
 
       debitorDataList?.forEach((item) => {
         item?.bills?.forEach((bill) => {
-          let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
-          let credit_note_amount =
-            parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
-          let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0;
-          let finalAmount = total_amount - paid_amount - credit_note_amount;
+          let sundary = sundaryDebitorHandler(bill) ; 
           meter += +bill?.meter;
-          billAmount += +finalAmount;
+          billAmount += +sundary?.bill_net_amount;
         });
       });
 
@@ -297,12 +294,8 @@ const SundryDebitor = () => {
     if (selectedInterestBill?.length > 0) {
       let totalInterest = 0;
       selectedInterestBill?.map((bill) => {
-        let dueDate = moment(bill?.due_days).format("DD-MM-YYYY");
-        let dueDays = isNaN(calculateDaysDifference(dueDate))
-          ? 0
-          : calculateDaysDifference(dueDate);
-        let interestAmount = CalculateInterest(dueDays, bill?.amount);
-        totalInterest += +interestAmount || 0;
+        let sundary = sundaryDebitorHandler(bill)
+        totalInterest += +sundary?.interest_amount || 0;
       });
       setTotalInterestAmount(totalInterest);
     }
@@ -332,25 +325,30 @@ const SundryDebitor = () => {
 
   const handleInterestCheckboxSelection = (event, bill) => {
     const { checked } = event.target;
-
+    let is_supplier = bill?.supplier_id == null?false:true ; 
+    let supplier_id = bill?.supplier_id  ; 
+    let party_id = bill?.party_id ; 
     setSelectedInterestBill((prev) => {
       if (checked) {
-        // Check if the new bill matches supplier_id or party_id with the existing elements
-        const hasMatchingSupplierOrParty = prev.some(
-          (item) =>
-            item?.supplier_id === bill?.supplier_id ||
-            item?.party_id === bill?.party_id
-        );
+        let hasMatchingSupplierOrParty ; 
+        if (is_supplier){
+          hasMatchingSupplierOrParty = prev.some(
+            (item) =>
+              +item?.supplier_id === +supplier_id
+          );
+        } else {
+          hasMatchingSupplierOrParty = prev.some(
+            (item) =>
+              +item?.party_id === +party_id
+          );
+        }
 
         if (hasMatchingSupplierOrParty) {
-          // Add the new bill to the array
           return [...prev, bill];
         } else {
-          // Clear the state and add only the new bill
           return [bill];
         }
       } else {
-        // Filter out the unselected bill
         return prev.filter(
           (item) =>
             item?.bill_id !== bill?.bill_id || item?.model !== bill?.model
@@ -359,7 +357,7 @@ const SundryDebitor = () => {
     });
   };
 
-  const { mutateAsync: addInterestAmount } = useMutation({
+  const { mutateAsync: addInterestAmount, isPending: isInterestAmountLoading } = useMutation({
     mutationFn: async ({ data }) => {
       const res = await paidInterestRequest({
         data: data,
@@ -411,31 +409,33 @@ const SundryDebitor = () => {
     if (selectedBill?.length > 0) {
       let totalAmount = 0;
       selectedBill?.map((bill) => {
-        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0; // Bill total payment
-        let credit_note_amount =
-          parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0; // Bill credit note amount
-        let bill_deducation_amount = +total_amount - +credit_note_amount;
-        let bill_remaing_amount = parseFloat(
-          bill?.part_payment == null
-            ? bill_deducation_amount
-            : +bill?.part_payment
-        ).toFixed(2);
-        totalAmount += +bill_remaing_amount;
+        let sundary = sundaryDebitorHandler(bill) ; 
+        totalAmount += +sundary?.bill_net_amount;
       });
       setTotalBillAmount(totalAmount);
     }
   }, [selectedBill]);
 
   const handleBillSelection = (event, bill) => {
+    let is_supplier = bill?.supplier_id == null?false:true ; 
+    let supplier_id = bill?.supplier_id  ; 
+    let party_id = bill?.party_id ; 
     const { checked } = event.target;
     setSelectedBill((prev) => {
       if (checked) {
-        // Check if the new bill matches supplier_id or party_id with the existing elements
-        const hasMatchingSupplierOrParty = prev.some(
-          (item) =>
-            item?.supplier_id === bill?.supplier_id ||
-            item?.party_id === bill?.party_id
-        );
+        let hasMatchingSupplierOrParty ; 
+        if (is_supplier){
+          hasMatchingSupplierOrParty = prev.some(
+            (item) =>
+              +item?.supplier_id === +supplier_id
+          );
+        } else {
+          hasMatchingSupplierOrParty = prev.some(
+            (item) =>
+              +item?.party_id === +party_id
+          );
+
+        }
 
         if (hasMatchingSupplierOrParty) {
           // Add the new bill to the array
@@ -1517,6 +1517,7 @@ const SundryDebitor = () => {
             onConfirm={async (amount, date, data) => {
               PaidInterestAmount(amount, date, data);
             }}
+            isInterestAmountLoading = {isInterestAmountLoading}
           />
         )}
 
@@ -1628,13 +1629,9 @@ const TableWithAccordion = ({
       let meter = 0;
       let amount = 0;
       data?.bills?.forEach((item) => {
-        let total_amount = parseFloat(+item?.amount || 0).toFixed(2) || 0;
-        let credit_note_amount =
-          parseFloat(+item?.credit_note_amount || 0).toFixed(2) || 0;
-        let paid_amount = parseFloat(+item?.paid_amount || 0).toFixed(2) || 0;
-        let finalAmount = total_amount - paid_amount - credit_note_amount;
+        let sundary = sundaryDebitorHandler(item) ; 
         meter += +item?.meter || 0;
-        amount += +finalAmount || 0;
+        amount += +sundary?.bill_net_amount || 0;
       });
 
       return { meter, amount };
@@ -1783,6 +1780,8 @@ const TableWithAccordion = ({
         <>
           {data && data?.bills?.length ? (
             data?.bills?.map((bill, index) => {
+
+              let sundary = sundaryDebitorHandler(bill) ; 
               
               // Bill paid amount information 
               let paid_amount = parseFloat(bill?.paid_amount) || 0;
@@ -1881,7 +1880,7 @@ const TableWithAccordion = ({
                 <tr key={index + "_bill"} className="sundary-data">
                   {/* Debit note creation related checkbox handler  */}
                   <td>
-                    {debit_note_id == null &&
+                    {sundary?.debite_note_id == null &&
                       ![CREDIT_NOTE_BILL_MODEL, DEBIT_NOTE_BILL_MODEL]?.includes(
                         bill?.model
                       ) && (
@@ -1905,17 +1904,55 @@ const TableWithAccordion = ({
 
                   {/* Bill number related information  */}
                   <td>
-                    {bill?.model === CREDIT_NOTE_BILL_MODEL ? (
-                      <span style={{ color: "green" }}>
-                        {bill?.bill_no || "N/A"}
-                      </span>
-                    ) : bill?.model === DEBIT_NOTE_BILL_MODEL ? (
-                      <span style={{ color: "red" }}>
-                        {bill?.bill_no || "N/A"}
-                      </span>
-                    ) : (
-                      <span>{bill?.bill_no || "N/A"}</span>
+                    <div>
+                      {bill?.model === CREDIT_NOTE_BILL_MODEL ? (
+                        <span style={{ color: "green" }}>
+                          {bill?.bill_no || "N/A"}
+                        </span>
+                      ) : bill?.model === DEBIT_NOTE_BILL_MODEL ? (
+                        <span style={{ color: "red" }}>
+                          {bill?.bill_no || "N/A"}
+                        </span>
+                      ) : (
+                        <span>{bill?.bill_no || "N/A"}</span>
+                      )}
+                    </div>
+
+                    {/* Credit note rellated information  */}
+                    {sundary?.credit_note_number?.length !== 0 && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "green", 
+                          cursor: "pointer"
+                        }}
+                      >
+                        <Tooltip title = {`DEBIT NOTE : ${sundary?.credit_note_number?.map((element) => element?.number).join(", ")}`}>
+                          ({sundary?.credit_note_number?.map((element) => element?.number).join(", ")})
+                        </Tooltip>
+                      </div>
                     )}
+
+                    {/* Debit note related information  */}
+                    {sundary?.debite_note_id !== undefined && (
+                      <>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "red",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Tooltip
+                            title={`DEBIT NOTE : ${sundary?.debite_note_number}`}
+                          >
+                            ( {sundary?.debite_note_number} )
+                          </Tooltip>
+                        </div>
+                      </>
+                    )}
+
+                    
                   </td>
 
                   {/* Bill type related information  */}
@@ -1982,16 +2019,14 @@ const TableWithAccordion = ({
                   {/* =========== Bill amount information =========  */}
                   <td>
                     <Tooltip
-                      title={`${total_amount} - ${credit_note_amount} - ${bill_paid_amount} = ${parseFloat(
-                        bill_remaing_amount
-                      ).toFixed(2)}`}
+                      title={`${sundary?.bill_net_amount_info_string}`}
                     >
                       <div>
                         {/* Total bill remaing amount information  */}
-                        {parseFloat(bill_remaing_amount).toFixed(2) || 0}
+                        {sundary?.bill_net_amount}
 
                         {/* Bill paid amount related information */}
-                        {+paid_amount != 0 && paid_amount !== undefined && (
+                        {+sundary?.paid_amount !== 0 && (
                           <div
                             style={{
                               fontWeight: 500,
@@ -1999,7 +2034,7 @@ const TableWithAccordion = ({
                               fontSize: 11,
                             }}
                           >
-                            Received ( {paid_amount} )
+                            Received ( {sundary?.paid_amount} )
                           </div>
                         )}
                       </div>
@@ -2011,18 +2046,18 @@ const TableWithAccordion = ({
 
                   <td
                     style={{
-                      color: +dueDays != 0 ? "red" : "#000",
+                      color: sundary?.due_day_color,
                       fontWeight: 600,
                       cursor: "pointer",
                     }}
                   >
                     {/* Due Date related information  */}
-                    <Tooltip title={`Due Date : ${dueDate || ""}`}>
-                      {dueDays <= 0 ? 0 : `+${dueDays}D` || 0}
+                    <Tooltip title={`Due Date : ${sundary?.dueDate || ""}`}>
+                      {sundary?.dueDays <= 0 ? 0 : `+${sundary?.dueDays}D` || 0}
                     </Tooltip>
 
                     {/* Bill date information  */}
-                    <Tooltip title={`Bill Date: ${billDate}`}>
+                    <Tooltip title={`Bill Date: ${sundary?.billDate}`}>
                       <span
                         style={{
                           color: "blue",
@@ -2031,7 +2066,7 @@ const TableWithAccordion = ({
                           paddingLeft: 5,
                         }}
                       >
-                        ( {billDays} )
+                        ( {sundary?.billDays} )
                       </span>
                     </Tooltip>
                   </td>
@@ -2049,8 +2084,8 @@ const TableWithAccordion = ({
                       </>
                     ) : (
                       <>
-                        {bill?.interest_paid_date !== null &&
-                          bill?.interest_amount !== null && (
+                        {sundary?.interest_paid_date !== null &&
+                          sundary?.interest_paid_amount !== null && (
                             <>
                               <div style={{ cursor: "pointer" }}>
                                 <span
@@ -2063,7 +2098,7 @@ const TableWithAccordion = ({
                                   Rece :
                                 </span>
                                 <span style={{ fontSize: 12, marginLeft: 4 }}>
-                                  {moment(bill?.interest_paid_date).format(
+                                  {moment(sundary?.interest_paid_date).format(
                                     "DD-MM-YYYY"
                                   )}
                                 </span>
@@ -2079,14 +2114,14 @@ const TableWithAccordion = ({
                                   Amount:
                                 </span>
                                 <span style={{ fontSize: 12, marginLeft: 4 }}>
-                                  {parseFloat(bill?.interest_amount).toFixed(2)}
+                                  {parseFloat(sundary?.interest_paid_amount).toFixed(2)}
                                 </span>
                               </div>
                             </>
                           )}
 
-                        {bill?.interest_paid_date == null && (
-                          <>{interest_amount}</>
+                        {sundary?.interest_paid_date == null && (
+                          <>{sundary?.interest_amount}</>
                         )}
                       </>
                     )}
@@ -2128,7 +2163,7 @@ const TableWithAccordion = ({
                         </>
                       )}
 
-                      {/* Credit note information  */}
+                      {/* Show particular credit note type credit note  */}
                       {bill?.model == CREDIT_NOTE_BILL_MODEL && (
                         <Tooltip title={`CREDIT NOTE : ${bill?.bill_no}`}>
                           <div style={{ cursor: "pointer" }}>
@@ -2142,7 +2177,7 @@ const TableWithAccordion = ({
                         </Tooltip>
                       )}
 
-                      {/* Debit note information  */}
+                      {/* Show particular debit note type debit note information  */}
                       {bill?.model == DEBIT_NOTE_BILL_MODEL && (
                         <Tooltip title={`DEBIT NOTE : ${bill?.bill_no}`}>
                           <div style={{ cursor: "pointer" }}>
@@ -2156,8 +2191,9 @@ const TableWithAccordion = ({
                         </Tooltip>
                       )}
 
-                      {debit_note_id !== null && debit_note_id !== undefined && (
-                        <Tooltip title={`DEBIT NOTE : ${debit_note_number}`}>
+                      {/* Show Debit note information related icon  */}
+                      {sundary?.debite_note_id !== null && sundary?.debite_note_id !== undefined && (
+                        <Tooltip title={`DEBIT NOTE : ${sundary?.debite_note_number}`}>
                           <div style={{ cursor: "pointer" }}>
                             <TabletFilled
                               style={{ color: "red" }}
@@ -2168,6 +2204,20 @@ const TableWithAccordion = ({
                           </div>
                         </Tooltip>
                       )}
+
+                      {/* Show all credit note infomration  */}
+                      {sundary?.credit_note_number?.map((element) => {
+                        return(
+                          <div style={{cursor: "pointer"}}>
+                            <Tooltip title = {`CREDIT NOTE: ${element?.number}`} >
+                              <TabletFilled
+                                style={{color: "green"}}
+                              />
+
+                            </Tooltip>
+                          </div>
+                        )
+                      })}
 
                     </Flex>
                   </td>
@@ -2186,10 +2236,10 @@ const TableWithAccordion = ({
 
                   {/* Bill Interest payment checkbox selection  */}
                   <td>
-                    {bill?.interest_paid_date ? (
+                    {sundary?.interest_paid_date ? (
                       <span>--</span>
                     ) : (
-                      CalculateInterest(dueDays, bill?.amount) !== 0 && (
+                      CalculateInterest(sundary?.dueDays, bill?.amount) !== 0 && (
                         <Checkbox
                           checked={isChecked}
                           onChange={(event) =>

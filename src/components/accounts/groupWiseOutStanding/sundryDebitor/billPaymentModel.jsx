@@ -20,6 +20,7 @@ const { Text } = Typography;
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addPaymentBillRequest } from "../../../../api/requests/accounts/payment";
 import { getLastVoucherNoRequest } from "../../../../api/requests/accounts/payment";
+import { sundaryDebitorHandler } from "../../../../constants/sundary.handler";
 
 const BillPaymentModel = ({
   visible,
@@ -27,8 +28,6 @@ const BillPaymentModel = ({
   selectedBill,
   sundryDebtorData,
 }) => {
-  console.log(selectedBill);
-  
   const queryClient = useQueryClient();
   const { companyListRes, companyId } = useContext(GlobalContext);
   const [bankOption, setBankOption] = useState([]);
@@ -80,21 +79,20 @@ const BillPaymentModel = ({
     setData((prevData) =>
       prevData.map((element, indexValue) => {
         if (indexValue === index) {
-          const total_amount = element?.totalAmount || 0; // Bill total payment
-          
+          let paid_amount =  +value ; 
+          let bill_net_amount = element?.amount ; 
+          let bill_remaing_amount = +bill_net_amount - +paid_amount ; 
 
-
-          let credit_note_amount = parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
-          
-          
-          let bill_deducation_amount = +total_amount - +credit_note_amount;
-          let bill_remaing_amount = parseFloat(element?.part_payment == null ? bill_deducation_amount : +element?.part_payment).toFixed(2);
-          
-          return {
-            ...element,
-            partAmount: element?.part_payment,
-            remainingAmount: bill_remaing_amount,
-          };
+          if (bill_remaing_amount < 0 ){
+            message.warning("Please, Enter proper amount as part payment") ; 
+            return {...element}
+          } else {
+            return {
+              ...element,
+              partPayment: paid_amount,
+              remainingAmount: +bill_remaing_amount,
+            };
+          }
         } else {
           return { ...element };
         }
@@ -117,7 +115,7 @@ const BillPaymentModel = ({
     {
       title: "Amount",
       dataIndex: "amount",
-      key: "amount",
+      key: "bill_amount",
     },
     {
       title: "Sale return/Claim/Discount",
@@ -126,14 +124,14 @@ const BillPaymentModel = ({
       render: (text, record) => {
         return(
           <Flex style={{cursor: "pointer"}}>
-            <Tooltip title = {`Sale Return : ${text}`}>
-              <div style={{color: "red"}}>{parseFloat(text).toFixed(2)}</div>
+            <Tooltip title = {`Sale Return : ${+record?.total_return_amount}`}>
+              <div style={{color: "red"}}>{parseFloat(record?.total_return_amount).toFixed(2)}</div>
             </Tooltip>/
-            <Tooltip title = {`Claim Amount: ${parseFloat(0).toFixed(2)}`}>
-              <div style={{color: "orange"}}>{parseFloat(0).toFixed(2)}</div>
+            <Tooltip title = {`Claim Amount: ${+record?.total_claim_amount}`}>
+              <div style={{color: "orange"}}>{parseFloat(+record?.total_claim_amount).toFixed(2)}</div>
             </Tooltip>/
-            <Tooltip title = {`Discount Amount: ${parseFloat(0).toFixed(2)}`}>
-              <div style={{color: "green"}}>{parseFloat(0).toFixed(2)}</div>
+            <Tooltip title = {`Discount Amount: ${+record?.total_discount_amount}`}>
+              <div style={{color: "green"}}>{parseFloat(+record?.total_discount_amount).toFixed(2)}</div>
             </Tooltip>
           </Flex>
         )
@@ -155,30 +153,38 @@ const BillPaymentModel = ({
     },
     {
       title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
+      dataIndex: "bill_amount",
+      key: "bill_amount",
     },
     {
       title: "Sale return/Claim/Discount",
       dataIndex: "salesReturn",
       key: "salesReturn",
       render: (text, record) => {
-        return (
-          <div>
-            {parseFloat(record?.credit_note_amount || 0)}
-          </div>
+        return(
+          <Flex style={{cursor: "pointer"}}>
+            <Tooltip title = {`Sale Return : ${+record?.total_return_amount}`}>
+              <div style={{color: "red"}}>{parseFloat(record?.total_return_amount).toFixed(2)}</div>
+            </Tooltip>/
+            <Tooltip title = {`Claim Amount: ${+record?.total_claim_amount}`}>
+              <div style={{color: "orange"}}>{parseFloat(+record?.total_claim_amount).toFixed(2)}</div>
+            </Tooltip>/
+            <Tooltip title = {`Discount Amount: ${+record?.total_discount_amount}`}>
+              <div style={{color: "green"}}>{parseFloat(+record?.total_discount_amount).toFixed(2)}</div>
+            </Tooltip>
+          </Flex>
         )
       }
     },
     {
       title: "Total Amount",
-      dataIndex: "totalAmount",
-      key: "totalAmount",
+      dataIndex: "amount",
+      key: "amount",
     },
     {
       title: "Part Amount",
-      dataIndex: "partAmount",
-      key: "partAmount",
+      dataIndex: "partPayment",
+      key: "partPayment",
       render: (text, record, index) => (
         <Input
           value={text}
@@ -188,7 +194,7 @@ const BillPaymentModel = ({
       ),
     },
     {
-      title: "Remaining Payable Amount",
+      title: "Payable Amount",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
     },
@@ -202,51 +208,56 @@ const BillPaymentModel = ({
       let totalSaleReturnAmount = 0;
       let finalNetAmount = 0;
       selectedBill?.map((bill, index) => {
-
-        // Bill Amount information 
-        let total_amount = parseFloat(+bill?.amount || 0).toFixed(2) || 0;
-
-        console.log("Selected bill information");
-        console.log(bill);
-        
-        let return_amount = 0 ; 
-
-        if (bill?.credit_notes?.length > 0 ){
-          console.log("Run this functionality");
-          
-        }
-        
-        
-        let credit_note_amount = parseFloat(+bill?.credit_note_amount || 0).toFixed(2) || 0;
-        let paid_amount = parseFloat(+bill?.paid_amount || 0).toFixed(2) || 0;
-        let finalAmount = total_amount - paid_amount - credit_note_amount;
-
+        let sundary = sundaryDebitorHandler(bill) ; 
+        let returnAmount = +sundary?.total_return_amount + +sundary?.total_claim_amount + +sundary?.total_discount_amount ; 
         if (paymentOption == "fullPayment") {
           temp.push({
             no: index + 1,
             billNo: bill?.bill_no,
-            amount: parseFloat(bill?.amount || 0).toFixed(2),
+            amount: sundary?.bill_net_amount,
             salesReturn: parseFloat(bill?.credit_note_amount || 0).toFixed(2),
-            remainingAmount: finalAmount,
-            ...bill,
+            remainingAmount: sundary?.bill_net_amount,
+            total_return_amount: sundary?.total_return_amount, 
+            total_claim_amount: sundary?.total_claim_amount, 
+            total_discount_amount: sundary?.total_discount_amount, 
+            bill_id: bill?.bill_id, 
+            model: bill?.model, 
+            bill_amount_without_gst: sundary?.bill_amount_without_gst, 
+            dueDate: sundary?.dueDate, 
+            supplier_id: bill?.supplier_id, 
+            party_id: bill?.party_id, 
+            billDate: sundary?.billDate, 
+            bill_amount: sundary?.bill_amount
           });
+
+          totalAmount += +parseFloat(sundary?.bill_net_amount || 0);
+          totalSaleReturnAmount += parseFloat(returnAmount || 0);
+          finalNetAmount += +sundary?.bill_net_amount;
         } else {
           temp.push({
             no: index + 1,
             billNo: bill?.bill_no,
-            amount: parseFloat(bill?.amount || 0).toFixed(2),
-            salesReturn: parseFloat(bill?.credit_note_amount).toFixed(2),
-            totalAmount: finalAmount,
-            partAmount: 0,
-            remainingAmount: finalAmount,
-            ...bill,
+            bill_amount: sundary?.bill_amount,
+            amount: sundary?.bill_net_amount,
+            salesReturn: parseFloat(bill?.credit_note_amount || 0).toFixed(2),
+            total_return_amount: sundary?.total_return_amount, 
+            total_claim_amount: sundary?.total_claim_amount, 
+            total_discount_amount: sundary?.total_discount_amount, 
+            bill_id: bill?.bill_id, 
+            model: bill?.model, 
+            bill_amount_without_gst: sundary?.bill_amount_without_gst, 
+            dueDate: sundary?.dueDate, 
+            supplier_id: bill?.supplier_id, 
+            party_id: bill?.party_id, 
+            billDate: sundary?.billDate, 
+            partPayment: 0,
+            remainingAmount: sundary?.bill_net_amount
           });
+          totalAmount += +parseFloat(sundary?.bill_amount || 0);
+          totalSaleReturnAmount += parseFloat(returnAmount || 0);
+          finalNetAmount += +sundary?.bill_net_amount;
         }
 
-        totalAmount += +parseFloat(bill?.amount || 0);
-        totalSaleReturnAmount += parseFloat(bill?.credit_note_amount || 0);
-
-        finalNetAmount += +finalAmount;
       });
 
       setData(temp);
@@ -291,12 +302,10 @@ const BillPaymentModel = ({
       },
       mutationKey: ["account", "group-wise-outstanding", "debiter", "sundry"],
       onSuccess: (res) => {
-        queryClient.invalidateQueries("account/statement/last/voucher", {
-          company_id: companyId,
-        });
+        queryClient.invalidateQueries(["account", "group-wise-outstanding", "debiter", "sundry"]);
         const successMessage = res?.message;
         if (successMessage) {
-          message.success(successMessage);
+          message.success('Bill payment received successfully');
         }
         onClose();
       },
@@ -326,52 +335,69 @@ const BillPaymentModel = ({
     } else if (bankValue == "" || bankValue == undefined) {
       message.warning("Please, Select bank");
     } else {
-      let bill_details = [];
-      let total_paid_amount = 0;
+      
+      // Vocher number information 
       let temp_vocher_number = lastVoucherNo || "V-0";
       temp_vocher_number = String(temp_vocher_number).split("-")[1];
       let vocher_details = `V-${+temp_vocher_number + 1}`;
+      let bill_details = [];
+
+      let haseError = false ; 
 
       data?.map((element) => {
-        
-        let total_amount = parseFloat(+element?.amount || 0).toFixed(2) || 0;
-        let credit_note_amount =
-          parseFloat(+element?.credit_note_amount || 0).toFixed(2) || 0;
-        let paid_amount =
-          parseFloat(+element?.paid_amount || 0).toFixed(2) || 0;
-        let finalAmount = total_amount - paid_amount - credit_note_amount;
-        let partAmount = element?.partAmount;
-        
-        let new_paid_amount =
-          paymentOption == "fullPayment"
-            ? finalAmount
-            : +finalAmount - +partAmount;
-        total_paid_amount += +new_paid_amount;
+        if (paymentOption == "fullPayment"){
+          bill_details.push({
+            bill_id: element?.bill_id,
+            bill_no: element?.billNo,
+            model: element?.model,
+            amount: +element?.bill_amount_without_gst,
+            net_amount: +element?.amount,
+            paid_amount: +element?.amount,
+            bill_date: element?.billDate,
+            due_date: element?.dueDate,
+            part_payment: 0,
+            tds: null,
+            less_percentage: null,
+            plus_percentage: null,
+            is_paid: false,
+          });
+        } else {
+          if (
+            element?.partPayment === null ||
+            element?.partPayment === undefined ||
+            element?.partPayment === "" ||
+            isNaN(element?.partPayment)
+          ) {
+            message.warning("Part payment is invalid. Please check the data.") ; 
+            haseError = true; 
+            return ; 
+          }
 
-        bill_details.push({
-          bill_id: element?.bill_id,
-          bill_no: element?.bill_no,
-          model: element?.model,
-          amount: +element?.amount,
-          net_amount: +finalAmount,
-          paid_amount: +new_paid_amount,
-          bill_date: element?.createdAt,
-          due_date: null,
-          part_payment: partAmount == 0 ? null : partAmount,
-          tds: null,
-          less_percentage: null,
-          plus_percentage: null,
-          is_paid: false,
-        });
+          bill_details.push({
+            bill_id: element?.bill_id,
+            bill_no: element?.billNo,
+            model: element?.model,
+            amount: +element?.bill_amount_without_gst,
+            net_amount: +element?.amount,
+            paid_amount: +element?.remainingAmount,
+            bill_date: element?.billDate,
+            due_date: element?.dueDate,
+            part_payment: element?.partPayment,
+            tds: null,
+            less_percentage: null,
+            plus_percentage: null,
+            is_paid: false,
+          });
+        }
       });
       let requestPayload = {
         supplier_id: data[0]?.supplier_id,
         bank_id: bankValue,
         cheque_no: chequeNumber,
         cheque_date: moment(chequeDate).format("YYYY-MM-DD"),
-        total_amount: total_paid_amount,
+        total_amount: +parseFloat(payableAmount).toFixed(2),
         voucher_no: vocher_details,
-        remark: "",
+        remark: bill_details?.map((element) => element?.bill_no).join(", "),
         createdAt: moment(new Date()).format("YYYY-MM-DD"),
         is_passbook_entry: updateOption == "passbookUpdate" ? true : false,
         party_id: data[0]?.party_id,
@@ -383,11 +409,9 @@ const BillPaymentModel = ({
         bill_details: bill_details,
       };
 
-      console.log("Request payload informatino ==================");
-      
-      console.log(requestPayload);
-      
-      // await addBillEntry({ data: requestPayload });
+      if (!haseError){
+        await addBillEntry({ data: requestPayload });
+      }
     }
   };
 
