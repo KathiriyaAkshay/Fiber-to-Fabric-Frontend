@@ -74,7 +74,6 @@ const addSaleBillSchema = yup.object().shape({
 });
 
 const SaleBillComp = ({ isModelOpen, handleCloseModal, details, MODE }) => {
-  console.log(details);
   
   const queryClient = useQueryClient();
   const { companyId, companyListRes } = useContext(GlobalContext);

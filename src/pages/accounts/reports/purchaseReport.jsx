@@ -15,6 +15,7 @@ import { GlobalContext } from "../../../contexts/GlobalContext";
 import { useQuery } from "@tanstack/react-query";
 import { getAccountPurchaseReportService } from "../../../api/requests/accounts/reports";
 import moment from "moment";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
 
 const PurchaseReport = () => {
   const [fromDate, setFromDate] = useState(null);
@@ -95,7 +96,7 @@ const PurchaseReport = () => {
                       <td className="purchase-report-table-data-title">
                         {`${item?.yarn_count}C/ ${item?.filament} ${item?.yarn_company_name} ${item?.yarn_color}`}
                       </td>
-                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.meters || 0}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.meters).toFixed(2) || 0}</td>
                       <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.amount).toFixed(2) || 0}</td>
                       <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
@@ -153,9 +154,9 @@ const PurchaseReport = () => {
               ? purchaseReportData?.purchase_report.map((item, index) => {
                   return (
                     <tr key={index + "_grey_purchase_report"}>
-                      <td className="purchase-report-table-data-title">{item?.quality_name || ""}</td>
-                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{item?.meters || 0}</td>
-                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{item?.amount || 0}</td>
+                      <td className="purchase-report-table-data-title">{getDisplayQualityName(item)}</td>
+                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.meters).toFixed(2) || 0}</td>
+                      <td className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.amount).toFixed(2) || 0}</td>
                       <td className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
                   );
@@ -206,9 +207,9 @@ const PurchaseReport = () => {
               ? purchaseReportData?.job_report?.map((item, index) => {
                   return (
                     <tr key={index + "_job_purchase_report"}>
-                      <td className="purchase-report-table-data-title">{item?.quality_name || ""}</td>
-                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.meters || 0}</td>
-                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{item?.amount || 0}</td>
+                      <td className="purchase-report-table-data-title">{getDisplayQualityName(item)}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.meters).toFixed(2) || 0}</td>
+                      <td className="purchase-report-table-data" style={{ width: "20%" }}>{parseFloat(item?.amount).toFixed(2) || 0}</td>
                       <td  className="purchase-report-table-data"style={{ width: "20%" }}>{parseFloat(item?.avg_rate).toFixed(2) || 0}</td>
                     </tr>
                   );

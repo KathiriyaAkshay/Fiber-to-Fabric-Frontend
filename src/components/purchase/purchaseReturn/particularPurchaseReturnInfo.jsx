@@ -250,20 +250,12 @@ const ParticularPurchaseReturnInfo = ({ details, returnTaka }) => {
             
             let Return1 = false; 
             let Return2 = false;
-            let Taka1Index = details?.purchase_taka_challan?.purchase_challan_details[index]?.id ; 
-            let Taka2Index = details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.id ; 
-            
-            details?.new_challan_details?.map((taka) => {
-                if (taka?.id == Taka1Index){
-                    Return1 = true; 
-                }
-
-                if (taka?.id == Taka2Index){
-                    Return2 = true ; 
-                }
-            })
-
-
+            if (returnTaka?.includes(details?.purchase_taka_challan?.purchase_challan_details[index]?.id)){
+              Return1 = true; 
+            }
+            if (returnTaka?.includes(details?.purchase_taka_challan?.purchase_challan_details[index + 12]?.id)){
+              Return2 = true ; 
+            }
             return (
               <Row
                 key={index}

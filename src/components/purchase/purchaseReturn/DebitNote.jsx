@@ -1,12 +1,39 @@
 import { CloseOutlined, FileOutlined } from "@ant-design/icons";
-import { Button, Modal, Table, Typography, Row, Col, Flex } from "antd";
-import React, { useRef, useState } from "react";
+import { Button, Modal, Table, Typography, Row, Col, Flex, Tooltip } from "antd";
+import React, { useRef, useState, useContext } from "react";
 import ReactToPrint from "react-to-print";
 import logo from "./../../../assets/png/debit_icon.png";
 const { Text } = Typography;
+import { FileTextOutlined } from "@ant-design/icons";
+import { GlobalContext } from "../../../contexts/GlobalContext";
+import moment from "moment";
+import { getDisplayQualityName } from "../../../constants/nameHandler";
+import { ToWords } from "to-words";
+
+const toWords = new ToWords({
+  localeCode: "en-IN",
+  converterOptions: {
+    currency: true,
+    ignoreDecimal: false,
+    ignoreZeroCurrency: false,
+    doNotAddOnly: false,
+    currencyOptions: {
+      // can be used to override defaults for the selected locale
+      name: "Rupee",
+      plural: "Rupees",
+      symbol: "₹",
+      fractionalUnit: {
+        name: "Paisa",
+        plural: "Paise",
+        symbol: "",
+      },
+    },
+  },
+});
 
 const DebitNote = ({ details }) => {
   const [isModelOpen, setIsModalOpen] = useState(false);
+  const { companyId, companyListRes, company } = useContext(GlobalContext);
   const componentRef = useRef();
   const pageStyle = `
     @media print {
@@ -43,15 +70,21 @@ const DebitNote = ({ details }) => {
 
   return (
     <>
-      <Button
-        // type="primary"
-        onClick={() => {
-          setIsModalOpen(true);
-        }}
+      <div onClick={() => {
+        setIsModalOpen(true);
+      }}
+        style={{cursor: "pointer"}}
       >
-        <FileOutlined />
-      </Button>
-
+        <Tooltip title = {`DEBIT NOTE : ${details?.debit_note?.debit_note_number}`}>
+          <FileTextOutlined
+            style={{
+              fontSize: 20, 
+              marginLeft: 10, 
+              color: "red"
+            }}
+          />
+        </Tooltip>
+      </div>
       <Modal
         closeIcon={<CloseOutlined className="text-white" />}
         title={
@@ -118,72 +151,17 @@ const DebitNote = ({ details }) => {
               <Typography.Title level={2}>Debit Note</Typography.Title>
             </span>
           </div>
-          {/* second div */}
-          {/* <Row className='debitnote-sec'>
-                        <Col span={12} className='h-full'>
-
-                            <Flex vertical className='border-top border-right h-full'>
-                                <div className='border-bottom'>
-                                    Company Name : XRZ
-                                </div>
-                                <div className='border-bottom'>
-                                    Party :  POWER_COmpany
-                                    232553
-                                </div>
-                            </Flex>
-                        </Col>
-                        <Col span={12}>
-                            <div>
-                                <div>
-                                    <div>Debit Note No. :-
-                                        DD-11
-                                    </div>
-                                    <div>
-                                        Dated :-
-                                        24-07-2024
-                                    </div>
-                                </div>
-                                <div>
-
-                                    <div>Buyer's Ref. :-
-                                        2422
-
-                                        Date :-
-                                        20-07-2024
-                                    </div>
-                                    <div>
-                                        Buyer's Order No. :-
-                                        32
-                                    </div>
-
-                                </div>
-                                <div>
-                                    DESCRIPTION OF GOODS :
-                                    33P PALLU PATERN (SDFSDFSDFSDFSDFSD) - (8KG)
-                                </div>
-                                <div>
-                                    <div>HSN :-
-                                        574</div>
-                                    <div>
-                                        PAN NO :-
-                                        ABHPP6021C
-                                    </div>
-
-                                </div>
-                            </div>
-                        </Col>
-                    </Row> */}
           <table className="w-full table-custom border border-collaps">
             <tbody>
               <tr>
                 <td className="border border-gray-400 p-2" colSpan={3}>
-                  <strong>Company Name :-</strong> SONU TEXTILES
+                  <strong>Company Name :-</strong> {company?.company_name}
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Debit Note No. :-</strong> DD-11
+                  <strong>Debit Note No. :-</strong> {details?.debit_note?.debit_note_number}
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Dated :-</strong> 24-07-2024
+                  <strong>Dated :-</strong> {moment(details?.debit_note?.createdAt).format("DD-MM-YYYY")}
                 </td>
               </tr>
               <tr>
@@ -192,32 +170,46 @@ const DebitNote = ({ details }) => {
                   rowSpan={3}
                   colSpan={3}
                 >
-                  <strong>Party :-</strong> POWER_COMPANY
-                  <br />
-                  23423
+                  <div>
+                    <div>
+                      Supplier
+                    </div>
+                    <strong>
+                      {String(details?.purchase_taka_challan?.supplier?.supplier_company).toUpperCase()}
+                    </strong>
+                    <div>
+                      {details?.purchase_taka_challan?.supplier?.supplier_name}
+                    </div>
+                    <div>
+                      <strong>Address: </strong> {details?.purchase_taka_challan?.supplier?.user?.address}
+                    </div>
+                    <div>
+                      <strong>GST NO: </strong> {details?.purchase_taka_challan?.supplier?.user?.gst_no}
+                    </div>
+                  </div>
                 </td>
                 <td className="border border-gray-400 p-2">
-                  <strong>Buyer's Ref. :-</strong> 2422
+                  <strong>Buyer's Ref. :-</strong> {details?.debit_note?.invoice_no || "N/A"}
                   <br />
-                  <strong>Date :-</strong> 20-07-2024
+                  <strong>Challan Date :-</strong> {moment(details?.purchase_taka_challan?.createdAt).format("DD-MM-YYYY")}
                 </td>
 
                 <td className="border border-gray-400 p-2">
-                  <strong>Buyer's Order No. :-</strong> 32
+                  <strong>Buyer's Order No. :-</strong> {details?.purchase_taka_challan?.gray_order?.order_no}
                 </td>
               </tr>
               <tr>
                 <td className="border border-gray-400 p-2" colSpan="3">
-                  <strong>DESCRIPTION OF GOODS :-</strong> 33P PALLU PATTERN
+                  <strong>DESCRIPTION OF GOODS :-</strong> {getDisplayQualityName(details?.purchase_taka_challan?.inhouse_quality)}
                   (8KG)
                 </td>
               </tr>
               <tr>
                 <td className="border border-gray-400 p-2">
-                  <strong>HSN :-</strong> 574
+                  <strong>HSN :-</strong> ----
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="4">
-                  <strong>PAN NO :-</strong> ABHPF6021C
+                  <strong>PAN NO :-</strong> {details?.purchase_taka_challan?.supplier?.user?.pancard_no}
                 </td>
               </tr>
               <tr>
@@ -245,16 +237,16 @@ const DebitNote = ({ details }) => {
                   1
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  12
+                  {details?.debit_note?.total_taka || 0 }
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  12
+                  {details?.debit_note?.total_meter || 0}
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  15
+                  {details?.debit_note?.rate || 0}
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  5
+                  {details?.debit_note?.amount || 0 }
                 </td>
               </tr>
               <tr className="no-border">
@@ -271,10 +263,10 @@ const DebitNote = ({ details }) => {
                   SGST(%)
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  2.50
+                  {details?.debit_note?.SGST_value || 0 }
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  1.50
+                  {details?.debit_note?.SGST_amount || 0 }
                 </td>
               </tr>
               <tr className="no-border text-gray-400">
@@ -284,7 +276,7 @@ const DebitNote = ({ details }) => {
                   CGST(%)
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  2.50
+                  {details?.debit_note?.CGST_value || 0}
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
                   1.50
@@ -297,10 +289,10 @@ const DebitNote = ({ details }) => {
                   IGST(%)
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  2.50
+                  {details?.debit_note?.IGST_value || 0}
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  1.50
+                  {details?.debit_note?.IGST_amount || 0 }
                 </td>
               </tr>
               <tr className="no-border text-gray-400">
@@ -310,10 +302,10 @@ const DebitNote = ({ details }) => {
                   Round Off
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  2.50
+                  
                 </td>
                 <td className="border border-gray-400 p-2" colSpan="1">
-                  1.50
+                  {details?.debit_note?.round_off_amount || 0 }
                 </td>
               </tr>
 
@@ -322,7 +314,7 @@ const DebitNote = ({ details }) => {
                   <strong>NET AMOUNT</strong>
                 </td>
                 <td colSpan={1}>
-                  <strong>43</strong>
+                  <strong>{details?.debit_note?.net_amount}</strong>
                 </td>
               </tr>
 
@@ -330,11 +322,13 @@ const DebitNote = ({ details }) => {
                 <td colSpan={2}>
                   <strong>Rs.(IN WORDS):</strong>
                 </td>
-                <td colSpan={3}>Sixty Three only</td>
+                <td colSpan={3}>
+                {details?.debit_note?.net_amount?toWords.convert(details?.debit_note?.net_amount):toWords.convert(0)}
+                </td>
               </tr>
               <tr className="no-border">
                 <td colSpan={5} className="text-right">
-                  <strong>For, SONU TEXTILES</strong>
+                  <strong>For, {company?.company_name}</strong>
                 </td>
               </tr>
               <tr className="no-border">

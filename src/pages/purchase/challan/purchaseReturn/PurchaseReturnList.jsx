@@ -367,6 +367,68 @@ const PurchaseReturnList = () => {
     {
       title: "Total Meter",
       render: (details) => details?.purchase_taka_challan?.total_meter,
+    }, 
+    {
+      title: "Return Meter", 
+      render: (text, record) => {
+        let purchase_return_id = record?.id ;
+        let total_return_meter = 0 ; 
+        record?.purchase_taka_challan?.purchase_challan_details?.map((element) => {
+          if (element?.purchased_return_id == purchase_return_id){
+            total_return_meter = +total_return_meter + +element?.meter ; 
+          }
+        })
+
+        return(
+          <div style={{fontWeight: 600, color: "red"}}>
+            {parseFloat(total_return_meter).toFixed(2)}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Return Taka",
+      render: (text, record) => {
+        let purchase_return_id = record?.id ; 
+        let total_return_taka = 0 ; 
+        record?.purchase_taka_challan?.purchase_challan_details?.map((element) => {
+          if (element?.purchased_return_id == purchase_return_id){
+            total_return_taka += 1;
+          }
+        })
+
+        return( 
+          <div style={{fontWeight: 600, color: "red"}}>
+            {parseFloat(total_return_taka).toFixed(2)}
+          </div>
+        )
+      }
+    }, 
+    {
+      title: "Action", 
+      render: (text, record) => {
+        let purchase_return_id = record?.id ; 
+        let purchase_return_taka = [] ; 
+        record?.purchase_taka_challan?.purchase_challan_details?.map((element) => {
+          if (element?.purchased_return_id == purchase_return_id){
+            purchase_return_taka.push(element?.id)
+          }
+        })
+        return(
+          <Space>
+            {/* Debit note information  */}
+            <DebitNote
+              details = {record}
+            />
+
+            {/* Purchase return amount rekated information  */}
+            <ParticularPurchaseReturnInfo
+              details = {record}
+              returnTaka={purchase_return_taka}
+            /> 
+          </Space>
+        )
+      }
     }
   ];
 
@@ -392,13 +454,13 @@ const PurchaseReturnList = () => {
           onShowSizeChange: onShowSizeChange,
           onChange: onPageChange,
         }}
-        expandable={{
-          expandedRowRender: (record) => {
-            return <PurchaseReturnInformation item={record} />;
-          },
-          expandedRowKeys:
-            purchaseReturnList?.rows?.map((element) => element?.id) || [], // Correct syntax
-        }}
+        // expandable={{
+        //   expandedRowRender: (record) => {
+        //     return <PurchaseReturnInformation item={record} />;
+        //   },
+        //   expandedRowKeys:
+        //     purchaseReturnList?.rows?.map((element) => element?.id) || [], // Correct syntax
+        // }}
       />
     );
   }

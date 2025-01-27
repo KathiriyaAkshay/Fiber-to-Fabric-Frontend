@@ -310,10 +310,7 @@ const SalesReport = () => {
             />
           </Flex>
           <Button
-            // icon={<FilePdfOutlined />}
             type="primary"
-            // disabled={!cashBookList?.rows?.length}
-            // onClick={downloadPdf}
             className="flex-none"
           >
             Export
