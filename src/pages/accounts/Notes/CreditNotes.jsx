@@ -32,7 +32,7 @@ import { BEAM_RECEIVE_TAG_COLOR, CREDIT_NOTE_OTHER, JOB_TAG_COLOR, PURCHASE_TAG_
 import useDebounce from "../../../hooks/useDebounce";
 import { disabledFutureDate } from "../../../utils/date";
 import CreditNoteSaleReturnComp from "../../../components/sale/challan/saleReturn/creditNoteSaleReturnComp";
-import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewDiscountCreditNote";
+import ViewDiscountCreditNoteModel from "../../../components/accounts/notes/CreditNotes/viewCreditNote";
 import AccountantYarnSaleChallan from "../../../components/sale/challan/yarn/accountantYarnSaleChallan";
 import DeleteCreditNote from "../../../components/accounts/notes/CreditNotes/DeleteCreditNote";
 import UpdateCreditNote from "../../../components/accounts/notes/CreditNotes/UpdateCreditNote";
