@@ -13,6 +13,7 @@ import {
 } from "../../../utils/mutationUtils";
 import { FilePdfOutlined, SaveOutlined } from "@ant-design/icons";
 import { createParticularRequest } from "../../../api/requests/accounts/particular";
+import "./_style.css";
 
 const CostPerMeter = () => {
   const { companyId } = useContext(GlobalContext);
@@ -159,9 +160,15 @@ const CostPerMeter = () => {
           <Spin />
         </Flex>
       ) : (
-        <div style={{ width: "100%", overflowX: "auto" }}>
+        <div
+          style={{
+            width: "100%",
+            overflowX: "auto",
+            height: "calc(100vh - 148px)",
+          }}
+        >
           <table
-            className="custom-table"
+            className="custom-table cost-per-meter"
             style={{
               width: "100%",
               borderCollapse: "collapse",
@@ -176,8 +183,11 @@ const CostPerMeter = () => {
                     width: "50px",
                     position: "sticky",
                     left: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    zIndex: 1,
+                    backgroundColor: "#fff",
+                    // color: "#fff",
+                    textAlign: "center",
+                    zIndex: 2,
+                    // zIndex: 1,
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -251,11 +261,12 @@ const CostPerMeter = () => {
                             width: "50px",
                             position: "sticky",
                             left: 0,
-                            backgroundColor: "rgb(25 74 109)",
-                            color: "#fff",
+                            backgroundColor: "#fff",
+                            // color: "#fff",
                             textAlign: "center",
                             zIndex: 1,
                             whiteSpace: "nowrap",
+                            fontWeight: "500",
                           }}
                         >
                           {index + 1}
@@ -265,8 +276,10 @@ const CostPerMeter = () => {
                             width: "250px",
                             position: "sticky",
                             left: "60px",
-                            backgroundColor: "rgb(25 74 109)",
-                            color: "#fff",
+                            backgroundColor: "#fff",
+                            // backgroundColor: "rgb(25 74 109)",
+                            // color: "#fff",
+                            fontWeight: "500",
                             textAlign: "center",
                             zIndex: 1,
                             whiteSpace: "nowrap",
@@ -311,10 +324,12 @@ const CostPerMeter = () => {
                             width: "100px",
                             position: "sticky",
                             right: "111px",
-                            backgroundColor: "rgb(25 74 109)",
-                            color: "#fff",
+                            backgroundColor: "#fff",
+                            // backgroundColor: "rgb(25 74 109)",
+                            // color: "#fff",
                             textAlign: "center",
                             zIndex: 1,
+                            fontWeight: "600",
                             whiteSpace: "nowrap",
                           }}
                         >
@@ -325,10 +340,11 @@ const CostPerMeter = () => {
                             width: "100px",
                             position: "sticky",
                             right: 0,
-                            backgroundColor: "rgb(25 74 109)",
-                            color: "#fff",
+                            backgroundColor: "#fff",
+                            // color: "#000",
                             textAlign: "center",
-                            zIndex: 1,
+                            zIndex: 2,
+                            fontWeight: "600",
                             whiteSpace: "nowrap",
                           }}
                         >
@@ -357,8 +373,9 @@ const CostPerMeter = () => {
                     width: "50px",
                     position: "sticky",
                     left: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    bottom: 0,
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
                     whiteSpace: "nowrap",
@@ -369,10 +386,11 @@ const CostPerMeter = () => {
                     width: "250px",
                     position: "sticky",
                     left: "60px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -400,6 +418,7 @@ const CostPerMeter = () => {
                               width: "80px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {totalAmount.toFixed(2)}
@@ -409,6 +428,7 @@ const CostPerMeter = () => {
                               width: "50px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {0}
@@ -422,10 +442,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: "111px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -436,10 +458,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -454,8 +478,8 @@ const CostPerMeter = () => {
                     width: "50px",
                     position: "sticky",
                     left: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
                     whiteSpace: "nowrap",
@@ -466,10 +490,11 @@ const CostPerMeter = () => {
                     width: "250px",
                     position: "sticky",
                     left: "60px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -489,6 +514,7 @@ const CostPerMeter = () => {
                               width: "80px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {0}
@@ -498,6 +524,7 @@ const CostPerMeter = () => {
                               width: "50px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {0}
@@ -511,10 +538,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: "111px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -525,10 +554,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -543,10 +574,11 @@ const CostPerMeter = () => {
                     width: "50px",
                     position: "sticky",
                     left: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
                     whiteSpace: "nowrap",
                   }}
                 ></td>
@@ -555,10 +587,12 @@ const CostPerMeter = () => {
                     width: "250px",
                     position: "sticky",
                     left: "60px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
+
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -578,6 +612,7 @@ const CostPerMeter = () => {
                               width: "80px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {0}
@@ -587,6 +622,7 @@ const CostPerMeter = () => {
                               width: "50px",
                               whiteSpace: "nowrap",
                               textAlign: "center",
+                              fontWeight: "500",
                             }}
                           >
                             {0}
@@ -600,10 +636,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: "111px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
+                    fontWeight: "500",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -614,10 +652,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 >
@@ -632,10 +672,11 @@ const CostPerMeter = () => {
                     width: "50px",
                     position: "sticky",
                     left: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 ></td>
@@ -644,8 +685,9 @@ const CostPerMeter = () => {
                     width: "250px",
                     position: "sticky",
                     left: "60px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
                     zIndex: 1,
                     whiteSpace: "nowrap",
@@ -696,10 +738,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: "111px",
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 ></td>
@@ -708,10 +752,12 @@ const CostPerMeter = () => {
                     width: "100px",
                     position: "sticky",
                     right: 0,
-                    backgroundColor: "rgb(25 74 109)",
-                    color: "#fff",
+                    backgroundColor: "#fff",
+                    // backgroundColor: "rgb(25 74 109)",
+                    // color: "#fff",
                     textAlign: "center",
-                    zIndex: 1,
+                    zIndex: 2,
+                    fontWeight: "500",
                     whiteSpace: "nowrap",
                   }}
                 ></td>
@@ -778,8 +824,10 @@ const AddNewParticular = ({ lastIndex, COLUMNS, companyId }) => {
           width: "50px",
           position: "sticky",
           left: 0,
-          backgroundColor: "rgb(25 74 109)",
-          color: "#fff",
+          backgroundColor: "#fff",
+          fontWeight: "500",
+          // backgroundColor: "rgb(25 74 109)",
+          // color: "#fff",
           textAlign: "center",
           zIndex: 1,
           whiteSpace: "nowrap",
@@ -792,8 +840,9 @@ const AddNewParticular = ({ lastIndex, COLUMNS, companyId }) => {
           width: "250px",
           position: "sticky",
           left: "60px",
-          backgroundColor: "rgb(25 74 109)",
-          color: "#fff",
+          backgroundColor: "#fff",
+          fontWeight: "500",
+          // color: "",
           textAlign: "center",
           zIndex: 1,
           whiteSpace: "nowrap",
@@ -857,10 +906,12 @@ const AddNewParticular = ({ lastIndex, COLUMNS, companyId }) => {
           width: "100px",
           position: "sticky",
           right: "111px",
-          backgroundColor: "rgb(25 74 109)",
-          color: "#fff",
+          backgroundColor: "#fff",
+          // backgroundColor: "rgb(25 74 109)",
+          // color: "#fff",
           textAlign: "center",
-          zIndex: 1,
+          zIndex: 2,
+          fontWeight: "500",
           whiteSpace: "nowrap",
         }}
       ></td>
@@ -869,10 +920,12 @@ const AddNewParticular = ({ lastIndex, COLUMNS, companyId }) => {
           width: "100px",
           position: "sticky",
           right: 0,
-          backgroundColor: "rgb(25 74 109)",
-          color: "#fff",
+          backgroundColor: "#fff",
+          // backgroundColor: "rgb(25 74 109)",
+          // color: "#fff",
           textAlign: "center",
-          zIndex: 1,
+          zIndex: 2,
+          fontWeight: "500",
           whiteSpace: "nowrap",
         }}
       ></td>
