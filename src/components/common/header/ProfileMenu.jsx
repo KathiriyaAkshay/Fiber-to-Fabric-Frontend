@@ -1,7 +1,7 @@
 import { Avatar, Button, Dropdown } from "antd";
 import { api } from "../../../api";
 import { Link as RotuerLink, useNavigate } from "react-router-dom";
-import profilePlaceholder from "../../../assets/png/profile-placeholder.png";
+// import profilePlaceholder from "../../../assets/png/profile-placeholder.png";
 import ProfileDetailModal from "../modal/ProfileDetailModal";
 import { useCurrentUser } from "../../../api/hooks/auth";
 import { USER_ROLES } from "../../../constants/userRole";
@@ -61,9 +61,11 @@ function ProfileMenu() {
       >
         <Avatar
           alt="Profile Avatar"
-          src={profilePlaceholder}
+          // src={profilePlaceholder}
           className="cursor-pointer"
-        />
+        >
+          {user ? user?.first_name?.charAt(0).toUpperCase() : ""}
+        </Avatar>
       </Dropdown>
     </>
   );

@@ -186,6 +186,9 @@ import CostPerMeter from "./pages/accounts/costPerMeter";
 import NotFound from "./components/common/NotFound";
 import ComingSoon from "./components/common/ComingSoon";
 import SignUp from "./pages/profile/signUp/SignUp";
+const showQueryDevTools = import.meta.env.VITE_SHOW_QUERY_DEVTOOLS;
+
+console.log({ showQueryDevTools });
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -1061,7 +1064,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       >
         <RouterProvider router={router} />
       </ConfigProvider>
-      <ReactQueryDevtools />
+      {showQueryDevTools === "true" && <ReactQueryDevtools />}
     </QueryClientProvider>
   </React.StrictMode>
 );
