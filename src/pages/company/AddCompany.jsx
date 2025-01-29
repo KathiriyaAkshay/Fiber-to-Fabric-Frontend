@@ -18,29 +18,31 @@ const createCompanySchemaResolver = yupResolver(
         value ? isValidPhoneNumber(value) : false
       ),
     gst_no: yup.string().required("Please enter GST"),
-    owner_name: yup.string().required(),
-    company_name: yup.string().required(),
-    pancard_no: yup.string().required(),
-    adhar_no: yup.string().required(),
-    company_unit: yup.string().required(),
-    bill_number_format: yup.string().required(),
-    company_email: yup.string().required(),
-    company_contact: yup.string().required(),
-    address_line_1: yup.string().required(),
+    owner_name: yup.string().required("Please enter owner name"),
+    company_name: yup.string().required("Please enter company name"),
+    pancard_no: yup.string().required("Please enter pancard number"),
+    adhar_no: yup.string().required("Please enter adhar number"),
+    company_unit: yup.string().required("Please enter company unit"),
+    bill_number_format: yup
+      .string()
+      .required("Please enter bill number format"),
+    company_email: yup.string().required("Please enter company email"),
+    company_contact: yup.string().required("Please enter company contact"),
+    address_line_1: yup.string().required("Please enter address line 1"),
     address_line_2: yup.string(),
-    country: yup.string().required(),
-    state: yup.string().required(),
-    city: yup.string().required(),
-    pincode: yup.string().required(),
-    bill_title: yup.string().required(),
-    bank_name: yup.string().required(),
-    account_number: yup.string().required(),
-    ifsc_code: yup.string().required(),
+    country: yup.string().required("Please enter country"),
+    state: yup.string().required("Please enter state"),
+    city: yup.string().required("Please enter city"),
+    pincode: yup.string().required("Please enter pincode"),
+    bill_title: yup.string().required("Please enter bill title"),
+    bank_name: yup.string().required("Please enter bank name"),
+    account_number: yup.string().required("Please enter account number"),
+    ifsc_code: yup.string().required("Please enter IFSC code"),
     company_types: yup
       .array()
       // .of(yup.string().oneOf(enumValues, "Invalid company type value"))
       .required("Enum array is required"),
-    account_type: yup.string().required(),
+    account_type: yup.string().required("Please enter account type"),
   })
 );
 
@@ -68,7 +70,7 @@ function AddCompany() {
   async function onSubmit(data) {
     console.log(data); // Handle form submission
     const res = await addNewCompany(data);
-    console.log("res----->", res);
+    console.log(res);
   }
 
   const {

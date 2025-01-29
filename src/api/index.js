@@ -59,9 +59,10 @@ api.interceptors.response.use(
   function (error) {
     // Any status codes that falls outside the range of 2xx cause this function to trigger
     if (
-      error?.response?.status === 401 &&
-      error?.config?.url?.includes("/auth/current-user")
+      error?.response?.status === 401
+      // error?.config?.url?.includes("/auth/current-user")
     ) {
+      localStorage.clear();
       window.location.href = `${window.location.origin}/auth`;
     }
     return Promise.reject(error);
